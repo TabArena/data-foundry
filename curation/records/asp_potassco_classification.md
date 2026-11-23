@@ -88,6 +88,8 @@ CC (2026-11-18, Andrej): Review issue 10, A, as implemented: Grouped 3-fold CV, 
 
 CC (2026-11-18, Andrej): "Do both by family" (blind split walk, cross-dataset item on the two algorithm-selection sets, b): the split holds out whole problem families instead of class folders: `problem_family` replaces `task_id`, the class folder with the folders of one generator merged (the 15 problems of the 2007 competition stored twice, HamiltonClumpy's five folders, RLP-150/200, plain and verbose searchTest): 96 folders, 75 families, 25 per test fold, 10 x 3. Why: grouped on the folders, 19% of the test instances (4-45% per fold) had their generator in training. The `UnseenGroup` tag and the grouped 3-fold CV of review issues 9 and 10 stay, now over families. Not built yet.
 
+CC (2026-11-23, Andrej): Review issue 2, B: 10 x 3 splits, counted in the instances PAR10 scores. The split count in scored units (SPLIT-33) is on main (#95), and the protocol reaches it from the data: one runtime per run, so the families do not count; PAR10 scores per instance; each instance's 11 runs sit inside one family. The 1,212 instances leave 694-878 on the train side, below 2,500, so 10 x 3 (the 13,332 runs would give 3 x 3, the 75 families 20 x 3). Supersedes the row count of the CC of 2026-11-12. Not built yet.
+
 ## Review
 
 **Outcome:** added. ASlib's ASP-POTASSCO scenario (Hoos, Lindauer and Schaub 2014; Bischl et al. 2016): 1,212
@@ -108,7 +110,7 @@ class shares (-), a label that scores a pick 0.05 s slower as wrong as a timeout
 
 **Main points:** Resolved: runtime regression scored by PAR10 (1), timeouts at the recorded 600 s (3), the log
 scale (4); scored per instance, with a note on the large problem classes (5, Lennart, 2026-11-08). Splits in scored
-units, 10 x 3 (2, 2026-11-06; in effect since SPLIT-33 landed). Kept after the value study, since tuned selectors beat
+units, 10 x 3, counted in instances (2, 2026-11-06; confirmed under SPLIT-33 on 2026-11-23). Kept after the value study, since tuned selectors beat
 the "most often fastest" rule on every split set tried (6, 2026-11-12), and the table's form kept (7); the notes'
 baseline numbers (8) stay open: the numbers chosen on 2026-11-12 were measured on the problem-class splits and need
 re-measuring on the family splits. Tagged `UnseenGroup` (9); the class-grouped split kept over ASlib's instance
@@ -276,6 +278,11 @@ call, and its reason ("the 11 runtimes are not shipped") describes our choice, n
    **Resolved (2026-11-06, Andrej):** B everywhere: the split protocol counts the units the metric scores (SPLIT-33).
    Deferred with the rule on 2026-11-12 and in effect since SPLIT-33 landed (#95): the 1,212 instances PAR10 scores
    give 10 x 3 splits.
+
+   **Resolved (2026-11-23, Andrej):** B, 10 x 3, counted in instances. SPLIT-33 is on main (#95) and decides it from
+   the data: the runtime is per run, so the families do not count; PAR10 scores per instance, and each instance's runs
+   sit inside one of the 75 families, so the instances count. 1,212 instances leave 694-878 on the train side, below
+   2,500. Not built yet.
 
 3. **Count a timed-out run as the 600 s limit in the target, or as the 6,000 s that PAR10 charges for it?**
 

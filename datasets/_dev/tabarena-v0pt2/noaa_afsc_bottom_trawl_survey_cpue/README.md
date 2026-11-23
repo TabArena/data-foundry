@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: noaa_afsc_bottom_trawl_survey_cpue
 container_format: 2
-checksum: v2:a2501fa1f10b9adcd61e5e4670eabb7b25cd58f32a764c97343beef3339df8ff
+checksum: v2:ed91807fbdbccdc6a446c95e95d4f29119ac91bb6180dfcb71c7a57084dcfeed
 build: null
 build_stale: false
 data:
@@ -43,11 +43,9 @@ splits:
     min: 11624
     max: 25604
 bundle_checks:
-  ok: false
-  errors:
-  - splits_test_too_small
-  warnings:
-  - splits_below_target
+  ok: true
+  errors: []
+  warnings: []
   infos: []
   accepted:
     task_target_value_dominant: '52% zeros: hauls that caught none of the row''s taxon
@@ -67,7 +65,7 @@ decisions:
 
 Regression of `log1p_cpue_no_km2`, scored with `mean_group_normalized_rmse` on temporal splits by `date`. 391,044 rows and 9 features. Source: GOV Website (2026).
 
-Not built yet. The current definition gives checksum `v2:a2501fa1f10b9adcd61e5e4670eabb7b25cd58f32a764c97343beef3339df8ff`.
+Not built yet. The current definition gives checksum `v2:ed91807fbdbccdc6a446c95e95d4f29119ac91bb6180dfcb71c7a57084dcfeed`.
 
 ## In brief
 
@@ -368,10 +366,8 @@ Short tows (under 0.75 of the median duration of their region and year) against 
 
 ## Bundle checks
 
-1 error(s), 1 warning(s), 0 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
-- **error** `splits_test_too_small`: Test window(s) with fewer than 33 scored units: window 0 with 11, window 1 with 11, window 2 with 11, window 3 with 11, window 4 with 11, window 5 with 11, window 6 with 11, window 7 with 11, window 8 with 11. (hint: SPLIT-14: widen the windows (or fewer of them) until each holds 33 scored units.)
-- **warning** `splits_below_target`: 9 window(s), against the 60 splits an IID split of 11 scored units would get (SPLIT-33). (hint: SPLIT-15 aims at that count and accepts fewer: the splits comment names the target, the count reached and what stops more windows (the use case's horizon or gap, the training floor, the least test window); then accept this warning with it.)
 
 Accepted on purpose:
 

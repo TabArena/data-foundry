@@ -1,0 +1,328 @@
+sequence_name,uniprot_accession,family_source,protein_family
+AAS_ECOLI,P31119,uniprot_family,family:2-acyl-GPE acetyltransferase family
+AAT_ECOLI,P00509,uniprot_family,family:Class-I pyridoxal-phosphate-dependent aminotransferase family
+ACEA_ECOLI,P0A9G6,uniprot_family,family:Isocitrate lyase/PEP mutase superfamily
+ACEK_ECOLI,P11071,uniprot_family,family:AceK family
+ACKA_ECOLI,P0A6A3,uniprot_family,family:Acetokinase family
+ADI_ECOLI,P28629,uniprot_family,family:Orn/Lys/Arg decarboxylase class-I family
+AGP_ECOLI,P19926,uniprot_family,family:Histidine acid phosphatase family
+ALKH_ECOLI,P0A955,uniprot_family,family:KHG/KDPG aldolase family
+AMPD_ECOLI,P13016,uniprot_family,family:N-acetylmuramoyl-L-alanine amidase 2 family
+AMPE_ECOLI,P0AE14,pfam_domains,pfam:PF17113
+AMY1_ECOLI,P25718,uniprot_family,family:Glycosyl hydrolase 13 family
+AMY2_ECOLI,P26612,uniprot_family,family:Glycosyl hydrolase 13 family
+APT_ECOLI,P69503,uniprot_family,family:Purine/pyrimidine phosphoribosyltransferase family
+ARAC_ECOLI,P0A9E0,pfam_domains,pfam:PF02311;PF12833
+ARAE_ECOLI,P0AE24,uniprot_family,family:Major facilitator superfamily
+ARAF_ECOLI,P02924,uniprot_family,family:Bacterial solute-binding protein 2 family
+ARAH_ECOLI,P0AE26,uniprot_family,family:Binding protein-dependent transport system permease family
+AROP_ECOLI,P15993,uniprot_family,family:Amino acid-polyamine-organocation (APC) superfamily
+ASG1_ECOLI,,unresolved,protein:ASG1_ECOLI
+ASG2_ECOLI,,unresolved,protein:ASG2_ECOLI
+ATKA_ECOLI,P03959,uniprot_family,family:KdpA family
+ATKB_ECOLI,P03960,uniprot_family,family:Cation transport ATPase (P-type) (TC 3.A.3) family
+ATP6_ECOLI,P0AB98,uniprot_family,family:ATPase A chain family
+BCR_ECOLI,P28246,uniprot_family,family:Major facilitator superfamily
+BETT_ECOLI,P0ABC9,uniprot_family,family:BCCT transporter (TC 2.A.15) family
+BGLX_ECOLI,P33363,uniprot_family,family:Glycosyl hydrolase 3 family
+BTUB_ECOLI,P06129,uniprot_family,family:TonB-dependent receptor family
+BTUR_ECOLI,P0A9H5,uniprot_family,family:Cob(I)alamin adenosyltransferase family
+C562_ECOLI,,unresolved,protein:C562_ECOLI
+CADB_ECOLI,P0AAE8,uniprot_family,family:Amino acid-polyamine-organocation (APC) superfamily
+CAFA_ECOLI,,unresolved,protein:CAFA_ECOLI
+CAIB_ECOLI,P31572,uniprot_family,family:CoA-transferase III family
+CAIT_ECOLI,P31553,uniprot_family,family:BCCT transporter (TC 2.A.15) family
+CFA_ECOLI,P0A9H7,uniprot_family,family:CFA/CMAS family
+CHEA_ECOLI,P07363,pfam_domains,pfam:PF01584;PF09078;PF02895;PF02518;PF01627
+CHEB_ECOLI,P07330,uniprot_family,family:CheB family
+CHEW_ECOLI,P0A964,pfam_domains,pfam:PF01584
+CHEY_ECOLI,P0AE67,pfam_domains,pfam:PF00072
+CHEZ_ECOLI,P0A9H9,uniprot_family,family:CheZ family
+CIRA_ECOLI,P17315,uniprot_family,family:TonB-dependent receptor family
+CN16_ECOLI,,unresolved,protein:CN16_ECOLI
+CODB_ECOLI,P0AA82,uniprot_family,family:Purine-cytosine permease (2.A.39) family
+CPXA_ECOLI,P0AE82,pfam_domains,pfam:PF16527;PF00672;PF02518;PF00512
+CRED_ECOLI,P08369,pfam_domains,pfam:PF06123
+CRL_ECOLI,P24251,uniprot_family,family:Crl family
+CSPA_ECOLI,P0A9X9,pfam_domains,pfam:PF00313
+CYDA_ECOLI,P0ABJ9,uniprot_family,family:Cytochrome ubiquinol oxidase subunit 1 family
+CYDB_ECOLI,P0ABK2,uniprot_family,family:Cytochrome ubiquinol oxidase subunit 2 family
+CYNR_ECOLI,P27111,uniprot_family,family:LysR transcriptional regulatory family
+CYOB_ECOLI,P0ABI8,uniprot_family,family:Heme-copper respiratory oxidase family
+CYOC_ECOLI,P0ABJ3,uniprot_family,family:Cytochrome c oxidase subunit 3 family
+CYOD_ECOLI,P0ABJ6,uniprot_family,family:Cytochrome c oxidase bacterial subunit 4 family
+CYOE_ECOLI,P0AEA5,uniprot_family,family:UbiA prenyltransferase family
+CYPB_ECOLI,P23869,uniprot_family,family:Cyclophilin-type PPIase family
+CYPC_ECOLI,,unresolved,protein:CYPC_ECOLI
+CYPH_ECOLI,,unresolved,protein:CYPH_ECOLI
+CYSB_ECOLI,P0A9F3,uniprot_family,family:LysR transcriptional regulatory family
+CYSE_ECOLI,P0A9D4,uniprot_family,family:Transferase hexapeptide repeat family
+CYSP_ECOLI,P16700,uniprot_family,family:Prokaryotic sulfate-binding protein family
+DAPD_ECOLI,P0A9D8,uniprot_family,family:Transferase hexapeptide repeat family
+DCP_ECOLI,P24171,uniprot_family,family:Peptidase M3 family
+DCTA_ECOLI,P0A830,uniprot_family,family:Dicarboxylate/amino acid:cation symporter (DAACS) (TC 2.A.23) family
+DDLA_ECOLI,P0A6J8,uniprot_family,family:D-alanine--D-alanine ligase family
+DDLB_ECOLI,P07862,uniprot_family,family:D-alanine--D-alanine ligase family
+DEOC_ECOLI,P0A6L0,uniprot_family,family:DeoC/FbaB aldolase family
+DGAL_ECOLI,P0AEE5,uniprot_family,family:Bacterial solute-binding protein 2 family
+DHG_ECOLI,P15877,uniprot_family,family:Bacterial PQQ dehydrogenase family
+DHSC_ECOLI,P69054,uniprot_family,family:Cytochrome b560 family
+DHSD_ECOLI,P0AC44,pfam_domains,pfam:PF01127
+DLDH_ECOLI,P0A9P0,uniprot_family,family:Class-I pyridine nucleotide-disulfide oxidoreductase family
+DMSC_ECOLI,P18777,uniprot_family,family:DmsC family
+DPPA_ECOLI,P23847,uniprot_family,family:Bacterial solute-binding protein 5 family
+DPPB_ECOLI,P0AEF8,uniprot_family,family:Binding protein-dependent transport system permease family
+DPPC_ECOLI,P0AEG1,uniprot_family,family:Binding protein-dependent transport system permease family
+DSBA_ECOLI,P0AEG4,uniprot_family,family:Thioredoxin family
+DSBB_ECOLI,P0A6M2,uniprot_family,family:DsbB family
+DSBC_ECOLI,P0AEG6,uniprot_family,family:Thioredoxin family
+DSBD_ECOLI,P36655,uniprot_family,family:Thioredoxin family
+ECOT_ECOLI,P23827,uniprot_family,family:Protease inhibitor I11 (ecotin) family
+ECPD_ECOLI,P77694,uniprot_family,family:EcpD/MatE family
+EFG_ECOLI,P0A6M8,uniprot_family,family:TRAFAC class translation factor GTPase superfamily
+EFTS_ECOLI,P0A6P1,uniprot_family,family:EF-Ts family
+EFTU_ECOLI,,unresolved,protein:EFTU_ECOLI
+EMRA_ECOLI,P27303,uniprot_family,family:Membrane fusion protein (MFP) (TC 8.A.1) family
+EMRB_ECOLI,P0AEJ0,uniprot_family,family:Major facilitator superfamily
+ENO_ECOLI,P0A6P9,uniprot_family,family:Enolase family
+ENVZ_ECOLI,P0AEJ4,pfam_domains,pfam:PF00672;PF02518;PF00512
+EXBB_ECOLI,P0ABU7,uniprot_family,family:ExbB/TolQ family
+EXBD_ECOLI,P0ABV2,uniprot_family,family:ExbD/TolR family
+FABB_ECOLI,P0A953,uniprot_family,family:Thiolase-like superfamily
+FADL_ECOLI,P10384,uniprot_family,family:OmpP1/FadL family
+FECA_ECOLI,P13036,uniprot_family,family:TonB-dependent receptor family
+FECB_ECOLI,P15028,uniprot_family,family:Bacterial solute-binding protein 8 family
+FECR_ECOLI,P23485,pfam_domains,pfam:PF16220;PF04773
+FEPA_ECOLI,P05825,uniprot_family,family:TonB-dependent receptor family
+FEPB_ECOLI,P0AEL6,uniprot_family,family:Bacterial solute-binding protein 8 family
+FEPD_ECOLI,P23876,uniprot_family,family:Binding protein-dependent transport system permease family
+FEPG_ECOLI,P23877,uniprot_family,family:Binding protein-dependent transport system permease family
+FES_ECOLI,P13039,uniprot_family,family:Fes family
+FHUA_ECOLI,P06971,uniprot_family,family:TonB-dependent receptor family
+FHUE_ECOLI,P16869,uniprot_family,family:TonB-dependent receptor family
+FIMC_ECOLI,P31697,uniprot_family,family:Periplasmic pilus chaperone family
+FRDC_ECOLI,P0A8Q0,uniprot_family,family:FrdC family
+FRDD_ECOLI,P0A8Q3,uniprot_family,family:FrdD family
+FTSH_ECOLI,P0AAI3,uniprot_family,family:AAA ATPase family
+FTSL_ECOLI,P0AEN4,uniprot_family,family:FtsL family
+FTSN_ECOLI,P29131,uniprot_family,family:FtsN family
+FTSQ_ECOLI,P06136,uniprot_family,family:FtsQ/DivIB family
+FTSW_ECOLI,P0ABG4,uniprot_family,family:SEDS family
+G3P1_ECOLI,P0A9B2,uniprot_family,family:Glyceraldehyde-3-phosphate dehydrogenase family
+G3P2_ECOLI,,unresolved,protein:G3P2_ECOLI
+G6PI_ECOLI,P0A6T1,uniprot_family,family:GPI family
+GABP_ECOLI,P25527,uniprot_family,family:Amino acid-polyamine-organocation (APC) superfamily
+GALP_ECOLI,P0AEP1,uniprot_family,family:Major facilitator superfamily
+GCVA_ECOLI,P0A9F6,uniprot_family,family:LysR transcriptional regulatory family
+GGT_ECOLI,P18956,uniprot_family,family:Gamma-glutamyltransferase family
+GLNA_ECOLI,P0A9C5,uniprot_family,family:Glutamine synthetase family
+GLNH_ECOLI,P0AEQ3,uniprot_family,family:Bacterial solute-binding protein 3 family
+GLNP_ECOLI,P0AEQ6,uniprot_family,family:Binding protein-dependent transport system permease family
+GLPD_ECOLI,P13035,uniprot_family,family:FAD-dependent glycerol-3-phosphate dehydrogenase family
+GLPQ_ECOLI,P09394,uniprot_family,family:Glycerophosphoryl diester phosphodiesterase family
+GLPT_ECOLI,P08194,uniprot_family,family:Major facilitator superfamily
+GLTP_ECOLI,P21345,uniprot_family,family:Dicarboxylate/amino acid:cation symporter (DAACS) (TC 2.A.23) family
+GLTS_ECOLI,P0AER8,uniprot_family,family:Glutamate:Na(+) symporter (ESS) (TC 2.A.27) family
+GLYA_ECOLI,P0A825,uniprot_family,family:SHMT family
+GSHR_ECOLI,P06715,uniprot_family,family:Class-I pyridine nucleotide-disulfide oxidoreductase family
+GT_ECOLI,,unresolved,protein:GT_ECOLI
+HEM6_ECOLI,P36553,uniprot_family,family:Aerobic coproporphyrinogen-III oxidase family
+HEMN_ECOLI,P32131,uniprot_family,family:Anaerobic coproporphyrinogen-III oxidase family
+HPRT_ECOLI,P0A9M2,uniprot_family,family:Purine/pyrimidine phosphoribosyltransferase family
+HTRA_ECOLI,,unresolved,protein:HTRA_ECOLI
+IF1_ECOLI,P69222,uniprot_family,family:IF-1 family
+IF2_ECOLI,P0A705,uniprot_family,family:TRAFAC class translation factor GTPase superfamily
+ILVY_ECOLI,P05827,uniprot_family,family:LysR transcriptional regulatory family
+IPYR_ECOLI,P0A7A9,uniprot_family,family:PPase family
+KAD_ECOLI,P69441,uniprot_family,family:Adenylate kinase family
+KDGL_ECOLI,P0ABN1,uniprot_family,family:Bacterial diacylglycerol kinase family
+KDSA_ECOLI,P0A715,uniprot_family,family:Class-I DAHP synthase family
+KEFC_ECOLI,P03819,uniprot_family,family:Monovalent cation:proton antiporter 2 (CPA2) transporter (TC 2.A.37) family
+KGTP_ECOLI,P0AEX3,uniprot_family,family:Major facilitator superfamily
+KUP_ECOLI,P63183,uniprot_family,family:HAK/KUP transporter (TC 2.A.72) family
+LACY_ECOLI,P02920,uniprot_family,family:Major facilitator superfamily
+LAMB_ECOLI,P02943,uniprot_family,family:Porin LamB (TC 1.B.3) family
+LEP_ECOLI,P00803,uniprot_family,family:Peptidase S26 family
+LEU3_ECOLI,P30125,uniprot_family,family:Isocitrate and isopropylmalate dehydrogenases family
+LGT_ECOLI,P60955,uniprot_family,family:Lgt family
+LIVJ_ECOLI,P0AD96,uniprot_family,family:Leucine-binding protein family
+LIVK_ECOLI,P04816,uniprot_family,family:Leucine-binding protein family
+LLDP_ECOLI,P33231,uniprot_family,family:Lactate permease family
+LNT_ECOLI,P23930,uniprot_family,family:CN hydrolase family
+LON_ECOLI,P0A9M0,uniprot_family,family:Peptidase S16 family
+LPLA_ECOLI,P32099,uniprot_family,family:LplA family
+LSPA_ECOLI,P00804,uniprot_family,family:Peptidase A8 family
+LYSP_ECOLI,P25737,uniprot_family,family:Amino acid-polyamine-organocation (APC) superfamily
+LYSR_ECOLI,P03030,uniprot_family,family:LysR transcriptional regulatory family
+MALE_ECOLI,P0AEX9,uniprot_family,family:Bacterial solute-binding protein 1 family
+MALF_ECOLI,P02916,uniprot_family,family:Binding protein-dependent transport system permease family
+MALG_ECOLI,P68183,uniprot_family,family:Binding protein-dependent transport system permease family
+MALM_ECOLI,P03841,pfam_domains,pfam:PF07148;PF30397
+MALQ_ECOLI,P15977,uniprot_family,family:Disproportionating enzyme family
+MALZ_ECOLI,P21517,uniprot_family,family:Glycosyl hydrolase 13 family
+MASY_ECOLI,P08997,uniprot_family,family:Malate synthase family
+MCP1_ECOLI,P02942,uniprot_family,family:Methyl-accepting chemotaxis (MCP) protein family
+MCP2_ECOLI,P07017,uniprot_family,family:Methyl-accepting chemotaxis (MCP) protein family
+MCP3_ECOLI,P05704,uniprot_family,family:Methyl-accepting chemotaxis (MCP) protein family
+MCP4_ECOLI,P07018,uniprot_family,family:Methyl-accepting chemotaxis (MCP) protein family
+MELB_ECOLI,P02921,uniprot_family,family:Sodium:galactoside symporter (TC 2.A.2) family
+MEPA_ECOLI,P0C0T5,uniprot_family,family:Peptidase M74 family
+METB_ECOLI,P00935,uniprot_family,family:Trans-sulfuration enzymes family
+METC_ECOLI,P06721,uniprot_family,family:Trans-sulfuration enzymes family
+METK_ECOLI,P0A817,uniprot_family,family:AdoMet synthase family
+METR_ECOLI,P0A9F9,uniprot_family,family:LysR transcriptional regulatory family
+METX_ECOLI,,unresolved,protein:METX_ECOLI
+MODA_ECOLI,P37329,uniprot_family,family:Bacterial solute-binding protein ModA family
+MOTA_ECOLI,P09348,uniprot_family,family:MotA family
+MOTB_ECOLI,P0AF06,uniprot_family,family:MotB family
+MSBB_ECOLI,P24205,uniprot_family,family:LpxL/LpxM/LpxP family
+MTR_ECOLI,P0AAD2,uniprot_family,family:Amino acid/polyamine transporter 2 family
+MURF_ECOLI,P11880,uniprot_family,family:MurCDEF family
+NADA_ECOLI,P11458,uniprot_family,family:Quinolinate synthase family
+NANT_ECOLI,P41036,uniprot_family,family:Major facilitator superfamily
+NFRA_ECOLI,P31600,pfam_domains,pfam:PF13283;PF14559
+NFRC_ECOLI,P27828,uniprot_family,family:UDP-N-acetylglucosamine 2-epimerase family
+NHAA_ECOLI,P13738,uniprot_family,family:NhaA Na(+)/H(+) (TC 2.A.33) antiporter family
+NHAB_ECOLI,P0AFA7,uniprot_family,family:NhaB Na(+)/H(+) (TC 2.A.34) antiporter family
+NHAR_ECOLI,P0A9G2,uniprot_family,family:LysR transcriptional regulatory family
+NIRD_ECOLI,P0A9I8,pfam_domains,pfam:PF13806
+NMPC_ECOLI,P21420,uniprot_family,family:Gram-negative porin family
+NRFA_ECOLI,P0ABK9,uniprot_family,family:Cytochrome c-552 family
+NRFF_ECOLI,P32711,uniprot_family,family:CcmH/CycL/Ccl2/NrfF family
+NUPC_ECOLI,P0AFF2,uniprot_family,family:Concentrative nucleoside transporter (CNT) (TC 2.A.41) family
+NUPG_ECOLI,P0AFF4,uniprot_family,family:Major facilitator superfamily
+OMPA_ECOLI,P0A910,uniprot_family,family:Outer membrane OOP (TC 1.B.6) superfamily
+OMPC_ECOLI,P06996,uniprot_family,family:Gram-negative porin family
+OMPF_ECOLI,P02931,uniprot_family,family:Gram-negative porin family
+OMPP_ECOLI,P34210,uniprot_family,family:Peptidase A26 family
+OMPR_ECOLI,P0AA16,pfam_domains,pfam:PF00072;PF00486
+OMPT_ECOLI,P09169,uniprot_family,family:Peptidase A26 family
+OMPX_ECOLI,P0A917,uniprot_family,family:Outer membrane OOP (TC 1.B.6) superfamily
+OPPA_ECOLI,P23843,uniprot_family,family:Bacterial solute-binding protein 5 family
+OSMY_ECOLI,P0AFH8,pfam_domains,pfam:PF04972
+OTC1_ECOLI,P04391,uniprot_family,family:Aspartate/ornithine carbamoyltransferase superfamily
+OTC2_ECOLI,P06960,uniprot_family,family:Aspartate/ornithine carbamoyltransferase superfamily
+PA1_ECOLI,P0A921,uniprot_family,family:Phospholipase A1 family
+PEPE_ECOLI,P0A7C6,uniprot_family,family:Peptidase S51 family
+PFLA_ECOLI,P0A9N4,uniprot_family,family:Organic radical-activating enzymes family
+PFLB_ECOLI,P09373,uniprot_family,family:Glycyl radical enzyme (GRE) family
+PGK_ECOLI,P0A799,uniprot_family,family:Phosphoglycerate kinase family
+PHEP_ECOLI,P24207,uniprot_family,family:Amino acid-polyamine-organocation (APC) superfamily
+PHOB_ECOLI,P0AFJ5,pfam_domains,pfam:PF00072;PF00486
+PHOE_ECOLI,P02932,uniprot_family,family:Gram-negative porin family
+PHOH_ECOLI,P0A9K1,uniprot_family,family:PhoH family
+PHOR_ECOLI,P08400,pfam_domains,pfam:PF02518;PF00512;PF00989;PF11808
+PMBA_ECOLI,P0AFK0,uniprot_family,family:Peptidase U62 family
+PNP_ECOLI,P05055,uniprot_family,family:Polyribonucleotide nucleotidyltransferase family
+PNTA_ECOLI,P07001,uniprot_family,family:AlaDH/PNT family
+PNTB_ECOLI,P0AB67,uniprot_family,family:PNT beta subunit family
+POTD_ECOLI,P0AFK9,uniprot_family,family:Bacterial solute-binding protein PotD/PotF family
+POTE_ECOLI,P0AAF1,uniprot_family,family:Amino acid-polyamine-organocation (APC) superfamily
+POTF_ECOLI,P31133,uniprot_family,family:Bacterial solute-binding protein PotD/PotF family
+PPA_ECOLI,P07102,uniprot_family,family:Histidine acid phosphatase family
+PPB_ECOLI,P00634,uniprot_family,family:Alkaline phosphatase family
+PROB_ECOLI,P0A7B5,uniprot_family,family:Glutamate 5-kinase family
+PROP_ECOLI,P0C0L7,uniprot_family,family:Major facilitator superfamily
+PROX_ECOLI,P0AFM2,pfam_domains,pfam:PF04069
+PSTA_ECOLI,P07654,uniprot_family,family:Binding protein-dependent transport system permease family
+PSTC_ECOLI,P0AGH8,uniprot_family,family:Binding protein-dependent transport system permease family
+PSTS_ECOLI,P0AG82,uniprot_family,family:PstS family
+PT1A_ECOLI,,unresolved,protein:PT1A_ECOLI
+PT1_ECOLI,P08839,uniprot_family,family:PEP-utilizing enzyme family
+PTAA_ECOLI,P09323,pfam_domains,pfam:PF00358;PF00367;PF02378
+PTBA_ECOLI,P08722,pfam_domains,pfam:PF00358;PF00367;PF02378
+PTCA_ECOLI,,unresolved,protein:PTCA_ECOLI
+PTCB_ECOLI,,unresolved,protein:PTCB_ECOLI
+PTCC_ECOLI,P17334,pfam_domains,pfam:PF02378
+PTDA_ECOLI,P24241,pfam_domains,pfam:PF00367;PF02378
+PTFA_ECOLI,P32155,pfam_domains,pfam:PF00359
+PTFB_ECOLI,P20966,pfam_domains,pfam:PF25554;PF02378;PF02302
+PTGA_ECOLI,P69783,pfam_domains,pfam:PF00358
+PTGB_ECOLI,,unresolved,protein:PTGB_ECOLI
+PTHA_ECOLI,P05706,pfam_domains,pfam:PF03829
+PTHB_ECOLI,P56580,pfam_domains,pfam:PF07663;PF03612
+PTHP_ECOLI,P0AA04,uniprot_family,family:HPr family
+PTKA_ECOLI,P69828,pfam_domains,pfam:PF00359
+PTKB_ECOLI,P37188,pfam_domains,pfam:PF02302
+PTKC_ECOLI,P69831,pfam_domains,pfam:PF03611
+PTMA_ECOLI,P69824,pfam_domains,pfam:PF00359
+PTNA_ECOLI,,unresolved,protein:PTNA_ECOLI
+PTOA_ECOLI,P19642,pfam_domains,pfam:PF00367;PF02378
+PTR_ECOLI,P05458,uniprot_family,family:Peptidase M16 family
+PTTB_ECOLI,P36672,pfam_domains,pfam:PF00367;PF02378
+PTWB_ECOLI,,unresolved,protein:PTWB_ECOLI
+PTWX_ECOLI,P32676,pfam_domains,pfam:PF02302
+RBSB_ECOLI,P02925,uniprot_family,family:Bacterial solute-binding protein 2 family
+RHAR_ECOLI,P09378,pfam_domains,pfam:PF02311;PF12833
+RHAS_ECOLI,P09377,pfam_domains,pfam:PF02311;PF12833
+RHAT_ECOLI,P27125,uniprot_family,family:L-rhamnose transporter (TC 2.A.7.6) family
+RIMI_ECOLI,P0A944,uniprot_family,family:Acetyltransferase family
+RIMJ_ECOLI,P0A948,uniprot_family,family:Acetyltransferase family
+RIML_ECOLI,P13857,uniprot_family,family:Acetyltransferase family
+RNB_ECOLI,P30850,uniprot_family,family:RNR ribonuclease family
+RNC_ECOLI,P0A7Y0,uniprot_family,family:Ribonuclease III family
+RND_ECOLI,P09155,uniprot_family,family:RNase D family
+RNE_ECOLI,P21513,uniprot_family,family:RNase E/G family
+RODA_ECOLI,P0ABG7,uniprot_family,family:SEDS family
+SECD_ECOLI,P0AG90,uniprot_family,family:SecD/SecF family
+SECE_ECOLI,P0AG96,uniprot_family,family:SecE/SEC61-gamma family
+SECF_ECOLI,P0AG93,uniprot_family,family:SecD/SecF family
+SECG_ECOLI,P0AG99,uniprot_family,family:SecG family
+SECY_ECOLI,P0AGA2,uniprot_family,family:SecY/SEC61-alpha family
+SERC_ECOLI,P23721,uniprot_family,family:Class-V pyridoxal-phosphate-dependent aminotransferase family
+SLYD_ECOLI,P0A9K9,uniprot_family,family:FKBP-type PPIase family
+SOXS_ECOLI,P0A9E2,pfam_domains,pfam:PF12833
+SPEA_ECOLI,P21170,uniprot_family,family:Orn/Lys/Arg decarboxylase class-II family
+SUBI_ECOLI,P0AG78,uniprot_family,family:Prokaryotic sulfate-binding protein family
+SYA_ECOLI,P00957,uniprot_family,family:Class-II aminoacyl-tRNA synthetase family
+SYC_ECOLI,P21888,uniprot_family,family:Class-I aminoacyl-tRNA synthetase family
+SYD_ECOLI,P21889,uniprot_family,family:Class-II aminoacyl-tRNA synthetase family
+SYE_ECOLI,P04805,uniprot_family,family:Class-I aminoacyl-tRNA synthetase family
+SYFA_ECOLI,P08312,uniprot_family,family:Class-II aminoacyl-tRNA synthetase family
+SYFB_ECOLI,P07395,uniprot_family,family:Phenylalanyl-tRNA synthetase beta subunit family
+SYGA_ECOLI,P00960,uniprot_family,family:Class-II aminoacyl-tRNA synthetase family
+SYGB_ECOLI,P00961,uniprot_family,family:Class-II aminoacyl-tRNA synthetase family
+SYH_ECOLI,P60906,uniprot_family,family:Class-II aminoacyl-tRNA synthetase family
+SYI_ECOLI,P00956,uniprot_family,family:Class-I aminoacyl-tRNA synthetase family
+SYK1_ECOLI,P0A8N3,uniprot_family,family:Class-II aminoacyl-tRNA synthetase family
+SYK2_ECOLI,P0A8N5,uniprot_family,family:Class-II aminoacyl-tRNA synthetase family
+SYL_ECOLI,P07813,uniprot_family,family:Class-I aminoacyl-tRNA synthetase family
+SYM_ECOLI,P00959,uniprot_family,family:Class-I aminoacyl-tRNA synthetase family
+SYP_ECOLI,P16659,uniprot_family,family:Class-II aminoacyl-tRNA synthetase family
+SYQ_ECOLI,P00962,uniprot_family,family:Class-I aminoacyl-tRNA synthetase family
+SYR_ECOLI,P11875,uniprot_family,family:Class-I aminoacyl-tRNA synthetase family
+SYS_ECOLI,P0A8L1,uniprot_family,family:Class-II aminoacyl-tRNA synthetase family
+SYT_ECOLI,P0A8M3,uniprot_family,family:Class-II aminoacyl-tRNA synthetase family
+SYV_ECOLI,P07118,uniprot_family,family:Class-I aminoacyl-tRNA synthetase family
+SYW_ECOLI,P00954,uniprot_family,family:Class-I aminoacyl-tRNA synthetase family
+SYY_ECOLI,P0AGJ9,uniprot_family,family:Class-I aminoacyl-tRNA synthetase family
+TBPA_ECOLI,P31550,uniprot_family,family:Bacterial solute-binding protein 1 family
+TEHA_ECOLI,P25396,uniprot_family,family:Tellurite-resistance/dicarboxylate transporter (TDT) family
+TESA_ECOLI,P0ADA1,uniprot_family,family:'GDSL' lipolytic enzyme family
+THGA_ECOLI,P07464,uniprot_family,family:Transferase hexapeptide repeat family
+THIK_ECOLI,P75948,uniprot_family,family:Thiamine kinase family
+TNAB_ECOLI,P23173,uniprot_family,family:Amino acid/polyamine transporter 2 family
+TOLA_ECOLI,P19934,uniprot_family,family:TolA family
+TOLB_ECOLI,P0A855,uniprot_family,family:TolB family
+TOLC_ECOLI,P02930,uniprot_family,family:Outer membrane factor (OMF) (TC 1.B.17) family
+TOLQ_ECOLI,P0ABU9,uniprot_family,family:ExbB/TolQ family
+TONB_ECOLI,P02929,uniprot_family,family:TonB family
+TORA_ECOLI,P33225,uniprot_family,family:Prokaryotic molybdopterin-containing oxidoreductase family
+TREA_ECOLI,P13482,uniprot_family,family:Glycosyl hydrolase 37 family
+TSX_ECOLI,P0A927,uniprot_family,family:Nucleoside-specific channel-forming outer membrane porin (Tsx) (TC 1.B.10) family
+TYRB_ECOLI,P04693,uniprot_family,family:Class-I pyridoxal-phosphate-dependent aminotransferase family
+TYRP_ECOLI,P0AAD4,uniprot_family,family:Amino acid/polyamine transporter 2 family
+UBIC_ECOLI,P26602,uniprot_family,family:UbiC family
+UGPB_ECOLI,P0AG80,uniprot_family,family:Bacterial solute-binding protein 1 family
+UGPQ_ECOLI,P10908,uniprot_family,family:Glycerophosphoryl diester phosphodiesterase family
+UHPB_ECOLI,P09835,pfam_domains,pfam:PF02518;PF07730;PF05231
+USHA_ECOLI,P07024,uniprot_family,family:5'-nucleotidase family
+USPA_ECOLI,P0AED0,uniprot_family,family:Universal stress protein A family
+UVRB_ECOLI,P0A8F8,uniprot_family,family:UvrB family
+UVRC_ECOLI,P0A8G0,uniprot_family,family:UvrC family
+XGPT_ECOLI,P0A9M5,uniprot_family,family:Purine/pyrimidine phosphoribosyltransferase family
+XYLA_ECOLI,P00944,uniprot_family,family:Xylose isomerase family
+XYLE_ECOLI,P0AGF4,uniprot_family,family:Major facilitator superfamily
+XYLF_ECOLI,P37387,uniprot_family,family:Bacterial solute-binding protein 2 family
+YCEE_ECOLI,P25744,uniprot_family,family:Major facilitator superfamily
+YTFQ_ECOLI,P39325,uniprot_family,family:Bacterial solute-binding protein 2 family

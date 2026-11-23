@@ -75,7 +75,11 @@ CC (2026-11-17, Andrej): the declared split (grouped on `instance_id`, 10x3 fold
 
 CC (2026-11-18, Andrej): "Do both by family" (blind split walk, cross-dataset item on the two algorithm-selection sets, b): the split holds out whole problem families instead of instances: `problem_family`, the generator an instance comes from, read off its path before the id is hashed, with the folders that split one generator by satisfiability or a parameter merged (48 folders, 32 families, 11 of one instance, the largest 21); grouped 3-fold CV, 20 x 3; `instance_id` becomes a scoring column for PAR10, never a feature; `UnseenGroup` instead of `Timeless`. Why: the instances new in 2011 (88) all came from generators no earlier competition used, while the instance folds put 91% of the test instances' families in training. Supersedes the split of the CC of 2026-10-06 and the check of 2026-11-17. Not built yet.
 
+CC (2026-11-23, Andrej): Review issue 2, B: 20 x 3 splits, counted in the instances PAR10 scores. The split count in scored units (SPLIT-33) is on main (#95), and the protocol reaches it from the data: one runtime per run, so the families do not count; PAR10 scores per instance; each instance's 10 runs sit inside one family. The 184 instances leave about 123 on the train side, below 500, so 20 x 3 (the 1,840 runs would give 10 x 3; the 32 families also 20 x 3). Supersedes the row count of the CC of 2026-11-12. Not built yet.
+
 **Assessment (AI, 2026-11-18):** the family split (32 families, 10-11 per test fold) raises `groups_test_groups_few`; `dataset check` has 0 errors otherwise (the three constant columns as before). The group probe (`group_probes.py`, 3 x 3 family folds, R^2 on the log runtime) finds signal across families with three model families: random forest 0.345, LightGBM 0.291, kNN 0.242 against a baseline of 0 (ridge -5.58, it extrapolates). It also shows what the instance split rewarded: LightGBM per fold scores 0.875 +- 0.031 on IID folds and 0.041 +- 0.269 on family folds. Accepting the warning with this evidence is the curator's call; the definition does not accept it yet.
+
+CC (2026-11-23, Andrej): `groups_test_groups_few` accepted, in `accepted_check_warnings` with the group-probe evidence above: the use case is a problem family not seen in training, so 10-11 families per test fold follow from the 32 families, and three model families find signal across them (random forest 0.345, LightGBM 0.291, kNN 0.242 against 0). Not built yet.
 
 ## Review
 
@@ -97,8 +101,9 @@ file too) can go without a decision. Weighed: a documented algorithm-selection b
 (+), few instances per fold and an untested spread under PAR10 (-).
 
 **Main points:** Ship: timeouts at the recorded 5,000 s, PAR10 (issues 1, 3 and 4 resolved); PAR10 alone picks the
-solver, a tie counted as PAR10 defines it (issue 4). The split count (2) is open again, settled with rule
-SPLIT-33. Since 2026-11-18 whole problem families are held out (32 families, 20 x 3, `UnseenGroup`; not built).
+solver, a tie counted as PAR10 defines it (issue 4). The split count (2): 20 x 3, counted in instances under
+SPLIT-33 (Andrej, 2026-11-23). Since 2026-11-18 whole problem families are held out (32 families, 20 x 3, `UnseenGroup`; not built);
+the few-groups warning (10-11 families per test fold) is accepted with the group-probe evidence (Andrej, 2026-11-23).
 
 **Record judgment:** valid. The task is the one the curator chose (one model for all solvers, from instance and
 solver features, as in Pulatov et al. 2022), and the split by instance rather than by instance family was his decision
@@ -185,6 +190,11 @@ are added. The `Multi-target` tag stays (one runtime per solver, stacked as rows
      | B | 20 x 3 under SPLIT-33 | the protocol counts the instances PAR10 scores | steadier score; same count as asp | twice the compute (1,840 rows, small) |
 
    * **Recommendation:** B, with the rule; Andrej chose it on 2026-11-06. **Decision:** A or B?
+
+   **Resolved (2026-11-23, Andrej):** B, 20 x 3, counted in instances. SPLIT-33 is on main (#95) and decides it from
+   the data: the runtime is per run, so the families do not count; PAR10 scores per instance, and each instance's runs
+   sit inside one of the 32 families, so the instances count. 184 instances leave about 123 on the train side, below
+   500. Not built yet.
 
 3. **Count a timed-out run as the recorded 5,000 s, or as the 50,000 s PAR10 charges for it?**
 

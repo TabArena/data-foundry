@@ -82,13 +82,16 @@ CC (2026-11-12, Andrej): answering Lennart's question on PR #55 (back to a rando
 
 CC (2026-11-20, Andrej): folds grouped by case, `StationaryRelation` on the stationary-relation test (Review issue 2, C); the relation is measured for cases held out whole, not for random folds over visits.
 
+CC (2026-11-23, Andrej): the folds grouped by case stay, `StationaryRelation`, now as the tree's result rather than a departure (Review issue 3): a small table (344 admissions, SPLIT-33's 20-repeat tier) whose order gives only three windows gets the stationary-relation test over them, and here no run reads not flat and the pooled reading is flat (Kumo-Tabular -0.001 ± 0.012 ROC AUC, floor 0.003), so the split goes on to the forced step, where the reading was signed off on 2026-11-20 and the unit check holds out whole cases. The row leaves the departures table.
+
 ## Review
 
-**Outcome:** added. Split re-decided without the current split: the tree gives Temporal · rebuilt order, the definition ships Grouped · StationaryRelation by `case_number`.
+**Outcome:** added. Split re-decided without the current split: the tree gave Temporal · rebuilt order; since the small-table rule of 2026-11-23 it gives Grouped · StationaryRelation by `case_number`, as shipped.
 
 **Main points:** Settled on 2026-11-20 (issue 2, C): the 20 x 3 folds grouped by case stay, `StationaryRelation` on the
-stationary-relation test, which holds for the grouped setting. Open: issue 1 (three windows of 57 admissions in
-case-number order instead of the grouped folds) has no Resolved line.
+stationary-relation test, which holds for the grouped setting; issue 1 superseded by issue 2 (2026-11-23).
+Since 2026-11-23 no departure: a small table's three flat windows go on to the forced step (issue 3). Nothing is
+left open.
 
 **Issues for Andrej:**
 
@@ -160,6 +163,8 @@ case-number order instead of the grouped folds) has no Resolved line.
      train side holds fewer than 500 units.
 
    [^hc3]: **SPLIT-17** (Should): below about 50 test rows per window, use wider windows and fewer splits.
+
+   **Resolved (2026-11-23, Andrej):** superseded by issue 2, where the 20 x 3 folds grouped by case stay, tagged `StationaryRelation` (C, 2026-11-20).
 
 2. **Back to three windows in case-number order, as the rules now ask?**
 
@@ -235,6 +240,30 @@ case-number order instead of the grouped folds) has no Resolved line.
    **Andrej (2026-11-20, change):** We can do 20 x 3 folds grouped by case, tagged StationaryRelation. But note that the stationary relation only holds for the grouped setting.
 
    **Resolved (2026-11-20, Andrej):** C. The 20 x 3 folds grouped by case stay, `StationaryRelation`; the `Time basis:` line rests on the stationary-relation test (pooled Kumo-Tabular -0.001 ± 0.012 ROC AUC, flat) and says the relation is measured for cases held out whole (a horse's return visits on one side), not for random folds over visits. `dataset check`: 0 errors. Not rebuilt.
+
+3. **Keep the folds grouped by case, now that the rules put buildable windows first?**
+
+   * **Problem:**
+     - Three windows of 57 admissions in case-number order train on 50%, 67% and 83% of the rows, so they meet the windows floor without an exception[^dep-hc-win].
+     - Where the windows can be built, the split is temporal however flat the relation; the flat reading belongs in the notes as what the windows cost[^dep-hc-flat].
+     - The split tree lists horse_colic as a departure that rests on a flat relation; Lennart asked on 2026-11-23 that you make this call.
+   * **Background:** issue 2 settled the grouped folds on 2026-11-20 before the split-rules review; the run of 2026-11-18 reads flat only pooled (Kumo-Tabular -0.001 ± 0.012 ROC AUC, floor 0.003), each run of 57 cases alone inconclusive.
+   * **Effect on the task:** the grouped folds test horses as random draws of the 344 rows; the windows test later admissions, as the vet meets them, on three noisy test sets.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 20 x 3 folds grouped by case, `StationaryRelation` (implemented) | No change; the tree's departures table keeps horse_colic with your reason | 60 splits; no rebuild | Windows exist, and the rules then give the temporal split |
+     | B | Three windows of 57 admissions in case-number order, no gap | The case number orders the split and is no input; the flat reading goes in the notes | The leaf the tree gives (Temporal · rebuilt order) | Three test sets of 57 admissions |
+
+   * **Recommendation:** none from the AI beyond what the rules give as written: B; A stays only as a departure you confirm with its reason. **Decision:** A or B?
+
+   **Notes for the AI:** B: the declaration of 2026-11-10 (issue 2's option B); survival is known at discharge, well inside one window, so no gap, stated in the splits comment; record `required_split` back to temporal. A: the reason goes into the departures table of `split_tree.md`. On B horse_colic leaves that table.
+
+   [^dep-hc-win]: **SPLIT-14** (Must): "A temporal task has at least 3 windows (splits). Every window trains on at least 50% of the data. A window under 50% is the curator's exception for that dataset, down to 30%".
+   [^dep-hc-flat]: **SPLIT-32** (Should; amended 2026-11-17): "Where the windows can be built, the split is temporal however flat the relation, and the measurement goes in the notes as what the windows cost."
+
+   **Resolved (2026-11-23, Andrej):** the split rules are amended instead (SPLIT-32 and the tree's `[ORDER.small]`): a table in SPLIT-33's 20- or 10-repeat tier whose order gives only three windows also gets the stationary-relation test over them, and a flat reading goes on to the forced step. Here no run is not flat and the pooled Kumo-Tabular reading is flat, so the tree reaches Grouped · `StationaryRelation` (the unit) [L-FORCED.flat-unit]: the shipped 20 x 3 folds grouped by case, no departure. No change to the definition; the row leaves the departures table, and horse_colic is an example of that leaf.
 
 ## Reference
 

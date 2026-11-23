@@ -5,7 +5,11 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary, TimeBasis
+
+# each shipped protein's family: UniProt protein family, else its Pfam domains, else the protein alone (lookup of
+# 2026-11-23 from the SWISS-PROT entry names)
+FAMILIES = "protein_families.csv"
 
 
 class EcoliProteins(AbstractCuratedDataset):
@@ -79,24 +83,22 @@ class EcoliProteins(AbstractCuratedDataset):
           labels (the reason `yeast` was rejected). Dropped and the task kept, as the amended LEAK-27 says when the
           other columns still make a real one (Andrej, 2026-11-11). Without it, outer-membrane proteins (6% of rows)
           are barely recognised: TabPFN recall 0.02 instead of 0.90 (stratified 3-fold x 20).
+        - Split by protein family (Andrej, 2026-11-23): `protein_families.csv` next to this file maps each of the 327 shipped proteins from its SWISS-PROT entry name to a UniProt accession (289 by ID mapping, 20 by a text search of renamed entries; UniProt REST, 2026-11-23) and to its UniProt protein family (270), else to its set of Pfam domains (39), else to itself (18 unresolved). 219 families, at most 12 proteins in one; 11 families hold proteins of more than one location. UniRef50 clusters are too fine to group anything (312 of 319 hold one protein). On 20 x 3 folds without `aac`, family-held-out folds cost logistic regression +0.015 ± 0.004 and TabPFN +0.012 ± 0.005 log loss against random folds (0.472 and 0.463), the ranking unchanged; under random folds 41% of test proteins had a family member in training and carried 33% of the loss.
     """
     time_basis = TimeBasis(
-        "StationaryRelation",
+        "UnseenGroup",
         """
-        the proteins are dated by their SWISS-PROT entry years (1986-1995; 309 of 336 entries dated, UniProt and
-        UniSave lookup of 2026-11-16), and the random folds stand for later entries because the relation reads flat.
-        The stationary-relation test (2026-11-19, log loss, 5 seeds, 297 dated proteins, periods up to 1988, 1989-90,
-        1991-92 and 1993-96) pooled over the three tested periods gives LightGBM +0.012 ± 0.047 and Kumo-Tabular
-        +0.034 ± 0.033; over the two periods trained on half the data or more Kumo-Tabular gives +0.050 ± 0.047
-        (2 SD 9.8 floors of 10), flat, narrowly. The location mix moves (cytoplasm 54% of entries up to 1989 against
-        34% from 1990) but under twofold, so it changes which proteins arrive, not how the scores map to a location.
-        The test ran on the six scores, `aac` included, before `aac` was dropped. Three windows on the entry year would need the 1989-90 window, trained on 37%, as an exception and would
-        test 46 to 76 proteins each; the 20 x 3 random folds stay. Not tested: a protein of a family the 1996
-        database did not hold, and homologous proteins on both sides of the split, which the dropped accessions
-        would be needed to find.
+        the catalogue is split by protein family, its default key: three windows on the SWISS-PROT entry years
+        (1986-1995) would need the 1989-90 window, trained on 37%, as an exception, so the entry date does not
+        decide. Holding out whole families tests a protein whose family the training set lacks, as the localisation
+        of a newly sequenced protein meets it; under random folds 41% of the test proteins had a family member in
+        training. The entry years and the stationary-relation test (2026-11-19, flat narrowly; the location mix moves,
+        cytoplasm 54% of entries up to 1989 against 34% from 1990) go in the notes; that test ran on the six
+        scores, `aac` included, before `aac` was dropped. Not tested: a later entry year.
         """,
         set_by="Andrej",
-        on="2026-11-20",
+        on="2026-11-23",
+        note="`StationaryRelation` before",
     )
 
     # Task
@@ -109,6 +111,30 @@ class EcoliProteins(AbstractCuratedDataset):
             "multiclass fallback."
         ),
     )
+
+    grouping = Grouping(
+        on="protein_family",
+        labels="per_sample",
+        prediction_unit="row",
+        context="none",
+        definition="""
+            One group is a protein family: the UniProt protein family of the protein's SWISS-PROT entry, else its set of Pfam domains, else the protein alone where the entry name could not be resolved (`protein_families.csv`). Each row is one protein and one prediction of its cell location from its sequence scores. The use case is the location of a protein of a family not seen in training; related proteins share sequence signals, so their scores and their location move together.
+        """,
+    )
+
+    accepted_check_warnings = {
+        "splits_test_class_missing": (
+            "One of the 60 family-grouped test folds (r1f2) lacks one of the five locations: the outer-membrane "
+            "proteins (20) sit in few families, 6 in the TonB-dependent receptors and 4 in the porins, so a fold can "
+            "draw none. The metric is log loss, which a missing class in a test fold does not break (Andrej, "
+            "2026-11-23)."
+        ),
+    }
+
+    # Splits
+    splits_comment = """
+        Grouped 20 x 3 folds on the protein family (219 families, at most 12 proteins; 18 unresolved proteins each their own group): a family's proteins stay on one side, so the model predicts the location of a protein whose relatives it has not seen. One of the 60 test folds lacks the outer-membrane location (20 proteins in few families); log loss is unaffected. The SWISS-PROT entry years (1986-1995) would give three windows only with the 1989-90 window trained on 37%, so the catalogue's family key decides (SPLIT-37). Against random folds, holding out families costs +0.012 to +0.015 log loss for TabPFN and logistic regression, the ranking unchanged (curation notes).
+    """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         feature_names = [
@@ -127,6 +153,12 @@ class EcoliProteins(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
+        # Drop samples with classes with too little data (less than 10 samples)
+        df = df[~df["class"].isin(["omL", "imL", "imS"])].copy()
+        # the protein's family, the group of the split (no input)
+        families = pd.read_csv(self.folder / FAMILIES).set_index("sequence_name")["protein_family"]
+        df["protein_family"] = df["Sequence Name"].map(families).astype("category")
+        assert df["protein_family"].notna().all()
         df = df.drop(
             columns=[
                 "Sequence Name",  # avoid leakage from look the name and otherwise unique identifier.
@@ -134,8 +166,6 @@ class EcoliProteins(AbstractCuratedDataset):
                 "aac",  # discriminant fitted to the labels; leaks them
             ]
         )
-        # Drop samples with classes with too little data (less than 10 samples)
-        df = df[~df["class"].isin(["omL", "imL", "imS"])]
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
