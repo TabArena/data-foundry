@@ -97,6 +97,11 @@ CC (2026-11-05, Lennart): ship. Every issue of the second-pass review is settled
 
 CC (2026-11-19, Andrej): 3-fold CV over whole month classes, `ForcedGroupedFromTemporal` (Review issue 11, B): the stationary-relation test reads not flat across the classes (pooled +4.6 ± 1.1 s RMSE for LightGBM, +4.0 ± 0.8 s for Kumo-Tabular), so whole months are held out, never random orders.
 
+**Assessment (AI, 2026-11-23):** the month-class folds train on months after the test months too, so the test months
+are unseen, not later. The classes have no order, so what that adds to the score cannot be measured here; the
+`Time basis:` line now says so. On online_shoppers, the one month-group dataset where it can be measured, training on
+later months did not raise the score (mean over five test months -0.005 to -0.015 ROC AUC across four models).
+
 ## Review
 
 **Outcome:** added. Sendy's labelled Nairobi express orders from the Zindi challenge (20,461 of 21,201 after the

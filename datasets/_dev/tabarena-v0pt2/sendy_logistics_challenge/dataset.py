@@ -168,7 +168,7 @@ class SendyLogisticsChallenge(AbstractCuratedDataset):
     time_basis = TimeBasis(
         "ForcedGroupedFromTemporal",
         """
-        the use case predicts orders of later months from a model fit on earlier ones, but the release has the day of the month and the weekday and no month or year. The stationary-relation test reads not flat (v3 pooled +4.6 ± 1.1 s RMSE for LightGBM and +4.0 ± 0.8 s for Kumo-Tabular against floors of 2.2-2.5 s); whole month classes are held out; the classes are not in time order (a class mixes months from across the year). `month_class` = (placement weekday - placement day of month) mod 7, the weekday the month started on (0 = Monday), built in `_clean` as the group key only (no input): seven classes of 1,109 to 4,632 orders.
+        the use case predicts orders of later months from a model fit on earlier ones, but the release has the day of the month and the weekday and no month or year. The stationary-relation test reads not flat (v3 pooled +4.6 ± 1.1 s RMSE for LightGBM and +4.0 ± 0.8 s for Kumo-Tabular against floors of 2.2-2.5 s); whole month classes are held out; the classes are not in time order (a class mixes months from across the year). `month_class` = (placement weekday - placement day of month) mod 7, the weekday the month started on (0 = Monday), built in `_clean` as the group key only (no input): seven classes of 1,109 to 4,632 orders. The test classes are unseen months, not later ones: each fold also trains on months after its test months, and since the classes have no order, what that adds to the score cannot be measured.
         """,
         set_by="Andrej",
         on="2026-11-19",

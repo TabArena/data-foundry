@@ -111,7 +111,11 @@ class OnlineShoppersPurchasingIntentionDataset(AbstractCuratedDataset):
         the visits carry their month but no
         year; the stationary-relation test reads not flat (November: LightGBM +0.054 ± 0.007, Kumo-Tabular +0.039
         ± 0.004 ROC AUC, floors 0.003-0.004; the purchase share moves from 10% in June to 25% in November), so whole
-        months are held out, each once.
+        months are held out, each once. The test months are unseen, not later: each fold also trains on the months
+        after its test month. That does not raise the score: for August to December, at the same training size,
+        training on the other months, earlier and later, scores below training on the earlier months alone (mean over
+        the five months -0.005 ROC AUC for LightGBM, -0.009 random forest, -0.014 logistic regression, -0.015 TabPFN;
+        10 draws each); only November gains from later months (+0.004 to +0.010).
         """,
         set_by="Andrej",
         on="2026-11-19",

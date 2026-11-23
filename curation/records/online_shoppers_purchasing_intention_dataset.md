@@ -77,6 +77,24 @@ CC (2026-11-19, Andrej): leave one month out, `ForcedGroupedFromTemporal` (Revie
 
 CC (2026-11-20, Andrej): the finished-visit rows stay as an approximate stand-in for the in-visit decision (Review issue 3, A). This answers the first triage note ("it is meaningless to predict a purchase after it already happened"): on the kept months no count, duration, bounce or exit rate marks the buyers (ROC AUC 0.55 to 0.68 each; LightGBM 0.739 without `PageValues`), and `fit_reason` names the gap: each row summarises the finished visit, while the shop acts during it.
 
+**Assessment (AI, 2026-11-23):** does leave one month out flatter the score by training on later months? No. For each
+test month from August to December, two training sides of equal size (90% of the visits before the test month) score
+all of that month's visits: one drawn from the earlier months only, as a forward deployment has, and one drawn from all
+other months, earlier and later, as the shipped folds have. 10 draws each; ROC AUC, gap = all other months − earlier
+months only, ± SE:
+
+| Test month | Train size | LightGBM | Random forest | Logistic regression | TabPFN |
+|---|---|---|---|---|---|
+| August | 648 | -0.008 ± 0.006 | -0.024 ± 0.003 | -0.007 ± 0.010 | -0.041 ± 0.006 |
+| September | 1,037 | -0.029 ± 0.007 | -0.018 ± 0.005 | -0.033 ± 0.006 | -0.025 ± 0.005 |
+| October | 1,440 | +0.001 ± 0.005 | -0.008 ± 0.002 | -0.027 ± 0.005 | -0.014 ± 0.002 |
+| November | 1,935 | +0.010 ± 0.003 | +0.006 ± 0.002 | -0.003 ± 0.005 | +0.004 ± 0.001 |
+| December | 4,633 | +0.002 ± 0.001 | +0.000 ± 0.001 | -0.001 ± 0.001 | -0.001 ± 0.001 |
+| Mean | | -0.005 | -0.009 | -0.014 | -0.015 |
+
+Later months help only November, by +0.004 to +0.010; elsewhere they cost as much or more. The `Time basis:` line
+now says the test months are unseen, not later, and gives this result.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it as defined; all issues are settled (the 40 repeated visits kept,
