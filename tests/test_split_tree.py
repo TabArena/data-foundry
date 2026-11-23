@@ -149,8 +149,10 @@ def test_at_most_three_examples(tree: SplitTree) -> None:
 
 
 def test_departures_name_a_leaf(tree: SplitTree) -> None:
-    """Every row of the departures table names a leaf of the tree, and the definition is no example of it."""
-    assert tree.departures
+    """Every row of the departures table names a leaf of the tree, and the definition is no example of it.
+
+    The table may be empty: a resolved departure leaves it.
+    """
     for row in tree.departures:
         leaf = tree.leaf(row["leaf"])
         assert leaf is not None, row

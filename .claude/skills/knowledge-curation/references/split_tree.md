@@ -430,7 +430,8 @@ the source or a parent covers; no time, or one period → nothing measurable)_
     - yes → **Grouped · `StationaryRelation` (the unit)** [L-FORCED.flat-unit]. Whole units held out; the reading in
       the time basis, a later period untested. Examples: horse_colic_survival, spanish_motor_insurance_coverage_level_2022_2024.
     - no → **Random · `StationaryRelation`** [L-FORCED.flat-random]. Random; the reading in the time basis, a later
-      period untested. Examples: bad_customer_detection, regensburg_pediatric_appendicitis.
+      period untested. Examples: bad_customer_detection, cirrhosis_patient_survival_prediction,
+      regensburg_pediatric_appendicitis.
   - yes, a reason where nothing can be measured →
     **Does a unit have several rows, and does the use case meet new units?** [FORCED.assumed-units] _(data and
     documentation; the unit check)_
@@ -482,8 +483,7 @@ check)_
 
 ## Definitions that ship another split
 
-These v0.2 definitions ship a split other than their leaf's; a reviewer confirmed each departure, for the reason given.
+These v0.2 definitions ship a split other than their leaf's; a reviewer confirmed each departure, for the reason given. None does at present.
 
 | Definition | Leaf | Ships | Reviewer | Date | Reason |
 |---|---|---|---|---|---|
-| cirrhosis_patient_survival_prediction | L-ORDER.windows | random 20 x 3, `ForcedIIDFromTemporal` | Andrej | 2026-11-19 | the three windows that can be built hold about 50 referrals each, and the stationary-relation test is inconclusive for 1976-77 |

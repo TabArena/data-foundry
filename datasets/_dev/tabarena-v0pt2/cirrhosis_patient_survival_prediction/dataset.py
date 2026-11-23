@@ -143,11 +143,11 @@ class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
           event). Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
     """
     time_basis = TimeBasis(
-        "ForcedIIDFromTemporal",
+        "StationaryRelation",
         """
-        three windows of 50 referrals
-        could be built on the registration order, but the curator keeps the 60 random folds. The stationary-relation
-        test (2026-11-18, two-year periods) is inconclusive for 1976-77 (LightGBM -0.011 ± 0.021 ROC AUC, Kumo-Tabular
+        a small table (304 patients) whose registration order gives only three
+        windows of 50 referrals, over which the relation reads flat, so the 60 random folds stand for later
+        referrals (the small-table rule of 2026-11-23). The stationary-relation test (2026-11-18, two-year periods) is inconclusive for 1976-77 (LightGBM -0.011 ± 0.021 ROC AUC, Kumo-Tabular
         -0.006 ± 0.022) and flat for 1978-79 and 1980-81 (Kumo-Tabular); pooled, Kumo-Tabular reads flat (-0.007 ±
         0.011, floor 0.004). Earlier reading (2026-11-12): the IDs follow registration within the trial and within the other patients,
         and the censored patients' follow-up dates them (1974 to mid-1981). Measured along that order (2026-11-12):
@@ -162,7 +162,8 @@ class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
         a change of referrals or treatment.
         """,
         set_by="Andrej",
-        on="2026-11-19",
+        on="2026-11-23",
+        note="`ForcedIIDFromTemporal` before",
     )
 
     # Task
