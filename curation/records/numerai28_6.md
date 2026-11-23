@@ -3,6 +3,7 @@ unique_name: numerai28_6
 name: numerai28.6
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -11,16 +12,24 @@ decision_markers:
 - Anonymized
 tags:
 - New IID
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Later'
+- Database Snapshot
 collections:
 - TabArena Reject
 - TabSTAR
 year: '2016'
+collection_period: Unknown
 source_links:
 - https://www.kaggle.com/datasets/numerai/encrypted-stock-market-data-from-numerai
 - https://www.openml.org/search?type=data&id=23517
 v2_path: datasets/_dev/tabarena-v0pt2/numerai28_6/dataset.py
 source_row: 719
 type_adapter_id: curation-record-v1
+required_split:
+- Random (IID)
+problem_type: Binary Classification
 ---
 
 ## Comments
@@ -55,6 +64,80 @@ CC (2026-10-26, Lennart): verdict ship.
 CC (2026-10-27, Lennart): marker Anonymized, from the AI review of PR #17: the definition carries the Anonymized data tag; the 21 features are encrypted, regularized numbers in [0, 1], and what they measure, their timing and the target's horizon are hidden.
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
+CC (2026-11-13, Andrej): collection fact `Target: Later` (Review issue 1, C): an undisclosed outcome of the stock's later return, so it arrives after the features; the forced tag and the split stay.
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 3, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Financial markets with adaptive participants are the clearest case against ASR, and the same source's dated data is measured not flat.
+
+## Review
+
+**Outcome:** added. The record gained `Target: Later` on 2026-11-13.
+
+**Main points:** Nothing open: issue 1 resolved on 2026-11-13 (`Target: Later` recorded). Issue 3 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
+
+**Issues for Andrej:**
+
+1. **Stay forced and record `Target: Later`, or `CrossSectional`?**
+
+   * **Problem:**
+     - The record names no `Target:` fact, which reads as a target measured with the features[^cs-1].
+     - The label is an undisclosed outcome of the stock's later return: it arrives after the features, so the use case looks forward and the forced tag fits[^fo-1].
+     - The missing fact is what makes it look cross-sectional.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Leave as is (implemented) | the forced tag stays, the record keeps no `Target:` fact | no change | the record contradicts the label's timing |
+     | B | `CrossSectional` | the tag reads the label as a present state | none found | the label arrives later, which a present state excludes |
+     | C | Stay forced, record `Target: Later` | the record gains the fact; tag and split stay | the record says when the label arrives; the facts guard can check it | none found |
+
+   * **Recommendation:** C. **Decision:** A, B or C?
+
+   **Notes for the AI:** on C, add `Target: Later` to the record with a CC line; the definition does not change.
+
+   [^cs-1]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`, whether the dates survive or not; its line says whether the drift of the relation was measured or is untested. A label that only arrives later is no present state.
+   [^fo-1]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
+
+   **Andrej (2026-11-13, change):** Option C: Stay forced, record Target: Later.
+
+   **Resolved (2026-11-13, Andrej):** C. The record has `Target: Later`; the forced tag and the split stay (`CrossSectional`, option B, was dropped the same day).
+
+3. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: Numerai's 2016 Kaggle sample has no era, date or id; file order shuffled (block target means 0.494-0.521, lag-1 autocorrelation <= 0.007); no dated 2016 release found.
+     - Use: Numerai trains on past weeks and scores the next week's stocks.
+     - Mechanism: Stock-return signal is weak and regime-dependent; markets are adversarial (alpha decays as it is traded), so the feature-target relation moves week to week.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | numerai_v5_2_1m (this collection, dated weekly eras) | dated yearly windows of Numerai's newer data | not flat: out-of-time signal can fall to about 0; example LightGBM per-era correlation 0.009-0.013 | same source and target type (stock return rank), same weekly market regime |
+
+   * **For a stationary use case:**
+     - None: a 1-NN check removes the same-stock leak, but that is no stationarity reason.
+   * **Against:**
+     - Prices and markets, with adaptive opponents: the textbook non-stationary domain.
+     - The same source's dated data (numerai_v5_2) shows out-of-time signal falling to about 0.
+     - Signal is tiny (ROC AUC 0.524-0.531); any drift dominates it.
+   * **Earlier views:**
+     - CC (2026-10-22, Lennart): 'add as forced IID' (record note: 'need to find a version with a timestamp (or treat it as forced IID)')
+     - Resolved (2026-11-13, Andrej): C, Target: Later recorded, forced tag and split stay.
+     - CC (2026-11-17, Andrej): blind split walk: the decision tree, walked without the current split, reaches the forced split it ships.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Prices and markets, with adaptive opponents: the textbook non-stationary domain.; The same source's dated data (numerai_v5_2) shows out-of-time signal falling to about 0. |
+
+   * **Recommendation:** A, financial markets with adaptive participants are the clearest case against ASR, and the same source's dated data is measured not flat. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (Financial markets with adaptive participants are the clearest case against ASR, and the same source's dated data is measured not flat.)
 
 ## Reference
 

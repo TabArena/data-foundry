@@ -53,7 +53,7 @@ CC: "Looks like a nice dataset, but source is not entirely clear to me. Also mig
 
 **Assessment (AI, 2026-11-01):** the source is traced (issue #38): the upload is the iFood Data Analyst Case's `ml_project1_data.csv` (https://github.com/nailson/ifood-data-business-analyst-test), cell for cell the same file as `marketing_campaign`, so `Duplicate` of it (PROV-4) replaces `Missing source information`.
 
-CC (2026-11-01, Lennart): `marketing_campaign`, the same file, is retired as generated data (review page of issue #38), so this reject stands: `No` with `AHDS` and `Duplicate`.
+CC (2026-11-01, Lennart): `marketing_campaign`, the same file, is retired as generated data (issue #38), so this reject stands: `No` with `AHDS` and `Duplicate`.
 
 ## Reference
 

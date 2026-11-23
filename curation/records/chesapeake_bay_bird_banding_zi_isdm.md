@@ -69,14 +69,14 @@ These are per dataset judgement calls and if a dataset is useful for a predictiv
 collected for something else, then this is fine"), as SEL-2 already reads the scope rules: this record is judged on its
 own use case. The verdict and priority stay.
 
-**Consistency check (AI, 2026-10-30):** the review page sets `Yes`, priority 1. The release cannot form a target by
+**Consistency check (AI, 2026-10-30):** the screening sets `Yes`, priority 1. The release cannot form a target by
 itself: its zeros come from eBird data, "not available for distribution", obtained through eBird's request form. By the
 curator's request rule of the same day that is 2nd Tier (`heritage_health_prize`,
 `shaoxing_hourly_precipitation_fusion`). What may set it apart: eBird's form is routinely approved and the release ships
 the covariate grid. Options: `Yes` with that fact, or 2nd Tier.
 
 CC (2026-10-30, Andrej): `TBD -> 2nd Tier`, priority 1 (the AI screening had `TBD -> 2nd Tier`, priority 1;
-zero-inflated screening review page, after the AI's consistency check). "Data needs request"
+zero-inflated screening, after the AI's consistency check). "Data needs request"
 
 CC (2026-10-30, Andrej), in chat: `TBD -> Yes`, priority 1: "Data on request shall be a TBD then for the cases where it
 mattered." The verdict rests on the merits; `Available on Request` records that the request is still to be made (EV-4:

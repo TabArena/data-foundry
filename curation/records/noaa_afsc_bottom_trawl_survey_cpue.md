@@ -11,8 +11,13 @@ priority: 3
 tags:
 - Two-Regime Zeros
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Entities: Recur'
+- Panel Data
 original_source: GOV Website
 year: '2026'
+collection_period: 1982-2026
 domain: biology & life sciences
 required_split:
 - Temporal (NON-IID)
@@ -92,7 +97,7 @@ collected for something else, then this is fine"), as SEL-2 already reads the sc
 own use case. The verdict and priority stay.
 
 CC (2026-10-30, Andrej): `Yes`, priority 5 (the AI screening had `TBD -> Yes`, priority 3; zero-inflated screening
-review page).
+review).
 
 Bottom trawl surveys of AFSC's Groundfish Assessment Program (eastern and northern Bering Sea, Bering Sea slope,
 Gulf of Alaska, Aleutian Islands), public through the FOSS API as HAUL, CATCH and SPECIES tables. Downloaded on
@@ -154,7 +159,9 @@ CC (2026-11-09, Andrej): columns held only for training rows stay out for now, n
 
 CC (2026-11-09, Andrej): review issue 10, "Go ahead" on the consistency check's (a): the nine two-year windows stay, each fitted once; the split text, the splits comment's no-gap sentence and the exception to SPLIT-10 above name a refit after each two-year survey cycle, not after each season, as each window's second year (42.6% of the test hauls) is predicted without the season before it. Rows, split and score unchanged.
 
-CC (2026-11-09, Andrej): ship (review page of 2026-11-09).
+CC (2026-11-09, Andrej): ship.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `date`, windows of 2 years, 9 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
@@ -231,7 +238,7 @@ taxa (issue 1), the temporal split (2) and RMSE (3) on 2026-11-02; the copy
 Pacific cod (5) and a clause in the remedy of the leak rules' time-on-risk row (6) on 2026-11-08. Across datasets: X2
 and X3.
 
-**Verdict (2026-11-09, Andrej):** ship (review page of 2026-11-09).
+**Verdict (2026-11-09, Andrej):** ship.
 
 **Verdict (2026-11-02, Andrej):** ship. The metric is marked as declared (`mean_group_normalized_rmse`). The
 dataset joins the accepted set; a build waits for your ask.
@@ -476,7 +483,7 @@ dataset joins the accepted set; a build waits for your ask.
    shorter than the time column's step (after ames_housing and perth_house_prices), so the amendment proposed in
    splits.md is now due; that call is open for you and Lennart.
 
-3. **Keep RMSE as the metric?** Asked on the review page's metric row. The definition scores RMSE of the rex sole catch
+3. **Keep RMSE as the metric?** Asked on the metric row. The definition scores RMSE of the rex sole catch
    per km^2 swept, as the 2022 EFH review selects and weights its models (MET-5: the source's metric).
 
    **Andrej (2026-11-02, discuss):** Why rmse? What would be other options?

@@ -14,13 +14,17 @@ claimed_by: Andrej
 suggestion: 'Yes'
 priority: 1
 tags:
+- Non-IID (Grouped)
 - New IID
 - Free Text (Sentences)
+- 'Samples: One Moment'
+- Database Snapshot
 collections:
 - TexTabBench
 - STRABLE
 original_source: Kaggle
 year: '2023'
+collection_period: '2023'
 domain: business & marketing
 required_split:
 - Grouped (NON-IID)
@@ -50,17 +54,19 @@ CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the o
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `alko_wine_price_list` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after changes: the shop's copy carries real signal (+0.09 R²) and never states the price, but it is written for priced wines by an unnamed shop, so the fit should be approximate; drop the two spirits. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after changes: the shop's copy carries real signal (+0.09 R²) and never states the price, but it is written for priced wines by an unnamed shop, so the fit should be approximate; drop the two spirits. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
 
-CC (2026-11-10, Andrej): review page marks: the shop's sales copy stays as part of the task, fit approximate (issue 1, option B: `fit_reason` names the copy written for priced wines and the unnamed shop); the whisky and the tequila (ABV 40%) stay, 1,279 wines (issue 2, ok: as implemented, A); the random split is named `Snapshot` of the 2023 scrape (issue 3, B; the `Time basis:` bullet is in `curation_comments`, the tag enters `data_tags` once PR #50 is in the working copy); the sentence quoting "Majestic Loves Rose 2019"'s own earlier price (£5.99) is removed from its description (issue 4, B).
+CC (2026-11-10, Andrej): the shop's sales copy stays as part of the task, fit approximate (issue 1, option B: `fit_reason` names the copy written for priced wines and the unnamed shop); the whisky and the tequila (ABV 40%) stay, 1,279 wines (issue 2, ok: as implemented, A); the random split is named `Snapshot` of the 2023 scrape (issue 3, B; the `Time basis:` bullet is in `curation_comments`); the sentence quoting "Majestic Loves Rose 2019"'s own earlier price (£5.99) is removed from its description (issue 4, B).
 
-CC (2026-11-11, Andrej): record field set from the definition (review page field mark): `original_source` Kaggle (was Other).
+CC (2026-11-11, Andrej): record field set from the definition: `original_source` Kaggle (was Other).
 
-CC (2026-11-11, Andrej): split grouped by producer (review page issue 5, a, the issue's C), random before. The data have no producer column: a `Producer` key is read from the title by a rule and two hand-made tables fix what the rule gets wrong; all 1,279 titles were checked by hand. Brands, ranges and second wines join their house when the title or the shop's copy names it as their maker; the shop's own-label ranges are one group each; 615 producers. `required_split` Grouped (NON-IID) (was Random (IID)). Grouping costs every model 0.03 to 0.04 RMSLE (TabPFN-3.5 0.345 to 0.377). Use case reassessment opened as issue 6.
+CC (2026-11-11, Andrej): split grouped by producer (Review issue 5, a, the issue's C), random before. The data have no producer column: a `Producer` key is read from the title by a rule and two hand-made tables fix what the rule gets wrong; all 1,279 titles were checked by hand. Brands, ranges and second wines join their house when the title or the shop's copy names it as their maker; the shop's own-label ranges are one group each; 615 producers. `required_split` Grouped (NON-IID) (was Random (IID)). Grouping costs every model 0.03 to 0.04 RMSLE (TabPFN-3.5 0.345 to 0.377). Use case reassessment opened as issue 6.
 
-CC (2026-11-11, Andrej): use case reframed (review page issue 6, B): the actor is a producer or importer estimating the UK shelf price of a wine it offers, or a buyer judging whether a wine is good value, not the shop, which prices from its costs (supplier price, duty, VAT, margin) that the data do not hold. `use_case` and `question` rewritten; `fit_reason` adds that the model stands for someone who does not know the price (fit stays approximate; its price-tier numbers moved to `curation_comments`); the grouping definition and the split bullet name the new actor. Text only, data unchanged.
+CC (2026-11-11, Andrej): use case reframed (Review issue 6, B): the actor is a producer or importer estimating the UK shelf price of a wine it offers, or a buyer judging whether a wine is good value, not the shop, which prices from its costs (supplier price, duty, VAT, margin) that the data do not hold. `use_case` and `question` rewritten; `fit_reason` adds that the model stands for someone who does not know the price (fit stays approximate; its price-tier numbers moved to `curation_comments`); the grouping definition and the split bullet name the new actor. Text only, data unchanged.
 
-CC (2026-11-16, Lennart): use case kept (review page issue 7, A, as drafted): the actor is a UK wine merchant's buyer who, offered a wine from a producer the merchant does not stock yet, estimates the shelf price it would sell at, to decide whether to list it and what supplier price that price point allows; the trade fixes the price point first and works the supplier price back from it. `use_case` rewritten, `fit_reason`'s last sentence names what such a buyer would hold instead (the producer's tasting note, the wine's price in other markets); fit stays approximate. Text only, data unchanged.
+CC (2026-11-16, Lennart): use case kept (Review issue 7, A, as drafted): the actor is a UK wine merchant's buyer who, offered a wine from a producer the merchant does not stock yet, estimates the shelf price it would sell at, to decide whether to list it and what supplier price that price point allows; the trade fixes the price point first and works the supplier price back from it. `use_case` rewritten, `fit_reason`'s last sentence names what such a buyer would hold instead (the producer's tasting note, the wine's price in other markets); fit stays approximate. Text only, data unchanged.
+
+CC (2026-11-17, Andrej): the declared split (grouped on `Producer`, 10x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
@@ -80,7 +86,7 @@ family on one side lowers R² only from 0.741 to 0.733. Weighed: methods separat
 an unnamed shop and an uploader's own licence -, one shop at one time -, better data may exist (Alko's price list,
 not screened yet) -.
 
-**Main points:** Issues 1 to 4 settled (2026-11-10): the shop's copy stays with an approximate fit (1), the two spirits stay (2), the random split is named a `Snapshot` of the 2023 scrape (3), and the sentence quoting a wine's own earlier price is removed (4). Record `original_source` set to Kaggle (2026-11-11). Split settled (2026-11-11): grouped by a hand-checked producer key, 615 producers (5). Use case reframed (2026-11-11): a producer, importer or buyer estimating the UK shelf price of a wine not on the list, not the shop, which prices from its costs (6). Use case settled (2026-11-16, Lennart): kept, a UK merchant's buyer deciding whether to list a wine from a producer it does not stock yet, and at which price point (7).
+**Main points:** Issues 1 to 4 settled (2026-11-10): the shop's copy stays with an approximate fit (1), the two spirits stay (2), the random split is named a `Snapshot` of the 2023 scrape (3; the prototype is now named `Retrospective`), and the sentence quoting a wine's own earlier price is removed (4). Record `original_source` set to Kaggle (2026-11-11). Split settled (2026-11-11): grouped by a hand-checked producer key, 615 producers (5). Use case reframed (2026-11-11): a producer, importer or buyer estimating the UK shelf price of a wine not on the list, not the shop, which prices from its costs (6). Use case settled (2026-11-16, Lennart): kept, a UK merchant's buyer deciding whether to list a wine from a producer it does not stock yet, and at which price point (7).
 
 **Record judgment:** valid, ship after the changes. Andrej disputed Lennart's `Yes` on 2026-10-15; his strongest
 points were the licence and provenance of scraped shop copy and that the copy is written for wines already priced. The
@@ -88,8 +94,7 @@ licence is a note, not a reason to retire or a decision here: the uploader marks
 cannot grant for a retailer's sales copy. The provenance is a known gap, not an unknown source: the first upload is
 named and the shop can be read off the text. The use-case point is issue 1. The data-scouting run of 2026-10-30/31
 found `alko_wine_price_list` (the Finnish monopoly's catalogue, about 7,600 wines) as better data for the same task;
-it is screened in its own record and does not change this verdict. The record has no `CC (...)` line yet; its undated
-to-do notes are done.
+it is screened in its own record and does not change this verdict. Its undated to-do notes are done.
 
 **Issues for Andrej and Lennart:**
 
@@ -189,7 +194,7 @@ to-do notes are done.
 
    * **Recommendation:** B. **Decision:** A, B or C?
 
-   **Notes for the AI:** once PR #50 is in, on B: `data_tags = ("Snapshot",)` (no tag is listed now) and the curation
+   **Notes for the AI:** on B: `data_tags = ("Snapshot",)` (no tag is listed now) and the curation
    bullet "- Time basis: Snapshot: one scrape of a UK online wine shop's range (most likely Majestic Wine) in 2023;
    the shelf prices, sales copy and catalogue attributes of that moment; the vintage is a wine attribute, not a time.
    Not tested: prices after 2023."; `dataset check`. The record's facts stay.
@@ -201,8 +206,7 @@ to-do notes are done.
      exam round) is not forced; SPLIT-32 gives it `Snapshot` or `DelayedTarget`.
 
    **Resolved (2026-11-10, Andrej):** B: the drafted `Time basis: Snapshot:` bullet is in `curation_comments`, ending
-   with what the split cannot test (prices after 2023). Split and record facts unchanged; `Snapshot` enters `data_tags`
-   once PR #50 is in the working copy.
+   with what the split cannot test (prices after 2023). Split and record facts unchanged; `Snapshot` is in `data_tags`.
 
 4. **Remove the one sentence that quotes the wine's own earlier price?**
 

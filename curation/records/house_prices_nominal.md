@@ -47,7 +47,7 @@ the incomplete July 2010 and his three partial-sale outliers), the log price and
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — RMSE between the logarithm of the predicted and the observed sale price (https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques/overview/evaluation).
 
-CC (2026-10-26, Lennart): issue 7: drop the allocation and adjoining-land sales, "as we know from the metadata what data to use to build the real task" (USE-5). The family sales wait for the consistency check on the review page (house_sales keeps its related-party sales, CC 2026-10-22).
+CC (2026-10-26, Lennart): issue 7: drop the allocation and adjoining-land sales, "as we know from the metadata what data to use to build the real task" (USE-5). The family sales wait for the consistency check (house_sales keeps its related-party sales, CC 2026-10-22).
 
 CC (2026-10-26, Lennart): issue 9: map the text codes of the 43 categorical columns to the documentation's labels (CLEAN-12).
 

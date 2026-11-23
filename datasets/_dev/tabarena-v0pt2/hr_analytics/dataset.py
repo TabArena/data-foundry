@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis, drop_columns
 
 RAW_FILE = "train_jqd04QH.csv"
 """The hackathon's train file: 18,359 enrollees with labels, 2,425 of them looking for a job change."""
@@ -151,6 +151,17 @@ class HrAnalytics(AbstractCuratedDataset):
           by the curator's rule (missing when the column has no other missing value, else the lowest level; a state that
           is simply not on the scale, such as Other, is missing).
     """
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        enrollees signed up over a period the hackathon does not state, and the
+        release has no date; `enrollee_id` numbers the train and test files together and is not shown to follow
+        sign-up time (training hours flat along it), and windows in its order score as random folds do (ROC AUC 0.645
+        against 0.646, untuned LightGBM). A dated release would allow a split by sign-up date. Not taken as stationary
+        (Andrej, 2026-11-18): A labour-market behaviour with an undocumented target and not-flat similar intent sets;
+        a low ceiling is no stationarity reason.
+        """,
+    )
 
     # Task
     target = "LookingForJobChange"

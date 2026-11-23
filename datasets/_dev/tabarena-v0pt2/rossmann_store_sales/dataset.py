@@ -104,7 +104,7 @@ class RossmannStoreSales(AbstractCuratedDataset):
     accepted_check_warnings = {
         "splits_rows_unused": (
             "By design: the 1,114 store-days of 19 June 2015, the one-day gap before the newest window, are in no "
-            "split (Lennart, 2026-11-11, review issue 1)."
+            "split (Lennart, 2026-11-11)."
         ),
     }
     temporal = Temporal(

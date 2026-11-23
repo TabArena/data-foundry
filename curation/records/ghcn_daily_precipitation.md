@@ -100,7 +100,7 @@ wrangling` stays (observation-time alignment, neighbour features). Not a duplica
 in Australia).
 
 CC (2026-10-30, Andrej): `TBD -> Yes`, priority 2 (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated
-screening review page). "See if you can resolve all your flags, I think you can"
+screening). "See if you can resolve all your flags, I think you can"
 
 NOAA NCEI's archive of daily station observations: 133,039 stations in `ghcnd-stations.txt`, one fixed-width `.dly`
 file per station with one row per station, element and month and 31 day slots (3.8 GB for all stations). It is an

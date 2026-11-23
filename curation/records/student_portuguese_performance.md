@@ -3,6 +3,7 @@ unique_name: student_portuguese_performance
 name: archive_r56_Portuguese
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -11,11 +12,15 @@ decision_markers:
 - No Good Target / Scientific Discovery
 tags:
 - Tiny Data
+- 'Samples: One Moment'
+- 'Target: Later'
+- Database Snapshot
 collections:
 - TabArena Reject
 - TabSTAR
 original_source: UCI
 year: '2014'
+collection_period: 2005-2006
 domain: education
 required_split:
 - Random (IID)
@@ -52,6 +57,62 @@ CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words w
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): counts with a cut end are numbers: failures.
 
 CC (2026-11-01, Lennart): counts with a cut end stay ordered categories of the source's levels, the cut end a level of its own (CLEAN-14): the lossless form, chosen from the context rather than by model runs; the same day's numbers with censoring flags are reverted.
+
+CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which was dropped before it shipped:
+- A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
+- The random split stays.
+
+CC (2026-11-17, Andrej): the declared split (random, 20x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Two dated Portuguese education sets in the collection are not flat across cohorts and a 2009 reform changed the secondary intake; one 2005-06 cohort cannot stand for later years.
+
+## Review
+
+**Outcome:** added. Stationarity reasoning of 2026-11-18: the forced tag stays (issue 1, A, Andrej).
+
+**Main points:** Nothing open: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation` (issue 1 resolved on 2026-11-18).
+
+**Issues for Andrej:**
+
+1. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: One cohort, the 2005-2006 school year at two Alentejo schools (Cortez & Silva 2008); the release has no date or order and no later year was published.
+     - Use: A school predicts final Portuguese grades early in a later school year to offer support; used today, ~20 years after collection.
+     - Mechanism: Past failures, study time, parental education and alcohol use relate to the final grade; grading, curriculum, national exams and intake change by year and by reform.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | predict_students_dropout_and_academic_success | four enrolment-cohort windows 2014-2017 (Portuguese polytechnic): log loss +0.02 to +0.14 above training on as many students from all cohorts | not flat | Portuguese education, academic outcome from background |
+     | open_university_learning_analytics_dataset | v2 test over course presentations | not flat | student outcome predicted for later presentations |
+     | Portuguese Law 85/2009 (Lei n.º 85/2009) (literature, cited from memory: check) | extended compulsory schooling to age 18 / 12th grade from 2009-10 | changed intake after the collected year | changes who is in secondary school and why |
+
+   * **For a stationary use case:**
+     - Prior failures and parental education are consistently strong predictors of grades across studies.
+     - Use within a school year is close in time to the predictors.
+   * **Against:**
+     - Measured cohort shift in the nearest Portuguese education set (+0.02 to +0.14 log loss forward).
+     - Compulsory schooling to 12th grade from 2009 changed the intake (changed rules).
+     - Grades depend on teachers and exams that change by year (changed coding).
+     - Use today spans ~20 years from 2005-06.
+   * **Earlier views:**
+     - CC (2026-11-16, Andrej): ForcedIIDFromTemporal in place of DelayedTarget (one school year is one period).
+     - CC (2026-11-17, Andrej): blind split walk reaches the shipped split.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Measured cohort shift in the nearest Portuguese education set (+0.02 to +0.14 log loss forward).; Compulsory schooling to 12th grade from 2009 changed the intake (changed rules). |
+
+   * **Recommendation:** A, two dated Portuguese education sets in the collection are not flat across cohorts and a 2009 reform changed the secondary intake; one 2005-06 cohort cannot stand for later years. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (Two dated Portuguese education sets in the collection are not flat across cohorts and a 2009 reform changed the secondary intake; one 2005-06 cohort cannot stand for later years.)
 
 ## Reference
 

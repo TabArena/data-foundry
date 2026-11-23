@@ -79,8 +79,7 @@ the hydrographic table (8,195 rows): the minimum, 0.03 ug/l, is the most frequen
 against 1.9% for the next (0.21), and it is the low end of a continuous spread (5th percentile 0.06, median 0.43), not a
 regime of its own. One row carries -999, a missing-value code.
 
-CC (2026-10-30, Andrej): `Yes`, priority 1 (the AI screening had `TBD -> 2nd Tier`, priority 1; zero-inflated screening
-review page).
+CC (2026-10-30, Andrej): `Yes`, priority 1 (the AI screening had `TBD -> 2nd Tier`, priority 1; zero-inflated screening).
 
 The "hydrographic" table of the same benchmark as `basque_offshore_bivalve_biotoxins`, from the same AZTI upstream.
 The raw file is 8,195 rows of 1-dbar CTD depth bins from 2 stations on 146 dates (May 2014 to December 2023);

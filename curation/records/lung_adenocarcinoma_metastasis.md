@@ -14,8 +14,11 @@ tags:
 - New IID
 - Many features
 - Tiny Data
+- 'Samples: No Time Dimension'
+- Experimental Results
 original_source: Other
 year: '2001'
+collection_period: 16 Mar 2001 - 17 Apr 2001
 domain: medical & healthcare
 required_split:
 - Random (IID)
@@ -31,7 +34,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC (2026-11-11, Andrej): new record for the metastasis task on the arrays of `lung_cancer`, whose histology target was retired on 2026-11-10 (BeyondArena v0.2 review page, lung_cancer issues 7, B, and 4, B: a new record, since rows, target and values all changed). Ship.
+CC (2026-11-11, Andrej): new record for the metastasis task on the arrays of `lung_cancer`, whose histology target was retired on 2026-11-10 (lung_cancer's Review issues 7, B, and 4, B: a new record, since rows, target and values all changed). Ship.
 - **The source's own task:** "A key issue in lung tumor diagnosis is the discrimination of a primary lung adenocarcinoma from a distant metastasis to the lung" (Bhattacharjee et al. 2001, Results); "metastases of nonlung origin can be difficult to distinguish from lung adenocarcinomas" (Introduction). The paper finds them by clustering and scores no classifier.
 - **Where the label comes from:** the study's annotation sheet (`SampleData.xls`, sheet DATASET B, in GEO's caArray archive) flags 16 of its 139 adenocarcinomas as "possible mets" (8 colon, 4 breast, 4 other). 15 are written in the resected tumour's own pathology note, AD218's only in the study's second reading. The call is read from the specimen's pathology but not settled there: it rests on the earlier cancer outside the specimen, and the source calls the two "difficult to distinguish". The 8 colon flags are the firmest and the easiest part. All count but AD218's (below), leaving 15.
 - **Rows:** 123 adenocarcinomas: the paper's 125 with clinical data, less AD218 and AD224; the 12 `A` patients and AD355, AD360 have no clinical data, so "no flag" is no finding for them. One MAS5 array per tumour, scaled on that array alone (the GEO rebuild of lung_cancer's issue 1); the 67 control probes are dropped.
@@ -48,6 +51,14 @@ CC (2026-11-11, Lennart): the second review panel's issues: 1, B (USE-1 amended 
 
 CC (2026-11-11, Lennart): the declared metric, ROC AUC (the binary fallback; the source scores no classifier), is checked as declared.
 
+CC (2026-11-16, Andrej): collection fact `Samples: No Time Dimension`, missing because the record was made after every record got its facts: the tumours were banked and profiled for one study (the 123 arrays scanned between 16 March and 17 April 2001), and whether a resected tumour started in the lung does not change with when it was resected. One array per tumour, so no `Entities: Recur`; the label is known with the features, so no `Target:` fact.
+
+CC (2026-11-17, Andrej): Review issue 10, A, as implemented: Keep `Experimental Results`: 20 x 3-fold random cross-validation over patients stratified on the target (train 82, test 41, 5 metastases per test fold), `Timeless`.
+
+CC (2026-11-17, Andrej): verdict ship (blind split walk).
+
+CC (2026-11-17, Andrej): the declared split (random, 20x3 folds, `Timeless`) is checked in the blind split walk.
+
 ## Review
 
 **Outcome:** added. A primary lung adenocarcinoma against a metastasis from another organ, on the study's own GEO arrays (123 tumours, 15 metastases, 5 per test fold). The review panel recommends shipping after changes.
@@ -59,7 +70,7 @@ CC (2026-11-11, Lennart): the declared metric, ROC AUC (the binary fallback; the
 
 Either of issues 1 and 2 can still end at `No`.
 
-**Main points:** Sign the PR's use-case wording, or retire the task like lung_cancer? Keep it at 15 metastases, or retire it as too small? Ask Andrej to apply the nine fixes the panel agreed on?
+**Main points:** All settled: the PR's use-case wording signed, USE-1 amended on this case (issue 1, B); kept at 15 metastases, 5 per test fold (issue 2, A); the nine fixes the panel agreed on applied (issue 3, B); all 2026-11-11. The collection type stays `Experimental Results` (issue 10, A, 2026-11-17).
 
 **Record judgment:** valid provenance. Every flag, row and quote checks out against the study's annotation sheet, its arrays and the paper. The record's numbers hold apart from the details listed in issue 3.
 
@@ -230,6 +241,31 @@ Either of issues 1 and 2 can still end at `No`.
    - the new record is cited under PROV-7.
 
    `dataset check` is clean, and the task and leak probes raise no flag.
+
+10. **Collection type: tag the record `Clinical Study` instead of `Experimental Results`?**
+
+   * **Problem:**
+     - the rule[^split-34] names this very case as `Experimental Results`: patient data without dates is a clinical study when the patients arrived over time, and experimental results when the data has no time dimension, 'a tumour's type measured on banked specimens'.
+     - The 123 tumours were resected earlier and banked; their arrays were scanned in one month (16 March to 17 April 2001) for one study, and the record says `Samples: No Time Dimension`.
+     - Re-walked as `Clinical Study` (later patients at the same clinic, order lost, one row per patient), the tree gives Random · ForcedIIDFromTemporal: the same 20 x 3 random folds, only the tag changes.
+   * **The doubt:** Banked tumours of one hospital's patients with clinical data read more like a clinical study (single site, order lost) than designed runs.
+   * **What changes:** Nothing on A.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `Experimental Results`: 20 x 3-fold random cross-validation over patients stratified on the target (train 82, test 41, 5 metastases per test fold), `Timeless` (implemented) | no change | Follows the rule[^split-34]'s own example for banked tumours; the origin of a tumour does not change with when it was resected, as the Time basis line says. | The type does not say the specimens are one hospital's patients with clinical histories, which bear on the label (it rests on an earlier cancer outside the specimen). |
+     | B | Tag `Clinical Study` with `Samples: Over Time`: the same 20 x 3-fold random cross-validation, tag `ForcedIIDFromTemporal` | Changes the record's type and Samples tags; in dataset.py `data_tags` becomes `ForcedIIDFromTemporal` with a Time basis line on the lost resection order; the folds do not change. | Names one hospital's case series of patients who came to surgery over time. | Claims a forward use whose time was lost, though the target is a fixed property of the tumour; contradicts the rule[^split-34]'s banked-specimen example; folds grouped by scan day or IVT batch already score as the random ones (ROC AUC 0.856-0.903 vs 0.872). |
+
+   * **Recommendation:** A, because the rule[^split-34] names a tumour's type measured on banked specimens as `Experimental Results`.. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: change the record's type tag to `Clinical Study`, re-walk the tree from it and check whether the leaf changes; update the type rules' examples.
+
+   [^split-34]: **SPLIT-34** (Should): Every record of a definition names how its source collected the rows with one **data collection type**, set at screening from the source and true whatever task is built on it.
+
+   **Andrej (2026-11-17, ok):** as implemented.
+
+   **Resolved (2026-11-17, Andrej):** A, as implemented: Keep `Experimental Results`: 20 x 3-fold random cross-validation over patients stratified on the target (train 82, test 41, 5 metastases per test fold), `Timeless`.
 
 **Review panel:** ship after changes (mediator). Full panel, a second pass run on 2026-11-11 at Lennart's ask (the first panel, run for Andrej the same day, left only its one-line summary in the record). Claim audit: 33 claims, no validity claim refuted, 4 details wrong, 4 untested. Blind review: would not benchmark (15 mixed positives, a third only suspected). Task gamer: no exploit beats an honest model beyond the noise. Agreed: no leak, the random split, the recording difference does not carry the score, notes on the soft positives and the negatives, the clinical columns and the other fixes (issue 3). Disputed: the use-case amendment (issue 1) and the size (issue 2).
 

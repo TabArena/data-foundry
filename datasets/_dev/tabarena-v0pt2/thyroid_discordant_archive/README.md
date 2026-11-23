@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: thyroid_discordant_archive
 container_format: 2
-checksum: v2:d57c128a71554792d886e60a81864d77f6d55742b3fc6adb19cd1b7e5bb80973
+checksum: v2:726f257bae196be81050be71d95a27bb378ecf8916dbb955700fe7de568e6033
 build: null
 build_stale: false
 data:
@@ -43,7 +43,8 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings: []
+  warnings:
+  - splits_below_target
   infos: []
   accepted:
     dataset_pure_feature_value: 'on_thyroxine and TSH_measured are on the request,
@@ -58,7 +59,7 @@ decisions: []
 
 Binary classification of `discordant`, scored with `roc_auc` on temporal splits by `request_date`. 9,162 rows and 29 features. Source: UCI (1987).
 
-Not built yet. The current definition gives checksum `v2:d57c128a71554792d886e60a81864d77f6d55742b3fc6adb19cd1b7e5bb80973`.
+Not built yet. The current definition gives checksum `v2:726f257bae196be81050be71d95a27bb378ecf8916dbb955700fe7de568e6033`.
 
 ## In brief
 
@@ -198,17 +199,18 @@ We start with thyroid0387.data from the UCI Thyroid Disease files: "the latest v
 Three test windows of four months of request dates, newest first: October 1986 to January 1987 (the end of the
 archive), June to September 1986 and February to May 1986; each trains on every earlier request (87%, 73% and
 61% of the rows). The windows hold 1,215, 1,230 and 1,145 requests with 25, 54 and 24 discordant results. They
-follow option C of thyroid_discordant's issue 4 (train on 1984-1985; test on the first half of 1986, its third
+follow option C of thyroid_discordant's split decision (train on 1984-1985; test on the first half of 1986, its third
 quarter, and its fourth quarter with January 1987), as four-month windows, which one declaration can express:
 the archive holds only 2 requests in January 1986 and 1 in June 1986, none discordant, so the windows differ
-from option C's by those three requests (January trains the oldest window, June is tested with the summer)
-and keep its positives. An IID task of this size would get more folds; more windows would cut the 103 test
-positives into a handful each. The source split by time too: the ann-thyroid files of the same UCI zip, which
-their readme gives as the data of Quinlan's 1987 case study, train on 3,772 requests of 1985 and test on the
-3,428 of 1986 (every row that matches exactly one archive record by its values falls in those years). Training
-on earlier requests only scores like random training rows of the same size (untuned LightGBM, within 0.01 ROC
-AUC in each window), so the windows test later requests, with their changes in the tests ordered and in the
-share of code R, rather than remove a leak.
+from option C's by those three requests (January trains the oldest window, June is tested with the summer) and
+keep its positives. An IID split of this size would get 9 splits (SPLIT-15); the three windows follow that
+decision, and four-month windows fit five only down to 30% training, the curator's exception (SPLIT-14). The
+source split by time too: the ann-thyroid files of the same UCI zip, which their readme gives as the data of
+Quinlan's 1987 case study, train on 3,772 requests of 1985 and test on the 3,428 of 1986 (every row that matches
+exactly one archive record by its values falls in those years). Training on earlier requests only scores like
+random training rows of the same size (untuned LightGBM, within 0.01 ROC AUC in each window), so the windows
+test later requests, with their changes in the tests ordered and in the share of code R, rather than remove a
+leak.
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 5,572 to 7,947 rows, test 1,145 to 1,230 rows. Prediction horizon: 4 months.
 
@@ -231,8 +233,9 @@ Each test window against its train side, by statistics of the data, never of a m
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 1 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
+- **warning** `splits_below_target`: 3 window(s), against the 9 splits an IID split of 9,162 scored units would get (SPLIT-33). (hint: SPLIT-15 aims at that count and accepts fewer: the splits comment names the target, the count reached and what stops more windows (the use case's horizon or gap, the training floor, the least test window); then accept this warning with it.)
 
 Accepted on purpose:
 
