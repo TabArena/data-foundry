@@ -1,5 +1,13 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-23, huesken_sirna_efficacy: 20 x 3 splits over the target genes (Andrej's decision, no container built)
+
+- The score averages one per-gene correlation and every fold holds out whole target genes, so the split rule counts
+  the 30 genes, not the 2,431 guides: 20 genes on a train side give 20 repeats of 3 folds, 60 splits, where the
+  container was built with 10 x 3. The definition is unchanged, as the protocol derives the count; the README's split
+  block reads 20 repeats. Not rebuilt: the raw supplement is not in the local warehouse.
+- The record: issue 10 resolved (B) and a CC line.
+
 ## 2026-11-16, wine_world_cost: the use case kept as a merchant's listing decision (Lennart's decision, no container built)
 
 - Review issue 7 (whether any real use case exists), A: kept, fit approximate. The actor is a UK wine merchant's buyer
