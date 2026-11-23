@@ -46,7 +46,7 @@ import pandas as pd
 from data_foundry.curation_container import CuratedContainer, non_feature_columns
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
 from data_foundry import time_basis as basis_rules
-from data_foundry.schema import TIME_BASIS_TAGS, DatasetMetadata, as_column_list, training_only_weight
+from data_foundry.schema import TIME_BASIS_TAGS, DatasetMetadata, as_column_list, current_tag, training_only_weight
 from data_foundry.utils.checksum import categorical_details
 from data_foundry.utils.dtypes import is_str_dtype, object_columns
 
@@ -2098,8 +2098,8 @@ def _check_time_basis(ctx: _Ctx) -> Iterator[CheckResult]:
         yield CheckResult(slug, severity, message, hint=_TIME_BASIS_HINTS.get(slug))
     if temporal or ctx.df is None:
         return
-    prototypes = set(tags) & set(TIME_BASIS_TAGS)
-    explained = "Retrospective" in tags or (basis_rules.parse(comments) is not None and not prototypes)
+    prototypes = {current_tag(t) for t in tags} & set(TIME_BASIS_TAGS)
+    explained = "RetrospectiveFillIn" in prototypes or (basis_rules.parse(comments) is not None and not prototypes)
     dated = [c for c in ctx.df.columns if c != ctx.target and pd.api.types.is_datetime64_any_dtype(ctx.df[c])]
     if dated and not explained:
         yield CheckResult(

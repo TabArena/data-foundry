@@ -177,6 +177,13 @@ the earlier case, or change the rule. Before you depart from a rule, ask yoursel
 * Is it a one-off, or should the rule change?
 * Which higher principle does it serve?
 
+## The split tree
+
+* **`/review-split-tree`** ([`review-split-tree/SKILL.md`](review-split-tree/SKILL.md)): the split decision tree
+  as a page you can read and review: the tree drawn as a tree, the review's issues below it in the review page's
+  shape, your marks and notes saved with the page for Claude to answer or apply. Also draws a draft of a new
+  structure beside today's tree.
+
 ## More
 
 * How a record moves through the stages, and which file is the truth for what:
