@@ -1,5 +1,19 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-23, split rules: window size, the running-id check and rebuilt orders (no container built)
+
+Changes to the split rules and checks after the split-rules review; no definition changes:
+- Window size: a scored unit that a test window cuts across its training and test sides is scored on part of its
+  rows, so the window counts rows, not the unit (SPLIT-14 as SPLIT-33 counts). noaa_afsc_bottom_trawl_survey_cpue,
+  whose metric averages an RMSE per taxon, counted 11 units in every window before; eras inside one window (numerai)
+  still count as units.
+- The running-id check (`dataset_sequential_id_column`) skips the time column of a split declared with
+  `time_of="label"`: a rebuilt order is a running id by construction, orders and splits the rows and is no model
+  input. A prediction-time column is still flagged.
+- A rebuilt order is checked against something independent of it, dated where anything is (SPLIT-22 and the split
+  tree), no longer "something dated": a second dated column, a linked release, outside facts, or a quantity that
+  counts calendar time; where nothing dated exists, evidence only a time order explains, named in `splits_comment`.
+
 ## 2026-11-22, the split-rules review: the time basis as one declaration (no container built)
 
 Lennart's review of the split rules, applied across the definitions of the split work:
