@@ -72,7 +72,7 @@ CC (2026-11-20, Andrej): the random folds stay `StationaryRelation`, now on the 
 
 **Main points:** Settled: issue 1 withdrawn (2026-11-13); collection type `Dated Event Log` (issue 3, a, 2026-11-17);
 the random folds stay `StationaryRelation`, on the stationary-relation test over the two two-month windows (issue 4,
-C, 2026-11-20). Open: issue 2 (three two-month windows instead of random folds) has no Resolved line.
+C, 2026-11-20). Open: issue 2 (three two-month windows instead of random folds) has no Resolved line. Open since 2026-11-23: issue 5 (the departure, now that the newest three periods read not flat).
 
 **Issues for Andrej:**
 
@@ -285,6 +285,36 @@ C, 2026-11-20). Open: issue 2 (three two-month windows instead of random folds) 
    **Andrej (2026-11-20, discuss):** Reply (C): the same folds
 
    **Resolved (2026-11-20, Andrej):** C. The 10 x 3 random folds stay, tagged `StationaryRelation`; the `Time basis:` line now rests on the stationary-relation test over the two two-month windows on half the subjects or more (flat for Kumo-Tabular) and names the Nov-Dec 2017 reading at the change of set-up. Not rebuilt.
+
+5. **Keep the random folds tagged `StationaryRelation`, now that the newest three periods read not flat?**
+
+   * **Problem:**
+     - Since the split-rules review of 2026-11-22 the stationary-relation test reads the newest three periods whatever their training share, so Nov-Dec 2017 counts, and it reads not flat for Kumo-Tabular[^dep-newest].
+     - A relation measured not flat is held out by whole periods or the task is `Too Small`, never by random folds; and since the windows can be built with one exception, the tree's leaf is Temporal · arrival date[^dep-notflat].
+     - The split tree lists infrared as a departure that rests on a flat relation; Lennart asked on 2026-11-23 that you make this call.
+   * **Background:** the run of 2026-11-19 (issue 4), RMSE in °C, 5 seeds, the newest three two-month periods.
+
+     | Test period | Train share | Test subjects | Kumo-Tabular gap | Floor | Verdict |
+     |---|---|---|---|---|---|
+     | Mar-Apr 2018 | 82% | 179 | -0.002 ± 0.004 | 0.002 | flat |
+     | Jan-Feb 2018 | 60% | 220 | +0.001 ± 0.007 | 0.004 | flat |
+     | Nov-Dec 2017 | 48% | 120 | +0.010 ± 0.003 | 0.001 | not flat |
+
+   * **Effect on the task:** the random folds put both study years on both sides, so the change of set-up between them (location, camera distance about 0.8 to 0.6 m), the kind of change a later screening point meets, stays untested.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 10 x 3 random folds, `StationaryRelation` (implemented) | No change; the tree's departures table keeps infrared with your reason | 30 splits; no rebuild | The tag no longer follows from the test; the not-flat period is set aside |
+     | B | Three two-month windows on the visit date, Nov-Dec 2017 at 48% as your exception | The visit day orders the split and is no input; no gap, the label is read at the visit | The leaf the tree gives; tests later visitors, as the screening point meets them | 120 to 220 test subjects per window; the exception is yours to allow |
+     | C | 10 x 3 folds grouped by two-month period, `ForcedGroupedFromTemporal` | Seven periods held out whole, the test in the `Time basis:` line | What the forced step gives for a relation measured not flat, without the exception; 30 splits | Trains on later periods too; the step forward stays untested |
+
+   * **Recommendation:** none from the AI beyond what the rules give as written: B if you allow the 48% window, else C; A stays only as a departure you confirm with its reason. **Decision:** A, B or C?
+
+   **Notes for the AI:** B as issue 4's option B (cutoffs 2017-11-01, 2018-01-01, 2018-03-01, window two months, no gap; the exception goes into the splits comment and a CC line). C: a `Grouping` on the two-month period of the visit date and `TimeBasis("ForcedGroupedFromTemporal", ...)` with the run above. A: the reason goes into the departures table of `split_tree.md`. On B or C infrared leaves that table.
+
+   [^dep-newest]: **SPLIT-32** (Should; amended 2026-11-22): "The newest three are tested whatever their training share: SPLIT-14's floor is for a split's windows, not for this test, and a reading on fewer periods is partial, never the verdict." The relation "is not flat when one period or the averaged gap is not flat for one model".
+   [^dep-notflat]: **SPLIT-32** (Should): "Where the windows can be built, the split is temporal however flat the relation"; for a forced split, "a relation measured not flat is held out only by whole periods, else `Too Small` (SPLIT-16)". **SPLIT-14** (Must): "A temporal task has at least 3 windows (splits). Every window trains on at least 50% of the data. A window under 50% is the curator's exception for that dataset, down to 30%".
 
 ## Reference
 
