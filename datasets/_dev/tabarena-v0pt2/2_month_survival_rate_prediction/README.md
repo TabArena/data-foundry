@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: 2_month_survival_rate_prediction
 container_format: 2
-checksum: v2:eb2cefeac9abfa1d5314473a5fb25c0523af62a6c5e89699f2aee41598be08d5
+checksum: v2:86f44716efc52a4bb248cb9857976324e449e5800496e9adf6fe75c8da806129
 build:
-  uuid: 01a207ec-d85a-7de7-a9c5-c8ce68e10e23
-  checksum: v2:eb2cefeac9abfa1d5314473a5fb25c0523af62a6c5e89699f2aee41598be08d5
-  built_at: '2026-11-23T10:21:33+00:00'
-  path: 2_month_survival_rate_prediction/01a207ec-d85a-7de7-a9c5-c8ce68e10e23
+  uuid: 01a207f8-cef8-7844-bd03-78434d377a51
+  checksum: v2:86f44716efc52a4bb248cb9857976324e449e5800496e9adf6fe75c8da806129
+  built_at: '2026-11-23T10:34:39+00:00'
+  path: 2_month_survival_rate_prediction/01a207f8-cef8-7844-bd03-78434d377a51
   data_foundry_version: 0.0.5
-  git_sha: 56c874b4bb4d9779027aa119236aa39f6dbeaa0e-dirty
+  git_sha: ab3a9fa4b776951236de5736e45a661755b10d58-dirty
   libraries:
     python: 3.11.16
     pandas: 2.3.3
@@ -90,7 +90,7 @@ decisions:
 
 Binary classification of `death_within_2_months`, scored with `roc_auc` on temporal splits by `entry_date`. 8,967 rows and 22 features. Source: Other (2003).
 
-Built as `01a207ec-d85a-7de7-a9c5-c8ce68e10e23` on 2026-11-23. See [Build](#build).
+Built as `01a207f8-cef8-7844-bd03-78434d377a51` on 2026-11-23. See [Build](#build).
 
 ## In brief
 
@@ -129,11 +129,13 @@ Built as `01a207ec-d85a-7de7-a9c5-c8ce68e10e23` on 2026-11-23. See [Build](#buil
 Two downloads. Every value of the dataset comes from the first; the second only tells where each patient's physiology sits in it.
 
 1. support2.csv (all 9,105 SUPPORT patients, 47 variables) from the Vanderbilt Biostatistics data repository (https://hbiostat.org/data, "SUPPORT study datasets"), which released this extract of the SUPPORT study data. The file is not versioned: ours is dated 2003-06-23 inside the zip and has SHA-256 79621945edf2a5c8dc36359684ff356d3c6025e773ba4fefac26f865f7894c78. UCI dataset 880 (SUPPORT2, https://archive.ics.uci.edu/static/public/880/data.csv) serves the same table, with the same misplaced phase II physiology (see the curation notes); it differs only in the rounding of prg6m, which we drop.
-2. The full study data, ICPSR 2957 V2 (https://doi.org/10.3886/ICPSR02957.v2, Knaus and Lynn, released 2020-02-20): the public-use parts 9 ("Physiology Data, SUPPORT Phases I and II and HELP") and 10 ("Key Common Analytical Variables, SUPPORT Phases I and II and HELP"), as ASCII data with their data maps. ICPSR asks for a free login and the acceptance of its terms of use, so there is no download command: log in at https://www.icpsr.umich.edu/web/ICPSR/studies/2957, download DS9 and DS10 (each a zip with the folder ICPSR_02957) and unzip both into local-data-warehouse/2_month_survival_rate_prediction/icpsr_2957/. Ours: 02957-0009-Data.txt SHA-256 96859cd2860862d670379def714badcd314c90ea3445c6f6da38d1c32ad56b7d, 02957-0010-Data.txt SHA-256 1a9a41ba78ba13db60d9e4ce9347922f5f2fad77f386ef02ac802d9a7bb4fd86. ICPSR's terms forbid passing these files on.
+2. The full study data, ICPSR 2957 V2 (https://doi.org/10.3886/ICPSR02957.v2, Knaus and Lynn, released 2020-02-20): the public-use parts 9 ("Physiology Data, SUPPORT Phases I and II and HELP") and 10 ("Key Common Analytical Variables, SUPPORT Phases I and II and HELP"), as ASCII data with their data maps. ICPSR asks for a free login and the acceptance of its terms of use, so there is no download command: log in at https://www.icpsr.umich.edu/web/ICPSR/studies/2957, download DS9 and DS10 (each a zip with the folder ICPSR_02957) and unzip both into local-data-warehouse/2_month_survival_rate_prediction/icpsr_2957/. The study-level download gives the same parts in one zip (ICPSR_02957-V2.zip, every part under ICPSR_02957/DSxxxx), from which the two parts can be taken alone. Ours: 02957-0009-Data.txt SHA-256 96859cd2860862d670379def714badcd314c90ea3445c6f6da38d1c32ad56b7d, 02957-0010-Data.txt SHA-256 1a9a41ba78ba13db60d9e4ce9347922f5f2fad77f386ef02ac802d9a7bb4fd86. ICPSR's terms forbid passing these files on.
 
 mkdir -p local-data-warehouse/2_month_survival_rate_prediction && cd local-data-warehouse/2_month_survival_rate_prediction && wget https://hbiostat.org/data/repo/support2csv.zip && unzip support2csv.zip && rm support2csv.zip
-# after downloading DS9 and DS10 from ICPSR (login), in the same folder:
+# after downloading from ICPSR (login), in the same folder, either the two parts:
 unzip -o <DS9 zip> -d icpsr_2957 && unzip -o <DS10 zip> -d icpsr_2957
+# or the two parts out of the whole-study zip:
+unzip -o <study zip> "ICPSR_02957/DS0009/*" "ICPSR_02957/DS0010/*" -d icpsr_2957
 ```
 
 Then, from the repository root:
@@ -552,10 +554,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a207ec-d85a-7de7-a9c5-c8ce68e10e23 |
-| checksum | v2:eb2cefeac9abfa1d5314473a5fb25c0523af62a6c5e89699f2aee41598be08d5 |
-| built_at | 2026-11-23T10:21:33+00:00 |
-| path | 2_month_survival_rate_prediction/01a207ec-d85a-7de7-a9c5-c8ce68e10e23 |
+| uuid | 01a207f8-cef8-7844-bd03-78434d377a51 |
+| checksum | v2:86f44716efc52a4bb248cb9857976324e449e5800496e9adf6fe75c8da806129 |
+| built_at | 2026-11-23T10:34:39+00:00 |
+| path | 2_month_survival_rate_prediction/01a207f8-cef8-7844-bd03-78434d377a51 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 56c874b4bb4d9779027aa119236aa39f6dbeaa0e-dirty |
+| git_sha | ab3a9fa4b776951236de5736e45a661755b10d58-dirty |
 | libraries | {'python': '3.11.16', 'pandas': '2.3.3', 'numpy': '2.4.6', 'pyarrow': '24.0.0', 'scikit-learn': '1.7.2', 'polars': '1.44.2'} |
