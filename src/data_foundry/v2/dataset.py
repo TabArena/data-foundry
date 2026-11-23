@@ -1657,11 +1657,22 @@ class AbstractCuratedDataset(ABC):
         return findings
 
     def _window_size_findings(self, container: CuratedContainer, windows: list, n_rows: int) -> list[CheckResult]:
-        """SPLIT-14's least test window and SPLIT-15's target number of windows, both in scored units (SPLIT-33)."""
+        """SPLIT-14's least test window and SPLIT-15's target number of windows, both in scored units (SPLIT-33).
+
+        A scored unit counts only where no window cuts it across its training and test sides (an era inside one
+        window); a unit every window cuts (a taxon in every survey year) is scored on part of its rows in each, so
+        the rows count, as SPLIT-33 counts them.
+        """
         task = getattr(container, "task_metadata", None)
         unit = protocol.scored_unit_column(task) if task is not None else None
         frame = container.dataset
         units = frame[unit] if unit is not None and hasattr(frame, "columns") and unit in frame.columns else None
+        if units is not None:
+            values = units.to_numpy()
+            for _repeat, train, test in windows:
+                if np.intersect1d(pd.unique(values[list(test)]), pd.unique(values[list(train)])).size:
+                    units = None
+                    break
 
         def count(rows) -> int:
             return int(units.iloc[list(rows)].nunique(dropna=False)) if units is not None else len(rows)
