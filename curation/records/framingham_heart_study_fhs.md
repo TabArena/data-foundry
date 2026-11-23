@@ -78,6 +78,8 @@ CC (2026-11-18, Andrej): time basis stays `ForcedIIDFromTemporal` (Review issue 
 
 CC (2026-11-20, Andrej): random folds over participants stay, a written departure from the measured-not-flat rule (Review issue 3, A): the shipped task holds one exam, so no later period can be held out; with ages matched the shift remains for LightGBM (-0.040 ROC AUC on exam 3) and vanishes for Kumo-Tabular.
 
+CC (2026-11-23, Andrej): the departure decided in Review issue 3 (A, 2026-11-20) is listed in the departures table of `split_tree.md`: the tree's leaf is Retire · Too Small (`L-FORCED.too-small`), and the definition ships random 3 x 3 folds, `ForcedIIDFromTemporal`.
+
 ## Review
 
 **Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below (issues 2 and 3).
