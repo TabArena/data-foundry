@@ -165,6 +165,7 @@ class SendyLogisticsChallenge(AbstractCuratedDataset):
         - Metric: the source's RMSE in seconds, with no target transform.
         - Test.csv's 7,068 orders (per the 2026-10-29 audit) have no labels and are not used.
     """
+    split_leaf = "L-FORCED.periods"
     time_basis = TimeBasis(
         "ForcedGroupedFromTemporal",
         """

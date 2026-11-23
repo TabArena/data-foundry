@@ -188,6 +188,7 @@ class CreditG(AbstractCuratedDataset):
           (about 5% in the bank's portfolio), and the credit amounts are an unknown monotonic transformation of the
           real amounts (Grömping 2019, Sec. 3).
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

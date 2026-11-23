@@ -158,6 +158,7 @@ class HotelBookingDemand(AbstractCuratedDataset):
             Training data holds only bookings that arrive before the prediction point. Bookings with a future arrival that were already cancelled at the prediction point are left out: the future bookings known at that point are only the cancelled ones, so they taught "arrival in the test window = cancelled" (100% of 867 such rows on the split of 1 May 2017, against 12.5% cancelled in its test set; leak audit 2026-09-24 and an independent probe, 2026-08-20). \
             We drop BookingChanges, AssignedRoomType and RequiredCarParkingSpaces (and DepositType, see the curation notes): per the data paper (Antonio et al. 2019, Table 1) they are recorded until check-in or cancellation, and no cancelled booking has a parking space. Note that the data paper takes every variable as of "the day prior to each booking's arrival", later than our prediction point (up to three months before arrival), so small post-prediction changes may remain in other columns.
     """
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="arrival_date",
         horizon=3,

@@ -127,6 +127,7 @@ class WineQuality(AbstractCuratedDataset):
         row's share of its colour file, no date, and assumes both files were entered at a steady pace. No gap: the
         grade is given at the tasting that dates the row.
     """
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="file_position",
         splits=TemporalSplits(window=292, unit="rows", n_windows=9),

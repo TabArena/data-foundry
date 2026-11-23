@@ -241,6 +241,7 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
         target_transform="log1p",
     )
 
+    split_leaf = "L-ORDER.exception"
     # Splits: three 4-month windows tile 2017, the competition's public test year.
     temporal = Temporal(
         on="timestamp",

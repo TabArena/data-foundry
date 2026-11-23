@@ -196,6 +196,7 @@ class SpanishMotorInsuranceCoverageLevel20222024(AbstractCuratedDataset):
         - CC (2026-11-09, Andrej): the renewals get no claims or cost of the year before, and the notes carry the LEAK-9 protocol line against reading other test rows ("No history, a protocol line").
         - CC (2026-11-09, Andrej): the forced split by policy stays, with that protocol line; the one 2024 window is not adopted ("Split by policy"). The release has no date finer than the year.
     """
+    split_leaf = "L-FORCED.flat-unit"
     time_basis = TimeBasis(
         "StationaryRelation",
         """

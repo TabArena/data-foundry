@@ -125,6 +125,7 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
           year are no second recent block; their positive share is that of the older drugs. The record carries the
           collection facts `Samples: Over Time`, `Time: Dated` and `Target: Revised Later` (2026-11-11, Andrej).
     """
+    split_leaf = "L-FAMILY.key"
     time_basis = TimeBasis(
         "UnseenGroup",
         """

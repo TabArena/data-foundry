@@ -30,8 +30,9 @@ OLD_WAY_TOLERATED = frozenset({"meta_time_basis_mismatch", "meta_time_basis_line
 rendered form (a line that names a tag the definition does not list yet, two lines)."""
 
 BASIS_TAGS = (*TIME_BASIS_TAGS, *FORCED_TIME_TAGS)
-"""Every tag a :class:`TimeBasis` may carry: a use-case prototype or a forced tag; a split has one at most. An old
-name (:data:`~data_foundry.schema.RENAMED_TAGS`) is read as its new one."""
+"""Every tag a :class:`TimeBasis` may carry: a use-case prototype or a forced tag; a split has one at most. A
+definition refuses an old name (:data:`~data_foundry.schema.RENAMED_TAGS`); a container built before the rename is read
+with its new one."""
 
 HUMAN_SET_TIME_TAGS = ("StationaryRelation", "AssumedStationaryRelation")
 """Prototypes only a person sets (SPLIT-32): an AI may offer one with the facts for and against (for
@@ -111,7 +112,9 @@ class TimeBasis:
     def problems(self) -> list[str]:
         """What is wrong with the declaration itself, before the split is looked at."""
         found = []
-        if current_tag(self.tag) not in BASIS_TAGS:
+        if self.tag in RENAMED_TAGS:
+            found.append(f"`{self.tag}` is the old name of `{RENAMED_TAGS[self.tag]}`: declare that one")
+        elif current_tag(self.tag) not in BASIS_TAGS:
             found.append(f"`{self.tag}` is no time basis; one of {list(BASIS_TAGS)}")
         if not " ".join((self.reason or "").split()):
             found.append("the reason is empty")

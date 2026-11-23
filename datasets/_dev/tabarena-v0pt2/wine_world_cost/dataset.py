@@ -503,8 +503,9 @@ class WineWorldCost(AbstractCuratedDataset):
           maker (Definition Fleurie by Pardon et Fils): the shop prices the range, and the maker is not named for all.
           615 producers, 1 to 35 wines (Definition), 250 with more than one wine.
     """
+    split_leaf = "L-FILL.whole"
     time_basis = TimeBasis(
-        "Retrospective",
+        "RetrospectiveFillIn",
         """
         one scrape of a UK online wine shop's range (most likely Majestic Wine) in 2023; the
         shelf prices, sales copy and catalogue attributes of that moment; the vintage is a wine attribute, not a

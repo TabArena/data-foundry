@@ -153,6 +153,7 @@ class PerthHousePrices(AbstractCuratedDataset):
         target_transform="log",
     )
 
+    split_leaf = "L-ORDER.windows"
     # Splits: 9 monthly windows (the 3 x 3 an IID task of this size would get), every third month back from December 2020.
     temporal = Temporal(on="DATE_SOLD", splits=TemporalSplits(window=1, unit="months", n_windows=9, step=3))
     splits_comment = """

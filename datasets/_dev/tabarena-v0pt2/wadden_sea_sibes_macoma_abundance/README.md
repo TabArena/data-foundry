@@ -136,7 +136,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2024 |
 | domain | biology & life sciences |
 | license | CC BY-SA 4.0 |
-| data_tags | Non-IID, Grouped, Spatial, Retrospective |
+| data_tags | Non-IID, Grouped, Spatial, RetrospectiveFillIn |
 | reference | bijleveld2024sibes,rijkswaterstaat2026vaklodingen |
 | rows x columns | 59,044 x 11 |
 | task.target | log1p_macoma_per_m2 |
@@ -233,7 +233,7 @@ We start with samples.csv and biota.csv of the SIBES dataset, version 6 (NIOZ, 2
 - CC (2026-11-06, Lennart): decision D13 of the exposure study: the 39 single boat cores stay, with the note above, and the notes name the effort the density folds in (the core area and the subsample fraction, chosen after the sample is seen and not released). No earlier call covered them: the definition has kept them without a note since the review panel of 2026-11-01, which counted them and raised nothing; the exposure study of 2026-11-05 found that the descriptor does not describe them and measured their zeros (79.5% against 57.4% for two-core boat samples).
 - CC (2026-11-10, Andrej): "Per-year normalised RMSE (C)": the score is `mean_group_normalized_rmse` over the survey years on the density, each survey's map one vote, in place of the pooled RMSE of 2026-11-02.
 - CC (2026-11-09, Andrej): as implemented, "Go ahead" on the consistency check's (a): the elevation stays the latest vaklodingen survey stamped on or before the sample's date, though the map of a past survey could also take a later one. The reason: the survey nearest in time would move the elevation by a median 0.08 m (90th percentile 0.30 m, for the 49.7% of the samples it changes), about the median 0.07 m between two successive surveys of a cell, too little to move a settled join.
-- Time basis: Retrospective: the use case fills in the map of a survey year already run, at places between its
+- Time basis: RetrospectiveFillIn: the use case fills in the map of a survey year already run, at places between its
   stations (the prediction point); the split holds out whole stations with all their years, 2008-2022. It cannot
   test a later survey year.
 

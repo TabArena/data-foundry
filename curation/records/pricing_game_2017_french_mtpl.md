@@ -12,7 +12,7 @@ tags:
 - Two-Regime Zeros
 - Non-IID (Grouped)
 - 'Samples: One Moment'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - Database Snapshot
 year: '2017'
 collection_period: Unknown

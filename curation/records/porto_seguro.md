@@ -16,7 +16,7 @@ decision_markers:
 tags:
 - Larger IID Data
 - 'Samples: One Moment'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - Database Snapshot
 collections:
 - TabArena Reject

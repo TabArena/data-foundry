@@ -175,6 +175,7 @@ class PricingGame2017FrenchMtpl(AbstractCuratedDataset):
         - CC (2026-11-10, Andrej): the task stays on Year 0 split by client, with a sentence on the yearly drift of the claim level in `splits_comment` ("Keep, with the drift sentence"); no rebuild on the AIcrowd years.
         - CC (2026-11-10, Andrej): the metric floor stays at 0.1 EUR ("0.1 EUR"), its reason restated under MET-13 as amended on 2026-11-09 (Metric floor bullet).
     """
+    split_leaf = "L-FORCED.groups"
     time_basis = TimeBasis(
         "ForcedGroupedFromTemporal",
         """

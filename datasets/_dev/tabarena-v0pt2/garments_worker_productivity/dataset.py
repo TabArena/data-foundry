@@ -130,6 +130,7 @@ class GarmentsWorkerProductivity(AbstractCuratedDataset):
             "(12 of 15 windows, p 0.012)."
         ),
     }
+    split_leaf = "L-ORDER.exception"
     temporal = Temporal(
         on="date",
         splits=TemporalSplits(window=1, unit="unique", n_windows=30),

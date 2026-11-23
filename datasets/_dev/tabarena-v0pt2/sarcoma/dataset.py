@@ -162,6 +162,7 @@ class Sarcoma(AbstractCuratedDataset):
         - Split by entry into TCGA, checked and not taken (2026-11-12): the programme is closed (the GDC lists the cohort's 261 cases, none added after the study that supplies the label), so no later wave exists to hold out. The TCGA batch (aliquot plate, 127 codes over the cohort) is recoverable only from the GDC's full barcodes, not from our rows, whose barcodes are trimmed to the sample, and a shipment is the tissue source site under another name. The one date per case, the year of diagnosis (169 of 261 cases, 1996 to 2013, 117 of them 2009 or later), dates the patient, not the case's entry.
         - Note: the generated-data probe flags rule leaves of dedifferentiated liposarcoma: `mRNA_MDM2.4193` alone separates the class (ROC AUC 1.000), since MDM2 sits on the 12q15 amplicon the review required. Unlike coad's copy-number block, the defining measurement is not shipped, a lab measures MDM2 at typing anyway, and the task is no rule (best single-feature skill 0.24 over 30 splits against 0.75 for the best model, four classes; 0.05 with five), so the column stays (SEL-5).
     """
+    split_leaf = "L-EXP.random"
     time_basis = TimeBasis(
         "Timeless",
         """

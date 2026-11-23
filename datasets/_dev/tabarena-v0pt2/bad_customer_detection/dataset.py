@@ -90,6 +90,7 @@ class BadCustomerDetection(AbstractCuratedDataset):
           60; unrelated to children, p = 0.9), so it reads as scrambled or meaningless. It does not separate the classes
           (p = 0.1) and is kept as recorded.
     """
+    split_leaf = "L-FORCED.flat-random"
     time_basis = TimeBasis(
         "StationaryRelation",
         """

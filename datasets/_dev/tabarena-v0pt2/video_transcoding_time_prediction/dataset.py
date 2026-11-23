@@ -87,6 +87,7 @@ class VideoTranscodingTimePrediction(AbstractCuratedDataset):
           | LightGBM untuned, all features | 0.181 | 0.023 |
           | noise floor: 81 jobs measured twice | 0.113 | |
     """
+    split_leaf = "L-EXP.item"
     time_basis = TimeBasis(
         "Timeless",
         """

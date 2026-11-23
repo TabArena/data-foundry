@@ -433,6 +433,7 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
         study enrolled no one from mid-1991 to January 1992.
         Until 2026-11-19 the split was random patients (`ForcedIIDFromTemporal`).
     """
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="entry_date",
         horizon=6,

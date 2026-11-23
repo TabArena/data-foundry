@@ -80,6 +80,7 @@ class MicroMass(AbstractCuratedDataset):
         - Each strain has one species; the 20 species have 7 to 20 strains each (median 10; Escherichia coli 20, Haemophilus influenzae 18, Enterobacter cloacae 16; from the v1 exploration, counted 2026-10-22).
         - The spectrum is declared as one (`special_features`, CLEAN-26, 2026-11-02) in the state the instrument's software left it: a peak list on 1,300 fixed bins ("pre-processed by the standard algorithm used for routine (culture-based) bacterial identification, which provided a peak-list representation", the archive's README). The m/z of the bins is not published, so the axis is the bin number; the recommended encoding leaves a peak list as it is.
     """
+    split_leaf = "L-EXP.item"
     time_basis = TimeBasis(
         "Timeless",
         """

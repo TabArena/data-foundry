@@ -142,6 +142,7 @@ class NumeraiV521m(AbstractCuratedDataset):
         ),
     )
 
+    split_leaf = "L-ORDER.windows"
     # Splits: three windows of 52 weekly eras, 4 embargoed eras between train and test.
     temporal = Temporal(
         on="era",

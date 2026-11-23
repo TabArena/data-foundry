@@ -194,6 +194,7 @@ class SirnaEfficacy(AbstractCuratedDataset):
 
         - CC (2026-10-26, Myunghwan): accepted the small-gene warning for this add-stage task. Lennart (2026-11-04) put it as the case where the group is a large set of observations over which we want to generalize, so that from the context a few groups suffice (as for a few hospitals), and a case-by-case call, not a minimum-group rule; the native ten-gene folds stay. The separate final ship verdict was explicitly given by Myunghwan on 2026-10-28. Grouped evaluation targets an unseen species/gene ID with no measured candidates (cold start); OOD here names that unseen-entity evaluation, not a separately established shift in assay conditions.
     """
+    split_leaf = "L-EXP.kind"
     time_basis = TimeBasis(
         "UnseenGroup",
         """

@@ -113,6 +113,7 @@ class SepsisPrediction1m(AbstractCuratedDataset):
           the event, the class that sorts second, so it is the metrics' positive class.
         - The row budget (1M train, 500k test rows): We keep the whole frame (1,552,210 hours of 40,336 patients) and use grouped 3-fold cross-validation over it (v2 split protocol). Each fold tests on at most 500k rows, whole patients drawn from its third, and trains on every other row (about 1.05M). The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M rows with `subsample_train`, whose default draws whole patients at random. Both draws are stratified by each patient's most frequent label.
     """
+    split_leaf = "L-PAN.new-units"
     time_basis = TimeBasis(
         "UnseenGroup",
         """

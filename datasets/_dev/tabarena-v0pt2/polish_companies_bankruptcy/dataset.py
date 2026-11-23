@@ -73,6 +73,7 @@ class PolishCompaniesBankruptcy(AbstractCuratedDataset):
         - We removed duplicates.
         - Anomaly: the data contains a lot of features created by feature engineering.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

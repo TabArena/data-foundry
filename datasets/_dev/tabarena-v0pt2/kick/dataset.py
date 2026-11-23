@@ -119,6 +119,7 @@ class Kick(AbstractCuratedDataset):
         the oldest window, starting 2010-02-19); the test windows hold 3,028 to 4,515 cars (33,054 in all). The earlier
         windows of 28 purchase dates without a gap trained the oldest window on 48.7% of the cars.
     """
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="PurchDate",
         splits=TemporalSplits(window=35, unit="days", n_windows=9, gap=14, min_train_fraction=0.5),

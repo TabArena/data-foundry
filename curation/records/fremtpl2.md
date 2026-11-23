@@ -15,7 +15,7 @@ tags:
 - Two-Regime Zeros
 - 'Samples: Over Time'
 - 'Time: Inferred'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - 'Entities: Recur'
 - 'Features: Read Later'
 - Database Snapshot

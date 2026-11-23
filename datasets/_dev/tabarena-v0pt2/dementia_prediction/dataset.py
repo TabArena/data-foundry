@@ -122,6 +122,7 @@ class DementiaPrediction(AbstractCuratedDataset):
           decimals). Checked on the 60 grouped splits: the decimal counts alone fall from ROC AUC 0.54-0.56 to
           0.50-0.53, and logistic regression scores as before (log loss 0.6145, unweighted, before the person weight).
     """
+    split_leaf = "L-PAN.new-units"
     time_basis = TimeBasis(
         "UnseenGroup",
         """

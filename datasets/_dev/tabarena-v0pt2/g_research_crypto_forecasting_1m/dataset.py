@@ -191,6 +191,7 @@ class GResearchCryptoForecasting1m(AbstractCuratedDataset):
         ),
     )
 
+    split_leaf = "L-ORDER.exception"
     # Splits
     temporal = Temporal(
         on="timestamp",

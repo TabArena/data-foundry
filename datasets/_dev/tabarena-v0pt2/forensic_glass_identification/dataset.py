@@ -74,6 +74,7 @@ class ForensicGlassIdentification(AbstractCuratedDataset):
         - The target (2026-11-01, CLEAN-25): `Type_of_glass` ships its classes as words (glass.names, 11. Type of
           glass).
     """
+    split_leaf = "L-EXP.random"
     time_basis = TimeBasis(
         "Timeless",
         """

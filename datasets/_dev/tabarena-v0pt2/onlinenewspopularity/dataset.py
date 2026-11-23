@@ -188,6 +188,7 @@ class Onlinenewspopularity(AbstractCuratedDataset):
         target_transform="log",
     )
 
+    split_leaf = "L-ORDER.windows"
     # Splits: nine two-week windows, the size of the paper's rolling test sets, one every five weeks, one-week gap.
     temporal = Temporal(
         on="publication_date",

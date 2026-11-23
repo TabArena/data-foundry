@@ -104,6 +104,7 @@ class WebsitePhishing(AbstractCuratedDataset):
           phishy end, while `web_traffic` runs against them, as the data page codes it. `age_of_domain` and
           `having_IP_Address` have two levels.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

@@ -124,7 +124,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2015 |
 | domain | business & marketing |
 | license | Kaggle Competition Rules |
-| data_tags | IID, Anonymized, Retrospective |
+| data_tags | IID, Anonymized, RetrospectiveFillIn |
 | reference | Bossan2015OttoGroupProductClassificationChallenge |
 | rows x columns | 61,878 x 94 |
 | task.target | target |
@@ -186,7 +186,7 @@ We start with the train.csv from Kaggle.
 - The data has been anonymized, so feature meanings are unknown.
 - Features and data is clean. Top Kaggle experts applied no relevant preprocessing.
 - We drop the index column.
-- Time basis: Retrospective (Andrej, 2026-11-13; `Timeless` before): the use case cleans up the existing
+- Time basis: RetrospectiveFillIn (Andrej, 2026-11-13; `Timeless` before): the use case cleans up the existing
   catalogue, assigning the products of one 2015 extract to their main categories, which subsidiaries file
   differently; the event counts are read at the extract, and the competition chose its test products at random.
   Not tested: products listed after the 2015 extract, or a revised category tree.

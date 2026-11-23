@@ -122,6 +122,7 @@ class QsarBiodeg(AbstractCuratedDataset):
           series are held out; qsar_bioconcentration, qsar_oral_toxicity, qsar_fish_toxicity, qsar_aquatic_toxicity and
           qsar_tid_11 group the same way. The source split at random.
     """
+    split_leaf = "L-FAMILY.key"
     time_basis = TimeBasis(
         "UnseenGroup",
         """

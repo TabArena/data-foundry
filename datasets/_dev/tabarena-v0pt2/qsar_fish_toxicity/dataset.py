@@ -115,6 +115,7 @@ class QsarFishToxicity(AbstractCuratedDataset):
 
           The first three rows score the same test chemicals of the dated windows; the last is a scaffold 3-fold over all rows. The spread between windows (RMSE 0.81 to 1.17) is larger than the spread between schemes. The split cannot test a chemistry newer than the 1990s (90% of the dated chemicals were first tested by 1990, none after 2005), nor whether the 58 undated chemicals follow the same pattern; a publication year is an upper bound on the test date.
     """
+    split_leaf = "L-FAMILY.key"
     time_basis = TimeBasis(
         "UnseenGroup",
         """

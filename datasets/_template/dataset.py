@@ -53,6 +53,7 @@ class ClassName(AbstractCuratedDataset):
         ),
     )
     data_tags = ()  # context tags only (Spatial, Anonymized, ...); the regime tags are added from the task
+    # split_leaf = "L-FILL.random"  # the leaf of the split decision tree the split comes from (SPLIT-36)
     # time_basis = TimeBasis("RetrospectiveFillIn", "...")  # why a split that is not temporal is not (SPLIT-32)
     download_description = """
         TODO(verify): commands that recreate the raw files.

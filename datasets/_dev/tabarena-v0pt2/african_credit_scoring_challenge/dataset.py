@@ -185,6 +185,7 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
     splits_comment = """
         A lender scores each loan when it is disbursed and refits on the loans whose outcome it knows, at least once a month; the six windows hold about a week of loans each (6-11 days, the declared horizon 7 days). A loan's label counts as known 30 days after its due date, so each training side holds the loans whose due date lies more than 30 days before the window starts; the loans of the five weeks before a window are not in its training side. Six windows of about equal numbers of rows cover the end of the product's lending, newest first, from the first day by which half of the rows have a settled label to the last Type_1 loan on 2022-12-01; they hold 18-22 default rows each. Six of the nine windows an IID split of this size would get: a label settles 37 days after disbursement, so only the loans from 15 October 2022 have half the rows settled before them, and those 48 days hold six windows of about a week (Andrej, 2026-11-19). The 2022 windows leave out the 8-18% of the rows of their dates whose lender funds less than one unit (curation comments).
     """
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(on="disbursement_date", horizon=WINDOW_DAYS, horizon_unit="days")
     accepted_check_warnings = {
         "splits_below_target": (

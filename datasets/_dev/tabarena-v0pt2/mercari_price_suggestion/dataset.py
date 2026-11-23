@@ -99,6 +99,7 @@ class MercariPriceSuggestion(AbstractCuratedDataset):
           each would sit about 8.4 squared log units from a typical prediction and carry about 2.6% of a good model's
           squared error, for a price no listing explains.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

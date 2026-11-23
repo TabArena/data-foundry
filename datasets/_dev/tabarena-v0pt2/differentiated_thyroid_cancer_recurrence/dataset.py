@@ -122,6 +122,7 @@ class DifferentiatedThyroidCancerRecurrence(AbstractCuratedDataset):
         - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 5 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

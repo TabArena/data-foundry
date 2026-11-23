@@ -146,6 +146,7 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
         - The row budget (1M train, 500k test rows): We keep the whole frame (2,154,048 customers) and use 3-fold cross-validation over it (v2 split protocol). Each fold tests on 500k customers of its third, drawn stratified on the target, and trains on the other 1,654,048. The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M customers with `subsample_train`, whose default draws random rows stratified on the target.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

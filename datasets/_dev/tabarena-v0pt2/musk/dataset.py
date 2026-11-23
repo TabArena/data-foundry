@@ -78,6 +78,7 @@ class Musk(AbstractCuratedDataset):
         - We rename the molecule IDs to remove the target leakage from the names.
         - We drop the conformation name as it leaks information that the real task should not have (the correlation between specific conformations across samples).
     """
+    split_leaf = "L-EXP.item"
     time_basis = TimeBasis(
         "Timeless",
         """

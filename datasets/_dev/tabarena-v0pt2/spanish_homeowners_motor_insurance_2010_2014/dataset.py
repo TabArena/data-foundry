@@ -223,6 +223,7 @@ class SpanishHomeownersMotorInsurance20102014(AbstractCuratedDataset):
         ),
         target_transform="log1p",
     )
+    split_leaf = "L-ORDER.exception"
     temporal = Temporal(
         on="policy_year",
         splits=TemporalSplits(window=1, unit="unique", n_windows=3),

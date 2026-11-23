@@ -124,6 +124,7 @@ class AcquireValuedShoppersChallenge(AbstractCuratedDataset):
         of this size would get: the data hold 61 days, and with five-day windows and the five-day gap the next window
         (6-10 April) would train on 41.4% of the offers (Andrej, 2026-11-19).
     """
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="offerdate",
         splits=TemporalSplits(window=5, unit="days", n_windows=4, gap=5),

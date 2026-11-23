@@ -237,6 +237,7 @@ class SpanishMotorInsurance20152018(AbstractCuratedDataset):
             "twelve-month gap, July 2017 would train on 45.4% of the rows (Andrej, 2026-11-03 and 2026-11-19)."
         ),
     }
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="period_start", splits=TemporalSplits(window=1, unit="months", gap=12, min_train_fraction=0.5)
     )

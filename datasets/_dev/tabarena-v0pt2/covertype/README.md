@@ -124,7 +124,7 @@ Only curators run `build`, when the dataset ships.
 | year | 1998 |
 | domain | environmental science & climate |
 | license | CC BY 4.0 |
-| data_tags | IID, Spatial, Retrospective, ForcedIIDFromGrouped |
+| data_tags | IID, Spatial, RetrospectiveFillIn, ForcedIIDFromGrouped |
 | reference | blackard1999comparative |
 | rows x columns | 581,012 x 15 |
 | task.target | Cover_Type |
@@ -213,7 +213,7 @@ Other steps:
   59.6% of the test cells have a training cell within one cell's distance on the four location columns, and
   LightGBM is as accurate on the others (0.972 against 0.969): a stand is recognised from location values
   within a few cells. The score mostly measures interpolation between mapped cells inside the four areas.
-- Time basis: Retrospective: one extract of the Forest Service's stand map of four wilderness areas and of terrain,
+- Time basis: RetrospectiveFillIn: one extract of the Forest Service's stand map of four wilderness areas and of terrain,
   road and fire-point layers (date not documented, before the August 1998 donation); the task fills in cells
   of the same areas at that moment, and cells of one stand share its label (see the look-up above). Not
   tested: a later map of the same areas, or land outside the four areas.

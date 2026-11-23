@@ -228,6 +228,7 @@ class PricingGame2016FrenchFleet(AbstractCuratedDataset):
         - CC (2026-11-09, Andrej): the metric stays `rescaled_mean_tweedie_deviance` ((a): "Keep the rescaled deviance"): measured on the 9 shipped folds, it orders 8 models at Kendall's W 0.85 against 0.87 for the weighted Gini, so the reason of 2026-11-08 stands (the metric bullet).
         - CC (2026-11-10, Andrej): the split by contract stays, 3 x 3 folds by `fleet_group` over 2011-2013 with every year tested (A: "Disagree: We go with A over E because it provides the larger test size."). The hold-out of the last year (2013 trained on 2011-2012) is the reference design but allows no repeated splits, so the shipped split is its approximation, measured against it (splits_comment). A over E, the same folds scored on their 2013 periods only, for the larger test size: about 1,240 positive charges per fold against 437 to 477. A ranks 7 models as the hold-out does (Kendall's tau 1.00, and 1.00 for the 5 sound ones); its mean distance from the hold-out's margins over the constant is 0.20 against E's 0.14, within the hold-out's own noise (SE of a margin 0.33 to 0.54).
     """
+    split_leaf = "L-FORCED.groups"
     time_basis = TimeBasis(
         "ForcedGroupedFromTemporal",
         """

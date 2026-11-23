@@ -103,6 +103,7 @@ class LungCancerEpithelialGenexp(AbstractCuratedDataset):
         - Left out on purpose: `bronch_status`, whether this bronchoscopy's cytopathology gave the diagnosis (40 of 78 cancers, 5 of 85 others), which arrives after the brushing and is the diagnosis for half the cancers; `subjective_assessment`, a risk rating made for the study afterwards by three pulmonologists blinded to the outcome (ROC AUC 0.897 alone), which no clinic records; `biomarker_score`, the 80-gene predictor fitted on the labels; `cancer_status` and `sample_id`, the label and the title's number.
         - Potential leak, kept on purpose: GSE4115 holds RMA values, which quantile-normalise all arrays processed together, so a sample's values depend on the others (per-sample medians vary by an SD of only 0.053 log2 over 187 samples); there are no CEL files to redo it per sample. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if raw arrays appear.
     """
+    split_leaf = "L-FORCED.periods"
     time_basis = TimeBasis(
         "ForcedGroupedFromTemporal",
         """

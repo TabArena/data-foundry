@@ -15,7 +15,7 @@ tags:
 - Non-IID (Temporal)
 - 'Samples: Over Time'
 - 'Time: Inferred'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - Database Snapshot
 collections:
 - TabArena Reject

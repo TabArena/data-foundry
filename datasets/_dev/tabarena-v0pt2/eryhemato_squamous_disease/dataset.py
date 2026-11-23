@@ -107,6 +107,7 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
           numbers. The source names only the ends of the scale ("0 indicates that the feature was not present, 3
           indicates the largest amount possible, and 1, 2 indicate the relative intermediate values").
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

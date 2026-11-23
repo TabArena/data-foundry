@@ -14,7 +14,7 @@ tags:
 - Tiny Data
 - 'Samples: Over Time'
 - 'Time: Lost'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - Clinical Study
 collections:
 - New (BeyondArena)

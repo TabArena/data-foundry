@@ -104,6 +104,7 @@ class BiogeographicalAncestryPrediction(AbstractCuratedDataset):
         - rs2789823 is AG in 7 rows, all Iberian; it may be a smaller artefact of the same kind and is kept.
         - Class-dependent recording (record marker `Class-dependent Recording`): Turkey comes from a separate source with its own genotyping artefact, as described above; the class is dropped.
     """
+    split_leaf = "L-EXP.random"
     time_basis = TimeBasis(
         "Timeless",
         """

@@ -125,7 +125,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2020 |
 | domain | business & marketing |
 | license | CC0: Public Domain |
-| data_tags | IID, Retrospective |
+| data_tags | IID, RetrospectiveFillIn |
 | reference | paolocons2020fiat |
 | rows x columns | 1,434 x 8 |
 | task.target | price |
@@ -189,7 +189,7 @@ We start with automobile_dot_it_used_fiat_500_in_Italy_dataset_filtered.csv from
 - We keep one row per car, its first listing (1,434 rows): 104 rows repeat the model, engine power, age, mileage and owners of another. 18 are exact copies, most 12-14 rows after the first (the crawler saw the listing on two result pages), and one car with an odd mileage such as 9,248 km appears at up to 9 places a median 396 km apart, mostly at one price (Lennart, 2026-10-14).
 - Partial order, left unordered (2026-11-01, CLEAN-14): `model`: pop is the base trim; lounge and sport are both
   above it but not ranked against each other.
-- Time basis: Retrospective: one crawl of listings (published on Kaggle in 2020; the crawl date is not stated), whose prices the use case fills in for the same market. It cannot test a later market.
+- Time basis: RetrospectiveFillIn: one crawl of listings (published on Kaggle in 2020; the crawl date is not stated), whose prices the use case fills in for the same market. It cannot test a later market.
 
 ## Splits
 
@@ -237,9 +237,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
-
-- **info** `meta_time_basis_renamed`: `Retrospective` is the old name of `RetrospectiveFillIn`: declare `TimeBasis('RetrospectiveFillIn', ...)`.
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 ## Data checks
 

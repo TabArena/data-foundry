@@ -150,6 +150,7 @@ class HrAnalytics(AbstractCuratedDataset):
           by the curator's rule (missing when the column has no other missing value, else the lowest level; a state that
           is simply not on the scale, such as Other, is missing).
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """
