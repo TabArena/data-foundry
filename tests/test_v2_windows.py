@@ -193,10 +193,12 @@ def test_test_windows_hold_33_scored_units_and_the_count_follows_split_33() -> N
     """
     assert [split_count(n) for n in (100, 749, 750, 3_749, 3_750, 374_999, 375_000)] == [60, 60, 30, 30, 9, 9, 3]
 
-    def findings(test_sizes: list[int], n_rows: int, *, unit_column: bool = False) -> dict[str, str]:
-        frame = pd.DataFrame({"era": np.arange(n_rows) // 2})
-        windows = [(i, list(range(10 + i)), list(range(n))) for i, n in enumerate(test_sizes)]
-        inputs = {"group": "era"} if unit_column else {}
+    def findings(test_sizes: list[int], n_rows: int, *, unit_column: bool = False, cut: bool = False) -> dict[str, str]:
+        # era: two rows each, never cut by a window; taxon: three values in every window, cut by each
+        frame = pd.DataFrame({"era": np.arange(n_rows) // 2, "taxon": np.arange(n_rows) % 3})
+        starts = [n_rows // 2 + 2 * sum(test_sizes[:i]) for i in range(len(test_sizes))]  # even: an era stays whole
+        windows = [(i, list(range(s)), list(range(s, s + n))) for i, (s, n) in enumerate(zip(starts, test_sizes))]
+        inputs = {"group": "taxon" if cut else "era"} if unit_column else {}
         task = SimpleNamespace(objective_metric=SimpleNamespace(inputs=inputs))
         container = SimpleNamespace(task_metadata=task, dataset=frame)
         return {
@@ -209,6 +211,9 @@ def test_test_windows_hold_33_scored_units_and_the_count_follows_split_33() -> N
     assert findings([40, 32, 40] + [40] * 6, 5_000) == {"splits_test_too_small": "error"}
     assert findings([80] * 9, 12_000, unit_column=True) == {}  # 40 eras a window; 6,000 eras give 9 splits
     assert findings([80, 60] + [80] * 7, 12_000, unit_column=True) == {"splits_test_too_small": "error"}  # 30 eras
+    # three taxa in every window, on both sides of each cut: the rows count (SPLIT-33), 40 a window, 5,000 in all
+    assert findings([40] * 9, 5_000, unit_column=True, cut=True) == {}
+    assert findings([40, 32, 40] + [40] * 6, 5_000, unit_column=True, cut=True) == {"splits_test_too_small": "error"}
 
 
 def test_splits_count_by_their_training_sides() -> None:
