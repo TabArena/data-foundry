@@ -9,10 +9,17 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
+tags:
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Varying Delay'
+- Clinical Study
 original_source: Other
 year: '2020'
+collection_period: 1992-1995
 required_split:
 - Random (IID)
+problem_type: Multiclass Classification
 source_links:
 - https://www.openml.org/search?type=data&id=45648
 - https://doi.org/10.24432/C53P5M
@@ -57,6 +64,55 @@ CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words w
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): counts with a cut end are numbers: INF_ANAM.
 
 CC (2026-11-01, Lennart): counts with a cut end stay ordered categories of the source's levels, the cut end a level of its own (CLEAN-14): the lossless form, chosen from the context rather than by model runs; the same day's numbers with censoring flags are reverted.
+
+CC (2026-11-17, Andrej): the declared split (random, 10x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Care drifts measurably within the file and has changed since; both are facts against.
+
+## Review
+
+**Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below (issue 1, A, 2026-11-18).
+
+**Main points:** `ForcedIIDFromTemporal` stays (issue 1, A, 2026-11-18). Nothing is left open.
+
+**Issues for Andrej:**
+
+1. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: Lost: Krasnoyarsk 1992-1995, no admission date, file sorted by outcome; order within each block shows drift but the blocks share no calendar.
+     - Use: Cardiologists estimate lethal complications at admission for later MI patients, 30 years after.
+     - Mechanism: Admission ECG, history and labs to in-hospital death and its cause; mortality given them depends on reperfusion care, which changed (primary PCI) and already drifted inside the file.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | mic's own within-block order | Trental 15%->35% in ICU; first vs second half AUC 0.82/0.58/0.72; last fifth of each block vs random fifth | not flat: death ROC AUC 0.77 vs 0.84 (SD 0.02) | same data |
+     | 2_month_survival_rate_prediction (SUPPORT) | v3 stationary-relation test, phase I 1989-91 -> phase II 1992-94, death ROC AUC forward vs contemporaneous | flat (LightGBM gap 0.0008, TabPFN gap 0.0027) | clinical prognosis of hospitalised patients from admission physiology, one 3-year step |
+     | Rogers WJ et al., 'Trends in presenting characteristics and hospital mortality among patients with STEMI and NSTEMI in the NRMI, 1990 to 2006', Am Heart J 2008;156:1026-1034 | in-hospital MI mortality 1990-2006 | not flat: mortality fell with reperfusion | same outcome and era |
+
+   * **For a stationary use case:**
+     - SUPPORT's admission prognosis was flat over a 3-year step.
+   * **Against:**
+     - structure in the file order: drift in care and a 0.07 ROC AUC cost on each block's last fifth.
+     - changed treatments (PCI, drugs) since the 1990s.
+     - 30-year span.
+   * **Earlier views:**
+     - CC 2026-11-17 (Andrej): random 10x3 checked by blind walk.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | structure in the file order: drift in care and a 0.07 ROC AUC cost on each block's last fifth; changed treatments (PCI, drugs) since the 1990s |
+
+   * **Recommendation:** A, care drifts measurably within the file and has changed since; both are facts against. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (Care drifts measurably within the file and has changed since; both are facts against.)
 
 ## Reference
 
