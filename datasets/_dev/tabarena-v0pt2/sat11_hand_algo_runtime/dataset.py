@@ -201,6 +201,17 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
             One group is a problem family: the instances of one generator (32 families with 1 to 21 instances), each instance with the runs of the 10 candidate algorithms on it, described by instance and algorithm features, with the log runtime as the target. The use case is algorithm selection: predict every algorithm's runtime on a new instance and run the one predicted fastest (ASlib, Bischl et al. 2016; one model for all algorithms as in Pulatov et al. 2022), scored per instance by the selected algorithm's true runtime (PAR10, or the share of the gap between the single best and the virtual best solver that is closed) through the instance id, a scoring column. ASlib's folds hold out instances at random; holding out whole families is our choice (Andrej, 2026-11-18): the instances new at the 2011 competition all came from generators no earlier competition used.
         """,
     )
+    accepted_check_warnings = {
+        "groups_test_groups_few": (
+            "Accepted (Andrej, 2026-11-23): a group is a problem family, the instances of one generator, and the use "
+            "case is a family not seen in training (the 88 instances new in 2011 all came from new generators), so "
+            "the 32 families give 10 or 11 per test fold. The signal across families is real: on 3 x 3 family folds "
+            "(group_probes.py, R^2 on the log runtime) random forest reaches 0.345, LightGBM 0.291 and kNN 0.242 "
+            "against a baseline of 0. The spread is wide (LightGBM 0.041 +- 0.269 per fold, against 0.875 +- 0.031 on "
+            "instance folds), which the 20 x 3 splits average over; repeats reuse the same families, so the spread "
+            "across repeats is descriptive, not 60 independent experiments."
+        ),
+    }
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         def load_arff(path) -> pd.DataFrame:
