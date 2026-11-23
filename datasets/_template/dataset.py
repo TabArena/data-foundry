@@ -53,7 +53,7 @@ class ClassName(AbstractCuratedDataset):
         ),
     )
     data_tags = ()  # context tags only (Spatial, Anonymized, ...); the regime tags are added from the task
-    # time_basis = TimeBasis("Retrospective", "...")  # why a split that is not temporal is not (SPLIT-32)
+    # time_basis = TimeBasis("RetrospectiveFillIn", "...")  # why a split that is not temporal is not (SPLIT-32)
     download_description = """
         TODO(verify): commands that recreate the raw files.
         mkdir -p local-data-warehouse/<unique_name> && mv data_files local-data-warehouse/<unique_name>/
