@@ -161,6 +161,28 @@ CC (2026-11-20, Andrej): windows on the IDpol blocks (Review issue 13, B): block
 
 CC (2026-11-20, Andrej): `BonusMalus` stays in the windows on the IDpol blocks (Review issue 14, A): the block-5 window trains without it (blanked in blocks 0-4) and tests with it; a pricing model meets a factor once it starts being recorded, and block 6's window learns it from block 5. Measured: most of block 5's stationarity gap is this column (+0.0014 with it, +0.0005 without).
 
+CC (2026-11-23, Andrej): the IDpol blocks are signed off as a forward order of periods whose calendar is unknown. The
+rebuilt order is checked against an anchor independent of it, as the rule on a rebuilt order asks.
+
+- **The anchor:** renewal pairs repeat a car of the block before with the car and the driver a year older. An age
+  counts calendar time, so the pairs fix both the direction of the block order and a step of about a year; the
+  shuffled and shifted controls show the pairing is not chance. The default codes agree: of the 23 rows with
+  `VehAge` 99 the 14 that pair with a next-year row are all 100 there, `DrivAge` 99 in block 3 pairs with a block-2
+  row at 98, and two of the block-4 rows with block-5 rows at 100.
+
+  | Evidence | Measurement | Control |
+  |---|---|---|
+  | Renewal pairs, car and driver a year older | 161,883 pairs; 48.7%, 48.3%, 49.2% and 60.3% of blocks 1, 3, 5 and 6, each a lower bound (a wider IDpol offset finds 75.3% in block 6) | 16 to 75 pairs under shuffled or shifted IDpols |
+  | One-to-one links between consecutive blocks | 46,445 to 57,212 for 0 to 1, 1 to 2, 2 to 3 and 3 to 4; 7,907 for 4 to 5; 10,470 for 5 to 6 | under 300 between any other pair |
+
+- **Not established:** which year a block is. Seven yearly steps do not fit the source's "approximately 2011-2013",
+  and in blocks 4-6 0.2% of linked rows cover a full year while 63-66% of linked pairs have exposures summing to at
+  most 1.01, so blocks 0-1, 2-3 and 4-6 may be three sub-portfolios and the blocks accounting periods rather than
+  years. The split therefore uses the order alone: a horizon of one block with no calendar length, and
+  `idpol_block` no model input.
+- **What would overturn it:** a release that dates the records, or a key the source states that pairs records across
+  blocks differently.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it: the re-review panel of 2026-11-06 under the exposure rules found no

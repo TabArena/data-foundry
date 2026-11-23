@@ -81,6 +81,30 @@ CC (2026-11-17, Andrej): the declared split (temporal on `file_position`, window
 
 CC (2026-11-18, Andrej): nine windows of 292 wines in place of 295 (Review issue 5, B; full-information split check): the oldest window trained on 49.6% after the 49 near-copies were dropped; at 292 every train side holds 50.1% or more.
 
+CC (2026-11-23, Andrej): the file order is signed off as the order of entry, a judgement call. The release holds
+nothing dated to check the rebuilt order against, so it rests on evidence only a time order explains, as the rule on
+a rebuilt order allows where no anchor exists.
+
+- **What the data leave:** of the six readings weighed (order of entry in the certification body's iLab system; a
+  producer's request entered together within it; sorted by producer; sorted by a file column; sorted by a dropped
+  attribute such as grape or brand; shuffled), only the first two survive. A shuffle and a sort by a file column go
+  because no column is sorted and neighbouring rows are alike. A sort by producer goes because both colour files
+  change their density recording in the same stretches and drift alike, which a producer sort would scatter, and
+  because training on earlier wines alone predicts worse than training on wines from both sides, while under a
+  producer sort both sides would be equally new.
+
+  | Evidence | Measurement |
+  |---|---|
+  | Density written with 5 decimals, in the same stretches of both colour files | a burst at 12-20% of each file, almost none at 33-46%, about 82% from 46% on |
+  | Mean grade per tenth, correlation between the colours | r = 0.78; at most 0.48 for any shifted pairing |
+  | Position explains a column's variance | up to 31% |
+  | Repeated rows near their copy | within 17 rows: 240 of 240 red, 925 of 937 white |
+  | Training side, same test wines at equal size (untuned LightGBM, MAE, lower is better) | random 0.528, both sides 0.535, earlier only 0.546 |
+
+- **The assumption accepted:** `file_position` is a row's share of its own colour file, so putting both colours on
+  one axis assumes both were entered at a steady pace over the same period, May 2004 to February 2007.
+- **What would overturn it:** CVRVV sample numbers, or dates that show another order.
+
 ## Review
 
 **Outcome:** added. Red and white Vinho Verde wines certified by the CVRVV between May 2004 and February 2007 (Cortez
