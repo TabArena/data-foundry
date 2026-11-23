@@ -83,6 +83,8 @@ CC (2026-11-18, Andrej): Review issue 7, A, as implemented: Grouped 3-fold CV, o
 
 CC (2026-11-18, Andrej): "Do both by family" (blind split walk, cross-dataset item on the two algorithm-selection sets, b): the split holds out whole problem families instead of class folders: `problem_family` replaces `task_id`, the class folder with the folders of one generator merged (the 15 problems of the 2007 competition stored twice, HamiltonClumpy's five folders, RLP-150/200, plain and verbose searchTest): 96 folders, 75 families, 25 per test fold, 10 x 3. Why: grouped on the folders, 19% of the test instances (4-45% per fold) had their generator in training. The `UnseenGroup` tag and the grouped 3-fold CV of review issues 6 and 7 stay, now over families. Not built yet.
 
+CC (2026-11-23, Andrej): Review issue 2, B: 10 x 3 splits, counted in the instances PAR10 scores. The split count in scored units (SPLIT-33) is on main (#95), and the protocol reaches it from the data: one runtime per run, so the families do not count; PAR10 scores per instance; each instance's 11 runs sit inside one family. The 1,212 instances leave 694-878 on the train side, below 2,500, so 10 x 3 (the 13,332 runs would give 3 x 3, the 75 families 20 x 3). Supersedes the row count of the CC of 2026-11-12. Not built yet.
+
 ## Review
 
 **Outcome:** added. ASlib's ASP-POTASSCO scenario (Hoos, Lindauer and Schaub 2014; Bischl et al. 2016): 1,212
@@ -103,7 +105,7 @@ class shares (-), a label that scores a pick 0.05 s slower as wrong as a timeout
 
 **Main points:** Resolved: runtime regression scored by PAR10 (1), timeouts at the recorded 600 s (3), the log
 scale (4); scored per instance, with a note on the large problem classes (5, Lennart, 2026-11-08). The split count
-(2) is open again, settled with rule SPLIT-33. Tagged `UnseenGroup` (6); the class-grouped split kept over ASlib's
+(2): 10 x 3, counted in instances under SPLIT-33 (Andrej, 2026-11-23). Tagged `UnseenGroup` (6); the class-grouped split kept over ASlib's
 instance folds (7), then grouped by problem family, 75 families, 10 x 3 (2026-11-18, not built). The rename (no longer
 `_classification`) is still to do.
 
@@ -262,6 +264,11 @@ call, and its reason ("the 11 runtimes are not shipped") describes our choice, n
 
    * **Recommendation:** B, with the rule; Andrej chose it on 2026-11-06, before the count left #79. **Decision:** A
      or B?
+
+   **Resolved (2026-11-23, Andrej):** B, 10 x 3, counted in instances. SPLIT-33 is on main (#95) and decides it from
+   the data: the runtime is per run, so the families do not count; PAR10 scores per instance, and each instance's runs
+   sit inside one of the 75 families, so the instances count. 1,212 instances leave 694-878 on the train side, below
+   2,500. Not built yet.
 
 3. **Count a timed-out run as the 600 s limit in the target, or as the 6,000 s that PAR10 charges for it?**
 
