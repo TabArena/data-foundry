@@ -76,7 +76,11 @@ question no answer fits: only a reviewer adds a branch.
   length**: how much time a window covers; a forecaster's "horizon" is the planning lead, which sets the gap.
 * **Contain** for what the data has; **hold out** only for what the split keeps out of training.
 * **Rebuilt order**: an order the release does not record but the data allows (an id issued in sequence, the file's
-  row order), checked against something dated and recorded as `Time: Inferred`.
+  row order), **checked** and recorded as `Time: Inferred`. The check is never against the order itself: against
+  something dated independent of it where the data or its surroundings hold any — a second column that is dated, a
+  dated subset from a linked release, dated facts outside the file, a quantity that counts calendar time (an age, a
+  business age) — else against evidence only a time order explains (renewals that link one period to the next, items
+  that appear or retire along it), which makes the order a judgement call named in `splits_comment`.
 * **Hint**: a collection fact (`Samples:`, `Time:`, `Target:`, `Entities:`) points to where to look; it never answers
   a question by itself.
 * **Prediction point**: when the model is used for a case; `Samples: One Moment` means every case shares one.
@@ -224,8 +228,8 @@ later patients at the same clinic)_
   **Do the raw rows record a date per patient?** [CLI.dated] _(data and documentation; reads the release: an admission,
   entry or visit date in the raw rows, not one rebuilt from the data)_
   - yes → **Dated event log** (the record's type changes, SPLIT-34)
-  - no → **Order and windows step** (time key: an order rebuilt from case numbers, encounter numbers or deposit batches
-    and checked against something dated; here: diabetes_130_us, framingham_heart_study_fhs,
+  - no → **Order and windows step** (time key: an order rebuilt from case numbers, encounter numbers or deposit
+    batches and checked as a rebuilt order asks; here: diabetes_130_us, framingham_heart_study_fhs,
     regensburg_pediatric_appendicitis)
 
 ## Survey
@@ -365,11 +369,13 @@ or a follow-up that closes after the record → later)_
 Reached when the model predicts later cases, rounds, periods or occasions. The link names the time key; the gap
 follows the gap rules.
 
-**Is an order of arrival recorded, or can it be rebuilt from the data and checked against something dated?**
+**Is an order of arrival recorded, or can it be rebuilt from the data and checked?**
 [ORDER.order] _(data and documentation; reads the time key the link names, and SPLIT-22: an order the release does not
 record but the data allows (an id issued in sequence, the export's row order, case or encounter numbers, a recovered
-survey round), checked against something dated and recorded as `Time: Inferred`. The order is lost, or every case is
-predicted at one point (a cohort scored at one baseline exam, hint: `Samples: One Moment`) → no)_
+survey round), checked as the rebuilt order asks and recorded as `Time: Inferred`. A rebuilt order is never checked
+against itself: against something dated independent of it where there is any, else against evidence only a time order
+explains, which makes it a judgement call. The order is lost, nothing checks it, or every case is predicted at one
+point (a cohort scored at one baseline exam, hint: `Samples: One Moment`) → no)_
 - no: the order is lost, or every case is predicted at one point → **Forced step**
 - yes →
   **Can the order hold at least three test windows of the use case's size?** [ORDER.windows] _(data and
