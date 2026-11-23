@@ -17,7 +17,7 @@ import re
 from dataclasses import dataclass
 from typing import ClassVar
 
-from data_foundry.schema import FORCED_TIME_TAGS, GROUP_BASIS_TAGS, TIME_BASIS_TAGS
+from data_foundry.schema import FORCED_TIME_TAGS, GROUP_BASIS_TAGS, RENAMED_TAGS, TIME_BASIS_TAGS, current_tag
 
 ALLOW_UNSTRUCTURED = True
 """Whether a definition may still name its time basis the old way: a forced tag in ``data_tags`` and a free-text
@@ -30,7 +30,8 @@ OLD_WAY_TOLERATED = frozenset({"meta_time_basis_mismatch", "meta_time_basis_line
 rendered form (a line that names a tag the definition does not list yet, two lines)."""
 
 BASIS_TAGS = (*TIME_BASIS_TAGS, *FORCED_TIME_TAGS)
-"""Every tag a :class:`TimeBasis` may carry: a use-case prototype or a forced tag; a split has one at most."""
+"""Every tag a :class:`TimeBasis` may carry: a use-case prototype or a forced tag; a split has one at most. An old
+name (:data:`~data_foundry.schema.RENAMED_TAGS`) is read as its new one."""
 
 HUMAN_SET_TIME_TAGS = ("StationaryRelation", "AssumedStationaryRelation")
 """Prototypes only a person sets (SPLIT-32): an AI may offer one with the facts for and against (for
@@ -84,7 +85,7 @@ class TimeBasis:
     """Why a definition's split is not temporal (SPLIT-32), or why a forward use case ships a forced split (SPLIT-8).
 
     Attributes:
-        tag: A use-case prototype (``Timeless``, ``Retrospective``, ``StationaryRelation``,
+        tag: A use-case prototype (``Timeless``, ``RetrospectiveFillIn``, ``StationaryRelation``,
             ``AssumedStationaryRelation``, ``UnseenGroup``) or a forced tag (``ForcedIIDFromTemporal``,
             ``ForcedGroupedFromTemporal``).
         reason: The fact behind it, ending with what the split cannot test; for a forced tag the reason (time lost,
@@ -110,7 +111,7 @@ class TimeBasis:
     def problems(self) -> list[str]:
         """What is wrong with the declaration itself, before the split is looked at."""
         found = []
-        if self.tag not in BASIS_TAGS:
+        if current_tag(self.tag) not in BASIS_TAGS:
             found.append(f"`{self.tag}` is no time basis; one of {list(BASIS_TAGS)}")
         if not " ".join((self.reason or "").split()):
             found.append("the reason is empty")
@@ -171,8 +172,10 @@ class Line:
     """A ``Time basis:`` bullet read back from ``curation_comments``.
 
     Attributes:
-        head: The word before the first colon (``Retrospective``, or an old free-text line's first word), or None.
-        tag: ``head`` when it is a time basis tag, else None (a free-text line of the old way).
+        head: The word before the first colon (``RetrospectiveFillIn``, or an old free-text line's first word), or
+            None.
+        tag: ``head`` when it is a time basis tag, under its current name, else None (a free-text line of the old
+            way).
         set_by: The person in the brackets after the tag, or None.
         on: The date in the brackets, or None.
         note: The note after the date in the brackets, or None.
@@ -200,7 +203,7 @@ def parse(comments: str | None) -> Line | None:
         return None
     body = " ".join(found[0].split())
     m = _HEAD.match(body)
-    if m is None or m["head"] not in BASIS_TAGS:
+    if m is None or current_tag(m["head"]) not in BASIS_TAGS:
         head = m["head"] if m is not None and m["inside"] is None and len(m["head"]) > 1 else None
         return Line(head=head, tag=None, set_by=None, on=None, reason=body)
     inside = _RULE_ID.sub("", m["inside"] or "").strip()
@@ -209,7 +212,7 @@ def parse(comments: str | None) -> Line | None:
         who, on, note = attribution["who"].strip(), attribution["on"], (attribution["note"] or "").strip() or None
     else:
         who, on, note = inside or None, None, None
-    return Line(head=m["head"], tag=m["head"], set_by=who, on=on, reason=m["rest"].strip(), note=note)
+    return Line(head=m["head"], tag=current_tag(m["head"]), set_by=who, on=on, reason=m["rest"].strip(), note=note)
 
 
 def problems(tags: list[str], comments: str | None, *, temporal: bool, grouped: bool) -> list[Problem]:
@@ -221,9 +224,14 @@ def problems(tags: list[str], comments: str | None, *, temporal: bool, grouped: 
         temporal: Whether the split is temporal.
         grouped: Whether the split holds out groups (a ``grouping``).
     """
-    basis = [t for t in dict.fromkeys(tags) if t in BASIS_TAGS]
+    basis = [current_tag(t) for t in dict.fromkeys(tags) if current_tag(t) in BASIS_TAGS]
     group = [t for t in dict.fromkeys(tags) if t in GROUP_BASIS_TAGS]
-    found = _split_problems(basis, group, temporal=temporal, grouped=grouped)
+    found = [
+        ("meta_time_basis_renamed", "info", f"`{old}` is the old name of `{new}`: declare `TimeBasis({new!r}, ...)`.")
+        for old, new in RENAMED_TAGS.items()
+        if old in tags
+    ]
+    found += _split_problems(basis, group, temporal=temporal, grouped=grouped)
     found += _line_problems(basis, group, comments)
     if not temporal and not basis and parse(comments) is None:
         message = "The split is not temporal and the definition does not say why."
