@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: online_shoppers_purchasing_intention_dataset
 container_format: 2
-checksum: v2:8a4766a0d6ea485455433e67855c92cbacfbfa6a90d65b904bb9999ac88a7d2e
+checksum: v2:62c643e0c8daddd5f56bb2f12e43edff2aab6de1f2f3ebd674e7a9f0ff3b9dab
 build:
   uuid: 01a111fc-b5f1-748b-a755-99b0a7c15a25
   checksum: v2:97076c1ab7ef8a7b53470378967dcdb5fc10d5358da47b31dbcde92a3b9a5ec2
@@ -86,7 +86,7 @@ decisions: []
 
 Binary classification of `Revenue`, scored with `roc_auc` on grouped splits by `Month`. 6,875 rows and 15 features. Source: UCI (2018).
 
-Built as `01a111fc-b5f1-748b-a755-99b0a7c15a25` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8a4766a0d6ea485455433e67855c92cbacfbfa6a90d65b904bb9999ac88a7d2e`, so the build is stale. See [Build](#build).
+Built as `01a111fc-b5f1-748b-a755-99b0a7c15a25` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:62c643e0c8daddd5f56bb2f12e43edff2aab6de1f2f3ebd674e7a9f0ff3b9dab`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -209,10 +209,6 @@ The first 5 of 6,875 rows of the final frame (random rows: the frame is shuffled
 - Anomaly: the data contains time-based features that were preprocessed to create a time-invariant predictive task.
 - We keep only the sessions from June to December (6,875 of 12,330). "PageValues" is meant as a historical Google Analytics metric per page, stored and updated at regular intervals, averaged over the pages a session visits (Sakar et al. 2019, Sec. 2.1). In February, March and May, however, every one of the 560 buyers has PageValues > 0 and PageValues alone separates buyers with ROC AUC 0.974, so these values most likely include the session's own purchase (the page-value table was probably computed over that period). From June on, 27% of buyers have PageValues = 0 and its AUC is 0.814, as expected for a historical page metric. We keep PageValues and drop the early months; this cannot be proven from the data, as a change in site tracking would leave a similar pattern.
 - We drop "SpecialDay": it is non-zero only in February and May, so it is constant on the kept months.
-- Time basis: ForcedGroupedFromTemporal (SPLIT-8; Andrej, 2026-11-19): the visits carry their month but no
-  year; the stationary-relation test reads not flat (November: LightGBM +0.054 ± 0.007, Kumo-Tabular +0.039
-  ± 0.004 ROC AUC, floors 0.003-0.004; the purchase share moves from 10% in June to 25% in November), so whole
-  months are held out, each once.
 - Leave one month out (Andrej, 2026-11-19: "Leave one month out, but this would still be ForcedGrouped"), in
   place of 3 x 3 random folds: only December can train on half the visits in time order and the file order
   within a month is not the order of days, so three time windows do not exist. `Month` is the group column and
@@ -226,6 +222,7 @@ The first 5 of 6,875 rows of the final frame (random rows: the frame is shuffled
   categories in the order of the source's codebook (`ORDINAL_LEVELS`).
 - The target (2026-11-01, CLEAN-25): `Revenue` ships its classes as words (True means revenue). Binary: "Yes" is
   the event, the class that sorts second, so it is the metrics' positive class.
+- Time basis: ForcedGroupedFromTemporal (Andrej, 2026-11-19): the visits carry their month but no year; the stationary-relation test reads not flat (November: LightGBM +0.054 ± 0.007, Kumo-Tabular +0.039 ± 0.004 ROC AUC, floors 0.003-0.004; the purchase share moves from 10% in June to 25% in November), so whole months are held out, each once. The test months are unseen, not later: each fold also trains on the months after its test month. That does not raise the score: for August to December, at the same training size, training on the other months, earlier and later, scores below training on the earlier months alone (mean over the five months -0.005 ROC AUC for LightGBM, -0.009 random forest, -0.014 logistic regression, -0.015 TabPFN; 10 draws each); only November gains from later months (+0.004 to +0.010).
 
 ## Splits
 
@@ -384,4 +381,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8a4766a0d6ea485455433e67855c92cbacfbfa6a90d65b904bb9999ac88a7d2e` |
+| stale | yes: the definition now gives checksum `v2:62c643e0c8daddd5f56bb2f12e43edff2aab6de1f2f3ebd674e7a9f0ff3b9dab` |

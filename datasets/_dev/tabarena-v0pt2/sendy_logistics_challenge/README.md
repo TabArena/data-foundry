@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sendy_logistics_challenge
 container_format: 2
-checksum: v2:9764d9c1c9c7b4d24adfc76315a1133f3610c5d34c751b2b70e45cfd6caf6ef6
+checksum: v2:200c7583887ed9bba0549100b56006665b9bccbe0048a375b3cc32014e3c8e4f
 build:
   uuid: 01a18a16-1f77-7fc2-b293-c8d8ca2eeefc
   checksum: v2:de47fa29784e3225f35fd7700d297905b233fab9369501a4d222bcca2baad69f
@@ -64,12 +64,18 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - task_group_count_low
-  - groups_test_groups_few
-  - groups_largest_share_high
+  warnings: []
   infos: []
-  accepted: {}
+  accepted:
+    task_group_count_low: 'Decided (Andrej, 2026-11-23): the seven month classes are
+      the finest period the release gives (no month or year), so no more groups exist.'
+    groups_test_groups_few: 'Decided (Andrej, 2026-11-23): each test fold holds two
+      or three whole month classes, all seven classes split three ways; each fold
+      still scores 3,775 to 8,394 orders.'
+    groups_largest_share_high: 'Decided (Andrej, 2026-11-23): the largest class, 4,632
+      of the 20,461 orders (22.6%), is a real class of months that started on the
+      same weekday, not a catch-all value; with it in the test fold the model trains
+      on 59.5% to 63.2% of the orders.'
 decisions:
 - Pickup legs of 60 s or less dropped
 ---
@@ -80,7 +86,7 @@ decisions:
 
 Regression of `Time from Pickup to Arrival`, scored with `rmse` on grouped splits by `month_class`. 20,461 rows and 19 features. Source: Zindi (2019).
 
-Built as `01a18a16-1f77-7fc2-b293-c8d8ca2eeefc` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:9764d9c1c9c7b4d24adfc76315a1133f3610c5d34c751b2b70e45cfd6caf6ef6`, so the build is stale. See [Build](#build).
+Built as `01a18a16-1f77-7fc2-b293-c8d8ca2eeefc` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:200c7583887ed9bba0549100b56006665b9bccbe0048a375b3cc32014e3c8e4f`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -141,7 +147,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2019 |
 | domain | business & marketing |
 | license | Zindi competition terms; no standalone open-data licence specified |
-| data_tags | Non-IID, Grouped, ForcedGroupedFromTemporal, Anonymized, Spatial |
+| data_tags | Non-IID, Grouped, Anonymized, Spatial, ForcedGroupedFromTemporal |
 | reference | sendy2019logistics |
 | rows x columns | 20,461 x 21 |
 | task.target | Time from Pickup to Arrival |
@@ -263,15 +269,8 @@ We start with Train.csv of the Zindi Sendy Logistics Challenge (21,201 labelled 
   so a blank where a temperature exists most likely means no rain; every row without a temperature also
   lacks precipitation.
 - Metric: the source's RMSE in seconds, with no target transform.
-- Time basis: ForcedGroupedFromTemporal (SPLIT-8; Andrej, 2026-11-19, decision B; `ForcedIIDFromTemporal`
-  before): the use case predicts orders of later months from a model fit on earlier ones, but the release
-  has the day of the month and the weekday and no month or year. The stationary-relation test reads not flat
-  (v3 pooled +4.6 ± 1.1 s RMSE for LightGBM and +4.0 ± 0.8 s for Kumo-Tabular against floors of 2.2-2.5 s);
-  whole month classes are held out; the classes are not in time order (a class mixes months from across the
-  year). `month_class` = (placement weekday - placement day of month) mod 7, the weekday the month started
-  on (0 = Monday), built in `_clean` as the group key only (no input): seven classes of 1,109 to 4,632
-  orders.
 - Test.csv's 7,068 orders (per the 2026-10-29 audit) have no labels and are not used.
+- Time basis: ForcedGroupedFromTemporal (Andrej, 2026-11-19; decision B; `ForcedIIDFromTemporal` before): the use case predicts orders of later months from a model fit on earlier ones, but the release has the day of the month and the weekday and no month or year. The stationary-relation test reads not flat (v3 pooled +4.6 ± 1.1 s RMSE for LightGBM and +4.0 ± 0.8 s for Kumo-Tabular against floors of 2.2-2.5 s); whole month classes are held out; the classes are not in time order (a class mixes months from across the year). `month_class` = (placement weekday - placement day of month) mod 7, the weekday the month started on (0 = Monday), built in `_clean` as the group key only (no input): seven classes of 1,109 to 4,632 orders. The test classes are unseen months, not later ones: each fold also trains on months after its test months, and since the classes have no order, what that adds to the score cannot be measured.
 
 ## Splits
 
@@ -356,11 +355,14 @@ The rider marked the pickup at the destination (the winners' page), so the custo
 
 ## Bundle checks
 
-0 error(s), 3 warning(s), 0 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `task_group_count_low`: `group_on='month_class'` yields only 7 groups. (hint: Few groups make grouped CV coarse and high-variance.)
-- **warning** `groups_test_groups_few`: A test fold holds 2 groups (2-3 per fold, 7 groups in all): a score per group rests on few independent units, and a score per row on not many more. (hint: Keep the dataset only if its signal across groups is real (`.claude/skills/knowledge-data-foundry/scripts/group_probes.py`), and accept the warning with that reason.)
-- **warning** `groups_largest_share_high`: The largest group holds 23% of the rows; it dominates every score that counts rows and the fold it lands in. (hint: Check whether the group is real (one entity) or a catch-all value such as 'unknown'.)
+
+Accepted on purpose:
+
+- `task_group_count_low`: Decided (Andrej, 2026-11-23): the seven month classes are the finest period the release gives (no month or year), so no more groups exist.
+- `groups_test_groups_few`: Decided (Andrej, 2026-11-23): each test fold holds two or three whole month classes, all seven classes split three ways; each fold still scores 3,775 to 8,394 orders.
+- `groups_largest_share_high`: Decided (Andrej, 2026-11-23): the largest class, 4,632 of the 20,461 orders (22.6%), is a real class of months that started on the same weekday, not a catch-all value; with it in the test fold the model trains on 59.5% to 63.2% of the orders.
 
 ## Data checks
 
@@ -465,4 +467,4 @@ The rider marked the pickup at the destination (the winners' page), so the custo
 | data_foundry_version | 0.0.5 |
 | git_sha | b58e9ac9185941edb42d19f681fe534aad8ec734 |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:9764d9c1c9c7b4d24adfc76315a1133f3610c5d34c751b2b70e45cfd6caf6ef6` |
+| stale | yes: the definition now gives checksum `v2:200c7583887ed9bba0549100b56006665b9bccbe0048a375b3cc32014e3c8e4f` |

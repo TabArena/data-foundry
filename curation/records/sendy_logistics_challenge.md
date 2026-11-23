@@ -102,6 +102,11 @@ are unseen, not later. The classes have no order, so what that adds to the score
 `Time basis:` line now says so. On online_shoppers, the one month-group dataset where it can be measured, training on
 later months did not raise the score (mean over five test months -0.005 to -0.015 ROC AUC across four models).
 
+CC (2026-11-23, Andrej): the three `dataset check` warnings of the month classes are accepted with reasons
+(`task_group_count_low`, `groups_test_groups_few`, `groups_largest_share_high`): the seven classes are the finest
+period the release gives, each fold still tests two or three whole classes, and the largest class (4,632 orders,
+22.6%) is a real class of months.
+
 ## Review
 
 **Outcome:** added. Sendy's labelled Nairobi express orders from the Zindi challenge (20,461 of 21,201 after the

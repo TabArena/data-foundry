@@ -219,6 +219,21 @@ class SendyLogisticsChallenge(AbstractCuratedDataset):
         against 0.731% on Train alone), so it holds no chronology. If a later release supplies full dates, build
         chronological windows.
     """
+    accepted_check_warnings = {
+        "task_group_count_low": (
+            "Decided (Andrej, 2026-11-23): the seven month classes are the finest period the release gives (no month "
+            "or year), so no more groups exist."
+        ),
+        "groups_test_groups_few": (
+            "Decided (Andrej, 2026-11-23): each test fold holds two or three whole month classes, all seven classes "
+            "split three ways; each fold still scores 3,775 to 8,394 orders."
+        ),
+        "groups_largest_share_high": (
+            "Decided (Andrej, 2026-11-23): the largest class, 4,632 of the 20,461 orders (22.6%), is a real class of "
+            "months that started on the same weekday, not a catch-all value; with it in the test fold the model trains "
+            "on 59.5% to 63.2% of the orders."
+        ),
+    }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         return pd.read_csv(raw_dir / "Train.csv")
