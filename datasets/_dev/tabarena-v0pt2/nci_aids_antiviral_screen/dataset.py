@@ -15,6 +15,7 @@ from data_foundry.v2 import (
     Smiles,
     Source,
     TaskSummary,
+    TimeBasis,
     canonical_smiles,
     scaffold_groups,
 )
@@ -159,6 +160,15 @@ class NciAidsAntiviralScreen(AbstractCuratedDataset):
         - Note: MoleculeNet's HIV.csv (41,127 compounds: 404 CA, 1,039 CM, 39,684 CI) is this SD file read by an older RDKit, salts and the stereo of the coordinates kept, and it carries the charge-code artefact repaired here: 413 `[NaH]`, 24 `[KH]` and 254 `[PH]` against 16 `[Na+]`, 11 `[K+]` and 56 `[P+]` (PROV-15, a problem of that copy; another collection's version is no reason to keep ours damaged, EV-4). So after the repair our structures differ from MoleculeNet's, and from OGB's `ogbg-molhiv` built on it, on the 690 compounds the repair touched: 40,385 of MoleculeNet's 41,116 InChIKey skeletons are among ours, where 41,077 were before the repair. Its conclusions agree with ours for 40,311 of the 40,343 stereo-free SMILES both hold; the other 32 are structures entered here under several NSC numbers with different conclusions, of which MoleculeNet kept one.
         - Licence: the DTP page states no terms.
     """
+    time_basis = TimeBasis(
+        "UnseenGroup",
+        """
+        the use case screens compounds not tested yet, which whole scaffolds held out stand for. The screen's conclusion for a compound is a property of the compound, and the only order the source keeps, the NSC registration number, is not when a compound entered the screen (about a quarter were registered long before it began). A forward split on that order leaves 8.4% of the test compounds a close training analog against 9.8% for a random draw of the same size and 4.3% scaffold-disjoint (splits comment), so it carries no wave of arrivals the scaffold split misses. The split cannot test a chemical class the screen received only later.
+        """,
+        set_by="Andrej",
+        on="2026-11-13",
+        note="`Timeless` before, Andrej, 2026-11-12, review of how cuts of growing catalogues split",
+    )
 
     # Task
     target = "active_in_screen"
@@ -194,6 +204,17 @@ class NciAidsAntiviralScreen(AbstractCuratedDataset):
         The split still leaves the test compounds close to the training ones: 78.1% of the test compounds of repeat 0 have a training compound above Tanimoto 0.4 (87.7% of the actives), the median nearest is 0.517, and 15.5% have one at 0.7 or more (Morgan radius 2, 2,048 bits, on the structure without its salts). Lo-Hi (Steshin 2023, arXiv 2310.06399, Sec. 5.2) measured the same on MoleculeNet's cut of this screen, "56% of HIV test molecules have a train neighbor with a Tanimoto similarity > 0.4", and concludes it is unsuitable for hit identification. So the scores stand for a compound of a series that has not been tested; finding a chemical class nobody has seen is a harder task than this split measures.
 
         Potential leak, kept on purpose: the NSC number counts the compounds in the order they were registered, so neighbouring numbers are usually analogs submitted together. For two consecutive NSC numbers P(the next compound is active | this one is active) is 0.343 against a base rate of 0.034, and still 0.283 when the two sit in different scaffold groups; 81.9% of the test compounds of repeat 0 have a training compound within 5 NSC numbers, 7.5% one that is also a close analog (10.0% of the actives). The batch stays out of the group key because the NSC number is not shipped (the one feature column is the structure), so no model can recognise a submission batch; the only channel is structural resemblance, which the series grouping already holds out. Holding the batches out as well (the series key plus every pair of consecutive NSC numbers that is also a close analog) moves ROC AUC from 0.802 to 0.800, inside the 0.012 to 0.025 standard deviation over the folds (untuned LightGBM on the recommended encoding over the nine splits, 2026-11-02); a looser batch key (NSC numbers within 2 at Tanimoto 0.5 or more) gives 0.787 with a fold spread of 0.020, and makes the folds uneven (11,547 to 17,917 test compounds). sarcoma discloses its tissue source site the same way instead of grouping on it. Revisit if a release ships the NSC number or another submission key as a column.
+
+        Split by registration order, measured and not taken (Andrej, 2026-11-11): the NSC number is the NCI's registration order, so it looked like a time index for a screening use case. It is not the order compounds entered the screen: the numbers run from 48 to 706,805 and about a quarter of the compounds sit below 609,000, registered into the repository long before the screen began, and no public table maps NSC numbers to dates. Four windows from the highest numbers down, each trained on every lower number (training sides 50.0%, 62.5%, 75.0% and 87.5%; 184 to 257 actives each), against the same test compounds drawn scaffold-disjoint and at random from all other numbers; untuned LightGBM and random forest on the recommended encoding, ROC AUC for confirmed active (CA or CM) against inactive, means over the four windows:
+
+        | Scheme | ROC AUC, LightGBM / RF | Close training analog | Test scaffold in training |
+        |---|---|---|---|
+        | By registration order | 0.749 / 0.774 | 8.4% | 32.5% |
+        | Scaffold-disjoint | 0.717 / 0.739 | 4.3% | 0 |
+        | Random | 0.762 / 0.770 | 9.8% | 34.9% |
+        | The shipped scaffold folds | 0.786 / 0.796 | 15.4% | 0 |
+
+        A forward split on this order leaves a third of the test compounds a training compound of their own series and scores close to a random split, so it would follow an order the screen never ran in while holding out less than the series grouping does; the newest window cannot be compared at all, since nothing is registered after it. The record's `Time:` fact was corrected to `Inferred` at the same time, since an order survives and no calendar.
     """
 
     special_features = (Smiles(column="SMILES"),)

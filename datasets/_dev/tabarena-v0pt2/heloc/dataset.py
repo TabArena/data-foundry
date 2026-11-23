@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode, set_missing
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+    decode,
+    set_missing,
+)
 
 # The ordinal scales, lowest level first, from the FICO data dictionary (curation notes; the README lists them):
 # the worst delinquency, from a derogatory comment to current and never delinquent.
@@ -127,6 +136,18 @@ class Heloc(AbstractCuratedDataset):
           each level is carries the words, a score without them is a number): 2 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order.
     """
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        HELOC applications of an unnamed lender over a period FICO does not state,
+        each account followed for 24 months; the release keeps no date and its order is the assembly of a balanced
+        sample (training on the first 80% of the file scores the last 20% at ROC AUC 0.819 against 0.794 to 0.815 on
+        random splits), so random applications stand in for the applications to come. A dated release would allow a
+        split by application date. Not taken as stationary (Andrej, 2026-11-18): HELOC default is tied to house prices
+        and rates, the period is unknown, and the sample is constructed; the file-order check is not a time
+        measurement and 'no drift seen' is no reason.
+        """,
+    )
     accepted_check_warnings = {
         "meta_license_unknown": ("The Kaggle copy we download gives its licence as 'Unknown' (checked 2026-11-10)."),
     }

@@ -47,7 +47,7 @@ spare parts, a benchmark for intermittent-demand forecasting, with no column bes
   index (https://raw.githubusercontent.com/canerturkmen/gluon-ts/intermittent-datasets/datasets/intermittent_auto/metadata/metadata.json),
   so the only task is forecasting each series from its own past.
 
-CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
+CC (2026-10-30, Andrej): `No`, as screened (verified in the zero-inflated screening).
 
 Monthly demand of 3,000 automotive stock-keeping units over 24 months, attributed to Syntetos and Boylan (2005), in
 the GluonTS fork of Turkmen et al. (2021). Downloaded on 2026-10-19: 3,000 series x 24 months, 22.0% exact zeros, no

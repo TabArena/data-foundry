@@ -196,13 +196,28 @@ We start with the UCI copy (878) of the Mayo Clinic PBC data (Fleming and Harrin
 - We drop ID, and N_Days and Status, which define the label.
 - The other columns are the baseline values taken at registration (the follow-up visits are in the separate pbcseq file), so all stay. The 66 patients outside the trial have no drug, ascites, hepatomegaly, spiders, copper, alkaline phosphatase or SGOT; these stay missing.
 - Until 2026-10-14 the task regressed the log time to death over the 161 patients who died. That is right truncation: a patient registered in 1982-84 entered only with a death within about 3 years (median 1.86 years, against 3.98 for 1974-76), so the label partly measured the calendar window.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+- Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
   categories in the order of the source's codebook (`ORDINAL_LEVELS`).
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 1 scores with no words per level are
   numbers (`SCORES`): `Stage`.
 - The target (2026-11-01, CLEAN-25): `death_or_transplant_within_5y` ships its classes as words (1 is the
   event). Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
+- Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-19): three windows of 50 referrals
+  could be built on the registration order, but the curator keeps the 60 random folds. The stationary-relation
+  test (2026-11-18, two-year periods) is inconclusive for 1976-77 (LightGBM -0.011 ± 0.021 ROC AUC, Kumo-Tabular
+  -0.006 ± 0.022) and flat for 1978-79 and 1980-81 (Kumo-Tabular); pooled, Kumo-Tabular reads flat (-0.007 ±
+  0.011, floor 0.004). Earlier reading (2026-11-12): the IDs follow registration within the trial and within the other patients,
+  and the censored patients' follow-up dates them (1974 to mid-1981). Measured along that order (2026-11-12):
+  the event rate shows no trend (34%, 40%, 34% and 35% by two-year period); the outcome is not autocorrelated
+  (lag-1 -0.05, permutation p 0.39; in the trial's exact ID order -0.11, p 0.08), nor is what the findings
+  miss (-0.08, p 0.15); only age alternates slightly in the trial (-0.16, p 0.015, one of 18 tests) and does
+  not reach the outcome; the event rate of the 10 nearest patients adds nothing (logistic regression ROC AUC
+  0.895 without it, 0.892 with it, 3 x 20 folds). The newest of three windows of 50 patients scores 0.921
+  against 0.861 on random folds (untuned LightGBM; logistic regression 0.846 against 0.874), with no gain
+  from later patients at equal training size. So random patients lose no realism and keep 60 folds
+  (2026-11-12, Andrej). The random split cannot test patients referred after mid-1981, nor
+  a change of referrals or treatment.
 
 ## Splits
 

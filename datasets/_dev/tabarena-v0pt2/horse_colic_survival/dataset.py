@@ -13,6 +13,7 @@ from data_foundry.v2 import (
     Metric,
     Source,
     TaskSummary,
+    TimeBasis,
     decode,
     set_missing,
 )
@@ -89,7 +90,7 @@ class HorseColicSurvival(AbstractCuratedDataset):
         ),
         split=(
             "Random horses, 20 times 3 folds, with all visits of one horse on the same side: along the case-number "
-            "order, the only time order the data has, survival and its relation to the examination stay flat."
+            "order, the only time order the data has, the relation of survival to the examination measures stable."
         ),
         changes=(
             "We merge died and euthanized into did not survive, drop whether the horse had surgery and the lesion "
@@ -136,7 +137,7 @@ class HorseColicSurvival(AbstractCuratedDataset):
         - We drop features that leak the target.
         - We keep the first row per hospital number. The 22 repeated hospital numbers are one visit with several lesion
           codes (one pair with conflicting outcomes), not repeat visits; the first row is kept (corrected 2026-11-10).
-        - Target (2026-11-10, Andrej, review issue 1 B): `did_not_survive`, "Yes" when the horse died or was
+        - Target (2026-11-10, Andrej): `did_not_survive`, "Yes" when the horse died or was
           euthanized (129 of 344), "No" when it lived, the usual survival-to-discharge outcome of colic prognosis
           (Bishop et al. 2022, Vet Surg 51:891, https://doi.org/10.1111/vsu.13839). Died against euthanized follows the
           admission period (earlier case numbers 58 died / 14 euthanized among non-survivors, later ones 4 / 34) with
@@ -153,7 +154,7 @@ class HorseColicSurvival(AbstractCuratedDataset):
           was chosen as a solution for cost reasons" (arXiv:1304.2344). UCI's 300/68 files are not a time split (both
           span the whole range of case numbers).
         - We keep the duplicates occurring in the data.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 8 columns are ordered
+        - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 8 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); 8 of them decoded from the source's codes
           into its words (`CODE_LABELS`, 2026-11-01); codes that mean unknown are missing (CLEAN-10).
         - Partial order, left unordered (2026-11-01, CLEAN-14): `pain`: the codebook says it "should NOT be treated as
@@ -164,7 +165,7 @@ class HorseColicSurvival(AbstractCuratedDataset):
           each level is carries the words, a score without them is a number): 8 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order; 5 unordered codes carry their words: `mucous_membranes`, `pain`,
           `abdomen`, `abdominocentesis_appearance`, `age`.
-        - Recording change, harmonised (2026-11-12, Andrej, review issue 7 B, CLEAN-21; replaces the exception of
+        - Recording change, harmonised (2026-11-12, Andrej, CLEAN-21; replaces the exception of
           2026-11-10): `total_protein` is recorded in g/L (values above 15) for 95 horses, 92 of them with case numbers
           above 530,560, and in g/dL for 209; we divide the g/L values by 10, the scale of the codebook (normal 6 to
           7.5 g/dL), as an analyst at the hospital would. In those 95 rows every measured
@@ -175,29 +176,38 @@ class HorseColicSurvival(AbstractCuratedDataset):
           loss 2.126 against 0.761 harmonised, while LightGBM and TabPFN 3.5 did not change beyond noise (2026-11-12).
           Under the source's three classes the unit told died from euthanized (ROC AUC 0.79 alone), which the
           `Class-dependent Recording` marker records.
-        - Case number (2026-11-10, review issue 3; 2026-11-12, Andrej, review issue 6 D): `case_number` is the hospital
+        - Case number (2026-11-10; 2026-11-12, Andrej): `case_number` is the hospital
           number's first six digits (the 42 seven-digit numbers are a six-digit case number with one digit appended, a
           9 for 25 of 28 foals); the frame is sorted by case number, then by the full number. It orders the admissions
           as far as the data shows and is the split's group, no model input. From 2026-11-10 to 2026-11-12 it was the
           time column of three windows of 57 horses and a feature; on those windows' test rows, training on as many
           random horses instead of the earlier ones scored 0.045 log loss better for LightGBM, 0.009 for TabPFN 3.5
           and 0.003 for logistic regression (harmonised recording).
-        - Time basis: StationaryRelation: admissions to one hospital, in the order of their case numbers, which stand
-          in for the missing admission dates (`Time: Inferred`; an inferred order serves the measurement as it would a
-          temporal split). Along it survival is flat (62.2% in the first half, 62.8% in the second, Fisher p = 1.0),
-          and its relation to the examination does not move measurably: each of the 60 horses at positions 200 to 259,
-          trained once on its history and once on as many random horses, scores +0.020 log loss from its history for
-          TabPFN 3.5 (95% interval -0.034 to +0.080), -0.008 for logistic regression and +0.016 for LightGBM, no
-          interval excluding zero (2026-11-12). The recording change is harmonised (above); what remains of it, 55
-          missing cells, is unrelated to survival. The measurement rules out a drift above about 0.08 log loss for
-          TabPFN 3.5 and about 0.2 for LightGBM and logistic regression; the random split cannot test a later change
-          of recording or of practice (2026-11-12, Andrej, review issue 6 D).
-        - Return visits kept (2026-11-10, Andrej, review issue 4 A): nine cases appear two or three times under one
+        - Return visits kept (2026-11-10, Andrej): nine cases appear two or three times under one
           six-digit case number with a suffix (10 later rows; the codebook: "may not be unique if the horse is treated >
           1 time"), all first visits survived. A return visit is an admission to score; the split groups by case, so no
-          fold trains on one visit of a horse and tests another (2026-11-12, review issue 6 D; until then the time
+          fold trains on one visit of a horse and tests another (2026-11-12; until then the time
           order kept each later visit after its first).
     """
+    time_basis = TimeBasis(
+        "StationaryRelation",
+        """
+        admissions to one hospital, in the order of their case numbers, which stand in for
+        the missing admission dates (`Time: Inferred`; an inferred order serves the measurement as it would a
+        temporal split). The stationary-relation test (v3, 2026-11-18, ROC AUC, 5 seeds) on six runs of 57 cases in
+        case-number order, the newest three tested, reads flat pooled: Kumo-Tabular -0.001 ± 0.012, floor 0.003;
+        LightGBM +0.010 ± 0.014; each run alone is inconclusive, and in none does the forward model do clearly worse.
+        The relation is measured stationary for cases held out whole (grouped by case: a horse's return visits stay
+        on one side); random folds over visits would not be covered by it. Earlier evidence: survival is flat along
+        the order (62.2% in the first half, 62.8% in the second, Fisher p = 1.0), and for the 60 horses at positions
+        200 to 259 training on their history instead of as many random horses moved log loss by no interval excluding
+        zero (2026-11-12). The recording change is harmonised (above); what
+        remains of it, 55 missing cells, is unrelated to survival. Not tested: a later change of recording or of
+        practice.
+        """,
+        set_by="Andrej",
+        on="2026-11-20",
+    )
 
     # Task
     target = "did_not_survive"
@@ -220,10 +230,10 @@ class HorseColicSurvival(AbstractCuratedDataset):
     splits_comment = """
         Stratified grouped 20-repeated 3-fold split on `case_number`: the 334 horses (about 111 per test fold), a
         horse's return visits on the side of its first visit. The case number is the only time order (no dates);
-        along it survival and its relation to the examination stay flat (`Time basis: StationaryRelation` in the
-        curation notes), so random horses stand for later admissions. Not tested: a later change of recording or of
-        practice. From 2026-11-10 to 2026-11-12 the split was three windows of 57 horses in case-number order
-        (2026-11-12, Andrej, review issue 6 D, on Lennart's question).
+        along it the relation of survival to the examination measures stationary for horses held out whole (v3 test,
+        2026-11-18; `Time basis: StationaryRelation` in the curation notes), so random horses stand for later
+        admissions; the grouping by case is part of that basis (Andrej, 2026-11-20). Not tested: a later change of recording or of practice. From 2026-11-10 to 2026-11-12 the split was three windows of 57 horses in case-number order
+        (2026-11-12, Andrej, on Lennart's question).
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -269,7 +279,7 @@ class HorseColicSurvival(AbstractCuratedDataset):
         # Only keep non nan outcome rows
         df = df[~df["outcome"].isna()]
         # the case number groups a horse's visits: a seven-digit number is a six-digit case number with a digit appended;
-        # sort by it, then by the full number, so suffixed later visits follow the first visit (review issues 3 and 6)
+        # sort by it, then by the full number, so suffixed later visits follow the first visit
         df["case_number"] = np.where(
             df["hospital_number"] >= 1_000_000, df["hospital_number"] // 10, df["hospital_number"]
         ).astype(int)
@@ -286,7 +296,7 @@ class HorseColicSurvival(AbstractCuratedDataset):
                 "lesion_type_3",
             ]
         )
-        # did not survive: died (2) or euthanized (3), the event "Yes" (review issue 1 B; CLEAN-25)
+        # did not survive: died (2) or euthanized (3), the event "Yes" (CLEAN-25)
         df["did_not_survive"] = df.pop("outcome").map({1: "No", 2: "Yes", 3: "Yes"})
         # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
         # CLEAN-14): don't know, refused, not asked, other
@@ -296,7 +306,7 @@ class HorseColicSurvival(AbstractCuratedDataset):
                 "capillary_refill_time": [3.0],
             },
         )
-        # the second recording route (review issue 7 B; CLEAN-21): `total_protein` above 15 is g/L, put on the
+        # the second recording route (CLEAN-21): `total_protein` above 15 is g/L, put on the
         # codebook's g/dL; the route's 1/2 codes in two measured columns have no stated meaning, so they are missing
         route = df["total_protein"] > 15
         df.loc[route, ["abdominocentesis_total_protein", "nasogastric_reflux_ph"]] = np.nan

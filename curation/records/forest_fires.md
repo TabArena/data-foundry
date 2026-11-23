@@ -12,11 +12,15 @@ decision_markers:
 - No Signal
 tags:
 - Tiny Data
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
 collections:
 - TabArena Reject
 - TabSTAR
 original_source: UCI
 year: '2008'
+collection_period: Jan 2000 - Dec 2003
 domain: environmental science & climate
 required_split:
 - Grouped (NON-IID)
@@ -64,13 +68,13 @@ Cortez P, Morais A. A data mining approach to predict forest fires using meteoro
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
 
 **Assessment (AI, 2026-10-27):** The open questions for the curator are in the folder's `REVIEW.md` (review of the Tiny Data datasets, written from the earlier findings, no review panel); the AI recommends not to ship it. Priority 3: gap +, use case + (the paper states the fire-service use), source +, shape -, risk - (no signal on unseen days; recommended not to ship).
-**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `month` (a partial order); `day` (a partial order).
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels): left unordered: `month` (a partial order); `day` (a partial order).
 
-CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 2 calendar or compass cycles ordered.
+CC (2026-10-31, Lennart): decided in the dtype review of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 2 calendar or compass cycles ordered.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `fpa_fod_attributes_wildfire_size` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the folder's `REVIEW.md`. Retire: on fire days held out of training, as the use case needs, no model beats a constant, neither TabPFN-3.5 on the log scale (p = 0.16) nor untuned models under the declared MAE in hectares (p = 0.40 to 0.99). Priority 1: gap 0, use case 0, source 1, shape 0, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the folder's `REVIEW.md`. Retire: on fire days held out of training, as the use case needs, no model beats a constant, neither TabPFN-3.5 on the log scale (p = 0.16) nor untuned models under the declared MAE in hectares (p = 0.40 to 0.99). Priority 1: gap 0, use case 0, source 1, shape 0, risk -1.
 
 CC (2026-11-05, Andrej): retired (`No (Retired)`, `No Signal`): once the leak between fires of the same day is closed, the burned area is not learnable. The data: 517 forest fires in the Montesinho park, Portugal, 2000-2003 (UCI 162, Cortez and Morais 2007), the burned area from the fire's map square, month, weekday and that day's weather.
 - **The signal was the day, not the fire:** the daily fire-weather values identify the day (517 fires on 227 days, 78% sharing their day); on random splits TabPFN-3.5 beats the training mean (R² +0.012, above all 200 shuffles of the labels), with whole days held out it does not (R² -0.002, p = 0.16).

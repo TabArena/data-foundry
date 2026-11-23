@@ -48,7 +48,7 @@ abstract, "Questions.", https://doi.org/10.5061/dryad.4xgxd25g4).
   columns, no habitat covariate, and the source's question is trend detection
   (https://datadryad.org/dataset/doi:10.5061/dryad.4xgxd25g4).
 
-CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
+CC (2026-10-30, Andrej): `No`, as screened (verified in the zero-inflated screening).
 
 Dutch vegetation-plot records for three species behind a trend-estimation method (van Strien, Irvine and Retel 2024).
 Dryad methods: "This data package contains all observations of the species Acer pseudoplantanus, Senecio inaequidens

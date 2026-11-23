@@ -78,7 +78,7 @@ still carries a weak but real signal (AUC 0.58 for a payout, R^2 0.15 on log1p a
 2023). Left for /add-dataset: the target (building + contents, as suggested above) and the cut of the newest, still open
 year.
 
-CC (2026-10-30, Andrej): `TBD -> Yes`, priority 2, as screened (verified on the zero-inflated screening review page).
+CC (2026-10-30, Andrej): `TBD -> Yes`, priority 2, as screened (verified in the zero-inflated screening).
 "If you can fix the leak it should be fine, isnt it?"
 
 FEMA's National Flood Insurance Program claims, redacted, on OpenFEMA (v3; v2 retired 2026-10-15): 2,725,989 claims x

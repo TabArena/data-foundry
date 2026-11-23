@@ -75,8 +75,7 @@ These are per dataset judgement calls and if a dataset is useful for a predictiv
 collected for something else, then this is fine"), as SEL-2 already reads the scope rules: this record is judged on its
 own use case. The verdict and priority stay.
 
-CC (2026-10-30, Andrej): `Yes`, priority 3 (the AI screening had `TBD -> 2nd Tier`, priority 3; zero-inflated screening
-review page). "Just try to add it and if it turns out a bad task, then we drop it to no"
+CC (2026-10-30, Andrej): `Yes`, priority 3 (the AI screening had `TBD -> 2nd Tier`, priority 3; zero-inflated screening). "Just try to add it and if it turns out a bad task, then we drop it to no"
 
 Aerial survey counts of wintering sea ducks in Nantucket Sound with boosted GAMLSS hurdle models (Smith et al. 2019;
 paper read via PMC6405508). A row is one 2.25 km2 segment in one survey: 504 segments, 30 surveys over the winters

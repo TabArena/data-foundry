@@ -6,7 +6,16 @@ import hashlib
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+    drop_columns,
+)
 
 
 class Ai4dLabTanzaniaTourismClassificationChallenge(AbstractCuratedDataset):
@@ -89,8 +98,8 @@ class Ai4dLabTanzaniaTourismClassificationChallenge(AbstractCuratedDataset):
     curation_comments = """
         We start with the 18,506 labeled rows in Train.csv; the 6,169 unlabeled Test.csv rows are not training labels.
 
-        - CC (2026-11-05, Lennart): the survey statistician joins the trip planner as actor (issue 3, option B; USE-9): NBS and the Bank of Tanzania, who estimate tourism earnings from the exit survey, fill in a respondent's spending band from the rest of the form when the expenditure answer is missing or implausible. That actor has every input at departure, and its test is other respondents of the same survey, which the random folds measure. The planner stays, so the use case still looks forward and the `ForcedIIDFromTemporal` tag stays (SPLIT-8); the fit stays approximate (six bands, USE-5).
-        - CC (2026-11-05, Lennart): the scorer reads probability columns in the sorted order of the class labels (scikit-learn's classes_) and checks named columns; the ordered categories stay metadata (issue 5, C; MET-2).
+        - CC (2026-11-05, Lennart): the survey statistician joins the trip planner as actor (USE-9): NBS and the Bank of Tanzania, who estimate tourism earnings from the exit survey, fill in a respondent's spending band from the rest of the form when the expenditure answer is missing or implausible. That actor has every input at departure, and its test is other respondents of the same survey, which the random folds measure. The planner stays, so the use case still looks forward and the `ForcedIIDFromTemporal` tag stays (SPLIT-8); the fit stays approximate (six bands, USE-5).
+        - CC (2026-11-05, Lennart): the scorer reads probability columns in the sorted order of the class labels (scikit-learn's classes_) and checks named columns; the ordered categories stay metadata (MET-2).
         - Prediction point: a visitor supplies visitor context and a proposed trip plan, assumed to occur as specified.
           Nights, activity, party and package attributes are scenario inputs even though recorded in an exit survey.
           package_food denotes package inclusion, not meal consumption. cost_category stays target-only.
@@ -120,7 +129,7 @@ class Ai4dLabTanzaniaTourismClassificationChallenge(AbstractCuratedDataset):
         - Retain all rows and stratified random evaluation, accepted by Myunghwan on 2026-10-25 after reviewing
           repetition evidence. Across all nine folds, 9.8509% of test evaluations match a training profile and
           90.1491% do not (pooled across three repeats, not distinct people). The copies are distinct respondents
-          the coarse features cannot tell apart, kept under LEAK-18 (few coarse features, plausible repeats; Lennart, 2026-11-05, issue 7 (d), not a widened LEAK-19): 361 repeated
+          the coarse features cannot tell apart, kept under LEAK-18 (few coarse features, plausible repeats; Lennart, 2026-11-05, not a widened LEAK-19): 361 repeated
           profiles are Alone (213 of them with more than one label), and 67.8% of copy groups are larger than their
           party. A split grouped by feature profile costs +0.0047 log loss (+0.0025 without age_group; LightGBM, one
           repeat), and out-of-fold copy lookups gain nothing (1.0765 against 1.0755). Residual LEAK-17 risk: With
@@ -145,7 +154,15 @@ class Ai4dLabTanzaniaTourismClassificationChallenge(AbstractCuratedDataset):
         "dataset_duplicate_rows": "Myunghwan accepted row retention and stratified random evaluation on 2026-10-25 after reviewing all nine saved folds: 9.8509% matching and 90.1491% nonmatching test evaluations across three repeats. The 965 exact row extras are distinct respondents the coarse features cannot tell apart (LEAK-19): 361 repeated profiles are Alone and 67.8% of copy groups are larger than their party. A split grouped by profile costs +0.0047 log loss and copy lookups gain nothing. Residual LEAK-17 risk (With Spouse enriched, 44.6% against 27.8%) is bounded at about 0.005.",
         "dataset_conflicting_duplicate_rows": "Myunghwan accepted retention on 2026-10-25 after reviewing same- and different-label profile matches. The checker counts 468 additional distinct feature/label combinations; 410 profiles contain multiple labels (1,324 rows). On rows linked to the 2020 cut, such profiles have different real spending, so the ambiguity is genuine (LEAK-20). No outcome-based deduplication and no grouping on a feature hash (SPLIT-24).",
     }
-    data_tags = ("ForcedIIDFromTemporal",)
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        No date column or chronological meaning of Tour_ID is documented, and the raw row order carries none
+        (neighbouring labels agree 0.2211 against 0.2228 by chance). The use case looks forward (a trip before the
+        visit), so the split is IID forced from temporal: a dated survey wave would test drift of the TZS band edges
+        and of the visitor mix; recover it if NBS publishes it. No valid window exists to measure that cost.
+        """,
+    )
     splits_comment = """
         Stratified random 3-fold cross-validation with 3 repeats, using benchmark split seed 4267 and row shuffle 42.
         Tests represent held-out visitor/trip records from the represented survey population under the fulfilled-plan scenario.

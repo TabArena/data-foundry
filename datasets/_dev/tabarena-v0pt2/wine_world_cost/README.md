@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: wine_world_cost
 container_format: 2
-checksum: v2:9b341dbacb254595edaa2470e1655fd913e31481447ff87feff033e21b0c254a
+checksum: v2:f1fcec4bdbab2a7e509ba1dc3eb2680084ff11c71c9fc39860a86960fd8d3624
 build:
   uuid: 01a111fc-bf3e-75e4-bd32-d489275dd877
   checksum: v2:8c168087d0023ac94900336e032900e565a964201c4ad6c2a0b794fbc26f2a6a
@@ -75,7 +75,7 @@ decisions: []
 
 Regression of `Price`, scored with `rmsle` on grouped splits by `Producer`. 1,279 rows and 14 features. Source: Kaggle (2023).
 
-Built as `01a111fc-bf3e-75e4-bd32-d489275dd877` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9b341dbacb254595edaa2470e1655fd913e31481447ff87feff033e21b0c254a`, so the build is stale. See [Build](#build).
+Built as `01a111fc-bf3e-75e4-bd32-d489275dd877` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f1fcec4bdbab2a7e509ba1dc3eb2680084ff11c71c9fc39860a86960fd8d3624`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -134,7 +134,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2023 |
 | domain | business & marketing |
 | license | CC0: Public Domain |
-| data_tags | Non-IID, Grouped |
+| data_tags | Non-IID, Grouped, Retrospective |
 | reference | Rustamov2023WineDataset |
 | rows x columns | 1,279 x 16 |
 | task.target | Price |
@@ -235,7 +235,7 @@ We start with the Kaggle version. We resolve several issues from the web scrappe
   Alamos and Catena). The shop's own-label ranges are one group each, although some of their copy names the
   maker (Definition Fleurie by Pardon et Fils): the shop prices the range, and the maker is not named for all.
   615 producers, 1 to 35 wines (Definition), 250 with more than one wine.
-- Time basis: Snapshot: one scrape of a UK online wine shop's range (most likely Majestic Wine) in 2023; the
+- Time basis: Retrospective: one scrape of a UK online wine shop's range (most likely Majestic Wine) in 2023; the
   shelf prices, sales copy and catalogue attributes of that moment; the vintage is a wine attribute, not a
   time. Not tested: prices after 2023.
 
@@ -309,7 +309,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -435,4 +435,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:9b341dbacb254595edaa2470e1655fd913e31481447ff87feff033e21b0c254a` |
+| stale | yes: the definition now gives checksum `v2:f1fcec4bdbab2a7e509ba1dc3eb2680084ff11c71c9fc39860a86960fd8d3624` |

@@ -81,7 +81,7 @@ the public coordinates, median 2.6 m, but differs from FIADB `ELEV` by a median 
 blurred; canopy cover is a Landsat product (SEL-13, milder than raw reflectance); visits per location must be grouped
 and the split spatial.
 
-CC (2026-10-30, Andrej): `No` (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening review page,
+CC (2026-10-30, Andrej): `No` (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening,
 after the AI's answer to the curator's question). "Seems to risky." The record's markers (`Needs extensive data
 wrangling`, `No Good Target (yet)`) stand with the risks of the Assessment above (leaky condition fields, fuzzed
 coordinates).

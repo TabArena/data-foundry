@@ -61,8 +61,7 @@ if it is zero inflated or not"), so how the source codes its zeros is no reason 
 0 is no sale or a floor of Avito's score no longer counts against the record; the undocumented target (USE-5) remains
 the open concern, so the verdict and priority stay.
 
-CC (2026-10-30, Andrej): `Yes`, priority 4 (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening
-review page).
+CC (2026-10-30, Andrej): `Yes`, priority 4 (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening).
 
 Avito's 2018 Kaggle competition: 1,503,424 Russian classified ads posted 15-28 March 2017 by 771,769 sellers, with
 title and description, price, location, Avito's category and parameter codes, an image and Avito's image class

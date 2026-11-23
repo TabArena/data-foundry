@@ -39,7 +39,7 @@ publisher, and repeated searches found no release with its row count and period.
   Mendeley Data and Data in Brief, nothing matches the workbook row, whose only link is a search
   (Master row 32), and PROV-2 has no upload to point to.
 
-CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
+CC (2026-10-30, Andrej): `No`, as screened (verified in the zero-inflated screening).
 
 The workbook carries this row over from an earlier audit (196,776 samples, 2017-2022, utility-scale PV generation,
 night-time zeros), but its only link is a Google search and its own v4 deep review found no matching release. A
