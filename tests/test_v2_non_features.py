@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from data_foundry.bundle_checks import run_bundle_checks
-from data_foundry.schema import DATA_FOUNDRY_WAREHOUSE_ENV
+from data_foundry.schema import DATA_FOUNDRY_WAREHOUSE_ENV, PredictiveMLTaskMetadataV2
 from data_foundry.v2 import (
     DatasetDefinitionError,
     dataset as dataset_module,
@@ -19,7 +19,7 @@ from data_foundry.v2 import (
     read_report,
 )
 
-from tests.test_bundle_checks import make_container
+from tests.test_bundle_checks import make_container, make_spec
 
 PARENT = """
 from __future__ import annotations
@@ -256,3 +256,23 @@ def test_a_dense_unique_integer_column_is_flagged_as_a_running_id() -> None:
     df = pd.DataFrame({"row_id": np.arange(100, 200), "price": np.arange(100) * 1000, "target": np.tile([0, 1], 50)})
     slugs = {r.slug: r.message for r in run_bundle_checks(make_container(df), verbose=False).results}
     assert "['row_id']" in slugs["dataset_sequential_id_column"]  # `price` is unique too, but spread out
+
+
+def test_the_order_column_of_a_label_time_split_is_not_flagged_as_a_running_id() -> None:
+    """A rebuilt order the split cuts on (SPLIT-22) is a running id by construction and no model input."""
+    df = pd.DataFrame({"row_id": np.arange(100, 200), "price": np.arange(100) * 1000, "target": np.tile([0, 1], 50)})
+
+    def task(**extra) -> PredictiveMLTaskMetadataV2:
+        return PredictiveMLTaskMetadataV2(
+            target_column_name="target",
+            problem_type="binary_classification",
+            objective_metric=make_spec("binary_classification"),
+            time_on="row_id",
+            **extra,
+        )
+
+    label_time = run_bundle_checks(make_container(df, task_metadata=task(time_of="label")), verbose=False)
+    assert "dataset_sequential_id_column" not in {r.slug for r in label_time.results}
+    # the label time is what exempts it: as the prediction point the column is a running id a model reads
+    prediction_time = run_bundle_checks(make_container(df, task_metadata=task()), verbose=False)
+    assert "dataset_sequential_id_column" in {r.slug for r in prediction_time.results}
