@@ -18,8 +18,8 @@ Check, with numbers (load through `.claude/skills/knowledge-data-foundry/scripts
 Python run):
 
 * the tree (`split_tree.md`, SPLIT-36): walk it yourself from the record's data collection type, answering each
-  question from what it reads, and say which leaf you reach. Compare it with the leaf the `splits_comment` names and
-  with the split and tag the definition ships; a different leaf, a forced leaf, a leaf no definition reaches yet, or
+  question from what it reads, and say which leaf you reach, by its ID (`L-FILL.unit`). Compare it with the leaf
+  the definition names (`split_leaf`, the `splits_comment`) and with the split and tag it ships; a different leaf, a forced leaf, a leaf no definition reaches yet, or
   a question no answer fits is a finding for the main session to raise with the curator;
 * how the data was collected: the record's collection facts and, if the definition names one, its use-case prototype
   and `Time basis:` line (`splits.md`, SPLIT-32), against the source; for a split that is not temporal, what the time
