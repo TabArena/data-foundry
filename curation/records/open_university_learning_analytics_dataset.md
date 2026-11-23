@@ -24,7 +24,6 @@ source_links:
 - https://analyse.kmi.open.ac.uk/
 - https://analyse.kmi.open.ac.uk/open-dataset
 - https://doi.org/10.6084/m9.figshare.5081998.v1
-v2_path: datasets/_dev/tabarena-v0pt2/open_university_learning_analytics_dataset/dataset.py
 source_row: 738
 type_adapter_id: curation-record-v1
 ---
