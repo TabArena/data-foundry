@@ -1,5 +1,33 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-23, split departures decided and small tables with three windows tested (Andrej's decisions, no container built)
+
+Six definitions shipped a split other than the one the split tree gives. Each record's `## Review` gains the
+decision with its Resolved and CC lines; the departures table of `split_tree.md` is now empty.
+- infrared_thermography_temperature: temporal split, three two-month windows on the visit date from 15 March 2018,
+  15 January 2018 and 15 November 2017 (89%, 60% and 53% train; 108, 291 and 75 test subjects), no gap; the visit
+  date comes from the subject id and orders the split only (`time_of="label"`). The stationary-relation test reads
+  Nov-Dec 2017 not flat (Kumo-Tabular +0.010 +/- 0.003 RMSE, floor 0.001), at the change of camera set-up between
+  the study years. Was 10 x 3 random folds, `StationaryRelation`.
+- ecoli_proteins: 20 x 3 folds grouped by protein family, `UnseenGroup`. `protein_families.csv` maps the 327
+  proteins to 219 families (UniProt protein family 270, Pfam domains 39, the protein alone for 18 unresolved
+  entries). Entry-year windows would need a 37% exception, so the catalogue's family key decides; holding out
+  families costs +0.012 to +0.015 log loss for TabPFN and logistic regression, ranking unchanged. Was 20 x 3
+  random folds, `StationaryRelation`.
+- horse_colic_survival: unchanged (grouped by case, `StationaryRelation`); no longer a departure under the rule below.
+- cirrhosis_patient_survival_prediction: the random folds tagged `StationaryRelation` instead of
+  `ForcedIIDFromTemporal`, under the rule below (no period not flat, Kumo-Tabular flat pooled).
+- eryhemato_squamous_disease: the random split stays `ForcedIIDFromTemporal`; its time basis no longer reads the
+  file's two parts as periods, since the source does not say whether they are periods, examiners or a series
+  extended by diagnosis.
+- framingham_heart_study_fhs: the random folds tagged `AssumedStationaryRelation` on the curator's reason (one
+  baseline exam ships; the measured shift is one model family's once age is matched) instead of
+  `ForcedIIDFromTemporal`.
+- Rule: a small table, in SPLIT-33's 20- or 10-repeat tier, whose order gives only three windows also gets the
+  stationary-relation test over them; a flat reading goes on to the forced step (a catalogue to its family-key
+  step), where a person may sign it off as `StationaryRelation`, otherwise the windows stay (SPLIT-32; the tree's
+  `[ORDER.small]` and `[CAT.small]`). The tree test allows an empty departures table.
+
 ## 2026-11-16, wine_world_cost: the use case kept as a merchant's listing decision (Lennart's decision, no container built)
 
 - Review issue 7 (whether any real use case exists), A: kept, fit approximate. The actor is a UK wine merchant's buyer
