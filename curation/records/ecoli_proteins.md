@@ -20,7 +20,7 @@ year: '1996'
 collection_period: 1986-1995
 domain: biology & life sciences
 required_split:
-- Random (IID)
+- Grouped (NON-IID)
 problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
@@ -56,6 +56,8 @@ CC (2026-11-16, Andrej): tag `Expanding Science Catalogue`: the rows are a cut o
 
 CC (2026-11-20, Andrej): random folds tagged `StationaryRelation` on the entry years (Review issue 3, D): the relation measures flat across the entry-year periods; the `Timeless` line, false since the entries are dated, is replaced.
 
+CC (2026-11-23, Andrej): 20 x 3 folds grouped by protein family, `UnseenGroup` (Review issue 4, C): entry-year windows would need the 37% exception, so the catalogue's family key decides. `protein_families.csv` maps the 327 proteins to 219 families (UniProt protein family, else Pfam domains, else the protein alone for 18 unresolved entries). Holding out families costs +0.012 to +0.015 log loss for TabPFN and logistic regression, the ranking unchanged. Ecoli leaves the departures table. `dataset check`: 0 errors, 0 warnings (one fold without the outer-membrane location accepted). Not rebuilt.
+
 ## Review
 
 **Outcome:** added. UCI's E. coli protein localization data (Horton and Nakai 1996; UCI 39,
@@ -64,7 +66,7 @@ and the cell location; the five locations with 10 or more proteins are kept (327
 (fallback). Its SWISS-PROT entry names date the proteins (CC of 2026-11-16), so the split is read again (issue 1).
 
 **Main points:** Settled (2026-11-20, Andrej): the 20 x 3 random folds stay, tagged `StationaryRelation` on the
-SWISS-PROT entry years (issue 3, D, which also settles issue 1). Open since 2026-11-23: issue 4 (the departure: `StationaryRelation` is no outcome of a catalogue's walk).
+SWISS-PROT entry years (issue 3, D, which also settles issue 1). Since 2026-11-23: folds grouped by protein family, `UnseenGroup` (issue 4, C). Nothing is left open.
 
 **Record judgment:** valid. `Samples: Over Time`, `Time: Dated` and `Expanding Science Catalogue` added on 2026-11-16.
 
@@ -195,6 +197,19 @@ SWISS-PROT entry years (issue 3, D, which also settles issue 1). Open since 2026
 
    [^dep-cat]: **SPLIT-37** step 4 (Should): the entry date replaces the family key when the use case predicts for items the catalogue does not hold yet and "(a) arrival changes how the target is recorded, or which items are selected". **SPLIT-14** (Must): "A temporal task has at least 3 windows (splits). Every window trains on at least 50% of the data. A window under 50% is the curator's exception for that dataset, down to 30%".
    [^dep-fam]: The split tree, Expanding science catalogue: "Can the order hold at least three test windows of the use case's size? ... no → ① family-key step". **SPLIT-37** step 2 (Should): the family key is a catalogue's default split; without one the split is `Timeless`.
+
+   **Family check (AI, 2026-11-23):** the shipped proteins mapped through UniProt (REST, 2026-11-23) and grouped three ways; 20 x 3 folds, features without `aac`, log loss (mean ± SE; accuracy in brackets).
+
+   | Key | Resolved | Groups | Largest | Logistic regression | TabPFN |
+   |---|---|---|---|---|---|
+   | random folds | | | | 0.472 ± 0.007 (0.833) | 0.463 ± 0.009 (0.832) |
+   | UniRef90 | 309 | 326 | 2 | 0.471 (0.837) | 0.453 (0.831) |
+   | UniRef50 | 309 | 319 | 3 | 0.483 (0.830) | 0.464 (0.831) |
+   | UniProt family, else Pfam domains | 309 | 219 | 12 | 0.487 ± 0.007 (0.829) | 0.475 ± 0.009 (0.826) |
+
+   Family minus random, paired: logistic regression +0.015 ± 0.004, TabPFN +0.012 ± 0.005; with `aac` logistic regression +0.008 ± 0.005. Under random folds 41% of the test proteins (44 of 109 per fold) have a family member in training and carry 33% of TabPFN's loss (0.376 against 0.523 for unseen families). The 18 unresolved entries count as their own groups.
+
+   **Resolved (2026-11-23, Andrej):** C, folds grouped by protein family. `Grouping(on="protein_family")` from `protein_families.csv` next to the definition (UniProt protein family 270, Pfam domains 39, the protein alone 18; 219 groups), `TimeBasis("UnseenGroup", ...)` with `StationaryRelation` noted as before, splits comment and notes with the check above; `required_split` Grouped; the row leaves the departures table. `dataset check`: 0 errors, 0 warnings (`splits_test_class_missing` accepted: one fold lacks the outer-membrane location, which log loss tolerates). Not rebuilt.
 
 ## Reference
 

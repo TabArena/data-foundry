@@ -487,4 +487,3 @@ These v0.2 definitions ship a split other than their leaf's; a reviewer confirme
 | Definition | Leaf | Ships | Reviewer | Date | Reason |
 |---|---|---|---|---|---|
 | cirrhosis_patient_survival_prediction | L-ORDER.windows | random 20 x 3, `ForcedIIDFromTemporal` | Andrej | 2026-11-19 | the three windows that can be built hold about 50 referrals each, and the stationary-relation test is inconclusive for 1976-77 |
-| ecoli_proteins | L-CAT.entry-date | random 20 x 3, `StationaryRelation` | Andrej | 2026-11-20 | windows would need a 37% training floor and hold 46 to 76 proteins each, and the relation over the entry years measures flat, narrowly |
