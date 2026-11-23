@@ -13,10 +13,14 @@ decision_markers:
 tags:
 - Tiny Data
 - Non-IID (Grouped)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- Dated Event Log
 collections:
 - New (BeyondArena)
 original_source: UCI
 year: '1988'
+collection_period: 1981-1987
 domain: medical & healthcare
 required_split:
 - Grouped (NON-IID)
