@@ -128,12 +128,13 @@ domain and source from the record.
    of `_feature_types` (CLEAN-26); [spectra.md](../knowledge-curation/references/spectra.md) has what ships, the
    encodings, grouping the spectra of one sample (SPLIT-23) and the pitfalls.
 4. The regime: walk the decision tree from the record's data collection type
-   ([split_tree.md](../knowledge-curation/references/split_tree.md), SPLIT-36) and implement the leaf you reach:
-   nothing for IID, `grouping = Grouping(...)` or `temporal = Temporal(...)` with a `splits_comment` saying which leaf
-   and why this window (and any gap, sub-sampling or trimming). The leaf's tag and its reason go into
-   `time_basis = TimeBasis(tag, reason)` (and `group_basis = GroupBasis(reason)` for `ForcedIIDFromGrouped`), which
-   render the `Time basis:` (and `Group basis:`) line. A forced leaf, a leaf no definition reaches yet, or a question
-   no answer fits goes to the curator as an issue with the split you suggest. The record's collection facts and the
+   ([split_tree.md](../knowledge-curation/references/split_tree.md), SPLIT-36) and implement the leaf you reach: nothing
+   for IID, `grouping = Grouping(...)` or `temporal = Temporal(...)`, the leaf's ID in `split_leaf`, and a
+   `splits_comment` saying which leaf and why this window (and any gap, sub-sampling or trimming). The leaf's tag and
+   its reason go into `time_basis = TimeBasis(tag, reason)` (and `group_basis = GroupBasis(reason)` for
+   `ForcedIIDFromGrouped`), which render the `Time basis:` (and `Group basis:`) line. A forced leaf, a leaf no
+   definition reaches yet, a question only a person answers (the tree's "Who answers"), or a question no answer fits
+   goes to the curator as an issue with the split you suggest. The record's collection facts and the
    use-case prototypes of SPLIT-32 ([splits.md](../knowledge-curation/references/splits.md)) are information for the
    answers. For a temporal task, run `dataset windows <name>` and choose
    the windows from the use case and those statistics, never a model's score (SPLIT-15: the newest always, the others
@@ -236,9 +237,10 @@ and the editor) for a re-check after a small change. Say which tier ran.
    leave nothing for the curator to decide (the outcome says so, and the curator only sets the verdict). Never raise an
    issue to have one; an issue is something whose answer would change the dataset.
 3. The `review-editor` agent reads the draft as the curator would; apply its fixes.
-4. Keep the decision tree current ([split_tree.md](../knowledge-curation/references/split_tree.md)): a definition
-   that reaches a leaf with few examples is added to them, and one that ships another split than its leaf, with the
-   curator's agreement, gets a row in "Definitions that ship another split" (the leaf, the shipped split, the reason).
+4. Keep the decision tree current ([split_tree.md](../knowledge-curation/references/split_tree.md)): the definition
+   names its leaf in `split_leaf`; a leaf with fewer than three examples may take it as one; and a definition that
+   ships another split than its leaf, with the curator's agreement, gets a row in "Definitions that ship another
+   split" (the leaf's ID, the shipped split, the reviewer, the date, the reason).
 5. Add a dated CHANGELOG entry for the new folder, and the panel's summary in the record, one line in a fixed form:
    `**Assessment (AI, <date>):** review panel (<tier>): <the mediator's recommendation>; disputed: <the points, by
    rule ID>; for the curator: issues <n>-<m>.` The panel's reports stay in the record's review, also once its issues
