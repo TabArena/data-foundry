@@ -75,6 +75,33 @@ Changes to the split rules and checks after the split-rules review; no definitio
   tree), no longer "something dated": a second dated column, a linked release, outside facts, or a quantity that
   counts calendar time; where nothing dated exists, evidence only a time order explains, named in `splits_comment`.
 
+## 2026-11-23, open_university_learning_analytics_dataset retired as `Too Small` (Andrej's decision of 2026-11-20, no container built)
+
+- The relation is measured not flat across the four start dates (2013B, 2013J, 2014B, 2014J): each date held out is
+  taught worse by the other three than by its own rows (log loss, LightGBM +0.011 to +0.040, Kumo-Tabular +0.014 to
+  +0.095, 5 seeds). A presentation runs longer than the gap between start dates, so with training limited to cohorts
+  finished before the test cohort starts, only one forward split exists (2014J on 66.5%); every other layout trains
+  on later, unfinished or concurrent cohorts.
+- The record is `No (Retired)` with `Too Small`, a CC line and the decision in its `## Review`; `v2_path` cleared.
+  The folder is removed. `DF: Yes` and the other tags stay.
+
+## 2026-11-23, ai4d_lab_tanzania_tourism_classification_challenge retired as `Too Small` (Andrej's decision of 2026-11-20, no container built)
+
+- The release is three dated survey waves (2012, 2013, 2014), recovered by matching its rows to the statistics
+  bureau's per-year files. The relation is not flat forward in time (trained on 2012-2013 and tested on 2014, log loss
+  +0.058 for LightGBM and +0.045 for Kumo-Tabular over training on 2014 itself; 2012 to 2013, +0.079 and +0.072).
+  Three waves give neither three windows on half the data nor the four whole periods a grouped split needs.
+- The record is `No (Retired)` with `Too Small`, a CC line and the decision in its `## Review`; `v2_path` cleared.
+  The folder is removed. It can come back if per-row years are published for four or more waves.
+
+## 2026-11-23, huesken_sirna_efficacy: 20 x 3 splits over the target genes (Andrej's decision, no container built)
+
+- The score averages one per-gene correlation and every fold holds out whole target genes, so the split rule counts
+  the 30 genes, not the 2,431 guides: 20 genes on a train side give 20 repeats of 3 folds, 60 splits, where the
+  container was built with 10 x 3. The definition is unchanged, as the protocol derives the count; the README's split
+  block reads 20 repeats. Not rebuilt: the raw supplement is not in the local warehouse.
+- The record: issue 10 resolved (B) and a CC line.
+
 ## 2026-11-22, the split-rules review: the time basis as one declaration (no container built)
 
 Lennart's review of the split rules, applied across the definitions of the split work:
@@ -297,33 +324,6 @@ where the leaf differs from what ships or from a credible source split.
   `AssumedStationaryRelation` also at one moment. SPLIT-37: a catalogue without a family key is `Timeless`, random or
   grouped by the item, without `ForcedIIDFromGrouped` (SPLIT-35 names catalogues as outside it). definitions.md follows.
 - No definition changes; the departures are for a reviewer.
-
-## 2026-11-23, open_university_learning_analytics_dataset retired as `Too Small` (Andrej's decision of 2026-11-20, no container built)
-
-- The relation is measured not flat across the four start dates (2013B, 2013J, 2014B, 2014J): each date held out is
-  taught worse by the other three than by its own rows (log loss, LightGBM +0.011 to +0.040, Kumo-Tabular +0.014 to
-  +0.095, 5 seeds). A presentation runs longer than the gap between start dates, so with training limited to cohorts
-  finished before the test cohort starts, only one forward split exists (2014J on 66.5%); every other layout trains
-  on later, unfinished or concurrent cohorts.
-- The record is `No (Retired)` with `Too Small`, a CC line and the decision in its `## Review`; `v2_path` cleared.
-  The folder is removed. `DF: Yes` and the other tags stay.
-
-## 2026-11-23, ai4d_lab_tanzania_tourism_classification_challenge retired as `Too Small` (Andrej's decision of 2026-11-20, no container built)
-
-- The release is three dated survey waves (2012, 2013, 2014), recovered by matching its rows to the statistics
-  bureau's per-year files. The relation is not flat forward in time (trained on 2012-2013 and tested on 2014, log loss
-  +0.058 for LightGBM and +0.045 for Kumo-Tabular over training on 2014 itself; 2012 to 2013, +0.079 and +0.072).
-  Three waves give neither three windows on half the data nor the four whole periods a grouped split needs.
-- The record is `No (Retired)` with `Too Small`, a CC line and the decision in its `## Review`; `v2_path` cleared.
-  The folder is removed. It can come back if per-row years are published for four or more waves.
-
-## 2026-11-23, huesken_sirna_efficacy: 20 x 3 splits over the target genes (Andrej's decision, no container built)
-
-- The score averages one per-gene correlation and every fold holds out whole target genes, so the split rule counts
-  the 30 genes, not the 2,431 guides: 20 genes on a train side give 20 repeats of 3 folds, 60 splits, where the
-  container was built with 10 x 3. The definition is unchanged, as the protocol derives the count; the README's split
-  block reads 20 repeats. Not rebuilt: the raw supplement is not in the local warehouse.
-- The record: issue 10 resolved (B) and a CC line.
 
 ## 2026-11-16, wine_world_cost: the use case kept as a merchant's listing decision (Lennart's decision, no container built)
 
