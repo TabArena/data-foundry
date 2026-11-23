@@ -72,7 +72,7 @@ CC (2026-11-20, Andrej): the random folds stay `StationaryRelation`, now on the 
 
 **Main points:** Settled: issue 1 withdrawn (2026-11-13); collection type `Dated Event Log` (issue 3, a, 2026-11-17);
 the random folds stay `StationaryRelation`, on the stationary-relation test over the two two-month windows (issue 4,
-C, 2026-11-20). Open: issue 2 (three two-month windows instead of random folds) has no Resolved line. Open since 2026-11-23: issue 5 (the departure, now that the newest three periods read not flat).
+C, 2026-11-20); issue 2 superseded by issue 4 (2026-11-23). Open since 2026-11-23: issue 5 (the departure, now that the newest three periods read not flat).
 
 **Issues for Andrej:**
 
@@ -157,6 +157,8 @@ C, 2026-11-20). Open: issue 2 (three two-month windows instead of random folds) 
    point, forward, for subjects who arrive one by one, and each subject's oral reading is taken in the same visit, so
    the leaf is Temporal · arrival date, no gap. The options of this issue stand: windows on the visit date, or the
    random folds as shipped.
+
+   **Resolved (2026-11-23, Andrej):** superseded by issue 4, where the 10 x 3 random folds stay, tagged `StationaryRelation` (C, 2026-11-20).
 
 3. **Collection type: `Clinical Study` instead of `Experimental Results`?**
 

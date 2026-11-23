@@ -6,7 +6,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+    drop_columns,
+)
 
 # The columns the bad-debt label is set from: debt aged 90 days or more, write-offs, and their ratio to the billing.
 DEBT_COLUMNS = ["total90debt", "totalwriteoff", "debtbillingratio"]
@@ -117,7 +126,6 @@ class AccountDebtSouthAfrica(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download version 1 of the Kaggle dataset (the only version, 4 June 2020). It holds one file,
         MunicipalDebtAnalysis.csv (138,509 rows, md5 d5fa5aaf696e31a65eebb0532fa4568d). OpenML 43838
@@ -139,9 +147,18 @@ class AccountDebtSouthAfrica(AbstractCuratedDataset):
         - Potential leak, kept on purpose: `HasIDNo`, by the data card a property of the holder ("often not captured properly or at all"). Accounts with one are bad debts more often (Residential 64% against 47%), so it may be captured when debt is pursued. ROC AUC 0.874 with it, 0.872 without.
         - We keep the 6,355 exact duplicate rows (6.2%), plausibly distinct accounts with the same property record or flat charge; without the copied test rows, ROC AUC falls from 0.874 to 0.867.
         - Anomaly: the file ends with a run of category Unknown (rows 134,192-138,276; 2,396 curated rows), mostly billed 1-3 times in two years; its never-payers with 1-3 bills are bad debts at 53% (86% elsewhere). Debt is recorded there, so it stays.
-        - IID, forced: the file is one extract without dates, so the task (status at the extract) stands in for the data card's forecast, a model trained on one snapshot scoring the next.
         - A municipality scores its own accounts, so its level is known information, but the eight municipalities have no column. Held out by file position, ROC AUC falls from 0.877 (random) to 0.849 (blocks of 2,500 rows) and 0.787 (thirds of the file); file position added as a feature raises the random split to 0.892, the cost of the missing key. We build no key from file blocks (a guess); the municipality key from DMS Technologies would be a feature.
     """
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        the file is one extract without dates, so the task (status at the extract)
+        stands in for the data card's forecast, a model trained on one snapshot scoring the next. Not taken as
+        stationary (Andrej, 2026-11-18): Arrears depend on tariffs, collection policy and the economy, which change
+        between extracts, and the file order already shows structure the random split hides; nothing measured supports
+        ASR.
+        """,
+    )
 
     # Task
     target = "BadDebt"

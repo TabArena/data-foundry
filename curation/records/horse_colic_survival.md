@@ -87,8 +87,8 @@ CC (2026-11-20, Andrej): folds grouped by case, `StationaryRelation` on the stat
 **Outcome:** added. Split re-decided without the current split: the tree gives Temporal · rebuilt order, the definition ships Grouped · StationaryRelation by `case_number`.
 
 **Main points:** Settled on 2026-11-20 (issue 2, C): the 20 x 3 folds grouped by case stay, `StationaryRelation` on the
-stationary-relation test, which holds for the grouped setting. Open: issue 1 (three windows of 57 admissions in
-case-number order instead of the grouped folds) has no Resolved line. Open since 2026-11-23: issue 3 (the departure: the windows can be built).
+stationary-relation test, which holds for the grouped setting; issue 1 superseded by issue 2 (2026-11-23).
+Open since 2026-11-23: issue 3 (the departure: the windows can be built).
 
 **Issues for Andrej:**
 
@@ -160,6 +160,8 @@ case-number order instead of the grouped folds) has no Resolved line. Open since
      train side holds fewer than 500 units.
 
    [^hc3]: **SPLIT-17** (Should): below about 50 test rows per window, use wider windows and fewer splits.
+
+   **Resolved (2026-11-23, Andrej):** superseded by issue 2, where the 20 x 3 folds grouped by case stay, tagged `StationaryRelation` (C, 2026-11-20).
 
 2. **Back to three windows in case-number order, as the rules now ask?**
 

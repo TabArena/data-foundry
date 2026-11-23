@@ -3,6 +3,7 @@ unique_name: amex_non_iid
 name: amex
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -11,10 +12,16 @@ decision_markers:
 - Anonymized
 tags:
 - Non-IID (Grouped)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- 'Entities: Recur'
+- Panel Data
 collections:
 - New (BeyondArena)
 original_source: Kaggle
 year: '2022'
+collection_period: Mar 2017 - Mar 2018
 domain: finance
 required_split:
 - Grouped (NON-IID)
@@ -53,6 +60,43 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): -1, raddar's missing value in the 55 integer columns that hold it (on the same rows across blocks), set back to missing (CLEAN-10)..
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
+CC (2026-11-16, Andrej): time basis `ForcedGroupedFromTemporal` instead of `DelayedTarget`, which was dropped before it shipped:
+- A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
+- The grouped split stays.
+
+CC (2026-11-18, Andrej): time basis `UnseenGroup` in place of `ForcedGroupedFromTemporal` (Review issue 3, B; full-information split check; as dementia_prediction): the use case scores customers the data does not hold, the tree's panel leaf for new units. The split is unchanged (3-fold CV over whole customers); a later scoring month stays untested.
+
+## Review
+
+**Outcome:** added as `amex_non_iid_1m`. Full-information split check of 2026-11-18: the time basis tag disagreed with the split tree; decided below.
+
+**Main points:** The customer folds are tagged `UnseenGroup`, as dementia_prediction (issue 3, B, 2026-11-18). Nothing
+open.
+
+**Issues for Andrej:**
+
+3. **Tag the customer folds `UnseenGroup`, as dementia_prediction?**
+
+   * **Problem:**
+     - You set `ForcedGroupedFromTemporal` on 2026-11-16 because every customer is scored in one month (March 2018); the tree adopted the next day gives a panel whose use case meets only new customers `UnseenGroup` (new units)[^s32u] and names amex as that leaf's example.
+     - You moved dementia_prediction, the same leaf, to `UnseenGroup` on 2026-11-17[^ug_dem].
+     - The folds are right either way: whole customers with their statements.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Grouped by customer, `ForcedGroupedFromTemporal` (implemented) | No change | Names the single scoring month | Not the tree's leaf |
+     | B | The same folds, `UnseenGroup` | The Time basis line keeps the single scoring month as what the split cannot test | The tree's leaf; as dementia | |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   [^s32u]: **SPLIT-32** (Should): "does the use case aim at groups the data does not hold, rather than at a later period? ... the split groups by that unit ... That is `UnseenGroup`." The tree's panel leaf: "Only new units, met after the data (new patients, new customers) → Grouped · `UnseenGroup` (new units)".
+   [^ug_dem]: dementia_prediction, the same panel leaf: "Option B: The same 3-fold CV over whole subjects, tagged UnseenGroup" (Andrej, 2026-11-17).
+
+   **Andrej (2026-11-18, change):** Option B: The same folds, UnseenGroup.
+
+   **Resolved (2026-11-18, Andrej):** B. `data_tags` names `UnseenGroup` in place of `ForcedGroupedFromTemporal`, and the `Time basis:` line opens with `UnseenGroup (Andrej, 2026-11-18; ForcedGroupedFromTemporal from 2026-11-16)`: new customers, whole customers held out; the single scoring month (March 2018) stays as what the split cannot test. The folds are unchanged.
 
 ## Reference
 

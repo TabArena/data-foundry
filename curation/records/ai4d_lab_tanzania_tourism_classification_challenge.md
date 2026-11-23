@@ -4,15 +4,21 @@ name: ai4d-lab-tanzania-tourism-classification-challenge
 checked_by:
 - Myunghwan
 - Lennart
+- Andrej
 data_foundry_status:
 - WIP (DF)
 claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 4
+tags:
+- 'Samples: Over Time'
+- 'Time: Dated'
+- Survey
 collections:
 - New (BeyondArena)
 original_source: Zindi
 year: '2022'
+collection_period: 2012-2014
 domain: business & marketing
 required_split:
 - Random (IID)
@@ -96,7 +102,7 @@ CC (2026-11-04, Lennart): the target `cost_category` is an ordered category, Low
 
 CC (2026-11-04, Lennart): ship, with the ordered `cost_category` and `age_group` ("sounds good, we are ready to ship"). The build is a separate ask.
 
-**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; the PR #33 review page (a light static review of the definition, README and record) raised the two typing issues, both settled.
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; the PR #33 review (a light static review of the definition, README and record) raised the two typing issues, both settled.
 
 **Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes (text only, no change to data, target, metric or split; rebuild on the curator's ask. Made in the definition: the label is the party's total trip spending in TZS, bands at about 0.5M / 1M / 5M / 10M / 50M, 97.9% agreement on 2,401 rows linked to the 2020 cut (USE-5, EV-2); the 2020 cut is an earlier subset, a PROV-6 duplicate version, not a different task; year 2022 under PROV-9; `ForcedIIDFromTemporal` under SPLIT-8; the 965 copies kept under LEAK-19's distinct-entity clause, a profile-grouped split costs +0.0047 log loss; no leak and no exploit. This supersedes "no panel ran" above; the 2026-10-26 "retained in the review evidence" has no artefact behind it; `mmu_2022` is `No` / `Duplicate`, not `TBD -> Yes`; the screening's regression-framing risk is answered: keep the six classes, the cost exists only for the 4,809-row 2020 subset); disputed: SPLIT-8 (the tag stays unless the planner actor is replaced), PROV-6 (a record for the 2020 cut), MET-2 (the scorer's class column order, harness or dataset), LEAK-19 (exception line or note, settled as a note; issue 7); for the curator: issues 3-8. Priority 4: gap +, use case 0, source +, shape +, risk 0 (gap: multiclass is thin among the 162 accepted definitions; use case: Zindi names the planner, but the fit is approximate and a better-fitting actor is open, issue 3; source: NBS survey with Zindi's codebook and metric; shape: 18,506 rows, 19 mixed features; risk: no leak, the open issues are the actor, bookkeeping and the harness).
 
@@ -114,26 +120,52 @@ CC (2026-11-05, Lennart): the 965 exact copies stay under LEAK-18 (few coarse fe
 
 CC (2026-11-05, Lennart): the scorer reads probability columns in the sorted order of the class labels (scikit-learn's classes_) and checks named columns; the ordered categories stay metadata (issue 5, C; MET-2).
 
-CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+
+CC (2026-11-13, Andrej): collection facts `Samples: Over Time` and `Time: Inferred` in place of `Samples: Unknown`:
+- The release stacks two batches of NBS's yearly exit survey. 6,390 of the 6,410 rows of the 2020 cut
+  (`tanzania_tourism_prediction`, ids `tour_0` to `tour_6474`) recur here with their full profile (99.7%). All 3,015
+  rows spelled `Wildlife Tourism` and all 1,436 with an empty `travel_with` are among them; the other 18,285 rows
+  spell the activity `Widlife Tourism` (8,035) and never leave `travel_with` empty. The file order is shuffled, so the
+  batch shows only through the 2020 cut and this coding.
+- The 2020 batch is the 2014 wave (fieldwork 25 August to 7 September 2014, seven departure points, 7,491
+  respondents): its visitor mix matches the 2014 report, in the same order of markets (table, shares of visitors).
+- The other 18,285 rows are later waves, first published in 2022 ("up-to-date information"), with a different mix
+  and higher spending in the same shilling bands; 2013, with Kenya its leading market, does not fit their 2.9%. They
+  are more than any one wave of 2013 to 2021 interviewed (at most 12,575, in 2013; 5,391 in 2021), so at least two
+  waves, which the release does not tell apart.
+- No row keeps a date, and neither cut has one; what survives is the order of the two batches, with a calendar for
+  the first only (as fremtpl2's IDpol blocks), so the time is inferred, not dated. Two batches are too few periods for
+  three windows.
+- No `Target:` fact: the spending is answered on the same exit form as the features. No `Entities: Recur`: repeat
+  visitors exist (`first_trip_tz`), but nothing links a respondent across waves (as 2024_lusaka_mobility).
+
+| Share of visitors (%) | 2014 report | 2014 batch | later batch |
+|---|---|---|---|
+| Leisure and holidays | 68.9 | 68.2 | 74.3 |
+| Visiting friends and relatives | 11.6 | 11.7 | 10.1 |
+| Business | 8.9 | 9.4 | 7.1 |
+| United States | 13.7 | 14.5 | 16.2 |
+| United Kingdom | 11.3 | 10.5 | 12.9 |
+| Kenya | 4.8 | 5.1 | 2.9 |
+| Zimbabwe | 4.5 | 4.2 | 1.4 |
+| Netherlands | 3.2 | 3.1 | 2.0 |
+| Canada | 2.4 | 2.1 | 3.4 |
+
+Sources: the NBS / Bank of Tanzania International Visitors' Exit Survey reports for 2013-2020 (bot.go.tz,
+nbs.go.tz; sample size and fieldwork in each report's methodology appendix). The 2014 report's purpose table
+(14,996 visitors) and its Chart 2.1 give the first column; the rows were linked to the waves by these shares.
+
+CC (2026-11-18, Andrej): the split stays as shipped under SPLIT-8 as amended today (cross-dataset decision on the period count, full-information split check): the data holds two survey batches (the 2014 wave and the later waves) for a task of 3 repeats, which needs four, too few to hold out whole periods; the forced step goes on to the unit question: one row per respondent, so random, as shipped.
+
+CC (2026-11-20, Andrej): collection facts:
+- The release is three survey waves, not "2014 and later waves" (correcting the CC of 2026-11-13): NBS's own per-year files on open.africa (organisation "Tanzania National Bureau of Statistics", the Tanzania Tourism Sector Survey 2012, 2013 and 2014, mirrored from statistics.go.tz) recur in the release. 2012 is matched row by row (6,047 of its 6,163 rows found); 2013 is the rest of that batch (2012 and 2013 hold 6,163 + 12,575 = 18,738 respondents against the batch's 18,285 rows, and both files spell `Widlife Tourism`, as the batch does); 2014 is the 2020 Zindi cut. Labelled rows: 2012 4,387, 2013 8,930, 2014 4,676, undecided 513.
 
 ## Review
 
-**Outcome:** added. The AI recommends shipping after a rebuild on your ask: the panel said ship after changes
-(mediator), and those changes, all text in `dataset.py`, are made; six calls are left (issues 3-8). Validity: USE-1
-holds with an approximate fit; USE-5 holds (the label is the party's total trip spending in Tanzanian shillings,
-cut at about 0.5M / 1M / 5M / 10M / 50M, now in the notes); USE-9 open, a better-fitting actor exists (issue 3);
-LEAK-10 holds (no leak, no exploit); the 965 exact copies kept as distinct respondents under LEAK-19 (issue 7), with
-a residual risk that some are two spouses of one party (LEAK-17), worth at most about 0.005 log loss; SPLIT-1 and
-SPLIT-4 hold; SPLIT-8 triggered, fixed by the `ForcedIIDFromTemporal` tag, which goes if issue 3 replaces the
-planner; PROV-1, PROV-4 and PROV-6 hold (the 2020 competition is an earlier subset, not shipped; issues 4 and 8);
-PROV-9 keeps 2022. Value: TP holds (prior 1.592, models 1.076-1.126, RF beats linear by 0.012, SE 0.001); MET-4
-holds; MET-2 holds for the definition, with a scorer risk (issue 5). Quality: CLEAN-3, CLEAN-11, CLEAN-14 and
-CLEAN-25 hold. Weighed: source + (NBS survey, the competition's metric), size +, use case − (actor mismatch), gap +
-(multiclass is thin).
+**Outcome:** added; ships as defined (Lennart, 2026-11-05). The split stays random 3 x 3 folds, `ForcedIIDFromTemporal` (issue 10, 2026-11-18); issue 9 withdrawn (2026-11-13).
 
-**Main points:** Keep the tour-operator actor, add the survey statistician next to it, or replace it (issue 3); then
-smaller calls: the copies kept under LEAK-19 (issue 7), a duplicate record for the 2020 cut (issue 4), confirming
-`mmu_2022` (issue 8), a guard on the scorer's class-column order (issue 5) and `checked_by` (issue 6).
+**Main points:** Nothing open on the time basis: the split stays as shipped (issue 10), and the collection facts are three dated survey waves, 2012-2014 (CC of 2026-11-20).
 
 **Record judgment:** valid; NBS's exit survey as Zindi published it in 2022, with the competition's own task and
 metric. Four out-of-date statements (the 2026-10-26 "retained in the review evidence", the screening's `mmu_2022`
@@ -382,6 +414,128 @@ line of 2026-11-04. The record fields agree with the definition.
    **Lennart (2026-11-05, change):** Option B: Add Lennart. add checked by
 
    **Resolved (2026-11-05, Lennart):** B. `checked_by` lists Lennart.
+
+9. **`CrossSectional` instead of `ForcedIIDFromTemporal`?**
+
+   * **Problem:**
+     - The definition is tagged `ForcedIIDFromTemporal`, a forward use case whose time was lost[^fo-9]. Since
+       2026-11-13 the time is inferred instead: the 2014 wave and at least two later waves (CC of 2026-11-13); two
+       batches are too few periods for three windows.
+     - The target is a present state measured with the features: the respondent's spending band, read from the rest of the same exit survey, and the use case reads it for new units at their own present[^cs-9].
+     - The tag alone changes: the split stays random.
+   * **Evidence (AI, 2026-11-13):** the recovered batches measure the drift of the relation, which either line can
+     give. Log loss, mean of 5 repeats; every setting trains on 4,676 rows:
+
+     | Test rows | Trained on | LightGBM | Logistic regression | Class prior |
+     |---|---|---|---|---|
+     | later waves (4,439) | 2014 wave | 1.161 | 1.148 | 1.597 |
+     | later waves | other later rows | 1.110 | 1.109 | 1.572 |
+     | later waves | random mix of both (the shipped split) | 1.118 | 1.116 | 1.574 |
+     | 2014 wave (1,558) | later rows | 1.391 | 1.291 | 1.644 |
+     | 2014 wave | other 2014 rows | 1.258 | 1.227 | 1.619 |
+
+     - Training on the 2014 wave and testing on the later waves costs +0.050 ± 0.011 (LightGBM) and +0.039 ± 0.005
+       (logistic regression) over training on as many later rows. The class mix alone accounts for +0.025.
+     - The bands are fixed shilling amounts, and the later rows spend more within one tour arrangement (independent:
+       Lower Cost 31.7% in 2014, 22.5% later; package tours: Higher Cost 44.7%, then 49.5%). That is prices, or edges
+       set anew for the later waves: the 0.5M-50M edges were rebuilt on 2,401 rows that are all 2014 rows. Either
+       counts as time affecting the target (SPLIT-32, question 4).
+     - The random split mixes both batches and costs only +0.007 against training on later rows alone. The features
+       tell the batches apart with ROC AUC 0.78 (the visitor mix); the label adds 0.004.
+     - The definition has no `Time basis:` line yet, so either option writes one.
+     - B fits the statistician, who fills in a respondent of the same wave. The planner estimates a trip before it is
+       made, and its spending arrives later. Lennart kept the forced tag for that reason on 2026-11-05 ("the planner
+       still looks forward").
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Stay `ForcedIIDFromTemporal` (implemented) | the tag stays; a `Time basis:` line names too few periods (two batches) and the measured cost of the forced split | the decision stands; keeps the planner's forward use | the tag claims a forecast the statistician does not make |
+     | B | `CrossSectional` | the tag and a `Time basis:` line naming the present state, the measured drift for later units and what a dated release would show | names the statistician's use case; no claim of a lost forward split | a new prototype on a decided tag; the planner's forward use is not named |
+
+   * **Recommendation:** A. **Decision:** A or B?
+
+   **Notes for the AI:** on B, swap the tag, write the line, add a CC line; the split does not change. On either
+   option, the line gives the measured drift above, and `splits_comment`'s "No valid window exists to measure that
+   cost" and `fit_reason`'s "No survey year" go.
+
+   [^cs-9]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`, whether the dates survive or not; its line says whether the drift of the relation was measured or is untested. A label that only arrives later is no present state.
+   [^fo-9]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
+
+   **Andrej (2026-11-13, discuss):** The data might be cross sectional, but the use case isn't, right?
+
+   **Answer (AI, 2026-11-13):** Right. The definition's question is the trip planner's, "Which spending category applies to a visitor's specified Tanzania trip?", a trip that has not happened yet, for which the realized trip only stands in; the survey statistician who fills in a missing band from the same form is cross-sectional, but Lennart added that actor on 2026-11-05 and kept `ForcedIIDFromTemporal` "since the planner still looks forward". The evidence above agrees: time affects the target (+0.050 log loss from the 2014 wave to the later ones), and two inferred batches are too few for windows, so the split is forced. The recommendation is now A: stay forced, with the line updated to the inferred time and the measured drift.
+
+   **Andrej (2026-11-13, ok):** As implemented, after the answer above.
+
+   **Resolved (2026-11-13, Andrej):** withdrawn: `CrossSectional` was dropped the same day (it named no split the existing prototypes do not give: a present state used later is forced or a measured `StationaryRelation`, used within the covered time `Retrospective`). The tag stays.
+
+10. **Split: two folds by survey batch (the 2014 wave against the later waves) instead of random 3-fold CV?**
+
+   * **Problem:**
+     - The relation moves between the two survey batches: within one tour arrangement the later rows spend more in the same shilling bands (independent travellers: Lower Cost 31.7% in 2014, 22.5% later), and training on the 2014 wave costs +0.050 log loss on later rows (LightGBM) over training on as many later rows, of which the class mix alone explains +0.025.
+     - Two batches (2014: 4,676 labelled rows; later waves pooled: 13,317) are too few for three windows, so the tree's forced step holds whole periods out (`ForcedGroupedFromTemporal`) instead of drawing random folds.
+     - The batch is not a column: it comes from matching each row's full profile to the 2020 Zindi cut, and 513 rows match a profile found in both batches.
+   * **Background:** The planner predicts for later trips, i.e. a later survey wave, but only two batches (2014, and 2015-2021 pooled) can be rebuilt, so no three windows. The visitor mix and spending shift between them, so whole batches are held out rather than a random split; the statistician's fill-in reading would give random. Confidence of the blind walk: medium.
+   * **Walk:** the questions as answered without the current split[^tree]:
+     - Whom, and when, does the model predict for? (use case): the surveyed population at a later round (the planner); the statistician's fill-in is the second reading. Evidence: Dossier use case: a tour operator or the Tourism Board estimates the spending band of a specified trip plan from historical visitor records, i.e. trips after the data; NBS / Bank of Tanzania fill in a departing respondent's band when the answer is missing, which happens inside a wave. The exit survey runs in yearly waves (fieldwork windows such as 25 Aug - 7 Sep 2014), so the forward use meets…
+     - Do the rounds give the windows the rule[^split-14] and the rule[^split-15] ask for? (data): no. Evidence: No date or wave column. The dossier's record rebuilds two batches: the 2014 wave (rows recurring from the 2020 cut, coded 'Wildlife Tourism' and with empty travel_with; visitor mix matches the 2014 NBS report) and a later batch of at least two waves (2015-2021) that cannot be told apart. Two rounds < three windows. No raw file locally to count further.
+     - ForcedFromTemporal: can the arrival order be reconstructed? (data): no. Evidence: The file order is shuffled and Tour_ID is opaque (tour_id + 8 random characters); the two batches are the order already used and found too short; nothing splits the later batch into its waves.
+     - Did the windows fail only for too few positives? (data): no. Evidence: Failed for too few rounds (2).
+     - Is there a reason to treat later samples as interchangeable? (measurement): neither: measured not flat. Evidence: The dossier's table: visitor mix moves between the 2014 batch and the later batch (Leisure 68.2% vs 74.3%, Kenya 5.1% vs 2.9%, Zimbabwe 4.2% vs 1.4%), and the later batch spends more in the same shilling bands. The target and the inputs both shift between the two periods.
+     - Is there an order with at least two periods to hold out? (data): yes. Evidence: 2014 batch vs later batch, rebuilt from the 'Wildlife'/'Widlife' spelling and empty travel_with (all 2014-batch rows carry the former spelling; the later rows never leave travel_with empty). About 6,390 of 24,675 source rows are 2014, so roughly 4,800 of the 18,506 labelled rows.
+   * **What the blind dossier lacked, and what it changes:** none. The definition ships Random · ForcedIIDFromTemporal (raw row order carries no time; no wave column); the record's CC of 2026-11-13 rebuilds the two batches but says two batches are too few periods for windows, without taking the tree's next step (periods held out when the relation is not flat). The batch shift (visitor mix, spending in the same bands) is in the record. Shipped random is a departure for the reviewer.
+   * **Missing from the blind dossier:** The splits_comment's row-order check (neighbouring labels agree 0.2211 vs 0.2228 by chance) and the grouped-by-profile cost (+0.0047 log loss).
+   * **Source split:** yes, competition (Zindi, AI4D Lab 2022): predefined Train.csv (18,506 rows) / Test.csv (6,169 rows) with public/private leaderboard, construction not stated ("Train.csv, Test.csv ('6,169 rows'); 'The dataset describes 24,675 rows of up-to-date information on tourist expenditure collected by the National Bureau of Statistics (NBS) in Tanzania'") https://zindi.africa/competitions/ai4d-lab-tanzania-tourism-classification-challenge/data. Credible: no, No construction or reason given; with no wave column in either file it reads as a random 75/25 draw, a competition convention.. Against the tree's leaf: no, The competition's test reads as a random draw from the pooled waves; the leaf holds out the 2014 batch against the later waves.
+   * **Key to split on:** survey batch: 2014 wave vs later waves, rebuilt from the raw 'Wildlife Tourism' vs 'Widlife Tourism' spelling and empty travel_with (must be computed before the spelling merge) (the key is not a column yet: the build computes it).
+   * **What changes:** `_load_raw` reads the 2020 Zindi cut (Train.csv of tanzania_tourism_prediction) beside the 2022 files; `_clean` adds the batch key from the profile match (2014: 4,676, later: 13,317, 513 resolved by a stated rule); `grouping` on that key; `data_tags` ForcedIIDFromTemporal becomes ForcedGroupedFromTemporal; `splits_comment`, `task_summary.split` and a new `Time basis:` line give the two batches and the +0.050 drift; the record's required_split becomes grouped.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: the tree's Survey branch lists this dataset as an example of 'Temporal · round'; ignored. My walk does not reach it, because only two rounds can be rebuilt.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Stratified random 3-fold CV, 3 repeats (12,337-12,338 train / 6,168-6,169 test rows), `ForcedIIDFromTemporal` (implemented) | No change; a `Time basis:` line names the two batches and the measured +0.050. | Nine folds of about 6,169 test rows; mixing both batches costs only +0.007 against training on later rows alone. | Every test fold has rows of its own survey wave in training, so it does not test a model on a wave it has not seen, the planner's forward use. |
+     | B | Two folds by survey batch: train the later waves (13,317 rows) and test the 2014 wave (4,676), then train the 2014 wave (25% of the rows) and test the later waves; `ForcedGroupedFromTemporal` | `_load_raw` also reads the 2020 cut's Train.csv; `_clean` derives the batch by profile match (not a feature) and `dataset.py` declares a `grouping` on it; the 513 ambiguous rows need a rule (a batch by majority, or dropped); `data_tags` becomes ForcedGroupedFromTemporal. | Tests a model on a survey wave it has not seen, where the relation moves (+0.050 log loss); the closest to the planner's next wave the data allows. | Two folds only; one trains on 25% of the rows and one tests backward in time; the build needs the 2020 cut as a second download. |
+
+   * **Recommendation:** B, because the relation is measured not flat across the two batches, and with too few periods for windows the tree holds whole periods out.. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). Applying a change: the definition's split declaration, its time basis tag and line, the record's CC line; if A is kept, the tree's departure table with the reason.
+
+   [^split-14]: **SPLIT-14** (Must): A temporal task has at least 3 windows.
+
+   [^split-15]: **SPLIT-15** (Must): The newest window is always a test window: it is the deployment period.
+
+   [^tree]: **SPLIT-36** (Should): walk the decision tree from the record's collection type, answering each question as if no split had been decided; a split the source prescribes is evidence, not an answer.
+
+   **Andrej (2026-11-17, discuss):** I don't understand what you suggest here. What exactly are you planning to group on?
+
+   **Answer (AI, 2026-11-17):** on a survey-batch column the build would derive; it is not in the release.
+
+   * **What the column is:** for each row, whether it belongs to the 2014 survey wave or to the later waves. The
+     2020 Zindi release of this challenge holds only the 2014 wave; our 2022 release holds it again plus the later
+     waves. A row whose full answer profile (every column but the id and the label) occurs in the 2020 file is put in
+     the 2014 wave, one that occurs only in the 2022 file in the later waves.
+   * **What the match gives:**
+
+     | Group | Labelled rows | Share |
+     |---|---|---|
+     | 2014 wave (profile in the 2020 file) | 4,676 | 25% |
+     | later waves (profile only in 2022) | 13,317 | 72% |
+     | profile in both files: undecided | 513 | 3% |
+
+   * **The folds:** two. Fold 1 trains on the later waves and tests the 2014 wave; fold 2 trains on the 2014 wave
+     (25% of the rows, under the 30% floor a time split needs) and tests the later waves. The 513 undecided rows need
+     a rule: dropped, or put in the batch where most of their copies sit.
+   * **Why at all:** within one tour arrangement the later waves spend more in the same shilling bands, and training on
+     the 2014 wave costs +0.050 log loss on later rows against training on as many later rows.
+   * **What it does not do:** the later waves (2015 to 2021) cannot be told apart, so no fold tests one later year
+     on the earlier ones.
+   * The second fold is weak (a quarter of the rows trains a model for the other three quarters); a single fold
+     (train later waves, test 2014) is the other way to use the column, but it tests backwards in time.
+
+   **Andrej (2026-11-17, discuss):** It seems like the tree has a mistake. I think the question is whether there are at least two periods which then leads to the grouped leaf, but it should actually be as many periods as needed to get to the minimum no. of splits for the data size.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: random 3 x 3 folds, `ForcedIIDFromTemporal`. The period count is amended as the note asks (SPLIT-8; cross-dataset decision of 2026-11-18): two batches are too few for a task of 3 repeats.
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after Lennart's PR #33 review of 2026-11-04.
 The mediator's issues 1-4 are issues 3-6 here (its issue 2 is split into issues 4 and 8).
@@ -983,7 +1137,7 @@ The closest precedent is open_university_learning_analytics_dataset, whose `age_
 - Typo and alias merges (`Widlife` into `Wildlife`, `UAE`, `BURGARIA`) are synonyms of existing levels.
 - Metric `Metric.source("log_loss")`, the competition's metric (MET-4; zillow_prize `mae` kept on the same grounds).
 
-**8. Contradictions inside the record (not precedent departures; worth one line on the review page):**
+**8. Contradictions inside the record (not precedent departures; worth one line in the review):**
 
 - **Panel history:** the 2026-10-26 AI assessment says independent claim and blind reviews, a debate, a mediator and a cold editor are "retained in the review evidence". The 2026-11-04 AI assessment says "no panel ran for this dataset". One of them is wrong. This pass also supersedes the latter.
 - **Priority gap factor:** the screening (2026-10-22) has "gap 0 (multiclass ... not thin)", while 2026-10-26 has "gap + (multiclass is thin among 133 accepted definitions)". The priority stays 4 either way.
