@@ -96,6 +96,7 @@ from data_foundry.schema import (
     TrainSampling,
     UnitWeight,
     as_column_list,
+    current_tag,
     resolve_warehouse_dir,
     rows_text,
 )
@@ -227,6 +228,8 @@ class RawLineage:
 
 
 _TEXT_FIELDS = ("download_description", "curation_comments", "splits_comment", "derivation")
+_SPLIT_LEAF = re.compile(r"L-[A-Z]+\.[a-z0-9-]+")
+"""The form of a leaf ID of the split tree (``data_foundry.curation.split_tree``)."""
 
 
 def clean_text(text: str | None) -> str | None:
@@ -516,12 +519,16 @@ class AbstractCuratedDataset(ABC):
     """The audit trail: the starting artifact, then one bullet per non-obvious decision."""
     time_basis: ClassVar[TimeBasis | None] = None
     """Why a split that is not temporal is not (SPLIT-32), or why a forward use case ships a forced split (SPLIT-8):
-    ``TimeBasis("Retrospective", "one census of 1990 ...; a later census stays untested")``. The build adds its tag
-    to ``data_tags`` and renders it as the ``- Time basis:`` bullet of ``curation_comments``; a human-set tag
+    ``TimeBasis("RetrospectiveFillIn", "one census of 1990 ...; a later census stays untested")``. The build adds its
+    tag to ``data_tags`` and renders it as the ``- Time basis:`` bullet of ``curation_comments``; a human-set tag
     (``StationaryRelation``, ``AssumedStationaryRelation``) also names ``set_by`` and ``on``."""
     group_basis: ClassVar[GroupBasis | None] = None
     """Why a split is random although the use case holds out a group the data cannot key (SPLIT-35): the build adds
     ``ForcedIIDFromGrouped`` and renders the ``- Group basis:`` bullet."""
+    split_leaf: ClassVar[str | None] = None
+    """The leaf of the split decision tree (SPLIT-36, ``split_tree.md``) the split comes from, by its ID
+    (``"L-FILL.unit"``). The tests check that the leaf exists and that the definition ships its split and tag, unless
+    the tree lists the definition as a departure from it."""
 
     # --- task ---------------------------------------------------------------------------------------
     target: ClassVar[str]
@@ -2163,7 +2170,7 @@ def _validate_time_basis(cls: type[AbstractCuratedDataset], fail: Callable[[str]
         for problem in value.problems() if value is not None else ():
             fail(f"`{name}`: {problem}.")
     comments = cls.curation_comments or ""
-    listed = [t for t in cls.data_tags if t in (*basis_rules.BASIS_TAGS, *GROUP_BASIS_TAGS)]
+    listed = [t for t in cls.data_tags if current_tag(t) in (*basis_rules.BASIS_TAGS, *GROUP_BASIS_TAGS)]
     handwritten = [kind for kind in ("Time", "Group") if basis_rules.lines(comments, kind)]
     if cls.time_basis is not None or cls.group_basis is not None:
         by_hand = [*(f"`{t}` from `data_tags`" for t in listed), *(f"the `{k} basis:` line" for k in handwritten)]
@@ -2470,6 +2477,8 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
     declared = basis_rules.tags_of(cls.time_basis, cls.group_basis)
     if not task and (set(cls.data_tags) & {*REGIME_TAGS, *FORCED_TIME_TAGS, *GROUP_BASIS_TAGS} or declared):
         fail("a parent (no `target`) has no split, so no regime tag; its children get theirs from their task.")
+    if cls.split_leaf is not None and not (isinstance(cls.split_leaf, str) and _SPLIT_LEAF.fullmatch(cls.split_leaf)):
+        fail('`split_leaf` names a leaf of the split tree by its ID, such as "L-FILL.unit" (SPLIT-36).')
     if task:
         _validate_time_basis(cls, fail)
     moved = [
