@@ -88,6 +88,8 @@ CC (2026-10-26, Lennart): verdict ship.
 
 CC (2026-11-19, Andrej): three half-year windows on the rebuilt entry date with a 60-day gap (Review issue 3, B): the order is rebuilt from file position within each block (survivors' Spearman 1.000 with their entry dates); Kumo-Tabular reads the relation flat, but where windows can be built the split is temporal.
 
+CC (2026-11-23, Andrej): built with ICPSR 2957 V2 parts 9 and 10 in place, so the check and the build ran on the shipped definition instead of a scratch copy: 0 errors and 0 warnings, 8,967 patients and 22 features, the three half-year windows as decided. The restore moves the day-3 physiology into the right row for 4,373 of the 9,105 support2 rows (48%); every row links to exactly one ICPSR patient.
+
 ## Review
 
 **Outcome:** added. Reopened by the full-information split check of 2026-11-18: the shipped split disagreed with the split tree; issue 3 is resolved (B, 2026-11-19): three half-year windows on the rebuilt entry date with a 60-day gap.
@@ -154,7 +156,7 @@ CC (2026-11-19, Andrej): three half-year windows on the rebuilt entry date with 
 
    **Andrej (2026-11-19, discuss):** Agree.
 
-   **Resolved (2026-11-19, Andrej):** B. Three half-year windows on the rebuilt entry date with a 60-day gap: 1993-07-01 to 1994-01-21 (1,216 patients, train 82.2%), 1993-01-01 to 1993-06-30 (1,247, 68.9%) and 1992-07-01 to 1992-12-30 (1,099, 56.1%); `entry_date` orders the split and is no input (`time_of="label"`); `ForcedIIDFromTemporal` and its `Time basis:` line are gone; the record's `required_split` reads Temporal; its facts keep `Time: Dated` (a Dated Event Log): the survivors' entry dates are exact (end of follow-up minus days followed), and the deaths are placed between them. The Kumo-Tabular measurement is in the notes as what the windows cost. Not rebuilt: the ICPSR files that restore phase II's physiology are not on this machine, so `dataset check` ran on a scratch copy (0 errors; `task_label_time_gap` and `splits_below_target` to accept with this decision). (2026-11-21: both are now accepted in the definition, with the label's 60-day delay and the training floor as their reasons; the build still waits on the ICPSR parts 9 and 10, which need an account.)
+   **Resolved (2026-11-19, Andrej):** B. Three half-year windows on the rebuilt entry date with a 60-day gap: 1993-07-01 to 1994-01-21 (1,216 patients, train 82.2%), 1993-01-01 to 1993-06-30 (1,247, 68.9%) and 1992-07-01 to 1992-12-30 (1,099, 56.1%); `entry_date` orders the split and is no input (`time_of="label"`); `ForcedIIDFromTemporal` and its `Time basis:` line are gone; the record's `required_split` reads Temporal; its facts keep `Time: Dated` (a Dated Event Log): the survivors' entry dates are exact (end of follow-up minus days followed), and the deaths are placed between them. The Kumo-Tabular measurement is in the notes as what the windows cost. Not rebuilt: the ICPSR files that restore phase II's physiology are not on this machine, so `dataset check` ran on a scratch copy (0 errors; `task_label_time_gap` and `splits_below_target` to accept with this decision). (2026-11-21: both are now accepted in the definition, with the label's 60-day delay and the training floor as their reasons. 2026-11-23: built on the shipped definition with the ICPSR parts in place - 0 errors, 0 warnings, 8,967 patients, three windows of 1,099 to 1,247 test patients training on 5,029 to 7,369.)
 
 ## Reference
 
