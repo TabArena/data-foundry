@@ -97,6 +97,8 @@ DataTags = Literal[
     "Timeless",  # the target is a fixed property of the item, and the data has no time dimension
     # the samples arise over time in the use case, but the data is one snapshot of a moment or period, and the use case
     #   looks back: it fills in what is missing for the time the snapshot covers, not a later time
+    "RetrospectiveFillIn",
+    # the old name of RetrospectiveFillIn, read until every definition uses the new one (RENAMED_TAGS)
     "Retrospective",
     # the use case scores later units, the stationary-relation test on dated data reads the relation flat, and a person
     #   signed off the measurement; never set by an AI on its own (data_foundry.time_basis.HUMAN_SET_TIME_TAGS)
@@ -124,12 +126,23 @@ RETIRED_DATA_TAGS = ("2ndTierData",)
 
 TIME_BASIS_TAGS = (
     "Timeless",
-    "Retrospective",
+    "RetrospectiveFillIn",
     "StationaryRelation",
     "AssumedStationaryRelation",
     "UnseenGroup",
 )
 """The use-case prototypes that justify a split that is not temporal (SPLIT-32)."""
+
+RENAMED_TAGS = {"Retrospective": "RetrospectiveFillIn"}
+"""Old names of time-basis tags and their new ones. An old name is still read as its new one (it was renamed while
+the split-rules stack wrote it into definitions); `dataset check` notes it (``meta_time_basis_renamed``), and the
+change that moves the last definition drops it."""
+
+
+def current_tag(tag: str) -> str:
+    """The tag's current name: ``tag`` itself, or the new name of a renamed tag (:data:`RENAMED_TAGS`)."""
+    return RENAMED_TAGS.get(tag, tag)
+
 
 FORCED_TIME_TAGS = ("ForcedIIDFromTemporal", "ForcedGroupedFromTemporal")
 """The forced splits of a forward use case without usable time (SPLIT-8)."""
