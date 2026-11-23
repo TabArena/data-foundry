@@ -93,9 +93,9 @@ model run used the 34-feature BeyondArena table with the biopsy findings, so its
 Quality: the ten findings typed as unordered categories (issue 2); one patient aged 0, kept with a note. Weighed: a
 stage the source describes and a clear model ranking +, a selected, small and old cohort -.
 
-**Main points:** All settled: ship the clinical-only task with the ten graded findings as numbers (issues 1, 2 and
+**Main points:** Settled: ship the clinical-only task with the ten graded findings as numbers (issues 1, 2 and
 4, resolved 2026-11-05); the random split is tagged forced from temporal with the measured cost of the file's two parts
-(issue 3, resolved 2026-11-10), and the forced tag stays (issue 7, resolved 2026-11-18); issue 5 was withdrawn.
+(issue 3, resolved 2026-11-10), and the forced tag stays (issue 7, resolved 2026-11-18); issue 5 was withdrawn. Open since 2026-11-23: issue 8 (the file parts' class shares make the relation not flat: `Too Small`, or a departure).
 
 **Record judgment:** valid. Settled by CC 2026-10-06 (Lennart: clinical features only), CC 2026-10-20 (Andrej: keep,
 selection named in the fit), CC 2026-10-27 (Lennart: fit approximate, the marker stays) and CC 2026-11-01 (Lennart: the
@@ -461,6 +461,42 @@ counts one pair because age breaks the other ties).
    **Andrej (2026-11-18, ok):** as implemented.
 
    **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (The rule lists structure in the file order as a fact against, and here it is measured as a sizeable cost.)
+
+8. **Keep the random split tagged forced from temporal, or retire the task as too small?**
+
+   * **Problem:**
+     - The shipped `Time basis:` line reads the file's two parts as two collection periods, and between them the share of seborrheic dermatitis falls from 24.3% to 10.2% (factor 2.4, chi-square p = 0.0005), which by itself makes the relation measured not flat[^dep-ery-flat].
+     - A relation measured not flat is held out by whole periods or the task is `Too Small`; two parts are fewer than the five periods its 20 repeats need (four even for 3 repeats), so the rules give `Too Small`, retired or kept on the curator's call[^dep-ery-small].
+     - The split tree does not list eryhemato as a departure; Lennart asked on 2026-11-23 that you make this call.
+   * **Background:**
+     - Class shares of the two parts, from the raw UCI file (rows 1 to 169 and 170 to 366):
+
+       | Diagnosis | Rows 1-169 | Rows 170-366 | Factor | Chi-square p |
+       |---|---|---|---|---|
+       | psoriasis | 44 (26.0%) | 68 (34.5%) | 1.3 | 0.10 |
+       | seborrheic dermatitis | 41 (24.3%) | 20 (10.2%) | 2.4 | 0.0005 |
+       | lichen planus | 33 (19.5%) | 39 (19.8%) | 1.0 | 1.0 |
+       | pityriasis rosea | 19 (11.2%) | 30 (15.2%) | 1.4 | 0.34 |
+       | chronic dermatitis | 23 (13.6%) | 29 (14.7%) | 1.1 | 0.88 |
+       | pityriasis rubra pilaris | 9 (5.3%) | 11 (5.6%) | 1.0 | 1.0 |
+
+     - The cost measured on 2026-11-09 points the same way: trained on a mix of both parts, as the random split does, logistic regression's log loss is 0.536 and 0.345, against 0.688 and 0.425 trained on the other part alone.
+     - The stationary-relation test itself would test one of the two parts only, a partial reading that is never the verdict; the class-share check needs no third period.
+   * **Unknown:** whether the parts are two periods, two examiners, or one series extended by diagnosis (issue 3); the source does not say.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Random split, `ForcedIIDFromTemporal` (implemented) | No change; the tree's departures table lists eryhemato with your reason | 60 splits; no rebuild | The line reads the parts as periods, and the rules then give `Too Small` |
+     | B | `Too Small`: retire it, or keep it on your call with a CC line | The leaf the forced step gives for a relation measured not flat with too few periods | Follows the line as written | Loses a clinical differential-diagnosis task |
+     | C | Random split, `ForcedIIDFromTemporal`, the line no longer reads the parts as periods | The `Time basis:` line names the parts as two examiners or a series extended by diagnosis, with the measured cost | With no periods nothing is measured, and the forced step gives this split; no departure | Rests on a reading of the file order the source does not state |
+
+   * **Recommendation:** none from the AI beyond what the rules give as written: B while the line reads the parts as periods; C if you read them otherwise; A stays only as a departure you confirm with its reason. **Decision:** A, B or C?
+
+   **Notes for the AI:** B: the record's suggestion `No (Retired)` with marker `Too Small` and a CC line, the folder leaves the working copy (or, kept on your call, the CC line only), and the split tree's "Retire · Too Small" names it. C: rewrite the `Time basis:` line as said, the tag unchanged. A: a departures-table row in `split_tree.md`.
+
+   [^dep-ery-flat]: **SPLIT-32** (Should): the relation "is not flat when one period or the averaged gap is not flat for one model, or when a class share moves by a factor of two or more between two periods at chi-square p < 0.01 (the change in recording above)".
+   [^dep-ery-small]: **SPLIT-32** (Should): "a relation measured not flat is held out only by whole periods, else `Too Small` (SPLIT-16)". **SPLIT-16** (Must): "where enough meaningful groups can be built to approximate the temporal split (whole periods, enough for the task's repeats, SPLIT-8), hold them out; where they cannot, the task is `Too Small`." **SPLIT-8** (Must): whole periods count only with "four periods for 3 repeats, five for 10 or 20". The split tree, ForcedFromTemporal step: "Retire · Too Small ... retired or kept only on the curator's call".
 
 ## Reference
 
