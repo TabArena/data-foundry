@@ -57,9 +57,9 @@ decision with its Resolved and CC lines; the departures table of `split_tree.md`
   baseline exam ships; the measured shift is one model family's once age is matched) instead of
   `ForcedIIDFromTemporal`.
 - Rule: a small table, in SPLIT-33's 20- or 10-repeat tier, whose order gives only three windows also gets the
-  stationary-relation test over them; a flat reading goes on to the forced step (a catalogue to its family-key
-  step), where a person may sign it off as `StationaryRelation`, otherwise the windows stay (SPLIT-32; the tree's
-  `[ORDER.small]` and `[CAT.small]`). The tree test allows an empty departures table.
+  stationary-relation test over them; a flat reading that a person signs off as `StationaryRelation` goes on to the
+  forced step (a catalogue to its family-key step), otherwise the windows stay (SPLIT-32; the tree's
+  `[ORDER.small]` and `[CAT.small]`, both questions a person answers). The tree test allows an empty departures table.
 
 ## 2026-11-23, split rules: window size, the running-id check and rebuilt orders (no container built)
 

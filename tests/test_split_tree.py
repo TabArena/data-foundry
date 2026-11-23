@@ -32,8 +32,9 @@ from data_foundry.v2 import discover_definitions
 REPO = resolve_curation_root().parent
 V02 = REPO / "datasets/_dev/tabarena-v0pt2"
 RECORDS = REPO / "curation/records"
-PERSON_QUESTIONS = {"CAT.exception", "ORDER.exception", "FORCED.reason", "FORCED.risk"}
-"""The questions "Who answers" names: the windows exception, the two reasons SPLIT-32 allows, the leakage risk."""
+PERSON_QUESTIONS = {"CAT.exception", "ORDER.exception", "CAT.small", "ORDER.small", "FORCED.reason", "FORCED.risk"}
+"""The questions "Who answers" names: the windows exception, a small table's flat reading signed off, the two reasons
+SPLIT-32 allows, the leakage risk."""
 
 
 @pytest.fixture(scope="module")
