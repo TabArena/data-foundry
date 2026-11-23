@@ -22,7 +22,6 @@ problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://zindi.africa/competitions/ai4d-lab-tanzania-tourism-classification-challenge/data
-v2_path: datasets/_dev/tabarena-v0pt2/ai4d_lab_tanzania_tourism_classification_challenge/dataset.py
 source_row: 901
 type_adapter_id: curation-record-v1
 ---
