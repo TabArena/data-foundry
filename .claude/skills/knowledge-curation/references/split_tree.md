@@ -261,7 +261,8 @@ it; new cases that arrive one by one)_
   with their dates lost, give no order; here: account_debt_south_africa, allstate_claim_prediction_challenge_1m,
   blood_transfusion)
 - new cases that arrive one by one → **Order and windows step** (time key: an order rebuilt from an id issued in
-  sequence or the export's row order; here: amazon_employee_access, aps_failure, fremtpl2)
+  sequence or the export's row order; here: amazon_employee_access, aps_failure, fremtpl2,
+  labour_inspection_compliance)
 
 ## Dated event log
 
