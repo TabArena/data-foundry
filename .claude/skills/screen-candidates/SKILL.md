@@ -161,7 +161,7 @@ existing note kept below it:
 - Source: <first publication, who, year>; as published: <rows x columns, target, tables>.
 - Use case: <actor, moment, decision>; fit <direct | approximate>; collection <the Samples, Time and Target facts>:
   <where time lives>; type <the data collection type, SPLIT-34>.
-- Split: leaf <the leaf of split_tree.md the type and the page reach, SPLIT-36: split · tag> because <the answers>;
+- Split: leaf <the ID and title of the split_tree.md leaf the type and page reach, SPLIT-36> because <the answers>;
   open <the questions the page leaves open, or none>.
 - Siblings and duplicates: <records checked, and what they decided>; external collections: <...>.
 - Better data: <the hit: link, units and years against this one's, its record `<name>`> | none found (<where we
