@@ -15,6 +15,7 @@ from data_foundry.v2 import (
     Source,
     SplitPlan,
     TaskSummary,
+    TimeBasis,
     drop_columns,
 )
 
@@ -173,7 +174,7 @@ class OpenUniversityLearningAnalyticsDataset(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Spatial", "ForcedGroupedFromTemporal")
+    data_tags = ("Spatial",)
     download_description = """
         The OU first published the release on its own page in 2015 (see below). We download it (anonymisedData.zip)
         from the authors' figshare deposit, the data citation of Kuzilek et al. (2017):
@@ -210,9 +211,20 @@ class OpenUniversityLearningAnalyticsDataset(AbstractCuratedDataset):
         - Anomaly: 93 Withdrawn registrations (0.35% of rows, all in 2014J presentations) have no date_unregistration and stay in the cohort. 84 of them have no click on days 46-59, against 22% of the withdrawals that have a date, and 19 never clicked, so most likely withdrew before day 60. We keep them: the date would be inferred from the label and the activity, and a filter on Withdrawn alone selects on the target. 45 registrations have no date_registration (7 in the cohort, kept missing).
         - Duplicates: one pair of rows shares all features but not the result (Fail and Withdrawn); we keep both as two real registrations.
         - Spread (TP-3): untuned model families score alike on the 9 splits (log-loss skill 0.173 random forest, 0.170 LightGBM, 0.162 logistic regression; the lead of 0.011 is within twice its paired standard error of 0.009). Kept pending tuned results (Lennart, 2026-10-22): re-check with the first tuned run.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
+        - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
     """
+    time_basis = TimeBasis(
+        "ForcedGroupedFromTemporal",
+        """
+        deployment trains on earlier
+        presentations, but four start dates cannot give three temporal windows with half of the rows before each, so
+        whole presentations are held out (the split bullet above). More presentations would allow a split by start
+        date.
+        """,
+        set_by="Lennart",
+        on="2026-10-21",
+    )
 
     # Task
     target = "final_result"
