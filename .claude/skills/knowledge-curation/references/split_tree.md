@@ -97,7 +97,7 @@ flowchart LR
   T -->|"catalogue: items it adds next, or not"| K["Catalogue questions,<br/>family-key step"]
   T -->|"experiment: a kind, a new item, a repeat"| E["Experimental results questions"]
   F -->|"labels arrive later"| O
-  O -->|"no order, or too few windows"| X["Forced step"]
+  O -->|"no order, too few windows,<br/>or a small table's three windows flat"| X["Forced step"]
   P --> LP["UnseenGroup, or units held out,<br/>or ForcedIIDFromGrouped"]
   F --> LF["RetrospectiveFillIn"]
   O --> LO["Temporal"]
@@ -173,8 +173,14 @@ materials not yet reported, or no scope stated → yes)_
     - yes →
       **Can the entry dates hold at least three test windows of the use case's size?** [CAT.windows] _(data and
       documentation; reads the span and density of the entry dates; the windows check)_
-      - yes → **Temporal · entry date** [L-CAT.entry-date]. Each period tested on the earlier ones; an item keys on its
-        first date, which orders the split and is no input; the gap by the gap rules. Examples: apistox, qsar_tid_11.
+      - yes →
+        **Is the table small, with only three windows, and does the stationary-relation test read flat over them?**
+        [CAT.small] _(measurement; as the same question of the order step: SPLIT-33's 20- or 10-repeat tier, three
+        windows, and the test over them; otherwise no)_
+        - no → **Temporal · entry date** [L-CAT.entry-date]. Each period tested on the earlier ones; an item keys on
+          its first date, which orders the split and is no input; the gap by the gap rules. Examples: apistox,
+          qsar_tid_11.
+        - yes, flat → **Family-key step**
       - no →
         **Does a person allow an exception that gives three windows: training down to 30%, wider windows than the use
         case's, or no gap?** [CAT.exception] _(person decides; SPLIT-14, SPLIT-10; an agent offers it with the numbers
@@ -376,9 +382,15 @@ point (a cohort scored at one baseline exam, hint: `Samples: One Moment`) → no
 - yes →
   **Can the order hold at least three test windows of the use case's size?** [ORDER.windows] _(data and
   documentation; reads the span and density of the time key; the windows check)_
-  - yes → **Temporal · windows on the time key** [L-ORDER.windows]. Each window tested on the earlier ones; the gap by
-    the gap rules; a rebuilt order orders the split and is no input. Examples: diabetes_130_us, hotel_booking_demand,
-    rossmann_store_sales.
+  - yes →
+    **Is the table small, with only three windows, and does the stationary-relation test read flat over them?**
+    [ORDER.small] _(measurement; reads SPLIT-33's tier (an IID split's training side under 2,500 units: 20 or 10
+    repeats), the number of windows the windows check gives, and the test of the checks section over those windows;
+    four windows or more, a larger table, or a reading not flat or inconclusive → no)_
+    - no → **Temporal · windows on the time key** [L-ORDER.windows]. Each window tested on the earlier ones; the gap by
+      the gap rules; a rebuilt order orders the split and is no input. Examples: diabetes_130_us, hotel_booking_demand,
+      infrared_thermography_temperature.
+    - yes, flat → **Forced step**
   - no →
     **Does a person allow an exception that gives three windows: training down to 30%, wider windows than the use
     case's, or no gap?** [ORDER.exception] _(person decides; SPLIT-14, SPLIT-10; an agent offers it with the numbers
@@ -392,7 +404,8 @@ point (a cohort scored at one baseline exam, hint: `Samples: One Moment`) → no
 ## Forced step
 
 Reached when a forward use case has no usable windows: the order is lost, every case is predicted at one point, or
-the windows are too few and no exception was allowed. It first asks for a reason to treat later samples as
+the windows are too few and no exception was allowed; or when a small table's only three windows read flat
+(`[ORDER.small]`). It first asks for a reason to treat later samples as
 interchangeable with the data's (SPLIT-32), the only way such a use case keeps a split that is not temporal; without
 one, the split is forced (SPLIT-8).
 
@@ -421,9 +434,10 @@ the source or a parent covers; no time, or one period → nothing measurable)_
     **Does a unit have several rows, and does the use case meet new units?** [FORCED.flat-units] _(data and
     documentation; the unit check)_
     - yes → **Grouped · `StationaryRelation` (the unit)** [L-FORCED.flat-unit]. Whole units held out; the reading in
-      the time basis, a later period untested. Examples: spanish_motor_insurance_coverage_level_2022_2024.
+      the time basis, a later period untested. Examples: horse_colic_survival, spanish_motor_insurance_coverage_level_2022_2024.
     - no → **Random · `StationaryRelation`** [L-FORCED.flat-random]. Random; the reading in the time basis, a later
-      period untested. Examples: bad_customer_detection, regensburg_pediatric_appendicitis.
+      period untested. Examples: bad_customer_detection, cirrhosis_patient_survival_prediction,
+      regensburg_pediatric_appendicitis.
   - yes, a reason where nothing can be measured →
     **Does a unit have several rows, and does the use case meet new units?** [FORCED.assumed-units] _(data and
     documentation; the unit check)_
@@ -475,11 +489,7 @@ check)_
 
 ## Definitions that ship another split
 
-These v0.2 definitions ship a split other than their leaf's; a reviewer confirmed each departure, for the reason given.
+These v0.2 definitions ship a split other than their leaf's; a reviewer confirmed each departure, for the reason given. None does at present.
 
 | Definition | Leaf | Ships | Reviewer | Date | Reason |
 |---|---|---|---|---|---|
-| cirrhosis_patient_survival_prediction | L-ORDER.windows | random 20 x 3, `ForcedIIDFromTemporal` | Andrej | 2026-11-19 | the three windows that can be built hold about 50 referrals each, and the stationary-relation test is inconclusive for 1976-77 |
-| ecoli_proteins | L-CAT.entry-date | random 20 x 3, `StationaryRelation` | Andrej | 2026-11-20 | windows would need a 37% training floor and hold 46 to 76 proteins each, and the relation over the entry years measures flat, narrowly |
-| horse_colic_survival | L-ORDER.windows | grouped by case 20 x 3, `StationaryRelation` | Andrej | 2026-11-20 | the relation along the case-number order measures flat (pooled ROC AUC -0.001 ± 0.012), for cases held out whole |
-| infrared_thermography_temperature | L-ORDER.windows | random 10 x 3, `StationaryRelation` | Andrej | 2026-11-20 | the relation measures flat on the two two-month windows that train on half the subjects or more |
