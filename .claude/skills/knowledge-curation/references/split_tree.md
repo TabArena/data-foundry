@@ -271,7 +271,8 @@ it; new cases that arrive one by one)_
   with their dates lost, give no order; here: account_debt_south_africa, allstate_claim_prediction_challenge_1m,
   blood_transfusion)
 - new cases that arrive one by one → **Order and windows step** (time key: an order rebuilt from an id issued in
-  sequence or the export's row order; here: amazon_employee_access, aps_failure, fremtpl2)
+  sequence or the export's row order; here: amazon_employee_access, aps_failure, fremtpl2,
+  labour_inspection_compliance)
 
 ## Dated event log
 
@@ -283,9 +284,12 @@ period the data covers (a record not taken, a value not read); cases after the d
 booking, a tariff))_
 - a place or group the data does not contain → **Place step** (here: heart_disease)
 - the gaps of the period the data covers → **Fill-in step**
-- cases after the data → **Order and windows step** (time key: the arrival date, or the scoring date where the open
-  cases are scored at a date such as a month-end or a tariff year's start; here: acquire_valued_shoppers_challenge,
-  bad_customer_detection, hotel_booking_demand)
+- cases after the data → **Order and windows step** (time key: the arrival date; the scoring date where the open
+  cases are scored at a date such as a month-end or a tariff year's start; or the order in which the targets arrived,
+  where a cut on the arrival date would train on cases that close inside the window and that order can be rebuilt from
+  the data: it is the strictest form of training only on closed cases, so it needs no gap, and it arrives with the
+  target, so it is no model input; here: acquire_valued_shoppers_challenge, bad_customer_detection,
+  california_house_prices_2020, hotel_booking_demand)
 
 ## Panel data
 
