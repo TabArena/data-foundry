@@ -332,7 +332,7 @@ CC (2026-11-20, Andrej): Review issue 3, A: seismic_bumps is kept although no tu
 
    [^split15]: **SPLIT-15** (Must for the newest window, Should for the others): aim at SPLIT-33's count, accept fewer, never under three; overlapping windows are only offered.
 
-**Review panel:** ship after changes, if you keep it (mediator). Tier full, 2026-11-19: claim, column and split auditors, domain practitioner, blind reviewer and task gamer (both outside the repository, via `claude -p` on Slurm), precedent checker, advocate and critic with one rebuttal each, mediator; the editor pass is the main session's. Claims: 25, 21 hold, 2 refuted (note numbers, fixed), 2 untested (the 2010 paper). Blind review: include with changes (few positives, `shift_order` no input, the dropped rows explained). Task gamer: the next test row gives a row's label (ROC AUC 1.000): an evaluation leak, fixed with the protocol line (LEAK-9). Agreed: the protocol line, `shift_order` no input, 84 shifts, the number fixes, the proxy target in `fit_reason`. Disputed: keep or `No Signal` (issue 3), which turns on the metric (issue 2).
+**Review panel:** ship after changes, if you keep it (mediator). Tier full, 2026-11-19: claim, column and split auditors, domain practitioner, blind reviewer and task gamer (both outside the repository), precedent checker, advocate and critic with one rebuttal each, mediator; the editor pass is the main session's. Claims: 25, 21 hold, 2 refuted (note numbers, fixed), 2 untested (the 2010 paper). Blind review: include with changes (few positives, `shift_order` no input, the dropped rows explained). Task gamer: the next test row gives a row's label (ROC AUC 1.000): an evaluation leak, fixed with the protocol line (LEAK-9). Agreed: the protocol line, `shift_order` no input, 84 shifts, the number fixes, the proxy target in `fit_reason`. Disputed: keep or `No Signal` (issue 3), which turns on the metric (issue 2).
 
 <details><summary>Mediator</summary>
 
@@ -349,7 +349,7 @@ Weighed: real use case +, source states weak signal +, small single-mine export 
 For the curator: metric; keep or No Signal; window length; overlapping windows (optional).
 ```
 
-**Decisive new measurement: TP-2 step 1 under log loss** (no `shift_order`, tuned by log loss on the temporal inner split, 20 shuffles; Slurm jobs 1397775/1397776; `panel/scratch/mediator/signal_logloss.py`)
+**Decisive new measurement: TP-2 step 1 under log loss** (no `shift_order`, tuned by log loss on the temporal inner split, 20 shuffles)
 
 | Windows | Method | Mean log loss | Shuffled | p | Windows better than the constant | Brier p |
 |---|---|---|---|---|---|---|
@@ -580,7 +580,7 @@ Wording: issue 1 reason -> SPLIT-17; issue 4 "Decisive" bullet should call gener
 **Advocate opening brief (seismic_bumps): ship with four wording fixes and one input change**
 1. Next-row read = evaluation leak (LEAK-9, Should, P4): conceded fact (2,577/2,577; 1.000 reading the neighbour). Not a data leak (features known at shift end; deployed model cannot see t+1). Harness: Data Foundry hands out positions only (src/data_foundry/v2/splits.py); scoring is the external harness's ("a recommendation; the harness decides", schema.py); order_rows sorts temporal tasks by time column (v2/preprocessing.py; CLEAN-23 Must) so test rows arrive in shift order with shift_order. Concession: note "rows ship shuffled and are scored one by one" is false, rewrite. LEAK-9: fix in scoring or a protocol line, not the data; a method learning from the test block is called out. Precedents: loan_default_prediction_imperial_college (Andrej 11-10, next test row lifts Gini 0.20->0.63, kept with protocol line), spanish_motor_coverage (Andrej 11-09), medical_facility_operational_data (Lennart 11-05, MAE 13.85->6.83). LEAK-9 has no severity grade. Shuffling test rows breaks CLEAN-23; order rebuildable via genergy/gpuls anyway. Remedy: standard protocol line in curation_comments and splits_comment.
 2. Real use case (source's own: destress shooting / withdraw workers); order proven (chain, 21-shift cycle); cleaning checks out; proxy target named in fit_reason, no retirement.
-3. TP-2 step 1 passes: LightGBM 0.593 (p 0.048, 20 shuffles), TabPFN 0.637 above all 5 shuffles (0.395-0.545); step 2 keeps (bank_marketing 0.586, acquire 0.654, hr_analytics 0.62-0.63); source expects weak. Concession: without shift_order LR/LGBM p 0.10, TabPFN (0.583) not shuffled -> run TabPFN without shift_order vs 20 shuffles on Slurm before sign-off.
+3. TP-2 step 1 passes: LightGBM 0.593 (p 0.048, 20 shuffles), TabPFN 0.637 above all 5 shuffles (0.395-0.545); step 2 keeps (bank_marketing 0.586, acquire 0.654, hr_analytics 0.62-0.63); source expects weak. Concession: without shift_order LR/LGBM p 0.10, TabPFN (0.583) not shuffled -> run TabPFN without shift_order vs 20 shuffles before sign-off.
 4. Not Trivial (TP-4): genergy same-rows screen of >=6 features; train-chosen feature 0.470; ratings 0.48-0.51; no published rule.
 5. Not Too Small (TP-9): all windows hold a bump; 14 >= 3; lung_adenocarcinoma precedent. Window: set 84 (measured 4 weeks): 15 windows, 1-10 bumps, 49, >=51.1% train.
 6. TP-10 leg 1 answered by panel/probes/baselines.txt: persistence (current shift's own bump >=1e4 J = last label) mean ROC AUC 0.488 over 14 windows vs models 0.59-0.64 (LGBM 0.605 baseline, TabPFN 0.637).
@@ -617,7 +617,7 @@ Joint state: fixes agreed (protocol line, time_of="label", window 84, number cor
 <details><summary>Critic's rebuttal</summary>
 
 **Critic rebuttal (seismic_bumps)**
-Agrees on nearly all remedies; one point open: TP-2 step 1 without shift_order (jobs 1397641/1397642).
+Agrees on nearly all remedies; one point open: TP-2 step 1 without shift_order.
 Agreed changes in order: (1) protocol line (LEAK-9) in notes + splits_comment, worded as loan_default; (2) shift_order time_of="label" (wine, labour); (3) window 84 (15 windows, 1-10 bumps, >=51.1%); (4) wording fixes (positives per tenth, energy drop, prep stretch, "15 windows" in record, test windows in later regime); (5) proxy target in fit_reason; (6) metric reason cites AAIA'16 AUC (not checked by critic); (7) sign off only after the no-shift_order check.
 Per point: 1 concede; 2 mostly concede, but "order proven" -> "adjacency proven; calendar cadence shown only for rows 150-905; all test windows after row 1380" (SPLIT-12, wording); 3 DISPUTE: passing numbers are with shift_order, which the advocate concedes is no input; without it LR 0.579 p 0.10, LGBM 0.588 p 0.10, TabPFN 0.583 untested; if none beats 20 shuffles at either length -> defining-column ladder No Signal, not keep under step 2 (step-2 precedents passed step 1 first); 4 concede (genergy x coal 0.674 same-rows screen, fact for a note); 5 concede; 6 concede (persistence 0.488); 7 concede.
 
@@ -625,7 +625,7 @@ Per point: 1 concede; 2 mostly concede, but "order proven" -> "adjacency proven;
 
 <details><summary>Signal run without shift_order</summary>
 
-**Decisive run: TP-2 step 1 without shift_order (jobs 1397643/1397644, 2026-11-19)**
+**Decisive run: TP-2 step 1 without shift_order (2026-11-19)**
 The panel's signal script (tuned on a temporal inner split, last 20% of each train side; same pipeline on shuffled training labels, 20 shuffles each; windows newest first, every window >= 50% training). p = (shuffles >= real + 1) / 21.
 | Method | 84 shifts (15 windows): mean ROC AUC | p | 86 shifts (14 windows): mean ROC AUC | p |
 | LR | 0.588 | 0.19 (shuffles 0.596, 0.608, 0.589 above) | 0.579 | 0.24 |
