@@ -74,7 +74,7 @@ moment (every row predicted at the same point) is one period, too few for window
 from it is forced, whether its target is of that moment, of unknown timing or arrives after it in a window closed for
 every row (coil_2000, mobile_churn, credit_card_clients_default): a random split then draws train and test from that
 one moment and tests other rows of it, not the next moment. Where the use case looks back, SPLIT-32 gives it
-`Retrospective`.
+`RetrospectiveFillIn`.
 Whole periods held out (`ForcedGroupedFromTemporal`, grouped by period where the data has an order: scan periods,
 study phases, visit months, course presentations) train also on later periods but still test a change between periods
 rather than random rows, closer to the shift a temporal split tests (lung_cancer_epithelial_genexp's six scan
@@ -201,7 +201,7 @@ later period, at a known group or at all groups at once; where the label still m
 2. **Does the use case look back, into the time the data covers?** In the use case the samples arise over time, but
    the data is one snapshot of a moment or a period, and what the use case wants is the missing information of that
    time, not of a later one: the value of a block group the census did not record, a site not yet mapped in a past
-   survey, the hours a logged week lacks, the clients a campaign did not inspect. That is `Retrospective` (houses,
+   survey, the hours a logged week lacks, the clients a campaign did not inspect. That is `RetrospectiveFillIn` (houses,
    wadden_sea_sibes_macoma_abundance, 5g_energy_consumption, fraud_detection_in_electricity_and_gas_consumption_1m).
    It needs that backward need: a one-moment release whose use case looks forward (prospects for a mailing, customers
    who will leave) is not retrospective: it is forced (SPLIT-8), whether its target is of that moment or arrives after
@@ -236,7 +236,7 @@ later period, at a known group or at all groups at once; where the label still m
    is not flat when one period or the averaged gap is not flat for one model, or when a class share moves by a factor
    of two or more between two periods at chi-square p < 0.01 (the change in recording above); flat when, for at least
    one model that beats the constant in every period, the averaged gap is flat; and inconclusive otherwise, which
-   counts as unmeasured. Whenever a split reaches this question (the ForcedFromTemporal step of SPLIT-36), two things
+   counts as unmeasured. Whenever a split reaches this question (the forced step of SPLIT-36), two things
    are attempted (amended 2026-11-18, Andrej): (1) where the data or a parent source holds temporal information (a date,
    a rebuilt order, two or more periods), the stationary-relation test is run and its verdict goes into the `Time
    basis:` line, where the AI offers `StationaryRelation` on a flat verdict for a person to decide; (2) where it holds
@@ -312,8 +312,8 @@ split.
 Why: the same split can stand for the use case or flatter it, depending on how the data arrived; recording the
 collection facts and the prototype makes that visible. Cases: the arrival study of the 177 v0.2 definitions
 (2026-11-04) and the review of 98 of them (2026-11-06) are the evidence; examples are houses and 5g_energy_consumption
-(`Retrospective`), bad_customer_detection (`StationaryRelation`, measured; thyroid_discordant's one-year extract looked
-so too, its 1984-1987 archive did not), musk (`Timeless`), heart_disease (`UnseenGroup`), heloc and
+(`RetrospectiveFillIn`), bad_customer_detection (`StationaryRelation`, measured; thyroid_discordant's one-year extract
+looked so too, its 1984-1987 archive did not), musk (`Timeless`), heart_disease (`UnseenGroup`), heloc and
 credit_card_clients_default (`ForcedIIDFromTemporal`, the second one shared moment).
 
 **SPLIT-34 (Should; relates to SPLIT-32).** Every record of a definition names how its source collected
@@ -365,7 +365,7 @@ Where more than one fits:
 What each type holds for the split: a catalogue its items, families and entry dates; experimental results the
 item or the run, which repeats across conditions; a clinical study patients who arrived over time with the dates lost
 or only an order rebuilt (SPLIT-8), sites and patients that may recur; a survey its sampled units and its rounds; a
-database snapshot one read moment (SPLIT-32's `Retrospective` where the use case looks back, otherwise forced by
+database snapshot one read moment (SPLIT-32's `RetrospectiveFillIn` where the use case looks back, otherwise forced by
 SPLIT-8) or arrivals whose time is lost or survives only as a rebuilt order (SPLIT-8); a dated event log the
 row's date (SPLIT-7, SPLIT-14) and the entities its events involve (SPLIT-9); panel data both the unit (SPLIT-24) and
 the occasion. `tests/test_collection_types.py` checks that each record has one type and that the date conditions of
@@ -401,24 +401,25 @@ nor for repeats of one entity the data does not identify, whose rows share one o
 entity can be rebuilt exactly, and SPLIT-25 retires the dataset where it cannot. Like a forced tag from temporal, it
 stays whatever a leak test finds, as the use case asks for another split. Why: a random score stands for items of groups
 already seen, and the tag tells a reader that the use case asks for more. Cases: bioresponse (`Timeless`; no structure
-or compound id, so no chemical series), covertype (`Retrospective`; no stand id or coordinates, and four wilderness
-areas are too few groups).
+or compound id, so no chemical series), covertype (`RetrospectiveFillIn`; no stand id or coordinates, and four
+wilderness areas are too few groups).
 
 **SPLIT-36 (Should; applies SPLIT-8, SPLIT-10, SPLIT-32, SPLIT-34 and SPLIT-35).** A definition's split is decided by
-walking the decision tree in [split_tree.md](split_tree.md) from its record's data collection type: the use case
-first, then what the data and its documentation allow, then a measurement where one decides. The leaf reached gives
-the split and the tag that justifies it (a time basis, a forced tag or `ForcedIIDFromGrouped`), and for a temporal
-split the date the windows are cut on and the gap. Answer each question from what it reads; a collection fact only
-points to where to look. A forced leaf, a leaf no definition has reached yet, and a question no answer fits go to a
-human reviewer with the split suggested and the facts behind it; only a reviewer adds a branch. A split the source
-prescribes answers a question only where the source chose it for the use case: matching the leaf, it fills in the
-leaf's periods, gap and training history (SPLIT-19); differing, the leaf decides (SPLIT-5). A definition that ships
-another split than its leaf names the leaf, what the source prescribed and the reason in its `splits_comment`, and the
-departure goes to a reviewer. The rules above still decide each step (the windows, the gap, the groups, the leak
-tests); the tree orders them. Why: the same questions asked in the same order make splits of similar data agree, and
-show where a dataset is new. Cases: the 175 v0.2 definitions placed when the tree was adopted and regenerated
-(2026-11-17); the definitions that ship another split, each departure confirmed by a reviewer, are listed at the end
-of split_tree.md.
+walking the decision tree in [split_tree.md](split_tree.md) from its record's data collection type: the use case first,
+then what the data and its documentation allow, then a measurement where one decides. The leaf reached gives the split
+and the tag that justifies it (a time basis, a forced tag or `ForcedIIDFromGrouped`), and for a temporal split the date
+the windows are cut on and the gap; the definition names it by its ID in `split_leaf`, and the tests check that it ships
+the leaf's split and tag. Answer each question from what it reads; a collection fact only points to where to look, and
+only a person answers the questions the tree marks _person decides_. A forced leaf, a leaf no definition has reached
+yet, and a question no answer fits go to a human reviewer with the split suggested and the facts behind it; only a
+reviewer adds a branch. A split the source prescribes answers a question only where the source chose it for the use
+case: matching the leaf, it fills in the leaf's periods, gap and training history (SPLIT-19); differing, the leaf
+decides (SPLIT-5). A definition that ships another split than its leaf names the leaf, what the source prescribed and
+the reason in its `splits_comment`, and the departure goes to a reviewer. The rules above still decide each step (the
+windows, the gap, the groups, the leak tests); the tree orders them. Why: the same questions asked in the same order
+make splits of similar data agree, and show where a dataset is new. Cases: the 175 v0.2 definitions placed when the tree
+was adopted and regenerated (2026-11-17); the definitions that ship another split, each departure confirmed by a
+reviewer, are listed at the end of split_tree.md.
 
 **SPLIT-37 (Should; relates to SPLIT-4, SPLIT-31 and SPLIT-32).** A dataset drawn from an **expanding science
 catalogue** is a cut of a database or a testing programme that keeps growing: a bioactivity database's releases, a
