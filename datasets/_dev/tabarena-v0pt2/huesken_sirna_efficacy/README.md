@@ -47,7 +47,7 @@ task:
       min: 10
       max: 10
 splits:
-  n_repeats: 10
+  n_repeats: 20
   n_folds: 3
   random_state: 4267
   time_horizon: null
