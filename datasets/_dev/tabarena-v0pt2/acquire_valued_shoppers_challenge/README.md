@@ -87,11 +87,11 @@ Built as `01a111fd-7588-73e4-bf55-26fb6336c1f4` on 2026-10-06, but `dataset.py` 
 
 **Known at prediction time.** The offer's value and date, the shopper's total spend, and how often, how many and for how much they had bought from the offered product's company, category and brand, in the 3 to 180 days before the offer and overall; not which product it is.
 
-**What the test data stands for.** Each test window is five days of offers, five windows from 6 to 30 April 2013; training is every earlier offer from 1 March 2013.
+**What the test data stands for.** Four test windows of five days, 11 to 30 April 2013, each trained on the offers from 1 March 2013 until five days before it.
 
 **Our changes to the source.** Following TabReD and a top competition solution, each shopper's purchase records are summarised into one row per shopper and offer.
 
-> **Use case fit: approximate (a stand-in with a known gap).** Everything the model sees is from before the offer, and later offers are tested. But the source states no period for the repeat purchase, so in use the newest offers' outcomes would not yet be known at a refit, while here every earlier offer comes with its final label.
+> **Use case fit: approximate (a stand-in with a known gap).** Everything the model sees is from before the offer, and later offers are tested after a five-day gap that keeps the outcomes of the test window's own offer wave out of training. But the source states no period for the repeat purchase, so in use offers of older waves may still lack their outcome at a refit, while here every training offer comes with its final label.
 
 ## Files in this folder
 
@@ -197,10 +197,22 @@ We follow the preprocessing from TabRed https://github.com/yandex-research/tabre
 - The preprocessing by TabRed collapses customer groups into single entries per customer. So we go from grouped-temporal data to only temporal data. Future work could look into a version without preprocessing.
 - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
   event, the class that sorts second, so it is the metrics' positive class.
+- Purchase history before the offer: the aggregation does not filter by date, but no purchase after the offer
+  reaches the features (the 0.6% of shoppers who bought the offer's brand in the 3 days before it repeat at
+  42.6%, those of the 7 and 14 days at 40%; checked 2026-11-06 on the shipped rows).
 
 ## Splits
 
-Expanding-window temporal splits: 5 test window(s) of 5 days, walking back from the newest data, newest first; train is all earlier data.
+A model is deployed for 5 days before it is refit (the test window of TabRed): four test windows of five days,
+11 to 30 April 2013, each trained on the offers made up to five days before it (56% to 69% of the rows).
+Arrival: each shopper is predicted on its offer day (1 March to 30 April 2013), from purchases before that day;
+the offers come in waves that run over a week, and the repeat label arrives after a period the source does not
+state, final for every row of the release. A repeat purchase is not known within days of the offer, so a refit
+at a window's start does not know the outcomes of the wave it scores; without the gap the five newest days add
+ROC AUC 0.061 where a window continues a wave (LightGBM, equal training size). The repeat period is not
+published: the gap removes the same-wave outcomes, not every open label. Four of the nine windows an IID split
+of this size would get: the data hold 61 days, and with five-day windows and the five-day gap the next window
+(6-10 April) would train on 41.4% of the offers (Andrej, 2026-11-19).
 
 5 repeat(s) x 1 fold(s) with seed 4267; train 90,387 to 140,701 rows, test 2,758 to 30,305 rows. Prediction horizon: 5 days.
 
