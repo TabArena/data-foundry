@@ -147,23 +147,23 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
 
         - The official data is updated daily. The CFPB publishes no model and no refit cadence, so we simulate a model that is refit every three months and then deployed. The quarter is our assumption: it is longer than the 15 to 60 days a closure takes (a company "provides a response within 15 calendar days" and has "up to 60 calendar days to provide a final response", https://www.consumerfinance.gov/compliance/consumer-complaint-program/company-process/; the 180 days we wrote before are the deadline of the optional public response), and a quarter holds 200k to 350k complaints.
         - This introduces the unrealistic downside of data shift within a quarter that a model refit more often would not meet.
-        - No gap. At the download of 2026-01-23, 70% of December, 14% of November and 7% of October 2025 were still in progress, so each train side holds one to two months of closures a refit at the start of the quarter would not yet know. We accept this because the archive's closures are final: every complaint closed in both the download of 2026-01-23 and the archive has the same closure in each.
+        - A one-month gap (Andrej, 2026-11-19): the train side ends a month before each quarter, as a refit at the start of the quarter would not yet hold most of the last month's closures (at the download of 2026-01-23, 70% of December, 14% of November and 7% of October 2025 were still in progress). Measured (2026-11-18, equal training size, 3 seeds): leaving out the 30 days before each quarter worsens log loss by 0.004 to 0.017, broadly rather than through company waves, so recent closures carry a shortcut a deployed model would not have. A 60-day gap would put July-September 2024 under half the complaints (49.6%).
 
-        We create 3 test windows of one quarter, newest first: October-December 2025 (203,139 complaints; train 3,236,122, 94.1% of the 3,439,261), January-March 2025 (350,790; train 2,277,019, 66.2%) and July-September 2024 (213,655; train 1,838,062, 53.4%). The newest quarter is always tested. The other two are spread evenly over the six quarters from July 2024 on, the oldest whose train side holds half the complaints, so they test other seasons and another year (the curator's choice of 2026-11-10) and hold the two changes a deployed model met in that time: July-September 2024 falls before the closure mix moved ("Closed with explanation" was 51% to 57% of each quarter of 2024 and 57% to 67% of 2025), and January-March 2025 holds the wave of January 2025 (165,305 complaints that month; 12.9% of the quarter about money transfers, mostly Block, Inc. (Cash App) and Early Warning Services (Zelle)).
-        We use all data before each quarter as training data. Each quarter keeps at most 500k of its rows (all of them here); each train side holds every earlier row, and a benchmark sub-samples it to 1M rows, by default the newest year before the quarter, extended back in time until it holds 1M rows, and a random 1M of those (`subsample_train`).
+        We create 3 test windows of one quarter, newest first: October-December 2025 (203,139 complaints; train 91.8% of the 3,439,261 after the gap), January-March 2025 (350,790; train 63.9%) and July-September 2024 (213,655; train 51.5%). The newest quarter is always tested. The other two are spread evenly over the six quarters from July 2024 on, the oldest whose train side holds half the complaints, so they test other seasons and another year (the curator's choice of 2026-11-10) and hold the two changes a deployed model met in that time: July-September 2024 falls before the closure mix moved ("Closed with explanation" was 51% to 57% of each quarter of 2024 and 57% to 67% of 2025), and January-March 2025 holds the wave of January 2025 (165,305 complaints that month; 12.9% of the quarter about money transfers, mostly Block, Inc. (Cash App) and Early Warning Services (Zelle)).
+        We use all data up to a month before each quarter as training data. Each quarter keeps at most 500k of its rows (all of them here); each train side holds every earlier row, and a benchmark sub-samples it to 1M rows, by default the newest year before the quarter, extended back in time until it holds 1M rows, and a random 1M of those (`subsample_train`).
     """
     # 3 quarterly windows, newest first: the newest quarter and two in other seasons and another year (SPLIT-15; the
     # curator's choice of 2026-11-10, option B), at the assumed 3-month refit horizon. The labels of all three quarters
     # are settled (the archive was exported on 2026-09-14, eight and a half months after 2025-12-31).
     temporal = Temporal(
         on="Date received",
-        splits=TemporalSplits(window=3, unit="months", cutoffs=("2025-10-01", "2025-01-01", "2024-07-01")),
+        splits=TemporalSplits(window=3, unit="months", gap=1, cutoffs=("2025-10-01", "2025-01-01", "2024-07-01")),
     )
     accepted_check_warnings = {
         "dataset_pure_feature_value": "Block, Inc. (Cash App) closes 99.8% of its complaints with an explanation "
         "throughout 2019-2025: a company response policy, and the company is known when the complaint is filed.",
         "time_newest_period_short": (
-            "Decided (Lennart, 2026-11-11, cross-dataset item): December 2025 holds 54,655 complaints against 73,058 to "
+            "Decided (Lennart, 2026-11-11): December 2025 holds 54,655 complaints against 73,058 to "
             "77,970 a month from September to November, as complaints still in progress when the archive was taken are "
             "left out (curation_comments, the closures in progress)."
         ),
