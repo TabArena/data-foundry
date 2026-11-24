@@ -247,15 +247,16 @@ def test_custom_sampling_checks_the_eligible_history_without_waiving_the_floor()
     """A cap is a draw from eligible history, and a genuinely short history must still fail."""
     sampled = {r: {0: (list(range(20)), [20, 21])} for r in range(3)}
     container = SimpleNamespace(experiment_metadata=SimpleNamespace(splits=sampled), dataset=range(25))
-    definition = SimpleNamespace(temporal=object(), _frame_rows=100)
-    assert any(r.slug == "splits_floor_core" for r in AbstractCuratedDataset._floor_findings(definition, container))
-    for sizes, expected_error in [([90, 70, 55], False), ([90, 45, 40], True)]:
+    definition = SimpleNamespace(temporal=object(), _frame_rows=100, _window_size_findings=lambda *_: [])
+    floor = "splits_train_under_floor"  # SPLIT-14: no window trains on under 30% of the rows
+    assert any(r.slug == floor for r in AbstractCuratedDataset._floor_findings(definition, container))
+    for sizes, expected_error in [([90, 70, 55], False), ([90, 45, 25], True)]:
         definition._before_sampling = SplitPlan(
             df=pd.DataFrame(index=range(100)),
             splits={r: {0: (range(size), [90, 91])} for r, size in enumerate(sizes)},
         )
         found = AbstractCuratedDataset._floor_findings(definition, container)
-        assert any(r.slug == "splits_floor_core" for r in found) is expected_error
+        assert any(r.slug == floor and r.severity == "error" for r in found) is expected_error
 
 
 @pytest.mark.parametrize(
