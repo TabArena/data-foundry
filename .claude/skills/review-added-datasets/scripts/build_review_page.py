@@ -58,6 +58,9 @@ except ImportError:  # pragma: no cover - depends on the environment
         "    uv pip install --python .venv/bin/python markdown-it-py",
     )
 
+from data_foundry import time_basis as basis_rules
+from data_foundry.curation.consistency import COLLECTION_TYPES, collection_type_problems, time_basis_problems
+from data_foundry.schema import FORCED_TIME_TAGS, GROUP_BASIS_TAGS, TIME_BASIS_TAGS
 from data_foundry.v2.dataset import DEFAULT_SPLITS_COMMENT, TaskSummary, definition_files
 from data_foundry.v2.metrics import Metric
 from data_foundry.v2.registry import load_definition
@@ -1313,28 +1316,42 @@ def _split_notes(comments: str | None) -> list[str]:
     return [MD.renderInline(b) for b in bullets if SPLIT_WORD.search(b)]
 
 
-TIME_BASIS = ("Timeless", "Snapshot", "DelayedTarget", "StationaryRelation")
-"""The definition's use-case prototypes (SPLIT-32), as in ``data_foundry.schema.TIME_BASIS_TAGS``."""
-FORCED = ("ForcedIIDFromTemporal", "ForcedGroupedFromTemporal")
-"""The definition's forced tags (SPLIT-8), as in ``data_foundry.schema.FORCED_TIME_TAGS``."""
-TIME_LINE = re.compile(r"Time basis:\s*(.+?)(?:\n\s*[-*]\s|\n\s*\n|$)", re.S)
+TIME_BASIS = (*TIME_BASIS_TAGS, *GROUP_BASIS_TAGS)
+"""The definition's use-case prototypes (SPLIT-32) and its group basis (SPLIT-35)."""
+FORCED = FORCED_TIME_TAGS
+"""The definition's forced tags (SPLIT-8)."""
+DECLARED_BASIS = re.compile(r"""time_basis = TimeBasis\(\s*["'](\w+)""")
+"""A ``time_basis`` declaration read from a definition's source when the class does not load."""
 
 
-def _time_basis(tags: list[str], comments: str | None) -> dict:
-    """The definition's time basis (a prototype or a forced tag) and its `Time basis:` line."""
-    m = TIME_LINE.search(comments or "")
+def _declared_tags(code: str) -> list[str]:
+    """The tags a definition's ``time_basis`` and ``group_basis`` add, read from its source."""
+    group = ["ForcedIIDFromGrouped"] if "group_basis = GroupBasis(" in code else []
+    return [*DECLARED_BASIS.findall(code), *group]
+
+
+def _time_basis(tags: list[str], comments: str | None, regime: str | None = None) -> dict:
+    """The definition's time basis (a prototype or a forced tag), its `Time basis:` line and its regime."""
+    line = basis_rules.parse(comments)
     return {
         "basis": next((t for t in tags if t in TIME_BASIS or t in FORCED), None),
-        "lineHtml": MD.renderInline(" ".join(m.group(1).split())) if m else "",
+        "lineHtml": MD.renderInline(line.reason) if line else "",
+        "regime": regime,
     }
 
 
 def _time_facts(split: dict, record_path: Path) -> None:
-    """Add the record's collection facts (SPLIT-32) to ``split["time"]``, next to the definition's time basis."""
+    """Add the record's collection type (SPLIT-34) and facts (SPLIT-32) to ``split["time"]``, by the time basis."""
     meta, _ = _frontmatter(record_path.read_text()) if record_path.is_file() else ({}, "")
     tags = [str(t) for t in meta.get("tags") or []]
     time = split.setdefault("time", _time_basis([], None))
     time["facts"] = [t for t in tags if t.split(":")[0] in ("Samples", "Time", "Target", "Entities", "Features")]
+    time["collection"] = next((t for t in tags if t in COLLECTION_TYPES), None)
+    regime = {"temporal_non_iid": "temporal", "iid": "iid"}.get(time.get("regime") or "", "grouped")
+    basis = {time["basis"]} - {None}
+    time["problems"] = (collection_type_problems(set(tags)) if time["collection"] or time["facts"] else []) + (
+        time_basis_problems(set(tags), basis, regime) if time.get("regime") else []
+    )
 
 
 def _split(readme: str | None, tags: list[str], comments: str | None) -> dict | None:
@@ -1370,7 +1387,7 @@ def _split(readme: str | None, tags: list[str], comments: str | None) -> dict | 
         "noteHtml": render(note) if note and note != DEFAULT_SPLITS_COMMENT else "",
         "tableHtml": MD.render(table) if table else "",
         "notes": _split_notes(comments),
-        "time": _time_basis(tags, comments),
+        "time": _time_basis(tags, comments, task["split_regime"]),
     }
 
 
@@ -1479,7 +1496,11 @@ def _live_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
         "code": code,
         "summary": _summary_from_class(cls),
         "metric": _metric_from_class(cls) or _metric_from_front(front.get("task") or {}),
-        "split": _split(readme.read_text() if readme.is_file() else None, list(cls.data_tags), cls.curation_comments),
+        "split": _split(
+            readme.read_text() if readme.is_file() else None,
+            list(cls.dataset_metadata.data_tags),
+            cls.dataset_metadata.curation_comments,
+        ),
         "temporal": _temporal_from_class(cls),
         "meta": _meta(regime, getattr(cls, "problem_type", None), front, retired=False),
         "readme": _readme(where.root / folder, f"{where.wc}/{folder}", where.github),
@@ -1511,7 +1532,7 @@ def _retired_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
         "metric": _metric_from_front(task),
         "split": _split(
             readme,
-            list(_literal_from_source(code, "data_tags") or ()) if code else [],
+            [*(_literal_from_source(code, "data_tags") or ()), *_declared_tags(code)] if code else [],
             _literal_from_source(code, "curation_comments") if code else None,
         ),
         "meta": meta,

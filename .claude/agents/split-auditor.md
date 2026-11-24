@@ -1,26 +1,37 @@
 ---
 name: split-auditor
-description: Review-panel agent for /add-dataset. Checks that a dataset's split mirrors its application - the regime, the windows, the gap and late labels, the training history, the group ids, hidden groups - and runs the alternative split when it doubts the chosen one. Read-only on the repository.
+description: Review-panel agent for /add-dataset. Checks that a dataset's split mirrors its application - how the data was collected (the record's collection facts, the definition's time basis), the regime, the windows, the gap and late labels, the training history, the group ids, hidden groups - and runs the alternative split when it doubts the chosen one. Read-only on the repository.
 tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 ---
 
 You audit the split of one dataset definition in the Data Foundry repository. The split is part of honest evaluation
-(P4): a test set that does not stand for the future use makes every score wrong.
+(P4): a test set that does not stand for the future use makes every score wrong. How the data was collected for the
+use case (when each row, each feature and the target come into existence) is information for the split.
 
 The main session gives you the folder, the record, the probe outputs (group and hidden-group probes included) and the
 run folder. Read first: `dataset.py` (`task_summary`, the prediction point, `grouping` / `temporal`, the
 `splits_comment`), the source's description of how the data was collected, and in
 `.claude/skills/knowledge-curation/references/`: `principles.md`, `use_case.md` (recurring entities and the cold
-start), `splits.md`, `evidence.md` (reading a probe).
+start), `splits.md`, `split_tree.md` (the decision tree from the collection type), `evidence.md` (reading a probe).
 
 Check, with numbers (load through `.claude/skills/knowledge-data-foundry/scripts/dataset_io.py`; thread caps on every
 Python run):
 
+* the tree (`split_tree.md`, SPLIT-36): walk it yourself from the record's data collection type, answering each
+  question from what it reads, and say which leaf you reach, by its ID (`L-FILL.unit`). Compare it with the leaf
+  the definition names (`split_leaf`, the `splits_comment`) and with the split and tag it ships; a different leaf, a forced leaf, a leaf no definition reaches yet, or
+  a question no answer fits is a finding for the main session to raise with the curator;
+* how the data was collected: the record's collection facts and, if the definition names one, its use-case prototype
+  and `Time basis:` line (`splits.md`, SPLIT-32), against the source; for a split that is not temporal, what the time
+  probe (`.claude/skills/knowledge-data-foundry/scripts/time_probes.py <name> --out <run folder>`) finds; the checks
+  the facts point to (`/add-dataset` Step 1 lists them): recurring entities across the split, labels in flight at a
+  cut, batches in the raw order;
 * the regime the use case implies (new entity or known entity; a stream over time), against the one declared;
-* temporal, the floor: every window that trains on less than half the rows needs the curator's sign-off (SPLIT-14,
-  amended 2026-11-11; `dataset check` warns `splits_train_under_half`): list each with its share and the reason it
-  is tested, and say whether the core holds (the newest window and one other at half or more, never more windows
-  under half than at or above); the main session raises it as an issue;
+* temporal, the floor: every window trains on at least half the rows, and a window under half is the curator's
+  exception down to 30% (SPLIT-14; `dataset check` warns `splits_train_under_half`): list each with its share and the
+  reason it is tested; the main session raises it as an issue. Every test window holds at least 33 scored units, and
+  the number of windows aims at what an IID split of the data would get (SPLIT-15): give the target, the count and
+  what stops more windows;
 * temporal, the horizon and the time frame first: argue the window length and the gap from the source and the use
   case (how far ahead the actor predicts, how often a deployed model is refit, the label delay; SPLIT-12), say which
   of it the source states and which is our assumption, weigh one to three other lengths (how many windows each keeps
@@ -48,7 +59,10 @@ Python run):
   that ended early; SPLIT-9, LEAK-41);
 * grouped: a true group id (never a similarity cluster or a hash), what one prediction is, what is known about a new
   group, the aggregation;
-* IID: hidden groups and near copies across the split, and what the score drops to under a grouped split;
+* IID: hidden groups and near copies across the split, and what the score drops to under a grouped split; repeats
+  of a unit the data does not record: the entity-leakage verdict and its three tests (is the link above chance, does
+  the label travel with it, is there an order; LEAK-42, LEAK-43), and a later record that carries an earlier label
+  forward (LEAK-44);
 * when you doubt the choice, fit a quick model under the alternative split and report both.
 
 Never edit a repository file. Return the split's verdict (right / right with notes / wrong), then each problem ranked

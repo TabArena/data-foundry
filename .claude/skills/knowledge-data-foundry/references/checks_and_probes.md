@@ -60,11 +60,13 @@ K=.claude/skills/knowledge-data-foundry/scripts
 .venv/bin/python $K/leak_probes.py <unique_name> --raw [--splits 3] [--max-rows 50000] [--n-jobs 8] [--out DIR]
 .venv/bin/python $K/leak_probes.py <unique_name> --weight-proxy [--weight-column COLUMN] [--objective metric|l2|OBJ] [--seeds 3] [--splits 3] [--max-rows 50000]
 .venv/bin/python $K/leak_probes.py <unique_name> --forced-split [--time-on COLUMN] [--period Y|Q|M|W|D] [--objective metric|l2|OBJ] [--seeds 3] [--forced-splits 9] [--max-rows 50000]
+.venv/bin/python $K/leak_probes.py <unique_name> --stationary-relation [--time-on COLUMN] [--period Y|Q|M|W|D] [--unordered] [--unit COLUMN|none] [--exclude COLUMN ...] [--windows 3] [--test-period LABEL ...] [--stationary-seeds 5] [--foundation none|tabpfn|kumo] [--device cpu|cuda] [--threads N]
 .venv/bin/python $K/task_probes.py <unique_name> [--built] [--splits N] [--no-text] [--out DIR]   # or --all --jobs 8
 .venv/bin/python $K/group_probes.py <unique_name> [--repeats 3] [--permutations 100]
 .venv/bin/python $K/hidden_groups.py <unique_name> [--built] [--include-grouped] [--out DIR]     # or --all
 .venv/bin/python $K/generated_probes.py <unique_name> [--built] [--out DIR]                     # or --all
 .venv/bin/python $K/dtype_probes.py <unique_name> [--codebook URL] [--no-fetch] [--out DIR]    # or --all --jobs 4
+.venv/bin/python $K/time_probes.py <unique_name> [--built] [--include-temporal] [--out DIR]     # or --all --jobs 4
 .venv/bin/python $K/tuned_results.py <unique_name> [--feature auto]
 ```
 
@@ -99,11 +101,13 @@ K=.claude/skills/knowledge-data-foundry/scripts
   the rate times the weight is a whole count and Tweedie (power 1.5) for any other non-negative rate; L2 otherwise. Run
   the other fit too (`--objective l2`), as LEAK-41 decides on the worse. A flagged feature is judged by its timing
   (LEAK-41): one known at the quote stays (USE-6), even when its weight-mediated share is high through risk selection.
-  On a split tagged `ForcedGroupedFromTemporal` or `ForcedIIDFromTemporal` the default run ends with probe 23
+  On a split tagged `ForcedGroupedFromTemporal`, `ForcedIIDFromTemporal` or `AssumedStationaryRelation` (which replaces
+  a forced tag) the default run ends with probe 23
   (leak_checks.md, "Probe 23"; `curation_probes.leak.period_outcome` and `shared_units`), and `--forced-split` runs it
   alone: the period-outcome test on the period column it finds or `--time-on` names (it says so when there is none), and
   the shared-unit test on the group column and the exact profiles, with regularised LightGBM fits on `--forced-splits`
   splits (default 9) x `--seeds` seeds, about one to one and a half minutes on 87,000 to 354,000 rows.
+  `--stationary-relation` runs the stationary-relation test alone (below, "The stationary-relation test").
 * `task_probes.py`: dummy baselines against three untuned model families (a fourth on more than 1,000 inputs:
   `selected_linear`, the linear model on the 500 inputs a univariate F-test picks on each train side), on every shipped
   split up to 30 for a dataset of at most 5,000 scored units and the first 5 otherwise, scored per group for a
@@ -135,12 +139,85 @@ K=.claude/skills/knowledge-data-foundry/scripts
   no number in a column of numbers are listed: often proxy missing codes (`.b`, `-3`) that made a count categorical
   (CLEAN-10). UCI types coded answers as `Integer` too, and names often differ from the codebook's (the output says how
   many matched): read the codebook where they do. A flag is a question; the meaning decides.
+* `time_probes.py`, for a split that is not temporal (SPLIT-32, question 3): does the data still carry a time order?
+  It is model-free and fast. It lists the columns that look like time (a date dtype, a time word in the name such as
+  date, year, month, week, season, period, wave or cohort, or whole numbers between 1900 and 2100 only; names that say
+  a duration or an age are left out, and so are fractional numbers outside 1900-2100 and numbers named with `dt`, a
+  delta t such as `edge_dt`), the raw columns of that kind the definition drops, the target along the raw row
+  order and along each ID-like column (whole numbers, nearly one per row, named like an ID or following the row order;
+  an ID the definition dropped is read through the rows' raw positions), and few-valued columns that move together and
+  encode a period (yearly unemployment, inflation and GDP; at least 50 rows per period). Along the raw order it also
+  looks for rows that repeat one block later (company-years stored year block by year block: in windows of 500 rows,
+  a lag whose rows are very close, below the 1st percentile of random pairs, far more often than at the lags around
+  it), runs of one entity in consecutive rows (a counter such as an admission number that goes up by 1 while fixed
+  fields such as age and sex repeat, and the share of each class on a run's last row), and, in a file sorted by class,
+  features that drift along a class's rows (the class block is several pieces: sources or periods; not when one
+  feature sorts the block). Flags: `time_column`, `time_dropped`, `order_drift`, `id_drift`, `period_values`,
+  `periodic_blocks`, `entity_runs`, `class_block_drift`, and `sorted_by_target` for an order that follows the target in
+  blocks (a file sorted by class), which is how the file was put together, not a clock, unless `class_block_drift`
+  says the blocks are pieces. A flag that is not explained away is a sign that the data carries time: information for
+  the split, which it does not decide. `--root` names the definitions; the raw files come from the local warehouse
+  (`$DATA_FOUNDRY_WAREHOUSE`). `--built` reads the README's build from the local warehouse, else a collection's copy
+  from the cache (`~/.cache/data_foundry/<collection>/`, `$DATA_FOUNDRY_CACHE`); a container's rows were shuffled, so
+  the dropped columns and every check of the row order are left out, and the output says so.
 * `tuned_results.py`: the per-fold BeyondArena results of tuned and default methods cached under
   `~/.cache/tabarena/artifacts/` (`methods/<method>/results/hpo_results.parquet`), set against a dummy on the same
   splits of the shipped container; `--feature auto` adds the raw-feature test of TP-4. The runs used the shipped
   format-1 containers: say so when the v2 definition changed the split, the columns or the scoring.
 * `check_collection_bundles.py [--collection BeyondArena] [--json PATH]`: the bundle checks over every container of a
   registered collection, for the v1 collections ([DATA_FOUNDRY_V1.md](../../../../DATA_FOUNDRY_V1.md)).
+
+### The stationary-relation test
+
+SPLIT-32 lets a forward use case without usable windows keep a random split, or one grouped by the unit, as
+`StationaryRelation` only when the target and its relation to the features are measured flat across the periods the data
+holds. `leak_probes.py <unique_name> --stationary-relation` measures it, the same way for every dataset
+(`curation_probes.stationarity`):
+
+* **Periods:** the period column probe 13 finds or `--time-on` names, cut by `--period`. The windows are the newest
+  `--windows` periods (default 3) with at least 40 rows and 40 rows before them, whatever their training share
+  (SPLIT-14's floor is for a split's windows, not for this test); with `--unordered` (periods without an order, such as
+  month classes) every period is a window and the other periods stand in for the rows before it. Columns that name the
+  period (the period column, `--exclude`) are left out of the features. A run on fewer than the newest three
+  (`--test-period`, one job per window, or fewer `--windows`) reports `verdict: partial` with its own reading;
+  `curation_probes.stationarity.combine_runs` joins the jobs' JSON results into the verdict.
+* **Test half:** per seed, a random half of the window's rows; where a unit recurs and the use case meets new units
+  (`--unit`, default the definition's group column; `none` for rows), whole units are drawn, and the test half's units
+  leave every training side.
+* **Two models, scored on the same test half:** a forward model trained on every row before the window, and a
+  contemporaneous model trained on as many rows: the window's whole other half, filled up by a random draw from the rows
+  before it. A constant predictor (the forward side's weighted mean or class shares) is scored beside them.
+* **Models:** probe 23's regularised LightGBM with the task's objective and training weight, on all rows; and one
+  state-of-the-art tabular foundation model, on at most `--max-foundation-train` (20,000) training and
+  `--max-foundation-test` (5,000) test rows drawn by the same rules: TabPFN v3.5 (`--foundation tabpfn`; the public
+  `tabpfn` package with the public Hugging Face weights, categories as codes named categorical) or NVIDIA's
+  Kumo-Tabular (`--foundation kumo`; the optional package `structured-data-models`, large, 8 estimators, the mean of its
+  quantiles as the point for squared-error metrics, the median for absolute-error ones). Both models are scored by the
+  task's metric, the training weight included. A time basis quotes the two and names the foundation model.
+* **Seeds:** `--stationary-seeds` (5); each draws the test half, the contemporaneous fill and the models' seeds anew.
+* **Gap and floor:** the gap is how much worse the forward model scores than the contemporaneous one (positive when
+  worse, whatever the metric's direction), its mean and SD over the seeds; the floor is 1% of the distance between the
+  contemporaneous model and the constant predictor.
+
+The verdict:
+
+* **Per window and model:** not flat when the mean gap exceeds both 2 SD and the floor; flat when it does not, the
+  contemporaneous model beats the constant, and 2 SD is at most ten floors (the test could have shown a gap of a few
+  floors); inconclusive otherwise, which includes a model without skill.
+* **Pooled:** the gap averaged over the windows (its SD: the root of the windows' summed variances, divided by their
+  number), read like a window, so a small dataset gets the evidence of all its windows, both ways.
+* **The relation:** not flat when one window or the pooled gap is not flat for one model, or when, for classification,
+  a class share changes by a factor of 2 or more between two periods at chi-square p < 0.01 (a change in recording,
+  SPLIT-32); flat when, for a model that beats the constant in every window, the pooled gap is flat; inconclusive
+  otherwise. A target rate that moves less is reported, not counted. With no window, the test says `not measurable`.
+
+A flat relation lets a person set `StationaryRelation`: the AI offers it with the reading, and the definition's `Time
+basis:` line, which opens `StationaryRelation (<person>, <YYYY-MM-DD>):`, quotes the windows' gaps against their floors;
+not flat leaves the forced tag; inconclusive counts as unmeasured, so the forced tag stays unless a person gives
+`AssumedStationaryRelation` a reason (SPLIT-32). The run prints one line per window and model and, with `--out`, writes
+the result as JSON. Run the foundation model on a GPU node started through SkyPilot (the `skypilot` skill): TabPFN
+v3.5 refuses a CPU, and Kumo-Tabular is slow there (on 48 cores, about 50 s per fit on 2,000 training rows and 270 s on
+20,000; `--device cuda`).
 
 A sweep over the working copy (`--all`, for example after a rebuild) writes its output to a scratch folder, never into
 git; the rebuild runs it ([rebuild.md](rebuild.md), step 6).

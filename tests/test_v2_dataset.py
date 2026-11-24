@@ -26,6 +26,7 @@ from data_foundry.schema import DATA_FOUNDRY_WAREHOUSE_ENV, TrainSampling
 from data_foundry.v2 import (
     AbstractCuratedDataset,
     DatasetDefinitionError,
+    GroupBasis,
     Grouping,
     Metric,
     RowBudget,
@@ -33,6 +34,7 @@ from data_foundry.v2 import (
     TaskSummary,
     Temporal,
     TemporalSplits,
+    TimeBasis,
     cast_dtypes,
     decode,
     discover_datasets,
@@ -429,21 +431,46 @@ def _define(**attrs: object) -> type[AbstractCuratedDataset]:
         ({"categorical_features": ("a",)}, "`_feature_types`"),
         ({"data_tags": "Spatial"}, "tuple of tags"),
         ({"data_tags": ("2ndTierData",)}, "retired"),
-        ({"data_tags": ("ForcedGroupedFromTemporal",)}, "marks a grouped split"),
+        ({"time_basis": TimeBasis("ForcedGroupedFromTemporal", "x")}, "holds out whole groups"),
         (
             {
-                "data_tags": ("ForcedIIDFromTemporal",),
+                "time_basis": TimeBasis("ForcedIIDFromTemporal", "x"),
                 "grouping": Grouping(on="g", labels="per_group", definition="x"),
             },
             "marks an IID split",
         ),
         (
             {
-                "data_tags": ("ForcedIIDFromTemporal",),
+                "time_basis": TimeBasis("ForcedIIDFromTemporal", "x"),
                 "temporal": Temporal(on="t", splits=TemporalSplits(window=7, unit="days", n_windows=2)),
             },
             "marks an IID split",
         ),
+        ({"data_tags": ("Retrospective",)}, "declare (it|the time basis) as `time_basis = TimeBasis"),
+        (
+            {"time_basis": TimeBasis("Retrospective", "x"), "data_tags": ("ForcedIIDFromTemporal",)},
+            "drop `ForcedIIDFromTemporal` from `data_tags`",
+        ),
+        (
+            {"time_basis": TimeBasis("Retrospective", "x"), "curation_comments": "- Time basis: x"},
+            "drop the `Time basis:` line",
+        ),
+        (
+            {
+                "time_basis": TimeBasis("Retrospective", "x"),
+                "temporal": Temporal(on="t", splits=TemporalSplits(window=7, unit="days", n_windows=2)),
+            },
+            "this split is temporal",
+        ),
+        ({"time_basis": "Retrospective"}, "must be a `TimeBasis"),
+        ({"time_basis": TimeBasis("DelayedTarget", "x")}, "is no time basis"),
+        ({"time_basis": TimeBasis("Timeless", "x", set_by="Lennart")}, "go together"),
+        ({"time_basis": TimeBasis("Timeless", "x", set_by="Lennart", on="2026-13-01")}, "is not a date"),
+        (
+            {"time_basis": TimeBasis("StationaryRelation", "flat over the two periods held, by the test")},
+            "only a person",
+        ),
+        ({"group_basis": GroupBasis("")}, "the reason is empty"),
     ],
 )
 def test_class_validation_rejects_bad_definitions(attrs: dict, match: str) -> None:
@@ -720,7 +747,7 @@ def test_grouping_is_stored_in_a_format_2_task() -> None:
 
 def test_forced_grouped_tag_keeps_the_automatic_regime_tags() -> None:
     grouping = Grouping(on="g", labels="per_group", definition="One group is a toy.")
-    cls = _define(grouping=grouping, data_tags=("ForcedGroupedFromTemporal",))
+    cls = _define(grouping=grouping, time_basis=TimeBasis("ForcedGroupedFromTemporal", "too few periods for windows."))
     assert cls.dataset_metadata.data_tags == ["Non-IID", "Grouped", "ForcedGroupedFromTemporal"]
 
 
@@ -2016,3 +2043,113 @@ def test_a_spectrum_with_missing_intensities_is_flagged(tmp_path: Path, warehous
     warnings = [r for r in result.bundle_report.results if r.slug == "dataset_spectrum" and r.severity == "warning"]
     assert warnings, result.bundle_report.summary()
     assert "1 row(s)" in warnings[0].message
+
+
+@pytest.mark.parametrize("tag", ["Timeless", "Retrospective"])
+def test_a_time_basis_adds_its_tag_and_renders_its_line(tag: str) -> None:
+    """`time_basis` adds the tag to `data_tags` and the `Time basis:` bullet to the curation comments (SPLIT-32)."""
+    cls = _define(time_basis=TimeBasis(tag, "one census on\n    1 April 1990."), curation_comments="- Read the CSV.")
+    assert cls.dataset_metadata.data_tags == ["IID", tag]
+    assert cls.dataset_metadata.curation_comments.endswith(
+        f"- Read the CSV.\n- Time basis: {tag}: one census on 1 April 1990."
+    )
+
+
+STATIONARY = TimeBasis(
+    "StationaryRelation",
+    "the stationary-relation test reads flat, LightGBM +0.001 +- 0.010 against a floor of 0.003 pooled over 2023 "
+    "and 2024.",
+    set_by="Andrej",
+    on="2026-11-20",
+)
+
+
+def test_a_stationary_relation_needs_a_person_and_the_measurement() -> None:
+    """Only a person sets `StationaryRelation`, on the test's flat reading: `set_by`, `on` and the measurement."""
+    with pytest.raises(Exception, match="only a person sets"):
+        _define(time_basis=dataclasses.replace(STATIONARY, set_by=None, on=None))
+    with pytest.raises(Exception, match="not a person"):
+        _define(time_basis=dataclasses.replace(STATIONARY, set_by="Claude"))
+    with pytest.raises(Exception, match="shorter than 8 words"):
+        _define(time_basis=dataclasses.replace(STATIONARY, reason="flat."))
+    cls = _define(time_basis=STATIONARY)
+    assert cls.dataset_metadata.data_tags == ["IID", "StationaryRelation"]
+    assert (
+        "- Time basis: StationaryRelation (Andrej, 2026-11-20): the stationary"
+        in cls.dataset_metadata.curation_comments
+    )
+
+
+def test_a_time_basis_note_renders_after_its_date() -> None:
+    """A note on the basis's history renders in the brackets after the date and reads back (``time_basis.parse``)."""
+    from data_foundry import time_basis as basis_rules
+
+    basis = dataclasses.replace(STATIONARY, note="`ForcedIIDFromTemporal` before")
+    comments = _define(time_basis=basis).dataset_metadata.curation_comments
+    assert "(Andrej, 2026-11-20; `ForcedIIDFromTemporal` before): the stationary" in comments
+    line = basis_rules.parse(comments)
+    assert (line.tag, line.set_by, line.on, line.note) == (
+        "StationaryRelation",
+        "Andrej",
+        "2026-11-20",
+        "`ForcedIIDFromTemporal` before",
+    )
+
+
+def test_a_group_basis_sits_beside_the_time_basis() -> None:
+    """`group_basis` adds `ForcedIIDFromGrouped` and its `Group basis:` line; it marks an IID split (SPLIT-35)."""
+    basis = GroupBasis("no structure, so no series can be held out.")
+    with pytest.raises(Exception, match="`ForcedIIDFromGrouped` marks an IID split"):
+        _define(group_basis=basis, grouping=Grouping(on="g", labels="per_sample", definition="x"))
+    with pytest.raises(Exception, match="declare (it|the time basis) as `time_basis = TimeBasis"):
+        _define(data_tags=("ForcedIIDFromGrouped",), curation_comments="- Group basis: no structure.")
+    cls = _define(time_basis=TimeBasis("Timeless", "a property of the molecule."), group_basis=basis)
+    assert cls.dataset_metadata.data_tags == ["IID", "Timeless", "ForcedIIDFromGrouped"]
+    assert cls.dataset_metadata.curation_comments.endswith("- Group basis: no structure, so no series can be held out.")
+
+
+def test_assumed_stationary_relation_needs_a_person_and_a_reason() -> None:
+    """Only a person sets `AssumedStationaryRelation`: who, when and why (SPLIT-32)."""
+    reason = (
+        "one clinic's ultrasound diagnosis over a year, a relation that practice does not move; the dates are lost."
+    )
+    with pytest.raises(Exception, match="not a person"):
+        _define(time_basis=TimeBasis("AssumedStationaryRelation", reason, set_by="AI", on="2026-11-20"))
+    cls = _define(time_basis=TimeBasis("AssumedStationaryRelation", reason, set_by="Lennart", on="2026-11-20"))
+    assert cls.dataset_metadata.data_tags == ["IID", "AssumedStationaryRelation"]
+
+
+def test_unseen_group_needs_a_grouping() -> None:
+    with pytest.raises(Exception, match="`UnseenGroup` holds out whole groups"):
+        _define(time_basis=TimeBasis("UnseenGroup", "a new hospital."))
+    cls = _define(
+        time_basis=TimeBasis("UnseenGroup", "a new hospital."),
+        grouping=Grouping(on="g", labels="per_sample", definition="x"),
+    )
+    assert "UnseenGroup" in cls.dataset_metadata.data_tags
+
+
+def test_grouped_split_takes_a_time_basis() -> None:
+    cls = _define(time_basis=STATIONARY, grouping=Grouping(on="g", labels="per_group", definition="x"))
+    assert "StationaryRelation" in cls.dataset_metadata.data_tags
+
+
+def test_the_old_way_is_read_until_the_move_completes(monkeypatch: pytest.MonkeyPatch) -> None:
+    """A forced tag in `data_tags` and a free-text line still load while `ALLOW_UNSTRUCTURED` holds, also a line that
+    names a tag the definition does not list yet; once it is False, the definition must declare `time_basis`.
+    """
+    from data_foundry import time_basis as basis_rules
+
+    monkeypatch.setattr(basis_rules, "ALLOW_UNSTRUCTURED", True)
+    old_way = {"data_tags": ("ForcedIIDFromTemporal",), "curation_comments": "- Time basis: time lost."}
+    assert "ForcedIIDFromTemporal" in _define(**old_way).dataset_metadata.data_tags
+    _define(curation_comments="- Time basis: StationaryRelation: flat over two periods.")
+    monkeypatch.setattr(basis_rules, "ALLOW_UNSTRUCTURED", False)
+    with pytest.raises(Exception, match="declare the time basis as `time_basis = TimeBasis"):
+        _define(**old_way)
+
+
+def test_an_unacceptable_finding_cannot_be_accepted() -> None:
+    """Errors the rules allow no exception for cannot be listed in `accepted_check_warnings`."""
+    with pytest.raises(Exception, match="cannot be accepted"):
+        _define(accepted_check_warnings={"splits_train_under_floor": "a reason"})

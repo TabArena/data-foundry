@@ -45,7 +45,8 @@ import pandas as pd
 
 from data_foundry.curation_container import CuratedContainer, non_feature_columns
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
-from data_foundry.schema import DatasetMetadata, as_column_list, training_only_weight
+from data_foundry import time_basis as basis_rules
+from data_foundry.schema import TIME_BASIS_TAGS, DatasetMetadata, as_column_list, current_tag, training_only_weight
 from data_foundry.utils.checksum import categorical_details
 from data_foundry.utils.dtypes import is_str_dtype, object_columns
 
@@ -469,6 +470,9 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
     # a special feature's columns are checked by its kind: a SMILES is unique per molecule by nature (an input, not a
     # row id), and a spectrum's intensity of 999 is a reading, not a code for a missing value
     special = {c for f in getattr(ctx.task, "special_features", None) or () for c in f.columns}
+    # a time column declared as a label time (`Temporal(..., time_of="label")`) orders the split and is no model
+    # input; where that order was rebuilt from the data (SPLIT-22) it is a running id by construction, not a leak
+    order_column = ctx.task.time_on if getattr(ctx.task, "time_of", None) == "label" else None
     for column in df.columns:
         series = df[column]
         n_unique = series.nunique(dropna=True)
@@ -484,6 +488,7 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
         is_integer = pd.api.types.is_integer_dtype(series.dtype) and not pd.api.types.is_bool_dtype(series.dtype)
         if (
             column != ctx.target
+            and column != order_column
             and is_integer
             and unique_per_row
             and int(series.max()) - int(series.min()) < 2 * ctx.n_rows
@@ -537,7 +542,8 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
             f"{len(sequential)} integer column(s) hold one value per row, densely numbered like a running id: "
             f"{sequential[:5]}.",
             hint="A running id often encodes the order of collection (time) or the origin (a prefix per source), which "
-            "a model then learns. Drop it, or declare it `NonFeature(column, 'identifier')` in the parent.",
+            "a model then learns. Drop it, declare it `NonFeature(column, 'identifier')` in the parent, or, where it "
+            "is the rebuilt order the split cuts on, declare it `Temporal(..., time_of='label')`.",
         )
     if unused_categories:
         formatted = ", ".join(f"{c} (+{n})" for c, n in unused_categories[:5])
@@ -2027,7 +2033,7 @@ def _check_data_tags(ctx: _Ctx) -> Iterator[CheckResult]:
                 "warning",
                 f"`data_tags` claim {sorted(wrong)} but the task defines an IID split.",
                 hint="Either set `time_on`/`group_on`, or fix the tags (`ForcedIIDFromTemporal` is the tag for "
-                "temporal data shipped without a usable time index).",
+                "temporal data shipped without a usable time index, SPLIT-8).",
             )
     else:
         if expected not in tags and "GroupedTemporal" not in tags:
@@ -2059,6 +2065,54 @@ def _check_data_tags(ctx: _Ctx) -> Iterator[CheckResult]:
                 hint="Tag the regime that the split actually uses; describe the other structure in "
                 "`curation_comments`.",
             )
+
+
+_TIME_BASIS_HINTS = {
+    "meta_time_basis_missing": "Declare `time_basis = TimeBasis(...)`: a use-case prototype ("
+    + ", ".join(t for t in TIME_BASIS_TAGS if t not in basis_rules.HUMAN_SET_TIME_TAGS)
+    + ") or a forced tag (`ForcedIIDFromTemporal`, `ForcedGroupedFromTemporal`) with the fact behind it, SPLIT-32.",
+    "meta_time_basis_on_temporal": "Drop the time basis: a temporal split needs none.",
+    "meta_time_basis_unattributed": "Only a person sets it (SPLIT-32): on the stationary-relation test's flat reading "
+    "(`StationaryRelation`) or for a reason from the dataset's domain or use case (`AssumedStationaryRelation`); "
+    "otherwise keep the forced tag.",
+    "meta_time_basis_line_missing": "Name the reason (time lost, or too few periods) and what a dated release would "
+    "change, as `time_basis = TimeBasis(tag, reason)` (SPLIT-8, SPLIT-32).",
+    "meta_time_basis_unstructured": "Declare it as `time_basis = TimeBasis(tag, reason)`; the build renders the line.",
+    "meta_time_basis_regime": "Make the split what the tag says, or change the tag (SPLIT-8, SPLIT-35).",
+    "meta_time_basis_mismatch": "The line and the tag come from one `time_basis = TimeBasis(...)`.",
+    "meta_time_basis_several": "Keep the one time basis that says why the split is not temporal (SPLIT-32).",
+    "meta_time_basis_lines": "Keep one `Time basis:` line: the one `time_basis = TimeBasis(...)` renders.",
+    "meta_group_basis_missing": "Declare `group_basis = GroupBasis(reason)`: the group, why the data cannot key it, "
+    "and the overlap the random split leaves (SPLIT-35).",
+}
+
+
+@_check
+def _check_time_basis(ctx: _Ctx) -> Iterator[CheckResult]:
+    """A format-2 split says why it is not temporal: its time basis (``data_foundry.time_basis``) checked as the
+    definition checks it, and the date columns of data that is not split by time.
+    """
+    if ctx.container.format_version < 2:
+        return
+    tags = list(ctx.dataset_metadata.data_tags)
+    comments = ctx.dataset_metadata.curation_comments
+    task = ctx.container.task_metadata
+    temporal = ctx.regime == "temporal_non_iid"
+    grouped = getattr(task, "grouping", None) is not None
+    for slug, severity, message in basis_rules.problems(tags, comments, temporal=temporal, grouped=grouped):
+        yield CheckResult(slug, severity, message, hint=_TIME_BASIS_HINTS.get(slug))
+    if temporal or ctx.df is None:
+        return
+    prototypes = {current_tag(t) for t in tags} & set(TIME_BASIS_TAGS)
+    explained = "RetrospectiveFillIn" in prototypes or (basis_rules.parse(comments) is not None and not prototypes)
+    dated = [c for c in ctx.df.columns if c != ctx.target and pd.api.types.is_datetime64_any_dtype(ctx.df[c])]
+    if dated and not explained:
+        yield CheckResult(
+            "meta_time_present_unused",
+            "info",
+            f"Date columns {dated} are in the data, and the split is not temporal.",
+            hint="Information for the split (SPLIT-32): the data carries dates.",
+        )
 
 
 @_check

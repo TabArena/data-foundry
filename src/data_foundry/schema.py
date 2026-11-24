@@ -91,17 +91,65 @@ DataTags = Literal[
     # Other context tags (not statistical information!)
     "Spatial",  # data that contains spatial/geographical information
     "Anonymized",  # data that has no semantic meaning anymore on purpose
-    # data that is IID by construction of the data.
-    #   - e.g. temporal data that is missing the timestamp
+    # Use-case prototypes that justify an IID or grouped split of data that is not IID (SPLIT-32); one per definition,
+    #   never on a temporal split, declared as `time_basis = TimeBasis(...)` (data_foundry.time_basis), which renders
+    #   the `Time basis:` line of `curation_comments`.
+    "Timeless",  # the target is a fixed property of the item, and the data has no time dimension
+    # the samples arise over time in the use case, but the data is one snapshot of a moment or period, and the use case
+    #   looks back: it fills in what is missing for the time the snapshot covers, not a later time
+    "RetrospectiveFillIn",
+    # the old name of RetrospectiveFillIn, read until every definition uses the new one (RENAMED_TAGS)
+    "Retrospective",
+    # the use case scores later units, the stationary-relation test on dated data reads the relation flat, and a person
+    #   signed off the measurement; never set by an AI on its own (data_foundry.time_basis.HUMAN_SET_TIME_TAGS)
+    "StationaryRelation",
+    # the use case scores later units, the relation cannot be measured (no date survives, or the stationary-relation
+    #   test is inconclusive), and a person judged earlier and later samples interchangeable for a reason from the
+    #   domain or the use case; replaces a forced tag, never set by an AI on its own (time_basis.HUMAN_SET_TIME_TAGS)
+    "AssumedStationaryRelation",
+    # the use case aims at groups the data does not hold (a hospital, a well, a protein, a chemical family), not at a
+    #   later period: whole groups held out
+    "UnseenGroup",
+    # Forced from temporal (SPLIT-8): a forward use case whose target time affects, but no usable time or too few
+    #   periods; the closest split, IID or grouped, with a `Time basis:` line that names the reason.
     "ForcedIIDFromTemporal",
-    # a task temporal by its use case, split grouped because it has too few periods for three test windows
     "ForcedGroupedFromTemporal",
+    # Forced from grouped (SPLIT-35): the use case holds out a group of distinct items (a family, a site, an area) the
+    #   data cannot key; an IID split beside the time basis, with a `Group basis:` line
+    "ForcedIIDFromGrouped",
     # Retired (2026-10-21): kept readable for containers that carry it; new definitions refuse it (RETIRED_DATA_TAGS).
     "2ndTierData",
     "WrongDomain",  # Task that was transformed to another domain (like audio) to tabular.
 ]
 RETIRED_DATA_TAGS = ("2ndTierData",)
 """Tags old containers may carry and loading accepts, but a new definition may not set."""
+
+TIME_BASIS_TAGS = (
+    "Timeless",
+    "RetrospectiveFillIn",
+    "StationaryRelation",
+    "AssumedStationaryRelation",
+    "UnseenGroup",
+)
+"""The use-case prototypes that justify a split that is not temporal (SPLIT-32)."""
+
+RENAMED_TAGS = {"Retrospective": "RetrospectiveFillIn"}
+"""Old names of time-basis tags and their new ones. An old name is still read as its new one (it was renamed while
+the split-rules stack wrote it into definitions); `dataset check` notes it (``meta_time_basis_renamed``), and the
+change that moves the last definition drops it."""
+
+
+def current_tag(tag: str) -> str:
+    """The tag's current name: ``tag`` itself, or the new name of a renamed tag (:data:`RENAMED_TAGS`)."""
+    return RENAMED_TAGS.get(tag, tag)
+
+
+FORCED_TIME_TAGS = ("ForcedIIDFromTemporal", "ForcedGroupedFromTemporal")
+"""The forced splits of a forward use case without usable time (SPLIT-8)."""
+
+GROUP_BASIS_TAGS = ("ForcedIIDFromGrouped",)
+"""Why a split is not grouped although the use case holds out a group (SPLIT-35); beside the time basis, not one."""
+
 ProblemType = Literal["binary_classification", "multiclass_classification", "regression"]
 ProblemTypeClassification = [
     "binary_classification",

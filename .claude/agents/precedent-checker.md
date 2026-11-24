@@ -18,7 +18,11 @@ For each decision:
 
 1. Find the closest precedents: the same rule ID, the same marker or mechanism, sibling records (`grep -il` over
    `curation/records/` by source, name, collection), the settled issues in the records' `## Review` sections (the
-   curator's turns and the `**Resolved (<date>, <who>):**` turns), the Cases tables of the knowledge files.
+   curator's turns and the `**Resolved (<date>, <who>):**` turns), the Cases tables of the knowledge files. For a
+   split decision, also the definitions under the same leaf of the decision tree
+   (`.claude/skills/knowledge-curation/references/split_tree.md`, walked from the record's collection type: the
+   leaf's examples, the definitions whose `split_leaf` names it, and the table "Definitions that ship another
+   split"), which are its closest precedents.
 2. Compare the facts that matter for the rule. Follows: say which precedent. Departs: is there a fact that sets this
    case apart, written down or evident from the data? Is it a reasonable exception (a Should yielding to a higher
    principle) or would it break a higher-ranked Must?

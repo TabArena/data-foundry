@@ -51,12 +51,13 @@ errors, and `dataset build` refuses to save while any remains.
 ## Step 0: Gather inputs and claim
 
 Read `curation/records/<unique_name>.md`: the front matter and the comments, above all the screening block (the
-source, the use case, the regime, the risks). Verify its claims as you go instead of redoing its research; a
-measurement on the data supersedes what screening read from the page. No record: stop and point to
-`/screen-candidates`. Claim the records first, in the curator's name: `claims claim <names> --stage add --note
-"add-dataset"` ([claims.md](../knowledge-data-foundry/references/claims.md)); it pushes the claim to the board and
-writes `WIP (DF)` and `claimed_by` into the records. Never work on a dataset another curator holds: a name the command
-skips is left out and reported.
+source, the use case, the collection facts and the regime, the risks) and the record's collection facts (the
+`Samples:`, `Time:`, `Target:`, `Entities:` and `Features:` tags; SPLIT-32). Verify its claims as you go instead of
+redoing its research; a measurement on the data supersedes what screening read from the page. No record: stop and
+point to `/screen-candidates`. Claim the records first, in the curator's name: `claims claim <names> --stage add
+--note "add-dataset"` ([claims.md](../knowledge-data-foundry/references/claims.md)); it pushes the claim to the board
+and writes `WIP (DF)` and `claimed_by` into the records. Never work on a dataset another curator holds: a name the
+command skips is left out and reported.
 
 A batch (several names or a dashboard filter) runs one `dataset-builder` agent per source unit for steps 0-6
 ([agent_runs.md](../knowledge-data-foundry/references/agent_runs.md)); the main session then runs the panel (step 7)
@@ -67,8 +68,28 @@ for each dataset, because subagents do not start subagents, and writes each reco
 Follow `source_links` to the first publication. Write the use case first, in `task_summary`: who uses the prediction,
 when, the decision it informs, what one row is, what is predicted and what is known then. A dataset no decision fits
 (`fit="none"`) is not added: it goes back as `No Good Target / Scientific Discovery`. Write the prediction point into
-the first `curation_comments` bullet; every later choice is checked against it. Then map the fields (definitions.md,
-"Field mapping"); for a grouped task note what one real-world prediction is and what is known about a new group.
+the first `curation_comments` bullet; every later choice is checked against it. Then note how the data was collected
+for the use case: when each row, each feature and the target come into existence compared with that point (SPLIT-32 in
+[splits.md](../knowledge-curation/references/splits.md)); it is information for the split and for which features are
+available. Where the source or the data contradicts a collection fact or the collection type screening set (a date in
+a raw file behind `Time: Lost`, recurring entities behind none), correct the record's tags through the store API with
+the evidence in a comment, and run `tests/test_collection_types.py` and `tests/test_time_basis_facts.py`. The facts
+also point to checks; in the review of 98 v0.2 definitions they found more leaks than they changed splits:
+
+* `Target: Varying Delay` with a prediction point per row: a count or a length that the outcome stops
+  (bank_marketing's `campaign`), the gap, the residual at the release end, what the newest labels add at equal
+  training size.
+* A target that is an event within a window: labels still in flight across the cut (acquire_valued_shoppers_challenge,
+  hotel_booking_demand).
+* `Entities: Recur`: exact keys from fixed fields, label agreement within a key, random against grouped scores
+  (home_credit_default_risk, horse_colic_survival, lending_club).
+* `Features: Read Later` or `Revised Later`: an as-of check (rossmann_store_sales' competitors before they opened).
+* `Time: Lost` or `Inferred`: batches or blocks in the raw file's order before arguing that time does not matter
+  (eryhemato_squamous_disease's two file parts); the time probe looks for them.
+* A catalogue: which identifier a parent source could date its items by (qsar_tid_11 through ChEMBL).
+
+Then map the fields (definitions.md, "Field mapping"); for a grouped task note what one real-world
+prediction is and what is known about a new group.
 
 Find the metric the source scored before falling back (MET-1): the competition's evaluation page (Kaggle's Evaluation
 tab or the API's `evaluationMetric`, Zindi, DrivenData, a challenge page), the task description, the evaluation section
@@ -106,17 +127,25 @@ domain and source from the record.
    ships as the source publishes it and is declared in `special_features` as a `Spectrum(...)`, its columns left out
    of `_feature_types` (CLEAN-26); [spectra.md](../knowledge-curation/references/spectra.md) has what ships, the
    encodings, grouping the spectra of one sample (SPLIT-23) and the pitfalls.
-4. The regime: nothing for IID, `grouping = Grouping(...)` or `temporal = Temporal(...)` with a `splits_comment`
-   saying why this window (and any gap, sub-sampling or trimming). For a temporal task, run `dataset windows <name>`
-   and choose the windows from the use case and those statistics, never a model's score (SPLIT-15: the newest always,
-   the others argued; definitions.md, "Choosing the test windows"); the choice goes into the record's review as the
-   curator's decision, with the alternatives you weighed. Before the windows, three checks the reviews of 2026-11-10
-   and 11 found missed: the time column is the moment the prediction is made, not an earlier one (kickstarter dated
-   projects by creation, so its train sides held campaigns still running at a window's start; USE-3); a row whose
-   input is issued ahead of its time column (a forecast, a quote) needs a gap of that lead time (climate_model's
-   forecasts are issued up to three days ahead; SPLIT-10); and the newest period is not cut by the download
-   (kickstarter's scrape held only ended campaigns, so its newest quarter had half the rows of the year before;
-   LEAK-24): compare its rows a day and its target rate with earlier periods.
+4. The regime: walk the decision tree from the record's data collection type
+   ([split_tree.md](../knowledge-curation/references/split_tree.md), SPLIT-36) and implement the leaf you reach: nothing
+   for IID, `grouping = Grouping(...)` or `temporal = Temporal(...)`, the leaf's ID in `split_leaf`, and a
+   `splits_comment` saying which leaf and why this window (and any gap, sub-sampling or trimming). The leaf's tag and
+   its reason go into `time_basis = TimeBasis(tag, reason)` (and `group_basis = GroupBasis(reason)` for
+   `ForcedIIDFromGrouped`), which render the `Time basis:` (and `Group basis:`) line. A forced leaf, a leaf no
+   definition reaches yet, a question only a person answers (the tree's "Who answers"), or a question no answer fits
+   goes to the curator as an issue with the split you suggest. The record's collection facts and the
+   use-case prototypes of SPLIT-32 ([splits.md](../knowledge-curation/references/splits.md)) are information for the
+   answers. For a temporal task, run `dataset windows <name>` and choose
+   the windows from the use case and those statistics, never a model's score (SPLIT-15: the newest always, the others
+   argued; definitions.md, "Choosing the test windows"); the choice goes into the record's review as the curator's
+   decision, with the alternatives you weighed. Before the windows, three checks the reviews of 2026-11-10 and 11 found
+   missed: the time column is the moment the prediction is made, not an earlier one (kickstarter dated projects by
+   creation, so its train sides held campaigns still running at a window's start; USE-3); a row whose input is issued
+   ahead of its time column (a forecast, a quote) needs a gap of that lead time (climate_model's forecasts are issued up
+   to three days ahead; SPLIT-10); and the newest period is not cut by the download (kickstarter's scrape held only
+   ended campaigns, so its newest quarter had half the rows of the year before; LEAK-24): compare its rows a day and its
+   target rate with earlier periods.
 5. The metric: `metric = Metric.source(name, original=..., reference=..., params=..., inputs=...)`,
    `Metric.stand_in(name, original=..., reason=..., reference=...)` or `Metric.fallback(reason=<where we looked, and
    which source metric was rejected and why>)` (definitions.md, "Field mapping", `metric`; MET-11). A standard name
@@ -129,10 +158,12 @@ domain and source from the record.
    `tests/test_v2_metrics_custom.py` to equal the official code on random inputs, on one hand-computed case, and timed
    on 1M rows. Never `Metric.local` in the working copy.
 6. `accepted_check_warnings` stays empty: the curator fills it once the warnings are known, one reason per slug. A
-   temporal task with a window under half the rows (`splits_train_under_half`, `splits_train_under_floor`) always gets
-   an issue in the record's review for the curator's sign-off: the windows and their shares, the reason for each, and an
-   option without them (SPLIT-14, amended 2026-11-11). So does a feature that stops or starts being recorded within
-   the history (`splits_feature_missing_in_test`) and a newest period cut short (`time_newest_period_short`).
+   temporal task with a window under half the rows (`splits_train_under_half`) always gets an issue in the record's
+   review for the curator's exception: the windows and their shares, the reason for each, and an option without them
+   (SPLIT-14); one with fewer windows than an IID split would get (`splits_below_target`) names the target, the count
+   and what stops more in the splits comment, and where only overlapping windows would reach it, offers them as an
+   option. So does a feature that stops or starts being recorded within the history (`splits_feature_missing_in_test`)
+   and a newest period cut short (`time_newest_period_short`).
 7. `_decisions` and `_extra_checks` only when there is something to show or test.
 
 Then point the record at the definition:
@@ -158,12 +189,15 @@ data (`ds = workbench()` in a scratch notebook or script, never committed), re-r
 there are no errors and every warning is fixed or proposed for acceptance with a reason. Run `dataset check` again after
 every `ruff --fix`.
 
-Then run the leak probes and the task probes, the group probes for a grouped task, the hidden-group probe for an
-IID one and the dtype probe ([checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md)): every
-column it flags gets its meaning from the codebook, and its dtype from CLEAN-14. Read every flag by
-[evidence.md](../knowledge-curation/references/evidence.md), "Reading a probe": the highest-ranked reading first. A
-leak gets the mildest remedy that removes it (drop, lag, filter, re-split) with the deciding number in a bullet; a
-task-probe flag is answered by the rules of [task_probes.md](../knowledge-curation/references/task_probes.md).
+Then run the leak probes and the task probes, the group probes for a grouped task, the hidden-group probe for an IID
+one, the time probe for a split that is not temporal and the dtype probe
+([checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md)). Every column the dtype probe
+flags gets its meaning from the codebook, and its dtype from CLEAN-14. The time probe lists signs that the data
+carries time (date columns, a drifting row order or ID, figures of a period), as information for the split. Read every
+flag by [evidence.md](../knowledge-curation/references/evidence.md), "Reading a probe": the highest-ranked reading
+first. A leak gets the mildest remedy that removes it (drop, lag, filter, re-split) with the deciding number in a
+bullet; a task-probe flag is answered by the rules of
+[task_probes.md](../knowledge-curation/references/task_probes.md).
 
 ## Step 6: The checklist
 
@@ -203,14 +237,18 @@ and the editor) for a re-check after a small change. Say which tier ran.
    leave nothing for the curator to decide (the outcome says so, and the curator only sets the verdict). Never raise an
    issue to have one; an issue is something whose answer would change the dataset.
 3. The `review-editor` agent reads the draft as the curator would; apply its fixes.
-4. Add a dated CHANGELOG entry for the new folder, and the panel's summary in the record, one line in a fixed form:
+4. Keep the decision tree current ([split_tree.md](../knowledge-curation/references/split_tree.md)): the definition
+   names its leaf in `split_leaf`; a leaf with fewer than three examples may take it as one; and a definition that
+   ships another split than its leaf, with the curator's agreement, gets a row in "Definitions that ship another
+   split" (the leaf's ID, the shipped split, the reviewer, the date, the reason).
+5. Add a dated CHANGELOG entry for the new folder, and the panel's summary in the record, one line in a fixed form:
    `**Assessment (AI, <date>):** review panel (<tier>): <the mediator's recommendation>; disputed: <the points, by
    rule ID>; for the curator: issues <n>-<m>.` The panel's reports stay in the record's review, also once its issues
    are settled; this line is their short form among the comments, where the decision register reads it (Lennart,
    2026-11-04: "we want all our history of curation be documented and readable going forward (in a good format and in
    short, but not lost!)"). Never build: a build is the curator's call
    ([rebuild.md](../knowledge-data-foundry/references/rebuild.md)).
-5. Set the record's `priority` again from what was measured, so the review page puts the most important datasets
+6. Set the record's `priority` again from what was measured, so the review page puts the most important datasets
    first ([selection.md](../knowledge-curation/references/selection.md), "Priority"): `priority_factors.py <name>`
    (in `knowledge-data-foundry/scripts/`) gives the gap and the shape; judge the use case, the source and the risk
    from the source and the open issues (the recommendation not to ship is a risk). End the assessment line with

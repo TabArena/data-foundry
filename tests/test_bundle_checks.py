@@ -573,6 +573,151 @@ def test_forced_iid_tag_on_an_iid_task_is_not_flagged():
     assert "meta_tags_contradict_regime" not in slugs_of(make_container(dataset_metadata=metadata))
 
 
+def make_basis_container(metadata: DatasetMetadata, *, df: pd.DataFrame | None = None, temporal: bool = False):
+    """A format-2 container with ``metadata``'s tags and comments: the time basis check reads format 2 only."""
+    df = make_iid_frame() if df is None else df
+    task = {}
+    if temporal:
+        df = df.assign(ts=pd.date_range("2020-01-01", periods=len(df), freq="D"))
+        task["time_on"] = "ts"
+    return make_v2_container(df, dataset_metadata=metadata, **task)
+
+
+def test_an_iid_split_without_a_time_basis_gets_a_note():
+    found = slugs_of(make_basis_container(make_dataset_metadata(data_tags=["IID"])))
+    assert "meta_time_basis_missing" in found
+
+
+def test_a_time_basis_silences_the_note():
+    found = slugs_of(make_basis_container(make_dataset_metadata(data_tags=["IID", "Timeless"])))
+    assert "meta_time_basis_missing" not in found
+
+
+def test_a_forced_tag_answers_why_the_split_is_not_temporal():
+    metadata = make_dataset_metadata(data_tags=["ForcedIIDFromTemporal"])
+    assert "meta_time_basis_missing" not in slugs_of(make_basis_container(metadata))
+
+
+def test_a_time_basis_on_a_temporal_split_is_flagged():
+    metadata = make_dataset_metadata(data_tags=["Non-IID", "Temporal", "Retrospective"])
+    assert "meta_time_basis_on_temporal" in slugs_of(make_basis_container(metadata, temporal=True))
+
+
+def test_a_time_basis_line_without_a_tag_answers_why():
+    """A `Time basis:` line alone says why the split is not temporal."""
+    metadata = make_dataset_metadata(data_tags=["IID"], curation_comments="- Time basis: dates kept, not split on.")
+    assert "meta_time_basis_missing" not in slugs_of(make_basis_container(metadata))
+
+
+def test_a_forced_tag_without_its_line_gets_a_note():
+    """A forced tag without its `Time basis:` line gets a note; with the line, none."""
+    metadata = make_dataset_metadata(data_tags=["ForcedIIDFromTemporal"])
+    assert "meta_time_basis_line_missing" in slugs_of(make_basis_container(metadata))
+    metadata = make_dataset_metadata(
+        data_tags=["ForcedIIDFromTemporal"], curation_comments="- Time basis: time lost; a dated release would test."
+    )
+    assert "meta_time_basis_line_missing" not in slugs_of(make_basis_container(metadata))
+
+
+ASSUMED_LINE = (
+    "- Time basis: AssumedStationaryRelation (Lennart, 2026-11-20): one clinic's ultrasound diagnosis over a year, a"
+    " relation of body composition to gallstones that practice does not move; the visit dates are lost."
+)
+
+
+@pytest.mark.parametrize(
+    ("comments", "expected"),
+    [
+        (ASSUMED_LINE, 0),
+        ("- Time basis: AssumedStationaryRelation: the relation does not move.", 1),
+        (ASSUMED_LINE.replace("Lennart", "AI"), 1),
+        (ASSUMED_LINE.replace("Lennart", "Claude"), 1),
+        ("- Time basis: AssumedStationaryRelation (Lennart, 2026-11-20): flat.", 1),
+    ],
+)
+def test_an_assumed_stationary_relation_names_a_person_and_a_reason(comments: str, expected: int) -> None:
+    """Only a person sets `AssumedStationaryRelation`, with a reason; dataset check refuses it otherwise (SPLIT-32)."""
+    metadata = make_dataset_metadata(data_tags=["IID", "AssumedStationaryRelation"], curation_comments=comments)
+    assert slugs_of(make_basis_container(metadata)).count("meta_time_basis_unattributed") == expected
+
+
+def test_the_missing_basis_hint_does_not_offer_a_human_set_tag() -> None:
+    """The hint for a split without a time basis lists the prototypes an author may set, not the human-only one."""
+    report = run_bundle_checks(make_basis_container(make_dataset_metadata(data_tags=["IID"])), verbose=False)
+    note = next(r for r in report.results if r.slug == "meta_time_basis_missing")
+    assert "AssumedStationaryRelation" not in (note.hint or "")
+    assert "StationaryRelation" not in (note.hint or "")
+
+
+def test_a_stationary_relation_names_a_person_and_the_measurement() -> None:
+    """`StationaryRelation` is human-set too: dataset check refuses a line without a person (SPLIT-32)."""
+    line = (
+        "- Time basis: StationaryRelation (Andrej, 2026-11-19): two periods of case numbers, LightGBM +0.016 +- 0.016"
+        " ROC AUC against a floor of 0.004."
+    )
+    for comments, expected in ((line, 0), ("- Time basis: StationaryRelation: flat over the two periods.", 1)):
+        metadata = make_dataset_metadata(data_tags=["IID", "StationaryRelation"], curation_comments=comments)
+        assert slugs_of(make_basis_container(metadata)).count("meta_time_basis_unattributed") == expected
+
+
+def _dated_frame() -> pd.DataFrame:
+    """The IID toy frame with a date column."""
+    df = make_iid_frame()
+    return df.assign(when=pd.date_range("2020-01-01", periods=len(df), freq="D"))
+
+
+@pytest.mark.parametrize(
+    ("tags", "comments", "noted"),
+    [
+        (["IID", "Timeless"], "- Time basis: Timeless: a fixed property.", True),
+        (["IID", "Retrospective"], "- Time basis: Retrospective: one scrape, prices of that day.", False),
+        (["IID", "ForcedIIDFromTemporal"], "- Time basis: one mailing, too few periods; gifts dated before it.", False),
+        (["IID"], "- Time basis: dated, kept random by choice; a temporal split costs 0.01.", False),
+        (["IID"], "Read the CSV.", True),
+    ],
+)
+def test_date_columns_are_noted_unless_the_definition_says_why(tags, comments, noted):
+    """Date columns are noted unless the basis or a `Time basis:` line without a prototype explains them."""
+    metadata = make_dataset_metadata(data_tags=tags, curation_comments=comments)
+    found = slugs_of(make_basis_container(metadata, df=_dated_frame()))
+    assert ("meta_time_present_unused" in found) is noted
+
+
+@pytest.mark.parametrize(
+    ("tags", "comments", "slug", "severity"),
+    [
+        (["IID"], "- Time basis: Retrospective: one scrape.", "meta_time_basis_mismatch", "error"),
+        (["IID", "Timeless"], "- Time basis: Retrospective: one scrape.", "meta_time_basis_mismatch", "error"),
+        (
+            ["IID", "Timeless"],
+            "- Time basis: Timeless: a.\n- Time basis: Timeless: b.",
+            "meta_time_basis_lines",
+            "error",
+        ),
+        (["IID", "Timeless", "Retrospective"], "- Time basis: Timeless: a.", "meta_time_basis_several", "error"),
+        (["IID"], "- Time basis: DelayedTarget: one extract.", "meta_time_basis_unstructured", "info"),
+        (
+            ["IID", "ForcedIIDFromTemporal"],
+            "- Time basis: time lost; a dated release would test.",
+            "meta_time_basis_unstructured",
+            "info",
+        ),
+        (["IID", "UnseenGroup"], "- Time basis: UnseenGroup: a new hospital.", "meta_time_basis_regime", "error"),
+        (["IID", "ForcedIIDFromGrouped"], "- Time basis: Timeless: a property.", "meta_group_basis_missing", "error"),
+    ],
+)
+def test_the_time_basis_line_agrees_with_its_tag(tags, comments, slug, severity):
+    """One time basis, one line that names it, the regime it asks for (``data_foundry.time_basis.problems``)."""
+    report = run_bundle_checks(make_basis_container(make_dataset_metadata(data_tags=tags, curation_comments=comments)))
+    assert (slug, severity) in {(r.slug, r.severity) for r in report.results}
+
+
+def test_a_format_1_container_gets_no_time_basis_findings():
+    """BeyondArena (format-1) containers have no time basis convention, so the check leaves them alone."""
+    found = slugs_of(make_container(dataset_metadata=make_dataset_metadata(data_tags=["IID"])))
+    assert not [slug for slug in found if slug.startswith(("meta_time_basis", "meta_group_basis"))]
+
+
 def test_non_iid_tags_on_an_iid_task_are_flagged():
     metadata = make_dataset_metadata(data_tags=["Non-IID", "Temporal"])
     assert "meta_tags_contradict_regime" in slugs_of(make_container(dataset_metadata=metadata))
@@ -770,13 +915,15 @@ def test_round_trip_comparison_sees_category_order_but_not_string_storage():
 
 
 # --- Format 2: the metric spec and the scoring columns ------------------------------------------------------------
-def make_v2_container(df: pd.DataFrame | None = None, *, spec=None, scoring_columns=(), **task) -> CuratedContainer:
+def make_v2_container(
+    df: pd.DataFrame | None = None, *, spec=None, scoring_columns=(), dataset_metadata=None, **task
+) -> CuratedContainer:
     df = make_iid_frame() if df is None else df
     problem_type = task.pop("problem_type", "binary_classification")
     splits = task.pop("splits", None)
     return CuratedContainer(
         dataset=df,
-        dataset_metadata=make_dataset_metadata(),
+        dataset_metadata=dataset_metadata or make_dataset_metadata(),
         task_metadata=PredictiveMLTaskMetadataV2(
             target_column_name="target",
             problem_type=problem_type,

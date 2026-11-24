@@ -79,11 +79,14 @@ task is scored on (parkinsons: 8 healthy people, 2-3 per fold; retired). A small
 like the others (musk: 102 molecules, 13 musk per fold; kept). In a temporal task a test fold is a window: TP-9.
 Marker: `Too Small`.
 
-**TP-9 (Must; narrows TP-5).** Count the minority-class rows (or the target's spread) per test window of a temporal
-task. When the windows hold a handful of positives or none, the scores are noise and the dataset is `Too Small` for
-a temporal task. Do not fall back to an IID split for a non-stationary sequence (SPLIT-16); wider windows are the
-alternative to try (SPLIT-17; [splits.md](splits.md), "How many windows"). Marker: `Too Small`. Cases: seismic_bumps (49
-positives in the newest half, 0-5 per window; Lennart, 2026-09-30).
+**TP-9 (Must; narrows TP-5).** Count the minority-class rows (or the target's spread) per test window of a temporal task
+and report them. Few positives in a window are part of the task, not a reason for `Too Small` or for another split; only
+a window without a positive under a metric one class leaves undefined (ROC AUC, average precision, a Gini, the
+early-detection utility) cannot be scored, and is widened
+or its cut moved until it holds one (SPLIT-16, SPLIT-17; [splits.md](splits.md), "How many windows"). Do not fall back
+to an IID split for a non-stationary sequence (SPLIT-16). Marker: `Too Small`, where the task as a whole holds a handful
+of positives (TP-5). Cases: seismic_bumps (49 positives in the newest half, 0-5 per window; marked `Too Small` on
+2026-09-30, Lennart, under the earlier wording, which counted few positives per window against the task).
 
 **TP-6 (Must; amended 2026-10-21, Lennart).** Keep two questions apart: is the task valid, and is it the best
 version? A valid task stays. A better version the source itself defines (a stage it describes) replaces the current
@@ -231,7 +234,8 @@ and their rows are left single. The output gives the clusters at 0.9, 0.85, 0.8 
 the same random folds with each cluster moved into one fold. Read a near-copy hit as a pointer: find in the source
 what the rows of a cluster share (the salt forms of one parent structure, one company inspected again, one client's
 invoices) and take the group key from there, never from the clusters (SPLIT-24 in [splits.md](splits.md) bars
-similarity clusters).
+similarity clusters; a link calibrated against chance is allowed, and the verdict follows LEAK-42 and LEAK-43 in
+[leak_checks.md](leak_checks.md), "Entity leakage").
 When no row has 10 informative columns the check does not run, and the output says `not run` (before 2026-10-21 it
 read 0.0%): no evidence either way, as on huntprohibited_1m (9 features), where exact keys on the description later
 found a copy in train for 1.4-4.9% of the test ads. A text column is one token, so an edited copy of a text never

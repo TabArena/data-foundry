@@ -12,6 +12,10 @@ Usage::
     python .claude/skills/knowledge-data-foundry/scripts/leak_probes.py <unique_name> --forced-split
         [--time-on COLUMN] [--period D|W|M|Q|Y] [--tz ZONE] [--objective metric|l2|OBJECTIVE] [--seeds 3]
         [--forced-splits 9] [--max-rows 50000] [--n-jobs 8] [--out DIR]
+    python .claude/skills/knowledge-data-foundry/scripts/leak_probes.py <unique_name> --stationary-relation
+        [--time-on COLUMN] [--period D|W|M|Q|Y] [--unordered] [--unit COLUMN|none] [--exclude COLUMN ...]
+        [--windows 3] [--stationary-seeds 5] [--max-test N] [--foundation none|tabpfn|kumo] [--device cpu|cuda]
+        [--threads N] [--max-foundation-train 20000] [--max-foundation-test 5000] [--n-jobs 8] [--out DIR]
 
 Rebuilds the frame and the split plan from ``<root>/<unique_name>/dataset.py`` and runs the leak probes of
 ``curation_probes.leak`` (``.claude/skills/knowledge-curation/scripts/curation_probes/leak.py`` says what each number
@@ -43,8 +47,9 @@ them L2 fits on the shipped scale, and any other value is passed to LightGBM as 
 the L2 and the actuarial fit and decides on the worse: when an actuarial fit exists, the output says to run the other
 one. On a rate, L2 fits are noisy under a deviance
 (bemtpl97, 20,000 rows: the weight as a feature gains +0.0005 with an SD of 0.0066 under L2, +0.0039 with an SD of
-0.0013 under the Poisson fit). A split tagged ``ForcedGroupedFromTemporal`` or ``ForcedIIDFromTemporal`` (SPLIT-8) also
-gets probe 23, the leak tests across the split, at the end of the default run; ``--forced-split`` runs it alone, on
+0.0013 under the Poisson fit). A split tagged ``ForcedGroupedFromTemporal`` or ``ForcedIIDFromTemporal`` (SPLIT-8), or
+``AssumedStationaryRelation`` in place of either, also gets probe 23, the leak tests across the split, at the end of
+the default run; ``--forced-split`` runs it alone, on
 the first ``--forced-splits`` splits (default 9) with ``--seeds`` seeds each, every side capped at ``--max-rows``, with
 regularised LightGBM fits of the objective ``--objective`` sets, scored by the declared metric. Its period-outcome
 test (``leak.period_outcome``) predicts each test period without its period's training rows and without as many random
@@ -54,6 +59,18 @@ and a column named by a period word (``leak.period_columns``; the output names t
 test (``leak.shared_units``) counts the test rows whose group, exact profile of the model inputs, or profile without the
 period column has a training row, and fits a lookup of their training target. How to read them:
 ``.claude/skills/knowledge-curation/references/leak_checks.md``.
+``--stationary-relation`` runs the stationary-relation test alone (SPLIT-32; ``curation_probes.stationarity`` says
+how it is built and read): on the periods of the same period column, for the newest ``--windows`` periods (every
+period with ``--unordered``), a forward model trained before the period against a contemporaneous one of the same size
+that also holds the period's other half, scored on the same test half over ``--stationary-seeds`` seeds, with probe
+23's regularised LightGBM and one state-of-the-art tabular foundation model, which a time basis quotes beside it:
+``--foundation tabpfn`` for TabPFN v3.5 (the public ``tabpfn`` package; never on a CPU) or ``--foundation kumo`` for
+NVIDIA's Kumo-Tabular (the optional package ``structured-data-models``), on a GPU node started through SkyPilot. Either
+fits at most
+``--max-foundation-train`` training and ``--max-foundation-test`` test rows. Whole units of ``--unit`` (default the
+definition's group column) are held out; ``--exclude`` names further columns that tell the period. The verdict is
+flat, not flat or inconclusive over the newest three periods, whatever their training share; a run on fewer
+(``--test-period``, or fewer ``--windows``) is ``partial``, and ``stationarity.combine_runs`` joins the jobs.
 The probes use the shipped target; when the definition changed the target (merged, dropped or binned classes), run
 the same checks on the source's labels in a scratch notebook as well (section 1 of that file).
 """
@@ -71,7 +88,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "knowledge-curation" / "scripts"))
 import dataset_io
-from curation_probes import leak
+from curation_probes import leak, stationarity
 
 
 def target_by_period(data: dataset_io.ProbeInput, args: argparse.Namespace) -> dict | None:
@@ -256,13 +273,16 @@ def weight_proxy(data: dataset_io.ProbeInput, args: argparse.Namespace) -> dict 
     return result
 
 
-FORCED_TAGS = ("ForcedGroupedFromTemporal", "ForcedIIDFromTemporal")
-"""The tags of a split forced from temporal (SPLIT-8), which gets probe 23."""
+FORCED_TAGS = ("ForcedGroupedFromTemporal", "ForcedIIDFromTemporal", "AssumedStationaryRelation")
+"""The tags of a split forced from temporal (SPLIT-8), which gets probe 23; `AssumedStationaryRelation` replaces a
+forced tag and keeps its leak test (SPLIT-32)."""
 
 
 def forced_tags(ds: object) -> list[str]:
     """The definition's forced-split tags (``FORCED_TAGS``), none for another split."""
-    return [tag for tag in getattr(ds, "data_tags", None) or () if tag in FORCED_TAGS]
+    metadata = getattr(ds, "dataset_metadata", None)  # the tags as built: a `time_basis` adds its tag there
+    tags = getattr(metadata, "data_tags", None) or getattr(ds, "data_tags", None) or ()
+    return [tag for tag in tags if tag in FORCED_TAGS]
 
 
 def period_column(data: dataset_io.ProbeInput, args: argparse.Namespace) -> tuple[str | None, pd.Series | None, str]:
@@ -345,6 +365,73 @@ def forced_split(ds: object, data: dataset_io.ProbeInput, args: argparse.Namespa
     return out
 
 
+def stationary_relation(data: dataset_io.ProbeInput, args: argparse.Namespace) -> dict | None:
+    """The stationary-relation test (SPLIT-32, ``curation_probes.stationarity``) on the period column
+    (``period_column``): LightGBM, and TabPFN v3.5 (``--foundation tabpfn``) or Kumo-Tabular (``kumo``); None, with the
+    reason, without periods.
+    """
+    column, values, why = period_column(data, args)
+    if column is None:
+        leak.say(f"stationary relation: not run ({why})")
+        return None
+    try:
+        codes, labels, kind = leak.outcome_periods(
+            values, freq=getattr(args, "period", None), tz=getattr(args, "tz", None)
+        )
+    except ValueError as err:
+        leak.say(f"stationary relation: not run on `{column}` ({err})")
+        return None
+    unit_col = getattr(args, "unit", None)
+    if unit_col is None and data.group_cols:
+        unit_col = data.group_cols[0]
+    if unit_col == "none":
+        unit_col = None
+    units = None if unit_col is None else data.df[unit_col].to_numpy()
+    metric = data.declared_metric()
+    params = fit_params(getattr(args, "objective", "metric"), metric, original_rate(data, metric), data.weights)
+    foundation, name = None, None
+    kind_of_model = getattr(args, "foundation", "none")
+    if kind_of_model != "none":
+        y = data.df[data.target]
+        classes = None if data.problem_type == "regression" else np.unique(y.to_numpy())
+    if kind_of_model == "tabpfn":
+        foundation = stationarity.tabpfn_v35(data.problem_type, classes, device=args.device or "cuda")
+        name = "TabPFN v3.5"
+    elif kind_of_model == "kumo":
+        foundation = stationarity.kumo_tabular(
+            data.problem_type,
+            classes,
+            device=args.device or "cpu",
+            threads=args.threads or args.n_jobs,
+            point="median" if "absolute" in str((metric or {}).get("name", "")) else "mean",
+        )
+        name = "Kumo-Tabular"
+    leak.say(f"stationary relation: the periods of `{column}` ({why}; {kind}), units: {unit_col or 'none'}")
+    return stationarity.stationary_relation(
+        data.df,
+        data.target,
+        data.problem_type,
+        codes,
+        labels=labels,
+        ordered=not getattr(args, "unordered", False),
+        units=units,
+        sample_weight=data.weights,
+        feature_cols=data.feature_cols,
+        exclude_cols=[c for c in {column, unit_col, *(getattr(args, "exclude", None) or [])} if c],
+        metric=metric,
+        fit_params=params,
+        n_windows=args.windows,
+        test_periods=getattr(args, "test_period", None),
+        seeds=args.stationary_seeds,
+        max_test=args.max_test,
+        foundation=foundation,
+        foundation_name=name or "foundation model",
+        max_foundation_train=args.max_foundation_train,
+        max_foundation_test=args.max_foundation_test,
+        n_jobs=args.n_jobs,
+    )
+
+
 def probe(args: argparse.Namespace) -> dict:
     """Print the probes for one dataset and return their numbers; see the module docstring."""
     started = time.time()
@@ -361,6 +448,10 @@ def probe(args: argparse.Namespace) -> dict:
         return result
     if getattr(args, "weight_proxy", False):
         result = {"name": args.name, "weight_proxy": weight_proxy(data, args)}
+        result["seconds"] = round(time.time() - started)
+        return result
+    if getattr(args, "stationary_relation", False):
+        result = {"name": args.name, "stationary_relation": stationary_relation(data, args)}
         result["seconds"] = round(time.time() - started)
         return result
     if getattr(args, "forced_split", False):
@@ -428,6 +519,26 @@ def main(argv: list[str] | None = None) -> int:
         "--forced-split", action="store_true", help="Run probe 23 alone: the leak tests of a forced split."
     )
     parser.add_argument("--forced-splits", type=int, default=9, help="Probe 23's splits (default 9).")
+    parser.add_argument(
+        "--stationary-relation", action="store_true", help="Run the stationary-relation test alone (SPLIT-32)."
+    )
+    parser.add_argument("--unordered", action="store_true", help="Its periods have no order (month classes).")
+    parser.add_argument("--unit", help="Its unit column, or none; default the definition's group column.")
+    parser.add_argument("--exclude", nargs="*", help="Further columns that name the period: no model input.")
+    parser.add_argument("--windows", type=int, default=3, help="Its windows, newest first (default 3).")
+    parser.add_argument("--test-period", nargs="*", help="Only these windows, by period label (one job per window).")
+    parser.add_argument("--stationary-seeds", type=int, default=5, help="Its seeds (default 5).")
+    parser.add_argument("--max-test", type=int, help="Its LightGBM test rows per window, at most; default all.")
+    parser.add_argument(
+        "--foundation",
+        choices=("none", "tabpfn", "kumo"),
+        default="none",
+        help="Its foundation model, one state-of-the-art TFM for a time basis: tabpfn (TabPFN v3.5) or kumo.",
+    )
+    parser.add_argument("--device", help="The foundation model's device; default cuda for tabpfn, cpu for kumo.")
+    parser.add_argument("--threads", type=int, help="The foundation model's threads; default --n-jobs.")
+    parser.add_argument("--max-foundation-train", type=int, default=20_000, help="Its training rows per fit, at most.")
+    parser.add_argument("--max-foundation-test", type=int, default=5_000, help="Its test rows per window, at most.")
     args = parser.parse_args(argv)
     result = probe(args)
     if args.out:

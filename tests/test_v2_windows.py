@@ -12,7 +12,13 @@ import pytest
 from data_foundry.v2 import get_dataset
 from data_foundry.v2.cli import add_dataset_parser
 from data_foundry.v2.dataset import NEWEST_PERIOD_RATIO, AbstractCuratedDataset, newest_period_rate
-from data_foundry.v2.splits import TemporalSplits, temporal_window_splits, window_bounds
+from data_foundry.v2.splits import (
+    TemporalSplits,
+    split_count,
+    temporal_window_splits,
+    training_sides,
+    window_bounds,
+)
 from data_foundry.v2.windows import Window, candidate_windows, window_stats
 
 from tests.test_v2_dataset import temporal_version_body, warehouse, write_definition  # noqa: F401 - the fixture
@@ -164,24 +170,63 @@ def test_the_floor_counts_rows_also_for_unique_windows() -> None:
 
 
 def test_the_floor_findings_ask_for_the_curators_sign_off() -> None:
-    """Windows under half warn (the curator signs each off), under 30% warn again, a broken core is an error; the
-    shares count every row of the curated frame, not only the container's (SPLIT-14, amended 2026-11-11).
+    """Every window trains on half the rows; under half is the curator's exception (a warning), under 30% an error;
+    the shares count every row of the curated frame, not only the container's (SPLIT-14).
     """
 
     def findings(train_sizes: list[int], frame_rows: int = 100) -> dict[str, str]:
-        splits = {i: {0: (list(range(n)), [n])} for i, n in enumerate(train_sizes)}
+        splits = {i: {0: (list(range(n)), list(range(40)))} for i, n in enumerate(train_sizes)}
         container = SimpleNamespace(experiment_metadata=SimpleNamespace(splits=splits), dataset=range(60))
         definition = SimpleNamespace(temporal=object(), _frame_rows=frame_rows)
+        definition._window_size_findings = lambda c, w, n: []
         return {r.slug: r.severity for r in AbstractCuratedDataset._floor_findings(definition, container)}
 
     assert findings([90, 70, 55]) == {}
     assert findings([90, 70, 45]) == {"splits_train_under_half": "warning"}
-    assert findings([90, 70, 45, 25]) == {"splits_train_under_half": "warning", "splits_train_under_floor": "warning"}
-    assert findings([90, 45, 40])["splits_floor_core"] == "error"  # one window at half or more
-    assert findings([45, 70, 60])["splits_floor_core"] == "error"  # the newest under half
-    assert findings([90, 70, 45, 40, 35])["splits_floor_core"] == "error"  # more windows under half than above
-    assert findings([50, 45, 40], frame_rows=100)["splits_floor_core"] == "error"
-    assert findings([55, 52, 45], frame_rows=100) == {"splits_train_under_half": "warning"}
+    assert findings([45, 70, 60]) == {"splits_train_under_half": "warning"}  # no core rule any more
+    assert findings([90, 70, 45, 25]) == {"splits_train_under_half": "warning", "splits_train_under_floor": "error"}
+
+
+def test_test_windows_hold_33_scored_units_and_the_count_follows_split_33() -> None:
+    """A test window under 33 scored units is an error; fewer windows than SPLIT-33's count for two thirds of all
+    scored units is a warning (SPLIT-14, SPLIT-15).
+    """
+    assert [split_count(n) for n in (100, 749, 750, 3_749, 3_750, 374_999, 375_000)] == [60, 60, 30, 30, 9, 9, 3]
+
+    def findings(test_sizes: list[int], n_rows: int, *, unit_column: bool = False, cut: bool = False) -> dict[str, str]:
+        # era: two rows each, never cut by a window; taxon: three values in every window, cut by each
+        frame = pd.DataFrame({"era": np.arange(n_rows) // 2, "taxon": np.arange(n_rows) % 3})
+        starts = [n_rows // 2 + 2 * sum(test_sizes[:i]) for i in range(len(test_sizes))]  # even: an era stays whole
+        windows = [(i, list(range(s)), list(range(s, s + n))) for i, (s, n) in enumerate(zip(starts, test_sizes))]
+        inputs = {"group": "taxon" if cut else "era"} if unit_column else {}
+        task = SimpleNamespace(objective_metric=SimpleNamespace(inputs=inputs))
+        container = SimpleNamespace(task_metadata=task, dataset=frame)
+        return {
+            r.slug: r.severity
+            for r in AbstractCuratedDataset._window_size_findings(SimpleNamespace(), container, windows, n_rows)
+        }
+
+    assert findings([40, 40, 40], 5_000) == {"splits_below_target": "warning"}  # 9 splits for 5,000 rows
+    assert findings([40] * 9, 5_000) == {}
+    assert findings([40, 32, 40] + [40] * 6, 5_000) == {"splits_test_too_small": "error"}
+    assert findings([80] * 9, 12_000, unit_column=True) == {}  # 40 eras a window; 6,000 eras give 9 splits
+    assert findings([80, 60] + [80] * 7, 12_000, unit_column=True) == {"splits_test_too_small": "error"}  # 30 eras
+    # three taxa in every window, on both sides of each cut: the rows count (SPLIT-33), 40 a window, 5,000 in all
+    assert findings([40] * 9, 5_000, unit_column=True, cut=True) == {}
+    assert findings([40, 32, 40] + [40] * 6, 5_000, unit_column=True, cut=True) == {"splits_test_too_small": "error"}
+
+
+def test_splits_count_by_their_training_sides() -> None:
+    """Test parts that share one training side are one split, for the target count and for the minimum of three
+    (SPLIT-15).
+    """
+    assert training_sides([[0, 1, 2], [2, 1, 0], [0, 1, 2, 3]]) == 2  # the order of the positions does not matter
+    frame = pd.DataFrame({"x": np.arange(5_000)})
+    task = SimpleNamespace(objective_metric=SimpleNamespace(inputs={}))
+    container = SimpleNamespace(task_metadata=task, dataset=frame)
+    shared = [(i, list(range(100)), list(range(100 + 40 * i, 140 + 40 * i))) for i in range(9)]
+    found = AbstractCuratedDataset._window_size_findings(SimpleNamespace(), container, shared, 5_000)
+    assert [(r.slug, r.message.split(" ")[0]) for r in found] == [("splits_below_target", "1")]
 
 
 def test_a_newest_period_cut_short_is_found() -> None:
