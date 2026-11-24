@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis, decode
 
 # Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
 SCORES = [
@@ -31,8 +31,8 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
             "similar diseases before taking a biopsy, the first of the source's two steps."
         ),
         row=(
-            "One patient diagnosed with one of the six diseases (366 patients, published 1998; place and period not "
-            "stated)."
+            "One patient diagnosed with one of the six diseases at the Department of Dermatology, Gazi University, "
+            "Ankara (366 patients, published 1998; period not stated)."
         ),
         predicted=(
             "The diagnosis: psoriasis (31%), seborrheic dermatitis, lichen planus, pityriasis rosea, chronic "
@@ -76,7 +76,8 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
                   number={3},
                   pages={147--165},
                   year={1998},
-                  publisher={Elsevier}
+                  publisher={Elsevier},
+                  doi={10.1016/S0933-3657(98)00028-1}
                 }
             """,
         ),
@@ -93,17 +94,34 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
         - We keep only the clinical features: the 10 clinical findings graded 0 to 3, family history and age. The source describes two steps: "Patients were first evaluated clinically with 12 features. Afterwards, skin samples were taken for the evaluation of 22 histopathological features." With the 22 histopathological features the task is close to solved (a logistic model reaches macro ROC AUC 0.999 and 97% accuracy on the shipped splits); the task here is the clinical differential before the biopsy (macro ROC AUC 0.98, 87% accuracy), where seborrheic dermatitis, pityriasis rosea and chronic dermatitis are the hard cases.
         - `family history` (0/1) is a category; age and the 10 graded findings are numbers (below).
         - We ensure missing values in age are encoded as NaN.
+        - Note: the patients look selected. 93% of those with lichen planus have mouth lesions, against 56% of 91 biopsy-confirmed patients in another clinic's series (Samreen A, Luqman N, Asgher R, Khalid M, Shaheen JA. Frequency of oral involvement in cutaneous lichen planus patients. J Pak Assoc Dermatol. 2021;31(3):454-458. doi:10.66344/jpad.v31i3.1817). All 20 with pityriasis rubra pilaris are aged 7 to 22, though the disease is most common in adults; the source calls it "a children's disease".
+        - Note: one psoriasis patient has age 0, the only patient younger than 7. It may be an infant or a stand-in for an unknown age (the source marks 8 unknown ages with "?"); we keep it.
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 10 scores with no words per level are
           numbers (`SCORES`): `erythema`, `scaling`, `definite borders`, `itching`, `koebner phenomenon`, `polygonal
           papules`, `follicular papules`, `oral mucosal involvement`, `knee and elbow involvement`, `scalp involvement`.
         - The target (2026-11-01, CLEAN-25): `class` ships its classes as words (dermatology.names, 9. Class
           Distribution).
-        - The 10 scores ship as numbers (2026-11-05, Lennart, GitHub issue #48, CLEAN-14): `_feature_types` had cast
+        - The 10 scores ship as numbers (2026-11-05, Lennart, CLEAN-14): `_feature_types` had cast
           every column but age to a category, so they shipped unordered although the decoding above made them
           numbers. The source names only the ends of the scale ("0 indicates that the feature was not present, 3
           indicates the largest amount possible, and 1, 2 indicate the relative intermediate values").
     """
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        patients examined over a period the source does not state (published 1998);
+        the file keeps no date but has two parts, rows 1 to 169 in mixed order and rows 170 to 366 mostly in runs of
+        one diagnosis. The clinical findings tell them apart (random forest ROC AUC 0.70; 0.54 from the diagnosis
+        alone). The random split puts both parts on both sides, so each test patient has training patients of its own
+        part: on the shipped splits, logistic regression's log loss on one part's patients is 0.536 and 0.345 when it
+        trains on a random mix of both parts, against 0.688 and 0.425 when it trains on as many patients of the other
+        part alone; told the part, it improves by another 0.014, and the case mix of the parts adds nothing. Read as
+        two collection periods, too few for three windows; dates of examination would allow a split
+        by period. Not taken as stationary (Andrej, 2026-11-18): The rule lists structure in the file order as a fact
+        against, and here it is measured as a sizeable cost.
+        """,
+    )
 
     # Task
     target = "class"
