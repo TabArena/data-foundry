@@ -10,10 +10,17 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
+- 'Features: Read Later'
+- Dated Event Log
 collections:
 - New (BeyondArena)
 original_source: Other
 year: '2018'
+collection_period: Jul 2015 - Aug 2017
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)
@@ -65,13 +72,18 @@ CC (2026-11-11, Lennart): the declared horizon (three months of arrivals, no gap
 
 **Assessment (AI, 2026-11-11):** applied issue 1 (reply a): `_make_splits` lists the ten dates (1 June 2017 added; its rules unchanged). Counted with the split's own rules on the 81,418 bookings: test 6,511, 6,390, 6,015, 5,768, 4,578, 2,500, 2,474, 3,228, 4,314 and 4,596 (1 June 2017 back to 1 September 2016), train 64,524, 60,693, 57,112, 53,850, 50,982, 48,617, 45,946, 42,942, 39,297 and 35,860 (79.3%, 74.5%, 70.1%, 66.1%, 62.6%, 59.7%, 56.4%, 52.7%, 48.3% and 44.0%); 10.9% of the newest date's test bookings are cancelled (12.5% at 1 May 2017). `task_summary`, the notes and `splits_comment` name the ten dates, the latest prediction point (1 June 2017, arrivals to 31 August 2017), the two dates under half and the horizon's reason. `dataset check`: 0 errors, 0 warnings, with `splits_train_under_half` accepted on the CC line above.
 
+CC (2026-11-19, Andrej): nine prediction dates, the target count (Review issue 2): 1 September 2016 (44.0%) dropped; 1 October 2016 (48.3%) stays as the curator's exception, as no first-of-month date before 1 November 2016 trains on half.
+
 ## Review
 
 **Outcome:** added. On 2026-11-11 you chose all ten prediction dates, 1 September 2016 to 1 June 2017, the two
-oldest training on 48.3% and 44.0% of the bookings (issue 1, reply a), and kept the three-month horizon (H, A).
+oldest training on 48.3% and 44.0% of the bookings (issue 1, reply a), and kept the three-month horizon (H, A). On
+2026-11-19 Andrej dropped 1 September 2016: nine dates, 1 October 2016 to 1 June 2017, the target count, with 1 October
+2016 (48.3%) as the curator's exception (issue 2).
 
-**Main points:** Settled on 2026-11-11: the test predicts at the first of each month from September 2016 to June 2017,
-the newest date whose three months of arrivals the data holds (issue 1); three months of arrivals at monthly dates
+**Main points:** Settled on 2026-11-19: the test predicts at the first of each month from October 2016 to June 2017,
+nine dates, 1 September 2016 dropped (issue 2). Settled on 2026-11-11: June 2017 is the newest date whose three months
+of arrivals the data holds (issue 1); three months of arrivals at monthly dates
 hold, the length ours since the source scores every open booking (H). Nothing is left to decide.
 
 **Horizon:**
@@ -231,6 +243,50 @@ no gap is needed. The record has the horizon CC line. `dataset check`: 0 errors,
    `splits_comment` and the curation notes name the ten dates, the latest prediction point (1 June 2017) and the two
    dates under half; the leak measurement of 867 rows is dated to the split of 1 May 2017. `dataset check`: 0 errors,
    0 warnings.
+
+2. **Train floor: keep the windows under half the data as the curator's exception, or drop them?**
+
+   * **Problem:**
+     - 1 October and 1 September 2016 train on 48.3% and 44.0% of the bookings, beside eight dates on 52.7% to 79.3%.
+     - Since 2026-11-19, every window trains on at least half the data, and a window under half is the curator's exception for the dataset, down to 30%[^split14]; the sign-off (Lennart, 2026-11-11, review issue 1, reply a) was given under the earlier rule, which admitted such windows beside two at half or more.
+     - The definition has 10 windows; the target an IID split would get[^split33] for 81,418 rows is 9; without the windows under half it keeps 8.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the windows as the curator's exception (implemented) | The accepted warning is reworded to the new rule; split unchanged | Keeps the periods they test, as signed off; more windows toward the target | They train on less than half the data |
+     | B | Drop the windows under half | The windows under half leave the declaration; a rebuild | Every window trains on half the data or more | 2 fewer windows and the periods they test |
+
+   * **Recommendation:** A, the sign-off's reason (periods or test rows the newest windows lack) still holds, and no window is under 30%. **Decision:** A or B?
+
+   **Notes for the AI:** on A, reword the `splits_train_under_half` acceptance (drop "SPLIT-14's two tiers admit it", name the curator's exception and this decision) and add a CC line; on B, remove the windows from the declaration, rebuild, and update the splits comment.
+
+   **Andrej (2026-11-19, discuss):** Reduce to 9 splits since this is the target we need.
+
+   **Resolved (2026-11-19, Andrej):** nine prediction dates, the target count for this size: the oldest date, 1 September 2016 (44.0% of the bookings in training), leaves the test; the nine first-of-month dates from 1 October 2016 to 1 June 2017 stay, with their rules unchanged (three months of arrivals, no gap, training on the bookings that arrived before the date).
+
+   * Not every remaining date can train on half the bookings: on first-of-month dates only the eight from 1 November 2016 on do, so 1 October 2016 (48.3%) stays as the curator's exception, with this decision as its sign-off. The first date on half or more is 14 October 2016 (50.1%; 15 October 50.2%, 3,872 test bookings); moving the oldest date there would break the first-of-month dates and is not part of this decision.
+   * The windows, newest first (counted with the split's own rules on the 81,418 bookings):
+
+     | Prediction date | Test arrivals | Test bookings | Cancelled, test | Train bookings | Train share |
+     |---|---|---|---|---|---|
+     | 1 Jun 2017 | 2 Jun to 31 Aug 2017 | 6,511 | 10.9% | 64,524 | 79.3% |
+     | 1 May 2017 | 2 May to 31 Jul 2017 | 6,390 | 12.5% | 60,693 | 74.5% |
+     | 1 Apr 2017 | 2 Apr to 30 Jun 2017 | 6,015 | 13.0% | 57,112 | 70.1% |
+     | 1 Mar 2017 | 2 Mar to 31 May 2017 | 5,768 | 14.0% | 53,850 | 66.1% |
+     | 1 Feb 2017 | 2 Feb to 30 Apr 2017 | 4,578 | 15.6% | 50,982 | 62.6% |
+     | 1 Jan 2017 | 2 Jan to 31 Mar 2017 | 2,500 | 18.0% | 48,617 | 59.7% |
+     | 1 Dec 2016 | 2 Dec 2016 to 28 Feb 2017 | 2,474 | 17.1% | 45,946 | 56.4% |
+     | 1 Nov 2016 | 2 Nov 2016 to 31 Jan 2017 | 3,228 | 14.8% | 42,942 | 52.7% |
+     | 1 Oct 2016 | 2 Oct to 31 Dec 2016 | 4,314 | 15.0% | 39,297 | 48.3% |
+     | ~~1 Sep 2016~~ (dropped) | 2 Sep to 30 Nov 2016 | 4,596 | 13.8% | 35,860 | 44.0% |
+
+   * What goes: arrivals of 2 to 30 September 2016 are no longer tested; the dropped date's October and November arrivals stay tested in the 1 October and 1 November windows, which overlap by design.
+   * Edits: `_make_splits` drops `(2016, 9)` from `test_sets_year_month`; `accepted_check_warnings["splits_train_under_half"]` names only 1 October 2016 (48.3%), as the curator's exception (Andrej, 2026-11-19, review issue 2), beside eight dates on 52.7% to 79.3%; `task_summary.split`, `splits_comment` and the curation note say nine dates from 1 October 2016 and drop the 1 September figures; the record has the CC line. Rebuild and `dataset check` follow.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count.
 
 ## Reference
 

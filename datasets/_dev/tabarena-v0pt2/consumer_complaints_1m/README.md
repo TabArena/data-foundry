@@ -84,11 +84,11 @@ Built as `01a111fc-f194-75a8-92f0-489647625f28` on 2026-10-06, but `dataset.py` 
 
 **One row.** One complaint to the CFPB from a US state, received from 24 April 2017 to 31 December 2025, whose consumer agreed to publish the written account.
 
-**Predicted.** How the company closed it (companies have 180 days to respond): with an explanation (64.89%), with non-monetary relief (33.08%) or with monetary relief (2.03%).
+**Predicted.** How the company closed it (a company responds within 15 days and gives its final response within up to 60): with an explanation (64.89%), with non-monetary relief (33.08%) or with monetary relief (2.03%).
 
 **Known at prediction time.** The date received, the product and issue with their sub-categories, the company, the state and ZIP code (masked for small places), whether the consumer is an older American or a servicemember, and the consumer's written complaint.
 
-**What the test data stands for.** Each test window is one quarter of 2025 (April-June, July-September, October-December); training is a random million earlier complaints from April 2017 on, as for a model refit every three months.
+**What the test data stands for.** Each test window is one quarter, as for a model we assume is refit every three months: October-December 2025, January-March 2025 and July-September 2024, three seasons in two years. Training is every earlier complaint from April 2017 on, of which a benchmark fits on a million: by default the newest year, extended back in time until it holds a million, and a random million of those.
 
 **Our changes to the source.** We drop the company's public response, which leaks the outcome, keep complaints with a published text from after consumer disputes ended (April 2017), and build from the CFPB's archive, in which every 2025 label is settled.
 
@@ -216,21 +216,19 @@ The dataset on Kaggle (https://www.kaggle.com/datasets/selener/consumer-complain
 - The tags filed contains only three non-nan labels, of which one is a duplicate of the others. We created two categorical features from it instead.
 - We drop duplicates (2% of the data) as the data should not contain naturally occurring duplicates and this likely results from some overlap in data collection or data entry or faulty re-submissions. We investigated some of the duplicates and they appear to be identical complaints. There exist duplicates with different target labels, we also drop these as we have no way to determine what the correct label is (all copies are dropped).
 - We drop constant columns, the complaint ID, and when the complaint was send to the company (as it does not related to the target task)
-- The class shares shift over time (from the v1 exploration, counted 2026-10-22 on the cleaned data): "Closed with explanation" is 85% of 2017, 54% of 2024 and 63% of 2025, "Closed with non-monetary relief" 10%, 44% and 35%, and "Closed with monetary relief" 4.5%, 1.7% and 1.3%. In the three test quarters of 2025 (Q2-Q4) explanation is 57%, 65% and 67%, monetary relief 1.2-1.8%.
-
-Version of `consumer_complaints`: We use the last three quarters of 2025 as test windows. We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
+- The class shares shift over time (from the v1 exploration, counted 2026-10-22 on the cleaned data): "Closed with explanation" is 85% of 2017, 54% of 2024 and 63% of 2025, "Closed with non-monetary relief" 10%, 44% and 35%, and "Closed with monetary relief" 4.5%, 1.7% and 1.3%. In the three test quarters (July-September 2024, January-March 2025 and October-December 2025) explanation is 55%, 66% and 67%, monetary relief 1.5%, 1.1% and 1.8%.
+- The row budget: We test October-December 2025, January-March 2025 and July-September 2024. Each quarter keeps at most 500k of its rows (v2 split protocol; all of them here, 204k to 351k), and each train side holds every earlier complaint, so the container holds every complaint. The container records the 1M train budget, and a benchmark sub-samples each train side to 1M rows before a fit (`subsample_train`; by default the newest year before the quarter, extended back in time until it holds 1M rows, and a random 1M of those). Over eight years of history, a sample of all of it would dilute the recent complaints, and the class shares have shifted over time (above).
 
 ## Splits
 
 We try to create splits that simulate a model deployed to solve the task.
 
-- The official data is updated daily but companies have 180 days to respond to a new complaint.
-- We could simulate a model that is refitted daily, but this would need many splits. Moreover, data from just a few days is likely not enough to create a robust test set.
-- Thus, we instead simulate a model that is refit every three months and then deployed.
-- This introduces the unrealistic downside of data shift across a month that would not exist in a real-world model.
+- The official data is updated daily. The CFPB publishes no model and no refit cadence, so we simulate a model that is refit every three months and then deployed. The quarter is our assumption: it is longer than the 15 to 60 days a closure takes (a company "provides a response within 15 calendar days" and has "up to 60 calendar days to provide a final response", https://www.consumerfinance.gov/compliance/consumer-complaint-program/company-process/; the 180 days we wrote before are the deadline of the optional public response), and a quarter holds 200k to 350k complaints.
+- This introduces the unrealistic downside of data shift within a quarter that a model refit more often would not meet.
+- A one-month gap (Andrej, 2026-11-19): the train side ends a month before each quarter, as a refit at the start of the quarter would not yet hold most of the last month's closures (at the download of 2026-01-23, 70% of December, 14% of November and 7% of October 2025 were still in progress). Measured (2026-11-18, equal training size, 3 seeds): leaving out the 30 days before each quarter worsens log loss by 0.004 to 0.017, broadly rather than through company waves, so recent closures carry a shortcut a deployed model would not have. A 60-day gap would put July-September 2024 under half the complaints (49.6%).
 
-We create 3 test splits, one per quarter (2025-04-01 to 2025-06-30, 2025-07-01 to 2025-09-30, 2025-10-01 to 2025-12-31). This represents a refit horizon of 3 months.
-We use all data before each quarter as training data. Each quarter keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows).
+We create 3 test windows of one quarter, newest first: October-December 2025 (203,139 complaints; train 91.8% of the 3,439,261 after the gap), January-March 2025 (350,790; train 63.9%) and July-September 2024 (213,655; train 51.5%). The newest quarter is always tested. The other two are spread evenly over the six quarters from July 2024 on, the oldest whose train side holds half the complaints, so they test other seasons and another year (the curator's choice of 2026-11-10) and hold the two changes a deployed model met in that time: July-September 2024 falls before the closure mix moved ("Closed with explanation" was 51% to 57% of each quarter of 2024 and 57% to 67% of 2025), and January-March 2025 holds the wave of January 2025 (165,305 complaints that month; 12.9% of the quarter about money transfers, mostly Block, Inc. (Cash App) and Early Warning Services (Zelle)).
+We use all data up to a month before each quarter as training data. Each quarter keeps at most 500k of its rows (all of them here); each train side holds every earlier row, and a benchmark sub-samples it to 1M rows, by default the newest year before the quarter, extended back in time until it holds 1M rows, and a random 1M of those (`subsample_train`).
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 203,139 to 307,396 rows. Prediction horizon: 3 months. Row budget: at most 1M train / 500k test rows per split.
 
