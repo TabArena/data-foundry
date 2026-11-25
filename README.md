@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-25 13:15 UTC: 220 claim(s) (Andrej 189, Lennart 12, Myunghwan 19).
+As of 2026-11-25 13:16 UTC: 212 claim(s) (Andrej 181, Lennart 12, Myunghwan 19).
 
 ## Andrej
 
@@ -46,7 +46,6 @@ As of 2026-11-25 13:15 UTC: 220 claim(s) (Andrej 189, Lennart 12, Myunghwan 19).
 | `credit_approval` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `credit_card_clients_default` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `credit_g` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
-| `deafness_gene_carrier_hearing_loss` | triage | 2026-11-25 | 2026-12-02 | screening (Shaktah 2026 clinical benchmark) |
 | `deeploc2_fungi_membrane_esm2` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
 | `dementia_prediction` | review | 2026-11-11 | 2026-11-18 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `diabetes_130_us` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -58,13 +57,11 @@ As of 2026-11-25 13:15 UTC: 220 claim(s) (Andrej 189, Lennart 12, Myunghwan 19).
 | `electric_motor_temperature_prediction` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `emscad` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `eryhemato_squamous_disease` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
-| `esophageal_cancer_sponge_cytology` | triage | 2026-11-25 | 2026-12-02 | screening (Shaktah 2026 clinical benchmark) |
 | `fiat_500` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `food_delivery_time` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition` | review | 2026-11-12 | 2026-11-19 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `forensic_glass_identification` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `forest_fires` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
-| `fosp_cancer_registry_survival` | triage | 2026-11-25 | 2026-12-02 | screening (Shaktah 2026 clinical benchmark) |
 | `frempl_french_motor_personal_line` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `fusionai_gene_fusion_ntv2` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
 | `gallstone_disease` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -134,7 +131,6 @@ As of 2026-11-25 13:15 UTC: 220 claim(s) (Andrej 189, Lennart 12, Myunghwan 19).
 | `otto_group_product_classification_challenge` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `pancreatic_cancer_mouse_detection` | review | 2026-11-11 | 2026-11-18 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `peer_tem1_beta_lactamase_esm2` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
-| `pheochromocytoma_paraganglioma_metastasis` | triage | 2026-11-25 | 2026-12-02 | screening (Shaktah 2026 clinical benchmark) |
 | `polish_companies_bankruptcy` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `porto_seguro` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `predict_students_dropout_and_academic_success` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -162,9 +158,6 @@ As of 2026-11-25 13:15 UTC: 220 claim(s) (Andrej 189, Lennart 12, Myunghwan 19).
 | `sberbank_housing_market_forecasting` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `sdss_17` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `sdss_dr17_star_galaxy_quasar` | triage | 2026-11-12 | 2026-11-19 (expired) | BeyondArena v0.2 review page (Andrej): DR17's full set, from sdss_17 issue 8 |
-| `seer_hepatocellular_carcinoma_lung_metastasis` | triage | 2026-11-25 | 2026-12-02 | screening (Shaktah 2026 clinical benchmark) |
-| `seer_osteosarcoma_survival` | triage | 2026-11-25 | 2026-12-02 | screening (Shaktah 2026 clinical benchmark) |
-| `seer_renal_cell_carcinoma_5y_survival` | triage | 2026-11-25 | 2026-12-02 | screening (Shaktah 2026 clinical benchmark) |
 | `seismic_bumps` | add | 2026-11-19 | 2026-11-26 | add-dataset (Andrej, review page) |
 | `sepsis_survival_minimal_clinical_records` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `sf_permit_time` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -193,7 +186,6 @@ As of 2026-11-25 13:15 UTC: 220 claim(s) (Andrej 189, Lennart 12, Myunghwan 19).
 | `walmart_sales_in_stormy_weather` | add | 2026-10-30 | 2026-11-17 (expired) | add-dataset, zero-inflated batch |
 | `website_phishing` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `wids_diabetes_mellitus` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
-| `wild_type_attr_cardiac_amyloidosis` | triage | 2026-11-25 | 2026-12-02 | screening (Shaktah 2026 clinical benchmark) |
 | `wine_quality` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `wine_world_cost` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `wisconsin_local_government_property_insurance_fund` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
