@@ -3,9 +3,10 @@ unique_name: bacteria_id_raman
 name: Pathogenic Bacteria
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Lennart
+claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 decision_markers:
