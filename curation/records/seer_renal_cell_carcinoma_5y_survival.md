@@ -77,7 +77,7 @@ CC (2026-11-25, Andrej): accepted for adding in the screening review (issue 2 A 
    * **Options:**
 
      | | Option | What it does | Pro | Con |
-   |---|---|---|---|---|
+     |---|---|---|---|---|
      | a | Keep B as a recorded exception | whole site recode, histology a feature; the fact written down: the liver extract was also set aside for its label that counts unknown as no | more rows; like the São Paulo call | Wilms tumour keeps another actor; the source task set aside |
      | b | Take A, like liver cancer | C64 with RCC histologies | consistent with liver cancer and the source paper | fewer rows, still tens of thousands |
      | c | Drop only Wilms tumour | adults' kidney and renal pelvis cancers, histology a feature | removes the clearest change of actor | our own cohort, in no source |

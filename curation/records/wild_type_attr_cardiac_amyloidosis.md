@@ -114,7 +114,7 @@ CC (2026-11-25, Andrej): screening review: issue 1 A (drop the source's two leak
    * **Options:**
 
      | | Option | What it does | Pro | Con |
-   |---|---|---|---|---|
+     |---|---|---|---|---|
      | a | Keep the derivation file (implemented) | 2,142 patients, Huda's flags | the paper's own model task; the label is the curated wild-type cohort | small; the flags were chosen on all cases |
      | b | A second record from the validation file | its own definition next to this one | 7x the patients | the same task twice; 597 patients in both |
      | c | Build this record from the validation file instead | label from the codes, every E85 code removed, flags built with Huda's ICD map | 7x the patients; our own feature build, so the leak cut is ours | a broader label (any cardiac amyloidosis); the label is a code we must remove cleanly |
