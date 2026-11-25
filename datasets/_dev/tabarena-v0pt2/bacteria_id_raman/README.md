@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bacteria_id_raman
 container_format: 2
-checksum: v2:86e78f9b54cd8d0eb5d25374d3eafc167c2ab78240ab6636d503051f255ae499
+checksum: v2:f75cced0a150ed4a23f3c3d1a86ebb6c797b2c0938221023bff96fa64a0f563f
 build: null
 build_stale: false
 data:
@@ -71,7 +71,7 @@ decisions:
 
 Multiclass classification of `empiric_treatment`, scored with `log_loss` on grouped splits by `isolate`, one prediction per group (mean). 78,500 rows and 1,000 features. Source: GitHub (2019).
 
-Not built yet. The current definition gives checksum `v2:86e78f9b54cd8d0eb5d25374d3eafc167c2ab78240ab6636d503051f255ae499`.
+Not built yet. The current definition gives checksum `v2:f75cced0a150ed4a23f3c3d1a86ebb6c797b2c0938221023bff96fa64a0f563f`.
 
 ## In brief
 
@@ -213,7 +213,7 @@ We start with the five spectrum files (`X_reference`, `X_finetune`, `X_test`, `X
 - Potential leak, kept on purpose (LEAK-9, an evaluation leak): the paper's design puts 5 patients of each group in each year, and the year can be read from one spectrum (ROC AUC 0.993 in the task gamer's test), so the make-up of a test fold by year tells a model which groups remain among its patients of that year. Using it lowered the per-patient log loss by 0.014 and 0.033 (two untuned models, better on 53 and 51 of 60 3-fold splits; per spectrum 0.017 and 0.043), and it survives any random grouped split. Reading other test patients' spectra (a neighbour rebuild) gains no more at the patient unit than sharpening each spectrum's prediction on its own, and PCA fitted on all rows gains 0.004. All three are closed by the protocol line in splits_comment, not in the data.
 - Few patients (TP-5): 10 patients per treatment group in all. Two folds give 5 per group and 25 per fold; three folds gave 3 or 4 per group. On the first 20 shipped splits (a logistic regression on 100 principal components, per-patient log loss 0.076 to 0.324 per fold) one patient carries 13% to 34% of a fold's loss, and the patient-bootstrap standard error of one fold's score is 0.032 on a mean of 0.120, so gaps between methods below about 0.03 may not carry to new patients; with three folds one patient carried 16% to 51%. The 60 splits recombine the same 50 patients, so their spread understates how a score would move on new patients.
 - The source's test file was "gathered from separately cultured samples": within an isolate, a logistic regression on 20 principal components tells the fine-tuning file's spectra from the test file's at a median ROC AUC of 0.81 (0.47-1.00 over the 30 isolates), so they are separate measurements, which fits the claim.
-- Time basis: Timeless: the treatment group of an isolate is a property of the organism, not of when it was cultured, and no row records a date: whole patients are held out with all their spectra. The split cannot test a later year or the other site on its own, because the 2018 and 2019 cohorts are pooled; what that costs is measured in the curation notes and is open as a review issue.
+- Time basis: Timeless: a closed set of cultured isolates measured by one laboratory: the treatment group of an isolate is a property of the organism, not of when it was cultured, and no row records a date. The model meets a new patient's isolate, which is a new item of the kinds the data holds, and each isolate was measured 100 or 400 times, so whole patients are held out with all their spectra. The split cannot test a later year or the other site on its own, because the 2018 and 2019 cohorts are pooled; what that costs is measured in the curation notes and named in `fit_reason`.
 
 ## Splits
 

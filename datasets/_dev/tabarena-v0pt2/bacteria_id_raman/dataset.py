@@ -127,13 +127,16 @@ class BacteriaIdRaman(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "bacteria_id_raman"
+    split_leaf = "L-EXP.item"
     time_basis = TimeBasis(
         "Timeless",
         """
-        the treatment group of an isolate is a property of the organism, not of when it was cultured, and no row
-        records a date: whole patients are held out with all their spectra. The split cannot test a later year or
+        a closed set of cultured isolates measured by one laboratory: the treatment group of an isolate is a
+        property of the organism, not of when it was cultured, and no row records a date. The model meets a new
+        patient's isolate, which is a new item of the kinds the data holds, and each isolate was measured 100 or
+        400 times, so whole patients are held out with all their spectra. The split cannot test a later year or
         the other site on its own, because the 2018 and 2019 cohorts are pooled; what that costs is measured in
-        the curation notes and is open as a review issue.
+        the curation notes and named in `fit_reason`.
         """,
     )
     domain = "medical & healthcare"

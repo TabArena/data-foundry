@@ -17,7 +17,7 @@ tags:
 - Many features
 - Non-IID (Grouped)
 - Spectral Data
-- Clinical Study
+- Experimental Results
 - 'Samples: Over Time'
 - 'Time: Inferred'
 - 'Entities: Recur'
@@ -41,6 +41,11 @@ type_adapter_id: curation-record-v1
 ---
 
 ## Comments
+
+CC (2026-11-25, Andrej): Review issue 1, `ok`: one prediction per patient, from all of its spectra, as implemented.
+
+CC (2026-11-25, Andrej): the collection type becomes `Experimental Results` in place of `Clinical Study` (Review issue 5). The rows are laboratory measurements of cultured isolates, a closed set of specimens measured by one laboratory, not a clinical study of patients; the spectra are of cultures, not of people. The walk was redone from the new type and now reaches the split the definition already ships, so the departure the issue raised is gone.
+
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from the source pages, the release file listings and a two-column preview of the data, NOT from a build. A human must verify everything before relying on it.**
 
@@ -160,6 +165,8 @@ log loss on 2026-10-21). Priority 4 becomes 3 (the fit is approximate).
 
    * **Recommendation:** B: the source's cited protocol identifies a patient from its spectra, and nothing in the source makes one spectrum the decision. **Decision:** A or B?
 
+   **Resolved (2026-11-25, Andrej):** `ok`, B as implemented: one prediction per patient, the mean of its spectra's class probabilities, with all of the patient's spectra usable.
+
    **Notes for the AI:** A: `Grouping(prediction_unit="row", context="none")`; restore the scoring column `isolate_weight` (1 over the isolate's spectra), `Metric.fallback(..., inputs={"weight": "isolate_weight"})` and `UnitWeight(column="isolate_weight", unit="isolate")`; add to splits_comment's protocol line "each spectrum is predicted from itself and the training rows only, never from the patient's other spectra"; write the use-case reason for one spectrum into `grouping.definition`; rewrite `task_summary` (question, known, split, changes) and the unit bullet of curation_comments; re-run `dataset check` and the task probe. The mediator asked to keep `unit_weight` under B; the schema refuses a unit weight that is not the metric's weight input, and the weight input would be read at each patient's first row (a 2019 patient would count four times a 2018 patient), so B has none.
 
    [^u23]: **SPLIT-23** (Must): the source's use case, cited, decides what one prediction is and what a model may know about the group. Ho et al. 2019, Results: "We then use 10 randomly sampled spectra from each patient isolate in the test set ... The most common class out of the 10 spectral classifications is then chosen as the identification." principles.md, Tensions, "The right split against the score": a score argument does not decide a rule ranked above it.
@@ -188,6 +195,19 @@ log loss on 2026-10-21). Priority 4 becomes 3 (the fit is approximate).
 
    * **Recommendation:** A: the mildest remedy that follows the rule as written. **Decision:** A, B or C?
 
+   **Answer (2026-11-25):** the hierarchy, counted on the built frame (78,500 rows).
+
+   | | units | spectra | per unit |
+   |---|---|---|---|
+   | Patients (the test units) | 50 | 12,500 | 400 (the 25 of 2018) or 100 (the 25 of 2019) |
+   | Reference isolates (never tested) | 30 | 66,000 | 2,200 each, uniform |
+
+   Patients are balanced in units and in rows, but not in spectra per unit: each of the five patient classes holds exactly 10 patients and exactly 2,500 spectra, made of 5 patients at 400 spectra and 5 at 100. So "an equal number of patients per class" is yes, "an equal number of measurements each" is no, and the imbalance is 4 to 1 between the two years, evenly split inside every class. That is why the prediction unit of issue 1 matters: scored per spectrum, a 2018 patient would weigh four times a 2019 patient; scored per patient, each counts once without a weight.
+
+   The reference library is not balanced at all: Meropenem 8 isolates, Penicillin 7, Vancomycin 7, Caspofungin 2, Ceftriaxone 2, Piperacillin-tazobactam 2, Ciprofloxacin 1, Daptomycin 1. Three of those classes (Ciprofloxacin, Ceftriaxone, Caspofungin) have no patient at all, which is what issue 3 is about.
+
+   This issue stays open: the question was asked, not decided.
+
    **Notes for the AI:** B: in `_make_splits`, `n_repeats, n_folds = protocol.recommended_dimensions(clinical, group_on="isolate", group_labels="per_group")` (3 x 20); rewrite splits_comment, `task_summary.split` and the few-patients bullet; propose `groups_test_groups_few` for acceptance; add the amendment to the across-datasets REVIEW.md (text below) and, once you agree, to TP-5. Amendment text: "TP-5 amendment (proposed, bacteria_id_raman): a class at 3 or more units per test fold is not a handful when no class is short, a test fold holds 15 or more units, and the score is stable across splits (best family's skill within a narrow band on every probed split); below that, fewer and larger folds first, then Too Small." C: `suggestion` `No`, marker `Too Small`. Re-run `dataset check` and the task probe on B.
 
    [^t5]: **TP-5** (Must): `Too Small` means a handful of units of a class, per test fold and in total, counted in the unit the task is scored on. evidence.md: the `few_minority` flag fires below 5 units of a class per test fold. principles.md, How to decide 4: a very real task with a handful of units per class per test fold is still `Too Small`. definitions.md: accept `groups_test_groups_few` only with real signal and more than a handful of groups of each class per fold.
@@ -213,6 +233,14 @@ log loss on 2026-10-21). Priority 4 becomes 3 (the fit is approximate).
      | B | Drop the 5 isolates | 11,000 rows leave; training and test hold the same five groups | the score holds only the tested groups; the check warning clears | a filter of our own; the source's version changes; mostly a level shift |
 
    * **Recommendation:** A: the source pre-trains on all eight groups, and dropping them mostly shifts the level. **Decision:** A or B?
+
+   **Answer (2026-11-25):** because they are not patients. The 30 reference isolates are type strains from a culture collection (ATCC), ordered and grown on purpose, and a hospital laboratory already knows what each one is: putting one in a test fold would score the model on naming an organism that came out of a labelled freezer stock, not on the clinical decision. The task's test unit is a patient's isolate, where the species and the treatment are what nobody knows yet.
+
+   They stay in training because that is what the source does and what a laboratory has: Ho et al. pre-train on the 30 reference isolates for all eight treatment groups and then fine-tune on patients, and a hospital's own reference library is exactly this kind of collection. So the 66,000 reference spectra sit in every training side and in no test fold, which is the `splits_rows_never_tested` warning of issue 4.
+
+   The three groups with no patient (Ciprofloxacin, Ceftriaxone, Caspofungin; 5 isolates, 11,000 spectra) are a consequence: a model may put probability on them and is never rewarded for it, which is the level shift issue 3 is really asking about.
+
+   This issue stays open: the question was asked, not decided.
 
    **Notes for the AI:** B: in `_clean`, drop the reference rows whose group is ciprofloxacin, ceftriaxone or caspofungin (`REFERENCE_ISOLATES` 0, 1, 19, 23 and 24: groups 7, 1 and 4); update the row counts in `task_summary.row`, the library bullet and splits_comment; drop the `splits_test_class_missing` acceptance; re-run `dataset check` and the task probe. Either way, the across-datasets item on a reference library that trains and is never tested gets one Cases row with raman_mlrod.
 
@@ -258,6 +286,14 @@ log loss on 2026-10-21). Priority 4 becomes 3 (the fit is approximate).
 
    [^c34]: **SPLIT-34** (Must): the record names one collection type, and the split decision tree starts from it.
    [^c36]: **SPLIT-36** (Must): the split follows the tree's walk from that type, or the definition records the departure.
+
+   **Resolved (2026-11-25, Andrej):** the collection type becomes `Experimental Results`, and the reassessment removes the issue rather than deciding between A, B and C.
+
+   The reading is right: these rows are laboratory measurements of cultured isolates, a closed set of specimens measured by one laboratory under a protocol, not a clinical study of patients. Nothing is measured on a person; every spectrum is of a culture grown from a sample.
+
+   Walked again from the new type, the tree reaches the split the definition already ships. What does the model meet in use? A new item of the kinds the data holds: a new patient's isolate, where all five treatment groups are classes the data already carries, so it is not a kind the data lacks. Was the experiment repeated, giving several rows for one item? Yes, 100 or 400 spectra per isolate. That leaf is Grouped · `Timeless` (the item), whole items held out with all their rows, beside micro_mass and musk, and it is what ships: whole patients held out with every spectrum.
+
+   So the departure this issue raised is gone. The pooled 2018 and 2019 cohorts are no longer a split the tree refuses to name; they are a weighed property of the sample, and the measured cost of pooling them (per-spectrum log loss 0.368 trained on 2018 and tested on 2019, against 0.229 pooled) stays in `fit_reason` as one of the four named gaps. A later round that wants the site tested can still take option B, but no rule now asks for it.
 
    **Notes for the AI:** on B, `_make_splits` builds one fold from the file a patient comes from (2018 or 2019), `splits_comment` and `task_summary.split` say so, the protocol dimensions warning is re-accepted, and issue 2 (the fold count) falls away. On C, the companion view goes in `curation_comments` beside the fit gaps with both numbers. Either way, record the collection type and the branch in the record. Re-run `dataset check` and the task probe.
 
