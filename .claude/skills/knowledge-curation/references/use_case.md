@@ -53,7 +53,8 @@ checked may ship with `fit="approximate"` and a note naming the gap; decide the 
 or grade ships as a number or as classes is decided case by case too: by how the source models and scores it, checked
 against common sense and the practice of similar use cases (Lennart, 2026-10-21). A label checked and found to be
 another quantity than the one the actor acts on still fails (Lennart, 2026-10-21, diabetes_3). Cases:
-corporate_credit_rating, cirrhosis_patient_survival_prediction, diabetes_3, blood_tests_drink_prediction.
+corporate_credit_rating, cirrhosis_patient_survival_prediction, diabetes_3, blood_tests_drink_prediction,
+sdss_dr17_star_galaxy_quasar (the source's own quality flag drops the labels its pipeline marks unreliable).
 
 ### Inputs known at prediction time
 

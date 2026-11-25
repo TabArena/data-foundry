@@ -34,9 +34,6 @@ RENAME = {
 }
 MAGNITUDES = ["u", "g", "r", "i", "z"]
 PSF_MAGNITUDES = [f"psfMag_{band}" for band in MAGNITUDES]
-# zWarning bits for a fibre that carried no light from the object (sdss4.org/dr17/algorithms/bitmasks): UNPLUGGED (bit
-# 7) and NODATA (bit 9).
-NO_LIGHT = (1 << 7) | (1 << 9)
 # The first day of each test window, newest first: 2019 and 2020 form one window (1 January 2019 to the end of the data,
 # 24 March 2020), then the calendar years 2018 to 2012, as `sdss_17` (2026-11-12, Andrej).
 WINDOW_STARTS = tuple(pd.Timestamp(f"{year}-01-01") for year in range(2019, 2011, -1))
@@ -51,11 +48,11 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
         ),
         row=(
             "One object with a spectrum in the Sloan Digital Sky Survey's Data Release 17: every primary optical "
-            "spectrum with a photometric object whose fibre carried light, 4,599,104 objects observed from February "
-            "2000 to March 2020."
+            "spectrum with a photometric object whose class the survey's pipeline does not flag, 4,249,921 objects "
+            "observed from February 2000 to March 2020."
         ),
         predicted=(
-            "The class the survey's spectroscopic pipeline assigned: galaxy (60.26%), star (20.92%) or quasar (18.83%)."
+            "The class the survey's spectroscopic pipeline assigned: galaxy (61.60%), star (20.73%) or quasar (17.68%)."
         ),
         known=(
             "The sky position, the brightness in five colour bands (u, g, r, i, z) from the survey's images, both as "
@@ -70,16 +67,16 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
         ),
         changes=(
             "We drop the redshift, fitted with the class, the plate and fibre, which record how the object was "
-            "chosen, and the spectra whose fibre carried no light. We add the PSF magnitudes from the same images. "
-            "We split by the year of the spectrum, 2019 and 2020 in one window, and score 2012 on a random 500,000 "
-            "of its 577,180 spectra."
+            "chosen, and the spectra the survey's pipeline flags as unreliable. We add the PSF magnitudes from the "
+            "same images. We split by the year of the spectrum, 2019 and 2020 in one window, and score 2012 on a "
+            "random 500,000 of its 546,222 spectra."
         ),
         fit="approximate",
         fit_reason=(
             "The features exist before a spectrum, but every row is an object the survey's targeting programmes "
             "already picked by its colours for a spectrum, so the mix of classes and colours is not that of the "
             "objects one would classify without one. Each programme picked its own kind of object, so the class mix "
-            "of later years differs (quasars 14-17% of the spectra in 2010-2013, 30-49% from 2014)."
+            "of later years differs (quasars 13-16% of the spectra in 2010-2013, 31-51% from 2014)."
         ),
     )
 
@@ -133,26 +130,31 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
         all flagged by `zWarning`, and they have no features to classify with. The files are the release as published; no other file is read. The nights the ranges leave out
         (MJD 52711 to 52720, 55515 and 55516) hold no spectrum of the join: the row count of every range equals the
         join's count per night.
-        - Larger than the row budget: the training sides hold 2,308,241 to 4,536,732 spectra, so the dataset ships as
+        - Larger than the row budget: the training sides hold 2,223,206 to 4,197,395 spectra, so the dataset ships as
           the `_1m` version: every window keeps all earlier spectra on its training side, a benchmark draws 1M of
-          them before a fit, and each test window holds at most 500,000 spectra (only 2012, 577,180, is cut).
+          them before a fit, and each test window holds at most 500,000 spectra (only 2012, 546,222, is cut).
         - We renamed the columns to the Kaggle cut's names and the target to "ObjectType".
-        - We drop the 19,581 spectra whose fibre carried no light from the object, by the source's own flags
-          (`zWarning`, sdss4.org/dr17/algorithms/bitmasks): 18,513 UNPLUGGED, "the fiber was unplugged or damaged,
-          and the location of any spectrum is unknown" (17,948 labelled galaxy, 337 quasar, 228 star; median
-          signal-to-noise 0), and 1,068 more NODATA, "No data for this fiber, e.g. because spectrograph was broken
-          during this exposure", all labelled galaxy. The pipeline's class of such a spectrum was fitted to no
-          object's light, so the object's class is in effect missing; their share rises from 0.33% of the 2012 test
-          window to 0.87% of 2019-2020. They leave before the position dedup, so an object with a later real
-          spectrum keeps it. The other flagged spectra stay (7.59% of the objects, 90.9% of them flagged only as
-          SMALL_DELTA_CHI2, the best class template barely ahead of the next): their class is the pipeline's, as
-          the target is defined, and `sdss_17` keeps them.
+        - We drop the 368,771 spectra (7.98%) whose class the source flags as unreliable, `zWarning` not 0 (the
+          spectroscopic pipeline's own quality bitmask, sdss4.org/dr17/algorithms/bitmasks; Bolton et al. 2012), as
+          that flag directs and as SDSS training sets do (2026-11-25, Andrej): 172,453 labelled galaxy, 81,158 star
+          and 115,160 quasar, 6.2%, 8.4% and 13.3% of each class. 19,581 of them come from fibres that carried no
+          light from the object, a class fitted to no object's light: 18,513 UNPLUGGED, "the fiber was unplugged or
+          damaged, and the location of any spectrum is unknown" (17,948 labelled galaxy; median signal-to-noise 0),
+          and 1,068 more NODATA, "No data for this fiber, e.g. because spectrograph was broken during this
+          exposure", all labelled galaxy. About 91% of the rest are flagged only as SMALL_DELTA_CHI2, the best class
+          template barely ahead of the next. A flagged class is unstable: of the same 91,063 spectra of December
+          2011 to February 2012, 26.8% of the flagged ones changed class from DR12's pipeline (v5_7_0) to DR17's
+          (v5_13_2), against 0.43% of the clean ones. The flagged share grows over time (3.7% of the spectra before
+          2012, 15-22% of each test window from 2016), so the drop takes most from the newer windows and from the
+          quasars, and it changes which objects are scored: the ones the pipeline could not decide leave. They leave
+          before the position dedup, so an object whose flagged spectrum has a clean one at the same position keeps
+          the clean one (2 positions). `sdss_17` keeps them only because its Kaggle file has no `zWarning`.
         - We sort the spectra by night, plate and fibre, which name one spectrum: the service returns the rows of a
           query in no fixed order (a second fetch of the newest range held the same rows in another order), and the
           sort keeps the frame, and so the test-window draw, the same from fetch to fetch.
-        - We keep one spectrum per sky position ("alpha", "delta"), the earliest: 68 positions carry two spectra of one
-          photometric object, taken 0 to 5,509 nights apart (median 2,540), and at 6 of them the two classes differ;
-          the later spectrum would be a test row whose object the model saw with a label (4,599,104 objects remain).
+        - We keep one spectrum per sky position ("alpha", "delta"), the earliest: 61 positions carry two spectra of one
+          photometric object, taken 0 to 5,509 nights apart (median 2,536), and at 2 of them the two classes differ;
+          the later spectrum would be a test row whose object the model saw with a label (4,249,921 objects remain).
         - We dropped the identifiers ("obj_ID", "spec_obj_ID"), the imaging run, rerun (constant) and field, which
           name the image, not the object.
         - We drop "redshift". The SDSS pipeline fits the class and the redshift in the same step, and stars are only
@@ -168,9 +170,9 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
           star/galaxy `type` is a cut on it), and every photometric classifier of the literature reads it. `sdss_17`
           has no PSF magnitudes only because the Kaggle file held none; our own query has them, so the feature set
           now goes beyond `sdss_17`'s, for the same task. Measured by two reviewers in four tests on the windows
-          (LightGBM), they lower the log loss by 0.09 to 0.15.
-        - We set the sentinel -9999 to missing: 155 objects carry it in one or more bands of either magnitude (103 to
-          139 per band), 103 of them in all five.
+          (LightGBM, before the flagged spectra were dropped), they lower the log loss by 0.09 to 0.15.
+        - We set the sentinel -9999 to missing: 149 objects carry it in one or more bands of either magnitude (99 to
+          135 per band), 99 of them in all five.
         - "u", "g", "r", "i", "z" are the model magnitudes of DR17's imaging catalogue. DR17 adds no imaging ("Data
           Release 17 does not include any new or updated SDSS imaging data", sdss4.org/dr17/imaging), and its
           catalogue magnitudes carry the DR13 recalibration of the zero points ("the DR13 hypercalibration has been
@@ -180,32 +182,34 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
           of the catalogue classifies with today.
         - Split by the year of the spectrum instead of at random, as `sdss_17` (2026-11-11, Andrej). Every row is a
           spectrum taken on a dated night (the raw "mjd", now the time column "date") through a plate drilled for
-          one targeting programme, and the programmes changed what they observed: quasars are 3-10% of each year's
-          spectra in 2000-2009, 14-17% in 2010-2013 and 30-49% from 2014 on. A classifier in use is trained on the
+          one targeting programme, and the programmes changed what they observed: quasars are 2-10% of each year's
+          spectra in 2000-2009, 13-16% in 2010-2013 and 31-51% from 2014 on. A classifier in use is trained on the
           spectra taken so far and labels objects the survey has not yet observed.
         - We keep "MJD" out of the features and bring it back only as the time column "date": the date orders and
           splits the rows and is no model input (`Temporal(..., time_of="label")`), since the date of an object's
           spectrum arrives with its class (2026-11-12, Andrej).
         - Re-observed objects, kept: 5.6-7.7% of the primary spectra of 2010-2020 (8-14% of the quasars) belong to an
           object that had an earlier spectrum in `SpecObjAll`, eBOSS and TDSS re-observations of known quasars and
-          replacements of poorer spectra (counted on SkyServer). The earlier spectrum is not in the data and the
-          object appears once, so no copy crosses the split, but these objects were picked for a class the survey
-          already had, unlike the use case's objects without a spectrum (part of the `Selection Bias`).
+          replacements of poorer spectra (counted on SkyServer among all primary spectra, before the flagged ones were
+          dropped). The earlier spectrum is not in the data and the object appears once, so no copy crosses the
+          split, but these objects were picked for a class the survey already had, unlike the use case's objects without a spectrum (part of the `Selection Bias`).
         - We keep the sky position ("alpha", "delta") as `sdss_17` does: it is known from the images before any
           spectrum. Under the year windows it mostly records which targeting programme's footprint an object lies
           in, and the footprints move from year to year: adding it to the model magnitudes raised LightGBM's log
           loss in every window measured, by 0.013 to 0.066 (mean 0.033, five windows, before the PSF magnitudes
-          were added); alone it scores worse than the class shares. A method that learns to discount it under the
-          drift does better, which is part of the task. "cam_col" changes the log loss by at most 0.001.
+          were added and the flagged spectra dropped); alone it scores worse than the class shares. A method that
+          learns to discount it under the drift does better, which is part of the task. "cam_col" changes the log
+          loss by at most 0.001.
         - Worth benchmarking, measured in one run (the task probe, 5 of the 8 windows, untuned, log loss): LightGBM
-          0.354, random forest 0.359, logistic regression 0.502, the best single feature (`psfMag_u` or `psfMag_g`)
-          0.665, the class shares 1.196; LightGBM beats the class shares in every window.
+          0.255, random forest 0.265, logistic regression 0.393, the best single feature (`psfMag_g` or `psfMag_u`)
+          0.615, the class shares 1.247; LightGBM beats the class shares in every window.
         - Potential leak, kept on purpose (LEAK-9, an evaluation leak): features built from the other test rows of a
           window, the unlabelled objects observed in the same year in the same patch of sky, tell a model which
-          programme observed the patch and lowered the mean log loss by 0.047 in a reviewer's test. A deployed
-          classifier choosing targets from the images does not know which objects get a spectrum that year. Each
-          test object is predicted from the training rows and its own features only; no feature or model step may
-          use other test rows, and a method that learns from the test window is called out and not benchmarked.
+          programme observed the patch and lowered the mean log loss by 0.047 in a reviewer's test (before the flagged
+          spectra were dropped). A deployed classifier choosing targets from the images does not know which objects
+          get a spectrum that year. Each test object is predicted from the training rows and its own features only;
+          no feature or model step may use other test rows, and a method that learns from the test window is called
+          out and not benchmarked.
     """
 
     # Task
@@ -234,25 +238,25 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
         release (DR8, January 2011, to DR16, December 2019) would. No gap: the user is the survey team, which has
         its reduced spectra, and so the classes, within days and plans the next plates from them. A public user
         waits for the next release, whose newest spectra are 0.5 to 3.5 years old at a window's start; a window's
-        length is not that gap. Measured on the windows before the no-light drop (LightGBM, mean log loss): no gap
-        0.450, a 6-month gap 0.495, 18 months 0.590, the public release at each window's start 0.635 (release
+        length is not that gap. Measured on the windows before the flagged spectra were dropped (LightGBM, mean log
+        loss): no gap 0.450, a 6-month gap 0.495, 18 months 0.590, the public release at each window's start 0.635 (release
         cutoffs from the release papers, not checked). Any gap of 6 months or more puts 2012 under half the
-        objects, and 18 months 2013 too.
+        objects (48.0% at 6 months), and 18 months 2013 too (48.0%; 2012 37.3%).
 
-        The windows hold 62,372 (2019-2020), 311,768, 255,891, 210,578, 158,781, 242,471, 471,822 and 577,180 (2012)
+        The windows hold 52,526 (2019-2020), 253,228, 200,290, 179,009, 135,619, 212,680, 447,141 and 546,222 (2012)
         spectra; each test window keeps at most 500,000 of them, drawn at random within the classes, so 2012 is
-        scored on 500,000. Each train side holds every earlier spectrum, 4,536,732 (98.6% of the 4,599,104 objects,
-        2019-2020) down to 2,308,241 (50.2%, 2012), and a benchmark sub-samples it to 1M rows (by default rows drawn
+        scored on 500,000. Each train side holds every earlier spectrum, 4,197,395 (98.8% of the 4,249,921 objects,
+        2019-2020) down to 2,223,206 (52.3%, 2012), and a benchmark sub-samples it to 1M rows (by default rows drawn
         at random from the newest year before each window, extended back in time until it holds that many rows,
         `subsample_train`).
 
         The sizes follow the survey: BOSS used all the dark time until June 2014, eBOSS half of it until it ended on 1
-        March 2019, and 2020 holds only 8 plates (5,913 spectra, 5 nights) of one programme (eFEDS), observed before
+        March 2019, and 2020 holds only 8 plates (4,265 spectra kept, 5 nights) of one programme (eFEDS), observed before
         the observatory closed for COVID-19 on 24 March 2020: an atypical newest window, so it is merged with 2019
-        (56,459 spectra, 72 plates), as in `sdss_17` (2026-11-12, Andrej).
+        (48,261 spectra kept, 72 plates), as in `sdss_17` (2026-11-12, Andrej).
 
         Eight windows, more than the 3 an IID split of this size would get (one repeat of 3 folds): the number is
-        limited by the half-the-objects floor, not by that target, since a 2011 window would train on 39.4% of the
+        limited by the half-the-objects floor, not by that target, since a 2011 window would train on 41.4% of the
         objects.
     """
 
@@ -267,9 +271,10 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         # SkyServer writes some headers in mixed case ("psfMag_u", "zWarning"): lower case first, then the Kaggle names.
         df = raw.rename(columns=str.lower).rename(columns=RENAME)
-        # Spectra whose fibre carried no light (UNPLUGGED or NODATA): the class was fitted to no object's light, so the
-        # object's class is in effect missing (dropped before the position dedup, so an object keeps a real spectrum).
-        df = df[(df["zwarning"].astype("int64") & NO_LIGHT) == 0]
+        # Spectra the source flags (zWarning not 0): classes DR17 itself does not stand behind, among them the fibres
+        # that carried no light (UNPLUGGED, NODATA). Dropped before the position dedup, so an object whose flagged
+        # spectrum has a clean one at the same position keeps the clean one (2026-11-25, Andrej).
+        df = df[df["zwarning"].astype("int64") == 0]
         target_feature = "ObjectType"
         df = df.rename(columns={"class": target_feature})
         df[target_feature] = df[target_feature].str.strip()
@@ -277,7 +282,7 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
         df["date"] = pd.to_datetime(df["MJD"], unit="D", origin=pd.Timestamp("1858-11-17"))
         # A fixed row order (the service returns rows in no fixed order); night, plate and fibre name one spectrum.
         df = df.sort_values(["MJD", "plate", "fiber_ID"], kind="stable")
-        # One spectrum per sky position, the earliest (69 positions with two spectra of one photometric object).
+        # One spectrum per sky position, the earliest (61 positions with two spectra of one photometric object).
         df = df.drop_duplicates(subset=["alpha", "delta"]).reset_index(drop=True)
         assert df["obj_ID"].is_unique, "One photometric object per row after the position dedup."
         # The imaging pipeline's sentinel for a magnitude it could not measure.

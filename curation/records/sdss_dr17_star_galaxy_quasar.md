@@ -88,11 +88,17 @@ CC (2026-11-12, Andrej): record created to be considered for inclusion; `sdss_17
 
 **Assessment (AI, 2026-11-25):** review panel (full): ship after changes; disputed: the spectra DR17 flags as unreliable (USE-5, ruled a weighing call, not a Must: issue 1, with the DESI consistency check), the sky position as a leak or a shift (LEAK-10 against USE-6, settled: a shift, kept with a note), the PSF magnitudes (CLEAN-1 or USE-6, settled either way: added), the reason for no gap (SPLIT-10 against SPLIT-14, settled: no gap, the reason rewritten and its cost put to the sign-off); for the curator: issues H and 1-2. Priority 4: gap + (physics & astronomy and multiclass are thin), use case 0 (approximate, `Selection Bias`), source + (the DR17 paper and SkyServer's schema documentation), shape + (4,599,104 objects, 13 features, dated), risk 0 (the open label-quality call ships either way; the one exploit, reading the test window's other rows, is closed by a protocol line).
 
+CC (2026-11-25, Andrej): issue 1, B ("Option B: Drop every flagged spectrum."): the definition drops every spectrum the source flags (`zWarning` not 0: 368,771 of the 4,618,753 fetched, the 19,581 from fibres without light among them), following DR17's own quality flag; 4,249,921 objects remain.
+
+CC (2026-11-25, Andrej): the declared horizon (one calendar year, no gap, windows starting 1 January 2019 for 2019 with 2020, then 2018 back to 2012) is checked, as implemented (A): the yearly data releases set the length, and the user, the survey team, has its spectra and classes within days, so no gap; a 6-month gap would put the 2012 window at 48.0% of the objects.
+
+**Assessment (AI, 2026-11-25):** after the drop of the flagged spectra: 4,249,921 objects (61 repeated positions dropped, 2 of them with differing classes; 149 with a -9999 magnitude set missing), galaxy 61.60%, star 20.73%, quasar 17.68%; test windows 52,526 (2019-2020), 253,228, 200,290, 179,009, 135,619, 212,680, 447,141 and 546,222 (2012, scored on 500,000), training on 98.8% down to 52.3%. `dataset check`: 0 errors, 0 warnings. Leak probe: all features AUC 0.972, the best single one `psfMag_g` 0.792, no exact copy across the split. Task probe (5 of 8 windows, log loss): LightGBM 0.255, random forest 0.265, logistic regression 0.393, the class shares 1.247.
+
 ## Review
 
-**Outcome:** added as `sdss_dr17_star_galaxy_quasar_1m`; the AI recommends shipping it as now defined, with the label-quality call of issue 1 open (the panel said ship after changes; every change that needed no decision is made). 4,599,104 objects with a spectrum in SDSS DR17 (February 2000 to March 2020), the target the spectroscopic pipeline's class (galaxy 60.26%, star 20.92%, quasar 18.83%), inputs the sky position, the camera column and the model and PSF magnitudes in five bands; redshift, plate and fibre dropped as in `sdss_17`, the date no input. Split: eight one-year windows, 2019-2020 together, then 2018 back to 2012, each trained on every earlier spectrum (50.2% to 98.6%), no gap; metric the fallback log loss. Changed today on the panel's word: the 19,581 spectra from fibres that carried no light (`zWarning` UNPLUGGED or NODATA) are dropped, and the PSF magnitudes are added from the same query. Validity: no column leaks (all features AUC 0.947 in the leak probe, the best single one `psfMag_g` 0.776; missing indicators and number formats 0.50; no exact copy across the split); the one exploit, reading the test window's other rows, is closed by a protocol line. Value: on 5 of the 8 windows, untuned LightGBM 0.354 log loss, random forest 0.359, logistic regression 0.502, the best single feature 0.665, the class shares 1.196. Not built.
+**Outcome:** added as `sdss_dr17_star_galaxy_quasar_1m`; the horizon is signed off as implemented and the spectra DR17 flags are dropped (issue 1, B, 2026-11-25, Andrej); whether the imaging's `type` and the dust extinction join the inputs is open (issue 2: the answer to his question is yes, so the AI recommends adding both). 4,249,921 objects with a spectrum in SDSS DR17 whose class the pipeline does not flag (`zWarning` = 0; February 2000 to March 2020), the target the spectroscopic pipeline's class (galaxy 61.60%, star 20.73%, quasar 17.68%), inputs the sky position, the camera column and the model and PSF magnitudes in five bands; redshift, plate and fibre dropped as in `sdss_17`, the date no input. Split: eight one-year windows, 2019-2020 together, then 2018 back to 2012, each trained on every earlier spectrum (52.3% to 98.8%), no gap; metric the fallback log loss. Validity: no column leaks (all features AUC 0.972 in the leak probe, the best single one `psfMag_g` 0.792; missing indicators and number formats 0.50; no exact copy across the split); the one exploit, reading the test window's other rows, is closed by a protocol line. Value: on 5 of the 8 windows, untuned LightGBM 0.255 log loss, random forest 0.265, logistic regression 0.393, the best single feature 0.615, the class shares 1.247. `dataset check`: 0 errors, 0 warnings. Not built.
 
-**Main points:** Sign off the horizon (one year, no gap, for the survey's own user; a public user's release lag would cost 0.14 to 0.19 log loss), decide whether the spectra DR17 flags as unreliable stay (issue 1, with the consistency check on DESI's hold), and whether the imaging pipeline's `type` and the dust extinction join the inputs (issue 2).
+**Main points:** Horizon signed off (one year, no gap) and the flagged spectra dropped (issue 1, B); open: whether `type` and `extinction_u..z` join the inputs (issue 2: both are available to a practitioner at training and prediction time, so by the stated rule d, add both), and the DESI consistency check under issue 1.
 
 **Record judgment:** The panel changed the definition in two places and the builder's draft in one. The spectra whose fibre carried no light are dropped by the source's own flags (18,513 UNPLUGGED, and 1,068 NODATA that the mediator found, all labelled galaxy): a class fitted to no light is a missing label, so this needed no weighing. The PSF magnitudes are added: the feature set of `sdss_17` came from the Kaggle file, not from a choice against them, and they lowered the log loss by 0.09 to 0.15 in four tests (the task probe now 0.354 against the builder's 0.489). The rest is writing in the definition: the no-gap reason (a window's length is not a gap), the number of splits an IID split would get at this size (3, not 9), the reason for merging 2019 and 2020 (eight plates of one programme), the sky position note with its cost, the re-observed objects, the 492,959 primary spectra with no photometric object, the linear baseline quoted from one run, and the protocol line against reading the test window's other rows. "Task easier" is gone from issue 1 as a reason. The record's screening named DESI DR1 as `TBD -> Yes`; it is suspended (Comments, Assessment of 2026-11-25). Retiring `sdss_17` is decided in its own review.
 
@@ -129,6 +135,10 @@ CC (2026-11-12, Andrej): record created to be considered for inclusion; `sdss_17
 [^h10]: **SPLIT-10** (Should): when a label is known only some time after its row, a model refit at a window's start knows only the rows whose label had arrived; simulate that with a gap.
 [^h14]: **SPLIT-14** (Must): at least 3 windows, each training on at least 50% of the data; a window under 50% is the curator's exception for that dataset, down to 30%.
 [^h20]: **SPLIT-20** (Should): check whether the newest windows fall in an atypical season and widen them so most do not.
+
+**Andrej (2026-11-25, ok):** As implemented (A).
+
+**Resolved (2026-11-25, Andrej):** A: one calendar year, no gap, eight windows from 2019 with 2020 back to 2012, each trained on every earlier spectrum; nothing changed in the definition with the sign-off. After issue 1's drop the windows hold 52,526 (2019-2020) down to 546,222 (2012, scored on 500,000) objects and train on 98.8% down to 52.3%; a 6-month gap would put 2012 at 48.0%, an 18-month gap 2013 at 48.0% and 2012 at 37.3%. The gap costs in the table above were measured before the drop.
 
 **Issues for Andrej:**
 
@@ -203,6 +213,10 @@ CC (2026-11-12, Andrej): record created to be considered for inclusion; `sdss_17
 
    - **Recommendation:** d with B of issue 1: a documented pipeline class is a valid target once the source's own quality flag is applied, which is the "source-supported repair" DESI's hold names; then put it to Myunghwan as a question for DESI (c). If you keep A in issue 1, a, with the fact written down and the same question to Myunghwan. **Decision:** a, b, c or d?
 
+   **Andrej (2026-11-25, change):** Option B: Drop every flagged spectrum.
+
+   **Resolved (2026-11-25, Andrej):** B: `_clean` keeps only the spectra with `zWarning` = 0 (the files carry the flag), before the position dedup; the no-light drop is part of it. The choice follows the source's own quality flag, the pipeline's bitmask, not a rule of ours. 368,771 of the 4,618,753 fetched spectra leave (7.98%: 172,453 galaxies, 81,158 stars, 115,160 quasars; the 19,581 from fibres without light among them); 4,249,921 objects remain (61 repeated positions dropped, 2 of them with differing classes), galaxy 61.60%, star 20.73%, quasar 17.68%. Windows: 52,526 (2019-2020), 253,228, 200,290, 179,009, 135,619, 212,680, 447,141 and 546,222 (2012, scored on 500,000) objects, training on 98.8% down to 52.3%. `task_summary` (row, predicted, changes, fit reason), the curation notes (the flag bullet, the dedup, the sentinels, the class mix by period, the baselines) and the splits comment are rewritten; figures measured before the drop are marked so. `dataset check`: 0 errors, 0 warnings. Leak probe: all features AUC 0.972, the best single one `psfMag_g` 0.792, missing indicators and number formats 0.50, no exact copy across the split. Task probe (5 of 8 windows, log loss): LightGBM 0.255, random forest 0.265, logistic regression 0.393, the best single feature 0.615, the class shares 1.247; LightGBM ahead in every window. The consistency check above stays as written: this mark decides issue 1, not its question to Myunghwan or the rule of its option d.
+
 2. **Add the imaging pipeline's star/galaxy `type` and the dust extinction `extinction_u..z` as inputs?**
 
    - **Problem:**
@@ -234,6 +248,45 @@ CC (2026-11-12, Andrej): record created to be considered for inclusion; `sdss_17
    [^t6]: **USE-6** (Must): anything known at the prediction point is a legitimate input.
    [^t7]: **CLEAN-6** (Must): never build features from the labels, learned embeddings or another model's scores.
    [^t1]: **CLEAN-1** (Should): clean to the state an expert would ship.
+
+   **Andrej (2026-11-25, discuss):** Would a practitioner have these features available at train and predict time? If yes, we should add them, otherwise not.
+
+   **Answer (AI, 2026-11-25):** yes: both come from the object's imaging, which exists before any spectrum and for every imaged object, so a practitioner has them at training and at prediction time; by your rule they are added (d).
+
+   * **Problem:**
+     - Both sit in the object's `PhotoObj` row, the same imaging catalogue row as the model and PSF magnitudes that ship: the imaging was taken and reduced before the object was targeted for a spectrum, so neither depends on the spectrum or its class[^a6].
+     - At prediction time a practitioner classifying an object without a spectrum reads the same row: SDSS's imaging catalogue gives `type` and `extinction_u..z` for every imaged object, with or without a spectrum. In the training data they come with the same join on `bestobjid` as the magnitudes, for every row; both carry the magnitudes' as-of status, DR17's imaging catalogue rather than the version an astronomer had at a window's start (`Features: Revised Later`).
+     - `type` is no measurement but a fixed rule of the imaging pipeline: point source (6) when the PSF magnitude is at most 0.145 fainter than the cModel magnitude, else extended (3). No label went into it, so it is not another model's score; the PSF magnitudes ship, the cModel magnitudes do not. The shipped columns already carry most of it: LightGBM predicts it from them at 97.9% to 98.4% accuracy, and the rule in r alone with the shipped model magnitude in place of cModel agrees with it on 93.7% of the objects[^a7].
+     - `extinction_u..z` is the Galactic dust reddening of the dust map at the object's position times a fixed coefficient per band: the five columns are one number (correlation 1.000; u, g, i, z at 1.855, 1.446, 0.743 and 0.553 times r). It is known for any position before any observation; the shipped position carries part of it (R² 0.51 to 0.72 from the 10 nearest training positions).
+     - The domain practitioner of the panel would add both, optionally ("Optionally add `type` (as a categorical) and `extinction_u…z`. This puts the task in the state an expert would use."), and found `type` alone took most of the PSF magnitudes' gain before they shipped (0.501 to 0.380, train 2014-2015, test 2016).
+   * **Experiments:** on the clean spectra (`zWarning` = 0, earliest spectrum per position, as now shipped), the two newest windows, trained on every earlier spectrum from October 2014 (the panel's refetch with these columns, MJD 56935 onward), untuned LightGBM, 400 trees, log loss, lower is better:
+
+     | Test window | Training rows | Test rows | As shipped | + `type` | + extinction | + both |
+     |---|---|---|---|---|---|---|
+     | 2019-2020 | 851,124 | 52,526 | 0.2380 | 0.2329 | 0.2387 | 0.2339 |
+     | 2018 | 597,896 | 253,228 | 0.2229 | 0.2186 | 0.2243 | 0.2182 |
+
+     What the shipped columns already carry:
+
+     | Window | `type` from the shipped columns (LightGBM accuracy) | `extinction_r` from the position (10 nearest training positions, R²) |
+     |---|---|---|
+     | 2019-2020 | 98.4% | 0.72 |
+     | 2018 | 97.9% | 0.51 |
+
+     `type` by class on these objects: 87.2% of the galaxies are extended, 97.0% of the quasars and 94.9% of the stars point sources.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Neither (implemented) | the inputs stay the position, `cam_col`, the model and the PSF magnitudes | raw measurements only | leaves out two columns the practitioner has at both times, against your rule |
+     | b | Add `type` | one categorical column (`photo_type`: 3 extended, 6 point source, 5 objects 0) | the survey's own star/galaxy call; -0.004 to -0.005 | a rule on the PSF and cModel magnitudes, 98% recoverable from the shipped columns |
+     | c | Add `extinction_u..z` | five numeric columns as the source gives them | the dust along the line of sight, the physical part of the position | one number in five columns; no gain measured (+0.001) |
+     | d | Add both | b and c | the practitioner's full imaging row, as your rule asks for features available at both times; -0.004 to -0.005 | the largest departure from `sdss_17`'s columns; the extinction adds nothing measured |
+
+   * **Recommendation:** d: both are available to the practitioner at training and at prediction time, the condition you set; the measured gain is small (`type` 0.004 to 0.005, the extinction none), so the reason is availability, not the score. b is the choice if columns that add nothing measured should stay out. **Decision:** a, b, c or d?
+
+   [^a6]: **USE-6** (Must): anything known at the prediction point is a legitimate input.
+   [^a7]: **CLEAN-6** (Must): never build features from the labels, learned embeddings or another model's scores.
 
 **Review panel:** ship after changes (mediator). Claims: 23, 21 hold, none refuted, 2 untested (the Kaggle containment, the probe numbers); two findings from the data (the unplugged fibres, the cost of the sky position). Blind review: would include, with changes; its main concern the sky position as a shortcut to the survey programme. Debate: agreed on dropping the no-light spectra, adding the PSF magnitudes, keeping no gap with a rewritten reason, keeping the position with a note and the protocol line; disputed: whether the flagged spectra must go (ruled a weighing call: issue 1) and whether the position is a leak or a shift (ruled a shift). The mediator's issue 2 (confirm no gap) is the Horizon above, its issue 3 is issue 2.
 

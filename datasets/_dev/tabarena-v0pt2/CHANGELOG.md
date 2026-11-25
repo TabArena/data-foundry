@@ -1,6 +1,24 @@
 # Changelog: TabArena v0.2 working copy
 
 ## 2026-11-23, every definition names its split-tree leaf; `RetrospectiveFillIn` and `Target: Fixed Delay` in use (no container built)
+## 2026-11-25 (late night), better-data replacements: the curator's first marks (no container built)
+
+- american_companies_bankruptcy (Andrej): the horizon signed off (one-year windows, annual refit, no gap); nine
+  windows, 2008 and 2018 kept and the two years with the fewest bankruptcies (2017, 2009) left out. The next-year-row
+  question answered (no leak inside a split) and the company id raised as an input (issue 3). Check 0 errors, 0
+  warnings.
+- gusto_i_mi_mortality (Andrej, issue 1 B, issue 4 A): one round of 8-fold grouped cross-validation over the 16
+  regions, two per test fold, `splits_dimensions_off_protocol` accepted; the ages 108 to 110 stay with a note. The
+  metric question answered (the source scores calibration and discrimination side by side; log loss recommended),
+  open. Check 0 errors, 0 warnings.
+- sdss_dr17_star_galaxy_quasar_1m (Andrej, issue 1 B, horizon A): every spectrum DR17's pipeline flags
+  (`zWarning` not 0) dropped, following the source's own quality flag: 368,771 spectra, 4,249,921 objects left
+  (galaxy 61.60%, star 20.73%, quasar 17.68%); LightGBM log loss 0.255 in the task probe. The one-year, no-gap
+  horizon signed off. Whether `type` and extinction are inputs answered (available at train and predict time;
+  adding both recommended), open. Check 0 errors, 0 warnings. A USE-5 case added.
+- ga_merchandise_store_sessions: the two questions answered, open (the window target is 9, since two thirds of
+  305,819 visits fall under SPLIT-33's 250,000 step; a one-day gap costs nothing measurable and is recommended).
+
 ## 2026-11-25 (night), better-data replacements: nine datasets added (no container built)
 
 Each is the candidate replacement for a v0.2 dataset (the old dataset's review decides), built from the record's
