@@ -1054,11 +1054,11 @@ def test_the_move_puts_a_folder_review_into_its_record(mover, tmp_path):
         mover.main(args)
 
 
-def test_split_table_is_the_first_table_only():
-    """A temporal README follows the table of splits with a table of per-window statistics; only the first table
-    is the splits (eight windows were shown as 18 splits on 2026-11-25)."""
-    from build_review_page import _first_table
+def test_split_table_is_the_first_table_only(brp):
+    """A temporal README follows the table of splits with a table of per-window statistics.
 
+    Only the first table is the splits (eight windows were shown as 18 splits on 2026-11-25).
+    """
     text = "\n".join(
         [
             "8 repeat(s) x 1 fold(s) with seed 4267.",
@@ -1076,6 +1076,7 @@ def test_split_table_is_the_first_table_only():
             "| 1 | Jun | 0.2 |",
         ]
     )
-    table = _first_table(text)
+    table = brp._first_table(text)
     assert table.count("\n") == 3
-    assert "drift" not in table and "| 1 | 0 | 9 |" in table
+    assert "drift" not in table
+    assert "| 1 | 0 | 9 |" in table

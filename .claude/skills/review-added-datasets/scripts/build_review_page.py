@@ -1355,8 +1355,11 @@ def _time_facts(split: dict, record_path: Path) -> None:
 
 
 def _first_table(text: str) -> str:
-    """The first markdown table of ``text``: the table of splits. A temporal README follows it with a table of
-    per-window statistics; joining every table line made those rows extra "splits" (8 splits shown as 18)."""
+    """The first markdown table of ``text``: the table of splits.
+
+    A temporal README follows it with a table of per-window statistics; joining every table line made those rows
+    extra "splits" (8 splits shown as 18).
+    """
     block: list[str] = []
     for line in text.splitlines():
         if line.startswith("|"):
