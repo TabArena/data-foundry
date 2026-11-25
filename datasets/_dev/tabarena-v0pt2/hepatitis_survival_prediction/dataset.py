@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis, decode
 
 
 class HepatitisSurvivalPrediction(AbstractCuratedDataset):
@@ -71,6 +71,14 @@ class HepatitisSurvivalPrediction(AbstractCuratedDataset):
         - The target (2026-11-01, CLEAN-25): `class` ships its classes as words (1 means the patient died (UCI: 1 DIE, 2
           LIVE)). Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
     """
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        the patients of the study were seen over time, and the file carries no date
+        (nor the follow-up period), so the time is lost. A dated release would test patients seen later. Not taken as
+        stationary (Andrej, 2026-11-18): An old one-time study whose outcome treatment has since transformed.
+        """,
+    )
 
     # Task
     target = "class"

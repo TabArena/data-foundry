@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary, anonymize_ids
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+    anonymize_ids,
+)
 
 
 class Musk(AbstractCuratedDataset):
@@ -69,6 +78,14 @@ class Musk(AbstractCuratedDataset):
         - We rename the molecule IDs to remove the target leakage from the names.
         - We drop the conformation name as it leaks information that the real task should not have (the correlation between specific conformations across samples).
     """
+    time_basis = TimeBasis(
+        "Timeless",
+        """
+        the shapes are computed from each molecule's structure, all at once, and the label is an
+        expert's judgement of the molecule's smell (Dietterich et al. 1997); no row is dated, and every shape of a
+        test molecule is held out with it. Not tested: a new chemical class outside the 102 molecules.
+        """,
+    )
 
     # Task
     target = "class"

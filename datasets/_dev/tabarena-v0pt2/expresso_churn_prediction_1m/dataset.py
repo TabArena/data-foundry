@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     Metric,
     Source,
     TaskSummary,
+    TimeBasis,
     drop_columns,
 )
 
@@ -110,7 +111,6 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         Train.csv of the Zindi hackathon "UmojaHack Ghana: Expresso Churn Prediction Challenge" (27 June 2020), re-run
         as the Zindi competition "Expresso Churn Prediction Challenge" (2021) with the same five files: the Zindi API
@@ -135,7 +135,7 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
         - We drop `user_id`, the SHA-1 hash of the customer's row number in Expresso's extract; the 3rd-place solution used the decoded row order as a feature (Zindi discussion 9379).
         - We drop `MRG` (codebook: a customer who uses value-added services): "NO" in every row.
         - We drop REGION (LEAK-10): its missing flag follows the outcome, not the window. Among customers active on all 62 days, the flag alone separates churners at ROC AUC 0.936, while no window column's missing flag passes 0.59. Among churners, REGION is missing for 90-96% at every number of active days, while every activity column's missing share falls with activity (decision tables). Its whole value is the flag: LightGBM with the window and the flag scores 0.9309, with REGION 0.9311, and 0.901 without it (400,000 customers, 3-fold cross-validation).
-        - IID split, as in the competition: the file is one snapshot of the customer base with no time index, and Zindi's test set is a uniform random 15% of the extract (84.8-85.2% of every 100k block in Train). A deployed model trains on an earlier window, with a gap of at least the 90-day label delay and the customers' history, so the task is tagged ForcedIIDFromTemporal (SPLIT-8). The release has neither dates nor earlier windows, so the cost of the missing time axis cannot be measured: a hold-out by extract order (thirds 0.9026, 100k blocks 0.9028, random 0.9028) measures a customer sort, not time. Recover the dates and earlier windows if a later release has them.
+        - IID split, as in the competition: the file is one snapshot of the customer base with no time index, and Zindi's test set is a uniform random 15% of the extract (84.8-85.2% of every 100k block in Train). A deployed model trains on an earlier window, with a gap of at least the 90-day label delay and the customers' history, so the task is tagged ForcedIIDFromTemporal (SPLIT-8; see the time basis). The release has neither dates nor earlier windows, so the cost of the missing time axis cannot be measured: a hold-out by extract order (thirds 0.9026, 100k blocks 0.9028, random 0.9028) measures a customer sort, not time. Recover the dates and earlier windows if a later release has them.
         - Duplicates kept (LEAK-18): without user_id and REGION, 678,270 rows (31.5%) repeat another row exactly. Each row is a different customer with few effective features, so the repeats are natural: 75.3% of the copies have no activity value. The copies hold 317,548 of the 403,986 churners, so dropping them would turn an 18.75% churn task into a 5.9% one about active customers (decision table).
         - dtypes: TENURE (8 bands, none under 3 months) and TOP_PACK (140 packs, written inconsistently by Expresso) are categorical; the other columns are counts or amounts.
         - Note: an activity column is missing when the extract has no record of it; 0 is a record of none. Zeros and missing values coexist in six columns and carry different churn (ON_NET: missing 42.3%, 0 12.6%, above 0 4.6%), so we keep them as released.
@@ -146,6 +146,19 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
         - The row budget (1M train, 500k test rows): We keep the whole frame (2,154,048 customers) and use 3-fold cross-validation over it (v2 split protocol). Each fold tests on 500k customers of its third, drawn stratified on the target, and trains on the other 1,654,048. The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M customers with `subsample_train`, whose default draws random rows stratified on the target.
     """
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        Expresso scores every customer active in one
+        observation window of about three months at its end; churn is 90 days without activity after it. One window is
+        one period, too few for three (SPLIT-8). The release holds no earlier or later window; with them, a temporal
+        split with a 90-day gap would test the next one. It cannot test the next window. Not taken as stationary
+        (Andrej, 2026-11-18): The dormancy signal is partly mechanical, but packages, prices and competition shape
+        churn and the nearest measured churn set shifts; mixed at best.
+        """,
+        set_by="Andrej",
+        on="2026-11-16",
+    )
 
     # Task
     target = TARGET

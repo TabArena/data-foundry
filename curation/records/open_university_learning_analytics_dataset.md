@@ -9,10 +9,18 @@ suggestion: 'Yes'
 priority: 3
 decision_markers:
 - Needs extensive data wrangling
+tags:
+- Non-IID (Grouped)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- 'Entities: Recur'
+- Dated Event Log
 collections:
 - New (BeyondArena)
 original_source: Website
 year: '2015'
+collection_period: 2013-2014
 domain: education
 required_split:
 - Grouped (NON-IID)

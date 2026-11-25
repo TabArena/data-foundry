@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis
 
 
 class Fiat500(AbstractCuratedDataset):
@@ -71,6 +71,13 @@ class Fiat500(AbstractCuratedDataset):
         - Partial order, left unordered (2026-11-01, CLEAN-14): `model`: pop is the base trim; lounge and sport are both
           above it but not ranked against each other.
     """
+    time_basis = TimeBasis(
+        "Retrospective",
+        """
+        one crawl of listings (published on Kaggle in 2020; the crawl date is not stated),
+        whose prices the use case fills in for the same market. It cannot test a later market.
+        """,
+    )
 
     # Task
     target = "price"

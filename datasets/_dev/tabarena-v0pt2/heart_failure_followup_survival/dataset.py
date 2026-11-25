@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+    decode,
+    drop_columns,
+)
 
 
 class HeartFailureFollowupSurvival(AbstractCuratedDataset):
@@ -79,6 +88,17 @@ class HeartFailureFollowupSurvival(AbstractCuratedDataset):
         - The target (2026-11-01, CLEAN-25): `DEATH_EVENT` ships its classes as words (1 is the event). Binary: "Yes" is
           the event, the class that sorts second, so it is the metrics' positive class.
     """
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        heart-failure patients admitted from April to December 2015, each followed
+        from their own admission; the follow-up time dates the survivors (one end of follow-up, about mid-January
+        2016) but not the deaths, so no split by admission date can be built without the outcome, and random patients
+        stand in for the patients to come. A release with admission dates would allow a split by date (Andrej,
+        2026-11-11). Not taken as stationary (Andrej, 2026-11-18): Treatment changes move survival given the same
+        findings, and the label itself depends on admission time; against outweighs the short span.
+        """,
+    )
 
     # Task
     target = "DEATH_EVENT"
