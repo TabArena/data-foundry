@@ -1,15 +1,13 @@
 ---
 unique_name: wild_type_attr_cardiac_amyloidosis
-name: Wild-type transthyretin amyloid cardiomyopathy risk from claims and EHR features (Huda et al. 2021; Arasteh et al. 2024 copy)
+name: Cardiac amyloidosis in heart-failure patients from claims codes (Huda et al. 2021, IQVIA validation cohort)
 checked_by:
-- AI (UNVERIFIED)
 - Andrej
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 decision_markers:
 - Selection Bias
 tags:
-- AI-Filled (Verify)
 - Clinical Study
 - 'Samples: Over Time'
 - 'Time: Lost'
@@ -27,14 +25,12 @@ source_links:
 - https://www.nature.com/articles/s41467-024-45879-8
 - https://doi.org/10.1186/s12911-026-03654-3
 - https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-021-22876-9/MediaObjects/41467_2021_22876_MOESM4_ESM.zip
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from the source's pages and papers (and, where the block says so, a preview of the files), NOT from building the data. A human must verify everything before relying on it.**
+**AI summary:**
 
 **Screening (AI, 2026-11-25):** `TBD -> Yes`, priority 3: Huda et al. released the real IQVIA derivation cohort (2,142 heart-failure patients, 1,874 binary ICD-code flags, wild-type ATTR cardiomyopathy against matched non-amyloid HF) with the paper; not synthetic, but the code flags are lifetime presence, not cut at a prediction point, and one flag the source itself calls a leak ships in the file.
 - Source: Huda, Castaño, Niyogi, Schumacher, Stewart, Bruno et al., "A machine learning model for identifying patients at risk for wild-type transthyretin amyloid cardiomyopathy", Nat Commun 12:2725 (2021), doi 10.1038/s41467-021-22876-9 (read from Europe PMC, PMC8113237). Data availability: "The IQVIA training and validation datasets have been made available for download (see Source Data). The Optum and Northwestern Medicine Enterprise Data Warehouse datasets used for this study could not be made available publicly". As published (Source Data zip `41467_2021_22876_MOESM4_ESM.zip`, previewed): `training_input (IQVIA derivation dataset).csv`, 2,142 rows x 1,877 columns (`patient_id`, `cohort_type`, 1,874 binary ICD-10 phenotype flags, target `cohort_flag`; 1,071 cases "Wild Type" / 1,071 "Control Group", one row per patient, no missing values, no duplicate feature rows); `ca_validation_group_input (IQVIA validation dataset).csv`, 15,394 rows of `patient_id` and a comma-separated list of raw ICD-10 codes (Cohort 3, the general "cardiac amyloid" label, 7,296 + 7,296 matched in the paper, Table 1); the authors' training and validation notebooks and `icd_map.csv`. Real claims rows: the generated-data question (SEL-16) does not arise. Methods, "Dataset curation": "Two sets of case/control cohorts of patients were created for model training from the IQVIA data"; controls were "selected ... using a propensity score matching algorithm, with age, gender, duration of medical history in the database, and number of healthcare visits as matching parameters".
@@ -50,6 +46,8 @@ type_adapter_id: curation-record-v1
 Candidate from Shaktah et al. 2026, "Established machine learning matches tabular foundation models in clinical predictions", BMC Med Inform Decis Mak 26:364 (https://doi.org/10.1186/s12911-026-03654-3), one of its twelve binary clinical tasks.
 
 CC (2026-11-25, Andrej): screening review: issue 1 A (drop the source's two leak flags; reconsider while building and reopen on the added dataset); verdict and issue 2 under discussion.
+
+CC (2026-11-25, Andrej): accepted for adding (asked in chat to build it); issue 2 c, built from the IQVIA validation file with any cardiac amyloidosis code as the label, issue 1 A applied to its flags.
 
 ## Review
 
@@ -155,6 +153,10 @@ CC (2026-11-25, Andrej): screening review: issue 1 A (drop the source's two leak
      | c | Build this record from the validation file instead | 15,394 patients, about 1,742 flags built with Huda's map, E85 codes and the issue 1 leak flags removed | 7x the patients; the feature build is ours, so the leak cut is ours | a broader label (any cardiac amyloidosis) |
 
    * **Recommendation:** c, unchanged: the two tasks share almost every feature, so the larger file is the better version of the same task. **Decision:** a, b or c?
+
+   **Andrej (2026-11-25, discuss):** Reply (c): Build this record from the validation file instead.
+
+   **Resolved (2026-11-25, Andrej):** c: the record is built from Huda's IQVIA validation file (15,394 heart-failure patients, raw ICD-10 code lists); the label is an amyloidosis code (E85.82 or E85.4), every E85 code is removed from the features, the flags are built with Huda's ICD map and 2% case-prevalence rule, and issue 1's two leak flags go. The derivation file's score is reported beside it at /add-dataset.
 
    [^a2]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the target away; out: a part, a consequence or another encoding of the target.
 
