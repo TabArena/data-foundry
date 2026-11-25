@@ -84,7 +84,7 @@ CC (2026-11-24, Andrej): verdict ship; nothing open in the review. The build is 
 
 ## Review
 
-**Outcome:** added. Ship after changes (full re-check, 2026-11-21; marks of 2026-11-24 applied). Validity: a real screen of dyes before synthesis; dyes reach the literature in series of papers, so the split now follows each dye's first publication year (issue 3 B) in six one-year windows 2015-2020 that each train on at least half the rows (Horizon B); the extrapolated gas row of the betaine dye is dropped (issue 5 B); the 334 solvent rows of the betaine dye are measured peaks converted from the ET(30) scale. Value: on the windows LightGBM scores RMSE 46.5 nm against 97.2 nm for the dummy (task probe, 2026-11-24). Open: whether each dye counts once in the score (issue 4, discussed and answered).
+**Outcome:** added. Ship after changes (full re-check, 2026-11-21; marks of 2026-11-24 applied). Validity: a real screen of dyes before synthesis; dyes reach the literature in series of papers, so the split now follows each dye's first publication year (issue 3 B) in six one-year windows 2015-2020 that each train on at least half the rows (Horizon B); the extrapolated gas row of the betaine dye is dropped (issue 5 B); the 334 solvent rows of the betaine dye are measured peaks converted from the ET(30) scale. Value: on the windows LightGBM scores RMSE 46.5 nm against 97.2 nm for the dummy (task probe, 2026-11-24). The score stays per row, with a note on how unequally the dyes weigh per window (issue 4 A). Nothing open.
 
 **Main points:** No open decision. Not a decision: the build is stale after this round's changes.
 

@@ -14,6 +14,8 @@
   country out over the 16 countries surveyed in 2014-2016. Verdict ship.
 - chromophore_optical_properties_db, geoai_ground_level_no2_estimation_challenge, meituan_food_delivery_time: verdict
   ship; chromophore's score stays per row (issue 4, as implemented).
+- fugaku_hpc_job_failure_1m, text only: the maturity note no longer reads as if no gap had been chosen; it names
+  the one-day gap. Duolingo, economic, fugaku and chromophore records: the review's Outcome states the final task.
 
 ## 2026-11-24 (evening), PR #59 review: the curator's marks of the afternoon (no container built)
 
