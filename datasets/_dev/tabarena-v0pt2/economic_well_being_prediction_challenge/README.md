@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: economic_well_being_prediction_challenge
 container_format: 2
-checksum: v2:77496c3c1883740c9defa7843446578bb2f83984d04bbfc5c78170c894e0e01f
+checksum: v2:8be24a0eb9315391e3cc96c101247760752a90b8d880aeb5aea1c533b40f7e81
 build:
   uuid: 01a1ae48-ee3d-73ae-bf99-a2b037658716
   checksum: v2:67814a2cb764b9b4774b509d02aeb05b24c17f34e225e371229d3163fcf821f3
@@ -44,22 +44,22 @@ task:
     context: none
     n_groups: 25
     test_groups_per_fold:
-      min: 1
-      max: 1
+      min: 2
+      max: 3
 splits:
   n_repeats: 1
-  n_folds: 16
+  n_folds: 9
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 25923
-    max: 28288
+    min: 24505
+    max: 26709
   n_test:
-    min: 330
-    max: 2695
+    min: 1909
+    max: 4113
 bundle_checks:
   ok: true
   errors: []
@@ -67,21 +67,20 @@ bundle_checks:
   infos:
   - dataset_conflicting_duplicate_rows
   accepted:
-    groups_test_groups_few: 'Accepted (Andrej, 2026-11-24): a test country stands
-      for a country without surveys of its own, so one whole country per split is
-      the task (16 test countries of 25). The signal carries over to unseen countries:
-      LightGBM R^2 0.60 on the 16 held-out countries against 0.78 on a random split
-      (group probe), and a random forest beats night lights alone on 15 of the 16
-      shipped splits (2026-11-24).'
-    splits_rows_never_tested: 'Accepted (Andrej, 2026-11-24): the test countries are
-      the 16 surveyed in 2014-2016, one per split; the other 9 countries (5,923 rows,
-      20.7%) train in every split and are never tested.'
-    splits_dimensions_off_protocol: 'Accepted (Andrej, 2026-11-24): leave one country
-      out, 1 x 16, chosen over 3 x 3 country folds, whose repeats share most of their
-      training countries; the splits comment says why.'
+    groups_test_groups_few: 'Accepted (Andrej, 2026-11-25): a test country stands
+      for a country without surveys of its own, so two or three whole countries per
+      fold is the task (9 folds, each of the 25 countries tested once). The signal
+      carries over to unseen countries: over 20 draws of the 9 folds LightGBM scores
+      RMSE 0.1138 against 0.1230 for night lights alone, and leave one country out
+      over all 25 gives 0.1123 against 0.1218 (2026-11-25).'
+    splits_dimensions_off_protocol: 'Accepted (Andrej, 2026-11-25): 1 x 9 country
+      folds instead of the protocol''s 3 x 3. Over 20 draws each, 1 x 9 lands closer
+      to leave one country out over all 25 (bias +0.0010 to +0.0024 RMSE against +0.0020
+      to +0.0044 for 3 x 3, which trains on a third fewer countries) and keeps its
+      model ranking in 90% of draws against 85%; the splits comment says why.'
 decisions:
 - Test.csv's 7 countries added with labels recovered from the source table
-- Rows per country and file; the countries surveyed in 2014-2016 are each tested once
+- Rows per country and file, and the fold that tests each country
 ---
 
 # economic_well_being_prediction_challenge
@@ -90,7 +89,7 @@ decisions:
 
 Regression of `Target`, scored with `rmse` on grouped splits by `country`. 28,618 rows and 16 features. Source: Zindi (2021).
 
-Built as `01a1ae48-ee3d-73ae-bf99-a2b037658716` on 2026-11-06, but `dataset.py` has changed since: it now gives checksum `v2:77496c3c1883740c9defa7843446578bb2f83984d04bbfc5c78170c894e0e01f`, so the build is stale. See [Build](#build).
+Built as `01a1ae48-ee3d-73ae-bf99-a2b037658716` on 2026-11-06, but `dataset.py` has changed since: it now gives checksum `v2:8be24a0eb9315391e3cc96c101247760752a90b8d880aeb5aea1c533b40f7e81`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -104,7 +103,7 @@ Built as `01a1ae48-ee3d-73ae-bf99-a2b037658716` on 2026-11-06, but `dataset.py` 
 
 **Known at prediction time.** The survey year, urban/rural context, built-up area by epoch through 2014, land cover, water, population density, nighttime lights and distances, each as read today: one read of each layer serves every row, whatever its survey year, as the source released them. The prediction point is today, so later reads are known.
 
-**What the test data stands for.** Leave one country out: each of the 16 countries surveyed in 2014-2016 is held out once with all its survey years, the other 24 countries train; the source's own 7 test countries are among the 25.
+**What the test data stands for.** Whole countries held out with all their survey years, in 9 folds of 2 or 3 countries: each of the 25 countries is tested once and the other 22 or 23 train; the source's own 7 test countries are among them.
 
 **Our changes to the source.** We add the source's 7 test countries, with labels recovered from the source's cluster table, and keep the training file's rows and labels as released; 30 test rows whose cluster cannot be told apart from a neighbour's are left out. We hold out whole countries and drop the row ID. We keep the source's feature values, the later reads of the layers included.
 
@@ -240,54 +239,48 @@ We start with the curator-provided Train.csv and Test.csv from Zindi's Economic 
 - Keep all rows and numeric scales. Original labels are unique, and repeated predictor profiles are not established collection errors. 129 rows share all inputs with a row of another target value: they are Central African Republic clusters of 1994-95, whose positions are locality points (41 exact location groups, 205 rows, some holding a Rural and an Urban row at one point); Test.csv has no clusters at a shared coordinate. Country groups keep them on one side. Zero numeric measurements remain zero; the source documents no alternative missing-code convention (population density is 0 on 2,262 rows, 2,250 of them with no built-up in any GHSL epoch).
 - Licence: the competition grants CC BY-SA 4.0. The labels are cluster means of DHS and Malaria Indicator Surveys (the competition does not name DHS; the africa_poverty cluster table of Yeh et al. 2020 holds the same index), and the DHS terms of use (https://dhsprogram.com/data/terms-of-use.cfm) bar any marketing or commercial venture and the redistribution of DHS micro-level data; the shipped rows are cluster-level indices, not micro-level data, and carry no coordinates, survey ids or cluster ids (the join of review issue 9 reads coordinates only in the raw folder). The benchmark uses the data for non-commercial academic research only (Andrej, 2026-11-24, review issue 10).
 - Scope: the inputs are mapped quantities aggregated to 5 km (built-up fractions, modelled population, calibrated lights, water, land-cover fractions) plus GIS distances, read as measurements of a place, as for covertype, the GeoAI NO2 challenge and AirQo; no raw reflectance is used to recognise image content (the reason crop-type datasets were rejected).
-- Metric: RMSE, the source's metric, scores the wealth level. With one country per split, one offset for the whole country is 0.1-53% of a split's squared error for a random forest (Lesotho lowest, Malawi highest; mean 17%, measured 2026-11-24 on the 16 splits), while geographic targeting acts on the ranking of places within a country, which RMSE scores only in part.
+- Metric: RMSE, the source's metric, scores the wealth level. With one country per split, one offset for the whole country was 0.1-53% of a split's squared error for a random forest (Lesotho lowest, Malawi highest; mean 17%, measured 2026-11-24 on the earlier one-country splits of 16 countries), while geographic targeting acts on the ranking of places within a country, which RMSE scores only in part.
 - Temporal limitation: survey year orders label content. Target harmonization using future actual states cannot be ruled out. Label publication dates are absent, a limitation on literal historical deployment claims rather than an extra acceptance gate for this task, whose prediction point is today.
-- Split walk (the split decision tree, SPLIT-36, from the record's collection type Survey): [SUR.meets] the model estimates wealth for a country without surveys of its own, a place outside what the training surveys covered → Place step → [PLACE.several] the data holds 25 countries: yes → leaf L-PLACE.groups, Grouped · `UnseenGroup`, whole countries held out with all their survey years. The definition ships this leaf's split (Andrej, 2026-11-24), one country at a time for the 16 countries surveyed in 2014-2016 (6 of them the source's own test countries), as the source tests unseen countries over all years.
+- Split walk (the split decision tree, SPLIT-36, from the record's collection type Survey): [SUR.meets] the model estimates wealth for a country without surveys of its own, a place outside what the training surveys covered → Place step → [PLACE.several] the data holds 25 countries: yes → leaf L-PLACE.groups, Grouped · `UnseenGroup`, whole countries held out with all their survey years. The definition ships this leaf's split (Andrej, 2026-11-24), in 9 folds of 2 or 3 countries, each of the 25 countries tested once (the source's own 7 test countries among them), as the source tests unseen countries over all years (Andrej, 2026-11-25).
 - Time basis: UnseenGroup: survey clusters of 25 countries, 1994-2016; a test country stands for a country without surveys of its own, mapped for the years the other countries' surveys cover, which are all in training. Not tested: a later year.
 
 ## Splits
 
-Leave one country out (Andrej, 2026-11-24): one split per country surveyed in 2014-2016 (Angola, Burkina Faso,
-DR Congo, Ethiopia, Ghana, Kenya, Lesotho, Malawi, Mali, Nigeria, Rwanda, Tanzania, Togo, Uganda, Zambia,
-Zimbabwe), each holding out that country with all its survey years and training on the other 24 countries.
-Sixteen splits with sixteen different test countries, chosen over 3 x 3 country folds, whose repeats share
-most of their training countries. The other 9 countries (Benin, Cameroon, Central African Republic, Cote
-d'Ivoire, Guinea, Mozambique, Senegal, Sierra Leone, Swaziland) train in every split and are never tested. Six
-of the source's own 7 test countries (Test.csv, 1998-2016; all but Benin) are tested here, each with its
-recovered labels; the source tests unseen countries over all years, and this split tests the same, one country
-at a time. The split decision tree reaches L-PLACE.groups for this survey (Survey: a country without surveys
-of its own lies outside what the training surveys covered; the place step: several countries). A test
-country's clusters of every year are on the test side; no later year is tested.
+Whole countries in 9 folds, one repeat (Andrej, 2026-11-25): each of the 25 countries is held out once with
+all its survey years, two or three countries per fold (seven folds of 3, two of 2), assigned by the framework's
+grouped k-fold with shuffled countries and its fixed seed; each split trains on the other 22 or 23 countries.
+This replaces leave one country out over the 16 countries surveyed in 2014-2016 (2026-11-24), which never
+tested 9 countries, Benin, one of the source's own test countries, among them; under a prediction point of
+today an older survey is as valid a test as a newer one. Folds of several countries were chosen over one
+country per split for larger test sides (about 3,200 rows per fold against 1,150), and one repeat over 3 x 3
+because the repeats of repeated folds share most of their training countries. Measured (2026-11-25, 20 draws
+of the country folds per design, four models, mean RMSE over splits; reference: leave one country out over all
+25): 1 x 9 is off the reference by +0.0010 to +0.0024 and ranks the models as the reference does in 90% of
+draws; 3 x 3, which trains on 16-17 countries, is off by +0.0020 to +0.0044, in 85%, and halves the gap
+between LightGBM and a random forest (-0.0021 against -0.0039 on the reference; 1 x 9: -0.0034). Its scores
+vary less between draws (SD 0.0008-0.0013 against 0.0010-0.0017), less than its bias. All 7 of the source's own test
+countries (Test.csv, 1998-2016) are tested, with their recovered labels. The split decision tree reaches
+L-PLACE.groups for this survey (Survey: a country without surveys of its own lies outside what the training
+surveys covered; the place step: several countries). A test country's clusters of every year are on the test
+side; no later year is tested.
 
-1 repeat(s) x 16 fold(s) with seed 4267; train 25,923 to 28,288 rows, test 330 to 2,695 rows.
-
-<details>
-<summary>Show all 16 splits</summary>
+1 repeat(s) x 9 fold(s) with seed 4267; train 24,505 to 26,709 rows, test 1,909 to 4,113 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 27772 | 846 |
-| 0 | 1 | 27623 | 995 |
-| 0 | 2 | 27833 | 785 |
-| 0 | 3 | 26897 | 1721 |
-| 0 | 4 | 27199 | 1419 |
-| 0 | 5 | 25992 | 2626 |
-| 0 | 6 | 27824 | 794 |
-| 0 | 7 | 26661 | 1957 |
-| 0 | 8 | 27323 | 1295 |
-| 0 | 9 | 25923 | 2695 |
-| 0 | 10 | 27634 | 984 |
-| 0 | 11 | 26168 | 2450 |
-| 0 | 12 | 28288 | 330 |
-| 0 | 13 | 27045 | 1573 |
-| 0 | 14 | 27580 | 1038 |
-| 0 | 15 | 27431 | 1187 |
-
-</details>
+| 0 | 0 | 25555 | 3063 |
+| 0 | 1 | 26709 | 1909 |
+| 0 | 2 | 25990 | 2628 |
+| 0 | 3 | 24505 | 4113 |
+| 0 | 4 | 24581 | 4037 |
+| 0 | 5 | 24982 | 3636 |
+| 0 | 6 | 24731 | 3887 |
+| 0 | 7 | 26204 | 2414 |
+| 0 | 8 | 25687 | 2931 |
 
 ## Group structure
 
-One group is a country, held out with all its survey years: a test country stands for a country without surveys of its own, as in the source's test of 7 countries over 1998-2016, which the dataset holds too. The test countries are the 16 surveyed in 2014-2016, one per split.
+One group is a country, held out with all its survey years: a test country stands for a country without surveys of its own, as in the source's test of 7 countries over 1998-2016, which the dataset holds too. Every country is tested once, in 9 folds of 2 or 3 countries.
 
 | field | value |
 |---|---|
@@ -302,7 +295,7 @@ One group is a country, held out with all its survey years: a test country stand
 | groups | 25 |
 | rows per group (min / median / max) | 231 / 984.0 / 2,695 |
 | largest group | 9.4% of the rows |
-| test groups per fold | 1 |
+| test groups per fold | 2 to 3 |
 | groups of two or more rows with a single label | 0.0% |
 | nearest neighbour in the same group | 84.6% of the rows (chance: 5.4%) |
 | label variance explained by the group | 0.15 (shuffled groups: 0.00) |
@@ -323,37 +316,37 @@ Zindi's Train.csv and Test.csv are the coordinate-bearing clusters of the africa
 | train | near-tie in the distance to the capital | 135 | 133 |
 | train | shared coordinate | 173 | 42 |
 
-### 2. Rows per country and file; the countries surveyed in 2014-2016 are each tested once
+### 2. Rows per country and file, and the fold that tests each country
 
-Leave one country out over the 16 countries with a survey in 2014-2016, all their years.
+Whole countries in 9 folds of 2 or 3, one repeat: every country is tested once, all its years.
 
-| country | Test.csv | Train.csv | tested |
+| country | Test.csv | Train.csv | test_fold |
 |---|---|---|---|
-| Angola | 846 | 0 | True |
-| Benin | 740 | 0 | False |
-| Burkina Faso | 995 | 0 | True |
-| Cameroon | 0 | 1041 | False |
-| Central African Republic | 0 | 231 | False |
-| Cote d'Ivoire | 0 | 481 | False |
-| Democratic Republic of Congo | 785 | 0 | True |
-| Ethiopia | 0 | 1721 | True |
-| Ghana | 0 | 1419 | True |
-| Guinea | 0 | 593 | False |
-| Kenya | 0 | 2626 | True |
-| Lesotho | 0 | 794 | True |
-| Malawi | 0 | 1957 | True |
-| Mali | 0 | 1295 | True |
-| Mozambique | 0 | 879 | False |
-| Nigeria | 0 | 2695 | True |
-| Rwanda | 0 | 984 | True |
-| Senegal | 0 | 903 | False |
-| Sierra Leone | 0 | 785 | False |
-| Swaziland | 0 | 270 | False |
-| Tanzania | 0 | 2450 | True |
-| Togo | 0 | 330 | True |
-| Uganda | 1573 | 0 | True |
-| Zambia | 1038 | 0 | True |
-| Zimbabwe | 1187 | 0 | True |
+| Angola | 846 | 0 | 2 |
+| Benin | 740 | 0 | 5 |
+| Burkina Faso | 995 | 0 | 7 |
+| Cameroon | 0 | 1041 | 0 |
+| Central African Republic | 0 | 231 | 3 |
+| Cote d'Ivoire | 0 | 481 | 8 |
+| Democratic Republic of Congo | 785 | 0 | 4 |
+| Ethiopia | 0 | 1721 | 6 |
+| Ghana | 0 | 1419 | 7 |
+| Guinea | 0 | 593 | 6 |
+| Kenya | 0 | 2626 | 5 |
+| Lesotho | 0 | 794 | 1 |
+| Malawi | 0 | 1957 | 4 |
+| Mali | 0 | 1295 | 4 |
+| Mozambique | 0 | 879 | 2 |
+| Nigeria | 0 | 2695 | 3 |
+| Rwanda | 0 | 984 | 0 |
+| Senegal | 0 | 903 | 2 |
+| Sierra Leone | 0 | 785 | 1 |
+| Swaziland | 0 | 270 | 5 |
+| Tanzania | 0 | 2450 | 8 |
+| Togo | 0 | 330 | 1 |
+| Uganda | 1573 | 0 | 6 |
+| Zambia | 1038 | 0 | 0 |
+| Zimbabwe | 1187 | 0 | 3 |
 
 ## Bundle checks
 
@@ -363,9 +356,8 @@ Leave one country out over the 16 countries with a survey in 2014-2016, all thei
 
 Accepted on purpose:
 
-- `groups_test_groups_few`: Accepted (Andrej, 2026-11-24): a test country stands for a country without surveys of its own, so one whole country per split is the task (16 test countries of 25). The signal carries over to unseen countries: LightGBM R^2 0.60 on the 16 held-out countries against 0.78 on a random split (group probe), and a random forest beats night lights alone on 15 of the 16 shipped splits (2026-11-24).
-- `splits_rows_never_tested`: Accepted (Andrej, 2026-11-24): the test countries are the 16 surveyed in 2014-2016, one per split; the other 9 countries (5,923 rows, 20.7%) train in every split and are never tested.
-- `splits_dimensions_off_protocol`: Accepted (Andrej, 2026-11-24): leave one country out, 1 x 16, chosen over 3 x 3 country folds, whose repeats share most of their training countries; the splits comment says why.
+- `groups_test_groups_few`: Accepted (Andrej, 2026-11-25): a test country stands for a country without surveys of its own, so two or three whole countries per fold is the task (9 folds, each of the 25 countries tested once). The signal carries over to unseen countries: over 20 draws of the 9 folds LightGBM scores RMSE 0.1138 against 0.1230 for night lights alone, and leave one country out over all 25 gives 0.1123 against 0.1218 (2026-11-25).
+- `splits_dimensions_off_protocol`: Accepted (Andrej, 2026-11-25): 1 x 9 country folds instead of the protocol's 3 x 3. Over 20 draws each, 1 x 9 lands closer to leave one country out over all 25 (bias +0.0010 to +0.0024 RMSE against +0.0020 to +0.0044 for 3 x 3, which trains on a third fewer countries) and keeps its model ranking in 90% of draws against 85%; the splits comment says why.
 
 ## Data checks
 
@@ -452,4 +444,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | b4ac95ff0f853de54117555ae24bd013c3630fd4 |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:77496c3c1883740c9defa7843446578bb2f83984d04bbfc5c78170c894e0e01f` |
+| stale | yes: the definition now gives checksum `v2:8be24a0eb9315391e3cc96c101247760752a90b8d880aeb5aea1c533b40f7e81` |

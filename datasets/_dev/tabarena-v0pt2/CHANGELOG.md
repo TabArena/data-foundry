@@ -1,5 +1,13 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-25 (afternoon), economic_well_being_prediction_challenge: every country tested once (no container built)
+
+- The split is whole countries in 9 folds, one repeat (seven folds of 3 countries, two of 2, the framework's grouped
+  k-fold with its fixed seed), replacing leave one country out over the 16 countries surveyed in 2014-2016, which
+  never tested 9 of the 25 countries (Andrej). Chosen over 3 x 3 on a measurement of 20 draws per design against leave
+  one country out over all 25 (record CC line). Check 0 errors, 0 warnings; accepted warnings rewritten, the one on
+  never-tested rows removed.
+
 ## 2026-11-25, PR #59 review: the curator's marks of the night (no container built)
 
 - duolingo_spaced_repetition_recall_1m (Andrej, issues 10 B, 11 B, 13 B, 9 D; 8 and H as implemented): the session's

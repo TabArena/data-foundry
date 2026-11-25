@@ -21,28 +21,12 @@ from data_foundry.v2 import (
     decode,
     drop_columns,
 )
+from data_foundry.v2.splits import SPLIT_RANDOM_STATE, grouped_splits
 
 CODE_LABELS = {"urban_or_rural": {"R": "Rural", "U": "Urban"}}
 
-# The countries surveyed in 2014-2016, the newest survey years: each is held out once, with all its survey years.
-TEST_COUNTRIES = (
-    "Angola",
-    "Burkina Faso",
-    "Democratic Republic of Congo",
-    "Ethiopia",
-    "Ghana",
-    "Kenya",
-    "Lesotho",
-    "Malawi",
-    "Mali",
-    "Nigeria",
-    "Rwanda",
-    "Tanzania",
-    "Togo",
-    "Uganda",
-    "Zambia",
-    "Zimbabwe",
-)
+# Whole countries in 9 folds, one repeat: every country is tested once (seven folds of 3 countries, two of 2).
+N_COUNTRY_FOLDS = 9
 
 # The raw files, pinned: Zindi's Train.csv and Test.csv, the source's cluster table and the shoreline.
 SOURCE_TABLE = "dhs_wealth_index.csv"
@@ -238,8 +222,8 @@ class EconomicWellBeingPredictionChallenge(AbstractCuratedDataset):
             "known."
         ),
         split=(
-            "Leave one country out: each of the 16 countries surveyed in 2014-2016 is held out once with all its "
-            "survey years, the other 24 countries train; the source's own 7 test countries are among the 25."
+            "Whole countries held out with all their survey years, in 9 folds of 2 or 3 countries: each of the 25 "
+            "countries is tested once and the other 22 or 23 train; the source's own 7 test countries are among them."
         ),
         changes=(
             "We add the source's 7 test countries, with labels recovered from the source's cluster table, and keep "
@@ -324,9 +308,9 @@ class EconomicWellBeingPredictionChallenge(AbstractCuratedDataset):
         - Keep all rows and numeric scales. Original labels are unique, and repeated predictor profiles are not established collection errors. 129 rows share all inputs with a row of another target value: they are Central African Republic clusters of 1994-95, whose positions are locality points (41 exact location groups, 205 rows, some holding a Rural and an Urban row at one point); Test.csv has no clusters at a shared coordinate. Country groups keep them on one side. Zero numeric measurements remain zero; the source documents no alternative missing-code convention (population density is 0 on 2,262 rows, 2,250 of them with no built-up in any GHSL epoch).
         - Licence: the competition grants CC BY-SA 4.0. The labels are cluster means of DHS and Malaria Indicator Surveys (the competition does not name DHS; the africa_poverty cluster table of Yeh et al. 2020 holds the same index), and the DHS terms of use (https://dhsprogram.com/data/terms-of-use.cfm) bar any marketing or commercial venture and the redistribution of DHS micro-level data; the shipped rows are cluster-level indices, not micro-level data, and carry no coordinates, survey ids or cluster ids (the join of review issue 9 reads coordinates only in the raw folder). The benchmark uses the data for non-commercial academic research only (Andrej, 2026-11-24, review issue 10).
         - Scope: the inputs are mapped quantities aggregated to 5 km (built-up fractions, modelled population, calibrated lights, water, land-cover fractions) plus GIS distances, read as measurements of a place, as for covertype, the GeoAI NO2 challenge and AirQo; no raw reflectance is used to recognise image content (the reason crop-type datasets were rejected).
-        - Metric: RMSE, the source's metric, scores the wealth level. With one country per split, one offset for the whole country is 0.1-53% of a split's squared error for a random forest (Lesotho lowest, Malawi highest; mean 17%, measured 2026-11-24 on the 16 splits), while geographic targeting acts on the ranking of places within a country, which RMSE scores only in part.
+        - Metric: RMSE, the source's metric, scores the wealth level. With one country per split, one offset for the whole country was 0.1-53% of a split's squared error for a random forest (Lesotho lowest, Malawi highest; mean 17%, measured 2026-11-24 on the earlier one-country splits of 16 countries), while geographic targeting acts on the ranking of places within a country, which RMSE scores only in part.
         - Temporal limitation: survey year orders label content. Target harmonization using future actual states cannot be ruled out. Label publication dates are absent, a limitation on literal historical deployment claims rather than an extra acceptance gate for this task, whose prediction point is today.
-        - Split walk (the split decision tree, SPLIT-36, from the record's collection type Survey): [SUR.meets] the model estimates wealth for a country without surveys of its own, a place outside what the training surveys covered → Place step → [PLACE.several] the data holds 25 countries: yes → leaf L-PLACE.groups, Grouped · `UnseenGroup`, whole countries held out with all their survey years. The definition ships this leaf's split (Andrej, 2026-11-24), one country at a time for the 16 countries surveyed in 2014-2016 (6 of them the source's own test countries), as the source tests unseen countries over all years.
+        - Split walk (the split decision tree, SPLIT-36, from the record's collection type Survey): [SUR.meets] the model estimates wealth for a country without surveys of its own, a place outside what the training surveys covered → Place step → [PLACE.several] the data holds 25 countries: yes → leaf L-PLACE.groups, Grouped · `UnseenGroup`, whole countries held out with all their survey years. The definition ships this leaf's split (Andrej, 2026-11-24), in 9 folds of 2 or 3 countries, each of the 25 countries tested once (the source's own 7 test countries among them), as the source tests unseen countries over all years (Andrej, 2026-11-25).
     """
 
     target = "Target"
@@ -344,33 +328,38 @@ class EconomicWellBeingPredictionChallenge(AbstractCuratedDataset):
         definition=(
             "One group is a country, held out with all its survey years: a test country stands for a country without "
             "surveys of its own, as in the source's test of 7 countries over 1998-2016, which the dataset holds too. "
-            "The test countries are the 16 surveyed in 2014-2016, one per split."
+            "Every country is tested once, in 9 folds of 2 or 3 countries."
         ),
     )
     splits_comment = """
-        Leave one country out (Andrej, 2026-11-24): one split per country surveyed in 2014-2016 (Angola, Burkina Faso,
-        DR Congo, Ethiopia, Ghana, Kenya, Lesotho, Malawi, Mali, Nigeria, Rwanda, Tanzania, Togo, Uganda, Zambia,
-        Zimbabwe), each holding out that country with all its survey years and training on the other 24 countries.
-        Sixteen splits with sixteen different test countries, chosen over 3 x 3 country folds, whose repeats share
-        most of their training countries. The other 9 countries (Benin, Cameroon, Central African Republic, Cote
-        d'Ivoire, Guinea, Mozambique, Senegal, Sierra Leone, Swaziland) train in every split and are never tested. Six
-        of the source's own 7 test countries (Test.csv, 1998-2016; all but Benin) are tested here, each with its
-        recovered labels; the source tests unseen countries over all years, and this split tests the same, one country
-        at a time. The split decision tree reaches L-PLACE.groups for this survey (Survey: a country without surveys
-        of its own lies outside what the training surveys covered; the place step: several countries). A test
-        country's clusters of every year are on the test side; no later year is tested.
+        Whole countries in 9 folds, one repeat (Andrej, 2026-11-25): each of the 25 countries is held out once with
+        all its survey years, two or three countries per fold (seven folds of 3, two of 2), assigned by the framework's
+        grouped k-fold with shuffled countries and its fixed seed; each split trains on the other 22 or 23 countries.
+        This replaces leave one country out over the 16 countries surveyed in 2014-2016 (2026-11-24), which never
+        tested 9 countries, Benin, one of the source's own test countries, among them; under a prediction point of
+        today an older survey is as valid a test as a newer one. Folds of several countries were chosen over one
+        country per split for larger test sides (about 3,200 rows per fold against 1,150), and one repeat over 3 x 3
+        because the repeats of repeated folds share most of their training countries. Measured (2026-11-25, 20 draws
+        of the country folds per design, four models, mean RMSE over splits; reference: leave one country out over all
+        25): 1 x 9 is off the reference by +0.0010 to +0.0024 and ranks the models as the reference does in 90% of
+        draws; 3 x 3, which trains on 16-17 countries, is off by +0.0020 to +0.0044, in 85%, and halves the gap
+        between LightGBM and a random forest (-0.0021 against -0.0039 on the reference; 1 x 9: -0.0034). Its scores
+        vary less between draws (SD 0.0008-0.0013 against 0.0010-0.0017), less than its bias. All 7 of the source's own test
+        countries (Test.csv, 1998-2016) are tested, with their recovered labels. The split decision tree reaches
+        L-PLACE.groups for this survey (Survey: a country without surveys of its own lies outside what the training
+        surveys covered; the place step: several countries). A test country's clusters of every year are on the test
+        side; no later year is tested.
     """
     accepted_check_warnings = {
-        "groups_test_groups_few": "Accepted (Andrej, 2026-11-24): a test country stands for a country without "
-        "surveys of its own, so one whole country per split is the task (16 test countries of 25). The signal "
-        "carries over to unseen countries: LightGBM R^2 0.60 on the 16 held-out countries against 0.78 on a random "
-        "split (group probe), and a random forest beats night lights alone on 15 of the 16 shipped splits "
-        "(2026-11-24).",
-        "splits_rows_never_tested": "Accepted (Andrej, 2026-11-24): the test countries are the 16 surveyed in "
-        "2014-2016, one per split; the other 9 countries (5,923 rows, 20.7%) train in every split and are never "
-        "tested.",
-        "splits_dimensions_off_protocol": "Accepted (Andrej, 2026-11-24): leave one country out, 1 x 16, chosen over "
-        "3 x 3 country folds, whose repeats share most of their training countries; the splits comment says why.",
+        "groups_test_groups_few": "Accepted (Andrej, 2026-11-25): a test country stands for a country without "
+        "surveys of its own, so two or three whole countries per fold is the task (9 folds, each of the 25 countries "
+        "tested once). The signal carries over to unseen countries: over 20 draws of the 9 folds LightGBM scores RMSE "
+        "0.1138 against 0.1230 for night lights alone, and leave one country out over all 25 gives 0.1123 against "
+        "0.1218 (2026-11-25).",
+        "splits_dimensions_off_protocol": "Accepted (Andrej, 2026-11-25): 1 x 9 country folds instead of the "
+        "protocol's 3 x 3. Over 20 draws each, 1 x 9 lands closer to leave one country out over all 25 (bias "
+        "+0.0010 to +0.0024 RMSE against +0.0020 to +0.0044 for 3 x 3, which trains on a third fewer countries) and "
+        "keeps its model ranking in 90% of draws against 85%; the splits comment says why.",
     }
 
     prepared_raw_files = (LABELLED_TEST, JOIN_CHECK)
@@ -438,7 +427,12 @@ class EconomicWellBeingPredictionChallenge(AbstractCuratedDataset):
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         rows = raw.groupby(["country", "file"]).size().unstack(fill_value=0)
-        rows["tested"] = rows.index.isin(TEST_COUNTRIES)
+        fold_of = {
+            country: fold
+            for fold, (_train, test) in self._country_folds(df)[0].items()
+            for country in df["country"].iloc[test].unique()
+        }
+        rows["test_fold"] = rows.index.map(fold_of)
         check = pd.read_csv(self.raw_dir / JOIN_CHECK)
         check["status"] = np.select(
             [check["accepted"], check["shared"], check["near_tie"]],
@@ -460,8 +454,8 @@ class EconomicWellBeingPredictionChallenge(AbstractCuratedDataset):
                 evidence=join.reset_index(),
             ),
             Decision(
-                title="Rows per country and file; the countries surveyed in 2014-2016 are each tested once",
-                why="Leave one country out over the 16 countries with a survey in 2014-2016, all their years.",
+                title="Rows per country and file, and the fold that tests each country",
+                why="Whole countries in 9 folds of 2 or 3, one repeat: every country is tested once, all its years.",
                 evidence=rows.reset_index(),
             ),
         ]
@@ -469,15 +463,21 @@ class EconomicWellBeingPredictionChallenge(AbstractCuratedDataset):
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(categorical=["country", "urban_or_rural"])
 
+    @staticmethod
+    def _country_folds(df: pd.DataFrame) -> dict:
+        # One repeat of grouped k-fold over the countries; shuffled countries in about equal numbers per fold.
+        return grouped_splits(
+            df.reset_index(drop=True),
+            n_repeats=1,
+            group_on="country",
+            group_labels="per_sample",
+            n_folds=N_COUNTRY_FOLDS,
+            random_state=SPLIT_RANDOM_STATE,
+        )
+
     def _make_splits(self, df: pd.DataFrame) -> SplitPlan:
-        # Leave one country out, one repeat: fold i tests on the i-th country surveyed in 2014-2016, all its years
-        country = df["country"].astype(str).to_numpy()
-        newest = sorted(df.loc[df["year"] >= 2014, "country"].astype(str).unique())
-        assert tuple(newest) == TEST_COUNTRIES, newest
-        splits = {
-            0: {
-                i: (np.flatnonzero(country != c).tolist(), np.flatnonzero(country == c).tolist())
-                for i, c in enumerate(TEST_COUNTRIES)
-            }
-        }
+        splits = self._country_folds(df)
+        tested = [df["country"].iloc[test].unique() for _train, test in splits[0].values()]
+        assert sorted(len(c) for c in tested) == [2, 2, 3, 3, 3, 3, 3, 3, 3], tested
+        assert sum(len(c) for c in tested) == df["country"].nunique() == 25
         return SplitPlan(splits=splits)
