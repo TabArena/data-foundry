@@ -470,6 +470,9 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
     # a special feature's columns are checked by its kind: a SMILES is unique per molecule by nature (an input, not a
     # row id), and a spectrum's intensity of 999 is a reading, not a code for a missing value
     special = {c for f in getattr(ctx.task, "special_features", None) or () for c in f.columns}
+    # a time column declared as a label time (`Temporal(..., time_of="label")`) orders the split and is no model
+    # input; where that order was rebuilt from the data (SPLIT-22) it is a running id by construction, not a leak
+    order_column = ctx.task.time_on if getattr(ctx.task, "time_of", None) == "label" else None
     for column in df.columns:
         series = df[column]
         n_unique = series.nunique(dropna=True)
@@ -485,6 +488,7 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
         is_integer = pd.api.types.is_integer_dtype(series.dtype) and not pd.api.types.is_bool_dtype(series.dtype)
         if (
             column != ctx.target
+            and column != order_column
             and is_integer
             and unique_per_row
             and int(series.max()) - int(series.min()) < 2 * ctx.n_rows
@@ -538,7 +542,8 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
             f"{len(sequential)} integer column(s) hold one value per row, densely numbered like a running id: "
             f"{sequential[:5]}.",
             hint="A running id often encodes the order of collection (time) or the origin (a prefix per source), which "
-            "a model then learns. Drop it, or declare it `NonFeature(column, 'identifier')` in the parent.",
+            "a model then learns. Drop it, declare it `NonFeature(column, 'identifier')` in the parent, or, where it "
+            "is the rebuilt order the split cuts on, declare it `Temporal(..., time_of='label')`.",
         )
     if unused_categories:
         formatted = ", ".join(f"{c} (+{n})" for c, n in unused_categories[:5])

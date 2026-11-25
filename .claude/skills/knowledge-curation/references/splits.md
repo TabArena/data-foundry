@@ -78,11 +78,15 @@ one moment and tests other rows of it, not the next moment. Where the use case l
 Whole periods held out (`ForcedGroupedFromTemporal`, grouped by period where the data has an order: scan periods,
 study phases, visit months, course presentations) train also on later periods but still test a change between periods
 rather than random rows, closer to the shift a temporal split tests (lung_cancer_epithelial_genexp's six scan
-periods). They count only with enough periods that different groupings of whole periods into three folds give the
-repeats SPLIT-33 sets for the task's size: four periods for 3 repeats, five for 10 or 20 (three periods allow one
-grouping, four six, five 25); with fewer, a period fold would give the task two or three splits where its size calls
-for more. Where entities recur across the periods and the use case meets new entities, an entity's rows stay in one
-period or the entity is held out with its period (USE-10, LEAK-17); periods count only where no entity sits on both
+periods). The definition's `Time basis:` line says so: the test periods are unseen, not later, and a test period's score
+may gain from training on periods after it. Where a period can be trained on earlier periods alone, that gain is the
+cost to measure: the period's score trained on earlier periods only against one trained on other periods, earlier and
+later, at the same training size. They count only with enough periods that different groupings of whole periods into
+three folds give the repeats SPLIT-33 sets for the task's size: four periods for 3 repeats, five for 10 or 20 (three
+periods allow one grouping, four six, five 25); with fewer, a period fold would give the task two or three splits where
+its size calls for more. Where entities recur across the periods and the use case meets new entities, an entity's rows
+stay in one period or the entity is held out with its period (USE-10, LEAK-17); periods count only where no entity sits
+on both
 sides. Which regime is closest depends on what was measured. Where the relation is measured not flat, such periods
 are the only remedy: without them the task is `Too Small` (SPLIT-16). With nothing measured (an
 inconclusive test included) and no person's reason, three outcomes: a person may be unwilling to take the risk of
@@ -659,8 +663,12 @@ Why: such a comparison changes with the kind of window, so it measures the windo
 ### Row order as time
 
 **SPLIT-22 (Should).** The raw file order can be the time order without a timestamp; keep it. A deduplication, merge
-or lookup can reorder rows: rebuild a row-order time index after such steps and check it against the date. Cases:
-seismic_bumps, california.
+or lookup can reorder rows: rebuild a row-order time index after such steps and check it. The check is never against
+the rebuilt order itself, and the dates the rows lack are not what it asks for: check against something dated
+independent of the order where the data or its surroundings hold any, else against evidence only a time order
+explains, which makes the order a judgement call written into `splits_comment` with what would overturn it. Cases:
+seismic_bumps, california, lung_cancer_epithelial_genexp, diabetes_130_us, labour_inspection_compliance, fremtpl2,
+wine_quality.
 
 ### Grouped tasks
 
@@ -799,6 +807,11 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-23 | protein_model_quality_rf_pcp | `context="all_rows"`: CASP releases a target's server models at once and the researcher ranks them together; a context model scores 0.483 against 0.322 for a row-only one (2026-11-05, Lennart); huesken_sirna_efficacy reopened to follow | applied |
 | SPLIT-23 | huesken_sirna_efficacy | `context="all_rows"`: a researcher designs and ranks a gene's candidate guides together; per-gene context adds nothing measurable here (LightGBM 0.6708 against 0.6699, paired SE 0.0025), unlike protein (+0.161), and the context follows the use case, not the gain (2026-11-05, Lennart) | applied |
 | SPLIT-22 | california | the Kaggle id is the sale order; an index lookup sorted the rows by address, so the row-order time index is rebuilt after it | applied |
+| SPLIT-22 | lung_cancer_epithelial_genexp | the sample number in the GEO titles is the scan order, checked against the CEL-header scan dates of 31 arrays in a linked series (Spearman 0.997) | applied |
+| SPLIT-22 | diabetes_130_us | the encounter number is the order of stays, checked against dated facts outside the file: a drug withdrawn in March 2000 sits only in the oldest 0.1%, the combination drugs appear at their approvals | applied |
+| SPLIT-22 | labour_inspection_compliance | the raw export's row number is a coarse time order, checked against a quantity that counts calendar time: among rows of one organisation the later row has the higher business age in 92% of pairs far apart | applied |
+| SPLIT-22 | fremtpl2 | the policy-number blocks are consecutive periods, checked against the ages: 161,883 renewal pairs repeat a car of the block before with the car and driver a year older (16 to 75 under shuffled or shifted controls); which year a block is stays unknown | applied |
+| SPLIT-22 | wine_quality | the file position stands in for the order of entry with nothing dated to check it against: a judgement call on the internal evidence (a recording change both colour files share, drift correlated between them, copies adjacent), to be overturned by sample numbers or dates showing another order | applied |
 | SPLIT-24 | emscad | grouped on identical profile text or a poster-specific masked contact (4,441 groups); the first suggestion, a TF-IDF cosine cluster at 0.95 or more, was barred | applied |
 | SPLIT-24 | in_vehicle_coupon_recommendation | consecutive blocks of identical person-level answers in the raw file order: 587 respondents | applied |
 | SPLIT-24 | concrete_compressive_strength | a mix is its seven ingredient amounts, tested at several ages: 428 mixes behind 1,030 tests (2026-10-14) | applied |

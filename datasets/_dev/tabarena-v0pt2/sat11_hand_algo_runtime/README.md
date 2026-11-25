@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sat11_hand_algo_runtime
 container_format: 2
-checksum: v2:b864c2b9db07dd6852393b1cdb04d99e7694f6ad5c425570fa733e0a4814822c
+checksum: v2:91d2aa96ada611c37313142aa33985e21890449600a6322933aa2ea3ba273c9a
 build:
   uuid: 01a111fc-eda8-7830-9b0d-905bf0c5bc1d
   checksum: v2:082824cbfada42e34f46d496f770c9504874d054fc07938f04be92176b4fd0c0
@@ -22,7 +22,7 @@ data:
   n_rows: 1840
   n_features: 169
   dtypes:
-    category: 1
+    category: 2
     float64: 170
   n_test_dataset_rows: null
 task:
@@ -30,23 +30,24 @@ task:
   problem_type: regression
   metric: par_k
   metric_origin: source
-  scoring_columns: null
+  scoring_columns:
+  - instance_id
   split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
-  group_on: instance_id
+  group_on: problem_family
   group_labels: per_sample
   group_time_on: null
   grouping:
     prediction_unit: row
     aggregation: null
     context: all_rows
-    n_groups: 184
+    n_groups: 32
     test_groups_per_fold:
-      min: 61
-      max: 62
+      min: 10
+      max: 11
 splits:
-  n_repeats: 10
+  n_repeats: 20
   n_folds: 3
   random_state: 4267
   time_horizon: null
@@ -54,18 +55,18 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 1220
-    max: 1230
+    min: 840
+    max: 1620
   n_test:
-    min: 610
-    max: 620
+    min: 220
+    max: 1000
 bundle_checks:
   ok: true
   errors: []
   warnings:
   - dataset_constant_column
+  - groups_test_groups_few
   infos:
-  - task_metric_input_is_model_input
   - meta_bibtex_fields_missing
   accepted: {}
 decisions: []
@@ -75,15 +76,15 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `runtime`, scored with `par_k` on grouped splits by `instance_id`. 1,840 rows and 169 features. Source: ASlib (2011).
+Regression of `runtime`, scored with `par_k` on grouped splits by `problem_family`. 1,840 rows and 169 features. Source: ASlib (2011).
 
-Built as `01a111fc-eda8-7830-9b0d-905bf0c5bc1d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b864c2b9db07dd6852393b1cdb04d99e7694f6ad5c425570fa733e0a4814822c`, so the build is stale. See [Build](#build).
+Built as `01a111fc-eda8-7830-9b0d-905bf0c5bc1d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:91d2aa96ada611c37313142aa33985e21890449600a6322933aa2ea3ba273c9a`, so the build is stale. See [Build](#build).
 
 ## In brief
 
-**Question.** How long will each of ten SAT solvers take on a new problem instance?
+**Question.** How long will each of ten SAT solvers take on a problem instance from a family not seen before?
 
-**Use case.** Algorithm selection: given a new satisfiability problem, a portfolio predicts the runtime of each of its ten solvers and runs the one predicted fastest (ASlib, Bischl et al. 2016).
+**Use case.** Algorithm selection: given a new satisfiability problem, a portfolio predicts the runtime of each of its ten solvers and runs the one predicted fastest (ASlib, Bischl et al. 2016); here from a problem family not seen before, as the instances new at the 2011 competition were.
 
 **One row.** One run of one of 10 SAT solvers on one handcrafted instance of the 2011 SAT competition, stopped at 5,000 seconds (184 instances, 1,840 runs).
 
@@ -91,11 +92,11 @@ Built as `01a111fc-eda8-7830-9b0d-905bf0c5bc1d` on 2026-10-06, but `dataset.py` 
 
 **Known at prediction time.** Statistics of the instance's formula (size, clause and variable structure, graph measures, results of short probing runs) and of the solver's source code (size, complexity, code-graph measures); not the solver's name.
 
-**What the test data stands for.** Whole instances are held out, as in ASlib's folds, so the test data stands for new problems; other instances of the same family can be in training, on purpose.
+**What the test data stands for.** Whole problem families (the instances of one generator, 32 families) are held out with all their runs, so the test data stands for a kind of problem not seen in training, as at a later competition.
 
-**Our changes to the source.** We drop the 112 of 296 instances on which every solver hits the limit: their labels are only lower bounds and leave the choice open. One model covers all solvers, with the solver described by its features.
+**Our changes to the source.** We drop the 112 of 296 instances on which every solver hits the limit: their labels are only lower bounds and leave the choice open. One model covers all solvers, with the solver described by its features. We hold out whole problem families where ASlib splits the instances at random.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The features are known before any solver runs, and a held-out instance is a new problem. Counting a timeout as the limit keeps the order of the solvers within an instance, which is what the selection needs.
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features are known before any solver runs, and a held-out family is a new kind of problem, as every instance new in 2011 was. Counting a timeout as the limit keeps the order of the solvers within an instance, which is what the selection needs.
 
 ## Files in this folder
 
@@ -133,14 +134,14 @@ Only curators run `build`, when the dataset ships.
 | year | 2011 |
 | domain | technology & internet |
 | license | GPLv3 |
-| data_tags | Non-IID, Grouped |
+| data_tags | Non-IID, Grouped, UnseenGroup |
 | reference | xu-sat12a,sat12,bischl_aslib_2016 |
-| rows x columns | 1,840 x 171 |
+| rows x columns | 1,840 x 172 |
 | task.target | runtime |
 | task.problem_type | regression |
 | task.metric | par_k |
 | task.split_regime | grouped_non_iid |
-| task.group_on | instance_id |
+| task.group_on | problem_family |
 | task.group_labels | per_sample |
 
 **Metric**
@@ -156,10 +157,18 @@ Only curators run `build`, when the dataset ships.
 | inputs | group: `instance_id` |
 | target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
-<details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+**Scoring columns**
 
-- categorical (1): `instance_id`
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+
+| column | role | how the metric uses it | model input |
+|---|---|---|---|
+| `instance_id` | group | par_k: the anonymised instance (10 rows each, one per solver); the metric picks per instance the solver with the lowest predicted runtime and averages the picks' true runtimes. | never a feature |
+
+<details>
+<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
+
+- categorical (2): `problem_family`, `instance_id`
 - string (0): none
 - datetime (0): none
 
@@ -198,15 +207,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 1,840 rows of the final frame (random rows: the frame is shuffled); 12 of 171 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 1,840 rows of the final frame (random rows: the frame is shuffled); 12 of 172 columns, the target first. Cells are cut at 40 characters.
 
 | runtime | instance_id | nvarsOrig | nclausesOrig | nvars | nclauses | reducedVars | reducedClauses | vars_clauses_ratio | POSNEG_RATIO_CLAUSE_mean | POSNEG_RATIO_CLAUSE_coeff_variation | POSNEG_RATIO_CLAUSE_min |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 5.24087 | 60fefc92b9f1 | 311 | 2192 | 311 | 2192 | 0 | 0 | 0.1419 | 0.368 | 0.8294 | 0 |
-| 8.11078 | 7b5f82bfefb4 | 945 | 61409 | 900 | 60191 | 0.05 | 0.0202 | 0.015 | 0.9939 | 0.0237 | 0.7143 |
-| 8.51719 | ce86ff5e5fe4 | 284 | 42826 | 284 | 42826 | 0 | 0 | 0.0066 | 1 | 0 | 1 |
-| 0.510275 | f9b43cf101b4 | 870 | 24824 | 870 | 24824 | 0 | 0 | 0.035 | 0.4986 | 0.5877 | 0 |
-| 7.60168 | 7342722872d3 | 354 | 2596 | 354 | 2596 | 0 | 0 | 0.1364 | 0.3599 | 0.8453 | 0 |
+| 0.182172 | ac725bf4ec8a | 140 | 336 | 140 | 336 | 0 | 0 | 0.4167 | 0.494 | 0.9534 | 0 |
+| 3.42889 | 38bd7487f39e | 1339 | 7095 | 1239 | 5851 | 0.0807 | 0.2126 | 0.2118 | 0.294 | 0.9222 | 0 |
+| 5.88248 | 596ec6580b8c | 135 | 5251 | 135 | 5251 | 0 | 0 | 0.0257 | 1 | 0 | 1 |
+| 3.8508 | 6e9b39350c2a | 2856 | 10578 | 819 | 5437 | 2.4872 | 0.9456 | 0.1506 | 0.478 | 0.7307 | 0 |
+| -4.19991 | 76f0829019ec | 176 | 1628 | 132 | 1452 | 0.3333 | 0.1212 | 0.0909 | 1 | 0 | 1 |
 
 ## Curation notes
 
@@ -222,58 +231,103 @@ We get the data from ASlib and merge them into one file.
   linear models and TabPFN pick 17-19% better on the 60 splits, but it would replace the recorded value.
 - We log scale the target.
 - We drop duplicated columns and remove features that leak the target or are not relevant for the predictive task.
+- Split (Andrej, 2026-11-18): whole problem families are held out. A family is the
+  generator an instance comes from, read off its path before the id is hashed (`problem_family`); folders that
+  split one generator by satisfiability or a parameter are merged (Anton's 2003 SAT/UNSAT, rbsat's four
+  forced/unforced folders, QG6/7/7a/8, two Van der Waerden folders and six more), so the 48 folders give 32
+  families, 11 of them a single instance, the largest 21. Generators of a shared problem stay apart (model RB in
+  2004 and 2009, subgraph isomorphism in 2003 and 2011). The use case decides: in this data a portfolio built on
+  the instances of 2002-2009 meets 88 new instances in 2011 from 7 generators no earlier competition used, so
+  a new member of a family it already has does not occur; holding out single instances (ASlib's random folds,
+  and this definition until 2026-11-18) put 91% of the test instances' families in training. The anonymised
+  instance ships as a scoring column only (`instance_id`): PAR10 picks per instance the solver with the lowest
+  predicted runtime. Never a feature.
+- Time basis: UnseenGroup: whole problem families held out. Every solver ran on every instance in one campaign
+  of the 2011 SAT competition with a 5,000 s cutoff; the features exist before any full run, and no run is
+  dated. The competition that first used an instance gives one window with half of the rows in training (2011,
+  52%; 2009 trains on 38%), so no split by competition (SPLIT-14). Not tested: newer solvers.
 
 ## Splits
 
 Default splits.
 
-10 repeat(s) x 3 fold(s) with seed 4267; train 1,220 to 1,230 rows, test 610 to 620 rows.
+20 repeat(s) x 3 fold(s) with seed 4267; train 840 to 1,620 rows, test 220 to 1,000 rows.
 
 <details>
-<summary>Show all 30 splits</summary>
+<summary>Show all 60 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 1220 | 620 |
-| 0 | 1 | 1230 | 610 |
-| 0 | 2 | 1230 | 610 |
-| 1 | 0 | 1220 | 620 |
-| 1 | 1 | 1230 | 610 |
-| 1 | 2 | 1230 | 610 |
-| 2 | 0 | 1220 | 620 |
-| 2 | 1 | 1230 | 610 |
-| 2 | 2 | 1230 | 610 |
-| 3 | 0 | 1220 | 620 |
-| 3 | 1 | 1230 | 610 |
-| 3 | 2 | 1230 | 610 |
-| 4 | 0 | 1220 | 620 |
-| 4 | 1 | 1230 | 610 |
-| 4 | 2 | 1230 | 610 |
-| 5 | 0 | 1220 | 620 |
-| 5 | 1 | 1230 | 610 |
-| 5 | 2 | 1230 | 610 |
-| 6 | 0 | 1220 | 620 |
-| 6 | 1 | 1230 | 610 |
-| 6 | 2 | 1230 | 610 |
-| 7 | 0 | 1220 | 620 |
-| 7 | 1 | 1230 | 610 |
-| 7 | 2 | 1230 | 610 |
-| 8 | 0 | 1220 | 620 |
-| 8 | 1 | 1230 | 610 |
-| 8 | 2 | 1230 | 610 |
-| 9 | 0 | 1220 | 620 |
-| 9 | 1 | 1230 | 610 |
-| 9 | 2 | 1230 | 610 |
+| 0 | 0 | 1030 | 810 |
+| 0 | 1 | 1260 | 580 |
+| 0 | 2 | 1390 | 450 |
+| 1 | 0 | 1240 | 600 |
+| 1 | 1 | 1340 | 500 |
+| 1 | 2 | 1100 | 740 |
+| 2 | 0 | 1130 | 710 |
+| 2 | 1 | 1180 | 660 |
+| 2 | 2 | 1370 | 470 |
+| 3 | 0 | 1300 | 540 |
+| 3 | 1 | 1000 | 840 |
+| 3 | 2 | 1380 | 460 |
+| 4 | 0 | 1160 | 680 |
+| 4 | 1 | 1330 | 510 |
+| 4 | 2 | 1190 | 650 |
+| 5 | 0 | 1050 | 790 |
+| 5 | 1 | 1330 | 510 |
+| 5 | 2 | 1300 | 540 |
+| 6 | 0 | 1150 | 690 |
+| 6 | 1 | 1020 | 820 |
+| 6 | 2 | 1510 | 330 |
+| 7 | 0 | 1180 | 660 |
+| 7 | 1 | 1120 | 720 |
+| 7 | 2 | 1380 | 460 |
+| 8 | 0 | 1180 | 660 |
+| 8 | 1 | 1100 | 740 |
+| 8 | 2 | 1400 | 440 |
+| 9 | 0 | 1070 | 770 |
+| 9 | 1 | 1350 | 490 |
+| 9 | 2 | 1260 | 580 |
+| 10 | 0 | 1230 | 610 |
+| 10 | 1 | 1160 | 680 |
+| 10 | 2 | 1290 | 550 |
+| 11 | 0 | 1070 | 770 |
+| 11 | 1 | 1330 | 510 |
+| 11 | 2 | 1280 | 560 |
+| 12 | 0 | 950 | 890 |
+| 12 | 1 | 1620 | 220 |
+| 12 | 2 | 1110 | 730 |
+| 13 | 0 | 950 | 890 |
+| 13 | 1 | 1500 | 340 |
+| 13 | 2 | 1230 | 610 |
+| 14 | 0 | 980 | 860 |
+| 14 | 1 | 1170 | 670 |
+| 14 | 2 | 1530 | 310 |
+| 15 | 0 | 1280 | 560 |
+| 15 | 1 | 880 | 960 |
+| 15 | 2 | 1520 | 320 |
+| 16 | 0 | 1090 | 750 |
+| 16 | 1 | 1060 | 780 |
+| 16 | 2 | 1530 | 310 |
+| 17 | 0 | 1320 | 520 |
+| 17 | 1 | 1030 | 810 |
+| 17 | 2 | 1330 | 510 |
+| 18 | 0 | 1240 | 600 |
+| 18 | 1 | 1600 | 240 |
+| 18 | 2 | 840 | 1000 |
+| 19 | 0 | 1350 | 490 |
+| 19 | 1 | 1330 | 510 |
+| 19 | 2 | 1000 | 840 |
 
 </details>
 
 ## Group structure
 
-One group is a SAT instance; its rows are the runs of the 10 candidate algorithms on it, described by instance and algorithm features, with the log runtime as the target. The use case is algorithm selection: predict every algorithm's runtime on a new instance and run the one predicted fastest (ASlib, Bischl et al. 2016; one model for all algorithms as in Pulatov et al. 2022), scored by the selected algorithm's true runtime (PAR10, or the share of the gap between the single best and the virtual best solver that is closed). The split holds out instances as ASlib's folds do; the instances also come in families, which the split does not separate.
+One group is a problem family: the instances of one generator (32 families with 1 to 21 instances), each instance with the runs of the 10 candidate algorithms on it, described by instance and algorithm features, with the log runtime as the target. The use case is algorithm selection: predict every algorithm's runtime on a new instance and run the one predicted fastest (ASlib, Bischl et al. 2016; one model for all algorithms as in Pulatov et al. 2022), scored per instance by the selected algorithm's true runtime (PAR10, or the share of the gap between the single best and the virtual best solver that is closed) through the instance id, a scoring column. ASlib's folds hold out instances at random; holding out whole families is our choice (Andrej, 2026-11-18): the instances new at the 2011 competition all came from generators no earlier competition used.
 
 | field | value |
 |---|---|
-| group column | `instance_id` |
+| group column | `problem_family` |
 | labels | per_sample |
 | order inside a group | none |
 | prediction unit | row |
@@ -281,22 +335,22 @@ One group is a SAT instance; its rows are the runs of the 10 candidate algorithm
 
 | statistic | value |
 |---|---|
-| groups | 184 |
-| rows per group (min / median / max) | 10 / 10.0 / 10 |
-| largest group | 0.5% of the rows |
-| test groups per fold | 61 to 62 |
+| groups | 32 |
+| rows per group (min / median / max) | 10 / 30.0 / 210 |
+| largest group | 11.4% of the rows |
+| test groups per fold | 10 to 11 |
 | groups of two or more rows with a single label | 0.0% |
-| nearest neighbour in the same group | 14.0% of the rows (chance: 0.5%) |
-| label variance explained by the group | 0.83 (shuffled groups: 0.10) |
+| nearest neighbour in the same group | 91.0% of the rows (chance: 6.6%) |
+| label variance explained by the group | 0.53 (shuffled groups: 0.02) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 2 info (26 checks run, plus the dataset's own checks).
+0 error(s), 2 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_constant_column`: 3 constant column(s) (1 distinct non-null value): ['POSNEG_RATIO_CLAUSE_max', 'UNARY', 'clustering_max']. (hint: Drop them unless the constant is meaningful for the task.)
-- **info** `task_metric_input_is_model_input`: The metric reads the task's group or time column(s) ['instance_id'] where they are; they are not scoring columns.
+- **warning** `groups_test_groups_few`: A test fold holds 10 groups (10-11 per fold, 32 groups in all): a score per group rests on few independent units, and a score per row on not many more. (hint: Keep the dataset only if its signal across groups is real (`.claude/skills/knowledge-data-foundry/scripts/group_probes.py`), and accept the warning with that reason.)
 - **info** `meta_bibtex_fields_missing`: BibTeX entries miss recommended fields — xu-sat12a: year.
 
 ## Data checks
@@ -304,72 +358,72 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 ### Feature summary
 
 <details>
-<summary>Show the table (171 rows)</summary>
+<summary>Show the table (172 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | instance_id | category | 0 | 0 | 184 | 0528c7a99010, 08415bce3425, 0a07f63855c7, 0a55aac17fd0, 0ae23b67a3f5, 0df78c1a1… |
-| CG_mean | float64 | 950 | 51.63 | 82 | 0.0046, 0.0206, 0.0174, 0.0198, 0.0176, 0.0139, 0.0202, 0.0218, 0.0733, 0.0195 |
-| CG_coeff_variation | float64 | 950 | 51.63 | 80 | 0.8944, 0.1896, 0.307, 0.4743, 0.1461, 0.1356, 0.0566, 1.6291, 1.0206, 0.1713 |
-| CG_min | float64 | 950 | 51.63 | 72 | 0.0003, 0.0021, 0.022, 0.0135, 0.0001, 0.0152, 0.006, 0.0069, 0.0012, 0.0 |
-| CG_max | float64 | 950 | 51.63 | 86 | 0.0142, 0.1319, 0.0417, 0.0381, 0.0351, 0.1323, 0.0871, 0.0059, 0.0718, 0.1126 |
-| CG_entropy | float64 | 950 | 51.63 | 79 | 0.4506, 0.8158, 2.4789, 0.2636, 1.1012, 0.1265, 2.9811, 0.4101, 3.0217, 4.2546 |
-| cluster_coeff_mean | float64 | 950 | 51.63 | 79 | 0.3492, 0.0766, 0.1766, 0.0643, 0.5316, 0.0437, 0.4479, 0.1048, 0.0653, 0.082 |
-| cluster_coeff_coeff_variation | float64 | 950 | 51.63 | 81 | 0.3252, 0.1611, 0.0703, 0.2575, 0.1916, 0.0706, 0.0625, 0.3286, 0.1007, 0.2624 |
-| cluster_coeff_min | float64 | 950 | 51.63 | 71 | 0.0952, 0.4, 0.3262, 0.3012, 0.0556, 0.244, 0.0435, 0.0014, 0.0836, 0.0057 |
-| cluster_coeff_max | float64 | 950 | 51.63 | 63 | 0.4, 0.5, 0.0952, 0.0645, 0.069, 0.1333, 0.4805, 0.087, 0.08, 0.8889 |
-| cluster_coeff_entropy | float64 | 950 | 51.63 | 78 | 0.4506, 0.8158, 3.173, 0.2636, 2.8037, 0.0975, 1.0764, 0.4101, 1.4074, 2.1451 |
-| runtime | float64 | 0 | 0 | 1046 | 8.5172, -4.5101, -4.9621, -4.343, -4.7109, -5.8095, -4.8286, -5.2987, -6.2151, … |
-| nvarsOrig | float64 | 0 | 0 | 143 | 945.0, 760.0, 600.0, 1150.0, 2969.0, 870.0, 160.0, 120.0, 150.0, 41.0 |
-| nclausesOrig | float64 | 0 | 0 | 165 | 61409.0, 43649.0, 84314.0, 896.0, 2332.0, 672.0, 2416.0, 10578.0, 936.0, 2596.0 |
-| nvars | float64 | 0 | 0 | 145 | 900.0, 720.0, 120.0, 1100.0, 435.0, 580.0, 150.0, 754.0, 540.0, 132.0 |
-| nclauses | float64 | 0 | 0 | 177 | 42889.0, 60464.0, 936.0, 2416.0, 42826.0, 2653.0, 11583.0, 60191.0, 2596.0, 694… |
-| reducedVars | float64 | 0 | 0 | 68 | 0.0, 0.3333, 0.0345, 0.05, 0.0556, 0.0455, 0.0204, 0.0327, 0.0017, 1.0539 |
-| reducedClauses | float64 | 0 | 0 | 94 | 0.0, 0.0177, 0.012, 0.0193, 0.1212, 0.0181, 0.0201, 0.0156, 0.043, 0.1087 |
-| vars_clauses_ratio | float64 | 0 | 0 | 150 | 0.4167, 0.0168, 0.015, 0.0116, 0.0149, 0.0133, 0.0026, 0.0074, 0.0106, 0.008 |
-| POSNEG_RATIO_CLAUSE_mean | float64 | 0 | 0 | 112 | 1.0, 0.9939, 0.9984, 0.9923, 0.9949, 0.4921, 0.9937, 0.4764, 0.9991, 0.478 |
-| POSNEG_RATIO_CLAUSE_coeff_variation | float64 | 0 | 0 | 120 | 0.0, 0.0236, 0.0276, 0.0207, 0.8453, 0.5877, 0.0237, 1.0138, 0.6266, 0.0127 |
-| POSNEG_RATIO_CLAUSE_min | float64 | 0 | 0 | 21 | 0.0, 1.0, 0.3333, 0.8182, 0.7143, 0.8, 0.8667, 0.75, 0.7778, 0.8462 |
+| problem_family | category | 0 | 0 | 32 | b6ce310a956d, 943d3f9376bc, dbee2007e013, 2aec40cf6783, bb37867bcc32, fe11c21de… |
+| CG_mean | float64 | 950 | 51.63 | 82 | 0.0198, 0.0176, 0.0206, 0.0046, 0.0202, 0.0139, 0.0174, 0.0636, 0.0574, 0.093 |
+| CG_coeff_variation | float64 | 950 | 51.63 | 80 | 0.8944, 1.0269, 0.6649, 2.9351, 1.0857, 1.1581, 0.6655, 1.1817, 0.6711, 0.5345 |
+| CG_min | float64 | 950 | 51.63 | 72 | 0.0003, 0.0021, 0.0069, 0.0, 0.0135, 0.022, 0.0012, 0.0172, 0.0132, 0.006 |
+| CG_max | float64 | 950 | 51.63 | 86 | 0.0142, 0.1319, 0.0417, 0.2045, 0.0595, 0.2731, 0.0448, 0.2169, 0.0225, 0.2229 |
+| CG_entropy | float64 | 950 | 51.63 | 79 | 0.4506, 0.8158, 5.4727, 3.2654, 0.3906, 3.5096, 3.9191, 0.8259, 3.0728, 4.2844 |
+| cluster_coeff_mean | float64 | 950 | 51.63 | 79 | 0.3492, 0.0766, 0.1766, 0.1624, 0.1046, 0.2519, 0.0097, 0.021, 0.1631, 0.3587 |
+| cluster_coeff_coeff_variation | float64 | 950 | 51.63 | 81 | 0.3252, 0.537, 0.6841, 0.8347, 0.3199, 0.9673, 0.7089, 1.3559, 0.7063, 0.2547 |
+| cluster_coeff_min | float64 | 950 | 51.63 | 71 | 0.0952, 0.3012, 0.3262, 0.4, 0.244, 0.0014, 0.0435, 0.0556, 0.0065, 0.0189 |
+| cluster_coeff_max | float64 | 950 | 51.63 | 63 | 0.4, 0.5, 0.0952, 0.069, 0.0645, 0.087, 0.9048, 0.08, 0.8889, 0.4805 |
+| cluster_coeff_entropy | float64 | 950 | 51.63 | 78 | 0.4506, 0.8158, 2.6761, 0.3906, 2.7576, 2.7592, 0.8259, 2.9768, 3.2728, 0.2505 |
+| runtime | float64 | 0 | 0 | 1046 | 8.5172, -4.5101, -4.9621, -4.343, -4.7109, -4.8286, -5.8095, -5.1163, -5.2987, … |
+| nvarsOrig | float64 | 0 | 0 | 143 | 945.0, 760.0, 600.0, 160.0, 2969.0, 120.0, 1150.0, 870.0, 150.0, 180.0 |
+| nclausesOrig | float64 | 0 | 0 | 165 | 61409.0, 43649.0, 84314.0, 896.0, 10578.0, 936.0, 672.0, 2332.0, 2416.0, 1628.0 |
+| nvars | float64 | 0 | 0 | 145 | 900.0, 720.0, 120.0, 435.0, 1100.0, 580.0, 150.0, 913.0, 132.0, 420.0 |
+| nclauses | float64 | 0 | 0 | 177 | 42889.0, 936.0, 60464.0, 2416.0, 336.0, 1452.0, 79229.0, 5437.0, 5851.0, 6940.0 |
+| reducedVars | float64 | 0 | 0 | 68 | 0.0, 0.3333, 0.0345, 0.05, 0.0556, 0.0455, 0.0327, 0.0017, 0.0204, 0.0807 |
+| reducedClauses | float64 | 0 | 0 | 94 | 0.0, 0.0177, 0.012, 0.0156, 0.1212, 0.2126, 0.0201, 0.1087, 0.0193, 0.043 |
+| vars_clauses_ratio | float64 | 0 | 0 | 150 | 0.4167, 0.0168, 0.015, 0.0149, 0.0074, 0.0133, 0.0116, 0.0026, 0.1667, 0.0641 |
+| POSNEG_RATIO_CLAUSE_mean | float64 | 0 | 0 | 112 | 1.0, 0.9939, 0.9984, 0.9923, 0.9949, 0.478, 0.9991, 0.9937, 0.4921, 0.4764 |
+| POSNEG_RATIO_CLAUSE_coeff_variation | float64 | 0 | 0 | 120 | 0.0, 0.0236, 0.0276, 0.0207, 0.8453, 0.01, 1.0016, 0.9222, 0.0239, 0.6266 |
+| POSNEG_RATIO_CLAUSE_min | float64 | 0 | 0 | 21 | 0.0, 1.0, 0.3333, 0.8182, 0.7143, 0.8, 0.8667, 0.8462, 0.875, 0.75 |
 | POSNEG_RATIO_CLAUSE_max | float64 | 0 | 0 | 1 | 1.0 |
-| POSNEG_RATIO_CLAUSE_entropy | float64 | 0 | 0 | 127 | 0.0, 1.5974, 0.2437, 0.6221, 1.6919, 0.7656, 0.1561, 1.6272, 1.0258, 0.9339 |
-| VCG_CLAUSE_mean | float64 | 0 | 0 | 131 | 0.0036, 0.0046, 0.003, 0.0037, 0.0045, 0.0062, 0.0035, 0.001, 0.0666, 0.0058 |
-| VCG_CLAUSE_coeff_variation | float64 | 0 | 0 | 168 | 0.4472, 0.0, 1.105, 0.016, 0.5928, 1.0967, 0.6205, 0.1227, 1.6885, 0.5919 |
-| VCG_CLAUSE_min | float64 | 0 | 0 | 100 | 0.0022, 0.0028, 0.0008, 0.0118, 0.0071, 0.0079, 0.0034, 0.0018, 0.0027, 0.0024 |
+| POSNEG_RATIO_CLAUSE_entropy | float64 | 0 | 0 | 127 | 0.0, 1.1056, 2.9316, 1.89, 0.897, 0.1196, 2.5766, 0.2474, 1.6272, 0.2437 |
+| VCG_CLAUSE_mean | float64 | 0 | 0 | 131 | 0.0036, 0.0046, 0.003, 0.0037, 0.001, 0.0035, 0.0045, 0.0062, 0.0034, 0.0175 |
+| VCG_CLAUSE_coeff_variation | float64 | 0 | 0 | 168 | 0.4472, 0.0, 1.0967, 0.6205, 0.5928, 0.016, 1.105, 0.7362, 1.4728, 1.0135 |
+| VCG_CLAUSE_min | float64 | 0 | 0 | 100 | 0.0022, 0.0028, 0.0008, 0.0071, 0.0118, 0.0079, 0.0018, 0.0019, 0.0007, 0.0046 |
 | VCG_CLAUSE_max | float64 | 0 | 0 | 123 | 0.1, 0.0433, 0.0486, 0.0833, 0.0909, 0.0667, 0.0769, 0.0045, 0.0391, 0.0952 |
-| VCG_CLAUSE_entropy | float64 | 0 | 0 | 163 | 0.4506, 0.0, 0.0081, 0.2994, 0.4741, 0.3344, 0.267, 0.6867, 0.3469, 0.8158 |
+| VCG_CLAUSE_entropy | float64 | 0 | 0 | 163 | 0.4506, 0.0, 0.267, 0.4741, 0.0081, 0.3096, 0.6867, 0.3344, 0.2994, 0.3469 |
 | UNARY | float64 | 0 | 0 | 1 | 0.0 |
-| BINARYp | float64 | 0 | 0 | 129 | 0.0, 0.8333, 0.9349, 0.0323, 0.0027, 0.0909, 0.0124, 0.0101, 0.9261, 0.0112 |
-| TRINARYp | float64 | 0 | 0 | 147 | 0.0, 0.8333, 0.9349, 0.0909, 0.9169, 0.9247, 0.0323, 0.92, 0.9218, 0.0891 |
-| VCG_VAR_coeff_variation | float64 | 0 | 0 | 130 | 0.0, 0.2208, 0.2615, 0.2483, 0.2491, 0.1887, 0.2426, 0.1289, 0.3459, 3.524 |
-| VCG_VAR_min | float64 | 0 | 0 | 120 | 0.0001, 0.0004, 0.0, 0.0021, 0.0034, 0.0025, 0.01, 0.0028, 0.0018, 0.0029 |
-| VCG_VAR_max | float64 | 0 | 0 | 152 | 0.0203, 0.0055, 0.0065, 0.0099, 0.0045, 0.0057, 0.0062, 0.0071, 0.0432, 0.0208 |
-| VCG_VAR_entropy | float64 | 0 | 0 | 135 | 0.0, 5.1041, 1.2409, 5.3432, 0.023, 1.4343, 3.4695, 4.75, 2.0374, 2.7616 |
-| POSNEG_RATIO_VAR_mean | float64 | 0 | 0 | 153 | 0.0, 0.3333, 0.0526, 0.0345, 0.0323, 0.2552, 0.0769, 0.037, 0.0261, 0.2823 |
-| POSNEG_RATIO_VAR_stdev | float64 | 0 | 0 | 124 | 0.0, 0.1569, 0.0454, 0.0451, 0.0591, 0.0007, 0.0613, 0.1568, 0.2323, 0.0232 |
-| POSNEG_RATIO_VAR_min | float64 | 0 | 0 | 92 | 0.0, 0.3333, 0.2, 0.0526, 0.0323, 0.0769, 0.127, 0.037, 0.0476, 0.011 |
-| POSNEG_RATIO_VAR_max | float64 | 0 | 0 | 124 | 1.0, 0.0, 0.3333, 0.2, 0.5, 0.0526, 0.0323, 0.037, 0.0769, 0.3412 |
-| POSNEG_RATIO_VAR_entropy | float64 | 0 | 0 | 129 | 0.0, 0.6084, 2.9591, 0.0252, 3.5107, 0.9674, 2.765, 3.2079, 2.1674, 1.9831 |
-| HORNY_VAR_mean | float64 | 0 | 0 | 96 | 0.0021, 0.0017, 0.0002, 0.0026, 0.0016, 0.0011, 0.003, 0.0085, 0.0019, 0.002 |
-| HORNY_VAR_coeff_variation | float64 | 0 | 0 | 141 | 0.0, 0.3562, 0.357, 0.3597, 0.3923, 0.2024, 0.3653, 0.1754, 4.1046, 0.1189 |
-| HORNY_VAR_min | float64 | 0 | 0 | 73 | 0.0, 0.0005, 0.0014, 0.0012, 0.0008, 0.0002, 0.001, 0.0009, 0.0011, 0.0006 |
-| HORNY_VAR_max | float64 | 0 | 0 | 128 | 0.0055, 0.0033, 0.0054, 0.0056, 0.0032, 0.0099, 0.0036, 0.0031, 0.0038, 0.0035 |
-| HORNY_VAR_entropy | float64 | 0 | 0 | 146 | 0.0, 1.8528, 4.5789, 5.1021, 3.1476, 1.8659, 3.9239, 4.6597, 1.6262, 2.432 |
-| horn_clauses_fraction | float64 | 0 | 0 | 171 | 0.9349, 0.9261, 0.0831, 0.08, 0.2739, 0.7727, 0.7551, 0.0753, 0.5, 0.0782 |
-| VG_mean | float64 | 0 | 0 | 133 | 0.0034, 0.0046, 0.0036, 0.0042, 0.0103, 0.0021, 0.0035, 0.0075, 0.0322, 0.0015 |
-| VG_coeff_variation | float64 | 0 | 0 | 131 | 0.0, 0.0022, 0.0021, 0.0017, 0.002, 0.0246, 0.0019, 0.0016, 0.2234, 0.1102 |
-| VG_min | float64 | 0 | 0 | 117 | 0.0001, 0.0025, 0.0004, 0.0005, 0.0027, 0.0, 0.0026, 0.0079, 0.0019, 0.009 |
-| VG_max | float64 | 0 | 0 | 146 | 0.0116, 0.0066, 0.0206, 0.0064, 0.008, 0.0074, 0.006, 0.0046, 0.0114, 0.0091 |
-| DIAMETER_mean | float64 | 0 | 0 | 108 | 2.0, 3.0, 4.0, 2.1802, 6.0355, 6.204, 2.9312, 3.8986, 130.6681, 5.7887 |
-| DIAMETER_coeff_variation | float64 | 0 | 0 | 104 | 0.0, 0.1763, 0.0927, 0.1441, 0.0649, 0.0863, 0.0886, 0.0307, 0.181, 0.0774 |
-| DIAMETER_min | float64 | 0 | 0 | 10 | 2.0, 3.0, 4.0, 5.0, 6.0, 25.0, 90.0, 8.0, 91.0, 22.0 |
-| DIAMETER_max | float64 | 0 | 0 | 14 | 3.0, 2.0, 7.0, 4.0, 6.0, 5.0, 49.0, 8.0, 179.0, 12.0 |
-| DIAMETER_entropy | float64 | 0 | 0 | 106 | 0.0, 0.4717, 0.2813, 0.1533, 0.5059, 0.2505, 0.3281, 4.4519, 0.5156, 0.6898 |
-| cl_num_mean | float64 | 0 | 0 | 165 | 0.0, 4870.0, 4241.5, 2344.8889, 2244.3333, 2205.7778, 2670.4, 606.3846, 4202.0,… |
-| cl_num_coeff_variation | float64 | 0 | 0 | 153 | 0.0, 0.007, 0.0092, 0.0093, 0.004, 0.0066, 0.0026, 0.0094, 0.0191, 0.1411 |
-| cl_num_min | float64 | 0 | 0 | 159 | 0.0, 4836.0, 1380.0, 102.0, 4886.0, 4669.0, 110.0, 78.0, 20.0, 2045.0 |
-| cl_num_max | float64 | 0 | 0 | 161 | 0.0, 4879.0, 3848.0, 4202.0, 4330.0, 4636.0, 4904.0, 3495.0, 3860.0, 1362.0 |
+| BINARYp | float64 | 0 | 0 | 129 | 0.0, 0.8333, 0.9349, 0.0323, 0.0909, 0.0112, 0.0027, 0.0801, 0.0124, 0.0101 |
+| TRINARYp | float64 | 0 | 0 | 147 | 0.0, 0.8333, 0.9349, 0.9169, 0.0909, 0.927, 0.92, 0.0891, 0.9218, 0.9247 |
+| VCG_VAR_coeff_variation | float64 | 0 | 0 | 130 | 0.0, 0.2615, 0.2483, 0.2208, 0.1887, 0.2491, 4.3842, 1.2844, 0.2146, 0.2523 |
+| VCG_VAR_min | float64 | 0 | 0 | 120 | 0.0001, 0.0, 0.0004, 0.0021, 0.0034, 0.0025, 0.0029, 0.01, 0.0003, 0.0028 |
+| VCG_VAR_max | float64 | 0 | 0 | 152 | 0.0203, 0.0045, 0.0062, 0.0055, 0.0057, 0.0065, 0.0099, 0.0071, 0.011, 0.0063 |
+| VCG_VAR_entropy | float64 | 0 | 0 | 135 | 0.0, 3.0496, 3.8051, 2.3423, 2.759, 5.1203, 3.3564, 4.8047, 2.0374, 5.1041 |
+| POSNEG_RATIO_VAR_mean | float64 | 0 | 0 | 153 | 0.3333, 0.0, 0.0526, 0.0323, 0.0345, 0.011, 0.0476, 0.0261, 0.2823, 0.0769 |
+| POSNEG_RATIO_VAR_stdev | float64 | 0 | 0 | 124 | 0.0, 0.1569, 0.0451, 0.0454, 0.0591, 0.0722, 0.2302, 0.0491, 0.2323, 0.055 |
+| POSNEG_RATIO_VAR_min | float64 | 0 | 0 | 92 | 0.0, 0.3333, 0.0526, 0.2, 0.0323, 0.0769, 0.0345, 0.0476, 0.1275, 0.0909 |
+| POSNEG_RATIO_VAR_max | float64 | 0 | 0 | 124 | 1.0, 0.3333, 0.0, 0.2, 0.5, 0.0526, 0.037, 0.0323, 0.3412, 0.9667 |
+| POSNEG_RATIO_VAR_entropy | float64 | 0 | 0 | 129 | 0.0, 2.6907, 2.7087, 2.5365, 2.4732, 3.2793, 2.8275, 2.9364, 2.1674, 2.9591 |
+| HORNY_VAR_mean | float64 | 0 | 0 | 96 | 0.0021, 0.0002, 0.0017, 0.0026, 0.0011, 0.0016, 0.003, 0.0008, 0.0085, 0.0019 |
+| HORNY_VAR_coeff_variation | float64 | 0 | 0 | 141 | 0.0, 0.3562, 0.3923, 0.3597, 0.357, 0.4208, 0.233, 2.4499, 0.1433, 0.3118 |
+| HORNY_VAR_min | float64 | 0 | 0 | 73 | 0.0, 0.0005, 0.0014, 0.0008, 0.0012, 0.001, 0.0002, 0.0009, 0.0013, 0.0001 |
+| HORNY_VAR_max | float64 | 0 | 0 | 128 | 0.0055, 0.0032, 0.0033, 0.0099, 0.0054, 0.0036, 0.0056, 0.0025, 0.0035, 0.0031 |
+| HORNY_VAR_entropy | float64 | 0 | 0 | 146 | 0.0, 1.2016, 1.287, 3.5045, 1.5597, 3.7161, 4.7226, 1.6937, 4.2225, 1.6262 |
+| horn_clauses_fraction | float64 | 0 | 0 | 171 | 0.9349, 0.7551, 0.7727, 0.073, 0.7581, 0.0831, 0.5, 0.2739, 0.08, 0.0753 |
+| VG_mean | float64 | 0 | 0 | 133 | 0.0034, 0.0036, 0.0091, 0.0075, 0.0046, 0.0015, 0.0042, 0.0035, 0.0322, 0.008 |
+| VG_coeff_variation | float64 | 0 | 0 | 131 | 0.0, 0.0022, 0.0021, 0.002, 0.0019, 0.0246, 0.0017, 0.0695, 1.4947, 0.0235 |
+| VG_min | float64 | 0 | 0 | 117 | 0.0001, 0.0025, 0.0004, 0.0005, 0.0027, 0.0079, 0.0, 0.0026, 0.0031, 0.0016 |
+| VG_max | float64 | 0 | 0 | 146 | 0.0116, 0.0206, 0.0074, 0.0064, 0.0066, 0.008, 0.0055, 0.0902, 0.0192, 0.0084 |
+| DIAMETER_mean | float64 | 0 | 0 | 108 | 2.0, 3.0, 4.0, 2.1802, 5.9401, 2.9925, 4.7942, 4.8683, 3.8986, 3.081 |
+| DIAMETER_coeff_variation | float64 | 0 | 0 | 104 | 0.0, 0.1441, 0.1763, 0.0927, 0.1243, 0.0843, 0.0288, 0.0503, 0.0774, 0.0886 |
+| DIAMETER_min | float64 | 0 | 0 | 10 | 2.0, 3.0, 4.0, 5.0, 6.0, 25.0, 8.0, 91.0, 22.0, 90.0 |
+| DIAMETER_max | float64 | 0 | 0 | 14 | 3.0, 2.0, 7.0, 4.0, 6.0, 5.0, 49.0, 8.0, 10.0, 12.0 |
+| DIAMETER_entropy | float64 | 0 | 0 | 106 | 0.0, 0.4717, 0.2058, 0.044, 1.0762, 0.5083, 0.4777, 0.3281, 0.2813, 0.1779 |
+| cl_num_mean | float64 | 0 | 0 | 165 | 0.0, 4241.5, 4870.0, 4622.0, 1802.75, 3912.75, 618.8, 1686.1429, 1070.5, 2743.6… |
+| cl_num_coeff_variation | float64 | 0 | 0 | 153 | 0.0, 0.007, 0.004, 0.0093, 0.0191, 0.0094, 0.0092, 0.0026, 0.0066, 0.1411 |
+| cl_num_min | float64 | 0 | 0 | 159 | 0.0, 1380.0, 110.0, 102.0, 20.0, 4836.0, 4669.0, 78.0, 4886.0, 747.0 |
 
-(111 more rows not shown)
+(112 more rows not shown)
 
 </details>
 
@@ -377,7 +431,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 18.21 | -1.046 | nan | 19.245 | 0.546 | log1p | 8744.9 | 1.7136e+17 | exponential |
+| 0 | 0 | 18.21 | -1.046 | nan | 19.245 | 0.546 | log1p | 8744.9 | 4.29094e+16 | exponential |
 
 ### Numeric features
 
@@ -460,6 +514,11 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | instance_id | 3 | 0a07f63855c7 | 10 | 0.54 |
 | instance_id | 4 | 0a55aac17fd0 | 10 | 0.54 |
 | instance_id | 5 | 0ae23b67a3f5 | 10 | 0.54 |
+| problem_family | 1 | b6ce310a956d | 210 | 11.41 |
+| problem_family | 2 | 943d3f9376bc | 180 | 9.78 |
+| problem_family | 3 | dbee2007e013 | 180 | 9.78 |
+| problem_family | 4 | 2aec40cf6783 | 160 | 8.7 |
+| problem_family | 5 | bb37867bcc32 | 160 | 8.7 |
 
 ## Build
 
@@ -472,4 +531,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:b864c2b9db07dd6852393b1cdb04d99e7694f6ad5c425570fa733e0a4814822c` |
+| stale | yes: the definition now gives checksum `v2:91d2aa96ada611c37313142aa33985e21890449600a6322933aa2ea3ba273c9a` |

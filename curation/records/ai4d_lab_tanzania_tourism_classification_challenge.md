@@ -8,8 +8,9 @@ checked_by:
 data_foundry_status:
 - WIP (DF)
 claimed_by: Myunghwan
-suggestion: 'Yes'
-priority: 4
+suggestion: No (Retired)
+decision_markers:
+- Too Small
 tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
@@ -26,7 +27,6 @@ problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
 - https://zindi.africa/competitions/ai4d-lab-tanzania-tourism-classification-challenge/data
-v2_path: datasets/_dev/tabarena-v0pt2/ai4d_lab_tanzania_tourism_classification_challenge/dataset.py
 source_row: 901
 type_adapter_id: curation-record-v1
 ---
@@ -161,11 +161,20 @@ CC (2026-11-18, Andrej): the split stays as shipped under SPLIT-8 as amended tod
 CC (2026-11-20, Andrej): collection facts:
 - The release is three survey waves, not "2014 and later waves" (correcting the CC of 2026-11-13): NBS's own per-year files on open.africa (organisation "Tanzania National Bureau of Statistics", the Tanzania Tourism Sector Survey 2012, 2013 and 2014, mirrored from statistics.go.tz) recur in the release. 2012 is matched row by row (6,047 of its 6,163 rows found); 2013 is the rest of that batch (2012 and 2013 hold 6,163 + 12,575 = 18,738 respondents against the batch's 18,285 rows, and both files spell `Widlife Tourism`, as the batch does); 2014 is the 2020 Zindi cut. Labelled rows: 2012 4,387, 2013 8,930, 2014 4,676, undecided 513.
 
+CC (2026-11-20, Andrej): retired as `Too Small` (`No (Retired)`; Review issue 11, B). Why:
+- The task is a trip planner's: estimate the spending band of a planned trip from earlier visitors (CC 2026-11-05, Lennart), so it is used on later survey waves than it was trained on.
+- The release is three survey waves, not "2014 and later waves" (correcting the CC of 2026-11-13): NBS's own per-year files on open.africa (organisation "Tanzania National Bureau of Statistics", the Tanzania Tourism Sector Survey 2012, 2013 and 2014, mirrored from statistics.go.tz) recur in the release. 2012 is matched row by row (6,047 of its 6,163 rows found); 2013 is the rest of that batch (2012 and 2013 hold 6,163 + 12,575 = 18,738 respondents against the batch's 18,285 rows, and both files spell `Widlife Tourism`, as the batch does); 2014 is the 2020 Zindi cut. Labelled rows: 2012 4,387, 2013 8,930, 2014 4,676, undecided 513.
+- Forward in time the relation is clearly not flat (stationary-relation test, 2026-11-19, log loss, 5 seeds): trained on 2012-2013 and tested on 2014, LightGBM +0.058 ± 0.004 and Kumo-Tabular +0.045 ± 0.002 over a model trained on 2014 itself (floors 0.004-0.005); trained on 2012 and tested on 2013, +0.079 ± 0.005 and +0.072 ± 0.005. The class mix moves too: Lower Cost 6.2% (2012) to 19.0% (2014), threefold, p 1e-73. The gap is as large as the spread between model families (1.076 to 1.126 log loss).
+- A relation measured not flat may not be split at random; it needs whole periods held out, four for a task of 3 repeats, or three windows each training on half the data (SPLIT-14, SPLIT-16). Three waves give neither: "train 2012-2013, test 2014" is the only window on half the data, and holding out whole waves is a single repeat of three folds, two of which test an earlier wave on a later one.
+- Kept random (as shipped) the score would hide the shift a planner meets on the next wave; kept by whole waves it would rest on an exception and on NBS's 2012 file, whose licence is not stated.
+- It can come back if NBS publishes per-row years for later waves (the exit survey runs every year): four or more dated waves allow whole periods or windows.
+The folder leaves in a retirement PR.
+
 ## Review
 
-**Outcome:** added; ships as defined (Lennart, 2026-11-05). The split stays random 3 x 3 folds, `ForcedIIDFromTemporal` (issue 10, 2026-11-18); issue 9 withdrawn (2026-11-13).
+**Outcome:** added, then retired on 2026-11-20 as `Too Small` (issue 11, B).
 
-**Main points:** Nothing open on the time basis: the split stays as shipped (issue 10), and the collection facts are three dated survey waves, 2012-2014 (CC of 2026-11-20).
+**Main points:** Retired (issue 11, B, 2026-11-20) as `Too Small`: the release is three survey waves (2012, 2013, 2014), the relation moves clearly between them, and three waves allow neither three windows on half the data nor the four periods a grouped split needs. The folder leaves in a retirement PR.
 
 **Record judgment:** valid; NBS's exit survey as Zindi published it in 2022, with the competition's own task and
 metric. Four out-of-date statements (the 2026-10-26 "retained in the review evidence", the screening's `mmu_2022`
@@ -536,6 +545,134 @@ line of 2026-11-04. The record fields agree with the definition.
    **Andrej (2026-11-17, discuss):** It seems like the tree has a mistake. I think the question is whether there are at least two periods which then leads to the grouped leaf, but it should actually be as many periods as needed to get to the minimum no. of splits for the data size.
 
    **Resolved (2026-11-18, Andrej):** A, as implemented: random 3 x 3 folds, `ForcedIIDFromTemporal`. The period count is amended as the note asks (SPLIT-8; cross-dataset decision of 2026-11-18): two batches are too few for a task of 3 repeats.
+
+11. **Split: retire as `Too Small`, or keep random as your exception, now that the relation is measured not flat?**
+
+   * **Problem:**
+     - The stationary-relation test (2026-11-19) reads the relation not flat between the two survey batches: tested
+       on the later waves, training on the 2014 wave (4,676 rows) costs more log loss than training on as many later
+       rows, ten times the test's floor.
+
+       | Model | Gap (log loss) | SD over 5 seeds | Floor | Verdict |
+       |---|---|---|---|---|
+       | LightGBM | +0.058 | 0.002 | 0.0051 | not flat |
+       | Kumo-Tabular | +0.056 | 0.003 | 0.0057 | not flat |
+
+     - The gap is about the spread between model families (1.076 to 1.126 log loss).
+     - Since 2026-11-18 a relation measured not flat is held out by whole periods, four for a task of 3 repeats,
+       else the task is `Too Small`; never random[^split16]. Two batches are too few (issue 10). Issue 10 kept the
+       random split (2026-11-18) by going on to the unit question, which the forced step now reaches only where
+       nothing can be measured.
+     - The definition has no `Time basis:` line (issue 10, A named one), and its splits comment still says "No valid
+       window exists to measure that cost"[^split32].
+     - Read for the survey statistician filling in missing answers within a wave, the split would be random; issue 3
+       kept the trip planner, whose trips come after the data (CC 2026-11-05, Lennart).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep random 3 x 3, `ForcedIIDFromTemporal`, as your exception (implemented) | A CC line names the exception; the `Time basis:` line gives the two batches and the verdict; the splits comment drops "no valid window"; the departure table lists it | Keeps 18,506 rows of a documented NBS survey | Folds mix both batches, so the score does not show the +0.058 a planner meets on a later wave |
+     | B | Retire as `Too Small` | `No` / `Too Small`, the folder removed in a retirement PR | Follows the rules' path for a relation measured not flat with two periods | Loses the dataset; a dated wave from NBS would bring it back |
+
+   * **Recommendation:** B, the rules' path, and the drift is as large as the spread between model families.
+     **Decision:** A or B?
+
+   **Notes for the AI:** either way the `Time basis:` line and the splits comment change; on B, record fields, marker
+   and CHANGELOG.
+
+   **Andrej (2026-11-19, discuss):** Search the web and try to find a version of the dataset we can use
+
+   **Answer (AI, 2026-11-19):** Yes, in part: NBS's own per-year microdata files for 2012, 2013 and 2014 are on open.africa (each file is one survey year), and their rows recur in our release, so each row's wave can be recovered: the release is the 2012, 2013 and 2014 waves, not "2014 and later waves"; that gives three dated waves, still one short of the four periods the rules ask for.
+
+   * **Where:** open.africa, organisation "Tanzania National Bureau of Statistics", datasets *The Tanzania Tourism Sector Survey, 2008 / 2009 / 2010 / 2012 / 2013 / 2014* (mirrored in 2017 from the NBS open data portal statistics.go.tz, which is now offline). The CSV links point to the dead portal; the rows are served by the open.africa datastore API (`datastore_search`), downloaded 2026-11-19. Licence: "License not specified" on every dataset. The NBS microdata portal (microdata.nbs.go.tz, 65 studies), the World Bank microdata library and the Wayback Machine hold no exit-survey microdata (Wayback has only the 2009 CSV).
+   * **The files hold no year column**, but each file is one wave. Raw NBS columns (72-75 in 2012-2014: nationality, party, purpose, package items, nights, the raw spending by item and currency), from which Zindi derived its 19 inputs.
+   * **The link:** full profile (the 18 shared inputs, coding harmonised) matched row by row.
+
+     | NBS file | Rows | Report's respondents | Profile found in our 2022 release | Found in the 2020 cut (2014 wave) |
+     |---|---|---|---|---|
+     | 2012 | 6,163 | 6,163 (complete) | 6,047 (98.1%) | 52 (0.8%) |
+     | 2013 | 1,750 | 12,575 (a 14% part) | 1,707 (97.5%) | 30 (1.7%) |
+     | 2014 | 1,250 | 7,491 (a 17% part; digits garbled in 464 rows) | via the 2020 cut | 847 (67.8%, without `travel_with`) |
+
+     The 2012 and 2013 files spell the activity `Widlife Tourism`, the 2014 file `Wildlife tourism`: the spelling that split our two batches is NBS's coding by year. 2012 (6,163) + 2013 (12,575) = 18,738 respondents against 18,285 rows of the "later" batch.
+   * **This corrects the CC of 2026-11-13:** the second batch is the 2012 and 2013 waves, earlier than the 2014 wave, not 2015-2021 waves first published in 2022. The drift of issue 11 (train on the 2014 wave, test the other batch) was measured backwards in time.
+   * **Waves of the 18,506 labelled rows** (2014 as rebuilt on 2026-11-13; 2012 by matching the complete 2012 file; the rest of the second batch is 2013):
+
+     | Wave | Labelled rows | Share | Lower Cost | Higher Cost | Kenya | Leisure |
+     |---|---|---|---|---|---|---|
+     | 2012 | 4,387 | 23.7% | 6.2% | 33.6% | 2.7% | 73.9% |
+     | 2013 | 8,930 | 48.3% | 14.7% | 25.3% | 4.5% | 60.5% |
+     | 2014 | 4,676 | 25.3% | 19.0% | 23.0% | 5.2% | 58.9% |
+     | 2014 or later, undecided | 513 | 2.8% | | | | |
+
+     About 180 rows called 2012 share their profile with more copies than the 2012 file has, so they could be 2013; the chance-match rate is about 1-2% (2012 file against the 2014 wave).
+   * **What it gives the split:** three waves. Temporal windows: only "train 2012-2013, test 2014" trains on at least 50% (about 72%); "train 2012, test 2013" trains on 24%, under the 30% floor, so the three windows SPLIT-14 asks for cannot be built. Held out by whole waves: three periods allow one grouping into three folds, so one repeat where SPLIT-33 sets 3 and SPLIT-8 asks four periods. Under SPLIT-16 the task stays `Too Small` unless the relation is measured flat.
+   * **The stationary-relation test, rerun forward on the dated waves** (2026-11-19, log loss, training on the earlier waves against as many rows of the tested wave, 5 seeds): clearly not flat.
+
+     | Wave tested | Trained on | LightGBM gap | Kumo-Tabular gap | Floor | Verdict |
+     |---|---|---|---|---|---|
+     | 2014 | 2012-2013 (13,317 rows) | +0.058 ± 0.004 | +0.045 ± 0.002 | 0.004-0.005 | not flat |
+     | 2013 | 2012 (4,387 rows) | +0.079 ± 0.005 | +0.072 ± 0.005 | 0.006 | not flat |
+
+     The class mix moves too: Lower Cost rises from 6.2% (2012) to 19.0% (2014), threefold at p 1e-73, which counts as a recording change. The gap is larger than the spread between model families (1.076 to 1.126 log loss).
+   * **Not verified:** whether open.africa's 2013/2014 tables are cut-down copies or NBS's public samples; the licence of the NBS files.
+
+   | Source | Years | Rows | Year/wave per row | Links to ours | Access | Verified |
+   |---|---|---|---|---|---|---|
+   | open.africa NBS datasets (datastore API) | 2008-2010, 2012-2014 (2011 resource gone) | 8,530 / 3,250 / 3,000 / 6,163 / 1,750 / 1,250 | one file per year | 2012: 98.1%, 2013: 97.5%, 2014: via 2020 cut | open, no licence stated | downloaded, matched |
+   | NBS / BoT exit-survey reports | 2008-2023 | tables only | n/a | shares and sample sizes | open PDFs | read |
+   | microdata.nbs.go.tz, World Bank, IHSN | none | | | | | searched, none |
+   | Zindi 2020 cut (Pycon) | 2014 wave | 6,410 | no | already used | Zindi rules | already held |
+
+   **Option for issue 11:**
+
+   | | Option | What it does | Pro | Con |
+   |---|---|---|---|---|
+   | C | Hold out whole survey waves (2012, 2013, 2014), `ForcedGroupedFromTemporal`, as your exception to the period count | `_load_raw` also reads the NBS 2012 file (open.africa, datastore API) and the 2020 cut; `_clean` derives `survey_wave` by profile match (not a feature; 513 undecided + ~180 doubtful rows dropped or assigned by a stated rule); 3 folds, one per wave, 1 repeat; `Time basis:` line with the dated waves and a re-run stationarity test; the CC of 2026-11-13 and issue 9-11 facts corrected | Tests a model on a survey year it has not seen, with dated years; keeps 18,506 rows | One repeat where SPLIT-33 sets 3; a second download without a stated licence; two of three folds train on a later year |
+
+   **Recommendation:** B (`Too Small`): measured forward on dated waves the relation is not flat, and three waves fall short of both the three windows and the four periods the rules ask for; C only as your exception. Either way the record's facts are corrected (the second batch is 2012-2013, not later waves). **Decision:** A, B or C?
+
+   **Andrej (2026-11-19, discuss):** If I am not mistaken we have three years that you now found + the collection of later years. So this makes at least 4 periods, right?
+
+   **Answer (AI, 2026-11-19):** no: the "later years" are not in the release. The batch we called "later waves" on 2026-11-13 is the 2012 and 2013 waves, so the release holds three years, 2012, 2013 and 2014.
+
+   * **The counts add up to 2012 and 2013:** the batch has 18,285 rows (train and test); NBS's reports give 6,163 respondents for 2012 and 12,575 for 2013, 18,738 together, so nothing is left for later years.
+   * **The coding agrees:** the batch spells the activity `Widlife Tourism`, as NBS's 2012 and 2013 files do; the 2014 file spells it `Wildlife tourism`, as our 2014 batch does.
+   * **What is checked row by row and what by elimination:**
+
+     | Wave | Labelled rows | How assigned |
+     |---|---|---|
+     | 2012 | 4,387 | matched to NBS's complete 2012 file (98.1% of its rows found in our release) |
+     | 2013 | 8,930 | the rest of the batch; NBS's 2013 file on open.africa holds only 1,750 of 12,575 rows, 97.5% of them found in ours |
+     | 2014 | 4,676 | matched to the 2020 cut (the 2014 wave) |
+     | undecided | 513 | profile in both cuts |
+
+   * The 2013 assignment rests on the count and the spelling, not a full row match; a later wave hidden in it would have to replace 2013 rows one for one, which the count leaves no room for.
+   * **So:** three periods, one short of the four that 3 repeats need, and the forward test reads not flat; the options and the recommendation (B, `Too Small`; C, whole waves as your exception) stand. **Decision:** A, B or C?
+
+   **Andrej (2026-11-20, discuss):** What do you finally recommend?
+
+   **Answer (AI, 2026-11-20):** B: retire as `Too Small`, and correct the record's facts (the release is the 2012, 2013 and 2014 waves).
+
+   * **Why not keep the random folds (A):** forward in time the relation is clearly not flat (+0.045 to +0.079 log loss for a model trained on earlier waves), as large as the whole spread between model families (1.076 to 1.126); random folds mix the waves and hide exactly the shift a planner meets on the next wave, and the rules give no random fallback for a relation measured not flat.
+   * **Why not hold out whole waves (C):** three waves are one short of the four periods 3 repeats need, so it would be a single repeat of three folds as your exception; two of its three folds train on a later wave to test an earlier one; and it needs NBS's 2012 file from open.africa, whose licence is not stated, to tell the waves apart.
+   * **What B loses:** 18,506 labelled rows of a documented NBS survey. It would come back if NBS publishes per-row years for later waves (its exit survey runs every year), with four or more dated waves.
+
+   | | Option | Splits | What it tests | Blocker |
+   |---|---|---|---|---|
+   | A | Random 3 x 3, your exception | 9 | visitors of the same waves | the measured shift is hidden |
+   | B | `Too Small` (retire) | | | loses the dataset |
+   | C | Leave one wave out, your exception | 3 | an unseen survey year | one repeat; backwards folds; unlicensed second file |
+
+   **Decision:** A, B or C?
+
+   **Andrej (2026-11-20, discuss):** Reply (B): Too Small (retire). But explain it as good as you can in the documentation.
+
+   **Resolved (2026-11-20, Andrej):** B: retired as `Too Small` (`No (Retired)`); the reasons are written in the CC line of today and the corrected facts in the record's comments. The folder leaves in a retirement PR.
+
+   [^split16]: **SPLIT-16** (Must): a relation measured not stationary is never split by the unit or at random: whole periods are held out where there are enough for the task's repeats (four for 3 repeats, five for 10 or 20), else the task is `Too Small`.
+
+   [^split32]: **SPLIT-32** (Should): where the data holds two or more periods, the stationary-relation test is run and its verdict goes into the `Time basis:` line; a relation measured flat keeps the split random, tagged `StationaryRelation`.
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after Lennart's PR #33 review of 2026-11-04.
 The mediator's issues 1-4 are issues 3-6 here (its issue 2 is split into issues 4 and 8).

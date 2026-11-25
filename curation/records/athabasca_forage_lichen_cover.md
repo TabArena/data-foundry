@@ -66,13 +66,13 @@ These are per dataset judgement calls and if a dataset is useful for a predictiv
 collected for something else, then this is fine"), as SEL-2 already reads the scope rules: this record is judged on its
 own use case. The verdict and priority stay.
 
-**Consistency check (AI, 2026-10-30):** the review page sets `No` (no note). The curator's own rule of the same day
+**Consistency check (AI, 2026-10-30):** the screening sets `No` (no note). The curator's own rule of the same day
 sends data that must be requested to 2nd Tier (`heritage_health_prize`, `shaoxing_hourly_precipitation_fusion`), and
 `korea_bee_sting_injuries_district_year`, the same situation (a paper's table, request route open), stayed 2nd Tier. Is
 there another reason for `No`: the reflectance covariates (SEL-13), the Sphagnum covariate modelled from the same plots
 (LEAK-27), the opportunistic plots? If so it is recorded; otherwise 2nd Tier like korea.
 
-CC (2026-10-30, Andrej): `No` (the AI screening had `TBD -> 2nd Tier`, priority 1; zero-inflated screening review page,
+CC (2026-10-30, Andrej): `No` (the AI screening had `TBD -> 2nd Tier`, priority 1; zero-inflated screening,
 after the AI's consistency check). "I assume the actual task is image data and therefore out of scope" Marker `Image`
 set by the AI for this reason: the covariates are QuickBird, Landsat and SPOT reflectance and LiDAR height (SEL-13,
 remote-sensing spectra).

@@ -50,15 +50,15 @@ CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the o
 **Assessment (AI, 2026-10-27):** The open questions for the curator are in the folder's `REVIEW.md` (review of the Tiny Data datasets, written from the earlier findings, no review panel); the AI recommends shipping it. Priority 1: gap -, use case - (written by the curators), source +, shape -, risk - (undocumented label origin; `Trivial` untested).
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nhanes_alcohol_drinks_from_blood_tests` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the folder's `REVIEW.md`. Keep with changes: the source's own task (drinks from blood markers) with a weak but real signal; drop the four records entered twice (a lookup of the copies beats every benchmark method) and remove the refuted Trivial marker. Priority 1: gap 0, use case 0, source 1, shape 0, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the folder's `REVIEW.md`. Keep with changes: the source's own task (drinks from blood markers) with a weak but real signal; drop the four records entered twice (a lookup of the copies beats every benchmark method) and remove the refuted Trivial marker. Priority 1: gap 0, use case 0, source 1, shape 0, risk -1.
 
 CC (2026-11-05, Andrej): retired (`No (Retired)`, `No Good Target / Scientific Discovery`): no decision rests on the prediction. The data is the BUPA liver-disorders file (UCI, 1990): 345 men, five blood tests that respond to alcohol, and the number of drinks per day each reported.
 - **As a stand-in for liver damage it fails:** the file was framed as a test for liver disorders with the drinks as a proxy (McDermott & Forsyth 2016: the intended label is the drinks, cut into two classes), but a drink count is not a measure of damage, and the blood tests themselves are the better measure.
 - **As the definition's use case it leads to nothing:** the definition reads it as checking a patient's account of drinking from blood markers; once a doctor has the blood values, those values guide what happens next, and an estimate of the drinks adds nothing to act on (asking is simpler).
 - **The sample would not carry over:** men only, 336 of 345 drink, and how the drinks were recorded is not stated.
-Not changed: `Trivial` stays for now (open on the review page: the single-feature test refuted it, skill +0.05 against +0.10 to +0.17 for the methods). Had the dataset stayed, the four records entered twice would have been dropped.
+Not changed: `Trivial` stays for now (open: the single-feature test refuted it, skill +0.05 against +0.10 to +0.17 for the methods). Had the dataset stayed, the four records entered twice would have been dropped.
 
-CC (2026-11-10, Andrej): `Trivial` removed (review page issue 2, B): the test refuted it; the best single feature reaches skill +0.05 against +0.10 to +0.17 for every method configuration. The retirement's reasons stand.
+CC (2026-11-10, Andrej): `Trivial` removed: the test refuted it; the best single feature reaches skill +0.05 against +0.10 to +0.17 for every method configuration. The retirement's reasons stand.
 
 ## Reference
 

@@ -76,12 +76,12 @@ policy question 2 of the zero-inflated review: "We don't care. We want to add an
 if it is zero inflated or not"), so how the source codes its zeros is no reason for a No or a lower priority. Zero egg
 counts that may be false negatives stay as recorded. The verdict and priority stay on the screening's other points.
 
-**Consistency check (AI, 2026-10-30):** the review page sets `Yes`, priority 1. The record carries `Too Small` and `No
+**Consistency check (AI, 2026-10-30):** the screening sets `Yes`, priority 1. The record carries `Too Small` and `No
 Good Target / Scientific Discovery`: 80 children with eggs in 12 communities, 54 of them in 3, about 16 positives per
 test fold, and a source that compares count models. `plains_wanderer_spotlight_counts` (41 positives at 16 sites, the
 same markers) was set `No` on the same page. What sets ghana apart? If nothing: `No` like plains_wanderer, or 2nd Tier.
 
-CC (2026-10-30, Andrej): `No` (the AI screening had `TBD -> 2nd Tier`, priority 1; zero-inflated screening review page,
+CC (2026-10-30, Andrej): `No` (the AI screening had `TBD -> 2nd Tier`, priority 1; zero-inflated screening,
 after the AI's consistency check). The record's markers (`No Good Target / Scientific Discovery`, `Too Small`) stand as
 the reason, as for plains_wanderer_spotlight_counts.
 

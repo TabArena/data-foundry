@@ -48,7 +48,7 @@ plot", "Sown = number of seeds sown" and the dead, alive and germinated counts (
 - Reject check (AI, 2026-10-27): stands. SEL-3 (Must). The usage notes list only design columns (Date, FreeDays, Block,
   Treat, Species, Row) and counts (Sown, Dead, Alive, Germ_All) at one site (https://doi.org/10.5061/dryad.ff574).
 
-CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
+CC (2026-10-30, Andrej): `No`, as screened (verified in the zero-inflated screening).
 
 Emergence and survival of tree seedlings sown into alpine grassland at the treeline (Loranger, Zotz and Bader 2017).
 Dryad abstract: "Effects of herbaceous alpine vegetation on seedling emergence ... were studied in a field experiment

@@ -31,7 +31,7 @@ COLLECTION_TYPES = (
 )
 """How a source collected its rows, one per record tag (SPLIT-34); the split decision tree starts from it (SPLIT-36)."""
 
-STRICT_COLLECTION_TYPES = False
+STRICT_COLLECTION_TYPES = True
 """Whether every definition record must name a collection type. False while the records are typed in several
 changes (a record with neither a type nor a collection fact is left out); the change that completes the typing sets it
 True."""

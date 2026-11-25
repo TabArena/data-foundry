@@ -57,8 +57,7 @@ because the data is 40-50 years old and `meps_total_healthcare_expenditure` carr
 - Priority: gap 0 (medical, the largest domain), use case 0 (named by a later paper, fit approximate), source + (ICPSR
   and the authors' extract), shape + (5,912 persons over 3-5 years), risk - (outdated, outcome columns to drop).
 
-CC (2026-10-30, Andrej): `Yes`, priority 2 (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening
-review page). "Try to find a target and if not we can still reject it"
+CC (2026-10-30, Andrej): `Yes`, priority 2 (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening). "Try to find a target and if not we can still reject it"
 
 Person-year extract of the RAND Health Insurance Experiment (1974-1982, six US sites) from Cameron and Trivedi's
 Microeconometrics data page (randdata.dta, 20,190 rows x 45 columns); statsmodels' `randhie` keeps the visit count and

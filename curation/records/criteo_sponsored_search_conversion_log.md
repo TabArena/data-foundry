@@ -58,12 +58,12 @@ prediction is made and on that precedent, not on the word "CTR".
   logged with ids and hashes for Criteo's per-click bidding, as TalkingData's post-click downloads
   (https://ailab.criteo.com/criteo-sponsored-search-conversion-log-dataset/).
 
-**Consistency check (AI, 2026-10-30):** the review page sets 2nd Tier (no note, no priority). Policy question 7 of the
+**Consistency check (AI, 2026-10-30):** the screening sets 2nd Tier (no note, no priority). Policy question 7 of the
 same review left criteo's `No` on SEL-2 and the TalkingData precedent
 (`talkingdata_adtracking_fraud_detection_challenge`, Lennart, `No`). What sets criteo apart from TalkingData? Options:
 keep `No`; 2nd Tier with that fact and a priority; or reopen TalkingData and SEL-9's wording.
 
-CC (2026-10-30, Andrej): `TBD -> 2nd Tier` (the AI screening had `No`; zero-inflated screening review page, after the
+CC (2026-10-30, Andrej): `TBD -> 2nd Tier` (the AI screening had `No`; zero-inflated screening, after the
 AI's consistency check). "I simply disagree that CTR is out of scope. Keep 2nd tier."
 
 Criteo AI Lab's sample of 90 days of Criteo Predictive Search traffic: one row per click on a product ad, with `Sale`,

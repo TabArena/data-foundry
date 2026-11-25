@@ -46,7 +46,7 @@ parts, example series of a forecasting textbook, with no column besides the seri
 - Reject check (AI, 2026-10-27): stands. SEL-10 (Must). The release is "2674 intermittent monthly time series" of car
   parts sales with no covariates (https://zenodo.org/records/4656022).
 
-CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
+CC (2026-10-30, Andrej): `No`, as screened (verified in the zero-inflated screening).
 
 Monthly sales of 2,674 slow-moving parts of a US car company, January 1998 to March 2002 (51 months), from Hyndman
 et al. (2008) and the R package expsmooth; the Monash forecasting archive ships it twice on Zenodo. Both were

@@ -72,7 +72,7 @@ if it is zero inflated or not"), so how the source codes its zeros is no reason 
 zero-filled reporting gaps are a cleaning choice; the `No` rests on SEL-10 (a case series without predictors), not on
 the zeros, so it stands.
 
-CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
+CC (2026-10-30, Andrej): `No`, as screened (verified in the zero-inflated screening).
 
 OpenDengue (Clarke et al. 2024): publicly reported dengue case counts by place and period. Downloaded the V1.3
 extracts on 2026-10-19. National: 29,873 rows from 129 countries, 1924-2025, 32.6% zeros. Spatial: 2,821,791 rows

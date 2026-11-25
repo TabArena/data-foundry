@@ -75,7 +75,7 @@ Not built yet. The current definition gives checksum `v2:67084ec56517d77f492fa07
 
 **Known at prediction time.** The 9 am observations (temperature, humidity, pressure, cloud, wind), the minimum temperature, rain and evaporation of the 24 hours to 9 am, the previous day's maximum temperature, sunshine, strongest gust and 3 pm observations, the location and the date, and the rain, pressure and humidity read at 9 am that day at the other locations whose 9 am comes no later.
 
-**What the test data stands for.** 26 test windows of 14 days, one after the other from February 2025 to January 2026, newest first; each trains on every earlier day, as for a model refit every two weeks.
+**What the test data stands for.** 26 test windows of 14 days, one every 16 weeks from May 2018 to January 2026, so that dry and wet years are tested, newest first; each trains on every earlier day, as for a model refit every two weeks.
 
 **Our changes to the source.** We replace the ten values recorded after 9 am by the previous day's, drop the rain amount behind the label, drop rows whose next record is more than a day later or that lack a label (8,076) or their own 9 am rain reading (2,571), and add the other locations' 9 am rain, pressure and humidity of the day.
 
@@ -222,7 +222,7 @@ to 2026-01-30, with the target RainTomorrow.
   dropped rows carry a label over 48 hours or more (42.6% rain days against 21.8%), another quantity than the
   24-hour call of the task (USE-5; CC 2026-10-26).
 - Rainfall and RainToday (Rainfall > 1 mm in every row) are the location's 9 am gauge reading on D, i.e. the
-  label of D-1, known at the prediction point. They add 0.0027 ROC AUC on the 9 shipped windows (LightGBM,
+  label of D-1, known at the prediction point. They add 0.0027 ROC AUC on the 9 windows shipped until 2026-10-26 (LightGBM,
   0.8495 with them, 0.8467 without; log loss 0.3516 against 0.3549), and the features without the location's
   rain series beat persistence and the location-by-month climatology in 9 of 9 windows, so the skill does not
   come from the lagged target. A forecast of the rain amount from the location's own rain series with a > 1 mm
@@ -263,20 +263,32 @@ to 2026-01-30, with the target RainTomorrow.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
   categories in the order of the source's codebook (`ORDINAL_LEVELS`); 3 are calendar or compass cycles, in
   their usual order (the wrap is not shown); codes that mean unknown are missing (CLEAN-10).
+- Columns recorded on one side of a window only (Lennart, 2026-11-11): 12 station readings are missing in a test fortnight and recorded on its train side, as a station's instrument goes offline: Newcastle's rainfall and 9 am humidity (recorded on half the days or more only up to 2020), Sale's 9 am pressure (up to 2017), Launceston's 9 am pressure (up to 2013), and gaps of weeks at Coffs Harbour, Badgerys Creek, Mount Ginini, Nhil and Wagga Wagga. Kept: a deployed model meets the same outages.
 
 ## Splits
 
 Weather models are refit often (one to two weeks, the horizon the curators set for
-climate_model_weather_forecasting), so a model is refit and then used every morning for 14 days. 26 test windows
-of 14 days, one after the other from 2025-02-01 to 2026-01-30, newest first, so that the windows cover every
-season of the last year (6-7 per season); train is every earlier day (from 2007-11-01), at least 93.8% of the
-rows. Each window holds 619-642 location-days with 63-222 rain days, 16,457 test rows in all. The window AUCs
-vary as much as the earlier 9 windows' (standard deviation 0.04-0.05), so the count of windows sets how steady
-the mean is: its standard error is 0.008 against 0.016 for 9 windows spaced six weeks apart (LightGBM; the
-correlation of neighbouring windows, 0.24, makes it about 0.010) (CC 2026-10-26). No gap: the label of the last
-training day is read at 9 am on the first test day, before the first prediction. The history has a break (no
-rows from 2016-01-27 to 2017-02-28) and Sunshine and Evaporation are missing far more often after it; training
-from 2017-03 gives ROC AUC 0.842 against 0.847 with the full history, so the old years do no harm.
+climate_model_weather_forecasting), so a model is refit and then used every morning for 14 days. No source names
+a refit cadence (rattle's weatherAUS is a sample dataset and defines no task), so the length is the one set for
+weather (the horizon checked, CC 2026-11-11). 26 test windows of 14 days, one every 16 weeks (112 days) from
+2018-05-19 to 2026-01-30, newest first (CC 2026-11-11): the fortnights that keep half the rows for training
+start from 10 February 2018, and the windows are spread evenly over those eight years, so the score meets the
+dry and the wet years as well as the last one. The share of rain days in a twelve-month block (February to
+January) runs from 17.8% in 2019-20 (the Bureau's warmest and driest year on record, 2019) to 27.2% in 2022-23
+(the La Niña years 2020-2023 hold the most), against 21.5% in the last year. A step of 16 weeks moves the
+season by about 3.7 months each time, so the windows start in every calendar month two or three times. Train
+is every earlier day (from 2007-11-01): 137,157 to 263,940 rows, 51.8% to 99.8% of the 264,562. Each window
+holds 606-669 location-days with 55-202 rain days, 16,484 test rows in all. Why 26 windows and not the nine
+folds a random split of this size gets: a 14-day window (the rule on short weather windows) holds only about
+630 location-days, so 26 windows keep the test rows (16,484, as many as the 16,457 of the 26 back-to-back
+fortnights of the last year shipped from 2026-10-26 to 2026-11-11). On those back-to-back fortnights the
+window AUCs varied as much as the earlier 9 windows' (standard deviation 0.04-0.05), so the count of windows
+sets how steady the mean is: its standard error was 0.008 against 0.016 for 9 windows spaced six weeks apart
+(LightGBM; the correlation of neighbouring windows, 0.24, made it about 0.010) (CC 2026-10-26). No gap: the
+label of the last training day is read at 9 am on the first test day, before the first prediction. The history
+has a break (no rows from 2016-01-27 to 2017-02-28), before every window, and Sunshine and Evaporation are
+missing far more often after it; training from 2017-03 gives ROC AUC 0.842 against 0.847 with the full history
+(on the 9 windows shipped until 2026-10-26), so the old years do no harm.
 
 26 repeat(s) x 1 fold(s) with seed 4267; train 248,105 to 263,940 rows, test 619 to 642 rows. Prediction horizon: 14 days.
 

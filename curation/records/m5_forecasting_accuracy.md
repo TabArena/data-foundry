@@ -65,7 +65,7 @@ series' own naive forecast, won by recursive and lag-based models.
   approaches forecast recursively from past unit sales and that "almost all" of the top 50 did the same
   (https://statmodeling.stat.columbia.edu/wp-content/uploads/2021/10/M5_accuracy_competition.pdf, Sec. 4.2).
 
-CC (2026-10-30, Andrej): `TBD -> 2nd Tier`, priority 5 (the AI screening had `No`; zero-inflated screening review page).
+CC (2026-10-30, Andrej): `TBD -> 2nd Tier`, priority 5 (the AI screening had `No`; zero-inflated screening).
 "This is a great dataset, would just need more evidence to decide how to treat the time series aspect"
 
 The M5 competition (University of Nicosia with Walmart): daily unit sales of 30,490 item-store series (3,049 items,

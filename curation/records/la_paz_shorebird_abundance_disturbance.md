@@ -55,7 +55,7 @@ prediction task in the source, and no decision acts on a per-survey prediction.
   de La Paz, surveyed "to determine effects of potential raptor and human disturbance on abundance of shorebirds"
   (https://doi.org/10.5061/dryad.cjsxksn85).
 
-CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
+CC (2026-10-30, Andrej): `No`, as screened (verified in the zero-inflated screening).
 
 Shorebird counts at 12 sampling units of a Baja California Sur wetland, 15 visits each from September 2014 to April
 2015, i.e. 180 surveys (Palacios et al. 2022; Dryad methods). The R code (Zenodo, read as text) fits a
