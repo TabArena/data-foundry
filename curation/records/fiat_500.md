@@ -74,7 +74,7 @@ leak-free depreciation model with dealer effects ranks 9th of 41. Quality: no ot
 with a use case anyone can name +; one crawl of unstated date and filter, a small table, and better data for the same
 task under screening (autoscout24_car_listings_2025, priority 1) -.
 
-**Main points:** Better-data check (2026-11-25, issue 7): Keep fiat_500 until a Craigslist one-model record (Ford F-150, windows by scrape) replaces it, as the answer of 2026-11-05 recommended: no newer table meets the ask of one model, a time component and one or several sites, and the Craigslist pick holds once its placeholder prices and relisted trucks are handled (the later-market gap stays at 15% to 25%). Earlier: Parked (2026-11-11) on Andrej's note until it is decided whether better suited datasets replace this task: the one-row-per-car key (issue 1), the 56,779 km placeholder (issue 2), the split (issues 3 and 6) and the Craigslist replacement (issue 4) wait. The domain is settled (issue 5, 2026-11-05). The definition's split
+**Main points:** The 4 issues parked on 2026-11-11 are open again (2026-11-25). Better-data check (2026-11-25, issue 7): Keep fiat_500 until a Craigslist one-model record (Ford F-150, windows by scrape) replaces it, as the answer of 2026-11-05 recommended: no newer table meets the ask of one model, a time component and one or several sites, and the Craigslist pick holds once its placeholder prices and relisted trucks are handled (the later-market gap stays at 15% to 25%). Earlier: Parked (2026-11-11) on Andrej's note until it is decided whether better suited datasets replace this task: the one-row-per-car key (issue 1), the 56,779 km placeholder (issue 2), the split (issues 3 and 6) and the Craigslist replacement (issue 4) wait. The domain is settled (issue 5, 2026-11-05). The definition's split
 is random with the time basis `Retrospective` (CC 2026-11-17).
 
 **Record judgment:** valid, small, superseded soon. The crawl is real (the copies of one car at several dealers show a
@@ -249,7 +249,9 @@ dated listing table (autoscout24_car_listings_2025), screened in its own record.
      features predict, and an order. **SPLIT-24** (Must; draft PR #62): a key built exactly from the columns that
      define the entity.
 
-   **Deferred (2026-11-11):** parked on Andrej's note ("Park it until we decide on checking in with better suited datasets for this task.").
+   **Andrej (2026-11-11, discuss):** Park it until we decide on checking in with better suited datasets for this task.
+
+   **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 7 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
 
 2. **Treat the mileage 56,779 km as missing?**
 
@@ -328,7 +330,9 @@ dated listing table (autoscout24_car_listings_2025), screened in its own record.
      task row or a copy. **CLEAN-10** (Should): convert proxy missing values to real missing values when the encoding
      can be inferred from the description and the context.
 
-   **Deferred (2026-11-11):** parked on Andrej's note ("Park it until we decide on checking in with better suited datasets for this task.").
+   **Andrej (2026-11-11, discuss):** Park it until we decide on checking in with better suited datasets for this task.
+
+   **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 7 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
 
 3. **Which split instead of IID? Mark the random split as forced from temporal?**
 
@@ -446,7 +450,9 @@ dated listing table (autoscout24_car_listings_2025), screened in its own record.
      exam round) is not forced; SPLIT-32 gives it `Snapshot` or `DelayedTarget`. **SPLIT-32** (Should): a `Snapshot`
      fills in a time the data covers, such as one scrape.
 
-   **Deferred (2026-11-11):** parked on Andrej's note ("Park it until we decide on checking in with better suited datasets for this task.").
+   **Andrej (2026-11-11, discuss):** Park it until we decide on checking in with better suited datasets for this task.
+
+   **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 7 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
 
 4. **Better data for the same task: keep fiat_500 until a used-car listing table replaces it?**
 
@@ -625,6 +631,8 @@ dated listing table (autoscout24_car_listings_2025), screened in its own record.
 
    **Deferred (2026-11-11):** parked on Andrej's note ("Park it until we decide on checking in with better suited datasets for this task.").
 
+   **Note (AI, 2026-11-25):** the question moved to issue 7 of this review, which restates it with the candidates checked on their files on 2026-11-25; this issue stays parked and that one carries the decision.
+
 5. **Domain: `technology & internet`, or `business & marketing` as the other listing prices?**
 
    * **Problem:**
@@ -693,7 +701,9 @@ dated listing table (autoscout24_car_listings_2025), screened in its own record.
    [^6t2]: **SPLIT-8** (Must; reworded 2026-11-05): a release that is one moment (one extract, one stock month, one
      exam round) is not forced; SPLIT-32 gives it `Snapshot` or `DelayedTarget`.
 
-   **Deferred (2026-11-11):** parked on Andrej's note ("Park it until we decide on checking in with better suited datasets for this task.").
+   **Andrej (2026-11-11, discuss):** Park it until we decide on checking in with better suited datasets for this task.
+
+   **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 7 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
 
 7. **Keep fiat_500 until a Craigslist Ford F-150 record (split by scrape) replaces it, or keep it as it is?**
 

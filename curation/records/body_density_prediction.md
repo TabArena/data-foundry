@@ -84,7 +84,7 @@ one density implies negative body fat (issue 2); `Outdated`, `Not Representative
 none tested. Weighed: a direct, still common use case against a small, dated sample with a much larger public one in
 triage.
 
-**Main points:** Better-data check (2026-11-25, issue 6): Keep body density until nhanes_dxa_body_fat is added, then retire it as replaced: NHANES holds 39,691 people with a measured whole-body DXA scan and tape-and-scale measures (verified), predicts the same body fat from the same kind of measurements and separates tree models from linear ones, while the 252 men of 1985 do not; it reframes the target from density by underwater weighing to DXA percent fat, which the new record must state. Earlier: Parked (2026-11-11) on Andrej's note until it is decided whether better suited datasets replace this task: `nhanes_dxa_body_fat` as replacement (issue 1) and the impossible height (issue 2) wait. The `Timeless` split is settled (issue 3), and the type stays `Experimental Results` (issues 4 and 5, 2026-11-18).
+**Main points:** The 1 issues parked on 2026-11-11 are open again (2026-11-25). Better-data check (2026-11-25, issue 6): Keep body density until nhanes_dxa_body_fat is added, then retire it as replaced: NHANES holds 39,691 people with a measured whole-body DXA scan and tape-and-scale measures (verified), predicts the same body fat from the same kind of measurements and separates tree models from linear ones, while the 252 men of 1985 do not; it reframes the target from density by underwater weighing to DXA percent fat, which the new record must state. Earlier: Parked (2026-11-11) on Andrej's note until it is decided whether better suited datasets replace this task: `nhanes_dxa_body_fat` as replacement (issue 1) and the impossible height (issue 2) wait. The `Timeless` split is settled (issue 3), and the type stays `Experimental Results` (issues 4 and 5, 2026-11-18).
 
 **Record judgment:** valid task, better data available. The Discussion calls the task valid but limited, since much
 more data could be collected; Andrej's CC of 2026-10-15 names the replacement, and the data-scouting run of
@@ -135,6 +135,8 @@ more data could be collected; Andrej's CC of 2026-10-15 names the replacement, a
 
    **Deferred (2026-11-11):** parked on Andrej's note ("Park it until we decide on checking in with better suited datasets for this task.").
 
+   **Note (AI, 2026-11-25):** the question moved to issue 6 of this review, which restates it with the candidates checked on their files on 2026-11-25; this issue stays parked and that one carries the decision.
+
 2. **Only if kept: set the impossible height to missing?**
 
    * **Problem:**
@@ -168,7 +170,9 @@ more data could be collected; Andrej's CC of 2026-10-15 names the replacement, a
    [^2a]: **CLEAN-11** (Should; amended 2026-10-21): impossible values become missing, and the row stays; values that
      are only unusual stay.
 
-   **Deferred (2026-11-11):** parked on Andrej's note ("Park it until we decide on checking in with better suited datasets for this task.").
+   **Andrej (2026-11-11, discuss):** Park it until we decide on checking in with better suited datasets for this task.
+
+   **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 6 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
 
 3. **Only if kept: name the random split `Timeless`, or `StationaryRelation`, for one measurement session per man?**
 
