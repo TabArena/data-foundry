@@ -20,9 +20,7 @@ class BloodTransfusion(AbstractCuratedDataset):
             "donor database (748 donors); its bus collects blood at a university about every three months."
         ),
         predicted="Whether the donor gave blood in March 2007.",
-        known=(
-            "Months since the last and since the first donation and the number of donations."
-        ),
+        known=("Months since the last and since the first donation and the number of donations."),
         split="Random donors of the same database and the same month.",
         fit="approximate",
         fit_reason=(
