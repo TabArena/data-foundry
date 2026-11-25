@@ -76,8 +76,8 @@ class GaMerchandiseStoreSessions(AbstractCuratedDataset):
             "distinct pages, product list clicks and views, cart adds and removes, and the kinds of pages opened."
         ),
         split=(
-            "Each month from February to July 2017 is predicted from every earlier visit: the store's model, refit "
-            "monthly, scores the next month's visits."
+            "Each month from December 2016 to July 2017 is predicted from the visits that started at least a day "
+            "before it: the store's model, refit monthly, scores the next month's visits."
         ),
         changes=(
             "We cut each visit at its third pageview and count its hits up to there; the visit's final totals "
@@ -223,8 +223,9 @@ class GaMerchandiseStoreSessions(AbstractCuratedDataset):
           order of time.
         - Not shipped: the visit's final totals (`totals.pageviews`, `hits`, `timeOnSite`, `transactions`,
           `transactionRevenue`), which the query reads only for the label. They give the visit's own purchase away:
-          on the six test months untuned LightGBM reaches ROC AUC 0.977 with them (0.936 from the final pageviews
-          alone) against 0.873 at the cut (measured 2026-11-25, before the history columns and the masking fix).
+          on the six test months of the time (February to July 2017) untuned LightGBM reaches ROC AUC 0.977 with them
+          (0.936 from the final pageviews alone) against 0.873 at the cut (measured 2026-11-25, before the history
+          columns, the masking fix and the eight windows).
         - The checkout pattern, settled on the data: every hit with a checkout or purchase action (Enhanced Ecommerce
           action types 5 and 6; 7 and 8 never occur) or a transaction id is on one of four pages, `/yourinfo.html`,
           `/payment.html`, `/revieworder.html` and `/ordercompleted.html` (titled "Checkout Your Information",
@@ -284,18 +285,18 @@ class GaMerchandiseStoreSessions(AbstractCuratedDataset):
           falls from 33% to 13-17%), so they are a column of their own, `promotion_clicks`, and the other events do
           not change meaning; `other_events` holds add to cart, remove from cart, product click, contact-us click
           and unlabelled events (the cart and product clicks also count in the action-type columns). No test month
-          has a promotion click, so `promotion_clicks` is the feature that drifts most against the train side of
-          February to May 2017 (population stability index 0.73 to 1.11).
+          after December 2016 has a promotion click, so `promotion_clicks` is the feature that drifts most against
+          the train side of January to May 2017 (population stability index 0.73 to 1.34, measured without the gap).
         - "(not set)", Google Analytics' empty value, is missing (source 23 visits, medium 45, operating system 976,
           continent, subcontinent and country 331 each).
         - Ids and fields: Google obfuscated `fullVisitorId` and removed `clientId`, `adWordsClickInfo` and parts of
           `geoNetwork` ("Not available in demo dataset", the help page); country is set for 99.9% of the visits.
           Whether Google drew the sample at random from the store's traffic is not stated.
         - Returning visitors (`Entities: Recur`; SPLIT-13): 32.7% of the visits belong to one of 34,485 visitors
-          with several, and 9.3% to 10.1% of a test month's visits (February to July 2017) come from a visitor seen
-          in an earlier month (they buy at 7.9% to 11.4%, against 2.7% to 3.8% for new visitors; 20% to 28% after
-          an earlier purchase). The store knows its returning visitors (its cookie) and their visit number, which
-          ships, so they stay; the visitor id does not ship. The model cannot single a visitor out: untuned
+          with several, and 9.3% to 11.8% of a test month's visits (December 2016 to July 2017) come from a visitor
+          seen in an earlier month (they buy at 7.2% to 11.4%, against 2.3% to 4.0% for new visitors; 20% to 28%
+          after an earlier purchase, February to July 2017). The store knows its returning visitors (its cookie) and
+          their visit number, which ships, so they stay; the visitor id does not ship. The model cannot single a visitor out: untuned
           LightGBM scores ROC AUC 0.869 over three random folds and 0.867 over three folds grouped by visitor.
         - The visitor's history (USE-10, LEAK-34): the store knows a returning visitor's earlier visits and orders,
           so three columns come from the same `fullVisitorId`'s visits of the sample that started at least a second
@@ -303,16 +304,17 @@ class GaMerchandiseStoreSessions(AbstractCuratedDataset):
           `previous_visits`, `previous_purchases` (those whose first transaction hit came before this visit
           started) and `days_since_previous_visit` (missing without one). Earlier visits in the same test month
           count: the site knows them when the visit starts. The history starts with the sample in August 2016
-          (`visit_number`, the store's own count, reaches 395), so it understates what the store knows: 72% to 74% of
-          a test month's visits have no earlier visit in the sample and 96.6% to 97.5% no earlier purchase. Visits
-          with an earlier purchase buy at 17.2%, against 3.3% without. As information, not as the reason: untuned
-          LightGBM gains 0.002 to 0.007 ROC AUC with the three columns (mean 0.004, higher on 6 of 6 windows, 2
-          seeds) and 0.005 to 0.022 on the visits with an earlier visit (measured 2026-11-25). The missing
+          (`visit_number`, the store's own count, reaches 395), so it understates what the store knows: 70% to 74% of
+          a test month's visits have no earlier visit in the sample and 96.2% to 97.5% no earlier purchase (December
+          2016 to July 2017). Visits with an earlier purchase buy at 17.2%, against 3.3% without. As information, not as the reason: untuned
+          LightGBM gains 0.002 to 0.007 ROC AUC with the three columns (mean 0.004, higher on 6 of the 6 windows of
+          the time, February to July 2017, 2 seeds) and 0.005 to 0.022 on the visits with an earlier visit (measured
+          2026-11-25). The missing
           `days_since_previous_visit` marks a first visit in the sample; its missing indicator alone scores ROC AUC
           0.66 (the leak probe), the new-visitor effect.
-        - Protocol (LEAK-9, an evaluation leak): 14.2% to 15.7% of each test month's visits have a later visit by
-          the same visitor in the same month, and those visits buy at 5.4% to 7.1% against 2.8% to 4.2%. Reading
-          that later visit through the visitor id adds 0.014 to 0.017 ROC AUC to LightGBM (March, May and July 2017,
+        - Protocol (LEAK-9, an evaluation leak): 14.2% to 18.3% of each test month's visits (December 2016 to July
+          2017) have a later visit by the same visitor in the same month, and those visits buy at 5.4% to 7.2%
+          against 2.3% to 4.2%. Reading that later visit through the visitor id adds 0.014 to 0.017 ROC AUC to LightGBM (March, May and July 2017,
           measured before the history columns); about 80% of such pairs can be linked from shipped columns
           (`visit_number` plus one, the same device, browser, operating system and country), and the later visit's
           `previous_purchases` counts this visit's purchase. Chains rebuilt from the shipped columns gained nothing
@@ -343,26 +345,54 @@ class GaMerchandiseStoreSessions(AbstractCuratedDataset):
         splits=TemporalSplits(
             window=1,
             unit="months",
-            cutoffs=("2017-07-01", "2017-06-01", "2017-05-01", "2017-04-01", "2017-03-01", "2017-02-01"),
+            cutoffs=(
+                "2017-07-01",
+                "2017-06-01",
+                "2017-05-01",
+                "2017-04-01",
+                "2017-03-01",
+                "2017-02-01",
+                "2017-01-01",
+                "2016-12-01",
+            ),
+            gap=1,
+            gap_unit="days",
         ),
     )
+    accepted_check_warnings = {
+        "splits_train_under_half": (
+            "The curator's exception for this dataset (Andrej, 2026-11-25): January 2017 trains on 46.0% and "
+            "December 2016 on 35.7% of the visits (one-day gap), added to test the holiday season the newer months "
+            "lack and to come closer to the target of 9 windows, as on the earlier exceptions."
+        ),
+        "splits_below_target": (
+            "8 windows against a target of 9 (Andrej, 2026-11-25): November 2016 would train on 26.2% of the visits, "
+            "under the 30% floor, so the eight months December 2016 to July 2017 are all the sample holds."
+        ),
+    }
     split_leaf = "L-ORDER.windows"
     splits_comment = """
-        Six test windows, each one calendar month of 2017, February to July, each trained on every earlier visit
-        (an expanding train side, no gap). The window is a month because the store is assumed to refit its model
-        monthly and score the visits of the month after (the source names no task, horizon or refit cadence). No gap:
-        the label is known when the visit ends, within the day; at a month's start every earlier visit is over. The
-        windows and their train shares of the 305,819 visits: July 25,115 test visits (train 91.8%), June 22,577
-        (84.4%), May 24,556 (76.4%), April 22,530 (69.0%), March 23,691 (61.3%) and February 21,919 (54.1%). The
-        buy rate of the test months moves from 3.2% (February) to 4.5% (May). January 2017 (46.2%) and December
-        2016 (36.1%, the holiday season, buy rate 4.5%) would train on less than half the visits: an exception only
-        the curator can make. The target for an IID split of 305,819 visits is 9 splits (SPLIT-33); six monthly
-        windows on at least half of the visits are all the sample holds (August 2016 to July 2017), so the count is
-        6. The sample's last table, 2017-08-01 (959 visits), is dropped on purpose: one day is no month, and merging
-        it into July would bend July's window. Protocol (LEAK-9): 14.2% to 15.7% of a test month's visits have a
-        later visit by the same visitor in that month, whose features (among them `previous_purchases`) can give the
-        earlier visit's purchase away; each test visit is predicted from the training rows and its own features only,
-        and no feature or model step may use other test rows.
+        Eight test windows, each one calendar month from December 2016 to July 2017, each trained on the visits that
+        started at least one day before it (an expanding train side). The window is a month because the store is
+        assumed to refit its model monthly and score the visits of the month after (the source names no task,
+        horizon or refit cadence). Gap (SPLIT-10, Andrej, 2026-11-25, as on fugaku_hpc_job_failure_1m): one day, the
+        lag between building a model and applying it; the label alone needs none, as it is known when the visit
+        ends, within the day. So each window's training side lacks the previous month's last day (424 to 1,320
+        visits; later windows train on it). The windows and their train shares of the 305,819 visits: July 25,115 test visits (train
+        91.5%), June 22,577 (84.1%), May 24,556 (76.2%), April 22,530 (68.8%), March 23,691 (61.0%), February
+        21,919 (53.8%), January 24,276 (46.0%) and December 30,716 (35.7%). January and December train on less
+        than half the visits: the curator's exception (Andrej, 2026-11-25, SPLIT-14), to test the holiday season,
+        December's buy rate of 4.5% and its most visits of the year, which the newer months lack, and to come
+        closer to the target count, as on the earlier exceptions. December trains on four months, before the
+        traffic drop from about 950-990 visits a day in November and December 2016 to about 780 from January
+        2017, a change of unknown cause (Google's sampling or real) the windows test across. The buy rate of the
+        test months moves from 2.9% (January) to 4.5% (December and May). The target for an IID split of 305,819
+        visits is 9 splits (SPLIT-33); November 2016 would train on less than the 30% floor, so the count is 8.
+        The sample's last table, 2017-08-01 (959 visits), is dropped on purpose: one day is no month, and merging
+        it into July would bend July's window. Protocol (LEAK-9): 14.2% to 18.3% of a test month's visits have a
+        later visit by the same visitor in that month, whose features (among them `previous_purchases`) can give
+        the earlier visit's purchase away; each test visit is predicted from the training rows and its own
+        features only, and no feature or model step may use other test rows.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
