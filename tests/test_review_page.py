@@ -908,7 +908,9 @@ def _record(tmp_path, *tags):
 def test_the_split_box_shows_the_basis_and_the_records_facts(brp, tmp_path):
     """The time basis, its `Time basis:` line and the record's collection facts reach the split box, as information."""
     split = _iid_split(brp, ["IID", "ForcedIIDFromTemporal"], "- Time basis: all scored in September 2005.\n- x")
-    brp._time_facts(split, _record(tmp_path, "Samples: One Moment", "Target: Fixed Delay", "Entities: Recur", "Tiny Data"))
+    brp._time_facts(
+        split, _record(tmp_path, "Samples: One Moment", "Target: Fixed Delay", "Entities: Recur", "Tiny Data")
+    )
     assert split["time"]["basis"] == "ForcedIIDFromTemporal"
     assert "September 2005" in split["time"]["lineHtml"]
     assert split["time"]["facts"] == ["Samples: One Moment", "Target: Fixed Delay", "Entities: Recur"]
