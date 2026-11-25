@@ -260,7 +260,15 @@ later period, at a known group or at all groups at once; where the label still m
      and the definition and `dataset check` refuse the tag without a person and a measurement of eight words or more.
      Where the
      windows can be built, the split is temporal however flat the relation (the next bullet), and the measurement goes
-     in the notes as what the windows cost (amended 2026-11-17, Andrej). It holds whether
+     in the notes as what the windows cost (amended 2026-11-17, Andrej). The exception is a small table: one in
+     SPLIT-33's 20- or 10-repeat tier (a training side of an IID split under 2,500 units) whose order gives only three
+     windows gets the stationary-relation test over them as well, and where it reads flat and a person signs the
+     reading off as `StationaryRelation`, the split goes on to the forced step of SPLIT-36 (a catalogue to its
+     family-key step, SPLIT-37); where it reads not flat or inconclusive, or nobody signs it off, the windows stay
+     (amended 2026-11-23, Andrej). Why:
+     three test windows of a small table score little more than noise, and a measured flat relation lets the 60 or 30
+     splits of SPLIT-33 stand for them (horse_colic_survival: three windows of 57 admissions, each run inconclusive,
+     flat pooled; infrared_thermography_temperature: one window not flat, so the windows stay). It holds whether
      the target is measured with the features (a diagnosis at the visit) or later; when the target arrives is a
      collection fact, not a prototype. It is always measured, over the longest span the source or a parent source
      covers: one year can look flat where a longer span moves. thyroid_discordant's 1985 extract had a flat

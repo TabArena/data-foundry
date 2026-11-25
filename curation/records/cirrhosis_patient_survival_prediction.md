@@ -86,6 +86,8 @@ CC (2026-11-12, Andrej): random patients kept, as a stationary relation (Review 
 
 CC (2026-11-19, Andrej): random folds tagged `ForcedIIDFromTemporal` (Review issue 6, C): three windows of 50 referrals could be built, but the 60 random folds stay on the curator's call; the stationary-relation test is inconclusive in 1976-77 and flat when pooled (Kumo-Tabular).
 
+CC (2026-11-23, Andrej): the random folds are tagged `StationaryRelation` (Review issue 7, A): under the small-table rule (304 patients, three windows of 50 referrals) the stationary-relation test reads flat (no period not flat, Kumo-Tabular pooled -0.007 ± 0.011 ROC AUC, floor 0.004), and the flat reading is signed off; one row per patient, so random. The folds are unchanged; cirrhosis leaves the departures table.
+
 ## Review
 
 **Outcome:** added. The Mayo Clinic cohort of primary biliary cirrhosis, a slowly progressing autoimmune liver
@@ -101,13 +103,9 @@ not proven (TP-4). Quality: a shift of the clotting-time scale after 1977 is kep
 (selecting patients for transplant) on a documented cohort, against an earlier treatment era. Left for Andrej: issue
 1, one reason of the record to restate.
 
-**Main points:** Nothing open. Settled: the random folds stay, tagged `ForcedIIDFromTemporal`, the `Time basis:`
-line naming the three windows that could be built and the inconclusive stationary-relation test (issue 6, C,
-2026-11-19; it replaces the stationary relation of issue 2, A, 2026-11-12, whose measurement stays in the curation
-notes); ship as defined, the treatment-era reason restated (issue 1, 2026-11-05).
-
-**Record judgment:** valid with an approximate fit: the Mayo Clinic PBC cohort, the decision named by its source
-(Dickson et al. 1989: selecting patients for liver transplant), from an earlier treatment era.
+**Main points:** Nothing open. Settled: the random folds stay, tagged `StationaryRelation` on the flat reading under
+the small-table rule (issue 7, A, 2026-11-23; `ForcedIIDFromTemporal` of issue 6, C, 2026-11-19 before); ship as
+defined, the treatment-era reason restated (issue 1, 2026-11-05).
 
 **Issues for Andrej:**
 
@@ -288,6 +286,20 @@ notes); ship as defined, the treatment-era reason restated (issue 1, 2026-11-05)
    **Andrej (2026-11-19, change):** Option C: The same random folds, ForcedIIDFromTemporal.
 
    **Resolved (2026-11-19, Andrej):** C. `data_tags` reads `ForcedIIDFromTemporal`; the `Time basis:` line names the three windows that could be built and the test (inconclusive for 1976-77, flat pooled for Kumo-Tabular). The 20 x 3 random folds are unchanged; not rebuilt. This departs from the tree's leaf (three windows on the registration order) on your call; the departure is listed in split_tree.md.
+
+7. **Sign off the flat reading as `StationaryRelation`, now that the small-table rule sends three flat windows to the forced step?**
+
+   * **Problem:** since 2026-11-23 a table in SPLIT-33's 20- or 10-repeat tier whose order gives only three windows gets the stationary-relation test over them, and a flat reading goes on to the forced step. Here no period reads not flat (1976-77 inconclusive, 1978-79 and 1980-81 flat) and the pooled Kumo-Tabular reading is flat (-0.007 ± 0.011 ROC AUC, floor 0.004), so the tree reaches Random · `StationaryRelation` [L-FORCED.flat-random] once a person signs the reading off; the shipped `ForcedIIDFromTemporal` was listed as a departure.
+   * **Options:**
+
+     | | Option | What it does |
+     |---|---|---|
+     | A | Sign off: `StationaryRelation` | The tag and its `Time basis:` line change, the folds stay; the departures-table row is removed |
+     | B | Keep `ForcedIIDFromTemporal` as a departure | The row's reason is rewritten |
+
+   * **Recommendation:** A, the treatment horse_colic_survival got for the same reading.
+
+   **Resolved (2026-11-23, Andrej):** A. `TimeBasis("StationaryRelation", ...)` set by Andrej on 2026-11-23, `ForcedIIDFromTemporal` noted as before; the 20 x 3 random folds are unchanged; the row leaves the departures table, which is now empty, and cirrhosis is an example of `L-FORCED.flat-random`. Not rebuilt.
 
 ## Reference
 

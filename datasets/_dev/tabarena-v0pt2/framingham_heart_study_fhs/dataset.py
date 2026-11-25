@@ -320,23 +320,22 @@ class FraminghamHeartStudyFhs(AbstractCuratedDataset):
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
     """
     time_basis = TimeBasis(
-        "ForcedIIDFromTemporal",
+        "AssumedStationaryRelation",
         """
-        the baseline exam (period 1) is the cohort's one
-        prediction point, and ASCVD within 10 years follows it (follow-up runs 24 years). One cohort at one exam is
-        one period, too few for three windows (SPLIT-8). A later cohort scored the same way would allow a temporal
-        test. It cannot test a later cohort. Not taken as stationary (Andrej, 2026-11-18): the stationary-relation
-        test on the parent teaching file's three exams (about 1956, 1962, 1968; the cohort rebuilt at each exam, a
-        participant held out across exams) reads not flat: trained on earlier exams only, ROC AUC falls by 0.032 +-
-        0.008 on exam 3 (LightGBM) and 0.015 +- 0.005 on exam 2 (Kumo-Tabular), floors 0.002; the exams are also the
-        cohort's age. Weighted to the tested exam's age mix (2026-11-19), LightGBM still loses 0.040 +- 0.009 on exam
-        3, while Kumo-Tabular reads flat (+0.007 +- 0.004 on exam 3, +0.013 +- 0.011 on exam 2). A departure from the
-        rule that a relation measured not flat is never split at random (SPLIT-16), kept on the curator's call
-        (Andrej, 2026-11-20): the shipped task holds one exam, so no later period exists to hold
-        out, and the remaining shift is one model family's.
+        one baseline exam ships, so no later period exists to hold out; the shift measured across the parent
+        file's exams is one model family's once age is matched (LightGBM -0.040 ROC AUC on exam 3, Kumo-Tabular flat),
+        and secular drift in risk matters over decades, not within one exam. Before: ForcedIIDFromTemporal (Andrej,
+        2026-11-16, kept as a departure 2026-11-20): the baseline exam (period 1) is the cohort's one prediction point,
+        and ASCVD within 10 years follows it (follow-up runs 24 years); one cohort at one exam is one period, too few
+        for three windows. The stationary-relation test on the parent teaching file's three exams (about 1956, 1962,
+        1968; the cohort rebuilt at each exam, a participant held out across exams) reads not flat: trained on earlier
+        exams only, ROC AUC falls by 0.032 +- 0.008 on exam 3 (LightGBM) and 0.015 +- 0.005 on exam 2 (Kumo-Tabular),
+        floors 0.002; the exams are also the cohort's age. Weighted to the tested exam's age mix (2026-11-19),
+        LightGBM still loses 0.040 +- 0.009 on exam 3, while Kumo-Tabular reads flat (+0.007 +- 0.004 on exam 3,
+        +0.013 +- 0.011 on exam 2). It cannot test a later cohort.
         """,
         set_by="Andrej",
-        on="2026-11-16",
+        on="2026-11-23",
     )
 
     # Task
