@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: papyrus_bioactivity
 container_format: 2
-checksum: v2:08eb2e46164bb6dbb4f13509ecae23b7f124da5557b178805cc24bb11ddaf47c
+checksum: v2:2058eb7d6e93385ec41dc7cda754ce6df19a78a5948520e65497afb1645d7526
 build:
   uuid: 01a1c4a3-5dd9-7593-8c3b-19181baab684
   checksum: v2:08eb2e46164bb6dbb4f13509ecae23b7f124da5557b178805cc24bb11ddaf47c
@@ -25,7 +25,8 @@ data:
     Float64: 1
     Int64: 1
     category: 4
-    string: 3
+    int64: 1
+    string: 2
   n_test_dataset_rows: null
 task:
   target: mean_pchembl
@@ -33,41 +34,37 @@ task:
   metric: rmse
   metric_origin: fallback
   scoring_columns: null
-  split_regime: grouped_non_iid
+  split_regime: temporal_non_iid
   stratify_on: null
-  time_on: null
-  group_on: scaffold
-  group_labels: per_sample
+  time_on: entry_year
+  time_unit: years
+  time_of: label
+  group_on: null
+  group_labels: null
   group_time_on: null
-  grouping:
-    prediction_unit: row
-    aggregation: null
-    context: none
-    n_groups: 174933
-    test_groups_per_fold:
-      min: 58311
-      max: 58311
+  grouping: null
   special_features:
     SMILES: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 splits:
-  n_repeats: 1
-  n_folds: 3
+  n_repeats: 3
+  n_folds: 1
   random_state: 4267
-  time_horizon: null
-  time_horizon_unit: null
+  time_horizon: 2
+  time_horizon_unit: years
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 453392
-    max: 467698
+    min: 561960
+    max: 647885
   n_test:
-    min: 224319
-    max: 238625
+    min: 42209
+    max: 44132
 bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos: []
+  infos:
+  - meta_time_horizon_unit
   accepted: {}
 decisions:
 - Source pair means and the measured cohort
@@ -77,9 +74,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `mean_pchembl`, scored with `rmse` on grouped splits by `scaffold`. 692,017 rows and 7 features. Source: Other (2021).
+Regression of `mean_pchembl`, scored with `rmse` on temporal splits by `entry_year` (one step is a year). 692,017 rows and 7 features. Source: Other (2021).
 
-Built as `01a1c4a3-5dd9-7593-8c3b-19181baab684` on 2026-11-10. See [Build](#build).
+Built as `01a1c4a3-5dd9-7593-8c3b-19181baab684` on 2026-11-10, but `dataset.py` has changed since: it now gives checksum `v2:2058eb7d6e93385ec41dc7cda754ce6df19a78a5948520e65497afb1645d7526`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -93,20 +90,20 @@ Built as `01a1c4a3-5dd9-7593-8c3b-19181baab684` on 2026-11-10. See [Build](#buil
 
 **Known at prediction time.** The compound's structure and the selected protein's identity, sequence when available, organism, classification, length and mutation identity. No assay result, source potency summary or outcome history.
 
-**What the test data stands for.** Chemical scaffolds are held out across all proteins. The test compounds are from unseen chemical series; proteins may recur. This is structural generalization, not a prospective chronological evaluation.
+**What the test data stands for.** Each compound is dated by the year its measurements end, the last document behind any of its means, and three windows are tested on the compounds whose measurements ended earlier: 2022 with 2023, then 2021, then 2020. Every protein pair of a compound goes with that year; proteins may recur.
 
-**Our changes to the source.** We keep high-quality exact means composed solely of recognized potency types, join intrinsic protein metadata, remove source/provenance and outcome-derived predictors, and hold out compound scaffolds.
+**Our changes to the source.** We keep high-quality exact means composed solely of recognized potency types, join intrinsic protein metadata, remove source/provenance and outcome-derived predictors, and split by the year each compound's measurements end.
 
-> **Use case fit: approximate (a stand-in with a known gap).** Published mean log potency combines assay types and laboratories without a fixed experimental protocol. Scaffold holdout tests new chemistry; it does not establish that historical training labels preceded test dates. Structures omit stereochemistry, and exact reported potency measurements do not represent a complete prospective screening library.
+> **Use case fit: approximate (a stand-in with a known gap).** Published mean log potency combines assay types and laboratories without a fixed experimental protocol. The windows test the compounds the literature measures next, and every training label is final at its cut; the test compound's own papers are held out, but its chemical analogues need not be. Structures omit stereochemistry, and exact reported potency measurements do not represent a complete prospective screening library.
 
 ## Files in this folder
 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
-| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
+- The curation record, with the triage decision, its sources and the review: [`curation/records/papyrus_bioactivity.md`](../../../../curation/records/papyrus_bioactivity.md)
 - The original source: <https://doi.org/10.4121/16896406.v1>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -133,8 +130,8 @@ On first use, `_prepare_raw_files` writes `raw/05.7_high_quality_source_rows.par
 Then, from the repository root:
 
 ```bash
-.venv/bin/python -m data_foundry.curation.cli dataset check papyrus_bioactivity   # pipeline and checks, no UUID; rewrites this page
-.venv/bin/python -m data_foundry.curation.cli dataset build papyrus_bioactivity   # also saves the container and records its UUID
+.venv/bin/python -m data_foundry.curation.cli dataset check datasets/_dev/tabarena-v0pt2/papyrus_bioactivity   # pipeline and checks, no UUID; rewrites this page
+.venv/bin/python -m data_foundry.curation.cli dataset build datasets/_dev/tabarena-v0pt2/papyrus_bioactivity   # also saves the container and records its UUID
 ```
 
 Only curators run `build`, when the dataset ships.
@@ -147,15 +144,16 @@ Only curators run `build`, when the dataset ships.
 | year | 2021 |
 | domain | chemistry & material science |
 | license | CC BY-SA 4.0 |
-| data_tags | Non-IID, Grouped |
+| data_tags | Non-IID, Temporal |
 | reference | bequignon2023papyrus |
 | rows x columns | 692,017 x 9 |
 | task.target | mean_pchembl |
 | task.problem_type | regression |
 | task.metric | rmse |
-| task.split_regime | grouped_non_iid |
-| task.group_on | scaffold |
-| task.group_labels | per_sample |
+| task.split_regime | temporal_non_iid |
+| task.time_on | entry_year |
+| task.time_unit | years |
+| task.time_of | label |
 
 **Metric**
 
@@ -167,10 +165,10 @@ Only curators run `build`, when the dataset ships.
 | reason | Bequignon et al. 2023, Bioactivity modelling/Fig.5, doi:10.1186/s13321-022-00672-x reports RMSE and Pearson correlation side by side; no unique primary regression metric. Fallback RMSE directly scores the source mean pChEMBL scale, already logarithmic. |
 
 <details>
-<summary>Feature types: 4 categorical, 2 string, 0 datetime, smiles `SMILES`</summary>
+<summary>Feature types: 4 categorical, 1 string, 0 datetime, smiles `SMILES`</summary>
 
 - categorical (4): `protein_id`, `protein_organism`, `protein_classification`, `protein_variant`
-- string (2): `protein_sequence`, `scaffold`
+- string (1): `protein_sequence`
 - datetime (0): none
 - special feature `SMILES`: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 
@@ -196,15 +194,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 692,017 rows of the final frame (in the order of the source). Cells are cut at 40 characters.
+The first 5 of 692,017 rows of the final frame (the oldest rows: the frame is sorted by `entry_year`). Cells are cut at 40 characters.
 
-| mean_pchembl | SMILES | protein_id | protein_sequence | protein_organism | protein_classification | protein_length | protein_variant | scaffold |
+| mean_pchembl | SMILES | protein_id | protein_sequence | protein_organism | protein_classification | protein_length | protein_variant | entry_year |
 |---|---|---|---|---|---|---|---|---|
-| 7.075 | O=C(C=CC#Cc1ccccc1F)N=C1CCCCC1C(=O)O | Q8TDS4_WT | MNRHHLQDHFLEIDKKNCCVFRDDFIVKVLPPVLGLEFI… | Homo sapiens (Human) | Membrane receptor->Family A G protein-c… | 363 | WT | O=C(C=CC#Cc1ccccc1)N=C1CCCCC1 |
-| 7.8 | CC(C)C(NC(=O)C(=O)Nc1ccc(F)cc1)C(=O)NC(… | P29452_WT | MADKILRAKRKQFINSVSIGTINGLLDELLEKRVLNQEE… | Mus musculus (Mouse) | Enzyme->Protease->Cysteine protease->Cy… | 402 | WT | O=C(CNC(=O)CNC(=O)C(=O)Nc1ccccc1)COc1cc… |
-| 6.46 | COc1cccc(CNc2ccc(S(=O)(=O)Nc3cccs3)cc2)… | P18054_WT | MGRYRIRVATGAWLFSGSYNRVQLWLVGTRGEAELELQL… | Homo sapiens (Human) | Enzyme | 663 | WT | O=S(=O)(Nc1cccs1)c1ccc(NCc2ccccc2)cc1 |
-| 5.68 | COc1ccc(C2Sc3ccccc3-n3cccc3C2=O)cc1 | P16257_WT | MSQSWVPAVGLTLVPSLGGFMGAYFVRGEGLRWYASLQK… | Rattus norvegicus (Rat) | Membrane receptor | 169 | WT | O=C1c2cccn2-c2ccccc2SC1c1ccccc1 |
-| 5.77 | CC(C)(C)N(CCC(=O)c1ccc(C#N)cc1)Cc1ccccc1 | Q7M0F8_WT | ILDICLMLLDTNPKFLKNAGQDCSRRSRPVYVGRVVSAM… | Cavia porcellus (Guinea pig) | Enzyme->Transferase | 444 | WT | O=C(CCNCc1ccccc1)c1ccccc1 |
+| 6.63 | COc1ccc(Cl)cc1CN(C(=O)C(C)C)c1cc(C(=O)N… | P50416_WT | MAEAHQAVAFQFTVTPDGIDLRLSHEALRQIYLSGLHSW… | Homo sapiens (Human) | Enzyme->Transferase | 773 | WT | 1976 |
+| 4.82 | O=C(COc1ccccc1)N1CCCCC1c1nc(-c2ccc3\[nH\]… | P18886_WT | MMPRLLFRAWPRCPSLVLGAPSRPLSAVSGPDDYLQHSI… | Rattus norvegicus (Rat) | Enzyme->Transferase | 658 | WT | 1976 |
+| 6.21 | CCCN(c1cc(C(=O)Nc2nc(CC(=O)O)cs2)cc2c1O… | Q92523_WT | MAEAHQAVAFQFTVTPDGVDFRLSREALKHVYLSGINSW… | Homo sapiens (Human) | Transporter->Group translocator | 772 | WT | 1976 |
+| 5.36 | CN1CCN(Cc2c(O)ccc3c(=O)c(Oc4ccc(C(C)(C)… | O61059_WT | MSDKLEANGRSSRSEKEPIHDVITKNVMEDEDDAPPFLS… | Leishmania mexicana | Transporter | 567 | WT | 1976 |
+| 7.3 | Cc1n\[nH\]c(C)c1CC(=O)NCc1ccc(F)c(C(F)(F)… | Q99572_WT | MPACCSCSDVFQYETNKVTRIQSMNYGTIKWFFHVIIFS… | Homo sapiens (Human) | Ion channel->Ligand-gated ion channel->… | 595 | WT | 1976 |
 
 ## Curation notes
 
@@ -225,66 +223,67 @@ Papyrus2024.2/files05.7 supplies standardized non-stereochemical activities and 
 - Sequence remains a string: generic text/category handling limits representation. No learned sequence
   embedding, optional source UniRep representation or source molecular descriptors ship. Structures use
   typed canonical SMILES (CLEAN-24); salts/fragments remain published and stereo was absent in this source.
-- Canonical structure/scaffold is computed once per compound. Exact copies are removed; conflicting
-  canonical-pair labels leave as ambiguous copies, without averaging. Three source-connectivity aliases
-  include two crossing scaffold keys: union those components by recorded identity, without labels.
+- The canonical structure is computed once per compound. Exact copies are removed; conflicting
+  canonical-pair labels leave as ambiguous copies, without averaging. The Bemis-Murcko scaffold is still
+  prepared for each structure, but no longer ships as a column: it was the group key of the scaffold folds
+  this definition left on 2026-11-24 and was never a model input. The source connectivity, which identifies
+  chemical aliases written as different structures, dates those aliases as one compound (split note below).
 - The inherited whole-row hash ordering encoded labels: a training-only attack recovered 185/200 labels,
   independently 360/400. Disable that ordering; sort known structure/protein inputs then shuffle seed42.
   Full target perturbations leave the repaired order invariant. Source labels and fold membership stay intact.
-- Scaffold groups span all proteins; proteins and close analogs may recur across folds. Assay IDs,
-  outcome summaries/counts, quality/endpoint flags, document provenance and years never enter predictors.
-- Year is the first interaction document, not complete label availability: 9,386 retained pairs have Year<2013
-  but contributing years>=2013. This is not temporal evaluation. Any temporal variant must establish all
-  training outcomes collected before test prediction. Outcome-filtered Papyrus++ is not used; broader
-  source standardization is not certified independent of every label.
+- The windows span all proteins; proteins and close analogues may recur across windows, and a test
+  compound is new to the catalogue's record, not necessarily a new chemical series. Assay IDs, outcome
+  summaries/counts, quality/endpoint flags, document provenance and the split year never enter predictors.
+- Split by the year a compound's measurements end (Andrej, 2026-11-24, issue 1 C). `entry_year` is the
+  newest document year over every row of a compound (the source `all_years`), taken per source
+  connectivity, so every row of a compound carries one year and aliases share it; it orders and splits the
+  rows and is no model input. The source `Year`, the first interaction document, is not label availability
+  (9,386 retained pairs have Year<2013 and contributing years>=2013), which is why the key is the last
+  document and not the first: at every cut, no training label takes in a document from the test year or
+  later (0 of 601,378, 645,094 and 681,528 training rows). 2,791 rows (1,667 compounds, 0.40%) have no
+  dated document at all; they take the earliest year, 1976, so they always train. Outcome-filtered
+  Papyrus++ is not used; broader source standardization is not certified independent of every label.
 - The paper reports RMSE and Pearson without one primary score. Use fallback RMSE on the unchanged log scale.
 - PROV-7: this protein-conditioned interaction task differs from fixed-target QSAR: 129,427 multi-protein
   compounds supply 365,480 rows. Measured ChEMBL overlap is 1,616 IDs/2,257 rows, including 864 same-thrombin
   pairs. Pooling or a small overlap fraction alone does not establish uniqueness. Parent/stereo equivalence
   and comprehensive sibling overlap remain unverified; no legacy QSAR task is changed.
+- Split walk (the split decision tree, SPLIT-36, from the record's collection type Expanding Science Catalogue): [CAT.next-items] the source aims at compounds the catalogue does not hold yet: yes → [CAT.entry-date] a compound's mean takes in later documents (`Target: Revised Later`), but the year its last measurement arrives, at which its label is final, is rebuilt from the documents' years: yes → [CAT.arrival] what the catalogue takes in shifts with that year (each forward window's mix of protein families is 0.15 from its training side's in total variation distance, against 0.01 for a random split; the newest window's protein classification drifts at PSI 0.41, with 2.5% of its rows in a category the training side never shows): yes → [CAT.windows] the curator's three windows train on 81.2-93.6% of the rows: yes → leaf L-CAT.entry-date, Temporal · entry date, the split this definition ships (`split_leaf`; Andrej, 2026-11-24, issue 1 C).
 
 ## Splits
 
-Default grouped folds hold out whole compound scaffolds across all proteins. A compound and every one of its
-compound-protein outcomes remain on one side. Proteins may be present on both sides; some sparse targets may
-occur only in test. The scaffold share is computed over unique compounds, not their number of measured targets.
-Scaffold components connected by the same source compound connectivity are joined, so aliases cannot cross.
-Sorted one-to-one numeric scaffold codes are used only inside the default splitter to avoid slow text
-membership checks; the published scaffold values and default folds are unchanged.
-The frame is ordered by canonical structure and protein identity then shuffled with seed42, independently
-of labels. The source also reports random and temporal splits; this tests structural generalization only.
+Expanding windows on the year each compound's measurements end (`entry_year`, no input), leaf
+L-CAT.entry-date of the split tree: three test windows, newest first, no gap (a published measurement is
+known when its paper appears, and the key makes every training label final at its cut). Training is every
+compound whose measurements ended before the window; rows of later years are unused by it. The windows are
+the curator's (Andrej, 2026-11-24), and `TemporalSplits` cannot state them, since one window length serves
+every cutoff: the newest window joins 2022 and 2023, because the release's last year holds a fifth of a
+usual one (ChEMBL 34 curates a paper some time after it appears), and the two before it are single years.
+Test windows (years: rows, compounds, proteins, train share): 2022-2023: 44,132, 22,792, 2,372, 93.6%;
+2021: 43,716, 24,837, 2,016, 87.3%; 2020: 42,209, 24,770, 1,860, 81.2%. The declared horizon is the newest
+window's two years; the other two windows predict one year ahead. A year is the finest step the source's
+dates give, and the use case names no refit cadence. SPLIT-33's target for 692,017 rows is 3 splits, and 3
+windows are built. All rows of a compound stay in one window; proteins recur, and a test compound may have
+a close chemical analogue in training.
 
-1 repeat(s) x 3 fold(s) with seed 4267; train 453,392 to 467,698 rows, test 224,319 to 238,625 rows.
+3 repeat(s) x 1 fold(s) with seed 4267; train 561,960 to 647,885 rows, test 42,209 to 44,132 rows. Prediction horizon: 2 years. The time column `entry_year` dates the label, which arrives after the prediction point: it orders and splits the rows, so every training label was known at its window's start, and is no model input (`feature_columns(container)` leaves it out).
 
-| repeat | fold | n_train | n_test |
-|---|---|---|---|
-| 0 | 0 | 467698 | 224319 |
-| 0 | 1 | 453392 | 238625 |
-| 0 | 2 | 462944 | 229073 |
+| repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
+|---|---|---|---|---|---|---|---|
+| 0 | 0 | 647885 | 44132 | 1976 | 2021 | 2022 | 2023 |
+| 1 | 0 | 604169 | 43716 | 1976 | 2020 | 2021 | 2021 |
+| 2 | 0 | 561960 | 42209 | 1976 | 2019 | 2020 | 2020 |
 
-## Group structure
 
-One group is a compound Bemis-Murcko scaffold across all protein targets. Ringless compounds and compounds in a scaffold exceeding 10% of unique compounds are individually grouped by structure. The molecular scaffold default (SPLIT-31) models new chemical series before assay; the source's pooled PCM models motivate the protein-conditioned target, not a both-endpoint holdout.
+### The test windows
 
-| field | value |
-|---|---|
-| group column | `scaffold` |
-| labels | per_sample |
-| order inside a group | none |
-| prediction unit | row |
-| known about a group when predicting | none |
+Each test window against its train side, by statistics of the data, never of a model: the target, and the population stability index (PSI) of each feature, its largest value and the features that drift most (below 0.1 little shift, above 0.25 a large one), and the share of test rows with a category the train side never shows. Up to 20,000 rows per side. The candidates the windows were chosen from: `.venv/bin/python -m data_foundry.curation.cli dataset windows papyrus_bioactivity`.
 
-| statistic | value |
-|---|---|
-| groups | 174,933 |
-| rows per group (min / median / max) | 1 / 1.0 / 8,819 |
-| largest group | 1.3% of the rows |
-| test groups per fold | 58,311 |
-| groups of two or more rows with a single label | 1.6% |
-| nearest neighbour in the same group | 1.0% of the rows (chance: 0.0%) |
-| label variance explained by the group | 0.64 (shuffled groups: 0.25) |
-
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+| window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
+|---|---|---|---|---|---|---|---|---|
+| 0 | 2022 - 2023 (years) | 44132 | 0.936 | mean 6.498, median 6.4, p10 4.92, p90 8.28 | mean 6.565, median 6.511, p10 4.82, p90 8.34 | 0.192 | protein_classification (0.19), protein_id (0.15), protein_organism (0.10) | 0.0254 |
+| 1 | 2021 - 2021 (years) | 43716 | 0.873 | mean 6.547, median 6.5, p10 4.82, p90 8.33 | mean 6.562, median 6.52, p10 4.82, p90 8.351 | 0.228 | protein_classification (0.23), protein_id (0.21), protein_organism (0.16) | 0.0457 |
+| 2 | 2020 - 2020 (years) | 42209 | 0.812 | mean 6.602, median 6.57, p10 4.9, p90 8.36 | mean 6.566, median 6.53, p10 4.82, p90 8.36 | 0.342 | protein_classification (0.34), protein_id (0.30), protein_organism (0.14) | 0.0531 |
 
 ## Decisions
 
@@ -301,8 +300,9 @@ Select complete source means with recognized measurement types; retain pooled ta
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
+- **info** `meta_time_horizon_unit`: `time_horizon_unit='years'` implies calendar time, but `time_on='entry_year'` has dtype int64, so the horizon cannot be cross-checked. (hint: Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use `time_horizon_unit='steps'` for a plain numeric time index.)
 
 ## Data checks
 
@@ -315,10 +315,10 @@ Select complete source means with recognized measurement types; retain pooled ta
 | protein_classification | category | 11732 | 1.7 | 553 | Enzyme->Transferase, Enzyme->Hydrolase, Enzyme->Oxidoreductase, Enzyme->Lyase, … |
 | protein_organism | category | 60 | 0.01 | 331 | Homo sapiens (Human), Rattus norvegicus (Rat), Mus musculus (Mouse), Human immu… |
 | protein_id | category | 0 | 0 | 5057 | P42336_WT, P00533_WT, P48736_WT, Q16539_WT, Q12809_WT, O00329_WT, P24941_WT, O4… |
-| protein_variant | category | 0 | 0 | 59 | WT, V559D, L858R, H396P, E255K, Q252H, D816V, M351T, Y253F, D835H |
+| protein_variant | category | 0 | 0 | 59 | WT, V559D, L858R, H396P, Q252H, E255K, M351T, D816V, Y253F, D835H |
+| entry_year | int64 | 0 | 0 | 48 | 2014, 2015, 2013, 2021, 2020, 2016, 2018, 2017, 2019, 2022 |
 | protein_sequence | string | 60 | 0.01 | 5014 | MPPRPSSGELWGIHLMPPRILVECLLPNGMIVTLECLREATLITIKHELFKEARKYPLHQLLQDESSYIFVSVTQEAER… |
 | SMILES | string | 0 | 0 | 455964 | COc1cc2ncnc(Oc3cccc(NC(=O)Nc4cc(C(C)(C)C(F)(F)F)on4)c3)c2cc1OC, COC1C(N(C)C(=O)… |
-| scaffold | string | 0 | 0 | 174933 | c1ccccc1, c1ccc(-c2ccccc2)cc1, c1ccc(Nc2ncnc3ccccc23)cc1, c1ccc(Nc2ccc3ncc(-c4c… |
 
 ### Target distribution
 
@@ -331,12 +331,13 @@ Select complete source means with recognized measurement types; retain pooled ta
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | protein_length | 691957 | 668.016 | 501.492 | 9 | 7096 |
+| entry_year | 692017 | 2013.57 | 6.60604 | 1976 | 2023 |
 | mean_pchembl | 692017 | 6.55506 | 1.33597 | 3.007 | 13.939 |
 
 ### Categorical features
 
 <details>
-<summary>Show the table (35 rows)</summary>
+<summary>Show the table (30 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -369,12 +370,7 @@ Select complete source means with recognized measurement types; retain pooled ta
 | protein_variant | 2 | V559D | 186 | 0.03 |
 | protein_variant | 3 | L858R | 91 | 0.01 |
 | protein_variant | 4 | H396P | 70 | 0.01 |
-| protein_variant | 5 | E255K | 67 | 0.01 |
-| scaffold | 1 | c1ccccc1 | 8819 | 1.27 |
-| scaffold | 2 | c1ccc(-c2ccccc2)cc1 | 2263 | 0.33 |
-| scaffold | 3 | c1ccc(Nc2ncnc3ccccc23)cc1 | 1218 | 0.18 |
-| scaffold | 4 | c1ccc(Nc2ccc3ncc(-c4cn\[nH\]c4)nc3c2)cc1 | 1122 | 0.16 |
-| scaffold | 5 | O=c1cc(-c2ccccc2)oc2ccccc12 | 1089 | 0.16 |
+| protein_variant | 5 | Q252H | 67 | 0.01 |
 
 </details>
 
@@ -389,3 +385,4 @@ Select complete source means with recognized measurement types; retain pooled ta
 | data_foundry_version | 0.0.5 |
 | git_sha | f3f5797fde2b9cd7eeca788bb5bbf35e5f905499 |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
+| stale | yes: the definition now gives checksum `v2:2058eb7d6e93385ec41dc7cda754ce6df19a78a5948520e65497afb1645d7526` |

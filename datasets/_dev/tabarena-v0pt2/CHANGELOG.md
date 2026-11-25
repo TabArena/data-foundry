@@ -1,5 +1,122 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-25, PR #59 review: the curator's marks of the night (no container built)
+
+- duolingo_spaced_repetition_recall_1m (Andrej, issues 10 B, 11 B, 13 B, 9 D; 8 and H as implemented): the session's
+  exercise count is dropped (known only when the session ends); the label is the source's round(p), more than half
+  right, scored by the source's pooled ROC AUC; the learner id is an input; the published delta is replaced by the time
+  from the word's last practice to the end of the learner's previous lesson, known at the lesson's start. Check 0
+  errors, 0 warnings.
+- fugaku_hpc_job_failure_1m (Andrej, issue 7 D): a one-day gap with the label filter replaces the exception; training
+  shares 65.3 / 80.3 / 90.9%. Verdict ship.
+- economic_well_being_prediction_challenge (Andrej, issue 9 b): Zindi's Test.csv joins with labels recovered from the
+  pinned source table where the match is unambiguous (7,164 of 7,194 rows); 28,618 rows in 25 countries; leave one
+  country out over the 16 countries surveyed in 2014-2016. Verdict ship.
+- chromophore_optical_properties_db, geoai_ground_level_no2_estimation_challenge, meituan_food_delivery_time: verdict
+  ship; chromophore's score stays per row (issue 4, as implemented).
+
+## 2026-11-24 (evening), PR #59 review: the curator's marks of the afternoon (no container built)
+
+- duolingo_spaced_repetition_recall becomes `duolingo_spaced_repetition_recall_1m` (Andrej, issue 12 B): training sides
+  hold every earlier session (86.5 / 78.3 / 70.8%) and a benchmark samples 1M; test windows are capped at 500k by the
+  collection's budget, replacing the fixed 1M / 111,111 draw; standard declared windows, one-day gap kept; the test
+  pinning the old draw is removed. Check 0 errors, 0 warnings. Issue 11 answered (why binary, not regression).
+- fugaku_hpc_job_failure becomes `fugaku_hpc_job_failure_1m` (Andrej, issue 5 C): every training row after the label
+  filter, test windows capped at 500k; the preparation reads with Arrow's `self_destruct` and writes rows in time
+  order; the thin-newest-period warning, which the test-window sample makes, is accepted. Framework changes for it,
+  meant for their own PR: `order_rows` does not copy a frame already in order, the data summary counts duplicate rows
+  by row hashes, and a `_1m` version may build its own splits. Check peak memory 58.9 GB.
+- meituan_food_delivery_time (Andrej, H and issue 5 B): a 3-hour gap before each test day (training data taken at
+  21:00), windows training on 59.5 / 73.2 / 87.0%; the newest window's length accepted; `split_leaf` set. Check 0
+  errors, 0 warnings. Verdict ship.
+- geoai_ground_level_no2_estimation_challenge (Andrej, issue 2 B and issue 3 b): `TimeBasis("RetrospectiveFillIn")`
+  and `split_leaf = "L-FILL.whole"`; the use case ends "to map daily exposure between monitors". Checked on the code
+  only (no data on this machine). Verdict ship.
+- The split tree's catalogue entry-date question and SPLIT-37 step 4 accept a final date rebuilt from the data and
+  checked (cross-dataset decision, B); papyrus_bioactivity's split walk follows it.
+- economic_well_being_prediction_challenge (Andrej, issues 4/5 use case b, 10 B, 9 B): the prediction point is today, an
+  agency mapping past survey years with today's layers; the construction masks are removed, the four land-cover
+  columns restored, population density and night lights kept (16 inputs); the licence records the DHS terms and
+  non-commercial academic use. Recovering the 7 test countries' labels reached 97.43% on Train.csv, under the 99.9%
+  bar, so 18 countries still ship (issue 9 reopened with options). Random forest RMSE 0.110 over the 10 splits.
+- papyrus_bioactivity (Andrej, issue 1 C and the Horizon's windows): expanding windows on `entry_year`, the year a compound's
+  measurements end (the newest document year behind its means, taken per source connectivity so aliases share one
+  year), in place of the three scaffold folds: the curator's windows 2022 with 2023, then 2021, then 2020,
+  training 93.6 / 87.3 / 81.2% of the rows, no gap, `split_leaf = "L-CAT.entry-date"`. One `TemporalSplits` window
+  length cannot state a two-year window beside one-year ones, so the windows are built in `_make_splits` from the
+  constant `TEST_WINDOWS`, and the declared horizon is the newest window's two years. No training label is in flight at any cut,
+  which the first-document year could not give (0 against 0.7-1.7% of the training rows). The `scaffold` column
+  leaves with the grouping (it was the group key, never a model input); the 1,667 compounds with no dated document
+  take the earliest year and always train. Check 0 errors, 0 warnings, 1 info (a horizon in years cannot be
+  cross-checked against an integer year column); 692,017 rows and the same 7 inputs, test windows of 44,132 /
+  43,716 / 42,209 rows. The windows are signed off (Horizon item H, option D): no rule asks for windows of one
+  length, the rule on small windows asks for the wider window that absorbs the cut-short 2023, the horizon check
+  measures the newest window, and ten temporal definitions of the working copy build their windows in
+  `_make_splits` as this one does.
+- chromophore_optical_properties_db (Andrej, issues 3 B, H B, 5 B): six one-year windows 2015-2020 on each dye's first
+  publication year (Crossref years pinned in a small CSV), scaffold grouping removed, the betaine dye's extrapolated
+  gas row dropped (17,509 rows); `split_leaf` L-CAT.entry-date. Check 0 errors; 6 windows against a target of 9 and
+  the SMILES column accepted.
+
+## 2026-11-24, PR #59 review aligned with the latest split rules (no container built)
+
+- Text only, after the latest split rules (structured time basis, the split tree's step IDs and leaves, the
+  person-only gap questions) were merged: the splits comments and review items of chromophore_optical_properties_db,
+  duolingo_spaced_repetition_recall, economic_well_being_prediction_challenge, fugaku_hpc_job_failure and
+  meituan_food_delivery_time name the tree leaf they reach and quote the current rule text; geoai's issue 2 asks for
+  the structured time basis. duolingo's `task_summary.known` is shortened below the summary length limit. No split,
+  feature or target changed; `dataset check` gives 0 errors on all six.
+- fugaku_hpc_job_failure (Andrej): the definition names its split-tree leaf, `split_leaf = "L-ORDER.windows"`; the
+  other six PR #59 definitions set theirs with their open split decisions.
+- The seven PR #59 definitions give their walk through the split decision tree as a curation bullet ("Split walk"),
+  step by step to the leaf, and say where the shipped split departs from it (chromophore, economic, papyrus's
+  open alternative). Text only; the READMEs follow at the next `dataset check`.
+- economic_well_being_prediction_challenge (Andrej): whole countries held out with all their survey years, the
+  source's own test, in place of the temporal × unseen-country split: leave one country out on the 10 countries
+  surveyed in 2014-2016 (1 x 10); time basis `UnseenGroup`, leaf L-PLACE.groups; `ID` dropped. Accepted with the
+  split: few test countries per split, 8 countries never tested, 1 x 10 instead of 3 x 3.
+
+## 2026-11-23, PR #59 review marks: meituan_food_delivery_time, cross-dataset fixes (no container built)
+
+- meituan_food_delivery_time (Andrej): the target is now the minutes from courier acceptance to delivery
+  (`remaining_minutes`), with the elapsed minutes as an input (issue 3 B). The newest test window runs from 24 October
+  to the end of the data, so the 62 acceptances up to 00:23 on 25 October are scored (issue 2 C, 67,411 test rows);
+  `_make_splits` builds the windows by hand. The check's warning that this window is longer than a day is left open
+  for the curator (issue 5). Prebooked orders keep no booked slot (issue 4 A). Documentation: `da_id` and the courier
+  position. The horizon question (gap for training and tuning time) is answered with measured gaps and left open.
+- fugaku_hpc_job_failure (Andrej): the requests fixed at submission are inputs (issue 4 B): requested nodes and cores,
+  CPU frequency (categorical) and the memory limit (its "unlimited" code as missing plus an `mszl_unlimited` flag; the
+  encoding is open as issue 6), 388 to 393 inputs; time limit and priority stay out. The four-month windows are
+  confirmed (horizon, as implemented) and the splits comment names length, step, gap, unit and window count. Check 0
+  errors, 0 warnings.
+- Documentation fixes the column audits found (cross-dataset item, go ahead), text only, in
+  chromophore_optical_properties_db, duolingo_spaced_repetition_recall, economic_well_being_prediction_challenge and
+  geoai_ground_level_no2_estimation_challenge. geoai's issue 3 answered (what the sources did).
+- The review page shows a record's items in the order of its `**Order:**` line, and gives cross-dataset items with an
+  options table the same buttons as a dataset issue.
+
+## 2026-11-21, review of PR #59's datasets under the split rules: a full panel re-check (no container built)
+
+Andrej's review of the seven datasets PR #59 adds (papyrus_bioactivity not re-checked: the model provider's safeguards
+stopped its agents). For chromophore_optical_properties_db, duolingo_spaced_repetition_recall,
+economic_well_being_prediction_challenge, fugaku_hpc_job_failure, geoai_ground_level_no2_estimation_challenge and
+meituan_food_delivery_time: split and column audits on the data, then the full review panel (claim audit, domain
+practitioner, precedent check, blind review and task gamer where the data was available, advocate, critic, mediator,
+editor).
+- Records: collection type, collection facts and `collection_period` set (chromophore 1967-2020 measured); each record's
+  `## Review` gets this round's issues, Horizon blocks and the panel's reports; an Assessment line per record.
+- Definitions: text only, as the panels settled without a decision (no row, feature, target, split or metric change):
+  the timestamp's meaning on duolingo (the lesson's end, measured); geoai's `known`, `fit_reason`, satellite and agency
+  notes; economic's same-place check, target rescale and scope notes; meituan's protocol line against reading other
+  test rows, splits comment, `da_id`, `dt` and long-order notes; fugaku's row-identity and cohort notes, the fiscal-year
+  cut, the live-history gap, the recipe path and a typo; chromophore's ET(30), solvent-effect, OLED-host and charge-form
+  notes. All six builds are stale.
+- Open for the curator (records' reviews): among them meituan's 62 tail rows, which the newest-window rule now
+  rejects (the definition does not run as merged), and its target counted from placement; duolingo's exercise count,
+  75% cutoff, gap and windows; economic's split by year and country; chromophore's split by first publication year
+  and one vote per dye; fugaku's requested resources and training cap. Cross-dataset items (rules and framework) are
+  on the review page.
+
 ## 2026-11-16, wine_world_cost: the use case kept as a merchant's listing decision (Lennart's decision, no container built)
 
 - Review issue 7 (whether any real use case exists), A: kept, fit approximate. The actor is a UK wine merchant's buyer

@@ -3,6 +3,7 @@ unique_name: fugaku_hpc_job_failure
 name: 'F-DATA: A Fugaku Workload Dataset for Job-centric Predictive Modelling in HPC Systems'
 checked_by:
 - Myunghwan
+- Andrej
 data_foundry_status:
 - WIP (DF)
 - 'DF: Yes'
@@ -13,8 +14,14 @@ decision_markers:
 - Selection Bias
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
+- Dated Event Log
 original_source: Other
 year: '2024'
+collection_period: Mar 2021 - Apr 2024
 domain: technology & internet
 required_split:
 - Temporal (NON-IID)
@@ -23,7 +30,7 @@ original_data_state: One Table
 source_links:
 - https://doi.org/10.1038/s41597-025-05633-1
 - https://doi.org/10.5281/zenodo.11467483
-v2_path: datasets/_dev/tabarena-v0pt2/fugaku_hpc_job_failure/dataset.py
+v2_path: datasets/_dev/tabarena-v0pt2/fugaku_hpc_job_failure_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -89,11 +96,70 @@ CC (2026-11-05, Myunghwan): the declared metric roc_auc is checked as the unchan
 
 **Assessment (AI, 2026-11-16; verified compatibility build):** Built the canonical `fugaku_hpc_job_failure` definition from clean source `a6a4ac56259a656b235696d1e74d0a8c36f68f68` as format 2 UUID `01a1e3af-55a4-7df0-bd28-5009e8991055`, checksum `v2:4cfcfaad3da1a6271ad90e17ac9589a303bd8573baf5fe23acdd52e508f09f8d`. The 2,500,499 rows, every value/dtype/category and row order, target, features, metric and all ordered train/test arrays exactly match the previously accepted container. Preserve the approved fixed training draw and test caps; use eligible history after label-availability filtering, before sampling, for the temporal training-floor check. Saved reload/checksum verification and a separate check using only traced inputs both pass with zero errors or warnings. Two existing heavy checks remain skipped under the cell budget. The regenerated card records the canonical name and current build. Original build/source commits and resolved scientific decisions remain preserved. No model refit or new scientific exception is inferred; required downstream method checks and previously accepted limitations remain in force.
 
+**Assessment (AI, 2026-11-21):** collection facts set from the split audit: one row per job with its submission time; the exit state exists at job end (median 2.2 hours after submission, 99.9% within 23.6 days, at most 283 days; measured on all 25,866,900 rows 2026-11-21); users and job names recur.
+
+**Assessment (AI, 2026-11-21):** review panel (full re-check): ship after changes; disputed: live outcome history (USE-6 against CLEAN-6, settled by the LEAK-9 protocol cases: a note and the fit reason, not an input), the memory limit in the requested resources (CLEAN-22, CLEAN-10: added to issue 4's option B), the corrected row identity (LEAK-18, LEAK-20, MET-17: a note under resolved issue 1); for the curator: H and issues 4-5 (issue 5, the 1M training cap, decided with duolingo_spaced_repetition_recall's issue 12). The 861,254 timing-identical rows are distinct executions; the fiscal-year cut does not select on the outcome; leak probe 13 is clean, the neighbour step of the leak probe still needs its tool fix and a rerun after the issue 4 rebuild. Priority 3: gap 0 (no thin domain, type or regime), use case + (source-motivated submission-time triage, approximate), source + (fixed Zenodo release and Scientific Data paper), shape + (25.9M jobs, temporal, recurring users), risk - (selected cohort, live history outside the task, open input and cap decisions).
+
+CC (2026-11-23, Andrej): review issue 4, change to B: "Option B: Add the fixed requests." The requested nodes (`nnumr`) and cores (`cnumr`) ship as numbers, the requested CPU frequency (`freq_req`) as a category and the memory limit (`mszl`, bytes) as a number with its "unlimited" code 2^64 set to missing and the indicator `mszl_unlimited`; the elapsed limit and priority stay out, since pjalter can change them after submission (Fujitsu job manual, section 2.5.4).
+
+CC (2026-11-23, Andrej): the declared horizon (four months, no gap beyond the label filter, windows starting 2024-01-01, 2023-09-01 and 2023-05-01) is checked, kept as implemented (A): no source states a refit cadence, four months is the benchmark's judgment, and the three windows cover one year with each season once and the source paper's June 2023 to April 2024 holdout; training uses only jobs that ended before each window, without a fixed embargo, the recorded exception to the gap rule.
+
+**Assessment (AI, 2026-11-23):** `dataset check` passes with 0 errors after the requests were added (2,500,499 rows, 393 features: 388 before plus `nnumr`, `cnumr`, `freq_req`, `mszl`, `mszl_unlimited`; test 500,000 and train 1,000,000 rows in each window, failed 11.4 / 14.9 / 11.9% of test rows, May-Aug 2023 / Sep-Dec 2023 / Jan-Apr 2024). `mszl` holds the "unlimited" code on 88.6% of the 25,866,900 source rows and 86.3% of the shipped rows; the other limits run from 0.63 to 30.6 GB in the source. `freq_req` is 2000 or 2200 MHz in the shipped rows (1600 on 2 source rows). The share of test rows that share all inputs with another row barely moves: 20.0 / 39.2 / 25.3% with the requests against 20.0 / 39.3 / 25.3% without. Task probes (3 windows, untuned): ROC AUC linear 0.796, random forest 0.757, LightGBM 0.792, best single column 0.729, against 0.794 / 0.758 / 0.783 before; flags `no_spread` and `drift_baseline`, as before (the first-tuned-run recheck of issue 3). Leak probes: all features 0.794, depth-2/3 trees 0.608 / 0.616, `usr` alone 0.794, the memory limit's missing indicator alone 0.585 (a request known at submission); 34.9% of test rows have an exact copy of the non-time inputs in training (16.0% with both labels), 0.0% with the submission time; the probe stopped again at its nearest-neighbour step (an infinite value in its matrix), so the later probes have no results.
+
+CC (2026-11-24, Andrej): the definition names its split-tree leaf, `split_leaf = "L-ORDER.windows"` (windows on the time key; cross-dataset decision B: every definition names its leaf with its split decision). The question how the gap rule's list of cases labels this dataset's training without a gap (an exception, or an ordinary use) moved from the cross-dataset items to this record's review as issue 7, since it touches only this dataset.
+
+CC (2026-11-24, Andrej): review issue 6, as implemented (A): the memory limit's "unlimited" code stays missing in `mszl` with the indicator `mszl_unlimited`; the limits that are set stay amounts in bytes.
+
+CC (2026-11-24, Andrej): review issue 5, C ("Option C: _1m with whole training sides."), applied after the memory fixes: the dataset ships as `fugaku_hpc_job_failure_1m`, every training row kept, test windows capped at 500,000 rows. The check's warning that the newest 30 days are thin is accepted with it (13% in the stored frame from the test-window sample, 59% in the full source from the April 2024 start on 4 April).
+
+CC (2026-11-24, Andrej): review issue 7, D: a one-day gap with the label filter ("Option D: Add a 1-day gap"), replacing the exception of 2026-11-03; the gap rule's list records the dataset as an ordinary use.
+
+CC (2026-11-25, Andrej): the declared split (three four-month windows on the submission time, newest first from January 2024, a one-day gap with the label filter, test windows capped at 500,000 rows; leaf L-ORDER.windows) is checked, as implemented.
+
+CC (2026-11-25, Andrej): verdict ship; nothing open in the review. The build is stale until rebuilt (a large-memory node: about 79 GB at peak).
+
 ## Review
 
-**Outcome:** added as `fugaku_hpc_job_failure`. Recommend ship on current main, preserving Myunghwan’s accepted original future exit-state task and all qualified decisions. Validity: source labels and submission-time inputs are unchanged, mature-label temporal memberships are reproduced, and fit remains approximate for the selected execution cohort. Value: useful historical ranking evidence remains applicable with the required first-tuned-benchmark recheck. Quality: source representations and meaningful class words are retained. No new curator choice is required by the focused recheck.
+**Outcome:** added as `fugaku_hpc_job_failure_1m`. Ship after changes: the full re-check of 2026-11-21 keeps the exit-state task, rows, target, three four-month windows and ROC AUC. Validity: every input is known at submission and no training label arrives after its cutoff; the 861,254 rows that share job ID, times and exit code are separate executions (they differ in their counters) and stay as natural repeats; the fiscal-year cut at 31 March does not select on the outcome (failure-rate ratio 1.00 over 34 months); the operator's live outcome history, worth 0.04-0.12 AUC, stays outside the task under the evaluation protocol, and the fit reason names that gap. Value: LightGBM beats the best one-column failure rate on Jan-Apr 2024 (+0.040) and Sep-Dec 2023 (+0.076) and trails it within seed noise on May-Aug 2023 (-0.008), and the recheck at the first tuned run stays. Weighed: a first-publisher release of 25.9M real jobs with real signal, against a cohort selected after the run, a nonzero exit as a proxy for failure and the live history outside the task. Quality: wording fixes that need no decision are applied to the definition. Decided 2026-11-23: the requested nodes, cores, frequency and memory limit are inputs now (issue 4, B) and the four-month windows stay (H, A); the training cap (issue 5) still needs the curator. The build 01a1e3af is stale after these changes.
 
-**Main points:** No new scientific decision is required. Carry the original ship decision and all resolved choices forward under the November 6 request. The reviewed source is the same upstream code already validated on November 5; the task, metric, memberships, accepted qualifications and first-tuned-benchmark recheck remain unchanged.
+**Main points:** No open decision. Not a decision: the build is stale after this round's changes.
+
+
+
+**Horizon:**
+
+* **Verdict:** keep four-month windows; medium confidence: no source states a refit cadence for Fugaku, and four months is a benchmark judgment.
+* **Length:** four months, used as the step between refits: each window's model is fitted at its start and scores every job submitted in the next four months[^x21f1].
+* **Gap:** none beyond the label filter: a refit trains only on jobs that ended before the window starts, which drops 10,387 / 48,375 / 28,118 late labels at the May / September / January cutoffs[^x21f2].
+* **Time frame:**
+  - The windows cover May 2023 to April 2024: the source paper's holdout (June 2023 to April 2024) plus May 2023, one year with each season once[^x21f3].
+  - Training is all earlier history with a uniform 1M draw; the source's authors also trained on all earlier months[^x21f5].
+  - The F-DATA paper says models are "more accurate when they are updated frequently over time with recent data" but uses one fixed split; the same authors' [online study](https://arxiv.org/abs/2308.15481) (Marconi100, another machine) refits daily on the last 30 days. The four-month cadence is ours.
+  - 1-3 April 2024 are missing from the newest window (maintenance), and each fiscal year is cut on end time at 31 March, so the 25-31 March 2024 submissions are the jobs that ended by then; the same cut simulated in the 34 months without one leaves the failure rate unchanged (median ratio 1.00), so the cut does not select on the outcome, and the newest months show no rows missing near the download date. The definition's notes give the numbers; no option here changes the cut.
+* **Options:**
+
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | Four months (implemented) | Jan-Apr 2024, Sep-Dec 2023, May-Aug 2023 | 3: 2,304,010 / 2,737,058 / 3,918,654 rows, 500k each after the cap; train 91.0% / 80.3% / 65.3% before the cap | one full year, each season once; covers the source's holdout; built and verified | the cadence is ours; a model four months old at a window's end may understate a monthly refit |
+  | B | One month, spread over the year | Apr 2024, Dec 2023, Aug 2023 | 3: 420,450 / 626,404 / 1,043,535 rows (420,450 / 500k / 500k after the cap); train 98.4% / 88.7% / 76.4% | a monthly refit matches the monthly release and the paper's frequent updating; still three seasons | covers 3 of 12 months; needs a rebuild and a new label-maturity check |
+  | C | One day | three days, one per season | 3: about 14-30k rows each (median 21k a day); train about 99% | the authors' online setting (daily refit) | that study was on another machine; one weekday per window |
+  | D | Six months | Nov 2023-Apr 2024, May-Oct 2023, Nov 2022-Apr 2023 | 3: 3,660,437 / 5,299,285 / 4,443,099 rows, 500k each after the cap; train 85.9% / 65.3% / 48.1% | two years tested | the oldest window is under half: the curator's exception[^x21f4] |
+  | E | Four months, the newest season twice | Jan-Apr 2024, Sep-Dec 2023, Jan-Apr 2023 | 3: 2,304,010 / 2,737,058 / 2,833,835 rows, 500k each after the cap; train 91.0% / 80.3% / 54.3% before the cap | two years tested; the newest season tested twice, in other years as preferred[^x21f3] | leaves out summer (May-Aug 2023) and 3 of the source's 11 holdout months; custom cutoffs; rebuild |
+
+* **Recommendation:** A: it covers the source's own holdout (June 2023 to April 2024), and we weigh following the source's split[^x21f6] above the preference for windows in other years that E serves[^x21f3]; no source gives a cadence that would favour B, which is the choice if refit fidelity weighs more than whole-year coverage. **Decision:** keep four-month windows (A), or change to B, C, D or E?
+
+**Notes for the AI:** On B, set `_window_spec()` to `window=1`; months that are not adjacent need custom cutoffs in `_select_temporal`, since `TemporalSplits(n_windows=3)` walks back contiguously; rerun the label-maturity audit, rebuild on the curator's ask, update `task_summary.split`, `changes` and the splits comment. On E, the same custom cutoffs (test windows Jan-Apr 2024, Sep-Dec 2023, Jan-Apr 2023; the floor assert holds (54.3% after the label filter)), the same audit and text updates. On any option, the splits comment names the length, step, gap and time unit and where each comes from, the leaf (Temporal · arrival date, label-delay gap) and the count 3 against SPLIT-33's 3; keep the "Exception to SPLIT-10" wording: the gap rule asks for a gap where a selection by the outcome is measured, and it is measured here (18.53% against 0.292% failed among late-ending and completed last-day jobs).
+
+[^x21f1]: **SPLIT-12** (Should): the horizon is a human judgment from the source (how far ahead the actor predicts, the refit cadence); the curator signs off the horizon and the test windows of every new temporal dataset.
+[^x21f2]: **SPLIT-10** (Should): train only on rows whose outcome is known by the window's start, with a gap of about the label's delay; no gap only where the measurements show neither a shortcut through recent labels nor a selection by the outcome, and a departure otherwise is an exception. **SPLIT-9** (Must): no training label unknown at the prediction point.
+[^x21f6]: **SPLIT-19** (Should): when the source defines the split (a paper's official periods), follow it.
+[^x21f3]: **SPLIT-15** (Must for the newest window, Should for the others): prefer windows in other years, then seasons; walking back from the newest needs its reason; aim at the window count of **SPLIT-33** (here 3).
+[^x21f4]: **SPLIT-14** (Must): every window trains on at least half the rows; under half is the curator's exception, down to 30%.
+[^x21f5]: **SPLIT-20** (Should): the training history follows the use case and what the source's authors trained on.
+
+**Andrej (2026-11-23, ok):** As implemented (A).
+
+**Resolved (2026-11-23, Andrej):** keep the four-month windows (A): Jan-Apr 2024, Sep-Dec 2023 and May-Aug 2023, training only on jobs that ended before each window, no fixed embargo as the recorded exception to the gap rule. No change to the split; the splits comment now names the length and step (four months, the benchmark's refit judgment, since the source states no cadence), the gap (none beyond the label filter, from the recorded end times), the time unit (calendar months of the submission time in Japan time, as the source's monthly files), the leaf (Temporal · arrival date, label-delay gap), the count (3 windows against the target of 3) and the training history (all earlier labelled history, as the source's authors trained). `dataset check`: 0 errors, 0 warnings; 500,000 test and 1,000,000 training rows in each window.
 
 **Issues for Myunghwan:**
 
@@ -104,6 +170,22 @@ CC (2026-11-05, Myunghwan): the declared metric roc_auc is checked as the unchan
    **Myunghwan (2026-11-03, ok):** As far as some measurement reflects the futures, it's OK
 
    **Resolved (2026-11-03, Myunghwan):** Accepted the original eventual zero/nonzero exit-state task with approximate per-execution fit.
+
+   **Answer (AI, 2026-11-21):** corrected row-identity facts from the full re-check; no new decision, the issue stays resolved.
+
+   - On all 38 files, 861,254 rows in 300,062 groups share job ID, user, job name, environment, submission, start and end times, exit code and duration; none of the groups is a full copy over the 44 nonembedding fields, because every group differs in its performance and power counters. They are separate executions that ran side by side (bulk subjobs), so the notes' earlier "repeated job IDs have distinct submission/end times" was wrong and is corrected.
+   - On the shipped test sides, rows that share all inputs with another row:
+
+     | | May-Aug 2023 | Sep-Dec 2023 | Jan-Apr 2024 |
+     |---|---|---|---|
+     | Share of test rows | 20.2% | 39.4% | 25.4% |
+     | Groups holding both labels | 198 | 942 | 499 |
+     | Largest group (rows) | 1,756 | 1,884 | 476 |
+
+   - They are kept as natural repeats, and subjobs of one submission with different exit codes are the task's own label ambiguity[^x21r1]; scores stay per row, since the scheduler places each job, and the notes now say a bulk job counts once per subjob[^x21r2].
+
+   [^x21r1]: **LEAK-18** (Should): few features and plausible repeats are natural, keep them and say so. **LEAK-20** (Should): feature vectors that occur with both labels stay when they are genuine label ambiguity the task has.
+   [^x21r2]: **MET-17** (Should): the score stays per row when each row is a decision of its own (a job a scheduler places); the notes then say how unequal the units are.
 
 2. **Accept the proposed exception to the additional training gap?** Training excludes every record whose observed completion is at or after refit: 10,387/48,375/28,118 records at the May/September/January cutoffs. This satisfies the measured outcome boundary of SPLIT-9 (Must). SPLIT-10 (Should) also asks for a gap because the newest eligible training rows are fast completers; exact filtering does not remove that selection. Reporting latency after completion is unreleased. A seven-day embargo would discard another 0.615%/0.576%/0.892% of eligible history, newest to oldest, without establishing which operational delay it repairs.
 
@@ -121,7 +203,1328 @@ CC (2026-11-05, Myunghwan): the declared metric roc_auc is checked as the unchan
 
    **Resolved (2026-11-03, Myunghwan):** Retain with the required first-tuned-benchmark recheck; this remains a future trigger, not an unfinished add-stage gate.
 
-**Review panel:** retain the accepted task and decisions (November 6 focused mediator). The new scope is installed-runtime and instruction identity; there is no feature, label or split change. The complete earlier panels remain dated evidence, followed by current claim, precedent, mediator and cold-editor reports. Zero new disputed decisions.
+   **Answer (AI, 2026-11-21):** reference baselines for the recheck, from the full re-check; no new decision, the issue stays resolved.
+
+   - The first tuned benchmark run compares against these, per window (ROC AUC; the two history rows score every test row of the window, the others the shipped 500k test sides):
+
+     | Baseline | May-Aug 2023 | Sep-Dec 2023 | Jan-Apr 2024 |
+     |---|---|---|---|
+     | Training failure rate per user (one column) | 0.794 | 0.724 | 0.838 |
+     | Training failure rate per job name (one column) | 0.805 | 0.753 | 0.673 |
+     | LightGBM on the shipped inputs, 3-seed mean | 0.797 | 0.829 | 0.878 |
+     | Bounded-tuned LightGBM (above) | 0.791 | 0.778 | 0.866 |
+     | User's last 100 finished jobs, shrunk to the static rate (uses test-window labels, outside the task) | 0.915 | 0.902 | 0.921 |
+     | LightGBM on the shipped inputs + each user's and user-job name's last training label and training failure rate | 0.819 | 0.733 | 0.862 |
+
+   - LightGBM beats the best one-column rate on 2 of 3 windows (Sep-Dec 2023 +0.076, Jan-Apr 2024 +0.040); on May-Aug 2023 it trails by 0.008, inside that window's seed spread of 0.021[^x21v1].
+   - All three untuned models give worse probabilities than predicting the training failure rate for every job, the flag this recheck already carries[^x21v2] (log loss, lower is better, mean over the three windows):
+
+     | Model | Log loss |
+     |---|---|
+     | Training failure rate for every job | 0.389 |
+     | Linear | 0.498 |
+     | Random forest | 0.396 |
+     | LightGBM | 0.422 |
+
+   - The live history row is a reference, not a model to ship: it reads labels of earlier test rows, which the evaluation protocol rules out, and the fit reason now names that gap. Built from training labels only, history adds nothing: the row above it scores below LightGBM without it.
+
+   [^x21v1]: **TP-4** (Must): `Trivial` needs proof; when the methods beat the best single feature on most splits, their gain is real.
+   [^x21v2]: **TP-3** (Must): if tuned methods spread, keep the dataset; the flags `no_spread` and `drift_baseline` are rechecked with tuned results.
+
+4. **Add the requested resources that are fixed at submission (nodes, cores, frequency, memory limit) as inputs?**
+
+   - **Problem:**
+     - The operator in the use case sees the requested nodes, cores, frequency and memory limit at submission, and the release has them, but the definition ships none of them.
+     - The stated reasons are that the elapsed limit and priority can change after submission, and that these fields lie outside the authors' input set.
+     - The [Fujitsu job manual](https://www.r-ccs.riken.jp/fugaku/docs/manual/en/jos/j2ul-2534-01enz0.pdf) (section 2.5.4) lets users change only the elapsed limit, resource unit, resource group and priority, and the definition already adds the submission time, which the authors did not use.
+   - **Effect on the task:** without them the task is to predict from the job's identity and time only, narrower than what the stated actor knows; alone they score ROC AUC 0.63-0.68, while the measured gain inside a model is small and changes sign between windows.
+   - **Experiments:**
+     - One LightGBM configuration (400 trees, no tuning), 1M mature training rows, 300k test rows per window, ROC AUC:
+
+       | Inputs | May-Aug 2023 | Sep-Dec 2023 | Jan-Apr 2024 |
+       |---|---|---|---|
+       | Base (user, top-5000 job names, environment, time) | 0.804 | 0.779 | 0.882 |
+       | + nodes, cores, memory limit, frequency | 0.810 | 0.740 | 0.884 |
+       | + those, time limit and priority | 0.799 | 0.803 | 0.867 |
+       | + time limit only | 0.824 | 0.791 | 0.853 |
+
+     - A second check, one column at a time on the full April 2024 source month (420k jobs, ROC AUC of each column alone), then LightGBM on the Jan-Apr 2024 window only (one seed, 115k training rows; the seed spread on this window is up to 0.033):
+
+       | Column or model | ROC AUC |
+       |---|---|
+       | Requested nodes / cores | 0.681 |
+       | Memory limit | 0.633 |
+       | Time limit (stays out) | 0.566 |
+       | Frequency (the lower level fails more; AUC of the reversed score) | 0.567 |
+       | LightGBM, shipped inputs | 0.886 |
+       | LightGBM, shipped inputs + nodes, cores, memory limit, frequency and time limit | 0.897 |
+       | LightGBM, those requests + user + environment only | 0.902 |
+
+     - Requested nodes differ from allocated nodes on 4-35% of rows per month, so the requests are not overwritten by the allocation; priority is 127 on 99.995% of rows.
+     - Caveat: the requested memory limit and frequency equal the allocated values on 100% of rows in all 38 files, so their timing rests on the manual alone; whether a resource-group change resets a group default memory limit is untested, and the same holds for frequency.
+     - The memory limit holds the "unlimited" sentinel (2^64) on about 89% of rows; a sentinel is an encoding question, not a reason to drop a column[^x21col3].
+   - **Consistency:** inputs the actor holds at the prediction point were added elsewhere although the source's own models left them out (brazilian_ecommerce's promised date, medical_facility_operational_data, qsar_bioconcentration); they stayed out only where the actor's tool accepts nothing else (open_soil_spectral_library), which does not hold here: the source paper lists the requests among the information available at submission[^x21col1].
+   - **Panel:** the column audit (2026-11-21), on all 38 files of the release (25,866,900 rows); the task gamer measured the single-column scores; the critic asked to add the memory limit and the advocate conceded.
+   - **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Identity and time only (implemented) | Keep the 388 inputs | matches the authors' representation; built and verified | leaves out inputs the actor has; the stated reason covers only time limit and priority |
+     | B | Add the fixed requests | Add requested nodes and cores (numeric), frequency (categorical) and the memory limit (numeric, the "unlimited" sentinel as missing with an indicator, or as its own level); time limit and priority stay out with their reasons | inputs the actor has; the manual does not list them among what can change after submission; the strongest single columns found | rebuild; no measured AUC gain in one untuned configuration; memory limit and frequency timing rests on the manual |
+     | C | Keep A, correct the reason | Keep the inputs; the notes say the fixed requests are left out by choice | no rebuild | the task stays narrower than its actor; departs from the added-input cases without a fact that sets it apart |
+
+   - **Recommendation:** B: the manual's list of what a user can change after submission leaves these fields out[^x21col2], and an input the operator holds at submission stays whatever it scores[^x21col1]; the time limit stays out because it can be shortened after submission. **Decision:** keep A, or change to B or C?
+
+   **Notes for the AI:** On B, add `cnumr`, `nnumr`, `freq_req` and `mszl` to the columns `_write_selected` reads (`pf.iter_batches(columns=[...])`) and append them to `arrays`/`names`; `nnumr` and `cnumr` numeric, `freq_req` categorical (three levels: 2000, 2200, and 1600 on 2 rows); `mszl` numeric with the 2^64 sentinel set to missing plus an indicator column `mszl_unlimited` (or `mszl` categorical with the sentinel as its own level; ask if the curator names neither). Rewrite the "Changes from source experiments" and "Exclusions" bullets with the manual citation (section 2.5.4: pjalter changes `elapse`, `rscunit`, `rscgrp`, `priority`) and the caveat that `mszl` and `freq_req` equal their allocated values on every row; update `task_summary.known` and `changes`; rerun `dataset check` and the leak probes (with the fixed neighbour step) after the rebuild; rebuild only on the curator's ask. On C, replace the sentence "outside this source-experiment input set" with the curator's reason.
+
+   [^x21col1]: **USE-6** (Must): anything known at the prediction point is a legitimate input; dropping it changes the task. Case: brazilian_ecommerce.
+   [^x21col2]: **USE-3** (Must): name the prediction point and what is known then. Fujitsu Job Operation Software end-user manual, J2UL-2534-01ENZ0, section 2.5.4 "Changing job parameters": https://www.r-ccs.riken.jp/fugaku/docs/manual/en/jos/j2ul-2534-01enz0.pdf
+   [^x21col3]: **CLEAN-22** (Must): a column leaves for what it is (a leak, an identifier, a copy, the measurement that defines the label). **CLEAN-10** (Should): convert proxy missing values to missing; keep a code and say why when it means something.
+
+   **Andrej (2026-11-23, change):** Option B: Add the fixed requests.
+
+   **Resolved (2026-11-23, Andrej):** B, applied. `dataset.py` reads `nnumr`, `cnumr`, `freq_req` and `mszl` from the source files beside the representations: nodes and cores as numbers, the frequency as a category (2000 and 2200 MHz in the shipped rows), the memory limit in bytes as a number with the "unlimited" code 2^64 set to missing (88.6% of source rows, 86.3% of shipped rows) and the indicator `mszl_unlimited`; the elapsed limit and priority stay out. `task_summary.known` and `changes`, the inputs, "Changes from source experiments" and "Exclusions" bullets (with the manual's section 2.5.4 and the caveat that the memory limit and frequency equal their allocated values on every row) and the evaluation-unit counts are rewritten; the live-history figures are dated as measured on the identity and time inputs. `dataset check`: 0 errors, 0 warnings, 2,500,499 rows, 393 features (388 before). Task probes: linear 0.796, random forest 0.757, LightGBM 0.792 ROC AUC (0.794 / 0.758 / 0.783 before), the same flags as before; the leak probe ran up to its nearest-neighbour step, which crashed again; up to there no request column stands out (all features 0.794, the memory limit's missing indicator alone 0.585). The container is not rebuilt (the build 01a1e3af is stale).
+
+5. **Keep the fixed 1M training draw from all history, with the embedding size as the written exception?**
+
+   - **Problem:**
+     - Since the row-budget decision of 10 November, a set over the budget keeps every training row and ships under a `_1m` name, and the benchmark draws 1M training rows, by default at random from the newest year before the window[^x21c1].
+     - This definition draws its own class-proportional 1M training rows at random from all earlier history under its plain name, approved on 2026-11-03 before that decision, so the departure has no dated curator reason yet.
+     - Its 384 float32 embedding columns make a whole training side large: the largest holds 23.53M rows, 36.1 GB of embeddings in memory.
+   - **Background:** the house decision's study found that a random draw of all history dilutes recent data on long histories and changed the model ranking, while a random draw of the newest year never lost much; here the history before the windows runs 26 to 34 months.
+   - **Effect on the task:** none on the test sides; the draw sets which training rows a model sees (a uniform 1M of all history now, recent jobs weighted more under B, every row under C).
+   - **Experiments:** arithmetic only, no run:
+
+     | | Value |
+     |---|---|
+     | Largest training side | 90.98% of 25,866,900 rows = 23.53M |
+     | Its embedding in memory (384 float32 a row) | 36.1 GB |
+     | A container with whole training sides (about 25.0M rows) | about 38.5 GB of embeddings in memory, about 20 GB on disk |
+     | Today's container (2.5M rows) | 2.0 GB on disk |
+
+   - **Unknown:** how the three draws rank models; a run of the same model on each draw would settle it.
+   - **Consistency:** 18 `_1m` folders follow the house decision; duolingo_spaced_repetition_recall's issue 12 asks the same question for a set without the size fact and recommends `_1m`; the source's authors trained on all earlier months[^x21c2]; a model's input limit or runtime is never a curation reason, and container size is close to that[^x21c3].
+   - **Panel:** the advocate rests on the 36.1 GB, a fact that sets this dataset apart; the critic answers that the protocol exists for size and that a uniform draw over all history dilutes recent jobs.
+   - **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Fixed uniform 1M of all history (implemented) | `_make_splits` draws 1M class-proportional training rows per window at random from all earlier labelled history; plain name; the embedding size written as the dated exception | no rebuild; the authors trained on all earlier months; the container stays at 2.5M rows | departs from the house protocol; dilutes recent jobs, which the protocol's study found can change rankings; the reason is close to a storage limit |
+     | B | Fixed 1M, drawn the protocol's way | Keep the plain name and the cap; draw the 1M at random from the newest year before each window, extended back until it holds 1M | follows the protocol's sampler; the container stays small | rebuild and a new label-maturity audit; still a custom draw outside `_1m`; leaves the authors' all-history training |
+     | C | `_1m` with whole training sides | Rename to `fugaku_hpc_job_failure_1m`; drop the custom draw; row budget 1M train / 500k test | one rule with the 18 `_1m` sets (and duolingo); standard split code; a model may use more history | about 20 GB on disk and 36.1 GB of embeddings in memory per training side; rename and rebuild |
+
+   - **Recommendation:** A: the embedding size is a fact the other sets over the budget lack, and drawing from all history follows what the source's authors trained on; B if the protocol's dilution evidence weighs more, C if one rule should cover this dataset and duolingo. **Decision:** keep A with the exception written, or change to B or C (decide with duolingo_spaced_repetition_recall's issue 12)?
+
+   **Notes for the AI:** On A, add to the splits comment and as a curation bullet: "Exception to the row-budget protocol (<date>, <curator>): the definition draws 1M class-proportional training rows per window at random from all earlier labelled history and ships under its plain name, because the 384 float32 embedding coordinates make a whole training side up to 23.53M rows, 36.1 GB in memory; the source's authors also trained on all earlier months.", and a CC line in the record. On B, restrict the training draw in `_select_temporal` to rows submitted in the 12 months before each cutoff, extended back a month at a time until 1M remain; rerun the label-maturity audit; update the sampling bullet, the trailing note and the splits comment; rebuild only on the curator's ask. On C, `unique_name = "fugaku_hpc_job_failure_1m"`, rename the folder and the class, set the record's `v2_path`; `row_budget = RowBudget(train=1_000_000, test=500_000)`; drop the `TRAIN_CAP` draw so each train side keeps every earlier labelled row (the preparation then expands about 25M embeddings, so the build needs a large-memory node); rewrite `task_summary.row` and `changes`, the sampling bullet, the trailing note and the splits comment; the Outcome then opens "added as `fugaku_hpc_job_failure_1m`"; rebuild only on the curator's ask.
+
+   [^x21c1]: Row budget (issue #70, Lennart, 2026-11-10): the test side is capped in the container; the train side keeps every row available to it; the default sampler draws a random N from the newest year before the window, extended back until it holds N.
+   [^x21c2]: **SPLIT-20** (Should): decide what the train side holds from the use case; read what the source's authors trained on.
+   [^x21c3]: **EV-4** (Must): a model's input limit, feature cap or runtime is never evidence in a curation decision. **CLEAN-22** (Must): columns leave for what they are.
+
+   **Andrej (2026-11-24, change):** Option C: `_1m` with whole training sides.
+
+   **Answer (AI, 2026-11-24):** C was implemented and does not pass `dataset check` on the largest nodes we have, so it is not applied; the definition is back to A as before, and the choice is open again.
+   - What was built: `fugaku_hpc_job_failure_1m`, every training row each window can use, each test window capped at 500,000 rows. The preparation selects 24,039,864 of the 25,866,900 source rows and writes them with their embeddings (14.9 GB on disk).
+   - Where it stops: the check is killed at 125.5 GB of memory on a 126 GB node, while loading and splitting that frame. The 384 embedding coordinates alone are about 37 GB in memory, and the framework copies the whole frame several times on its way through the check: Arrow to pandas, the lineage check, the dtype casts, the reordering by time.
+   - A second obstacle, in the framework: a `_1m` version may not implement `_make_splits` ("`row_budget` is ignored when the class implements `_make_splits`"), and this definition needs its own splits for the label filter (only jobs that ended before the window start train). A one-line relaxation for a budget that comes from the name works, with a test; it would go in its own framework PR.
+   - The same size would meet every benchmark user: loading the container takes more than 37 GB of memory.
+
+   | | Option | What it does | Pro | Con |
+   |---|---|---|---|---|
+   | a | C, after framework work | Make the frame's path through check and build memory-lean (no full copies), relax the `_make_splits` guard for a named budget; then ship `_1m` | one rule with the 18 `_1m` sets and duolingo's B; a benchmark draws its own training rows | open-ended framework work with no assurance it fits 126 GB; a container of about 15 GB that needs more than 37 GB of memory to load |
+   | b | B: own 1M draw the protocol's way | Plain name; each window's 1M training rows drawn at random from the newest year before it, extended back until it holds 1M (the protocol's default sampler, applied in the definition) | follows the protocol's sampling, which C was chosen for; builds today (2.5M rows, 2 GB) | still a fixed draw in the container; a new label-maturity audit; departs from the authors' all-history training |
+   | c | A: own 1M draw from all history (as before) | Plain name, the class-proportional 1M draw from all earlier history, with the measured size as the written exception | no change; the authors trained on all earlier months | a random draw of all history dilutes recent jobs, which the protocol's study found can change rankings |
+
+   **Recommendation:** b: it keeps what C was chosen for, the protocol's newest-year draw, within what our tools can build; the size that blocks C is a measured fact of this dataset. a only if the framework work is wanted anyway. **Decision:** a, b or c?
+
+   Notes for the AI: the C implementation is kept outside the repository with the review's run files (definition and framework patch), ready for a. On b: in `_select_temporal` replace the all-history draw by `sample_train_positions`-style selection (newest year before each cutoff, extended back a month at a time until 1M rows remain, class-proportional), rerun the label-maturity audit and the check (Slurm), and rewrite the sampling bullet, the trailing note and the splits comment. On c: add the dated exception bullet of the Notes above, with the measured 24.0M rows and 125.5 GB.
+
+   **Andrej (2026-11-24, discuss):** Isn't that just an inefficient implementation on our end? Can we fix this?
+
+   **Answer (AI, 2026-11-24, later):** yes; three steps held the whole frame two or three times over, and with them fixed the `_1m` check fits. Measured with a memory trace in Slurm (24,039,864 rows x 394 columns, about 37 GB of embeddings):
+
+     | Step | Peak before | Peak after | Fix |
+     |---|---|---|---|
+     | Reading the prepared frame (the definition) | 79.6 GB | 51.9 GB | Arrow frees each column once pandas holds it (`self_destruct`) |
+     | Sorting by time (framework) | 78.5 GB | 44.1 GB | the preparation writes the rows in time order, and `order_rows` skips the copy when the order does not change |
+     | Duplicate rows in the data summary (framework) | 101.5 GB | 51.7 GB | rows compared by a 64-bit hash built one column at a time, not by copying the candidates; the same counts as `DataFrame.duplicated` (tested) |
+     | Whole `dataset check`, preparation included | killed at 125.5 GB | 65.8 GB | |
+
+   - A fourth change is a rule of the framework, not memory: a `_1m` version may now build its own splits (this one needs them for its label filter); a budget a definition declares itself is still refused with custom splits. The framework changes go in their own draft PR.
+   - Still true after the fixes: a benchmark that loads this container holds about 37 GB of embeddings, and the check needs a node with about 70 GB.
+
+   **Resolved (2026-11-24, Andrej):** C, applied after the memory fixes (the answer above): ships as `fugaku_hpc_job_failure_1m`. `dataset.py` keeps every training row each window can use after the label filter and caps each test window at 500,000 rows, a class-proportional draw (the collection's budget; a benchmark draws its 1M training rows, by default from the newest year before the window); the preparation reads the prepared frame with Arrow's `self_destruct` and writes the rows in submission-time order; `split_leaf` unchanged. The record's `v2_path` points to the `_1m` folder. `dataset check` (Slurm, 24,039,864 rows x 394 columns, peak memory 58.9 GB): 0 errors, 1 warning, accepted with this decision: the newest 30 days hold 13% of the usual rows a day in the stored frame because only the test windows are sampled, 59% in the full source because April 2024 begins on 4 April. Framework changes that came with it (their own draft PR): the frame is not copied when already in time order, duplicate rows in the data summary are counted by row hashes, and a `_1m` version may build its own splits.
+
+6. **Encode the memory limit's "unlimited" value as missing plus a flag, or as its own category?**
+
+   - **Problem:**
+     - Issue 4 B added the requested memory limit, whose "unlimited" code (2^64 bytes) sits on 86.3% of the shipped rows; issue 4 offered two encodings and the mark named neither.
+     - The definition now writes "unlimited" as missing plus a 0/1 column `mszl_unlimited`, the first encoding the issue listed.
+   - **Effect on the task:** a model sees the same information either way; the encoding changes how a method without native missing-value handling reads the column. The check passes with 0 errors and 0 warnings (393 inputs).
+   - **Experiments:** the flag alone scores ROC AUC 0.585 as a single feature; untuned LightGBM moves from 0.783 to 0.792 with the four requests added.
+   - **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Missing plus a flag (implemented) | `mszl` numeric in bytes, missing where unlimited; `mszl_unlimited` 0/1 | keeps the limit numeric for the 13.7% of rows that set one | one more column |
+     | B | Its own category | `mszl` categorical, "unlimited" one of its levels | one column, no missing values | the numeric order of the set limits is lost |
+
+   - **Recommendation:** A: the limits that are set are amounts, and the flag keeps the unlimited case explicit. **Decision:** keep A, or change to B?
+
+   **Notes for the AI:** On B, make `mszl` categorical (the byte values as strings plus "unlimited"), drop `mszl_unlimited`, rerun the check in Slurm and the task probes; add a CC line either way.
+
+   **Resolved (2026-11-24, Andrej):** A, as implemented: `mszl` stays a number in bytes, missing where the source writes "unlimited", with the 0/1 column `mszl_unlimited`. No change to the definition.
+
+7. **Keep this dataset's training without a gap listed as an exception to the gap rule?**
+   - **Problem:**
+     - On fugaku the jobs that end after a refit date fail far more often than the jobs already finished (18.5% against 0.3% among the last day's jobs before the September 2023 cutoff), so training only on finished jobs leans toward the fast, mostly successful ones.
+     - The gap rule allows training with no gap only where the data shows no such lean, so fugaku's setup departs from it, and PR #59 adds fugaku to the rule's list of cases as an `exception`.
+     - The question is only how that list labels fugaku (an exception, or an ordinary use of the rule); fugaku's split itself was settled by Myunghwan on 2026-11-03 and does not change here.
+   - **Background:**
+     - What the rule says: when a label arrives some time after its row, a model refit at a window's start knows only the rows whose label has arrived, so train on those, with a gap of about the label's delay; no gap is needed only where the measurements show neither a shortcut through recent labels nor a lean toward one outcome among the newest training rows[^x24f1].
+     - What fugaku does: each refit trains on every job that ended before the window starts (10,387 / 48,375 / 28,118 late jobs left out at the May / September / January cutoffs) and sets no further gap. Myunghwan accepted this as an exception once the label-maturity check found no late label left in training (fugaku's issue 2, resolved 2026-11-03).
+     - Why it came up: the split tree, the step-by-step guide to choosing a split, says "a gap of about the delay, or training only on cases whose outcome is known", which reads as if the filter alone were enough; the review of 2026-11-21 first proposed to relabel the row on that wording, then withdrew it; the wording itself is the cross-dataset item "Make the split tree's label-delay wording say what the gap rule says?". The latest split rules (PR #110, on main since 2026-11-24) keep both the rule's text and the tree's "or"; the tree's person-allowed "no gap" `[ORDER.exception]` applies only where three windows need it, and this dataset holds three.
+     - What other datasets did with no gap or a short one, as the rule's list of cases records them:
+
+       | Dataset | Training side | Lean toward one outcome measured? | Listed as |
+       |---|---|---|---|
+       | lt_vehicle_loan_default_prediction | no gap | no: one due date per loan, every label final at release | applied |
+       | melbourne_housing_market | no gap | no: the newest weeks are as complete as a later read | applied |
+       | ames_housing, perth_house_prices | no gap | no: sales dated by month, longer than the delay | applied |
+       | alfa_battle_2_0_task_2, lending_club, spanish_homeowners_motor_insurance_2010_2014 | no gap or a short one | the gap the delay needs would leave too little training data | exception |
+       | fugaku_hpc_job_failure (PR #59) | finished jobs only, no gap | yes: 18.5% against 0.3% failed | exception |
+       | meituan_food_delivery_time (PR #59) | delivered orders only, no gap | yes: the kept orders are about 2 minutes faster, with no effect on the scores | proposed exception (its horizon item) |
+
+   - **Effect:** none on the data or the scores. The label decides whether fugaku counts toward changing the rule: when one reason has produced three exceptions, the next review proposes to amend the rule[^x24f2]; with meituan, fugaku's reason would have two.
+   - **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep it as an exception (implemented) | The row in the gap rule's list stays of kind `exception`; the splits comment keeps its "Exception to" the gap rule | matches the rule as written and the measured lean; matches Myunghwan's resolution of fugaku's issue 2; counts toward an amendment if a third case follows | the row stays long |
+     | B | Relabel it as applied | The row becomes kind `applied`, shortened to the decision and its evidence (no late label among 25,866,900 jobs); the splits comment says "no fixed gap" | shorter; matches the split tree's present wording | contradicts the rule's text while the rule stands; right only if the rule is amended to accept the filter alone (option C of the cross-dataset item on the split tree's label-delay wording) |
+     | C | Add a 7-day gap | Each window trains on jobs submitted at least 7 days before its start and ended before it (99% of label delays are under 7 days); fugaku's row in the gap rule's list becomes an ordinary use of the rule | no exception; removes the most skewed recent jobs; costs 0.4-0.6 points of training share | the models see no outcome of the last week, which changed AUC by -0.017 / +0.004 / -0.046 in the 2026-11-03 run; a rebuild of the splits and a new check |
+     | D | Add a 1-day gap | Each window trains on jobs submitted at least 1 day before its start and ended before it: the lag between building a model and applying it, which also covers 90% of the label delays | an ordinary use of the gap rule; May and January lose their lean (99% of the last day's jobs complete, the same fail rate kept as overall); costs at most 0.1 point of training share | September keeps a lean at every gap length up to 7 days (long failing jobs of late August 2023), to be documented |
+
+   - **Recommendation:** D: one day is the deployment lag Andrej names and already removes the lean at two of three cutoffs; seven days (C) buys nothing more, since September's lean persists at every length up to 7 days. **Decision:** keep A, or change to B, C or D?
+
+   **Notes for the AI:** On A nothing changes in the rules or the definition. On B (only together with option C of the cross-dataset item on the split tree's label-delay wording): in splits.md's Cases table set the fugaku_hpc_job_failure SPLIT-10 row's kind to `applied` and its text to "no fixed gap after exact recorded-completion filtering; no late outcome retained among 25,866,900 rows (2026-11-03, Myunghwan)"; in fugaku's `splits_comment` and the curation bullet replace "Exception to SPLIT-10 (2026-11-03, Myunghwan): no additional fixed embargo" with "No fixed embargo (SPLIT-10, as amended)"; fugaku's record keeps its Horizon notes in step.
+
+   [^x24f1]: **SPLIT-10** (Should): "train on the rows whose outcome is known by the window's start, with a gap of about the label's delay between train and test ... No gap is needed where the collection covers what the gap guards against and the measurements show neither" a shortcut through recent labels nor a selection by the outcome at the release end; "Where the gap a case needs breaks SPLIT-14's floor, the departure is an exception" (amended 2026-11-04 and 2026-11-05, Lennart, on lt_vehicle_loan_default_prediction).
+   [^x24f2]: principles.md, "Exceptions and amendments": "When the same reason has produced three exceptions, the next pass proposes an amendment."
+
+   Moved here from the cross-dataset items (Andrej, 2026-11-24: it touches only this dataset).
+
+   **Andrej (2026-11-24, discuss):** Why is this allowed as an exception? Wouldn't it be easy to add a gap that is reasonable for this use case?
+
+   **Answer (AI, 2026-11-24):** it was allowed because Myunghwan accepted, on 2026-11-03, training on every job that ended before the window with no further gap, once no late label was left in training (issue 2); the lean toward fast jobs was documented, not removed. A reasonable gap is easy, measured on the full source; added as option C:
+
+     | | Value |
+     |---|---|
+     | Label delay (end minus submission): median / 90% / 95% / 99% | 2.2 h / 33 h / 62 h / 167 h |
+     | Training share at the May / Sep / Jan cutoffs: no gap → 7-day gap | 65.3 / 80.3 / 91.0% → 64.7 / 79.9 / 90.4% |
+     | Jobs of the last day before the Sep cutoff: fail rate of those kept vs of all | 0.3% vs 9.3% |
+     | Jobs of the last 7 days before the Sep cutoff: kept, fail rate kept vs all | 74.5%, 3.5% vs 5.1% |
+
+   - A 7-day gap keeps the rule's default form (a gap of about the label's delay) and leaves each window above the training floor.
+   - The score cost was measured on 2026-11-03 at fixed model settings: AUC -0.017 / +0.004 / -0.046 (newest window first) for a seven-day embargo; that is what a model deployed at a refit really lacks.
+
+   **Notes for the AI:** On C, in `_select_temporal` keep training rows with `adt < cutoff - 7 days` and `edt < cutoff`; declare the gap (`Temporal(..., gap=7, gap_unit="days")`); rewrite the splits comment, the split-walk bullet and the exception bullet (removed); in `splits.md` the fugaku row of the gap rule's list becomes `applied`; re-run the check (Slurm, a large-memory node) and report the shares.
+
+   **Andrej (2026-11-24, discuss):** We split on job start time and filter out jobs that don't have a result yet. That means the only gap we need is the one between starting developing the model and applying it. Seven days sounds like a bit too much,?
+
+   **Answer (AI, 2026-11-24, evening):** agreed on the length, with one correction: the windows are cut on the submission time (`adt`), not the start time; jobs whose result is not in by a window's start (`edt`) are filtered out, as you say. Measured on the full source, the lean the filter leaves for each gap (the last day of training jobs before the gap):
+
+     | Gap | Training share May / Sep / Jan | Last day's jobs kept, May / Sep / Jan | Fail rate kept vs all: May | Sep | Jan |
+     |---|---|---|---|---|---|
+     | none | 65.3 / 80.3 / 91.0% | 66 / 50 / 78% | 13.6 vs 9.0% | 0.3 vs 9.3% | 8.3 vs 8.4% |
+     | 1 day | 65.3 / 80.3 / 90.9% | 99 / 48 / 99% | 3.4 vs 3.4% | 2.2 vs 6.6% | 7.6 vs 7.7% |
+     | 3 days | 65.1 / 80.2 / 90.8% | 95 / 73 / 98% | 19.0 vs 18.1% | 4.9 vs 6.3% | 4.1 vs 4.1% |
+     | 7 days | 64.7 / 79.9 / 90.4% | 100 / 88 / 100% | 6.3 vs 6.3% | 1.7 vs 13.1% | 10.1 vs 10.1% |
+
+   - One day removes the lean at the May and January cutoffs; September leans at every length up to 7 days, from long-running failing jobs submitted in late August 2023, so seven days is not justified by it either.
+   - Added as option D (a 1-day gap) and recommended over C.
+
+   **Andrej (2026-11-24, change):** Option D: Add a 1-day gap.
+
+   **Resolved (2026-11-24, Andrej):** D, applied. `_select_temporal` trains on jobs submitted at least one day before each window and ended before it; `Temporal(..., gap=1, gap_unit="days")`; the exception bullet is replaced by a gap bullet with the September limitation, the horizon text and the split walk follow, and the gap rule's list of cases records the dataset as an ordinary use (`applied`). Training shares 65.3% / 80.3% / 90.9% (May / September / January cutoffs; 27,129 / 57,968 / 45,784 jobs left out by the filter and the gap). `dataset check` (Slurm, peak memory 78.6 GB): 0 errors, 0 warnings, the thin newest period accepted as before.
+
+**Review panel:** ship after changes (mediator, 2026-11-21, full re-check). Applied without a decision: the fit reason names the live-history gap and the fiscal-year cut; the evaluation-protocol line in the splits comment; the row-identity and evaluation-unit bullets corrected; the cohort-limit bullet (fiscal-year cut, elapsed-limit kills almost absent); the node-hours cost note; the jobenv_req switch in April 2024 and the first-appearance id numbering; the download recipe path and a typo; the row-identity facts under issue 1 and the recheck baselines under issue 3. Disputed and settled: the live outcome history is a note under the evaluation protocol, not an input (the critic's cleaning-rule reading ranks below the input and history rules; the protocol cases decide); the memory limit joins issue 4 (the advocate conceded); the corrected row identity is a note under resolved issue 1, not a new item; the "Exception to SPLIT-10" wording stays, with option E added to H. Claim audit: the row-identity sentences refuted and corrected; the download path stale. Blind review, without our notes: include with changes; main concern the missing submission-time requests (issue 4). Task gamer: no exploit beat the seed spread; the missing requests help an honest model. For the curator: H and issues 4-5; issues 1-3 stay resolved. Precedent check: consistent except the in-container training cap, which no curator decision after the row-budget rule covers (issue 5), and the missing other-year window (option E in H). Domain practitioner: would use it as advisory triage, with the live-history gap named. Earlier panels (2026-11-03, 2026-11-05/06) are kept below as dated evidence.
+
+<details><summary>Mediator (2026-11-21)</summary>
+
+**Mediator: fugaku_hpc_job_failure (2026-11-21)**
+
+Read: principles.md; claim auditor, domain practitioner, precedent checker, advocate and critic openings and rebuttals;
+blind review and task gamer; column audit (the column audit + evidence); the record's `## Review`
+(Horizon block, issues 1-4); `dataset.py`; check.log, leak.log, task/, dtype/; the duolingo and meituan mediator
+reports; USE-6, CLEAN-6, CLEAN-19, CLEAN-22, LEAK-9 (cases), LEAK-16 to LEAK-20, LEAK-34, TP-10, SPLIT-10, SPLIT-15,
+MET-17, EV-4, and the row-budget protocol (`definitions.md`).
+
+Three Slurm jobs, scripts and logs in the run folder:
+`dup44.py`, `fycut.py`, and leak probe 13 run alone, `--period-only`.
+
+**Judgment record**
+
+```text
+Verdict: ship after changes.
+Validity: USE-1/5 hold (fit approximate, USE-8, issue 1 Resolved); USE-6 triggered by the fixed resource requests
+  (issue 4, fix B + mszl); live outcome history: kept out by the LEAK-9 protocol (Andrej, 2026-11-09/10), the gap
+  named in the fit (USE-8); LEAK-10 holds (adt <= qdt on every row; elpl and pri stay out); LEAK-16/18: the
+  861,254 timing-identical rows are distinct executions (counters differ in all 300,062 groups), natural repeats,
+  kept with a note; SPLIT-9 holds (0 late training labels); SPLIT-10: exception stays (2026-11-03, Myunghwan);
+  SPLIT-14 holds (65.3% minimum); SPLIT-15 newest holds, option E to be offered.
+Value: TP-4 holds (methods beat the best one-column rate on 2 of 3 windows by 0.04-0.08); TP-3 flags no_spread and
+  drift_baseline stay with the issue 3 recheck.
+Quality: doc fixes (row identity, fiscal-year cut, recipe path, typo); CLEAN-14 jnam departure kept.
+Weighed: source +, size +, real signal +, cohort selected after the run -, live history missing from the task -.
+For the curator: issue 4 (add the requests, now with mszl); H (windows; option E added); new item: the 1M training
+  cap, decided with duolingo_spaced_repetition_recall.
+```
+
+**Decisive experiments**
+
+**1. Are the timing-identical rows copies? (all 38 raw files, all 44 non-embedding fields)**
+
+| Key | Rows in groups | Groups | Groups that are full 44-field copies |
+|---|---|---|---|
+| jid, usr, jnam, jobenv_req, adt, sdt, edt, ec, duration | 861,254 | 300,062 | **0** |
+| all 44 non-embedding fields | **0** | 0 | - |
+
+Every timing-identical group differs in its performance and power counters (`idle_time_ave`, `perf1`, `flops`,
+`mbwidth`, `opint` in all 300,062 groups; `econ`, `avgpcon` in nearly all). They are separate executions that ran side
+by side (bulk subjobs), not copies of one record. The README's "no exact duplicates over the 44 non-embedding fields"
+holds; its "repeated job IDs have distinct submission/end times" and "38 traced pairs differ in execution timing" are
+false.
+
+**2. Does the fiscal-year cut select late-March rows on the outcome? (compact table, all rows)**
+The cut was simulated in every month that has no cut: last-7-day submissions, all of them against only those that ended
+before the month's end.
+
+| | Value |
+|---|---|
+| Failure rate of the kept rows over all rows, median over the 34 non-March months | 1.00 (IQR 0.94-1.03) |
+| Months where the cut would lower it a lot (late-ending jobs fail more) | 2021-11 0.50, 2022-09 0.48, 2023-09 0.44 |
+| Months where it raises it more than 10% | 1 (2022-07, 1.21) |
+| Share of last-week rows that end before the month's end, median | 93.5% |
+| Late March 2024 failure rate (cut applied) | 0.423, against 0.047-0.118 in the neighbouring months |
+
+The cut does not raise the failure rate. Late March 2024's 42% is a real event (5-9 April 2024 also fail at 31-78%,
+claim auditor), not something the cut made. So the cut needs a note, not a decision item on dropping days.
+
+**3. Leak probe 13 alone.** No single newest month is outside the band. Pooled, the newest 6 months have
+*more* rows a day (z +3.5), not fewer. Failure rate in April 2024: 0.194 (z +2.9). Nothing points to censoring by the
+download date. The tail is denser and fails more, which is drift and the late-March event.
+
+**4. Training cap size (arithmetic, no run).** The largest training side holds 90.98% of 25,866,900 rows = 23.53M
+rows. At 384 float32 values per row, the embedding alone is **36.1 GB in memory**, so the precedent checker's figure
+holds. The container frame (all training rows plus 1.5M test rows, about 25.0M) would hold about 38.5 GB of
+embeddings. On disk it would be about 20 GB, going by the prepared 2.5M-row file (2.0 GB, about 800 B a row).
+
+**Disputes settled**
+
+**(1) Live outcome history: USE-6 against CLEAN-6. Settled by LEAK-9 precedent: a note, not a curator item**
+
+- **Facts (agreed):** an untrained rate over the user's last 100 finished jobs scores 0.915 / 0.902 / 0.921 AUC
+  (practitioner), against 0.797-0.878 for the honest LightGBM (gamer, 3-seed means). All of the gain comes from labels
+  inside the test window: the same history from training labels only adds nothing (gamer: 0.862 / 0.733 / 0.819).
+- **Rank:** the critic's rebuttal ("CLEAN-6 wins") has the rank backwards. CLEAN-6 is part 7 (P7) and cannot bar an
+  input that USE-6 (part 2) or LEAK-34 (part 3: an entity's history "is legitimate, also when it carries labels
+  forward") makes legitimate. The advocate's first reading, that USE-6 "does not reach labels", is weakened by LEAK-34.
+  CLEAN-6 therefore decides nothing here.
+- **What does decide it:** the LEAK-9 cases set the evaluation protocol for this exact pattern: "each test row is
+  predicted from the training rows and its own features only; no feature or model step may use other test rows".
+  - spanish_motor_insurance_coverage_level_2022_2024 (Andrej, 2026-11-09) adds "no history feature built across the
+    test fold".
+  - loan_default_prediction_imperial_college (Andrej, 2026-11-10) applies it under a temporal split.
+  - pricing_game_2016_french_fleet (CLEAN-19 exception) and the meituan mediator's protocol line point the same way.
+  - The admitted label history, tunisian_fraud_detection_challenge (USE-10/LEAK-34), was built so that "a test row's
+    previous label is always a training label".
+  - The practitioner's feature puts earlier test labels into later test rows' features. That is what the protocol
+    excludes. Neither side cited it.
+- **Remedy (ladder):**
+  - Keep the data.
+  - Name the gap in the fit reason (USE-8, Must): the operator sees outcomes live; a model frozen for four months does
+    not; untrained history is worth +0.04 to +0.12 AUC.
+  - Add the LEAK-9 protocol line to `splits_comment`.
+  - Put the history scores into the issue 3 recheck as a reference baseline.
+  - The training-label-only form (LEAK-34) is admissible, but it measured no gain, so there is nothing to ask for.
+- **Curator item or note:** a note. Both sides end at the note. Shipping in-window history would change the LEAK-9
+  protocol across datasets. That is an amendment for Andrej, not a fugaku item. Flag it only if he wants to reopen the
+  protocol.
+
+**(2) `mszl` in issue 4: add it (critic right; the advocate conceded)**
+
+- Issue 4 keeps the memory limit out because it is "the 'unlimited' sentinel on most rows". About 89% of rows hold
+  2^64. CLEAN-22 (Must): a column leaves for what it is (a leak, an identifier, a copy, the label's measurement). A
+  sentinel is none of these. Its encoding is CLEAN-10's job: keep the sentinel as its own level, or as missing plus
+  an indicator.
+- Timing: the manual's pjalter list (§2.5.4: elapse, rscunit, rscgrp, priority) does not include memory. The gamer
+  measured univariate AUC 0.633 (April 2024), above `freq_req`'s 0.567, which B already adds.
+- Caveat for the note: `mszl == msza` and `freq_req == freq_alloc` on 100% of rows in all 38 files (column audit
+  audit.json). Their timing rests on the manual, the same as for `freq_req`. Untested: whether a resource-group change
+  (`pjalter rscgrp`) resets a group default. Name this in the note. It does not separate `mszl` from `freq_req`.
+
+**(3) Corrected row-identity facts: a note under resolved issue 1, not a new item (advocate right)**
+
+- The critic's reason for an item was that issue 1 was decided on a refuted fact. Issue 1's own text put the
+  repeat structure in front of Myunghwan: 21.31% of April 2024 rows share (jid, adt), 180 groups hold both labels, and
+  deduplication is listed as unsupported.
+- The decisive experiment refutes the stronger worry: no row is a copy over the 44 fields. The 861,254 timing-identical
+  rows are distinct executions.
+- So the rules settle it, and nothing is left for the curator:
+  - LEAK-18: few features and plausible repeats are natural, so keep them and say so.
+  - LEAK-20: subjobs of one submission with different exit codes are genuine label ambiguity of the task.
+  - MET-17: per-row scoring stays for "a job a scheduler places".
+- Remedy: correct the Row identity and Evaluation unit bullets, and add a dated fact note under issue 1:
+  - 861,254 timing-identical rows in 300,062 groups, all distinct in counters;
+  - 20.2 / 39.4 / 25.4% of test rows (May-Aug / Sep-Dec / Jan-Apr) sit in identical-input groups, with 198 / 942 /
+    499 groups holding both labels;
+  - largest group 1,756 / 1,884 / 476 rows.
+- The notes also say how unequal the units are (MET-17's requirement). Issue 1 stays resolved.
+
+**(4) 1M training cap: a curator item, decided with duolingo; lean keep, with the embedding size written as the reason**
+
+- Consistent with the duolingo mediator: fugaku has a fact duolingo lacks. Its 384 float32 embedding coordinates make
+  a whole training side 36.1 GB in memory (checked above).
+- The critic is right that the AI cannot write the exception itself. The cap departs from the row-budget protocol
+  (issue #70, 2026-11-10), which came after the cited approval (2026-11-03). The departure therefore needs the curator's
+  dated decision.
+- A factor against: EV-4 and CLEAN-22 rule out a model's input limit or runtime as an argument. Container size is a
+  storage fact, close to that. The curator weighs it.
+- Options:
+  - a: keep the uniform class-proportional 1M of all history in the container, with the exception written.
+  - b: keep a 1M cap, drawn the protocol's way (newest year, extended back). This answers #70's ranking evidence and
+    needs a rebuild.
+  - c: `_1m` with whole training sides (about 20 GB on disk).
+- Lean: a. Choose b if Andrej weighs #70's dilution evidence above SPLIT-20's "what the authors trained on". Choose c
+  if he wants one rule for both datasets.
+
+**(5) Horizon: option E and the SPLIT-10 wording**
+
+- **Option E (Jan-Apr 2024, Sep-Dec 2023, Jan-Apr 2023)** goes into the table.
+  - SPLIT-15 (Should for older windows) prefers other years and asks a reason for walking back. Both sides agree.
+  - Pro: it trains on about 54% (above the floor) and tests the newest season twice.
+  - Con: it drops summer and 3 of the source's 11 holdout months, and needs custom cutoffs.
+  - A stays recommended, on SPLIT-19 (it covers the paper's June 2023-April 2024 holdout). The recommendation must say
+    so in words.
+- **"Exception to SPLIT-10" stays.** This is settled with meituan's mediator.
+  - The amended SPLIT-10 asks for a gap where a selection by the outcome is measured. Here it is measured (18.53% vs
+    0.292%), so no gap is an exception, not an application.
+  - Drop the Notes-for-the-AI sentence that rewords it as "No fixed embargo".
+  - Footnote [^x21f2] paraphrases `split_tree.md` ("accepts that filter in place of a fixed gap"). Replace it with
+    meituan's wording: "SPLIT-10: train only on rows whose outcome is known by the window's start, with a gap of about
+    the label's delay; no gap only where the measurements show neither a shortcut through recent labels nor a
+    selection by the outcome, and a departure otherwise is an exception."
+
+**Leak probe crash and group.log**
+
+- **group.log:** it is absent by design. `prep.sh` runs the group probe only for grouped datasets, and fugaku is
+  temporal. Nothing is missing there.
+- **What the leak probe completed:** single features, ablations, the number format, and the exact copies (0.0% across
+  the split with `adt`; 38.3% without, which are recurring identities).
+- **What it did not complete:**
+  - The 1-NN and distance-AUC step crashed: `neighbour_space` standardisation produced inf. This is a tool bug; the
+    column audit found no infinite values in the data.
+  - Probe 13 and the fills step never ran. Probe 13 has now run (experiment 3: clean).
+- **Rerun needed before ship?** Not before the curator's decisions. The missing 1-NN step can only add near-copy
+  evidence on recurring identities, which the exact-copy step, the gamer and LEAK-34 already cover.
+- **Rerun needed before the "verified" label?** Yes. Fix the probe, rerun it after the issue 4 rebuild (new columns),
+  and record the result.
+
+**Open issues in the record**
+
+| Issue | Verdict | What, why |
+|---|---|---|
+| **H** | **revise** | (1) Add option E as above; A stays recommended with its SPLIT-19 reason written against SPLIT-15's other-year preference. (2) Notes for the AI: drop "the 'Exception to SPLIT-10' wording can become 'No fixed embargo'"; keep the exception. (3) Footnote [^x21f2]: meituan wording. (4) Time-frame bullet "1-3 April 2024 are missing": add the fiscal-year cut (every March file ends at 31 March; late March 2024 = 28,113 test rows, 42.2% failed, 20.0% of window 0's positives; measured not to be selected by the cut). The requested raw-metadata measurement is done (probe 13 + experiment 2): drop it from the notes. |
+| **4** | **revise** | Option B adds `mszl` (sentinel as its own level or missing + indicator, CLEAN-10); remove "memory limit stays out" from B and from the Problem bullet's reasons. Add to Experiments the gamer's univariate AUCs (nnumr/cnumr 0.681, mszl 0.633, freq_req 0.567) and its one-seed gain (+0.010 / +0.016, below the 0.033 seed spread). Add the 100%-equality caveat. Recommendation stays B. Notes for the AI: add `mszl` to the columns read; rerun check and leak probes after the fix. |
+| 1-3 | keep (resolved) | Issue 1: add the dated row-identity fact note (dispute 3). Issue 3: the recheck spec gains reference baselines (below). No reopening. |
+
+Merges: none.
+
+**New issues for the curator (each one decision)**
+
+1. **Training cap: keep the in-container uniform 1M draw with the embedding size as the written exception, draw it the
+   protocol's way, or ship `_1m` with whole training sides?** Decide with duolingo_spaced_repetition_recall's new
+   issue 3. Rule: row-budget protocol (issue #70), SPLIT-20; EV-4/CLEAN-22 as the counter-factor. Lean a.
+   - Advocate's best evidence: 36.1 GB of embeddings in memory for one training side; the cap is distinguishing to
+     fugaku.
+   - Critic's best evidence: the protocol exists for size, and a uniform draw over all history dilutes recent jobs,
+     which #70 found can change rankings.
+
+No other new item. Live history and row identity are notes (disputes 1 and 3). The fiscal-year cut is a note
+(measured: no selection).
+
+**Changes to make now (no decision needed)**
+
+| Change | Rule |
+|---|---|
+| Fit reason + a note: the operator's live outcome history is not available to a model frozen per window; untrained last-100 history 0.915 / 0.902 / 0.921 against 0.797-0.878; training-label-only history adds nothing | USE-8 |
+| `splits_comment`: LEAK-9 protocol line (each test row predicted from the training rows and its own features only; no feature or model step may use other test rows) | LEAK-9 (Andrej 2026-11-09/10) |
+| Row identity and Evaluation unit bullets corrected (decisive experiment 1 + test-side shares); dated fact note under issue 1 | EV-1, LEAK-16/18, MET-17 |
+| Cohort limit bullet and fit reason: fiscal-year cut at every 31 March; late March 2024 holds 20.0% of window 0's positives; the cut measured not to raise the failure rate (median 1.00 over 34 months) | USE-8 |
+| Issue 3 recheck spec: add the per-usr / per-jnam training failure rates (0.794-0.838 / 0.673-0.805), the native models' log loss against the dummy (0.498 / 0.396 / 0.422 vs 0.389) and the history scores as reference baselines | TP-3, TP-4 |
+| Note: per-row AUC weighs cheap failures like costly ones (failed share 12.6% of rows, 7.0% of node-hours; top 1% of failed jobs hold 83.5% of failed node-hours); no cost from the source, so no weighted metric | MET-7, MET-17 |
+| Column-audit doc fixes: jobenv_req flip in April 2024; masked ids numbered by first appearance | EV-2 |
+| `download_description`: `fugaku_hpc_job_failure_1m/dataset.py` → `fugaku_hpc_job_failure/dataset.py`; typo "union's384-value"; regenerate the README | PROV-1 |
+| Leak probe: fix the inf in `neighbour_space` (tool), rerun after the issue 4 rebuild | verification checklist (P4, copies across the split) |
+
+**Agreed facts**
+
+- Label = nonzero exit code on all 25,866,900 rows; every input is known at submission (`adt <= qdt` on all 38
+  files); 0 late training labels; train shares 91.0 / 80.3 / 65.3%; test caps 500k; `dataset check` 0 errors,
+  0 warnings.
+- No exploit beat the seed spread (gamer). The embedding is a deterministic function of (usr, jnam, jobenv_req).
+- Methods beat the best one-column rate on 2 of 3 windows (+0.040, +0.076; -0.008 within the seed spread). TP-4 is
+  not met, and the critic conceded.
+- Requested nodes, cores, frequency and memory are fixed at submission per the manual. Time limit and priority are not
+  (LEAK-10).
+- The 861,254 timing-identical rows are distinct executions (decisive experiment 1).
+- The fiscal-year cut exists and does not select on the outcome (decisive experiment 2). Probe 13 shows no download
+  censoring.
+
+**Consistency with precedent**
+
+- History: follows LEAK-9 (spanish_motor_insurance, loan_default_prediction_imperial_college), pricing_game_2016 and
+  tunisian (training labels only). Nothing departs.
+- Issue 4 B: brazilian_ecommerce, medical_facility_operational_data, qsar_bioconcentration. open_soil's actor fact
+  is absent.
+- SPLIT-10 exception: kept as recorded. Meituan is now its second case of the same kind. The amendment count is
+  unchanged, because SPLIT-10's other exceptions serve SPLIT-14.
+- Duplicates: LEAK-18 natural repeats (sepsis_survival, tanzania_tourism); MET-17 per-row for scheduler jobs.
+- Training cap: the same lean as the duolingo mediator (fugaku keeps the cap on the embedding-size fact; duolingo
+  follows `_1m`). If Andrej wants one rule for both, fugaku moves to c.
+
+</details>
+
+<details><summary>Advocate (2026-11-21)</summary>
+
+**Advocate opening: fugaku_hpc_job_failure (2026-11-21)**
+
+Position: ship, after the fixes listed below. None of them needs a new scientific exception. One is a definition change (issue 4, B); the rest are documentation.
+
+**1. The task is real and nobody found a leak (P3, P4: USE-1/3 Must, LEAK, SPLIT-9 Must)**
+
+- The source paper defines this target ("completed if the exit code is 0, failed otherwise") and the task (prediction from "the information available at job submission time" on a temporal split). All 25,866,900 labels match the exit-code rule (claim audit, claim 1).
+- Every input is known at submission: `adt <= qdt` on all 38 files (claim 2). The column audit agrees, and so does the blind reviewer ("I found no leak").
+- The task gamer tried future same-user submissions, row order, `adt` formats, the `jnam` id order and source lookups. Nothing gained more than the seed spread: +0.001 / +0.005 / -0.005 against a spread of up to 0.033. Verdict: "I could not game this task."
+- No training row ends at or after its window start (claim 8; gamer "temporal hygiene").
+- `dataset check`: 0 errors, 0 warnings. The dtype probe flags 0 of 387 columns.
+- Gap I must disclose: the leak probe crashed in its nearest-neighbour step (`ValueError: Input X contains infinity`, leak.log), and there is no group.log. The independent gamer attacks cover the same ground, but the probe should be rerun once the crash is fixed. It is not evidence of a leak.
+
+**2. The value probe and TP-4 step 1 both say keep (P6: TP-4 Must, TP-2)**
+
+- Task probe: linear 0.794, LightGBM 0.783, RF 0.758 against a dummy at 0.5. Every family beats the dummy on 100% of splits, and the probe's best single feature scores 0.729.
+- TP-4 step 1 uses the best single feature chosen on each training side. The claim audit's per-category training failure rates (a target encoding, so stronger than a raw feature) are set against the gamer's honest LightGBM (3-seed means) below.
+
+  | Window | best one-column rate | honest LightGBM | gap |
+  |---|---|---|---|
+  | Jan-Apr 2024 | usr 0.838 | 0.878 | +0.040 |
+  | Sep-Dec 2023 | jnam 0.753 | 0.829 | +0.076 |
+  | May-Aug 2023 | jnam 0.805 | 0.797 | -0.008 (within the 0.021 seed spread) |
+
+- The methods are ahead on 2 of 3 windows, by 0.04 to 0.08. In TP-4's words, "the methods beat it on most splits: their gain is real". That leads to step 2, and the curator already ruled there: "Yes with the recheck" (issue 3, Resolved 2026-11-03).
+- The rule's first step also says the natural core of a task (here "who submits it") is expected to dominate.
+
+**3. The practitioner's outcome history is not an input we may ship. Its remedy is a note (CLEAN-6 Must outranks the USE-6 reading)**
+
+- The practitioner's strongest objection is that the user's last 100 finished jobs score 0.90 to 0.92 and that leaving them out breaks USE-6.
+- Those scores are label-based counts: failure rates over earlier rows' exit states. CLEAN-6 (Must): "Never build features from the labels (target or mean encodings, label-based counts)".
+- Precedents point the same way:
+  - The applied history feature, african_credit_scoring_challenge's `earlier_loans`, is "built without labels".
+  - pricing_game_2016_french_fleet left a fleet's earlier record out because it "would put one test period's claims into another's features".
+- Inside a four-month test window, the practitioner's feature puts earlier test labels into later test rows' features. That is the same pattern, and it turns the benchmark into online learning, a different design.
+- USE-6's cases are columns of the row: a promised date, a forecast, minutes early. None is another row's outcome. The two rules do not conflict here: CLEAN-6 bounds what may be built, and USE-6 does not reach labels.
+- Remedy, mildest first:
+  - (a) The note the practitioner offers as the alternative: "the operator's live outcome history is excluded", with its worth (0.04 to 0.12 AUC). Add the scores to the issue 3 recheck as a reference baseline.
+  - (b) If staleness is the concern, Horizon option B (monthly windows) is the in-rule remedy (SPLIT-12).
+- Label-free history (counts and gaps of earlier submissions, the african_credit pattern) is admissible under CLEAN-19. The gamer's past-only order features gave +0.018 / -0.001 / -0.014, which is noise, so I do not ask for them.
+
+**4. Issue 4: take B. It is a definition fix, not a reason to hold (USE-6 Must, remedy ladder)**
+
+- I concede the gap. Requested nodes, cores and frequency are fixed at submission (Fujitsu manual §2.5.4) and the actor sees them. All three non-column-audit agents (blind reviewer, gamer, practitioner) raised it.
+- B adds `nnumr`, `cnumr` and `freq_req`. Time limit and priority stay out: pjalter can change them after submission (LEAK-10). The precedent check finds B consistent (brazilian_ecommerce, medical_facility, qsar_bioconcentration), and the open_soil fact behind C is absent here.
+- The gain is suggestive, not proven: +0.010 / +0.016 on one window with one seed (gamer), and mixed in the column audit's ablation. USE-6 does not depend on a gain.
+- This is the mildest remedy on the ladder (fix the definition). It does not touch target, split or metric.
+
+**5. Cohort selection is a documented approximate fit, and the curator has accepted it (USE-8 Must, issue 1 Resolved)**
+
+- Three agents found the cohort limits again: the post-run cleaner, nonzero exit as a proxy, and execution records rather than parent jobs. USE-8 asks for these to be written down, not for them to be absent. They are written down, the record carries `Selection Bias`, and Myunghwan accepted this fit (issue 1, 2026-11-03).
+- New fact, the fiscal-year cut at 31 March (claim audit finding 1). It is real, and the remedy is (a): name it in the Cohort limit bullet. 2024's late-March spike is partly a real event, because 5-9 April 2024 also fail at 31-78%. Rows of a real event are not an artefact to drop.
+- The blind reviewer called the row selection "not uniform". That is the documented 1M-train / 500k-test cap, not label selection. The gamer measured the kit's April 2024 failure rate at 0.1939 against 0.1942 in the source.
+
+**6. Bulk subjobs and the embedding: documentation, not data changes (SPLIT-30, MET-17 Should, CLEAN-2 Must)**
+
+- I concede that the Row identity sentence is false: 861,254 rows are identical subjob records (claim audit claim 4). Correct it and give the shares: 20 to 39% of test rows sit in identical-input groups.
+- It is not a leak. Copies never cross the split, because `adt` is a feature and train `adt` < test `adt` (gamer: "signal, not leaks"). MET-17 keeps the score per row because the scheduler places each job. Weighting by (jid, adt) belongs to resolved issue 1 and is the curator's call.
+- The blind reviewer suggested PCA on the embedding. That is ours to refuse. The embedding is the source's own representation, and CLEAN-2 (Must) leaves dimension reduction to the pipeline. It also carries real signal: the blind reviewer measured AUC 0.60 to 0.78 on unseen (usr, jnam, env) combinations, against 0.5.
+
+**7. Split, exception and cap: keep as decided, and write down the missing reasons (SPLIT-10/12/14/15/20 Should)**
+
+- Horizon A covers the source's own holdout (June 2023 to April 2024) plus May 2023. Each window trains on at least 65.3% of the rows (SPLIT-14). SPLIT-15 accepts this reason for walking back, and the precedent check agrees. Add its option E (Jan-Apr 2023) to the table for completeness.
+- SPLIT-10: the no-gap choice is a curator exception with a stated reason (Resolved 2026-11-03). Keep the "Exception to SPLIT-10" wording (precedent check finding 1, option a). The Horizon note should not relabel it.
+- Training cap: write the distinguishing fact as an exception in the splits comment (precedent check finding 3, option a). That fact is the 384 float32 embedding columns, about 36 GB for a full training side. Decide duolingo the same way.
+- Mechanical: fix the download recipe path to `fugaku_hpc_job_failure/dataset.py` (PROV-1) and the "union's384-value" typo.
+
+**Changes I support**
+
+| Change | Kind | Source |
+|---|---|---|
+| Issue 4 B: add nnumr, cnumr, freq_req | definition, rebuild | column audit, gamer, blind |
+| Fiscal-year cut named in the Cohort limit | doc | claim audit 1, column audit |
+| Row identity / Evaluation unit sentences corrected, with shares | doc | claim audit 2 |
+| Note: live outcome history excluded (CLEAN-6), its worth; scores added to the issue 3 recheck | doc | practitioner 1 |
+| Keep the "Exception to SPLIT-10" wording; record the cap's reason; add option E | doc | precedent 1-3 |
+| Download path, typo | doc | claim audit 4, column audit |
+| Rerun the leak probe after fixing the infinity crash; run the group probe | check | leak.log |
+
+</details>
+
+<details><summary>Advocate rebuttal (2026-11-21)</summary>
+
+**Advocate rebuttal: fugaku_hpc_job_failure (2026-11-21)**
+
+We agree on the outcome: ship after changes, with no exclusion. We disagree on two things. The first is whether live outcome history should be offered as an input or written down as a note (point 1). The second is whether the bulk-subjob weighting needs a new decision item (point 4).
+
+| # | Critic's point | Answer |
+|---|---|---|
+| 1 | Live outcome history | Partly conceded: a decision item is fair. I dispute the recommendation |
+| 2 | Requested resources, with `mszl` | Conceded, including `mszl` |
+| 3 | Fiscal-year cut | Conceded |
+| 4 | Row-identity facts | Correction conceded; new decision item disputed |
+| 5 | One-column lookups and log loss | Conceded as recheck input; "mostly IDs" disputed |
+| 6 | Split items | Agreed (my point 7) |
+| 7 | Verification and recipe | Conceded |
+
+**1. Live outcome history: partly conceded**
+
+**I concede the rank argument.** USE-6 is a Must in part 2, so it outranks CLEAN-6, a Must in part 7. If USE-6 really covers other rows' outcomes, CLEAN-6 cannot block it. Whether it covers them is a reading of the rule. That reading is the curator's call, so a decision item is fair.
+
+**I dispute the recommendation. Option (b), the note, should be the recommendation, and (a) the alternative.**
+
+- **USE-6's cases.** Every applied case is a value attached to the row: a promised date, a forecast, minutes early. None of them is another row's label.
+- **The label-based history precedents point to (b).**
+  - The one applied history feature (african_credit `earlier_loans`) was built "without labels".
+  - pricing_game_2016 kept one test period's claims out of another test period's features.
+  - The critic concedes that (a) has the same property: test labels feed later test rows' features.
+- **CLEAN-19's "other rows" bullet does not cover labels.** Its case, rain_in_australia, uses other stations' readings, which are features. CLEAN-6 still binds anything that is not settled under USE-6.
+- **(a) changes the benchmark design.**
+  - A frozen four-month model would be scored partly on label lookups computed from the test window. That is online evaluation.
+  - It rests on `edt` as the label arrival time. Reporting latency is unreleased, so (a) needs a lag that nobody can measure.
+- **The 0.90-0.92 scores show what history is worth. They do not show that the shipped task is wrong.** The gamer's history from the training side only hurt (0.862 / 0.733 / 0.819). So all of the gain comes from outcomes inside the test window. That is exactly the online-learning ingredient a static benchmark leaves out by design.
+- **Horizon option B (monthly windows) is the in-rule way to reduce staleness.**
+
+Proposed item: (b) recommended. (a) is the alternative and must name the cost the critic already names. Put the practitioner's scores into the issue 3 recheck either way.
+
+**2. Issue 4, widened with the memory limit: conceded**
+
+- CLEAN-22 (Must): a column leaves for what it is, not for its values. A sentinel value is no reason to drop the column.
+- The manual's pjalter list (§2.5.4) does not include memory, so the limit is fixed at submission.
+- Univariate AUC is 0.633 (task gamer).
+- Add `mszl`, with "unlimited" treated as its own level or as missing under CLEAN-10. Do not ship it as a large number.
+- `elpl` and priority stay out (LEAK-10). We agree on that.
+
+**3. Fiscal-year cut: conceded**
+
+- Name it in the Cohort limit bullet and in the fit reason.
+- Run the late-March selection measurement before any item on dropping rows. Raise that item only if the measurement shows selection, since part of the spike is real (5-9 April 2024 fail at 31-78%).
+- This matches my point 5 and remedy (a) of the claim auditor.
+
+**4. Row-identity facts: correction conceded, new decision item disputed**
+
+- I concede the correction. The README sentences are false and must give the measured shares (EV-1).
+- I dispute that issue 1 "rests on" the false sentence. Issue 1's own text put the fact in front of Myunghwan: "In April 2024, 89,593 of 420,450 records (21.31%) share an identifier/submission-time pair with another record; 180 such groups contain both labels". It also listed "deduplicating IDs" among the unsupported alternatives. He accepted per-execution scoring knowing that.
+- The new numbers (20-39% of test rows) are larger than the April figure, but the kind of fact is the same.
+- MET-17 keeps per-row scoring for a job the scheduler places.
+- Remedy: correct the sentences, and add the shares to the issue 1 note. A new item is needed only if the curator asks to reopen.
+
+**5. One-column lookups and log loss: partly conceded**
+
+- **Conceded:**
+  - The log-loss numbers belong in the issue 3 recheck. The models score 0.498 / 0.396 / 0.422 against 0.389 for the dummy. This is the known `drift_baseline` flag.
+  - Running the recheck after points 1 and 2 are decided is sensible.
+- **Disputed: "mostly measures ID handling."** Against the gamer's honest LightGBM, the methods lead the best one-column rate by +0.040 and +0.076 on two windows. They trail by 0.008 on the third, which is inside the 0.021 seed spread. TP-4 step 1 reads that as a real gain.
+- The embedding also adds signal where IDs cannot: AUC 0.60-0.78 on unseen (usr, jnam, env) combinations (blind reviewer).
+
+**6. Split items: agreed**
+
+This is the same as my point 7:
+
+- Keep the "Exception to SPLIT-10" wording.
+- Add option E to the Horizon table, with A still recommended.
+- Open a decision item on the training cap, paired with duolingo. The distinguishing fact is the size of the embedding block (about 36 GB for a full training side).
+
+**7. Verification and recipe: conceded**
+
+- Fix the recipe path and the typo, then regenerate the README.
+- Find the infinite value in the leak probe's encoding, then rerun the leak and group probes.
+- Until those probes have run, the dataset is not "verified".
+
+</details>
+
+<details><summary>Critic (2026-11-21)</summary>
+
+**Critic opening brief: fugaku_hpc_job_failure (2026-11-21)**
+
+**Position:** ship only after changes. The task is real: the label is verified on all 25,866,900 rows and every
+shipped input is known at submission. But the inputs leave out the two things the stated actor (operator or
+admission hook) has on screen at submission, and that changes the task. Two documented facts are false, and the
+probes are incomplete. Nothing here is a Must that cannot be fixed, so I ask for no exclusion.
+
+Evidence read: the record (`## Review`, issues 1-4, Horizon block), `dataset.py`, the column audit
+(the column audit), the claim auditor, domain practitioner, precedent checker, blind reviewer and
+task gamer reports, and `check.log`, `leak.log`, `task.log`, `dtype.log`. There is no `group.log`.
+
+**1. The operator's live outcome history is left out, and it beats the shipped inputs in every window (validity; USE-6 Must, CLEAN-19 Should) — NEW**
+
+- **Problem:** at submission the operator knows how this user's and this job name's earlier jobs ended. The definition
+  ships the user only as a fixed category. A model frozen at the window start cannot use any outcome from the
+  following four months.
+- **Evidence** (domain practitioner, all rows, no fitted model; uses only jobs with `edt < adt`):
+
+  | ROC AUC | May-Aug 2023 | Sep-Dec 2023 | Jan-Apr 2024 |
+  |---|---|---|---|
+  | Tuned LightGBM on shipped inputs (record, issue 3) | 0.791 | 0.778 | 0.866 |
+  | User's last 100 finished jobs | 0.901 | 0.880 | 0.891 |
+  | User's last 100, shrunk to the static rate | 0.915 | 0.902 | 0.921 |
+
+  99.8-99.9% of test jobs have such history. Log loss improves too (0.226 vs 0.293 on the oldest window).
+- **Effect:** the shipped task is "predict job failure without the job history", and an untrained lookup the actor
+  holds beats it by 0.04-0.12 AUC. The task gamer's history from the training side only *hurt* (0.862 / 0.733 /
+  0.819), so the gain comes from outcomes inside the window, which the actor has and the frozen model lacks.
+- **Rules:** USE-6 (Must): dropping an input known at the prediction point changes the task. CLEAN-19 (Should),
+  bullets 3 and 4: build the history a data scientist would build, and the inputs the actor reads from other rows of
+  the release, "kept only where they are known by then".
+- **Remedy (mildest that works):** a new decision item for the curator.
+  - (a) Add past-only history features in `_clean`: per user and per job name, the failure rate and count over the
+    last N finished jobs, plus the time since the last failure. Count only rows with `edt` strictly before the row's
+    `adt` (plus a lag if the curator wants a margin for reporting latency, which is unreleased), and apply the same
+    rule in training and test.
+  - (b) Keep the inputs, and say in the fit reason and the notes that the live history is left out and what it is
+    worth.
+  - Name the cost of (a): test labels feed later test rows' features. That is what the actor sees, unlike the
+    entity-split case behind LEAK-9's protocol line, but it is a benchmark design choice, so the curator decides it.
+
+**2. Requested nodes, cores, frequency and memory limit are left out (validity; USE-6 Must) — KNOWN (issue 4), with a widening**
+
+- **Evidence:** three agents found this independently.
+  - Column audit: the Fujitsu manual (section 2.5.4) lets `pjalter` change only elapse, rscunit, rscgrp and priority,
+    so the other requests are fixed at submission.
+  - Task gamer: univariate AUC on April 2024 (420k jobs) is 0.681 for `nnumr`/`cnumr`, 0.633 for `mszl` and 0.567
+    for `freq_req`. Adding the requests gains +0.010 to +0.016 on r0 (one seed, below the seed spread).
+  - Blind reviewer: jobs requesting more than 30 nodes fail at 18.7%, against 6.6% for 3-8 nodes.
+- **Support for issue 4 option B, plus one change:** option B leaves out `mszl` (memory limit) because it holds the
+  "unlimited" sentinel on most rows. That is not a reason under CLEAN-22 (Must): a column leaves for what it is, never
+  for its values. The manual does not list memory among the fields that can change after submission, and the
+  memory limit alone scores AUC 0.633. Add it, typed so that the sentinel is a level, not a number.
+- Option C has no distinguishing fact: the precedent checker shows open_soil's "choice of actor" fact is absent here.
+- The time limit (`elpl`) and priority stay out, because they can change after submission (LEAK-10).
+
+**3. Every fiscal year ends in a cut, and the newest window's last week carries 20% of its positives (validity; USE-8 Must, SPLIT-10 Should) — NEW**
+
+- **Evidence** (claim auditor, finding 1): in every March file, no job ends after March 31. In every other month,
+  0.3-9.3% of jobs end after the month's end. The cause is the fiscal-year maintenance, which ran April 1-4 in 2024.
+- Jobs submitted on 25-31 March 2024 are 28,113 test rows (5.6% of window 0). They fail at 42.2% and hold **20.0% of
+  that window's positives**. Their cohort keeps only jobs that finished before the stop, which are short-limit jobs.
+  Part of the spike is real, since 5-9 April 2024 fail at 31-78%.
+- **Effect:** the README's Cohort limit bullet names only the cleaner and the start of April 2024. A selection that
+  sets a fifth of the newest window's positives is undisclosed.
+- **Remedy:**
+  - Name the fiscal-year cut in the Cohort limit bullet and in the fit reason.
+  - Measure whether late-March rows are selected on the outcome (failure rate by elapsed limit, late March vs the
+    same days of the other years).
+  - If they are, add a decision item on dropping those days from the test sides, like the short-last-month check
+    under SPLIT-10.
+
+**4. Two row-identity facts are false, and the resolved issue 1 rests on one of them (EV-1 Must, USE-8 Must) — NEW at this scale**
+
+- **Evidence:**
+  - The README says "Repeated job IDs have distinct submission/end times" and "all 38 traced pairs of exact projected
+    duplicates differ in source execution timing". The claim auditor refutes this: 300,062 groups hold 861,254 rows
+    with the same jid, every timestamp, exit code and duration (the largest group has 122 rows).
+  - On the shipped test sides, 20.2 / 39.4 / 25.4% of rows have identical inputs to another row. The largest groups
+    have 1,756-1,884 rows, and 198-942 groups hold both labels.
+  - Leak probe: 38.3% of test rows have an exact copy of their numeric features in training, and 17.7% have copies
+    with both labels. This is not a leak, because `adt` differs.
+- **Effect:** scores weight a bulk job by its number of subjobs. Issue 1 was accepted on 2026-11-03 against the stated
+  fact that repeats differ in timing. EV-1 puts facts before rules, so the curator should see the corrected fact.
+- **Remedy:**
+  - Correct the Row identity and Evaluation unit bullets with the measured shares.
+  - Add one decision item: keep per-row scoring as accepted, or weight or collapse the rows that share (jid, adt) and
+    the label. No exclusion.
+
+**5. A one-column lookup comes close to or beats the tuned model, and every native model's probabilities are worse than the prior (value; TP-4 Must, TP-1 Must) — NEW numbers, KNOWN flags (issue 3)**
+
+- **Evidence:**
+
+  | Test side | Training failure rate per usr | per jnam | Tuned LightGBM (record) |
+  |---|---|---|---|
+  | May-Aug 2023 | 0.794 | **0.805** | 0.791 |
+  | Sep-Dec 2023 | 0.724 | 0.753 | 0.778 |
+  | Jan-Apr 2024 | 0.838 | 0.673 | 0.866 |
+
+  In `task.log`, the dummy's log loss is 0.389, against 0.498 / 0.396 / 0.422 for the native linear, random forest
+  and LightGBM. The flags are `no_spread` and `drift_baseline`.
+- **Effect:** these are fitted one-column lookups, so they do not prove `Trivial` (TP-4). But the benchmark as built
+  mostly measures how a method handles 3 identifiers and 384 dense coordinates of the same identifiers. Points 1 and 2
+  would change that.
+- **Remedy:** add these baselines and the log losses to the issue 3 recheck. Run the recheck after points 1 and 2 are
+  decided, not before. No exclusion.
+
+**6. Three split choices lack a current decision (SPLIT-15 Should, SPLIT-10 Should, row-budget protocol) — NEW (precedent checker)**
+
+- **Training cap:** `TRAIN_CAP = 1_000_000` draws a uniform 1M of *all* history inside the container. The row-budget
+  protocol (issue #70, 2026-11-10) says "N is recorded, not applied", and its sampler takes the newest year. The
+  approval cited for the cap (2026-11-03) predates the protocol. Remedy: a decision item paired with
+  duolingo_spaced_repetition_recall, which follows the same pattern. If the cap stays, give the reason in the splits
+  comment.
+- **Horizon options:** none of options A-D tests the same season in another year. SPLIT-15 prefers that. Remedy: add
+  option E (Jan-Apr 2024, Sep-Dec 2023, Jan-Apr 2023), which trains on about 54% of the rows, above the floor. A can
+  stay the recommendation if its reason is given.
+- **"Exception to SPLIT-10":** the Horizon notes propose rewording it as "No fixed embargo". The amended SPLIT-10 sets
+  a gap where a measurement shows selection by the outcome, and the record measured one: 18.53% vs 0.292%. Remedy:
+  keep the exception wording, and drop that sentence from the notes.
+
+**7. The verification is incomplete, and the rebuild recipe is broken (verification checklist; PROV-1 Must) — NEW**
+
+- **Leak probe:** `leak.log` crashes in the nearest-neighbour step with `ValueError: Input X contains infinity`, so
+  the copies-across-the-split part of the verification checklist (leak probe 5) did not complete. `group.log` does not
+  exist.
+- **Recipe:** `download_description` (line 144) parses `datasets/_dev/tabarena-v0pt2/fugaku_hpc_job_failure_1m/dataset.py`,
+  which was removed. Run as written, it fails with FileNotFoundError.
+- **Typo:** "union's384-value" (line 179).
+- **Remedy:**
+  - Fix the path and the typo, and regenerate the README.
+  - Find the infinite value in the probe's encoding. Check whether it is `adt` or an embedding coordinate (the column
+    audit found none in the embeddings). Then rerun the leak and group probes before the dataset is called verified.
+
+**Ask, in order**
+
+1. Decision items on points 1 (history features) and 4 (weighting by (jid, adt)), and the existing issue 4 widened
+   with the memory limit.
+2. The documentation fixes from points 3, 4 and 7.
+3. The split items from point 6.
+4. The issue 3 recheck with the baselines from point 5.
+
+</details>
+
+<details><summary>Critic rebuttal (2026-11-21)</summary>
+
+**Critic rebuttal: fugaku_hpc_job_failure (2026-11-21)**
+
+**Net:** I concede the history-features remedy and the value point. Two disputes remain: the memory limit, and who
+decides the training cap. One item stays open for the curator: issue 1 was resolved on a fact that is now refuted.
+
+| Advocate point | Response | Why |
+|---|---|---|
+| 1. Real task, no leak found; probe rerun needed | **Concede** | We agree. The leak probe crashed (infinity) and the group probe is missing, so both must be rerun before the dataset is called verified. |
+| 2. Value: methods beat the one-column rates on 2 of 3 windows | **Concede** | The gamer's 3-seed means are the better comparison than the record's tuned run. TP-4 is not met, and issue 3's recheck covers the rest. My point 5 shrinks to adding the per-usr and per-jnam rates and the log losses (all three native models are worse than the dummy, 0.389) to that recheck. |
+| 3. Outcome history is barred by CLEAN-6 | **Concede the remedy, keep the gap** | See below. |
+| 4. Issue 4 B | **Concede B; dispute leaving out `mszl`** | See below. |
+| 5. Cohort documented; fiscal-year cut is doc only; the late-March spike is partly real | **Mostly concede** | A real event is not an artefact. I drop "drop those days" as a remedy unless a measurement shows the cut selects on the outcome. Naming the cut in the Cohort limit bullet and the fit reason is the fix. One addition: the note should say that late-March rows hold 20.0% of window 0's positives, so a reader knows one week drives that window's score. |
+| 6. Bulk subjobs: correct the text; weighting is the curator's call | **Concede the no-leak point; one item stays** | See below. |
+| 7. Split: keep A, add E, keep the exception wording, record the cap's reason | **Concede A, E and the exception wording; dispute the cap** | See below. |
+
+**Point 3: CLEAN-6 wins over my remedy (a)**
+
+- CLEAN-6 (Must) names "label-based counts". A user's failure rate over earlier jobs is exactly that.
+- The pricing_game_2016 precedent (CLEAN-19 exceptions) also refuses to carry one test period's labels into another's
+  features. I withdraw remedy (a).
+- The only label-lag exception I know is TP-10's last observation (rain_in_australia), and it is narrow. Its analogue
+  here, the user's last finished job, scores 0.775 / 0.782 / 0.805 and does not beat the shipped model. So it is not
+  worth asking for.
+- What I keep is a USE-8 (Must) point, not a feature request. The fit reason must name the gap: the operator has the
+  live outcome history, and it is worth 0.04-0.12 AUC over the shipped model. The issue 3 recheck should carry the
+  practitioner's history scores as a reference baseline. This is the advocate's remedy (a), so we agree.
+- Horizon option B (monthly windows) is a fair in-rule remedy for staleness. It is already in the Horizon table.
+
+**Point 4: add the memory limit**
+
+- The advocate's B adds only `nnumr`, `cnumr` and `freq_req`.
+- `mszl` passes the same timing test: the manual (section 2.5.4) lets `pjalter` change only elapse, rscunit, rscgrp
+  and priority. Its only stated reason for staying out is that most rows hold the "unlimited" value.
+- CLEAN-22 (Must): a column leaves for what it is, not for its values. The gamer measured AUC 0.633 for it alone on
+  April 2024, above `freq_req`'s 0.567, which B adds.
+- Remedy: add `mszl` to B, with the "unlimited" value as its own level or as missing.
+
+**Point 6: the curator should see the corrected fact**
+
+- Issue 1 was accepted on 2026-11-03 with the statement that repeated records "differ in source execution timing".
+  That is refuted: 861,254 rows are identical in jid, every timestamp, exit code and duration.
+- EV-1 (Must) puts facts before rules. Correcting the sentence is not enough, because the curator decided on the old
+  one.
+- Remedy: one short item that gives the corrected shares (20-39% of test rows sit in identical-input groups) and asks
+  whether per-row scoring still stands. Recommend keeping it (MET-17). The curator, not the panel, closes it.
+
+**Point 7: the training cap needs a curator decision, not an AI-written exception**
+
+- The 36 GB figure is the precedent checker's estimate. Nobody measured it, so EV-1 applies.
+- The row-budget protocol exists to handle size: it keeps the training side whole and records N. A size reason is
+  therefore an argument against the protocol itself.
+- The cap also changes what the training side holds: a uniform draw over all history rather than the protocol's
+  newest year. Issue #70 found that this choice can change rankings.
+- Remedy: a decision item, paired with duolingo_spaced_repetition_recall. The options are the precedent checker's
+  a / b / c, each with its measured size. If the curator keeps the cap, the exception is written with the curator's
+  reason.
+
+**Remaining asks**
+
+1. Issue 4 B plus `mszl`.
+2. Text fixes:
+   - the fiscal-year cut, with the 20% share;
+   - the row-identity sentences;
+   - the fit reason naming the live-history gap and its worth;
+   - the download path and the typo.
+3. Curator items:
+   - per-row scoring on the corrected row-identity fact;
+   - the training cap, paired with duolingo;
+   - option E added to the Horizon table.
+4. Rerun the leak and group probes.
+5. The issue 3 recheck with the one-column rates, the log losses and the history scores as reference baselines.
+
+No exclusion.
+
+</details>
+
+<details><summary>Claim audit (2026-11-21)</summary>
+
+**Claim audit: fugaku_hpc_job_failure (fugaku), 2026-11-21**
+
+Data: all 25,866,900 rows from the column audit's compact table (the run folder, 27 source columns; no embeddings). I rebuilt the shipped membership by running the definition's own `_select_temporal` on the full metadata, so it was not sampled. It reproduces every count in the record. Scripts and logs: the run folder (audit1.py, audit2.py). Audit1 crashed after its descriptive part; audit2 redid the membership part. No `check.log`, leak, task, dtype or group probe output exists in the run folder, and there is no `findings/fugaku.md` yet. I did not use them.
+
+**Claims table**
+
+| # | Claim (where) | Test | Result | Evidence | Rule |
+|---|---|---|---|---|---|
+| 1 | 25,866,900 records, 2,558,519 failed (9.891%); every label is ec==0 vs nonzero (curation_comments: Target) | full pass | holds | 2,558,519 failed (0.098911); 0 mismatches with `ec != 0` | MET-3 |
+| 2 | Prediction point is submission, before queue insertion (Prediction point) | adt <= qdt on every file | holds | min share over 38 files = 1.0 | USE-3 |
+| 3 | Submission months are disjoint across files (Row identity) | adt month = file month | holds | share = 1.0 in all 38 files | - |
+| 4 | "Repeated job IDs have distinct submission/end times" (Row identity); "all 38 traced pairs of exact projected duplicates differ in source execution timing" (Evaluation unit) | group rows on (jid, usr, jnam, jobenv_req, adt, sdt, edt, ec, duration) | **refuted** | 300,062 groups hold 861,254 rows with identical jid, all timestamps, exit code and duration (largest group 122). (jid, adt) is shared by 5,970,638 rows (23.1%); 9,661 of those groups mix both labels | USE-8, EV-1 |
+| 5 | No exact duplicates over the 44 non-embedding fields within a month (Row identity) | duplicates on the 17 available fields | untested | 552,536 rows duplicate on the 17 fields I have. The other 27 (counters, energy) are not in the compact table, so this cannot refute the claim | - |
+| 6 | jid is a nonunique identifier (Exclusions) | count | holds | 18,814,817 distinct jid for 25,866,900 rows | - |
+| 7 | The embedding encodes the original usr/jnam/jobenv_req strings, without outcomes (Inputs) | author code `generate_derived_features.py`; per-triple spread | holds | it encodes `usr_or, jnam_or, jobenv_req_or` joined by commas; within-triple spread is about 2e-7 (float noise; column audit's embdiff) | LEAK |
+| 8 | Late labels removed at the cutoffs: 10,387 / 48,375 / 28,118 (May / Sep / Jan) (Maturity, splits_comment) | recompute | holds | 10,387 / 48,375 / 28,118 exactly; shipped train edt max is before each cutoff | SPLIT-9 |
+| 9 | Late-ending last-day jobs fail at 18.53% vs 0.292% before September (Maturity) | Aug 31, 2023 submissions | holds | 18.53% (n = 9,428) vs 0.292% | SPLIT-10 |
+| 10 | Train share before the cap 91.0 / 80.3 / 65.3%; at least 50% before the oldest window (Horizon, splits_comment) | recompute | holds | 90.98 / 80.32 / 65.32% after the maturity filter (91.09 / 80.51 / 65.36% before it) | SPLIT-14 |
+| 11 | Test windows of 2,304,010 / 2,737,058 / 3,918,654 rows, 500k each after the cap; 1M train each (Horizon, README) | rebuild membership | holds | exact; 2,500,499 selected rows; test failed 59,253 / 74,610 / 57,135 (11.85 / 14.92 / 11.43%), newest first | SPLIT-33 |
+| 12 | Users seen before: 74.1 / 95.1 / 98.0% (record: blind reviewer) | shipped sides | holds | 74.12 / 95.08 / 97.98% (oldest first) | USE-10 |
+| 13 | April 2024 starts April 4; ends run through May 14 (Cohort limit, Horizon) | full pass | holds | first adt 2024-04-04 15:06; edt max 2024-05-14 02:38. Fugaku maintenance ran 1 Apr 00:00 to 4 Apr 16:00 JST ([RIKEN system report 2024-04](https://www.r-ccs.riken.jp/fugaku/docs/workshop/2024/systemreport/systemreport_202404.pdf)) | - |
+| 14 | Test labels are eventual exit states; the only cohort limits are the cleaner's post-run filter and April 2024 (Cohort limit, Maturity) | share of each month's jobs ending after the month's end | **refuted (incomplete)** | see finding 1: every March file is cut at March 31 | USE-8, SPLIT-10 |
+| 15 | Collection facts: delay median 2.2 h, 99.9% within 23.6 days, maximum 283 days (Assessment 2026-11-21) | quantiles | holds | 0.0908 d (2.18 h), 23.56 d, 283.3 d | - |
+| 16 | The source cleaner requires post-run measurements; authors evaluate representations separately; their holdout is 23_06 to 24_04 (Changes, Cohort limit, splits_comment) | read the pinned author code and paper | holds | cleaner drops rows missing perf1-6, econ and the like; `features` loop fits each representation alone; `test_yms` = 23_06 to 24_04; the paper says "more accurate when they are updated frequently over time with recent data" | - |
+| 17 | Requested elapsed limit and priority can change after submission (Changes) | manual, as quoted by the column audit | holds | pjalter changes elapse, rscunit, rscgrp and priority (§2.5.4). Issue 4 (KNOWN) covers the other requests | USE-6 |
+| 18 | The download recipe recreates the raw inputs (download_description, README Rebuild) | read the path | **refuted** | the recipe parses `datasets/_dev/tabarena-v0pt2/fugaku_hpc_job_failure_1m/dataset.py`, which no longer exists after the rename. Run as written, it fails with FileNotFoundError | PROV-1 |
+| 19 | Native linear/RF/LightGBM 0.794 / 0.758 / 0.783; tuned 0.8655 / 0.7775 / 0.7911; the user-only model does not match the full model on every fold (issue 3, Value follow-up) | per-category training failure rate (usr, jnam, usr+jnam) scored on the shipped test sides | holds literally; weaker than it reads | see finding 3 | TP-4 |
+| 20 | Metric: the paper reports accuracy with no threshold or cost; the pinned baseline calls classification_report; fallback is roc_auc (metric reason) | paper (PMC12311113), baseline_experiments.py | holds | the paper defines accuracy as the share classified correctly and fixes no threshold or cost; the baseline's `metric` is `classification_report` | MET-1, MET-5/6/8 |
+| 21 | Metric computable on our folds (MET-2) | count positives per test fold; constant-prediction AUC | holds | 57k-75k positives per test fold; constant prediction gives 0.5 on every fold; no scoring column needed | MET-2 |
+| 22 | No row is a copy across the split (implied) | adt is a feature and train adt < test adt | holds by construction | the bundle duplicate check was skipped (`dataset_duplicates_skipped`). Within-side copies are large (finding 2) | SPLIT-30 |
+| 23 | accepted_check_warnings = {} | README bundle_checks | holds | 0 errors, 0 warnings, 2 infos (heavy checks skipped) | - |
+
+**Findings, ranked**
+
+**1. NEW: every fiscal year ends in a cut; jobs still running at March 31 are missing (validity, USE-8 / SPLIT-10, Weigh)**
+
+| March file | jobs ending after Mar 31 | last 2 days: share crossing month end | last 3 days: share with time limit past the cut | last 2 days: share failed |
+|---|---|---|---|---|
+| 2021 | 0 | 0% | 5.1% | 12.3% |
+| 2022 | 0 | 0% | 0.0% | 9.3% |
+| 2023 | 0 | 0% | 0.0% | 4.8% |
+| 2024 | 0 | 0% | 0.6% | **44.7%** |
+| other 34 months | 0.3-9.3% of the month | 2.6-64% | Feb 2022 / 2023 / 2024: 11.7 / 1.1 / 11.7% | - |
+
+- Each March file's last end time falls minutes after its last submission. The pattern fits the fiscal-year maintenance: in 2024 it ran from April 1 00:00 to April 4 16:00, and no April file starts on April 1.
+- March-submitted jobs that would run past March 31 are absent: deleted at the stop, or held and run in April. The April files hold only April submissions, so held jobs would be missing either way.
+- In the newest test window this matters: 28,113 test rows (5.6%) come from 25-31 March 2024. They fail at 42.2% and hold **20.0% of that window's positives**. Their cohort keeps only short-limit jobs.
+- The 2024 spike is not explained by the cut alone. Late March 2022 and 2023 do not show it, and 5-9 April 2024 also fail at 31-78%, so part of it is a real event.
+- Remedy, mildest first:
+  - (a) Name the fiscal-year cut in the Cohort limit bullet and in fit_reason. Note that late-March rows are a short-limit cohort and that their failure rate carries 20% of window 0's positives.
+  - (b) For the curator: drop the submissions of the last days before a fiscal-year stop from the test sides, like the ames_housing short-last-month check under SPLIT-10. Measure first whether their class mix is selected.
+
+**2. NEW (scale) / KNOWN (concept, issue 1 resolved): row-identity sentences are false, and identical-input groups dominate the test sides (USE-8, EV-1)**
+
+- The Row identity sentence "Repeated job IDs have distinct submission/end times" is wrong: 861,254 rows share jid, every timestamp, exit code and duration with another row. These are bulk or step subjobs.
+- On the shipped test sides, rows whose usr, jnam, jobenv_req and adt are identical to another row (the embedding follows the triple) make up:
+
+  | | Jan-Apr 2024 | Sep-Dec 2023 | May-Aug 2023 |
+  |---|---|---|---|
+  | Share of test rows | 25.4% | 39.4% | 20.2% |
+  | Largest group (rows) | 476 | 1,884 | 1,756 |
+  | Groups with both labels | 499 | 942 | 198 |
+
+- Train sides hold about 190-205k such rows.
+- Not a leak: the copies never cross the split, because adt is a feature. But scores weight a bulk job by its subjob count.
+- Remedy: correct the two sentences (Row identity, Evaluation unit) and give the measured shares. Whether to weight or group by (jid, adt) is a curator question tied to the resolved issue 1, so raise it as a new item only if the curator wants it.
+
+**3. NEW numbers / KNOWN flag (issue 3): one-column history lookups come close to, or beat, the tuned model (value, TP-4 step 1, adjacent)**
+
+| Shipped test side | Training failure rate per usr | per jnam | per usr+jnam | Tuned LightGBM (record) | Native mean, linear / RF / LGBM (record) |
+|---|---|---|---|---|---|
+| Jan-Apr 2024 | 0.838 | 0.673 | 0.692 | 0.8655 | 0.794 / 0.758 / 0.783 (mean over the three windows) |
+| Sep-Dec 2023 | 0.724 | 0.753 | 0.652 | 0.7775 | (same) |
+| May-Aug 2023 | 0.794 | **0.805** | 0.800 | 0.7911 | (same) |
+
+- On the oldest window, an untuned per-job-name (or per-user) training failure rate beats the bounded-tuned LightGBM. On the other two it is within 0.03-0.05.
+- These are one-feature fits on the training side, not unfitted rules, so they do not prove `Trivial`. They are the foldwise simple baseline the first tuned benchmark must beat.
+- Remedy: add these three numbers to the recheck item. No change now.
+
+**4. NEW: the download recipe points to the old `_1m` path (PROV-1, mechanical)**
+
+- `download_description` (and so the README Rebuild block) reads `fugaku_hpc_job_failure_1m/dataset.py`. Change it to `fugaku_hpc_job_failure/dataset.py`. No rebuild is needed beyond regenerating the README.
+
+**Untested**
+
+- The claim of no exact duplicates over the 44 non-embedding fields: the counter columns are not in the compact table. It needs a pass over the raw Parquets.
+- "359,636 masked job names in the selected union": not recounted.
+- Issue 4's ablation numbers: KNOWN from this round's column audit; not re-run.
+
+Sources: [F-DATA paper (PMC12311113)](https://pmc.ncbi.nlm.nih.gov/articles/PMC12311113/), [RIKEN Fugaku system report 2024-04](https://www.r-ccs.riken.jp/fugaku/docs/workshop/2024/systemreport/systemreport_202404.pdf)
+
+</details>
+
+<details><summary>Domain practitioner (2026-11-21)</summary>
+
+**Domain practitioner: fugaku_hpc_job_failure (2026-11-21)**
+
+**Actor:** a Fugaku operator, or the scheduler's admission hook. It scores each job when the job is submitted and flags the risky ones for a check or a note to the user.
+
+**Fit: approximate.** The fit stays approximate, and the reasons already recorded still hold: the released cohort was selected after the run, a nonzero exit is a proxy for failure, and execution records do not map cleanly to parent jobs. The biggest new gap is in the inputs. At submission I always know how this user's and this job name's earlier jobs ended. The shipped task leaves that out, and that history alone beats the shipped inputs in every window.
+
+**Metric scores my decision: partly.** ROC AUC ranks one decision per job correctly (MET-8; MET-17 keeps the score per row for "a job a scheduler places"). What it ignores is the cost: failures are mostly short, small jobs, while the node-hours I want to save sit in a few large ones.
+
+**What I tested**
+
+I ran one CPU job on the column audit's compact copy of all 38 release files (25,866,900 rows). The test period is the three shipped windows (May 2023 to April 2024, 8,959,722 rows). I fitted no model. Script and output:
+the run folder, `practitioner.json` and the job log.
+
+The check, dataset-check and probe logs (check.log, leak/, task/, dtype/, group.log) were not in the run folder when I looked; only `precedent/` existed. There is also no `findings/fugaku.md` in the column-audit folder. I used the record's issue 4 and the column-audit folder's own files instead.
+
+**Findings**
+
+**1. NEW: the operator's strongest input, the recent outcomes of the same user and job name, is left out (USE-6 Must, USE-3 Must)**
+
+When a job arrives, I can see how this user's earlier jobs ended. I only count jobs whose end time is strictly before this job's submission time. The shipped model gets the user only as a fixed category, fitted on labels that were available at the last refit. For the rest of the four-month window it cannot use any newer outcome, even though the operator sees those outcomes live.
+
+Below are untrained scores built only from jobs that ended before each job's submission. "Static" is the user's smoothed failure rate on labels available at refit, which is roughly what a model trained on the shipped user category can learn. "Tuned LightGBM" is the record's bounded train-only tuning on the shipped inputs (issue 3).
+
+| ROC AUC | May-Aug 2023 | Sep-Dec 2023 | Jan-Apr 2024 |
+|---|---|---|---|
+| Static user rate at refit | 0.792 | 0.731 | 0.859 |
+| Tuned LightGBM on shipped inputs (record) | 0.791 | 0.778 | 0.866 |
+| User's last finished job | 0.775 | 0.782 | 0.805 |
+| User's last 10 finished jobs | 0.855 | 0.857 | 0.862 |
+| User's last 100 finished jobs | 0.901 | 0.880 | 0.891 |
+| Job name's last 100 finished jobs | 0.912 | 0.882 | 0.916 |
+| User's last 100, shrunk to the static rate | **0.915** | **0.902** | **0.921** |
+| Log loss: static / shrunk last 100 | 0.293 / 0.226 | 0.418 / 0.296 | 0.237 / 0.201 |
+
+- Nearly every test job has history: 99.8 to 99.9% have a finished earlier job by the same user, and 78 to 85% have one with the same job name.
+- These scores need no model and use nothing a live operator lacks. Without fitting anything, history gains 0.04 to 0.12 AUC over the tuned model. The shipped task is therefore "predict without the operator's job history". USE-6 says that dropping an input known at the prediction point changes the task.
+- The gap is largest in Sep-Dec 2023, where the static rate scores only 0.731. That is drift within the window, which a model frozen at the refit cannot follow.
+- **What an expert would change:** add rolling history features computed in `_clean`, using only rows that ended strictly before each row's submission time (`edt < adt`). For example: the user's failure rate and count over their last N finished jobs, the same for the job name, and the time since the user's last failure. In training rows they must use the same `edt < adt` rule, never the refit cutoff, or train and test features differ.
+- **Open points:**
+  - End time stands in for when the label arrives. The 24-hour reporting-lag check in the record should be repeated for these features.
+  - The masked job name is a global code. Generic names shared across users may blur it, so user plus job name may work better.
+  - I have not checked whether a rule such as the minimal-preprocessing guidance limits feature engineering across rows. This is a decision for the curator, not a fix.
+- **Alternative:** keep the task as it is, but say in the notes that the operator's live outcome history is excluded and how much it is worth. The fit reason would name that gap.
+
+**2. NEW: "failed" is mostly generic exit code 1 and quick crashes, not timeouts (USE-5, information only)**
+
+| In the failed class, test period | Value |
+|---|---|
+| Exit code 1 | 89.4% |
+| Exit codes 16 / 4 / 127 / 255 / 2 | 2.5% / 2.2% / 1.5% / 1.2% / 0.9% |
+| Ran to within 60 s of the elapsed limit (timeout) | 0.13% (completed jobs: 0.27%) |
+| Ran under 60 s | 32.9% (completed jobs: 11.4%) |
+
+- Timeouts do not make up the failed class. Most failures are script or application errors, a third of them within the first minute.
+- For me as the operator, this supports the target: these are the jobs a pre-submission check (bad path, missing module, wrong input file) catches. It adds weight to the recorded "nonzero exit is a proxy" caveat, but it does not dispute it.
+- Exit code 127 means "command not found" and 126 "not executable". At least 1.8% of failures are configuration errors in the strict sense.
+- I tested `deldt` and cannot use it: it reads as set on 100% of rows in the compact copy, against 0.07 to 1.1% in the column audit's `audit.json`. My reading of that column is unreliable, and nothing above rests on it.
+
+**3. NEW: per-row AUC weighs cheap failures equally with costly ones (MET-1 Must, MET-7, MET-17; note only)**
+
+| Test period | Value |
+|---|---|
+| Failed share of rows | 12.6% |
+| Failed share of node-hours (allocated nodes × duration) | 7.0% |
+| Share of failed node-hours held by the top 1% of failed jobs | 83.5% |
+| Rows submitted in bursts of 10 or more per user per minute (failed / all) | 85.9% / 85.5% |
+
+- The node-hours wasted on failures sit in a few large jobs. Per-row AUC is driven by many small, quick, bulk-submitted failures.
+- The source fixes no cost and no capacity, so MET-7 gives no basis for a cost-weighted metric. MET-17 keeps the score per row because each job is placed on its own.
+- I would keep ROC AUC as the declared metric. The notes should say how unequal the cost per row is (the figures above), and that a node-hours-weighted score would rank models differently. That second part is untested.
+
+**4. KNOWN: requested nodes, cores and frequency are left out (USE-6)**
+
+The column audit's issue 4 already covers this, and I agree with its recommendation B. These values are on the operator's screen at submission and cannot be changed afterwards. Finding 1 is the larger form of the same gap: of everything the operator has at submission, the job history matters more than the resource request.
+
+**5. KNOWN, still valid**
+
+The earlier practitioner's points remain unchanged:
+- the post-run cohort selection (USE-8, `Selection Bias`);
+- execution records versus parent jobs;
+- a nonzero exit as a proxy;
+- log loss or Brier for probability quality.
+
+The log-loss comparison in finding 1 repeats that last point: a user-history probability beats the shipped model there too.
+
+**Ranked gaps between the dataset and the real decision**
+
+1. Live outcome history is left out (finding 1). It is worth +0.04 to +0.12 AUC with no model, and it changes what the task is.
+2. The release only contains jobs that ran and were measured (KNOWN, USE-8).
+3. The requested resources are left out (KNOWN, issue 4).
+4. Each row is an execution record rather than a parent job (KNOWN). 85% of rows come in bulk bursts.
+5. Per-row scoring does not follow the node-hour cost (finding 3). This needs a note, not a change.
+
+**Would I use it?**
+
+I would use it as advisory triage, but not a model trained only on these inputs and frozen for four months. My first comparison would be the user's recent failure rate, and on these data that untrained rate beats the shipped model in every window.
+
+**Sources**
+
+- The record's `## Review` (issues 1 to 4, Horizon block, the historical practitioner) and `dataset.py`.
+- The column-audit folder: `feature_list.csv`, `audit.json`, `compact.parquet`.
+- The F-DATA paper (doi 10.1038/s41597-025-05633-1) and the Fujitsu job manual J2UL-2534-01ENZ0, as cited in the record.
+- `use_case.md` (USE-3/5/6/8) and `metrics.md` (MET-1/7/8/17).
+- Exit codes 126 and 127 follow the POSIX shell convention.
+
+</details>
+
+<details><summary>Precedent check (2026-11-21)</summary>
+
+**Precedent check: fugaku_hpc_job_failure (2026-11-21)**
+
+**What I tested**
+
+- Ran `decision_register.py` (5,933 decisions; JSON at the run folder) and read every flag that names this dataset, SPLIT-10, SPLIT-12/14/15 or USE-6.
+- Read the record, `dataset.py`, the SPLIT-9/10/12/14/15/19/20/33 rule texts and Cases rows, USE-6 and its cases, LEAK-38, the split tree's dated-event-log branch, the row-budget protocol (`split_protocol.md`, `definitions.md`), and the closest sibling definitions and records.
+- Monthly row counts come from the column audit's `out/audit.json`, covering all 25,866,900 rows. I fitted no models.
+- `check.log` was still running when I checked: it had verified the source files up to 23_05. There were no leak, task, dtype or group logs in the panel folder yet.
+
+**Verdict per decision**
+
+| Decision | Closest precedents | Verdict |
+|---|---|---|
+| Target: zero vs. nonzero exit code; fit approximate; `Selection Bias` (issue 1, Resolved 2026-11-03) | lt_vehicle_loan_default_prediction (Selection Bias plus approximate fit, 2026-10-23, Myunghwan). Memory rule: target treated case by case, as recorded | consistent |
+| Inputs: masked ids plus the source embedding; `jnam` kept categorical (CLEAN-14 departure) | high-cardinality ids kept as categories elsewhere (meituan courier and merchant ids) | departs, with a stated reason (opaque masked identities) |
+| Submission time `adt` as an input | time-column actor test (the operator holds the submission time) | consistent |
+| Metric: `roc_auc` fallback, because the paper's accuracy is a habit (MET-6/8) | the MET-8 fallback pattern | consistent |
+| Split leaf: dated event log, forward, case arrives, late labels → **Temporal · arrival date, label-delay gap** | the leaf's examples: lusaka (1-day gap), aeolus_rebuilt_1m (1-day gap), african_credit_scoring_challenge (filter on due date + 30 days), acquire_valued_shoppers (5-day gap) | consistent leaf |
+| No gap beyond the completion filter (Exception to SPLIT-10, 2026-11-03, Myunghwan) | see Finding 1 | departs, with a stated reason (P4); the Horizon note's proposed rewording would hide it |
+| Horizon: three contiguous four-month windows (Horizon block, open) | SPLIT-12 family case (each source keeps its own cadence, 2026-10-21, Lennart); aeolus (fortnights chosen by season, CC 2026-11-10); medical_facility (follows the source's horizon) | A is consistent with SPLIT-12/19; one option under SPLIT-15 is missing (Finding 2) |
+| Window count 3 against SPLIT-33's target of 3; train share 65.3% or more (SPLIT-14) | rule text | consistent |
+| Training side: a uniform 1M of all history, capped in the container | issue #70 protocol (Lennart, 2026-11-10); duolingo_spaced_repetition_recall (same PR, same pattern) | departs; no curator decision after the rule (Finding 3) |
+| Issue 4: add the requested nodes, cores and frequency (open; recommendation B) | brazilian_ecommerce, medical_facility_operational_data (2026-11-05, Lennart), qsar_bioconcentration (2026-10-26, Lennart); counter-case open_soil_spectral_library (2026-11-05, Lennart) | B is consistent; C needs an actor fact that is absent here (Finding 4) |
+
+Register flags that are not findings:
+- `exception_to_must` on SPLIT-1 and SPLIT-9 is a keyword artefact. The exception cites SPLIT-1 and SPLIT-9 as the rules it *serves*: SPLIT-9 is met by the completion filter, and SPLIT-1 is the reason given.
+- `amendment_due` on SPLIT-10 (11 datasets): of the SPLIT-10 exceptions in the Cases table, fugaku is the only one that serves P4 deployment fidelity. alfa_battle, lending_club, spanish_homeowners and wisconsin all serve SPLIT-14's floor. So fugaku is not a third case of any kind, and it adds nothing toward an amendment.
+
+**Findings**
+
+**1. Keep the "Exception to SPLIT-10" label; the Horizon note proposes rewording it as "No fixed embargo" (NEW; SPLIT-10, split tree)**
+
+- **Problem:**
+  - The Horizon block's notes for the AI say the "Exception to SPLIT-10" wording "can become 'No fixed embargo', since the tree's leaf accepts the completion filter as the gap".
+  - SPLIT-10 as amended (2026-11-04/05, Lennart, on lt_vehicle) is more specific than that. "A gap is set where a measurement shows ... a selection by the outcome", and "no gap is needed where ... the measurements show neither."
+  - The record's own maturity audit measured exactly that selection: late-ending last-day jobs fail at 18.53% against 0.292% among jobs already complete. The definition also feeds `adt` to the model as a datetime. That is the case SPLIT-10's "Why" names: "the newest training rows are the fast ones, and a model that sees the time as a number is biased."
+  - lt_vehicle's no-gap application rests on a fixed outcome horizon, which removes the selection. Fugaku's delay varies (tag `Target: Varying Delay`; median 2.2 h, 99.9% within 23.6 days), so that reason does not carry over.
+  - The siblings with exact end times all set a gap where training rows end after the cutoff: nyc_taxi_trip_duration_1m, pkdd_15, cooking_time_1m and maps_router_eta_1m (one-day gap, 2026-10-21, Lennart), plus lusaka and aeolus_rebuilt_1m. A 7-day embargo would cost fugaku only 0.58-0.89% of eligible history, so SPLIT-14 is not at stake. alfa_battle, lending_club and spanish_homeowners could invoke SPLIT-14 for their exceptions; fugaku cannot.
+  - The curator settled this as an exception, with a stated P4 reason (Resolved 2026-11-03), and the splits.md Cases table records it as `exception`. Relabelling it as an application would remove the record that this case departs from its siblings.
+- **Reflection prompt (draft, issue shape):** Keep the no-gap choice recorded as an exception to SPLIT-10, or relabel it an application of the label-delay leaf?
+
+  | | Option | Pro | Con |
+  |---|---|---|---|
+  | a | Keep "Exception to SPLIT-10" (no change). Distinguishing fact: exact completion times plus a cutoff at a calendar month, so the filter matches what a live refit knows, and the selection is kept as a disclosed limitation | matches SPLIT-10's text and the Cases row; no rebuild | the nyc/pkdd family with exact end times chose a gap; the pair stays a recorded departure |
+  | b | Relabel it an application ("No fixed embargo") | shorter wording | contradicts the amended SPLIT-10 trigger (measured selection) and the Cases row |
+  | c | Set a gap of about the delay (for example 7 days, or 24 days for 99.9% of jobs) | follows nyc/pkdd and SPLIT-10's Why | rebuild; reopens a Resolved decision |
+
+  **Recommendation:** a. Drop that sentence from the Horizon notes for the AI. c only if Andrej wants the nyc/pkdd pair decided alike across curators.
+
+  Rules: SPLIT-10 (Should, amended 2026-11-04/05), SPLIT-9, SPLIT-14; principles.md "Exceptions and amendments".
+
+**2. The Horizon options leave out a window in another year (NEW; SPLIT-15, SPLIT-14)**
+
+- **Problem:**
+  - SPLIT-15 (amended 2026-11-10, Andrej and Lennart): "Prefer windows in other years, then other seasons ... over the windows just before the newest. Walking back from the newest is one choice among others and needs its reason."
+  - Options A to D all walk back contiguously. The only one that reaches another year is D (six months), and its oldest window drops under 50% of the rows for training.
+  - On the release's monthly counts, a four-month window Jan-Apr 2023 trains on 54.4% of the rows before the label filter. The filter removes about 0.1-0.2% more, so the window stays above the floor. It is the same season as the newest window (Jan-Apr 2024), one year earlier. Sep-Dec 2022 (43.6%) would be under the floor.
+  - A's stated reason (it covers the source's June 2023-April 2024 holdout, SPLIT-19) is a valid reason under SPLIT-15. The table should still offer the other-year alternative.
+- **Suggested extra row for the Horizon options table:** E | Jan-Apr 2024, Sep-Dec 2023, Jan-Apr 2023 | train about 91% / 80% / 54% | Pro: two years; the newest season tested twice, as SPLIT-15 prefers | Con: leaves out May-Aug 2023 (summer) and 3 of the source's 11 holdout months; rebuild; custom cutoffs in `_select_temporal`.
+- The recommendation can stay A. Its reason should then say why the source holdout outweighs the other-year preference.
+
+**3. The training side is capped in the container, against the row-budget protocol (NEW; SPLIT-20, issue #70)**
+
+- **Problem:**
+  - The row-budget protocol (`definitions.md`, "Larger than the row budget", issue #70, Lennart 2026-11-10) says "The train side keeps every row available to it ... N is recorded, not applied." Its default sampler takes the newest year before the window, because "a random N of all history dilutes recent data on long histories".
+  - `dataset.py` applies a class-proportional random 1M of **all** history in the container (`TRAIN_CAP`, `_select_temporal`). The record states the intent: "Preserve the approved fixed training draw", in the 2026-11-16 compatibility repair.
+  - The approval it cites (2026-11-03, Myunghwan) predates the issue #70 rule. No CC after 2026-11-10 decides the cap. The Horizon block mentions "a uniform 1M draw" but raises no item on it.
+  - duolingo_spaced_repetition_recall (same PR) has the same pattern (`TRAIN_CAP` in its definition), so the two are a pair to decide alike.
+  - Distinguishing fact (my best guess): the 384 float32 embedding coordinates per row. A whole training side, up to 91% of 25.9M rows, is about 36 GB of embeddings alone. A container of that size would be out of line with the others (aeolus_rebuilt_1m keeps 13.7M rows, but with few columns). Neither the record nor the splits comment says this.
+- **Reflection prompt (draft):** Keep the training sides capped at a uniform 1M of all history in the container, or follow the protocol: keep whole training sides and let a benchmark sample the newest year?
+
+  | | Option | Pro | Con |
+  |---|---|---|---|
+  | a | Keep the cap, and write the fact (embedding size) as an exception in the splits comment | no rebuild; the container stays at a workable size | the uniform draw dilutes recent jobs, which the #70 study found can change rankings |
+  | b | Keep the cap but draw it the protocol's way (newest year, extended back to 1M) | follows #70's sampler; small change | rebuild and requalify; departs from the authors' all-history training (SPLIT-20) |
+  | c | Whole training sides plus a recorded budget | follows the protocol exactly | very large container; prepare step rewrite |
+
+  **Recommendation:** a, or b if Andrej weighs #70's ranking evidence above SPLIT-20's "what the authors trained on". Decide duolingo the same way.
+
+  Rules: SPLIT-20 (Should), SPLIT-11; `definitions.md` row-budget protocol (2026-11-10, Lennart).
+
+**4. Issue 4, option C would need the open_soil kind of fact, which is absent here (KNOWN issue; precedent added)**
+
+- Recommendation B follows USE-6 (Must) and its cases:
+  - brazilian_ecommerce: the promised date kept as an input.
+  - medical_facility_operational_data: `minutes_early` added although the source's features left it out (2026-11-05, Lennart).
+  - qsar_bioconcentration: logKOW added, because the assessor holds it (2026-10-26, Lennart).
+- The counter-case is open_soil_spectral_library (CC 2026-11-05, Lennart). There, inputs that a lab knows were left out as "a choice of actor", because the source's prediction service accepts only the spectra. For fugaku the source paper lists requested resources among "the information available at job submission time", and the stated actor (operator or scheduler) sees them. So the fact that set open_soil apart does not hold here. C ("left out by choice") would depart from USE-6 without a distinguishing fact.
+- Keeping the elapsed limit and priority out is consistent. The manual (section 2.5.4) documents that they can change after submission, so their timing is known to be possibly late (LEAK-10). LEAK-38 does not apply: the release is not the data owner's own competition.
+
+**Things checked and found consistent (no finding)**
+
+- Recurring users and job names stay in a temporal split, not a grouped one. The use case does not target unseen users (the first question of the split tree; SPLIT-13).
+- Test windows are capped at 500k rows each (protocol).
+- The masked-`jnam` CLEAN-14 departure has a written reason. It is the AI's documentation decision, endorsed by the 2026-11-03 mediator; no curator turn contradicts it.
+
+</details>
+
+<details><summary>Blind review (2026-11-21)</summary>
+
+**Blind review: Fugaku job failure (`exit state`)**
+
+**Verdict: include with changes.** The task is real and the split is honest, but the table is mostly three IDs plus a 384-dimension text embedding of those same IDs. It leaves out the submission-time resource requests a real failure predictor would use. The row selection is not uniform across months and not documented.
+
+Task: predict at submission (`adt` = "Arrival datetime (submission time)") whether a Fugaku job will end with exit code != 0. Users or the scheduler could act on that before resources are spent, which is a real use. The source paper (Antici et al., Sci Data 2025, F-DATA) proposes exactly this task with a temporal split. All prepared features are known at submission, so I found no leak.
+
+**Experiments (200k sample, LightGBM on Slurm cpuhigh32)**
+My own windows (the real ones are unknown to me); each test window is trained on everything before it.
+
+| test window | n test | fail rate | per-user past fail rate (AUC) | LGBM ids+time | LGBM embedding only | LGBM usr+env+time+embedding | logloss prior / best |
+|---|---|---|---|---|---|---|---|
+| 2023-07..09 | 28,734 | 8.5% | 0.768 | 0.782 | 0.750 | 0.790 | 0.292 / 0.272 |
+| 2023-10..12 | 31,817 | 14.7% | 0.881 | 0.865 | 0.863 | 0.900 | 0.429 / 0.289 |
+| 2024-01..04 | 40,008 | 11.9% | 0.872 | 0.834 | 0.784 | 0.857 | 0.366 / 0.234 |
+
+Embedding model, AUC on test rows whose (usr, jnam, jobenv_req) combination was seen in training vs. not seen: 0.90/0.95/0.89 vs 0.60/0.78/0.72. Between 49% and 70% of test rows have an unseen combination.
+
+**Concerns, most serious first**
+1. **The signal is mostly "which user", and 384 of the 388 features re-encode the IDs.** A smoothed per-user historical failure rate alone gets within 0.00-0.03 AUC of the best LightGBM, and beats it in window 3. The embedding is almost a function of the (usr, jnam, jobenv_req) combination: 50,922 combinations give 51,923 distinct vectors, at most 2 per combination. The source says it encodes "the de-anonymized user information, job name and job environment" with SBERT all-MiniLM-L6-v2. Its real value is name similarity for unseen job names (AUC 0.60-0.78 on unseen combinations). As prepared, the benchmark mostly scores how a method handles 384 dense correlated columns and high-cardinality IDs. *Change:* add the submission-time numeric fields (item 2). Consider reducing the embedding (for example with PCA to about 16-32 dimensions) so it does not dominate the column count.
+2. **Submission-time features were dropped.** The public `feature_list.csv` includes fields known at submission: `nnumr` (nodes requested), `cnumr` (cores requested), `elpl` (time limit), `mszl` (memory limit), `freq_req` (requested frequency) and possibly `pri`. They carry signal. In raw April 2021, jobs with `elpl` <= 1 h fail 19.9% of the time vs 6.8% for 1-2 h, and jobs with more than 30 nodes requested fail 18.7% vs 6.6% for 3-8 nodes. *Change:* add `nnumr`, `cnumr`, `elpl`, `mszl`, `freq_req` (and `pri` if it is set at submission; I did not confirm that). Keep out anything recorded after start (allocations, `qdt`, `sdt`, `edt`, `duration`, performance and power).
+3. **The row selection is undocumented and not uniform over time.** The source has about 24M jobs, the prepared full table 2,500,499. Comparing the implied monthly counts (sample count × 2,500,499/200,000) with the raw monthly files (parquet footers on Zenodo):
+
+   | month | raw jobs | implied prepared rows | rate |
+   |---|---|---|---|
+   | 2021-04 | 116,977 | 6,764 | 5.8% |
+   | 2021-07 | 338,251 | 19,216 | 5.7% |
+   | 2022-01 | 1,307,407 | 76,165 | 5.8% |
+   | 2023-06 | 1,303,631 | 166,546 | 12.8% |
+   | 2024-03 | 508,286 | 108,934 | 21.4% |
+   | 2024-04 | 420,450 | 92,606 | 22.0% |
+
+   Whatever the filter or cap is, it is not a uniform subsample, and it weights the later (test) period. *Change:* document the selection in the task, or draw a uniform random subsample, or deduplicate as in item 4. (2,500,499 is also close to the paper's "around 2.5 million" failed jobs, but the table holds 11% failures, so it is not the failed jobs only.)
+4. **Bulk submissions give exact copies and concentrate the task on a few users.** 16.3% of the 200k sampled rows are exact copies of another sampled row (all 388 columns including `adt`). In the raw April file, 43% of rows share (usr, jnam, adt) with another row, and 116,977 rows carry only 70,375 distinct `jid`. The top 20 users account for 62% of the failures. Copies in the same second share their label most of the time: only 68% of rows sit in an ID combination with a pure label, the rest vary. With a temporal split these copies rarely cross train and test, so this is a weighting problem rather than a leak. *Change:* collapse rows sharing (usr, jnam, jobenv_req, adt, label) into one row, or weight them, so a few heavy users do not decide the score.
+5. **The label is noisy by construction.** `exit state` = "failed" if the exit code is not 0, and the paper says "we cannot preclude that a user's application intentionally returns a non-0 exit code". In raw April, 73% of failures end within 60 s (start-up or script errors) and the exit codes are mixed (1, 255, 4, 127, 16, ...). It is still a sensible target, but it should be noted in the task.
+6. **Minor points.**
+   - `jobenv_req` is almost constant (96% one value) and has no signal on its own (AUC 0.44-0.50).
+   - The monthly failure rate drifts from 1.9% (2022-08) to 22% (2021-03), so the scores of the three windows will differ a lot.
+   - `adt` is naive local time (JST); the source stores it with "+09". That is fine as long as all rows are the same.
+   - There is no weight column, so I had nothing to check there.
+
+**What I could not check**
+- The exact rule that produced the 2.5M rows: I only compared 6 monthly row counts, not the full 24M.
+- The real test-window boundaries.
+- Whether `pri` is set at submission.
+- How cancellations and wall-time kills map to exit codes. `deldt` is filled for every job, so it does not identify them.
+- The SBERT input strings, which are not public.
+
+I loaded one raw monthly file (21_04) and the footers of five others from the public Zenodo record. I opened no file outside the clean room except the interpreter.
+
+Sources: https://pmc.ncbi.nlm.nih.gov/articles/PMC12311113/ , https://zenodo.org/records/11467483 (feature_list.csv, monthly parquet files).
+
+</details>
+
+<details><summary>Task gamer (2026-11-21)</summary>
+
+**Task gamer report: Fugaku job failure (`exit state`)**
+
+**Verdict:** I could not game this task. None of my attacks beat the honest model by more than the seed-to-seed spread. The weaker spot is the other way round: the kit leaves out the resources a job requests at submission, and those help an honest model.
+
+All fits were LightGBM (300 trees, lr 0.05, 63 leaves, bagging 0.8, colsample 0.5, `n_jobs=2`) on the shipped splits, scored with `score.py`, run as Slurm jobs on cpuhigh32. No rows were subsampled except where noted. Encoding: `usr` and `jobenv_req` as categories, `jnam` as its integer id, `adt` in epoch seconds, plus the 384 embedding columns.
+
+**Honest baseline and noise**
+
+| Model | r0f0 (Jan-Apr 24) | r1f0 (Sep-Dec 23) | r2f0 (May-Aug 23) |
+|---|---|---|---|
+| base, 3 seeds (default, 1, 2) | 0.898 / 0.871 / 0.865 | 0.825 / 0.824 / 0.838 | 0.787 / 0.796 / 0.808 |
+| base, mean of 3 seeds | 0.878 | 0.829 | 0.797 |
+| base + random column | 0.868 | 0.829 | 0.802 |
+| base + past-only order features, mean of 3 seeds | 0.896 | 0.828 | 0.783 |
+
+The seed spread is large: up to 0.033 AUC on r0 from bagging and column-sampling randomness alone. Every gain below should be read against it.
+
+**Exploits ranked by gain**
+
+| # | Exploit | Script | Honest score | Exploited score | Gain (per split) | A deployed model has it? | Fix |
+|---|---|---|---|---|---|---|---|
+| 1 | Future submissions of the same user and the same (user, job name): gap to the next job, counts in the next 1 h / 1 d, number of later jobs (test-window composition) | `work/build_feats.py`, `work/fit.py base_past_fut` | base+past, 3-seed mean: 0.896 / 0.828 / 0.783 | 0.897 / 0.833 / 0.778 | +0.001 / +0.005 / -0.005 (within noise) | No | None needed |
+| 2 | `jnam` anonymisation id used as a number | `work/fit.py base_noemb*`, `work/jnam_ids.py` | id replaced by first appearance in the kit, no embedding: 0.889 / 0.802 / 0.780 | 0.887 / 0.831 / 0.770 | -0.002 / +0.029 / -0.010 | Yes: ids rise with the month a name first appeared (checked month by month), so the id is "when this name was first used", which is known at submission | None needed |
+
+No exploit holds up. The future-submission features alone score 0.563 / 0.576 / 0.425, and the third split falls below 0.5, so they do not even carry a stable direction.
+
+**Flaws that hurt an honest model**
+
+| # | What is wrong | Honest choice | Kit score | Honest-choice score | Gain | Fix |
+|---|---|---|---|---|---|---|
+| A | The kit leaves out the submission-time request columns (`nnumr`/`cnumr` nodes and cores requested, `elpl` time limit, `mszl` memory limit, `freq_req` frequency). They are in the source and known when the job is submitted. | Join them from Zenodo by (usr, jnam, jobenv_req, adt); 100% of kit rows match | r0 only, trained on the r0 training rows of Sep-Dec 2023 (115k rows): 0.886 | kit + request: 0.897; request columns + usr + jobenv only: 0.902 | +0.010 / +0.016 (one seed, r0 only) | Add the request columns as features |
+
+Univariate AUCs on the full source month April 2024 (420k jobs) are `nnumr`/`cnumr` 0.681, `mszl` 0.633, `elpl` 0.566 and `freq_req` 0.567 (inverted). The model gain is one seed on one split and is below the r0 seed spread, so it is suggestive only. The univariate AUCs are solid. Script: `work/extract_src.py`, `work/subfit.py`; source months 23_09 to 24_04 were downloaded and reduced to these columns in `work/src/`.
+
+**Findings**
+
+1. **Future submissions (#1).** A job that fails is often followed by a resubmission, so the gap to the next same-name job and the count of later jobs could reveal a failure. They do not: the gain over the past-only model is +0.001, +0.005 and -0.005 on the 3-seed means, while the seed spread is 0.01 to 0.03. The kit is not exposed to test-set composition in any way I could measure.
+2. **`jnam` id (#2).** The ids were assigned file by file in the release script, and the median id per month of first appearance rises steadily (about 24k in 2021-03, 1.22M in 2023-01). So the id is a first-seen date for the job name, which is honest. Dropping it costs 0.02 to 0.05 AUC without the embedding, and replacing it with first appearance in the kit recovers most of that. That makes it signal, not an exploit.
+3. **Missing request columns (A).** The source has the requested resources for every job. They are submission-time inputs and the strongest single predictors I found, but the kit ships only user, job name, job environment, submit time and an embedding. According to the source's generation script, the embedding is Sentence-BERT (all-MiniLM-L6-v2) applied to the raw "usr,jnam,jobenv_req" string, so it duplicates the three id columns. Mildest fix: add `nnumr`, `cnumr`, `elpl`, `mszl` and `freq_req`.
+
+**Attacks that found nothing**
+
+| Attack | Result |
+|---|---|
+| Formats: share of `adt` at second 0, by class | 0.0180 completed vs 0.0184 failed |
+| Formats: last digit of the `adt` second, by class | Flat (0.096 to 0.113 per digit in both classes) |
+| Other columns | No numeric columns besides the float32 embedding and `adt` |
+| Row order | Rows sorted by `adt`. Row position AUC 0.554 and `usr` id AUC 0.521 reflect the time trend. Next-row label agreement 0.938 comes from bursts of the same job; test labels are unseen, so it cannot be used beyond the first rows after the split date. |
+| Temporal hygiene | No training row at or after its test window start, on all 3 splits |
+| Copies across the split | 50% of test rows have a job name seen in training, 74 to 98% a known user. The embedding is a deterministic function of (usr, jnam, jobenv_req) (0.06% collisions), so "copies" are recurring jobs: signal, not leaks. |
+| Naive label history (last training label and failure rate of the same user and the same (user, name)) | Hurts: 0.862 / 0.733 / 0.819. In training the previous label is seconds old; in test it is up to 4 months stale. Not a task flaw. |
+| Train only on recent rows | Last 120 days: 0.890 / 0.764 / 0.792. Last 365 days: 0.860 / 0.773 / 0.790. Not better than the full training set. |
+| Dropping `adt` | 0.863 / 0.825 / 0.801, within noise of the baseline |
+| Is the kit's sample label-dependent? | April 2024: kit failure rate 0.1939 vs 0.1942 in the source month. The kit holds 21.8% of the source rows, with no sign of label-dependent sampling. |
+| Source lookup | Works: every kit row of April 2024 matches the Zenodo file on (usr, jnam, jobenv_req, adt), with `ec` and `exit state` attached. As expected for a public dataset; not ranked. |
+| Web | No competition, leak or "magic feature" threads exist for F-DATA. The source repository's own failure baseline is a kNN on the embeddings or the ids. |
+
+**What I could not check**
+
+- The request-column gain on r1 and r2, and with the full training sets. That needs all 38 source months (about 25 GB); I used 8.
+- Whether jobs that never started (dropped by the source's cleaning, which requires start and end times and performance counters) would change the label base rate. The kit cannot show it.
+- More seeds. The 3-seed means carry roughly ±0.01 to ±0.015 uncertainty.
+
+</details>
+
+<details><summary>Column audit (2026-11-21)</summary>
+
+**fugaku column audit (2026-11-21) — all 38 files (25,866,900 rows); 1 issue (record issue 4: add requested nodes/cores/frequency); facts hold**
+- Inputs: usr, jnam, jobenv_req, 384-d MiniLM embedding of the comma-joined original strings (per-row function, no fit), adt. All known at submission.
+- Masked ids numbered in first-appearance order over the whole release (Spearman 0.99): inert as categories.
+- jobenv_req flips _0 -> _1 in April 2024 (99.94% of April rows); the embedding shifts with it; newest window's last quarter; drift, kept.
+- Requested nnumr/cnumr/freq_req fixed at submission (Fujitsu manual 2.5.4: pjalter changes only elapse, rscunit, rscgrp, priority); not shipped -> issue 4.
+- Each fiscal year cut on end time at 31 March (March files: latest ends 09:25/23:52/23:55/23:52; other months 2.2-16.5% of last-week submissions end after month end) -> ~0.4% of newest window missing; selection, doc only.
+- Elapsed-limit kills ~absent (0.005% of rows); failed = nonzero exit of a job that ran to its end.
+- Label delay: median 2.2 h, p99.9 23.6 d, max 283 d (Assessment corrected).
+Doc fixes: download recipe path points at removed fugaku_hpc_job_failure_1m folder; typo "union's384-value"; cohort-limit bullet (fiscal-year cut, kills absent); inputs bullet (jobenv flip, first-appearance numbering).
+Evidence: the run folder (stats.py, analyse.py, monthend.py, ablation.py, out/compact.parquet).
+
+</details>
 
 <details><summary>Historical panel summary (2026-11-03)</summary>
 

@@ -462,7 +462,9 @@ Which key stands for the use case is information from the use case and the sourc
 4. **The entry date replaces the family key** when the use case predicts for items the catalogue does not hold yet
    (not an inventory already collected, a closed study set or a designed experiment), the date is when the item entered
    this catalogue (not a registration number that predates it), and the labels are final (not `Target: Revised Later`,
-   where a split by date tests the delay of the label more than the items), and when either
+   where a split by date tests the delay of the label more than the items) or a date at which each item's label is
+   final can be rebuilt from the data and checked as SPLIT-22 asks (the year an item's last measurement arrives, checked
+   against the documents' own years), keyed on that date, and when either
    * **(a) arrival changes how the target is recorded, or which items are selected** (SPLIT-32, question 3): a
      new grading of the label, a programme that changed which items it takes in. A change in how the features are
      recorded (a later round's descriptor convention, the curves a newer well is logged with) does not move the split
@@ -743,8 +745,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 
 | Rule | Dataset | Decision (date, curator) | Kind |
 |---|---|---|---|
-| SPLIT-3 | economic_well_being_prediction_challenge | Candidate-specific higher-ranked use-case override: temporal × unseen-country, explicitly confirmed by Myunghwan on 2026-11-02 and carried forward at his request on 2026-11-05. Each test country-year trains only on earlier years from other countries. Serves USE-1 (Must, P3): the accepted task is future-year survey-gap mapping in an unseen country; either single-regime replacement changes that task. Temporal is the backend representation, not a new enum or general amendment. | exception |
-| SPLIT-10 | fugaku_hpc_job_failure | no additional fixed embargo after exact recorded-completion filtering: precise timestamps permit use of completed outcomes at live refit, serving SPLIT-1/P4. Myunghwan accepted the gap choice subject to maturity checks; full25,866,900-row and shipped-membership audit finds zero retained late outcomes. Fast-completer selection is measured and post-completion reporting latency remains unknown; first-tuned recheck retains sensitivity (2026-11-03, Myunghwan) | exception |
+| SPLIT-10 | fugaku_hpc_job_failure_1m | a one-day gap with the label filter: a job trains when submitted at least a day before the window and ended before it (90% of label delays within 33 hours); the lean toward fast jobs is gone at two of three cutoffs, and one cutoff's long failing jobs stay under-represented at every gap up to seven days | applied |
 | SPLIT-1 | airfoil_self_noise | grouped by setup, not by run: under the run split 91.5% of the test runs had their chord and angle in training at another speed, and a new angle or size is the query a tunnel cannot answer with one more run; treated like concrete_compressive_strength's mix (2026-10-20, Lennart) | applied |
 | SPLIT-4 | superconductivity | grouped by composition: a model is used for compositions nobody has measured, though a random split costs at most 0.009 R^2 (2026-10-06) | applied |
 | SPLIT-5, SPLIT-6 (SEL-10) | appliances_energy_prediction | 10-minute readings over 4.5 months, evaluated with a random split by its authors; it is forecasting, `No` | applied |

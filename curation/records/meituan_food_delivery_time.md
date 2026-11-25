@@ -3,6 +3,7 @@ unique_name: meituan_food_delivery_time
 name: 'Meituan: Operational-Level On-Demand Food Delivery Data for the INFORMS TSL Data-Driven Research Challenge'
 checked_by:
 - Myunghwan
+- Andrej
 data_foundry_status:
 - WIP (Triage)
 - 'DF: Yes'
@@ -11,8 +12,14 @@ suggestion: 'Yes'
 priority: 4
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
+- Dated Event Log
 original_source: Github
 year: '2024'
+collection_period: 17 Oct 2022 - 24 Oct 2022
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)
@@ -75,13 +82,164 @@ CC (2026-11-09, Myunghwan): the declared metric, fallback RMSE in minutes, is ch
 
 **Assessment (AI, 2026-11-09):** Integrate the approved and verified Meituan package into existing draft PR59 at the curator's correction. DF: Yes is the accepted integration proposal; preserve actual claim/WIP mirror until main. Existing five package files and prior rejection/holds are unchanged. Original build/source commits stay reachable; no new build or model fit. Separate PR66 will be closed as superseded once integration is published.
 
+**Assessment (AI, 2026-11-21):** collection facts set from the split audit: one row per order event with its own timestamps; arrival comes minutes to hours after acceptance; 4,962 merchants and 4,901 couriers recur. The period is the source's `dt` cohorts; acceptances run to 25 Oct 00:23 and some placements, mostly prebooked (199 of 213), go back to 11 Oct.
+
+**Assessment (AI, 2026-11-21):** review panel (full re-check): ship after changes; disputed: the last-hour selection of the delivered-before-midnight filter (SPLIT-10; measured: kept orders 1.8-2.1 min faster, scores within 0.02 RMSE of all true labels, so an exception of Fugaku's kind or a 1-hour gap), the booked slot of prebooks (USE-6, EV-7), the courier's next acceptances in the test day (LEAK-9, protocol line added); for the curator: H and issues 2-4. Wording fixes applied to the definition, build 01a1c240 stale. Priority 4: gap 0 (regression and temporal are not thin), use case + (acceptance-time ETA update), source + (first-party documented release), shape + (568,545 orders, recurring couriers and merchants), risk - (two Must fixes pending in issues 2 and 3, eight days in one city).
+
+CC (2026-11-23, Andrej): issue 2 C: "Option C: Stretch the last window to 00:23 on 25 October. Can we just keep the samples as part of the last test window, since they are perfectly valid?" The newest test window holds every acceptance from 24 October 00:00 to the end of the data, with the 62 acceptances up to 00:23 on 25 October; no row is left unscored.
+
+CC (2026-11-23, Andrej): issue 3 B: "Option B: Minutes from acceptance to arrival." The target is `remaining_minutes`, arrival minus acceptance; `elapsed_minutes` stays an input and all prebooked orders stay. The declared metric (RMSE in minutes) now scores `remaining_minutes`.
+
+CC (2026-11-23, Andrej): issue 4 A, as implemented: no promise on any row; `fit_reason` says prebooked orders lack their booked slot.
+
+**Assessment (AI, 2026-11-23):** applied issues 2 C, 3 B and 4 A. Windows: 24 October to the end of the data 67,411 test / 500,764 train (88.1%), 23 October 77,719 / 423,008 (74.4%), 22 October 77,637 / 345,355 (60.7%); 568,545 rows, all used. On the new target the training mean scores 10.68 / 11.49 / 11.01 RMSE minutes and the recorded promise 12.14 / 11.79 / 11.76 (24 / 23 / 22 October). The check has 0 errors; its one warning (the newest window spans 24 hours 23 minutes, which it counts as 2 days against the 1-day horizon) is accepted as the consequence of issue 2 C. For H (open): the sources state no evaluation window, refit cadence or deployment delay; a data snapshot 1 or 3 hours before midnight moves LightGBM RMSE by -0.03 to +0.09, 6 or 12 hours by +0.24 to +0.69.
+
+CC (2026-11-24, Andrej): H: "Agree. Implement the three hour gap." Implement option c of the answer of 2026-11-23: each training side is the data snapshot 3 hours before the test window's midnight (21:00), keeping orders accepted and delivered before it, for the time a nightly refit needs to extract its data, train with per-split tuning and roll out; the test windows stay 22, 23 and 24 October (the newest to the end of the data).
+
+CC (2026-11-24, Andrej): the declared horizon (one day, a 3-hour gap, windows starting 24, 23 and 22 October 2022) is checked: the source states no horizon, cadence or deployment delay, a nightly refit is assumed, the gap is the deployment time of that refit, and the three newest days are the only ones above the half-the-rows floor.
+
+CC (2026-11-24, Andrej): issue 5 B: "Option B: Accept it." `meta_time_horizon_mismatch` is accepted: the newest window keeps the 62 acceptances up to 00:23 on 25 October (issue 2 C) and spans 24 hours 23 minutes, which the check counts as 2 days.
+
+**Assessment (AI, 2026-11-24):** applied H (3-hour gap) and issue 5 B; `split_leaf` set to L-ORDER.windows. Windows (test / train, share of 568,545 rows): 24 October to the end of the data 67,411 / 494,654 (87.0%), 23 October 77,719 / 416,321 (73.2%), 22 October 77,637 / 338,395 (59.5%); all above the half-the-rows floor. Left out of training by the gap: 5,179 / 5,768 / 5,827 orders accepted in the 3 hours and 1,301 / 1,325 / 1,556 accepted before the snapshot but undelivered at it (24 / 23 / 22 October). The kept orders of the last hour before the snapshot are 1.8-2.2 minutes faster than all of that hour, as at midnight. `dataset check`: 0 errors, 0 warnings (the horizon warning accepted), 1 info (2 conflicting duplicate rows). Leak probe: all features R^2 0.293, no exact feature copy across the split, the 62-row 25 October tail out of band in rows only (mean and median in band). Task probe: random forest RMSE 9.17 against 11.06 for the dummy, beats it on 3 of 3 splits, flags none.
+
+CC (2026-11-24, Andrej): the declared split (three one-day windows on the acceptance time, the newest to the end of the data, training data taken 3 hours before each test day, leaf L-ORDER.windows) is checked, as implemented.
+
+CC (2026-11-24, Andrej): verdict ship; nothing open in the review. The build is stale until rebuilt.
+
 ## Review
 
-**Outcome:** added. The focused panel recommends inclusion of the forecast-free acceptance-time ETA task: valid inputs and temporal boundaries, useful remaining-time prediction, and no required definition correction. First-party operational provenance and substantial samples favor inclusion; eight days in one city limit generalization. Myunghwan approved inclusion, fallback RMSE in minutes and retaining the 62 unused tail rows on November 9, 2026. Scientific review is complete; a build has not been requested.
+**Outcome:** added. Ship: the full re-check of 2026-11-21 keeps the acceptance-time ETA task, its rows, inputs and one-day windows, and nothing argues for exclusion. Andrej decided on 2026-11-23 that the newest test window runs to the end of the data (issue 2 C), that the target is the minutes from acceptance to delivery (issue 3 B) and that prebooked orders get no booked slot (issue 4 A); on 2026-11-24 a 3-hour gap between each window's training snapshot and its midnight (H) and the acceptance of the newest window's 24 hours 23 minutes (issue 5 B). Windows 22, 23 and 24 October train on 59.5%, 73.2% and 87.0% of the rows; `dataset check` gives 0 errors and 0 warnings. No row is copied across the split and every training event precedes the snapshot; the same courier's next acceptances within a test day are worth 0.65-0.70 RMSE, so the splits comment carries the protocol line against reading other test rows. Value: random forest 9.17 RMSE against 11.06 for the dummy (task probe, 2026-11-24), so the task is not trivial. Nothing open. The build 01a1c240 is stale.
 
-**Main points:** All scientific decisions are approved: the forecast-free 15-feature task, root mean squared error in minutes and the explained warning for 62 retained but unused October 25 rows. No further curator decision remains for this review.
+**Main points:** Open: none. Settled on 2026-11-24: a 3-hour gap before each test window's midnight for the refit's extraction, tuning and rollout (H), and the newest window's longer span accepted (issue 5).
 
-**Record judgment:** Each row is an accepted order; predict total placement-to-delivery minutes immediately after acceptance. Known elapsed time, courier/merchant/district, shifted coordinates, prebook flag, acceptance time and dispatch/push delays are inputs. Both platform forecasts are excluded. Three future-day windows retain the same source cohorts, with every actual training event before midnight and earliest test acceptance; 370/407/423 unfinished training orders are excluded. Removing features changes tie ordering, so old predictions cannot be reused by position. Fresh qualification uses the revised frame. Recorded-promise timing and live evaluator isolation from future query rows remain unverified; neither is certified by these data checks.
+
+**Record judgment:** Each row is an accepted order; predict the minutes from acceptance to delivery immediately after acceptance. Known elapsed time, courier, merchant and the accepted waybill's business area, shifted coordinates, prebook flag, acceptance time and dispatch/push delays are inputs. Both platform forecasts are excluded. Three future-day windows (the newest to the end of the data) retain the same source cohorts, with every actual training event before the data snapshot 3 hours before each window's midnight (gap decided 2026-11-24); 1,556/1,325/1,301 orders (22/23/24 October) undelivered at the snapshot are excluded. Recorded-promise timing remains unverified; reading other test rows is ruled out by the protocol line, not by the data.
+
+**Horizon:**
+
+* **Verdict:** keep the one-day windows on 22, 23 and 24 October 2022 with the delivered-before-midnight filter and no fixed gap, as an exception to the gap rule[^x21h4] (a selection is measured but does not move the scores); high confidence on the windows, since no other three one-day windows keep half the rows for training.
+* **Length:**
+  - One day, cut at local midnight, which is also the assumed refit cadence.
+  - The source states no horizon or refit cadence: the daily refit is our assumption.
+  - An acceptance-time ETA looks minutes ahead, so the length only says how long one fitted model serves.
+* **Gap:**
+  - No fixed gap. Each training side keeps only orders delivered before the window's midnight, which withholds about a third of the last training hour's orders (99-100% of the withheld orders were accepted in that hour); the kept ones are faster in remaining time than all orders of that hour (minutes):
+
+    | Cut | Orders accepted in the last hour | Withheld | Mean remaining, all | Mean remaining, kept | Shift |
+    |---|---|---|---|---|---|
+    | 22 Oct | 1,259 | 423 | 23.18 | 21.39 | -1.79 |
+    | 23 Oct | 1,220 | 405 | 22.72 | 20.60 | -2.13 |
+    | 24 Oct | 1,134 | 370 | 23.06 | 21.06 | -2.00 |
+
+  - On scores the selection does not show: training on the filtered side scores within 0.02 RMSE of training on every earlier order with its true label, and a 1-hour gap costs 0.00 / 0.00 / +0.07 (remaining-time target, LightGBM 500 trees, mean of 2 seeds, seed spread up to 0.06):
+
+    | Training side | 22 Oct | 23 Oct | 24 Oct |
+    |---|---|---|---|
+    | Filter, no gap (implemented) | 8.101 | 8.464 | 7.644 |
+    | Every order before the cut with its true label (not available live) | 8.116 | 8.476 | 7.665 |
+    | Filter + 1-hour gap (about the p99 delay) | 8.097 | 8.461 | 7.713 |
+    | Filter + 3-hour gap | 8.143 | 8.460 | 7.725 |
+    | Filter + 11-hour gap (about the longest delay) | 8.207 | 8.525 | 7.979 |
+
+  - Arrival is the latest of the six event clocks of every order, so no training event falls after the cut.
+  - The label delay is the remaining time after acceptance: p99 55-58 minutes, at most 652 minutes.
+  - A one-day gap, as the NYC and Porto taxi and Lusaka trip tasks use, would leave the 22 October window training on about 48.7%; a 1-hour gap keeps all three windows.
+* **Time frame:**
+  - The release covers eight acceptance days, Monday 17 to Monday 24 October 2022, in one city; the windows are ours.
+  - Only the last three days keep half the rows for training; Friday 21 October would train on about 48.7%[^x21h2].
+  - Two of the three test days are weekend days, and the Saturday window trains on weekdays only.
+  - Seasons, holidays and other cities are not tested.
+* **Options:**
+
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | One day, 22-24 Oct, filter only (implemented) | Daily midnight refit, the three newest days; training keeps orders delivered before midnight | 3: 77,637 / 77,719 / 67,349 rows; train 60.7% / 74.4% / 88.1% | meets the half-the-rows floor and the target of 3 windows; newest day included; whole daily cycles; exactly what a midnight refit knows | an exception to the gap rule (the newest training hour is about 2 minutes faster than it was); Saturday trains with no weekend day; 2 of 3 test days are weekend days |
+  | B | A + 1-hour gap | As A, and training also drops orders accepted in the last hour before midnight (about the p99 delay) | 3: the same test rows; train about 0.2% smaller than A | removes the selection; applies the gap rule instead of an exception; keeps all three windows | costs up to 0.07 RMSE (24 Oct); drops labels a live refit would have |
+  | C | 12 hours, newest six half-days | Refit at midnight and noon | about 6, roughly 33-40k rows each (to measure) | splits the lunch and dinner peaks; more windows | the target is already met; noisier windows; a noon refit is not in the source |
+  | D | Two days | Refit every two days | 1 window above half (23-24 Oct, 145,068 rows); 21-22 Oct at about 48.7% | fewer, larger windows | fewer than 3 windows: fails the rules |
+  | E | One day, 21, 23 and 24 Oct | Friday replaces Saturday | 3: about 69k / 77,719 / 67,349 rows | two weekdays and one weekend day | 21 Oct trains on about 48.7%, a curator's exception; Saturday untested |
+
+* **Recommendation:** A, recorded as an exception to the gap rule: the selection is measured, and training on the filtered side scores within 0.02 of training on every true label, as for the Fugaku supercomputer job-failure dataset[^x21h5]; B is the choice if the letter of the gap rule weighs more than 0.07 RMSE on one day. The windows are the only three above the floor, with the newest day[^x21h1][^x21h3]. **Decision:** keep A, add a 1-hour gap (B), or change to C or E?
+
+**Notes for the AI:** Applied already (no decision): the splits comment names the leaf (L-ORDER.windows: windows on the acceptance time, the gap by the late-label gap rule; until 2026-11-24 named "Temporal, arrival date, label-delay gap"), says the source is silent on horizon and cadence and that the floor fixed the windows, gives the training shares 60.7/74.4/88.1% with 21 October at about 48.7%, the count 3 against SPLIT-33's 3, and the filter's measured selection and score effect. On A, add a curation bullet "Exception to SPLIT-10 (<date>, <curator>): no fixed gap; the delivered-before-midnight filter is the exact as-of knowledge of a midnight refit; it withholds about a third of the last training hour (kept orders 1.8-2.1 minutes faster), and training on it scores within 0.02 RMSE of training on all true labels", with a CC line (no gap is a person's exception), citing fugaku_hpc_job_failure (2026-11-03, Myunghwan) as precedent and the one-day gaps of nyc_taxi_trip_duration, pkdd_15_taxi_trip_time_prediction_ii and 2024_lusaka_mobility_prediction_hackathon as the contrast (date-level windows; here a one-day gap leaves 48.7%). On B, in `_make_splits` add `train = train[(df["accepted_at"].iloc[train] < start - pd.Timedelta(hours=1)).to_numpy()]` before the delivered-before-start filter and the assertions; replace the gap sentences of the splits comment with the 1-hour gap and its cost; run `dataset check`. On C, build the six half-day windows in `_make_splits` (cuts at midnight and noon; `TemporalSplits` has no hour windows and `Temporal` no hour horizon, so the horizon is declared as 1 day or left to the curator), keep the delivered-before-cut filter at each cut, run `dataset check`. On E, set the cutoffs to 21, 23 and 24 October, lower the `len(train) >= len(df) / 2` assertion to 30%, and accept `splits_train_under_half` only after the curator's CC line. Evidence: the mediator's run folder (`sel.py` and its log).
+
+[^x21h1]: **SPLIT-12** (Should): the horizon, the refit cadence, the gap and the time unit come from the use case and the source; the splits comment names each, or says the source is silent and what is assumed; the curator signs off the horizon of every new temporal dataset.
+[^x21h2]: **SPLIT-14** (Must): at least three windows, each training on at least half the rows (down to 30% only as the curator's exception), each test window with at least 33 scored units.
+[^x21h3]: **SPLIT-15** (Must for the newest window, Should for the others): the newest window is always tested; the count aims at SPLIT-33's count for two thirds of the scored units (here 3); walking back from the newest needs its reason.
+[^x21h4]: **SPLIT-10** (Should): train only on rows whose outcome is known by the window's start, with a gap of about the label's delay; no gap only where the measurements show neither a shortcut through recent labels nor a selection by the outcome, and a departure otherwise is an exception.
+[^x21h5]: fugaku_hpc_job_failure: no fixed gap after exact completion filtering, fast-completer selection measured (2026-11-03, Myunghwan), exception.
+
+**Andrej (2026-11-23, discuss):** "Did the source make any decisions on that?
+
+Otherwise, no gap at all is unrealistic. What would be the most realistic setting here, given that we also have optimization time for model hyperparameter tuning per split."
+
+**Answer (AI, 2026-11-23):** How long before midnight should the refit's data snapshot be taken?
+
+* **What the source says:**
+  - The challenge background (March 2024), the October 2024 supplement and Wang et al. (2025) set no evaluation windows, no train/test protocol, no refit cadence and no model training or deployment delay; they define no predictive benchmark at all (Sample Question 4 only asks for models of pick-up and delivery timings).
+  - The only latencies they give are operational: dispatch runs in batches every 30 seconds or 1 minute, and an assignment must be decided within about 10 seconds (background, Challenges 1). These bound the time to score one order, not the time to retrain a model.
+  - The release is delivered in daily `dt` cohorts, which fits a daily batch pipeline, but the source does not say how its own forecasts are refreshed. The midnight refit stays our assumption.
+* **Problem:**
+  - A refit at the cut cannot serve at the cut: the data must be extracted, the model trained and tuned (a benchmark method tunes its hyperparameters on every split), checked and rolled out. The realistic gap is the time from the last training data to deployment, not only the label delay (p99 55-58 minutes).
+  - A gap only drops training rows: the snapshot moves to midnight minus the gap, training keeps orders accepted and delivered before the snapshot (the filter stays, applied at the snapshot), and the test windows stay the same local days (24 October now to 00:23 on 25 October).
+* **Experiments:** LightGBM (500 trees, 127 leaves) on the remaining-time target and the 15 inputs, the definition's windows after issues 2 C and 3 B, mean of 2 seeds (spread up to 0.06, 0.15 for 12 hours on 22 October); RMSE in minutes, lower is better:
+
+  | Gap (snapshot) | 22 Oct train | 22 Oct RMSE | 23 Oct train | 23 Oct RMSE | 24 Oct train | 24 Oct RMSE | Change against no gap |
+  |---|---|---|---|---|---|---|---|
+  | 0 h (midnight, implemented) | 345,355 (60.7%) | 8.118 | 423,008 (74.4%) | 8.482 | 500,764 (88.1%) | 7.655 | - |
+  | 1 h (23:00) | 343,929 (60.5%) | 8.108 | 421,530 (74.1%) | 8.487 | 499,473 (87.9%) | 7.626 | -0.03 to +0.01 |
+  | 3 h (21:00) | 338,395 (59.5%) | 8.138 | 416,322 (73.2%) | 8.572 | 494,654 (87.0%) | 7.694 | +0.02 to +0.09 |
+  | 6 h (18:00) | 317,187 (55.8%) | 8.514 | 394,931 (69.5%) | 8.935 | 473,767 (83.3%) | 7.891 | +0.24 to +0.45 |
+  | 12 h (12:00) | 289,365 (50.9%) | 8.807 | 362,696 (63.8%) | 9.121 | 440,620 (77.5%) | 8.102 | +0.45 to +0.69 |
+
+  - The cost jumps between 3 and 6 hours, when the snapshot moves before the previous day's evening peak; that this is the cause is likely, not tested. Every gap keeps all three windows above the half-the-rows floor[^x23h1].
+  - A deployment gap does not remove the last-hour selection of the filter: it moves it to the snapshot (measured at midnight on 2026-11-21: within 0.02 RMSE).
+* **Options:**
+
+  | | Option | What it does | Pro | Con |
+  |---|---|---|---|---|
+  | a | No gap (implemented) | Snapshot at midnight; the model serves the moment its data ends | best scores; the exact as-of knowledge at midnight | a refit with tuning cannot serve at the cut; an exception to the gap rule[^x23h2] |
+  | b | 1-hour gap | Snapshot at 23:00 | about the label delay's p99; costs nothing measurable | leaves about an hour to train, tune and roll out |
+  | c | 3-hour gap | Snapshot at 21:00, after the evening peak | room for extraction, tuning and rollout of a nightly refit; costs at most 0.09 RMSE; trains on 59.5-87.0% | an assumed pipeline length; the source gives none |
+  | d | 6-hour gap | Snapshot at 18:00 | room for a long tuning run | loses the previous evening's peak; costs 0.24-0.45 RMSE |
+  | e | 12-hour gap | Snapshot at noon | a full afternoon for tuning | costs 0.45-0.69 RMSE; 22 October trains on 50.9%, near the floor |
+
+* **Recommendation:** c: a nightly refit that tunes per split needs hours between its data and serving, and 21:00 is the latest snapshot after the evening peak; it costs at most 0.09 RMSE and keeps all three windows. b if the curator holds that training and tuning fit in an hour. **Decision:** keep a, or change to b, c, d or e?
+
+**Notes for the AI:** On b to e, in `_make_splits` set `snapshot = start - pd.Timedelta(hours=<gap>)` and keep training rows with `accepted_at < snapshot` and `delivered_at < snapshot` (the assertions compare with the snapshot), declare the gap on `Temporal` (`gap=<gap>, gap_unit="hours"`), apply the same snapshot in `_decisions`, replace the gap sentences of the splits comment with the chosen gap, its reason (deployment time: extraction, training with tuning, rollout) and its measured cost, and run `dataset check`. Evidence: the run folder (`run.py`, the log of 2026-11-23).
+
+[^x23h1]: **SPLIT-14** (Must): at least three windows, each training on at least half the rows (down to 30% only as the curator's exception).
+[^x23h2]: **SPLIT-10** (Should): train only on rows whose outcome is known by the window's start, with a gap of about the label's delay; no gap only where the measurements show neither a shortcut through recent labels nor a selection by the outcome, and a departure otherwise is an exception.
+
+**Answer (AI, 2026-11-24):** What the split rules of 2026-11-24 change for H: the windows and the options stay; the decision is now named as one a person makes.
+
+* **Leaf:** the split tree now starts from the record's collection type. A dated event log whose model meets orders after the data, with a recorded acceptance time and three one-day windows, reaches the leaf "Temporal · windows on the time key" [L-ORDER.windows], with the gap set by the gap rules[^x24h1]. The former leaf "arrival date, label-delay gap" is merged into it; the splits comment now names the leaf by its ID. No change to the windows.
+* **Gap rules:**
+  - For late labels the tree allows "a gap of about the delay, or training only on cases whose outcome is known before the window", with a delivery as its example. The delivered-before-midnight filter is that second form.
+  - The gap rule itself is unchanged: it still asks for a gap where a measurement shows a selection by the outcome at the end of the training data[^x23h2]. That selection is measured here (the kept orders of the last hour are 1.8-2.1 minutes faster), so option a stays an exception.
+  - New: "no gap" is one of five questions only a person answers. Until a person answers it, the agent answers no.
+* **The gap the source does not give:** this is the second person-only question. The agent proposes a gap and the curator signs it off[^x24h2]. The answer of 2026-11-23 is that proposal (c).
+  - The deployment time is neither a label delay nor a planning lead the source states, so it enters the task only through this sign-off.
+  - b covers the label delay (p99 55-58 minutes). c to e add time for extraction, tuning and rollout.
+* **Window size:** the window check now counts a scored unit by its rows wherever a window cuts it across training and test. This task scores rows (RMSE, no group), so the counts are unchanged:
+
+  | | 22 Oct | 23 Oct | 24 Oct |
+  |---|---|---|---|
+  | Test rows (each needs at least 33) | 77,637 | 77,719 | 67,411 |
+  | Training share at no gap (floor 50%) | 60.7% | 74.4% | 88.1% |
+
+  - The target is 3 windows for 568,545 rows, and 3 are reached. Every gap in the table of 2026-11-23 keeps all three windows above the floor.
+* **Checks (2026-11-24):** `dataset check` reports 0 errors, the one warning of issue 5 and one info line. The record and definition are consistent. The leaf fits the shipped temporal split.
+* **Recommendation:** unchanged: c; b if the curator holds that training and tuning fit in an hour. Under the new tree, a (no gap) needs the curator's explicit exception and a CC line. **Decision:** keep a as a person's exception, or change to b, c, d or e?
+
+**Notes for the AI:** As in the answer of 2026-11-23. With `_make_splits` the gap is declared on `Temporal(on="accepted_at", horizon=1, horizon_unit="days", gap=<hours>, gap_unit="hours")` (accepted, resolves to the hour gap). On a, add the exception bullet and CC line of the Horizon notes, and name it the "no gap" exception at [L-ORDER.windows]. With the decision, set `split_leaf = "L-ORDER.windows"` (cross-dataset item, Andrej 2026-11-24: every definition names its leaf with its split decision): the placement check finds nothing for it (no v0.2 definition sets it yet).
+
+[^x24h1]: **SPLIT-36** (Should): a definition's split is decided by walking the split tree from the record's collection type; the leaf names the split, and for a temporal split the windows and the gap.
+[^x24h2]: **SPLIT-12** (Should): the horizon, the refit cadence, the planning gap and the label delay, and the time unit come from the use case and the source; the splits comment names each or says the source is silent; the curator signs off on the horizon and the test windows of every new temporal dataset.
+
+**Andrej (2026-11-24, discuss):** "Agree. Implement the three hour gap."
+
+**Resolved (2026-11-24, Andrej):** Implement c, a 3-hour gap. `_make_splits` builds each training side at the data snapshot 3 hours before the window's midnight (`GAP`): orders accepted and delivered before 21:00 of the previous day; the assertions compare with the snapshot. `Temporal` declares `gap=3, gap_unit="hours"`, `split_leaf = "L-ORDER.windows"`, and `_decisions` applies the same snapshot. The splits comment states the gap, its reason (extraction, training with per-split tuning, rollout; the source states none) and its measured cost (+0.02 to +0.09 RMSE); the split-walk bullet, the curation bullet on the windows and the task summary say the same. Training 338,395 / 416,321 / 494,654 rows (59.5% / 73.2% / 87.0%) for 22 / 23 / 24 October, test rows unchanged (77,637 / 77,719 / 67,411). `dataset check`: 0 errors, 0 warnings, 1 info; the gap brings no new warning. Leak and task probes after the change: no flag (task probe: random forest 9.17 RMSE against 11.06 for the dummy).
 
 **Issues for Myunghwan:**
 
@@ -113,7 +271,905 @@ CC (2026-11-09, Myunghwan): the declared metric, fallback RMSE in minutes, is ch
 
    **Resolved (2026-11-09, Myunghwan):** Option B selected and qualified: independent ETA prediction excludes both platform forecasts, their derivatives and missingness; the recorded promise is an external reference only, and prior forecast-assisted models remain sensitivity evidence. Acceptance-time prediction, total placement-to-arrival target, all prebooks and strict observed-event cutoffs remain. Fresh checks and three-day, two-seed models support the revised 15-feature definition. This resolves the feature choice, without final inclusion, metric or warning acceptance.
 
-**Review panel:** ship (focused mediator); Myunghwan approved final inclusion, the declared metric and the explained unused-tail warning on November 9, 2026. Routine reconciliation is complete. Independent claim, column, split, precedent and isolated participant reviews find no required definition correction or demonstrated exploit. Issue 1 and the final approvals are resolved; earlier pending statements in the reports below record their historical review state. The original full panel and boundary reports below are historical: their 17-feature counts, forecast-retention question and positional evidence reuse do not describe the revised primary.
+2. **Drop the 62 acceptances after midnight on 25 October, now that the newest window must be tested?**
+
+   - **Problem:**
+     - Under the split rules the definition stops with an error, because the 62 acceptances on 25 October lie after the last test window.
+     - Myunghwan approved keeping these rows unscored on 9 November, before that requirement existed.
+   - **Effect on the task:** the dataset cannot be checked or built until the 62 rows leave or get a window of their own.
+   - **Experiments:** the 62 rows are accepted between 00:00 and 00:23 on 25 October, all from the 24 October cohort; a window of their own would hold 62 rows against 67,349-77,719 in each full day. `TemporalSplits(...).splits` raises: "The newest cutoff's window ends at 2022-10-25 00:00:00, before the newest data (2022-10-25 00:23:29)". With B applied, `dataset check` (2026-11-21) gives 0 errors and 0 warnings; of its two infos, the unused accepted warning goes when the notes below remove it, and the other (2 rows with equal inputs and different targets) stays.
+   - **Consistency:** the newest window is always a test window[^x21colA]; B follows the cross-dataset ruling that dropped a short tail after the last full period (coffee ratings, Kickstarter), and C follows the Lusaka trips, which keep a short last day inside their last window, though there the window ends where the data ends[^x21colB].
+   - **Panel:** the column audit (2026-11-21) found no other use for these rows; they are ordinary late-evening orders.
+   - **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the 62 rows outside the windows (implemented) | As approved on 9 November | no rows lost | fails the newest-window requirement; the definition does not run |
+     | B | Drop acceptances after 24 October | Filter acceptances before 25 October 00:00 local in `_clean`; the newest window is 24 October | runs; whole local days only; loses 0.01% of rows | changes an approved row choice |
+     | C | Stretch the last window to 00:23 on 25 October | The newest test window holds 24 October plus the tail | keeps every row | the newest test window is 24 hours 23 minutes long, unlike the other two |
+
+   - **Recommendation:** B: 62 rows of a cohort's tail, and every test day stays a whole local day. **Decision:** keep A, or change to B or C?
+
+   **Notes for the AI:** On B, add `df = df.loc[pd.to_datetime(df["grab_time"], unit="s") + pd.Timedelta(hours=8) < pd.Timestamp("2022-10-25")]` before the assertions in `_clean`, then remove `accepted_check_warnings`, the 62-row sentence in `task_summary.row` and the last sentence of the splits bullet in `curation_comments`; update the counts of the decision "One labeled accepted waybill per order", run `dataset check`, add a CHANGELOG entry. Evidence: the run folder; the check with B applied: the run folder.
+
+   [^x21colA]: **SPLIT-15** (Must for the newest window): the newest window is always a test window, because it is the deployment period.
+   [^x21colB]: Cross-dataset ruling of 2026-11-11 (Lennart): coffee_rating_prediction drops its 2 reviews of October 2023, as kickstarter cuts its last 60 days; 2024_lusaka keeps a 70-row partial last day inside its last window (RMSE moves by 0.002).
+
+   **Andrej (2026-11-23, change):** "Option C: Stretch the last window to 00:23 on 25 October.
+   Can we just keep the samples as part of the last test window, since they are perfectly valid?"
+
+   **Resolved (2026-11-23, Andrej):** C. `_make_splits` builds the three windows by hand (`TemporalSplits` cannot end the newest window past a whole day): the newest holds every acceptance from 24 October 00:00 to the end of the data (00:23 on 25 October), 67,411 test rows including the 62, against 500,764 training rows (88.1%); 23 October 77,719 / 423,008 (74.4%); 22 October 77,637 / 345,355 (60.7%). The delivered-before-midnight filter stays on each training side (370/407/423 left out). The `splits_rows_unused` acceptance and every text about 62 unscored rows are gone; `task_summary.split`, the splits bullet of `curation_comments` and the splits comment say the newest window runs to the end of the data. `dataset check`: 0 errors, no newest-window error, no unused-rows warning; one warning, `meta_time_horizon_mismatch` (the check counts the 24-hour-23-minute window as 2 days against the 1-day horizon), left open for the curator (issue 5); the info on 2 rows with equal inputs and different targets stays.
+
+3. **Predict the minutes remaining after acceptance instead of the total since placement?**
+
+   - **Problem:**
+     - The target adds the elapsed minutes, already known at acceptance and an input, to the unknown remaining time, so 98% of the target's variance is a known input.
+     - A model fitted directly on this target scores 43-69 minutes RMSE against 10.7-11.5 for elapsed plus a training mean, and 96-98% of its squared error falls on the 4% of prebook rows.
+     - The total target was the AI's proposal; Myunghwan's quoted words fix only the prediction point ("accepted at").
+   - **Effect on the task:** the ranking would reward methods that extrapolate the known elapsed time on prebook orders (elapsed up to 10,293 minutes), not those that predict the delivery after acceptance, which is what the ETA update acts on.
+   - **Experiments:** LightGBM (500 trees, 127 leaves, one seed) on the 15 shipped inputs, the definition's three windows with the 62 tail rows kept, RMSE in minutes (lower is better); the two-seed runs of the Horizon block give 7.6-8.5 for the remaining-time fit:
+
+     | Test day | Total target, fitted directly | Remaining time + elapsed | Elapsed + training mean remaining | Share of squared error on prebooks (direct) | Direct, non-prebook rows | Remaining + elapsed, non-prebook rows |
+     |---|---|---|---|---|---|---|
+     | 22 Oct | 68.99 | 8.33 | 11.01 | 98.3% | 9.23 | 7.96 |
+     | 23 Oct | 42.86 | 8.70 | 11.49 | 96.0% | 8.67 | 8.43 |
+     | 24 Oct | 57.84 | 7.73 | 10.68 | 98.3% | 7.75 | 7.55 |
+   - **Consistency:** the target should be what the actor acts on[^x21colC]; every other delivery and trip-time task counts from its prediction point (Sendy deliveries from pickup, the NYC and Porto taxis and the Lusaka trips from trip start, the Olist orders from purchase); the one exception, the medical-facility delay, is the source's own target, while here the total was the AI's proposal.
+   - **Panel:** the advocate, critic, mediator and precedent checker all back B; earlier rounds only ran models that predict the remaining time and add the elapsed minutes, so a direct fit on the total was first measured on 2026-11-21.
+   - **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Total minutes since placement (implemented) | The current target, with elapsed as an input | the question as written; nothing changes | the score is dominated by extrapolating a known input on prebooks |
+     | B | Minutes from acceptance to arrival | Target = arrival minus acceptance; elapsed stays an input | the unknown part only; the same ETA for the customer | changes the question wording and the record's comparisons |
+     | C | Total target, prebooks dropped | Removes 22,181 rows | removes most of the extrapolation | loses a real order type; the prebook decision was made on purpose |
+
+   - **Recommendation:** B: the same information for the ETA, and a score that measures the delivery rather than the addition of a known number. **Decision:** keep A, or change to B or C?
+
+   **Notes for the AI:** On B, set `result[self.target] = (df["arrive_time"] - df["grab_time"]) / 60` and rename the target to `remaining_minutes`; rewrite `question` and `predicted` ("Minutes from courier acceptance to delivery") and the first curation bullet; in `_decisions`, set `remaining = df[self.target]`, make the baseline the training mean of the target (drop "elapsed plus"), and rename that column; the promise RMSE is unchanged (raw arrival minus promise); keep `elapsed_minutes` and all prebooks; run `dataset check` and the task probes; add a CHANGELOG entry. The metric stays RMSE in minutes: a prediction's error on the remaining time equals its error on the total, so the metric CC line only needs the target's new name.
+
+   [^x21colC]: **USE-5** (Must): predict what the actor acts on, at the resolution they act on it; a target the source defined badly can often be redefined into the real one.
+
+   **Andrej (2026-11-23, change):** "Option B: Minutes from acceptance to arrival."
+
+   **Resolved (2026-11-23, Andrej):** B. The target is `remaining_minutes` = (arrive_time − grab_time) / 60; `elapsed_minutes` stays an input and all 22,181 prebooked orders stay. `question` ("How many minutes after courier acceptance ...") and `predicted` ("Minutes from courier acceptance to delivery.") are rewritten, `changes` names the redefinition, the first curation bullet and the prebook bullet say the elapsed time is an input, not part of the target. In `_decisions` the baseline is the training side's mean of the target, measured again: 10.68 / 11.49 / 11.01 RMSE minutes on 24 / 23 / 22 October (equal to the former elapsed plus mean remaining, as it must be), the recorded promise 12.14 / 11.79 / 11.76 (24 October now with the 62 tail rows). The metric stays RMSE in minutes; its CC line names `remaining_minutes`. `dataset check` as in issue 2; task probes (3 of 3 windows, default models) flag nothing: random forest 9.04 RMSE against 11.06 for the dummy, ahead on 3 of 3 windows.
+
+4. **Give prebooked orders their booked delivery time as an input?**
+
+   - **Problem:**
+     - On prebooked orders (3.9% of rows) `estimate_arrived_time` is very likely the slot the customer booked at checkout, known at placement, not a platform forecast.
+     - Issue 1 dropped the field from every row as a forecast with unverified snapshot timing; it never separated a booked slot from a forecast.
+     - That the field holds the booked slot is inferred from the data; the source does not say so.
+   - **Effect on the task:** a model on prebooks misses the customer's own requested time; the requested time alone beats the shipped model on prebooks by about 0.75 minutes RMSE, and a model given both was not run.
+   - **Experiments:** on prebooks (domain practitioner, Slurm 1401911; column audit):
+
+     | Measure | Value |
+     |---|---|
+     | Correlation of promise − acceptance with the remaining time | 0.854 |
+     | RMSE of the bare promise as the prediction | 9.75 min |
+     | RMSE of the model on the shipped inputs | about 10.5 min |
+     | Orders whose promise varies across their waybills | 0 |
+
+   - **Consistency:** a customer's request known at the prediction point is a legitimate input[^x21m1]; a meaning the source does not document stays cannot-verify[^x21m2]. Issue 1 stays resolved: this item asks only about the prebooked rows.
+   - **Panel:** the critic asks for a decision item (the booked slot is a legitimate input); the advocate holds that the meaning is inferred, that option B partly reopens issue 1 and that the gain is small; the mediator ranks it last.
+   - **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the exclusion (implemented) | No promise on any row; `fit_reason` says prebooked orders lack their booked slot | issue 1 as decided; no inferred meaning in the inputs | prebooks miss a request the customer made at placement |
+     | B | Booked slot for prebooks only | Add `booked_minutes_after_acceptance` = promise − acceptance for `is_prebook = 1`, missing elsewhere | a known customer request enters; the bare value beats the shipped model on prebooks | rests on an inferred meaning; partly reopens issue 1; affects 3.9% of rows |
+
+   - **Recommendation:** A: the booked-slot meaning is inferred, not documented, and it touches 3.9% of rows; B if documentation shows the field is the booked slot on prebooks. **Decision:** keep A, or change to B?
+
+   **Notes for the AI:** A is applied (the `fit_reason` sentence on the booked slot). On B, in `_clean` add `result["booked_minutes_after_acceptance"] = ((df["estimate_arrived_time"] - df["grab_time"]) / 60).where(df["is_prebook"].eq(1))`; rewrite `known` ("for prebooked orders, the booked delivery slot") and the issue 1 bullet of `curation_comments` (the promise stays out for non-prebooks); remove the `fit_reason` sentence; run `dataset check`, the leak and task probes; add a CHANGELOG entry. Evidence: the run folder.
+
+   [^x21m1]: **USE-6** (Must): anything known at the prediction point is a legitimate input, including a number the company itself computed.
+   [^x21m2]: **EV-7** (Must): never claim a check you did not run; cannot-verify is never upgraded to pass and goes to the curator.
+
+   **Andrej (2026-11-23, ok):** As implemented (A).
+
+   **Resolved (2026-11-23, Andrej):** A: no promise on any row; the `fit_reason` sentence on the missing booked slot of prebooked orders stays. No change to `dataset.py`.
+
+5. **Accept the check warning that the newest test window is longer than one day?**
+
+   - **Problem:**
+     - After issue 2 C, the newest test window runs from 24 October 00:00 to the end of the data at 00:23 on 25 October (67,411 rows), so `dataset check` warns that the window is longer than the declared one-day horizon (it counts the span as 2 days).
+     - The other two windows are whole local days; nothing else in the check is open (0 errors).
+   - **Effect on the task:** none on rows or scores: the warning only says the newest window is 23 minutes longer than a day.
+   - **Consistency:** a warning stays open until the curator accepts it with a reason; 2024_lusaka_mobility_prediction_hackathon keeps a partial last day in its final window the same way[^x23m5].
+   - **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Leave the warning open (implemented) | `accepted_check_warnings` stays empty | nothing accepted without a decision | the check keeps reporting a warning |
+     | B | Accept it | Add `meta_time_horizon_mismatch` to `accepted_check_warnings` with the reason (issue 2 C, the 62 rows to 00:23) | the check is clean; the reason is written down | none beyond the 23 minutes already decided |
+
+   - **Recommendation:** B: the longer window is the direct result of issue 2 C, and the reason can be stated in one line. **Decision:** leave it open (A), or accept it (B)?
+
+   **Notes for the AI:** On B, set `accepted_check_warnings = {"meta_time_horizon_mismatch": "Andrej (<date>, issue 5 B): the newest test window keeps the 62 acceptances up to 00:23 on 25 October (issue 2 C), so it runs 24 hours 23 minutes (67,411 rows); the check counts its span as 2 days against the 1-day horizon. The other two windows are whole local days."}` and add a CC line.
+
+   [^x23m5]: The definition rules: a warning is accepted only with the curator's dated reason.
+
+   **Answer (AI, 2026-11-24):** The split rules of 2026-11-24 leave this item as it stands. `dataset check` on the new rules still reports exactly this warning: the newest window spans 24 hours 23 minutes, which the check counts as 2 days against the 1-day horizon. The new count by rows changes nothing here. A gap chosen under H would move only the training sides, so the warning remains whatever H decides. The recommendation stays B, with the reason given in the notes. **Decision:** leave it open (A), or accept it (B)?
+
+   **Andrej (2026-11-24, change):** "Option B: Accept it."
+
+   **Resolved (2026-11-24, Andrej):** B: `accepted_check_warnings` holds `meta_time_horizon_mismatch` with the reason of the notes (issue 2 C, the 62 acceptances up to 00:23 on 25 October, 24 hours 23 minutes, 67,411 rows) and the curator's date. `dataset check`: 0 errors, 0 warnings, 1 info (2 conflicting duplicate rows), with the 3-hour gap of H applied.
+
+**Review panel:** ship after changes (mediator, 2026-11-21, full re-check). Applied without a decision: the note on the courier's next acceptances in the test day (kept on purpose) and the rule that a test order is predicted without other test rows (same courier's next acceptances, 0.65-0.70 RMSE), the splits comment (source silent on horizon and cadence, the floor fixed the windows, the filter's measured selection), the 9 long non-prebook orders note, the business-area, structural-zero, dt and metric wording, the fit_reason sentence on prebooks' booked slot, the collection-facts Assessment (199 of 213 early placements prebooked). Disputed and settled: the last-hour selection is real (kept orders 1.8-2.1 min faster) but changes no score by more than 0.02 (H revised: a 1-hour-gap option added, the gap footnote corrected); the advocate's figure for the meal-ready estimate (0.63-0.76 RMSE) does not hold, since it was measured only together with the promise; the booked slot of prebooks becomes its own item. For the curator: H and issues 2-4. Earlier panels (2026-11-08, 2026-11-09): ship (focused mediator); Myunghwan approved final inclusion, the declared metric and the unused-tail warning on November 9, 2026; issue 2 reopens the tail warning, since the rule changed the next day. Those earlier panels found no required correction; this round found two (issues 2 and 3) and the courier exploit (now a protocol line). Issue 1 stays resolved. The original full panel and boundary reports below are historical: their 17-feature counts, forecast-retention question and positional evidence reuse do not describe the revised primary.
+
+<details><summary>Mediator (2026-11-21)</summary>
+
+**Mediator: meituan_food_delivery_time (meituan), 2026-11-21**
+
+Read: the advocate's and critic's openings and rebuttals, the claim, domain, precedent, blind and gamer reports, the
+column audit, `check.log`, `check_patched.log`, `leak.log`, `task.log`, the record's `## Review` (Horizon block,
+issues 1-3), `dataset.py`, SPLIT-10 in `splits.md` and `split_tree.md`. **`group.log` is missing**; no point depends
+on it (entities recur by design under a forward split, claim 15).
+
+Decisive experiment: Slurm 1401963, script and log in the run folder
+(`sel.py`, `1401963.log`). Issue 2 B applied (62 rows dropped), remaining-time target (issue 3 B), the 15 inputs,
+LightGBM 500 trees / 127 leaves, two seeds, the definition's three windows.
+
+**Recommendation (judgment record)**
+
+**Ship after changes.** Validity: two Musts fail as merged and each has a one-rung fix (SPLIT-15: issue 2 B; USE-5:
+issue 3 B); LEAK-9 needs a protocol line; LEAK-10 holds (no row copy across the split, every training event before
+the cut). Value: a real signal, LightGBM 7.6-8.5 min against 10.7-11.5 for elapsed plus the training mean; not Trivial.
+Quality: doc fixes, one new low-ranked decision (booked slot of prebooks), the Horizon sign-off. Both sides reach the
+same verdict; nothing argues for exclusion.
+
+**Settled disputes**
+
+**Is the last-hour comparison a measured selection effect? (critic point 5 / advocate rebuttal point 5)**
+
+**Settled: the advocate is right about the gamer's numbers, the critic is right that a selection exists. It is now
+measured, and it has no measurable effect on scores.**
+
+- The gamer's comparison (last training hour against the same hour a day earlier) is confounded by day: on the
+  remaining target, the same hours a day earlier vary by up to 0.9 min from day to day. It is not the measurement.
+- The direct measurement compares, within the same hour before each cut, all orders against the ones the filter keeps:
+
+  | Cut | Orders accepted in the last hour | Withheld | Mean remaining, all | Mean remaining, kept | Shift |
+  |---|---|---|---|---|---|
+  | 22 Oct | 1,259 | 423 | 23.18 | 21.39 | -1.79 |
+  | 23 Oct | 1,220 | 405 | 22.72 | 20.60 | -2.13 |
+  | 24 Oct | 1,134 | 370 | 23.06 | 21.06 | -2.00 |
+
+  Over the last 2 hours the shift is -0.57 to -0.69 min; over 6 hours about 0. 99-100% of withheld orders were
+  accepted in the last hour. So the newest training hour is about 2 minutes faster than it really was: SPLIT-10's
+  "newest training rows are the fast ones", in one hour of each training side.
+- Its effect on scores, test RMSE on the remaining target (mean of 2 seeds; seed spread 0.00-0.03, up to 0.06 at 3 h):
+
+  | Training side | 22 Oct | 23 Oct | 24 Oct |
+  |---|---|---|---|
+  | filter, no gap (shipped) | 8.101 | 8.464 | 7.644 |
+  | oracle: every order before the cut with its true label (not available live) | 8.116 | 8.476 | 7.665 |
+  | filter + 1-hour gap (about the p99 delay) | 8.097 | 8.461 | 7.713 |
+  | filter + 3-hour gap | 8.143 | 8.460 | 7.725 |
+  | filter + 11-hour gap (about the maximum delay) | 8.207 | 8.525 | 7.979 |
+
+  The filter scores like the oracle (within 0.02, slightly better), so the selection does not bias the model
+  measurably. A 1-hour gap removes the selection and costs 0.00 / 0.00 / +0.07 (24 Oct: what the newest hour's
+  labels add). Mean test residuals move by at most 0.27 min between filter and oracle.
+- **What the splits comment should say:** the filter withholds about a third of the last hour's orders, the kept ones
+  are 1.8-2.1 min faster, and the filter scores within 0.02 RMSE of training on all true labels; a 1-hour gap costs up
+  to 0.07. The excluded share (0.07-0.12%) alone understates the selection: the critic's point holds on substance.
+
+**Wording of footnote [^x21h4] (SPLIT-10)**
+
+**Settled for the precedent checker.** `splits.md` SPLIT-10 reads "train on the rows whose outcome is known by the
+window's start, **with** a gap of about the label's delay"; the 2026-11-05 amendment allows no gap only where the
+measurements show neither a shortcut through recent labels nor a selection by the outcome; where the needed gap breaks
+a floor, the departure is an exception. "Gap or filter" is not the rule. The paraphrase comes from `split_tree.md`
+(lines 59-60 and 347-348: "a gap of about the delay, or training only on cases whose outcome is known before the
+window"), which contradicts `splits.md` (see the cross item below).
+
+Proposed footnote: "SPLIT-10: train only on rows whose outcome is known by the window's start, with a gap of about the
+label's delay; no gap only where the measurements show neither a shortcut through recent labels nor a selection by the
+outcome, and a departure otherwise is an exception."
+
+Under that wording the shipped design (filter, no gap) is an **exception**, since a selection is measured, of
+fugaku_hpc_job_failure's kind (exact completion timestamps, filter only, fast-completer selection measured; 2026-11-03,
+Myunghwan). It is not forced by the floor: a 1-hour gap keeps all three windows (training shares fall by 0.2%), so the
+Horizon block's and precedent F3's "a gap would cost a window" holds only for a one-day gap. Whether the filter alone
+is enough is a weighing (the filter is the exact as-of knowledge of a midnight refit, P4; the letter of SPLIT-10 asks
+for a gap once selection is shown), so it goes to the curator as part of H.
+
+**Smaller disputes**
+
+| Point | Settled | Why |
+|---|---|---|
+| "meal-ready estimate worth 0.63-0.76 RMSE" (advocate opening 6) | critic right | the gamer's "honest+src" adds the promise and the meal-ready estimate together; neither was measured alone |
+| "26 of 28 claims held" (advocate opening 1) | critic right | claims 19, 25, 26 are substantive; 27-28 untested; the verdict does not change |
+| Booked slot of prebooks: note only, or a decision item? | critic right: a decision item | issue 1 asked about forecasts with unverified snapshot timing and never separated a customer-booked slot; one decision per issue. Advocate right that the booked-slot meaning is inferred (EV-7) and that the mildest option suffices to ship |
+| Probe 13 "no newest period outside the band" | neither fully | the probe's own line shows p50 z = +3.8 for 23 Oct, so its reading sentence is wrong for that statistic (a probe-text bug); probe 13 tests release-end censoring, not the per-cut selection, which the table above measures |
+
+**Open issues in the record**
+
+| Issue | Verdict | What, why |
+|---|---|---|
+| **H** (Horizon) | **revise** | (1) Footnote [^x21h4] as above. (2) Gap bullet 1: replace "No fixed gap ... (0.07-0.12% of the eligible rows)" with the measured selection (a third of the last hour withheld, kept orders 1.8-2.1 min faster) and its score effect (filter within 0.02 of all true labels; a 1-hour gap costs 0.00/0.00/+0.07). (3) Add an option "A + 1-hour gap": same windows, gap about the p99 delay, removes the selection, costs up to 0.07 RMSE on 24 Oct, makes the design an application of SPLIT-10 instead of an exception. (4) Recommendation stays A (one-day windows 22-24 Oct, filter only), recorded as a SPLIT-10 exception of fugaku's kind with the measurement; the decision line becomes "keep A, add a 1-hour gap, or change to B or D?". (5) Notes for the AI on A: cite fugaku as precedent and the nyc/pkdd/lusaka one-day gaps as the contrast (date-level windows; a one-day gap here leaves 48.7%). The 1-hour-gap option needs `train = train[accepted_at < start - 1h]` before the delivered-before-start filter and the assertions |
+| **2** (62 rows on 25 Oct) | **keep as written** | B is the only option consistent with SPLIT-15 (Must) and the 2026-11-11 cross-dataset ruling (coffee_rating_prediction, kickstarter). Add to Experiments: `check_patched.log` with B applied: 0 errors, 0 warnings, `accepted_check_warnings_unused` info, which the notes' removal of `accepted_check_warnings` clears |
+| **3** (remaining minutes) | **keep as written** | USE-5 (Must); four independent runs agree (direct fit 41-75 RMSE against 10.7-11.7 for a rule); every ETA sibling counts from its prediction point (precedent F1); the total was an AI proposal, so B reverses no curator ruling. The metric CC re-look stays in the notes |
+
+Merge: none. Issue 1 is resolved and stays closed; the new prebook item below is separate from it.
+
+**Changes to make now (no decision needed)**
+
+| Change | Rule |
+|---|---|
+| LEAK-9 protocol line: a `Potential leak, kept on purpose:` bullet with the gamer's numbers (courier's next acceptances within the test day: RMSE 7.72/8.29/7.45 to 7.07/7.61/6.76, gain 0.65-0.70 on 3 of 3 days; no column drop closes it), and in `splits_comment`: each test row is predicted from the training rows and its own features only; a method that reads other test rows is called out and not benchmarked. No data change | LEAK-9 (Should), loan_default_prediction_imperial_college (2026-11-10, Andrej) |
+| `splits_comment`: drop "Cadence and window count follow the eight-day operational release" (claim 28, unsupported); say the source is silent on horizon and cadence, a daily refit is assumed, SPLIT-14's floor fixed the windows, and the filter's measured selection and score effect (table above) | SPLIT-12, SPLIT-10 |
+| Note in `curation_comments`: 42 orders over 3 h remaining, 33 prebooks; 9 non-prebook (2 over 6 h, max 652 min), kept; the ETA family drops trips over 3 h (lusaka, nyc, pkdd) and the gamer found dropping training rows over 180 min changes nothing | CLEAN-11 (Should) |
+| `known`: "district" → "business area of the accepted waybill" | EV-2 |
+| "structural zero event times" → grab, fetch and arrive times and the courier coordinates only | EV-2 |
+| "redundant dt" → `dt` is the source's cohort date (differs from the local creation date for 1,758 orders) | EV-2 |
+| 2026-11-21 Assessment: 14 of the 213 pre-17-October placements are not prebooked | EV-2 |
+| Metric note: RMSE scores the mean remaining time, not the padded ETA a customer sees | MET-8 |
+| `## Review` Outcome and Main points: say issues 2, 3, H (and the new item) are open | EV-2 |
+
+**New issue for the curator**
+
+**4. Give prebooked orders their booked delivery time as an input?** (USE-6 Must, EV-7 Must; rank last)
+
+- Problem: on prebooks (3.9% of rows) `estimate_arrived_time` is very likely the slot the customer booked at checkout,
+  known at placement, not a platform forecast; issue 1 dropped it as a forecast.
+- Evidence: on prebooks, promise − acceptance correlates 0.854 with the remaining time; the bare promise scores 9.75
+  min RMSE against about 10.5 for the shipped-input model; the promise is constant across an order's waybills.
+- Critic: a customer request known at placement is a legitimate input (USE-6); issue 1 never separated it.
+  Advocate: the meaning is inferred, not documented (EV-7); option (a) partly reopens issue 1; under issue 3 B the gap
+  is under 1 min on 3.9% of rows.
+- Options: (a) add promise − acceptance as an input for `is_prebook = 1` rows only; (b) keep the exclusion, say in
+  `fit_reason` that prebooks lack their booked time. Recommendation: (b), unless documentation shows the field is the
+  booked slot. Decision: (a) or (b)?
+
+**Cross item (rule text, not this dataset)**
+
+`split_tree.md` (the gap paragraph and the "late labels" leaf) says "a gap of about the delay, **or** training only
+on cases whose outcome is known before the window"; `splits.md` SPLIT-10 says both, with no gap only on measurement.
+One of the two texts needs aligning; the amendment of 2026-11-05 (Lennart) is the authority. Also the probe 13 reading
+sentence ignores per-period |z| ≥ 3 (p50 z = +3.8 here).
+
+**Agreed facts**
+
+- 568,545 labeled accepted orders, 568,483 after issue 2 B; 15 inputs; none from after acceptance.
+- `check.log` errors on SPLIT-15; `check_patched.log` (B applied): 0 errors, 0 warnings, 2 info.
+- 0.0% of test rows have an exact feature copy in train; every training event before the cut (claim 12).
+- Training shares 60.7 / 74.4 / 88.1%; 21 Oct would train on 48.7%; the filter drops 370/407/423 orders, nearly all
+  accepted in the last hour.
+- Direct fit on the total target 41-75 RMSE against 10.7-11.7 for elapsed plus a mean; 96-98% of its squared error
+  on prebooks; remaining-time fit 7.2-8.7.
+- Courier's future within the test day: gain 0.65-0.70 RMSE, no clean column fix.
+- Licence CC BY-NC 4.0 with a no-redistribution clause: a note under EV-4 (lucas_topsoil), never a reason.
+
+**Consistency with precedent**
+
+- Issue 2 B: coffee_rating_prediction, kickstarter (2026-11-11). Issue 3 B: sendy, nyc/pkdd taxi, lusaka, brazilian
+  (counter-case medical_facility is the source's own target). LEAK-9 line: loan_default_prediction_imperial_college.
+- Gap: fugaku_hpc_job_failure (filter only, exception, 2026-11-03) is the closest precedent; the fact that sets meituan
+  apart from the one-day-gap ETA family is the eight-day release with daily windows (a one-day gap breaks SPLIT-14's
+  floor). With the measurement written down this is a second exception of fugaku's reason; the register's SPLIT-10
+  `amendment_due` flag should count it, and two exceptions of the same reason (exact completion timestamps, selection
+  measured without score effect) may make an amendment due at the third.
+- Forecast exclusion (issue 1): departs from USE-6's default with a stated reason (snapshot timing); unchanged.
+
+</details>
+
+<details><summary>Advocate (2026-11-21)</summary>
+
+**Advocate opening: meituan_food_delivery_time (meituan), 2026-11-21**
+
+**Position: ship after two definition fixes (issue 2 B, issue 3 B), plus notes.** I do not defend the definition as merged on two points. It fails a Must on each (SPLIT-15: it does not run; USE-5: the target), and each has a cheap fix one rung down the remedy ladder. Everything else holds or needs only a note.
+
+**1. A real, first-party ETA task with clear signal and no data leak (USE-1, LEAK-10, TP rules)**
+- **Use case:** the source's Sample Question 4 names it: "predict ... precise timings for order pick-up and delivery" (claim auditor, claim 21). The domain practitioner, acting as the ETA team, has all 15 inputs at acceptance and none from after it. The fit is direct for ordinary orders (96% of rows).
+- **Signal:** on the remaining-time target, LightGBM gets 7.19 / 8.12 / 7.78 min RMSE. The recorded platform promise gets 12.14 / 11.79 / 11.76, and elapsed plus the training mean gets 10.68 / 11.49 / 11.01 (domain practitioner; claim 17). The blind reviewer found the same independently: R² 0.63 on non-prebook rows, against 0.27 for the rule. The task is not trivial and not noise.
+- **No leak:** 0.0% of test rows have an exact copy in train (leak.log). Every training event falls before the cut, including events of rejected waybills (claim 12). `check_patched.log` reports 0 errors and 0 warnings. 26 of the 28 tested claims held or were wording-only.
+- **Why it outranks the objections:** none of them is a validity failure without a fix. Under principles step 5, exclusion is for a Must that cannot be fixed.
+
+**2. Issue 3 (target): I concede the problem; re-target with option B, don't exclude (USE-5 Must; remedy ladder)**
+- **The problem is real.** Fitted directly on the total target, LightGBM gets RMSE 43-69 against 10.7-11.5 for elapsed plus the mean. 96-98% of the squared error falls on the 3.9% prebook rows. The task probe ranks linear (10.4) far ahead of random forest (31.2) and LightGBM (62.8). The blind reviewer and the task gamer measured the same.
+- **Fix:** target = arrival minus acceptance. `elapsed_minutes` stays an input and all prebooks stay. The customer sees the same ETA, and the score then measures the unknown part only. This is "fix the definition (re-target)", the second rung.
+- **Precedent:** every shipped ETA sibling counts from its prediction point: sendy, nyc/pkdd taxi, 2024_lusaka, brazilian_ecommerce (precedent checker, F1).
+- **Reverses no human ruling:** the total target was an AI proposal. Myunghwan's quoted words fix only the prediction point.
+- **The task survives the fix:** remaining-time RMSE is 7.7-8.7 against a no-learning baseline of 10.7-11.5 (issue 3 table).
+
+**3. Issue 2 (62 rows after midnight): option B, a 0.01% filter (SPLIT-15 Must)**
+- **Fix:** drop the 62 acceptances between 00:00 and 00:23 on 25 October. With them gone, the patched check runs clean (`check_patched.log`). Also remove the stale `accepted_check_warnings` entry, which is now `accepted_check_warnings_unused`.
+- **Precedent:** the 2026-11-11 cross-dataset ruling (Lennart, A) cut coffee_rating_prediction's and kickstarter's partial newest periods the same way.
+- **Not drift:** Myunghwan approved A on 2026-11-09, before SPLIT-15 was amended on 2026-11-10. That is a rule change after the decision.
+
+**4. The split is sound and is the only design that meets the floors (SPLIT-10, SPLIT-14, SPLIT-15, SPLIT-33)**
+- **Windows:** one-day windows on 22, 23 and 24 October train on 60.7% / 74.4% / 88.1% of rows. That gives three windows, SPLIT-33's count, with the newest tested. Any earlier day falls below half (21 October: 48.7%).
+- **Filter instead of a gap:** training keeps only orders delivered before midnight. This excludes 0.07-0.12% of orders (370 / 407 / 423). A 1-day gap would cost a window under the floor.
+- **Precedent:** fugaku uses the same filter-only design (2026-11-03, Myunghwan). Probe 13 shows no censoring at the release end (|z| < 3 everywhere).
+- **Remaining step:** write both facts into the splits comment (precedent checker, F3; Horizon notes on A). That is documentation, not a change.
+
+**5. The gamer's exploit is an evaluation leak, fixed by a protocol line (LEAK-9 Should)**
+- **The exploit (NEW):** reading the same courier's next acceptances within the test day lowers RMSE by 0.65-0.70. The gamer found no column drop that closes it without also losing legitimate history.
+- **Rule:** LEAK-9 covers exactly this case: "a model can read other test rows" is "fixed in the scoring ... or by a protocol line the benchmark checks, not in the data".
+- **Precedent:** loan_default_prediction_imperial_college (Andrej, 2026-11-10) kept its columns and added the line. So did spanish_motor, medical_facility and bank_marketing.
+- **Remedy:** add to the notes and `splits_comment`: each test row is predicted from the training rows and its own features only; a method that reads other test rows is called out and not benchmarked.
+- **Not a data defect:** coarsening `accepted_at` would damage a legitimate input. The exploit needs transductive use of the test block.
+
+**6. Missing inputs make prebooks approximate, not the task invalid (USE-6; resolved issue 1)**
+- **The gap:** the booked delivery time of prebooked orders is missing (domain practitioner, F1: the model is at about 10.5 min against 9.75 for the bare promise, on 3.9% of rows). So are the meal-ready estimate (gamer flaw B, worth 0.63-0.76 RMSE) and courier load (worth about 2%).
+- **Why the forecasts are out:** Myunghwan excluded both forecasts on 2026-11-09, citing the unverified snapshot timing (LEAK-10, EV-7). That is a stated reason, not drift: the meal-ready forecast changes across waybills for 8,794 orders (precedent checker, F5).
+- **Prebooks after issue 3 B:** prebook rows weigh only their share in the score. The booked-time gap then costs little.
+- **Remedy:**
+  - State in `fit_reason` that the booked slot of a prebook is not an input.
+  - The prebook-only carve-out stays the curator's choice (it partly reopens issue 1).
+  - Courier load is an engineered cross-row feature. Under minimal preprocessing it stays out, with a note.
+
+**7. The rest is notes; the licence never decides (EV-4 Must, MET-8, CLEAN-11 Should)**
+- **Licence:** CC BY-NC 4.0 with a no-redistribution clause. Under EV-4 that is a one-line note, "never the reason for a `No`" (precedent: lucas_topsoil).
+- **Metric:** RMSE in minutes is the fallback. No source metric exists (claim 23), and it matches 2024_lusaka ("ok keep minutes"). After issue 3 B, the metric CC needs a new look, and RMSE on remaining minutes stays the natural choice. The asymmetric customer-ETA point (domain practitioner, F3) belongs in the metric note.
+- **Doc fixes, all cheap:**
+  - `da_id` is the "business area of the accepted waybill".
+  - "Structural zeros" applies to the grab, fetch and arrive times and the courier coordinates only.
+  - `dt` is the source's cohort date, not "redundant".
+  - 14 of the pre-17-October placements are not prebooked.
+  - The "Main points" block is stale.
+- **Long non-prebook orders:** 9 non-prebook orders with more than 3 h remaining (precedent checker, F4). A note is enough; CLEAN-11 is a Should, and the count is tiny.
+
+**Verdict sketch:**
+- **Validity:** USE-5 triggered, fixed by re-target (issue 3 B). SPLIT-15 triggered, fixed by the filter (issue 2 B). LEAK-9 triggered, fixed by a protocol line. LEAK-10 holds. SPLIT-10 and SPLIT-14 hold.
+- **Value:** a real signal (learner 7.2-8.1 against 10.7-11.5 for the rule).
+- **Quality:** doc fixes; prebook booked time, licence and long tail kept with notes.
+- **Ship after changes.**
+
+</details>
+
+<details><summary>Advocate rebuttal (2026-11-21)</summary>
+
+**Advocate rebuttal: meituan_food_delivery_time (meituan), 2026-11-21**
+
+The critic and I agree on the verdict: ship after changes, with no case for exclusion. All seven of the critic's points match points of my opening, and I dispute none of them. Below I concede each and add what follows. On two points, 4 and 5, I narrow the weight the critic gives them.
+
+| Critic point | Answer | What follows |
+|---|---|---|
+| 1. Target (issue 3) | concede | Option B. Four independent runs agree (direct LightGBM 41-75 min RMSE against 10.7-11.7 for the rule). USE-5 is a Must and the fix costs nothing. Re-look at the RMSE CC line afterwards. |
+| 2. Does not run (issue 2) | concede | Option B, plus removing the stale `accepted_check_warnings` entry and the two 62-row sentences. Option A cannot stand under SPLIT-15. |
+| 3. Courier's future in the test day (LEAK-9) | concede | Add a "Potential leak, kept on purpose" bullet with the gamer's numbers (gain 0.65-0.70, 3 of 3 days) and the protocol sentence in `splits_comment`. No data change, since no column drop closes the channel. |
+| 4. Booked time of prebooks | concede the facts; narrow the weight | See below. |
+| 5. Filter in place of a gap, reason unwritten | concede; narrow one piece of evidence | See below. |
+| 6. Nine non-prebook orders over 3 h | concede | A note in `curation_comments`: the count, the 652-minute maximum, and why they stay. The cap stays a curator option. CLEAN-11 is a Should, and the gamer found that dropping training rows over 180 min changes nothing. |
+| 7. Stale and wrong text | concede | All six fixes apply as listed. The `## Review` Outcome and Main points blocks need updating once issues 2 and 3 and the Horizon decision are settled. |
+
+**Point 4: a decision item, mildest (b); its weight shrinks under issue 3 B**
+- **I agree:** this is a new decision for Myunghwan, not a fix. The booked-slot meaning is inferred, not documented (EV-7), and option (a) partly reopens issue 1, which Myunghwan settled on 2026-11-09.
+- **What the critic leaves out:**
+  - The evidence that the model loses on these rows is about 10.5 min against 9.75 for the promise. That is a gap of under 1 minute on 3.9% of rows.
+  - Under the total target these rows carried 96-98% of the squared error. Under issue 3 B they weigh about their share of the rows (domain practitioner, finding 1).
+  - So once issue 3 B is applied, the gap is an approximate fit on a small subgroup (USE-1 approximate). It is not a validity failure.
+- **Ranking:** the item should sit below issues 2 and 3 and the Horizon decision. Option (b) is enough to ship.
+
+**Point 5: rewrite the splits comment; the selection effect is bounded, not shown**
+- **I agree:** the claim that "cadence and window count follow the release" is unsupported (claim 28). The comment should say:
+  - the source is silent on horizon and cadence, and a daily refit is assumed;
+  - the floor fixed the windows;
+  - a 1-day gap would put training at about 48.7%;
+  - the excluded share is 370 / 407 / 423 orders;
+  - fugaku is the precedent.
+- **I dispute that the gamer's last-hour numbers measure a selection effect.**
+  - The 24.5-25.6 against 26.6-27.6 min means compare the last training hour (23:00-24:00) with the same hour a day earlier. They do not hold time of day fixed against the orders actually withheld.
+  - A difference of the same size can come from day-to-day variation alone.
+  - What bounds any selection effect is the excluded share, 0.07-0.12% of eligible rows. Probe 13 also shows no newest day outside the band of the earlier days (|z| < 3 on the mean, the median and the 90th percentile).
+- **What follows:** under the amended SPLIT-10, the measurement that allows no gap is the excluded share. Quote that number. Do not present the last-hour comparison as a measured selection effect.
+
+**Fact the critic raised**
+- `group.log` is missing from the run folder. I confirm this and do not rely on it. No point on either side depends on a group probe: entities recur by design under a forward split (merchants seen 99.8-99.9%, couriers 98.5-99.1%; claim 15).
+
+**Joint position for the mediator:**
+- **Validity fixes:** issue 3 B, issue 2 B, and the LEAK-9 protocol line.
+- **Curator items:** issues 2 and 3, the Horizon decision (recommend A), and the new prebook booked-time item (recommend b, ranked last).
+- **Notes and text:** points 5, 6 and 7.
+
+</details>
+
+<details><summary>Critic (2026-11-21)</summary>
+
+**Critic opening: meituan_food_delivery_time (meituan)**
+
+**Position: do not ship as merged. Ship after changes 1-3; 4-7 are a curator item, notes and doc fixes.** The task is real (an ETA update at courier acceptance, first-party data, clear signal), so nothing here argues for exclusion. But the merged definition does not run, its target makes the benchmark rank the wrong thing, and it lacks the protocol line that its own test set needs.
+
+Read: `dataset.py`, README, the record (`## Review`, Horizon block, issues 1-3), the claim, domain, precedent, blind and gamer reports, the column findings, `check.log`, `check_patched.log`, `leak.log`, `task.log`, `dtype.log`. **`group.log` is missing** from the run folder.
+
+**1. The target ranks methods by extrapolating a known input (KNOWN issue 3; USE-5 Must)**
+
+- **Problem:** `delivery_minutes` = elapsed (known, an input) + remaining. On prebooked orders elapsed runs to 10,293 min, so 98% of the target's variance is a column the model already has.
+- **Evidence:**
+
+  | Source | Linear / rule | Random forest | LightGBM on total | LightGBM on remaining + elapsed |
+  |---|---|---|---|---|
+  | panel task probe (`task.log`), RMSE | linear 10.41 | 31.16 | 62.83 | - |
+  | column audit, 3 days | elapsed + mean 10.68-11.49 | - | 42.86-68.99 | 7.73-8.70 |
+  | blind review, 200k sample | elapsed + median 11.4 | - | 41.4 | 8.1 |
+  | task gamer, untuned | elapsed + median 10.73-11.71 | - | 51.11-74.51 | 8.56-9.90 |
+
+  Four independent runs agree: a rule with no learning beats every tree model by 4-6x, and 96-98% of LightGBM's squared error sits on the 4% prebook rows. On non-prebook rows the two fits are close (7.7-9.2 vs 7.6-8.4).
+- **Effect:** the benchmark would score extrapolation of one column on a few hundred rows, not delivery prediction. The customer's ETA is acceptance + remaining minutes either way.
+- **Precedent:** every shipped ETA task (sendy, nyc/pkdd taxi, lusaka, brazilian) counts from its prediction point. The total was an AI proposal; no curator words fix it (precedent F1).
+- **Remedy:** option B of issue 3: target = arrival − acceptance, `elapsed_minutes` stays an input, all prebooks stay. Re-look at the RMSE CC line afterwards, as the issue's notes say.
+
+**2. The definition as merged does not run (KNOWN issue 2; SPLIT-15 Must)**
+
+- **Evidence:** `check.log` raises "The newest cutoff's window ends at 2022-10-25 00:00:00, before the newest data (2022-10-25 00:23:29)". With the 62 rows dropped, `check_patched.log` has 0 errors, but reports `accepted_check_warnings_unused` for `splits_rows_unused`.
+- **Effect:** no build, no check, no probe on the shipped definition.
+- **Remedy:** option B (drop acceptances from 25 Oct 00:00 local, 62 rows, 0.01%), remove `accepted_check_warnings`, the 62-row sentence in `task_summary.row` and the last sentence of the splits bullet. Same as coffee_rating_prediction and kickstarter (2026-11-11, cross-dataset item A). Option A cannot stand under a Must.
+
+**3. Test rows give away each other's outcome; no protocol line (NEW; LEAK-9 Should)**
+
+- **Problem:** a test window is one whole day of one city's couriers. A model that reads the other test rows of the same courier (next accept time, accepts in the next 30/60 min, position at the next assignment) learns when the courier became free again, which is the delivery.
+- **Evidence (task gamer, LightGBM, 22/23/24 Oct):**
+
+  | Model | RMSE |
+  |---|---|
+  | honest (remaining target, courier past only) | 7.715 / 8.286 / 7.454 |
+  | + courier's future within the test day | 7.065 / 7.610 / 6.756 |
+  | gain | 0.65 / 0.68 / 0.70 (8-9%) |
+  | ref: fetch time, a post-acceptance field | 6.314 / 6.830 / 6.183 |
+
+  The gain is consistent on 3 of 3 days, larger than the courier-load gain the domain practitioner measured (0.13-0.20), and about half of what a known post-acceptance field gives. The gamer found no column drop that closes it without losing the legitimate courier history; `courier_id` and `accepted_at` are the channel.
+- **Rule:** LEAK-9 as amended 2026-11-05: an evaluation leak is fixed by a protocol line the benchmark checks. `dataset.py` has none (no "other test rows" text anywhere). Precedents: duolingo_spaced_repetition_recall, frempl_french_motor_personal_line, medical_facility_operational_data, fremtpl2.
+- **Remedy:** a `Potential leak, kept on purpose:` bullet in `curation_comments` with the numbers above, and the protocol sentence in `splits_comment`: each test row is predicted from the training rows and its own features only; no feature or model step may use other test rows; a method that reads them is called out and not benchmarked. No data change.
+
+**4. Prebooked orders lose their booked delivery time (NEW; USE-6 Must, EV-7)**
+
+- **Problem:** issue 1 dropped `estimate_arrived_time` as a platform forecast. On prebooked orders it is very likely the slot the customer booked at checkout, known at placement, not a forecast.
+- **Evidence (domain practitioner, job 1401911):** on prebooks, promise − acceptance correlates 0.854 with the remaining time; as a bare predictor it scores 9.75 min RMSE, the shipped-input model about 10.5. The promise is constant across an order's waybills (column audit: 0 orders vary).
+- **Limit:** that the field is the booked slot is inferred from the data, not documented (EV-7), and it partly reverses Myunghwan's 2026-11-09 choice. So this is a decision, not a fix.
+- **Remedy:** a new decision item for Myunghwan: (a) keep "promise − acceptance" as an input for `is_prebook = 1` rows only, or (b) keep the exclusion and say in `fit_reason` that prebooked rows lack their booked time. Mildest: (b).
+
+**5. The split filter replaces a gap without the reason written down (NEW in part; SPLIT-10, SPLIT-12 Should)**
+
+- **Problem:** `splits_comment` says "Cadence and window count follow the eight-day operational release", which no source states (claim auditor 28, untested). It does not say why the filter replaces the 1-day gap the ETA siblings use.
+- **Evidence:** a 1-day gap would push 22 Oct's training to about 48.7%, below SPLIT-14's floor (Horizon block). The filter drops 370/407/423 orders (0.07-0.12%); the gamer measured a small selection effect: the last training hour's mean target is 24.5-25.6 min vs 26.6-27.6 a day earlier (slow late orders are the ones held back). Footnote [^x21h4] paraphrases SPLIT-10 as "gap or filter"; the amended rule allows no gap only on a measurement.
+- **Remedy:** rewrite `splits_comment` per the Horizon notes for A: the source is silent on horizon and cadence (daily refit assumed), the floor fixed the windows, the gap's cost, the excluded share and its selection effect; cite fugaku as precedent.
+
+**6. Nine non-prebook orders over 3 hours remaining (NEW, minor; CLEAN-11 Should)**
+
+- **Evidence (precedent F4, job 1401917):** 42 orders over 3 h remaining, 33 of them prebooks; 9 non-prebook, 2 over 6 h (max 652 min). lusaka, nyc and pkdd drop trips over 3 h as not closed in the app (Lennart, 2026-10-26 / 11-05).
+- **Effect:** under RMSE on option B, one 300-min error weighs about as much as 1,000 typical rows (estimate). The gamer found dropping training rows over 180 min changes nothing, so this is about scoring, not fitting.
+- **Remedy:** a note in `curation_comments` stating the count and why they stay, or a decision item if the curator wants the family's cap. Not a reason to hold the dataset.
+
+**7. Stale and wrong text (quality; EV-2 Must for the facts)**
+
+- `known`: "district" → "business area of the accepted waybill" (supplement 2.6: overlaps, also order type; `da_id` follows the accepting courier in 1,963 orders).
+- "structural zero event times" → only grab, fetch, arrive times and courier coordinates are 0 on rejected rows; placement, push, dispatch are real.
+- "redundant dt" → `dt` is the source cohort date, differs from local creation date for 1,758 orders.
+- 2026-11-21 Assessment: 14 of the 213 pre-17-Oct placements are not prebooked ("mostly prebooked").
+- Metric note: one sentence that RMSE scores the mean remaining time, not the padded customer ETA (domain practitioner finding 3; MET-8 fallback, no rule breach).
+- `## Review` Outcome and Main points say nothing is open; issues 2, 3 and the Horizon decision are open.
+
+**Not argued:** the licence (CC BY-NC plus a permission request) is a note under EV-4, not a reason (lucas_topsoil precedent). Missing courier load is an engineered feature the source cannot give row by row; the task is real without it.
+
+</details>
+
+<details><summary>Critic rebuttal (2026-11-21)</summary>
+
+**Critic rebuttal: meituan_food_delivery_time (meituan)**
+
+The advocate and I agree on the verdict: ship after issue 2 B, issue 3 B and a LEAK-9 protocol line, with notes. The disagreements are two points of fact and one on point 6.
+
+| Advocate point | Reply | Why |
+|---|---|---|
+| 1. Real task, signal, no data leak | **Concede, with two corrections** | (a) "26 of 28 claims held or were wording-only" is generous: claim 19 (the definition does not run), 25 (the metric is refuted in effect) and 26 (stale "nothing open") are substantive, and 27-28 are untested. (b) `check_patched.log` is clean only on a patched copy (issue 2 B applied). It also shows `accepted_check_warnings_unused` as an info line, which needs removing. Neither changes the verdict. |
+| 2. Issue 3 B | **Concede** | Same evidence, same remedy (USE-5 Must; precedent F1). |
+| 3. Issue 2 B | **Concede** | Same remedy (SPLIT-15 Must; coffee_rating and kickstarter, 2026-11-11). |
+| 4. Split sound | **Concede the design; dispute "documentation only, no censoring"** | Probe 13's own reading says it "does not show which labels a model refit at a window's start would have known (SPLIT-10)". The probe also shows p50 z = +3.8 for one newest period. The gamer measured the filter's selection effect: the last training hour's mean target is 24.5-25.6 min, against 26.6-27.6 a day earlier. Small (0.07-0.12% of rows), but the amended SPLIT-10 allows no gap only on a measurement, so the splits comment must state that effect, not only the excluded counts. This is still a text change, not a design change. |
+| 5. LEAK-9 protocol line | **Concede** | We agree on the rule, the remedy and on not coarsening `accepted_at`. loan_default_prediction_imperial_college is the closest precedent (same pattern: next row of a hidden entity in the same temporal test window). |
+| 6. Missing prebook booked time: a `fit_reason` note | **Dispute in part** | (a) Issue 1 asked about forecasts with unverified snapshot timing. A booked slot is a customer request known at checkout, not a forecast, and issue 1 never separated the two. So Myunghwan has not decided it. It needs its own decision item (one decision per issue), with the note as the mildest option. Under USE-6 (Must) an input known at the prediction point is legitimate. (b) "Costs little after issue 3 B" is a score argument. Whether the task matches what the actor has does not depend on how much the score moves. On those rows the model (about 10.5) still loses to the bare slot (9.75). (c) **Factual error:** "meal-ready estimate worth 0.63-0.76 RMSE" is the gamer's "honest+src" gain from **both** the promise and the meal-ready estimate together. Nobody measured the meal-ready estimate alone. |
+| 7. Licence, metric, doc fixes, long tail | **Concede** | Same list. One addition: the 9 non-prebook rows over 3 h are noted with their count and the family's 3-hour cap (lusaka, nyc, pkdd) as the contrast, so the curator can choose the cap. |
+
+**Net:** ship after issue 2 B, issue 3 B, the LEAK-9 protocol line and the doc fixes. One new decision item goes to Myunghwan: the booked slot of prebooked orders as an input. The splits comment states the filter's measured selection effect.
+
+</details>
+
+<details><summary>Claim audit (2026-11-21)</summary>
+
+**Claim auditor: meituan_food_delivery_time (meituan)**
+
+**What I ran**
+
+- The definition's own `_load_raw` and `_clean`, on the raw CSV in the run folder. Slurm jobs 1401923 and 1401929. Scripts and logs are in the run folder. Note: job 1401923 has an index-alignment bug in its baseline columns; job 1401929 replaces it.
+- **How I worked around the split error.** `_make_splits` still raises on this branch: "The newest cutoff's window ends at 2022-10-25 00:00:00, before the newest data (2022-10-25 00:23:29)". I rebuilt the three windows by hand with the definition's own filters:
+  - train = accepted before midnight and delivered before midnight;
+  - test = accepted on that day;
+  - the 62 rows from 25 October are in no window.
+- I extracted the text of the background document, the October 2024 supplement and Wang et al. 2025 with pypdf (installed into the run folder, run in Slurm job 1401924).
+- I read the panel outputs: `check.log` (it fails with the split error) and `check_patched.log` (0 errors, after the 62 rows are dropped). I also read `leak.log` and `task.log`; both ran on the patched frame of 568,483 rows.
+
+**Claims table**
+
+| # | Claim | Source | Test | Result | Evidence | Rule |
+|---|---|---|---|---|---|---|
+| 1 | 654,343 attempts for 568,546 orders, exactly one accepted attempt per order | curation bullet 2 | count the raw rows | holds | 654,343 / 568,546; at most 1 accepted per order; every order has one | PROV |
+| 2 | Rejected attempts have "structural zero event times" | curation bullet 2 | zero share per column on rejected rows | holds, wording too broad | grab, fetch and arrive times and the grab coordinates are 0 on 100% of rejected rows; placement, push and dispatch times are never 0 (supplement 2.4 lists only grab/fetch/arrive and the courier coordinates) | EV-2 |
+| 3 | One accepted order has no arrival label, which leaves 568,545 rows | curation bullet 2, decision 1 | count | holds | 1 accepted row has `arrive_time` = 0 (the same row has `dispatch_time` = 0); 568,545 rows | - |
+| 4 | Target = total minutes from placement to arrival | `predicted` | recompute from raw | holds | maximum difference 0.0 | USE-5 (issue 3 is open) |
+| 5 | `grab_lat`/`grab_lng` are the courier's position at acceptance, per Wang 2025, correcting the 2024 document | curation bullet 3, `known` | read both documents | holds | 2024 Table 2: "when the waybill is assigned"; Wang 2025 Table A.2: "Courier latitude when accepting order" | USE-3 |
+| 6 | "district" (`da_id`) | `known` | supplement 2.6 | refuted in wording (KNOWN, column audit) | "associated with geographic locations and other factors such as order type ... may have geographically overlapped areas"; 20.3% of accepted rows have a `da_id` other than the courier's most common one that day | EV-2 |
+| 7 | The source `is_weekend` flag describes order creation, so it is recomputed from acceptance | curation bullet 8 | compare the flag with three dates | holds | the flag equals weekend-of-creation-date on 100% of rows, weekend-of-acceptance on 99.88%, weekend-of-`dt` on 99.89% | - |
+| 8 | Timestamps converted to China local time (UTC+8) | curation bullet 8 | dispatch checkpoints in local time | holds | the checkpoints fall at 11:25, 11:27 and 11:30 local each day, the "noon peak" of Wang 2025 | - |
+| 9 | Dispatch snapshots cover only three noon checkpoints a day | curation bullet 10 | `dispatch_rider` times | holds | 24 checkpoints, 3 per day, all 11:25-11:30 | - |
+| 10 | The supplement documents a wave-start indexing defect | curation bullet 10 | supplement 2.2 | holds | "may be problematic due to incorrect indexing" | - |
+| 11 | Both platform forecasts and their derivatives are excluded | `known`, curation bullet 4 | frame columns | holds | the frame has 15 features plus the target; none is built from `estimate_*`; `delivered_at` leaves the frame | USE-6 |
+| 12 | Every observed training event happens before the test window's midnight; arrival is the latest of the six clocks | splits comment, curation bullet 9 | maximum of all six clocks on the training rows, including the order's rejected waybills | holds | latest accepted-row event per fold: 23:59:47, 23:59:53, 23:59:56 on the day before; latest rejected-waybill event 23:45-23:48; the assertion in `_clean` passes | SPLIT-9, SPLIT-10 |
+| 13 | Train/test sizes, and 370/407/423 unfinished orders excluded | README splits table, decision 2 | hand-built windows | holds | 500,764/67,349; 423,008/77,719; 345,355/77,637; 370/407/423 excluded | SPLIT-10 |
+| 14 | Each train side holds at least half the rows; 22-24 Oct are the last three complete days | splits comment | training share | holds | 88.1% / 74.4% / 60.7%; 25 Oct holds only 62 rows | SPLIT-14 |
+| 15 | Merchants and couriers recur | `split` | seen fractions | holds | merchants 99.8-99.9% seen, couriers 98.5-99.1% (decision table reproduced) | SPLIT-13 |
+| 16 | No row is a copy across the split | implied | hash of the 15 features, train against test | holds | 0 copies in every fold (leak probe: 0.0%); 4 rows share all features within the frame (2 conflicting, info) | LEAK |
+| 17 | Recorded-promise RMSE 12.14/11.79/11.76; elapsed + training-mean remaining 10.68/11.49/11.01 | decision 2 | recompute | holds | identical to 4 decimal places | - |
+| 18 | 4,962 merchants, 4,901 couriers, 22,181 prebooked | decision 1 | count; Wang 2025 | holds | Wang: 4,962 merchants, 4,955 couriers, of whom 54 never accepted, which leaves 4,901; 23 districts | - |
+| 19 | Row: Oct 17-24 cohorts plus 62 acceptances after midnight on 25 Oct | `row`, accepted warning | count | the count holds; the definition does not run (KNOWN, issue 2) | 62 rows, 00:00-00:23; `check.log` raises the SPLIT-15 error; `check_patched.log` then reports `accepted_check_warnings_unused` | SPLIT-15 |
+| 20 | Collection facts: acceptances run to 25 Oct 00:23; some prebooked placements go back to 11 Oct | assessment 2026-11-21 | minimum placement time | holds, incomplete | earliest placement 11 Oct 21:29; 213 orders were placed before 17 Oct, 199 of them prebooked and **14 not prebooked** | EV-2 |
+| 21 | `fit_reason`: "the challenge names delivery timing prediction" | `fit_reason` | background, Sample Question 4 | holds | "predict courier delivery processes ... like precise timings for order pick-up and delivery" | USE-1 |
+| 22 | `fit_reason`: the promise has "unverified snapshot timing" | `fit_reason`, curation bullet 5 | does the promise vary across an order's waybills? | holds; the evidence leans one way | the promise is constant per order across all orders with several waybills (column audit: 0 orders vary), while the meal-ready estimate varies in 8,794 orders. That fits a promise fixed at or before the first dispatch. It does not prove the timing, and it changes nothing now that the promise is not an input. | EV-7 |
+| 23 | Metric: fallback, because no source prescribes one | `metric.reason` | search the background, the supplement and Wang 2025 for RMSE, MAE, MAPE, "evaluat", "metric", "accura" | holds | no predictive scoring metric anywhere; "evaluates" refers only to the matching-degree score; no leaderboard | MET-1, MET-11 |
+| 24 | RMSE is computable on our folds | MET-2 | `metric.resolve("regression")`, then `score` on each fold | holds | no scoring columns needed; 67,349-77,719 test units per fold; RMSE of the training mean 82.3/71.9/93.1; elapsed + mean 10.68/11.49/11.01 | MET-2 |
+| 25 | RMSE on the total target measures the ETA task | MET-2, MET-3 (implied) | probe family ranking | **refuted in effect** (KNOWN, issue 3; new evidence) | task probe: linear 10.41, random forest 31.16, LightGBM 62.83, single feature (`elapsed_minutes`) 57.25. The declared target ranks the families by whether they can extrapolate the known elapsed time, not by how well they predict delivery. | USE-5, MET-1 |
+| 26 | Record "Main points": "No further curator decision remains" | `## Review` | open issues | refuted (stale) | issues 2 and 3 and the Horizon decision (2026-11-21) are open | - |
+| 27 | Previous-panel model numbers (residual LightGBM 8.42-9.52; isolated learner 7.32/8.21/7.70) | assessments 2026-11-09 | - | untested | no refit; the column audit's residual LightGBM gives 7.73/8.70/8.33 with other settings, so the spread does not contradict them | - |
+| 28 | "Cadence and window count follow the eight-day release, not model scores" | splits comment | - | untested (KNOWN, Horizon) | the source states no cadence; the Horizon block asks for the splits comment to say so | SPLIT-12 |
+
+**Refuted or untested claims, ranked**
+
+1. **The metric on the total target (claim 25, KNOWN, issue 3; the evidence is NEW).**
+   - The panel's task probe ranks linear (RMSE 10.4) far ahead of random forest (31.2) and LightGBM (62.8).
+   - The trees lose because they cannot extrapolate `elapsed_minutes` on prebooked orders (elapsed time up to 10,293 minutes).
+   - This shows the ranking issue 3 predicts, on the panel's own probe.
+   - Mildest remedy: option B of issue 3, remaining minutes as the target; RMSE in minutes stays.
+2. **The definition does not run (claim 19, KNOWN, issue 2).**
+   - With the 62 rows dropped (the patched check), `accepted_check_warnings_unused` appears.
+   - Option B's notes already say to remove the accepted warning and the 62-row sentence.
+3. **"district" (claim 6, KNOWN, column audit doc fix).**
+   - Supplement 2.6 says `da_id` also reflects order type and that areas overlap.
+   - Remedy: "business area of the accepted waybill".
+4. **"Structural zero event times" (claim 2, NEW, wording).**
+   - Only the grab, fetch and arrive times and the grab coordinates are 0 on rejected rows. Placement, push and dispatch times are real.
+   - Remedy: "Rejected attempts have zero grab, fetch and arrival times and zero courier coordinates (supplement 2.4)."
+5. **Collection-facts assessment (claim 20, NEW, minor).**
+   - 14 of the 213 pre-17-October placements are not prebooked.
+   - Remedy: "some placements, mostly prebooked, go back to 11 Oct".
+6. **Stale "Main points" (claim 26, NEW, editorial).**
+   - The Outcome and Main points blocks still say that nothing is open.
+   - Remedy: update them when issues 2 and 3 are settled.
+
+Every other claim in task_summary, the curation notes, the splits comment, the decisions and the metric block held when tested. None of the tests showed a leak, a copy across the split or a training event after the cutoff.
+
+</details>
+
+<details><summary>Domain practitioner (2026-11-21)</summary>
+
+**Domain practitioner: meituan_food_delivery_time**
+
+I am the ETA team at the platform. When a courier accepts an order, I update the arrival time the customer sees, and dispatch uses the same estimate to plan the courier's route.
+
+**Fit: direct for ordinary orders, approximate for prebooked ones.** The row, the moment and the inputs match an ETA update at acceptance. For prebooked orders, though, the model does not get the delivery time the customer booked, and that time drives my ETA.
+
+**Metric: partly.** RMSE in minutes is a fair score for the expected remaining time. It does not score the ETA I show the customer, where a late ETA costs more than an early one. On the total target as shipped, RMSE mostly measures how well a model adds back the elapsed time on prebooked orders (issue 3).
+
+**What I tested**
+
+I ran one Slurm CPU job (1401911) on the raw waybill CSV with the shipped selection: accepted attempts with an arrival.
+- Remaining time after acceptance, split by the prebook flag.
+- The recorded promise against the actual remaining time.
+- An as-of courier load: the orders the same courier had accepted earlier and not yet delivered, or not yet picked up, at this acceptance time. It uses only events before the acceptance time.
+- LightGBM (500 trees, 127 leaves) on the remaining-time target, in the definition's three windows (24, 23 and 22 October; training only on orders delivered before midnight). One run without the load features, one with them, and the recorded promise as a reference.
+
+Script and log are in the run folder (`load.py`, `1401911.log`).
+
+The `dataset check` and probe outputs this round are missing: the run folder the run folder held only `precedent/` when I looked.
+
+**Answers as the actor**
+
+**1. Do I have these inputs at acceptance?**
+
+- **Inputs I have:** all 15 shipped inputs. These are the merchant, the accepting courier, the business area, the coordinates, the courier's position at acceptance, the prebook flag, the acceptance time, the elapsed time and the push and dispatch delays.
+- **Inputs I would always have but the data lacks:**
+  1. **The booked delivery time of a prebooked order (NEW, finding 1).** The customer picked it at checkout.
+  2. **The courier's current load (NEW, finding 2):** how many orders the courier already carries and how many are not yet picked up. Meituan's own ETA features include area-level uncollected orders and capacity load.
+  3. **The promise shown at checkout (KNOWN, issue 1, resolved B).** It is constant across an order's attempts, which fits a value fixed at placement. Under USE-6 I would use it as an input. Myunghwan chose the forecast-free task for safety, and I do not reopen that.
+  4. **Weather and the merchant's live backlog.** The source does not publish them, and there is no remedy.
+- **Nothing in the shipped inputs comes from after acceptance.**
+
+**2. Is the target what I act on?**
+
+No. I act on the remaining minutes: ETA = acceptance time + remaining time.
+
+The total target adds the elapsed time, which I already know. For prebooked orders the elapsed time runs up to 10,293 minutes. This is KNOWN as issue 3, and I support option B (USE-5).
+
+I want a number of minutes, and for the screen I want a padded quantile, not the mean (see question 5).
+
+**3. Does one row match one decision, and is the test what I would face?**
+
+Yes. One accepted order is one ETA update.
+
+The test is the next day, in the same city, with the same couriers and merchants recurring. That is what a daily refit meets (USE-10). New cities and seasons are not tested; this is KNOWN from the Horizon block.
+
+**4. Would I use this model?**
+
+For ordinary orders, yes. A learner without the platform forecasts is clearly better than the recorded promise on the mean error:
+
+| Test day | Inputs | RMSE | MAE | RMSE non-prebook | Within ±5 min | More than 10 min late |
+|---|---|---|---|---|---|---|
+| 24 Oct | shipped inputs (remaining target) | 7.19 | 5.49 | 7.02 | 54.8% | 7.9% |
+| 24 Oct | + courier load | 7.06 | 5.37 | 6.87 | 56.0% | 7.6% |
+| 24 Oct | recorded promise | 12.14 | 9.81 | 12.21 | 27.8% | 1.2% |
+| 23 Oct | shipped inputs | 8.12 | 5.85 | 7.80 | 52.0% | 10.6% |
+| 23 Oct | + courier load | 7.95 | 5.68 | 7.61 | 53.7% | 9.9% |
+| 23 Oct | recorded promise | 11.79 | 9.35 | 11.82 | 30.9% | 1.9% |
+| 22 Oct | shipped inputs | 7.78 | 5.75 | 7.39 | 53.1% | 9.5% |
+| 22 Oct | + courier load | 7.59 | 5.58 | 7.18 | 54.5% | 8.6% |
+| 22 Oct | recorded promise | 11.76 | 9.47 | 11.81 | 29.8% | 1.5% |
+
+What would make me distrust it:
+- It is late by more than 10 minutes on 8-11% of orders, against 1-2% for the promise.
+- It has no booked time for prebooked orders.
+- Its training covers eight days of one city.
+
+**Findings**
+
+**1. Prebooked orders lack their booked delivery time (NEW; USE-3, USE-6, USE-8)**
+
+**Evidence:**
+
+| | not prebooked | prebooked |
+|---|---|---|
+| rows | 546,364 | 22,181 |
+| remaining time after acceptance (mean / p99) | 25.1 / 55.0 min | 40.2 / 73.6 min |
+| elapsed time at acceptance (mean / p99) | 4.5 / 23.2 min | 139.3 / 1,372.4 min |
+| promise minus acceptance against remaining time (correlation) | – | 0.854 |
+| promise as a predictor of remaining time (RMSE) | 11.89 min | 9.75 min |
+
+- **What the numbers show:** after acceptance, a prebooked order is an ordinary 40-minute delivery. Its long total time is the wait before acceptance.
+- **The promise is the booked time.** On prebooked orders, the promise tracks the remaining time closely, so for these orders it is almost certainly the slot the customer booked, not a platform forecast.
+- **The model loses on these orders.** From the all-row and non-prebook RMSEs on 24 October, the model's error on prebooked orders is about 10.5 min. The bare promise gets 9.75 min.
+- **Why it matters:** the booked time is known at placement. It is the customer's request, not a platform forecast. Issue 1 dropped it together with the forecasts, and the record never separates the two.
+- **Effect:** 3.9% of rows. Under the total target (issue 3, option A) these rows carry 96-98% of the squared error. Under option B they weigh about as much as their share of rows.
+- **Expert change:** for prebooked rows only, keep "booked time minus acceptance" (the promise, used only where `is_prebook = 1`) as an input. Otherwise state in `fit_reason` that the booked time is missing. This is a curator decision, because it partly reverses issue 1's choice. Whether the promise of a prebooked order is the booked slot is inferred from the data, not documented.
+
+**2. Courier load at acceptance is missing and cannot be rebuilt from one row (NEW; USE-6, minor)**
+
+**Evidence:** the mean remaining time rises steadily with the courier's open orders, from 0 to 5 open orders:
+
+| Courier's open orders at acceptance | Orders | Mean remaining time (min) |
+|---|---|---|
+| 0 | 197,618 | 23.2 |
+| 1 | 179,056 | 24.3 |
+| 2 | 95,562 | 26.7 |
+| 3 | 44,201 | 29.2 |
+| 4 | 18,808 | 31.3 |
+| 5 | 6,970 | 33.1 |
+
+- **Spread:** the median courier has 1 open order, and the 99th percentile has 5.
+- **Gain from adding it:** RMSE drops by 0.13-0.20 min (about 2%) on each test day, and every metric in the table above improves.
+- **Why it matters:** every platform uses this input. It needs other orders' events up to the acceptance time, so a row-level model cannot compute it from the shipped columns.
+- **Weight:** an added, engineered feature, so the minimal-preprocessing practice argues against it. I rank it low: the task is real without it.
+
+**3. RMSE scores the mean, but the ETA shown to the customer is an asymmetric decision (NEW as a metric argument; MET-1, MET-8)**
+
+- **Evidence:** the recorded promise is early by 8.2 min on average and late by more than 10 min on 1-2% of orders. The unbiased learner is late by more than 10 min on 8-11%.
+- **Platform practice:** Meituan's published ETA work trains with an asymmetric loss that penalises late predictions more (slopes 1.2 early and 1.8 late, per a summary of the Meituan tech blog; I could not open the original post).
+- **What I would choose:** the source has no metric, and RMSE is the fallback under MET-8, so this is no rule violation. For the customer ETA I would choose by MAE together with the late rate, or by a quantile (pinball) loss. RMSE fits the dispatch use, the expected completion time. I would keep RMSE and add a sentence to the metric note saying that it scores the mean remaining time, not the padded customer promise. The earlier record already calls MAE and calibration diagnostics.
+
+**4. Target: remaining minutes, not total minutes (KNOWN, issue 3)**
+
+I support option B. The customer's ETA is the acceptance time plus the remaining minutes. With option B, RMSE in minutes scores the part I do not know.
+
+**5. Promise excluded as an input (KNOWN, issue 1, resolved)**
+
+At acceptance I would have it. The promise is constant across an order's attempts, which points to a value fixed at placement. I leave the decision as resolved and note only finding 1's carve-out for prebooked orders.
+
+**Gaps ranked by how much they change the task**
+
+1. **Total target instead of remaining time (issue 3).** It changes what the score measures.
+2. **No booked time for prebooked orders (finding 1).** It affects 3.9% of rows; on those rows the model is worse than the platform's booked slot.
+3. **Mean-error metric against an asymmetric customer ETA (finding 3).** It is a framing note, not a change.
+4. **No courier load (finding 2).** It costs about 2% RMSE.
+5. **One city and eight days, no weather (known).** Generalisation is limited, and there is no remedy.
+
+**Sources**
+
+- Record `curation/records/meituan_food_delivery_time.md`, plus `dataset.py` and `README.md` in the worktree.
+- Column findings in the run folder.
+- Rules in `use_case.md` (USE-3, USE-5, USE-6, USE-8, USE-10) and `metrics.md` (MET-1, MET-8).
+- [到达时间预测两则: Uber 和美团](https://shiina18.github.io/machine%20learning/2022/03/03/predict-eta): Meituan's ETA features, including area uncollected orders and capacity load, and merchant backlog.
+- [Deep Learning-Based ETA Estimation in Meituan's Delivery System](https://besthub.dev/articles/deep-learning-based-eta-estimation-in-meituan-s-delivery-system-9795f127a7ca): the asymmetric late-penalising loss. This is a summary of the Meituan tech blog post 深度学习在美团配送ETA预估中的探索与实践 (2019); the original link did not open.
+- [Uber DeepETA](https://www.uber.com/en-US/blog/deepeta-how-uber-predicts-arrival-times/): MAE as the production ETA metric, and residual post-processing.
+
+</details>
+
+<details><summary>Precedent check (2026-11-21)</summary>
+
+**Precedent check: meituan_food_delivery_time (PR #59 re-check, 2026-11-21)**
+
+**What I did**
+- Ran the decision register (5,933 decisions, 43 flags). Output: the run folder. No flag names this dataset. The relevant flags are general ones: `amendment_due` on SPLIT-10 (exceptions on 11 datasets) and on SPLIT-14, and `opposite_outcomes` on USE-5.
+- Compared every decision of the definition, issues 2 and 3, and the Horizon block with the ETA and delivery siblings (sendy, nyc/pkdd taxi, 2024_lusaka, brazilian_ecommerce, delivery_eta_1m, medical_facility), the cross-dataset item on short newest periods, and the Cases tables of use_case.md, splits.md, cleaning_features.md and evidence.md.
+- Ran one CPU job (Slurm 1401917) on the raw data to count long durations. Script and log are in `.../precedent/`.
+- **Missing panel outputs:** the run folder contains only my `precedent/` folder. There is no check.log, README_check.md, leak/, task/, dtype/ or group.log, so I could not read them.
+
+**Verdict per decision**
+
+| # | Decision | Status | Closest precedents |
+|---|---|---|---|
+| 1 | Prediction point at courier acceptance; elapsed, dispatch and push delays and the courier position as inputs (USE-3, USE-6) | consistent | sendy (inputs: placement, confirmation and pickup times; prediction at pickup) |
+| 2 | Both platform forecasts excluded (forecast-free; 2026-11-09, Myunghwan) | departs from USE-6's default, **with a stated reason** | brazilian_ecommerce keeps Olist's promise (2026-10-15). 2_month_survival keeps physician estimates out (2026-10-26, Lennart). |
+| 3 | Total target since placement (issue 3, open) | **departs, no curator reason** | sendy, nyc/pkdd taxi, lusaka and brazilian all count from the prediction point. Counter-case: medical_facility. |
+| 4 | Prebooks kept; durations not clipped (CLEAN-11) | consistent for prebooks. Weak open point on the longest non-prebook rows. | lusaka, nyc and pkdd drop trips over 3 h as not closed in the app (2026-11-05, 2026-10-26, Lennart) |
+| 5 | Delivered-before-midnight filter in place of a fixed gap (SPLIT-10) | departs from the ETA siblings' 1-day gap, **with an evident reason not yet written down** | fugaku (filter only, 2026-11-03, Myunghwan). nyc, pkdd and lusaka use a 1-day gap. |
+| 6 | One-day windows on 22-24 October, walking back from the newest (SPLIT-12, SPLIT-14, SPLIT-15, Horizon block) | consistent | SPLIT-15 accepts "a history too short for others". The target count is 3 (above 250k units, SPLIT-33). |
+| 7 | 62 acceptances on 25 October kept outside the windows (issue 2, open) | A is **not reasonable under the ranking** now (it breaks SPLIT-15, a Must). B follows precedent. | coffee_rating_prediction and kickstarter cut their partial newest period (2026-11-11, Lennart, cross-dataset item A). lusaka keeps a 70-row partial day inside its last window. |
+| 8 | RMSE on raw minutes, fallback (MET-1, MET-8, CLEAN-16) | consistent | lusaka "ok keep minutes", "as the other RMSE-scored ETA datasets" (2026-11-04, Lennart) |
+| 9 | Merchant and courier ids as categorical inputs, recurring across windows | consistent | sendy (rider and customer recur, kept) |
+| 10 | Licence CC BY-NC 4.0 plus a permission request, kept as a note (EV-4) | consistent | lucas_topsoil (2026-09-23, Lennart). The 11-08 panel called it a "release blocker"; EV-4 makes it a note only. |
+| 11 | Not a duplicate of food_delivery_time or the other delivery-time tasks (PROV-4, PROV-7) | consistent | food_delivery_time was retired as AHDS (2026-11-05, Andrej), so it does not compete. meituan_courier_order_acceptance is a different task. |
+
+**Findings**
+
+**F1 (KNOWN, issue 3): the total target departs from every ETA precedent; B follows them**
+Every shipped ETA definition counts the target from its prediction point, with the earlier events as inputs:
+
+| Dataset | Prediction point | Target | Earlier events |
+|---|---|---|---|
+| sendy_logistics_challenge | pickup | seconds from pickup to arrival | placement, confirmation and pickup times are inputs |
+| nyc_taxi_trip_duration_1m, pkdd_15_taxi_trip_time_prediction_ii_1m, 2024_lusaka | trip start | trip time from start | none |
+| brazilian_ecommerce | purchase | days from purchase | none |
+| **meituan (A)** | **acceptance** | **minutes since placement**, elapsed up to 10,293 min | elapsed is an input and also part of the target |
+
+- **Counter-case:** medical_facility_operational_data predicts at check-in. Its target is the delay against the scheduled time, and `minutes_early` is an input (2026-11-05, Lennart). So that target also contains a known offset.
+- **What sets medical_facility apart:**
+  - It is the source's own target (Crowley et al.).
+  - The offset is minutes, not days.
+  - Meituan's source defines no target. The total was the AI's proposal (Assessment 2026-11-08: "Exact implementation details remain agent proposals").
+- **History:** the 11-08 panel already raised this ("Total target includes a known elapsed component", gamer item 1). The mediator kept the total, which was an AI decision. Myunghwan's quoted words fix only the prediction point. His 11-09 inclusion approval covered the definition as a whole, not the target. So choosing B reverses no explicit curator ruling.
+- **Consistency:** B is consistent with precedent. A is a departure with no fact that sets it apart. **USE-5 (Must)**, sendy.
+- If B is chosen, the metric CC (RMSE in minutes, 2026-11-09) needs a new look, as the issue's notes say. This is not drift.
+
+**F2 (KNOWN, issue 2): option A now breaks a Must; B follows the cross-dataset precedent**
+- Myunghwan approved A on 2026-11-09. SPLIT-15 was amended on 2026-11-10 to require that the newest window is always tested. This is a rule change after the decision, not drift.
+- Under the current Must, A cannot stand: no higher-ranked principle overrides it, and the definition errors.
+- **B** matches the 2026-11-11 cross-dataset ruling (Lennart, A): coffee_rating_prediction drops its 2 reviews of October 2023, consistent with kickstarter's cut of the last 60 days.
+- **C** has a sibling precedent: 2024_lusaka keeps a 70-row partial final day inside its last window. The record measured that this moves RMSE by 0.002. So C is not without precedent. It differs in two ways:
+  - lusaka's window ends where the data ends.
+  - Meituan's tail would make the newest window 24 h 23 min long.
+- **Fact for the curator:** the 62 rows belong to the 24 October source cohort (`dt`). Under B they leave the frame; under C they are scored with their cohort.
+
+**F3 (NEW, minor; Horizon block and splits comment): the no-gap choice needs its distinguishing fact written down**
+- **Precedents:** the three closest ETA precedents (nyc 2016, pkdd, 2024_lusaka) all use a 1-day gap, although their delays are minutes to hours. Meituan uses a filter (delivered before midnight) and no gap. That is fugaku's design (2026-11-03, Myunghwan), which is listed as an exception.
+- **Distinguishing fact, evident but not written down:** a 1-day gap before the 22 October window would leave training only up to 20 October. That is the 48.7% the Horizon block quotes for 21 October, below SPLIT-14's floor. With 8 days, the gap would cost a window.
+- **Under the amended SPLIT-10, measurement decides.** The filter excludes 370/407/423 orders (0.07-0.12%), so any selection of fast orders at the cut is bounded at that share.
+- **Wording:** footnote [^x21h4] paraphrases SPLIT-10 as "a gap ... **or** training only on rows whose outcome is known". The rule says both ("with a gap"). The amendment allows no gap only on measurement.
+- **Suggested fix:** the splits comment names both facts: the 1-day gap's cost under the floor, and the excluded share. It cites fugaku as the precedent and the taxi/lusaka 1-day gaps as the contrast.
+- This follows the amended rule. No reflection prompt is needed. The register's `amendment_due` on SPLIT-10 (11 datasets) should not count this case as a new exception if the measurement is written down.
+
+**F4 (NEW, minor; CLEAN-11 and the 3-hour cap of the ETA family)**
+- **Precedent:** lusaka, nyc and pkdd drop trips over 3 hours as "not closed in the app" (CLEAN-11 then CLEAN-15; 2026-11-05 and 2026-10-26, Lennart). Meituan keeps every duration ("Do not clip").
+- **Counts from Slurm job 1401917, 568,545 labeled orders:**
+
+  | Remaining time after acceptance | Orders | Of which prebooks |
+  |---|---|---|
+  | over 2 h | 71 | 53 |
+  | over 3 h | 42 | 33 |
+  | over 6 h | 10 | 8 |
+  | max | 652 min | |
+
+- **Prebooks are set apart:** a courier can accept a prebook hours before its slot, so those rows are real.
+- **The open part is the 9 non-prebook orders with more than 3 h remaining (2 over 6 h).** They are the same kind of row the family dropped as not closed in the app.
+- **Effect:** tiny on row count. Under RMSE each such row adds about as much squared error as about 1,000 typical rows (300² against 8²). That is an estimate, not measured.
+- **Recommendation:** add a note to the definition, or a decision item if the curator wants the family's rule applied. Low priority.
+
+**F5 (KNOWN, resolved issue 1; consistency note only)**
+- Excluding both forecasts departs from USE-6's default ("dropping it changes the task") and from brazilian_ecommerce.
+- **Distinguishing fact, already recorded:** the meal-ready forecast differs across attempts for 8,794 orders, and no issuance timestamps exist (LEAK-10, EV-7). Olist's promise is fixed at checkout.
+- The 11-09 Assessment instead names 2_month_survival as the precedent. That precedent rests on the source framing the physician estimate as a comparator. The Meituan source does not frame its promise that way, so 2_month_survival is the weaker analogy. The timing uncertainty is the fact that carries the departure, and curation_comments already says so.
+- Reasonable as decided. This is the only exception of its kind, so no amendment is due.
+
+**Doc points from the column audit (not precedent questions, listed for completeness)**
+- "district" should read "business area of the accepted waybill" (da_id follows the accepting courier in 1,963 orders).
+- "redundant dt" is refuted: dt is the source's cohort date and differs from the local creation date for 1,758 orders.
+
+</details>
+
+<details><summary>Blind review (2026-11-21)</summary>
+
+**Blind review: Meituan food delivery time (`delivery_minutes`)**
+
+**Verdict: include with changes.** It is a real ETA task on real operational data with clear signal. But the target, as built, runs from order creation, so its tail is mostly the already-known wait `elapsed_minutes`. That turns RMSE into a test of copying one column, and the licence forbids redistribution without permission.
+
+**Concerns, most serious first**
+
+**1. The target includes a part that is already known, and that part decides the score**
+- `delivery_minutes` is order creation to arrival, and the features describe the moment of acceptance. In the data, `delivery_minutes >= elapsed_minutes` on every row (smallest difference 1.53 min). So the target is `elapsed_minutes` (known) plus the remaining time (the part actually to be predicted).
+- Pre-booked orders (3.9%) make up the tail. Their `delivery_minutes` has a median of 80.6, a 90th percentile of 410 and a maximum of 8,208 minutes (5.7 days). Their remaining time, though, has a median of 38.5 and a 90th percentile of 52, just like normal orders. The whole tail is `elapsed_minutes`.
+- LightGBM on 3 daily windows (train on the days before; test on 2022-10-22, -23 and -24), using the 200k sample:
+
+| model | RMSE all | R² all | RMSE non-prebook | R² non-prebook |
+|---|---|---|---|---|
+| mean | 73.0 | 0.00 | 13.6 | -0.19 |
+| `elapsed` + median remaining (no learning) | **11.4** | **0.975** | 10.6 | 0.27 |
+| linear regression, 4 features | 9.2 | 0.984 | 8.8 | 0.50 |
+| LightGBM on `delivery_minutes` | **41.4** | **0.678** | 7.7 | 0.61 |
+| LightGBM on remaining time, plus `elapsed` | 8.1 | 0.987 | 7.6 | 0.63 |
+
+- Over the whole set, a rule with no learning beats a tuned GBM by about 4x on RMSE. The GBM loses only because it cannot carry the additive `elapsed` term into the multi-day prebook tail. On normal orders the GBM is the best model. So on this target the method ranking measures extrapolation of one known column across a few hundred extreme rows, not delivery-time prediction. `elapsed_minutes` takes 62% of the GBM's gain importance.
+- **Change:** make the target the remaining time, `arrive_time − grab_time`. Keep `elapsed_minutes` as a feature. On that target the GBM reaches R² 0.49 against a median baseline (RMSE 8.1 vs 11.4): real signal, not trivial. If you want to keep the creation-to-arrival framing, at least drop the prebook orders or cap the time to acceptance, and say so.
+
+**2. Licence: redistribution is not allowed without permission**
+- License.txt in the repo: "CC BY-NC 4.0 … We reiterate that without permission, the distribution of this dataset to third parties is not allowed, and this dataset is intended for non-commercial use only". It also asks for an acknowledgement ("This research was supported by data provided by Meituan.").
+- A benchmark that ships a derived table to users is distributing a derivative. **Change:** get written permission from Meituan, or ship only a loader that points users to the GitHub download. Also record the NC restriction and the acknowledgement.
+
+**3. Feature choice at the prediction point**
+- At acceptance the source also has `estimate_arrived_time` (the promised delivery time) and `estimate_meal_prepare_time` (the estimated meal-ready time). Both are known before acceptance, and both are absent here. Dropping the promised time is defensible, because it is Meituan's own ETA model and would turn the task into "correct Meituan's ETA". Dropping the estimated meal-ready time throws away a legitimate, likely strong input: waiting at the restaurant is a large part of delivery time. **Change:** add the estimated meal-ready time as a lead time (minutes from acceptance). I could not measure its value because the column is not in the clean room.
+- The courier's current load (orders on hand when accepting) is the main driver in this domain, and it is missing. It can be rebuilt legitimately from earlier accepts by the same courier, but only with the full table and the wave file. This is a known limit, not a defect.
+
+**4. Rows are not independent; check how the split relates to couriers**
+- Couriers bundle orders. 154 sample rows share the restaurant, the recipient coordinates, the courier and the acceptance second (one customer's split orders), and their targets differ by a median of 1.5 min. 4,806 couriers appear on a median of 6 of the 8 days, so the same couriers are in train and test. That is fine under a forward-in-time split, because the platform knows its couriers. Within a test day, bundled rows are correlated, which only affects variance.
+- Only 8 days (2022-10-17 to 10-24), one city area. The weekly cycle is seen once, so each test window has at most one earlier day of the same weekday.
+
+**5. Smaller data points**
+- Coordinates are integer degrees ×1e6, shifted for privacy ("uniformly shifted but not scaled"; supplementary document §2.1). Distances survive, absolute positions do not. Fine.
+- `da_id` overlaps geographically ("associated with geographic locations and other factors such as order type", §2.6). It is fine as a categorical, but `poi_id`, `courier_id` and `da_id` are stored as int64 and should be categorical or ID types. Removing the ID columns barely changes the GBM (RMSE on non-prebook rows 7.76 vs 7.73).
+- `is_weekend` matches the weekday exactly. Timestamps are on whole seconds. No missing values. The 568,483 rows match the 654,343 waybills minus rejected ones (rejected waybills have zero grab/arrive times, §2.4), which is plausible.
+- Among non-prebook rows, 12 have `delivery_minutes` > 180 (max 597) and 57 have `elapsed_minutes` > 60. These are plausible operational outliers; leave them in.
+- No training weight is named in `task.md`.
+
+**What I could not check**
+- The exact test windows and how the split is cut. I assumed the last 3 days as 3 expanding daily windows.
+- Whether `accepted_at` is passed to models as a feature.
+- The full 568k rows: I used the 200k sample.
+- The preparation code, and whether the waybill rows of re-dispatched orders are handled as I assume (the accepted waybill is kept, with `elapsed` measured from order creation).
+- The value of the dropped estimate columns.
+- The 2025 data paper (5.7 MB PDF), which I did not read. I did read the 2024 background document and the October 2024 supplementary document.
+
+I opened no files outside the clean room except the allowed Python interpreter.
+
+Scripts and logs: `work/baseline.py`, `work/1401930.log`. Source copies: `work/src/`.
+
+</details>
+
+<details><summary>Task gamer (2026-11-21)</summary>
+
+**Task gamer: meituan_food_delivery_time (saved by the main session from the agent's hand-back; content verbatim in substance)**
+
+Setup: 3 one-day test windows (22, 23, 24 Oct 2022), all earlier days train; untuned LightGBM (500 trees, lr 0.05, 63 leaves), all rows. "Honest" = LightGBM on remaining time (target - elapsed, elapsed added back) + hour, two distances, courier past (gap since previous accept, same shop as previous, accepts in past 30/60 min). "Honest+src" = honest + promised time and meal-ready estimate (relative to order and acceptance). Noise (random column): +0.01..+0.03 on honest; -1.9..+2.1 on raw target.
+
+**Exploits (RMSE r2/r1/r0 = 22/23/24 Oct)**
+| # | Exploit | Honest | Exploited | Gain | Deployed model has it? |
+|---|---|---|---|---|---|
+| 1 | Courier's future within the test day: time to next and second-next accept, accepts in next 30/60 min, next order same shop, distance from next-assignment position to this recipient and shop | 7.715/8.286/7.454 | 7.065/7.610/6.756 | 0.65/0.68/0.70 | No |
+| 1a | timing only | same | 7.301/7.891/7.013 | ~0.4 | No |
+| 1b | next-assignment location only | same | 7.524/8.077/7.228 | ~0.2 | No |
+| 1c | 1 on top of honest+src | 6.972/7.526/6.826 | 6.338/6.926/6.176 | 0.63/0.60/0.65 | No |
+| 2 | counts over train+test (per shop/courier/courier-day/address) | 7.715/8.286/7.454 | 7.673/8.255/7.369 | 0.04/0.03/0.09 (noise) | courier-day count no; harmless |
+| ref | fetch time (post-acceptance, correctly excluded) | | 6.314/6.830/6.183 | 1.3-1.5 | No |
+
+Fix for 1: none clean (no column drop removes it without the legitimate courier history). Options untested: coarsen accepted_at in test rows (e.g. 15 min); accept and document as a property of a batch test set with entity ids; sequential scoring (benchmark cannot).
+
+**Flaws hurting an honest model**
+| # | Flaw | Baseline | Honest choice |
+|---|---|---|---|
+| A | Target from order creation contains known elapsed (tail to 10,293 min, prebooks); trees cannot extrapolate. 484-638 rows/test day (<1%) carry 95-97% of target variance | untuned LGBM raw target 74.51/51.11/58.58 | same on remaining time 8.99/9.90/8.56; rule elapsed+median remaining 11.19/11.71/10.73 |
+| B | Promised delivery time (estimate_arrived_time) and meal-ready estimate (estimate_meal_prepare_time), set before acceptance, are dropped | honest 7.715/8.286/7.454 | honest+src 6.972/7.526/6.826 (gain 0.63-0.76) |
+Fix A: target = arrive - grab (or drop prebooks, unmeasured). Dropping train rows with remaining >180 min: no change.
+
+**Found nothing**
+Tied-second order (-0.008..-0.006, noise); number formats (all whole seconds); 2 full-feature duplicates, no cross-split copies; no training rows after the split (370-423 late-label rows correctly left out; small selection effect, last training hour mean 24.5-25.6 vs 26.6-27.6 a day earlier); no transforms over all rows; no weight. Source lookup works (all 568,483 rows match) — not a flaw of the task. Web: no prediction leaderboard, no leak threads.
+
+Not checked: prebooks-dropped variant; coarsening accepted_at; dispatch-time tables (courier load); tuned models.
+Files: this folder: prep.py, fit.py, 1401931.log, 14019*.log, src/.
+
+</details>
+
+<details><summary>Column audit (2026-11-21)</summary>
+
+**meituan column audit — built data; 2 issues (62-row tail breaks newest-window guard; total target vs remaining); facts hold**
+Doc fixes: task_summary.known "district" -> "business area of the accepted waybill"; curation_comments 3rd bullet + da_id note (follows accepting courier in 1,963 orders where it changes); "redundant dt" -> "dt (the source's cohort date; it differs from the local creation date for 1,758 orders)"; optional grab position match note (median 35 m within 30 s of dispatch snapshot).
+
+</details>
 
 <details><summary>Mediator</summary>
 

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: meituan_food_delivery_time
 container_format: 2
-checksum: v2:1c8113474925271ced300ea5c8142a758859f26f0fc76c69aa8306cf3a03c594
+checksum: v2:0cf10db6da52cf76db504c123023260cf23c2088c5cdd1c70c044bdee6c7cc00
 build:
   uuid: 01a1c240-670c-7619-accd-dcfb6e721d9c
   checksum: v2:1c8113474925271ced300ea5c8142a758859f26f0fc76c69aa8306cf3a03c594
@@ -28,7 +28,7 @@ data:
     int64: 6
   n_test_dataset_rows: null
 task:
-  target: delivery_minutes
+  target: remaining_minutes
   problem_type: regression
   metric: rmse
   metric_origin: fallback
@@ -46,13 +46,13 @@ splits:
   random_state: 4267
   time_horizon: 1
   time_horizon_unit: days
-  time_gap: null
-  time_gap_unit: null
+  time_gap: 3
+  time_gap_unit: hours
   n_train:
-    min: 345355
-    max: 500764
+    min: 338395
+    max: 494654
   n_test:
-    min: 67349
+    min: 67411
     max: 77719
 bundle_checks:
   ok: true
@@ -61,10 +61,10 @@ bundle_checks:
   infos:
   - dataset_conflicting_duplicate_rows
   accepted:
-    splits_rows_unused: Myunghwan (2026-11-09) approved retaining the 62 October 25
-      acceptances outside the three complete October 22-24 acceptance-day test windows.
-      These tail rows are retained in the frame but never scored; no incomplete test
-      day is introduced.
+    meta_time_horizon_mismatch: 'Andrej (2026-11-24, issue 5 B): the newest test window
+      keeps the 62 acceptances up to 00:23 on 25 October (issue 2 C), so it runs 24
+      hours 23 minutes (67,411 rows); the check counts its span as 2 days against
+      the 1-day horizon. The other two windows are whole local days.'
 decisions:
 - One labeled accepted waybill per order
 - Future-day windows and operational baselines
@@ -74,37 +74,36 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `delivery_minutes`, scored with `rmse` on temporal splits by `accepted_at`. 568,545 rows and 15 features. Source: GitHub (2024).
+Regression of `remaining_minutes`, scored with `rmse` on temporal splits by `accepted_at`. 568,545 rows and 15 features. Source: GitHub (2024).
 
-Built as `01a1c240-670c-7619-accd-dcfb6e721d9c` on 2026-11-09. See [Build](#build).
+Built as `01a1c240-670c-7619-accd-dcfb6e721d9c` on 2026-11-09, but `dataset.py` has changed since: it now gives checksum `v2:0cf10db6da52cf76db504c123023260cf23c2088c5cdd1c70c044bdee6c7cc00`, so the build is stale. See [Build](#build).
 
 ## In brief
 
-**Question.** How many minutes after placement will this accepted food order reach the customer?
+**Question.** How many minutes after courier acceptance will this food order reach the customer?
 
 **Use case.** An independent delivery-time model updates the customer's ETA when a courier accepts the order, using courier and merchant information without the platform's existing forecasts.
 
-**One row.** One accepted food order from the October 17-24, 2022 source cohorts in an anonymized Chinese city, including prebooked orders and 62 acceptances just after midnight October 25.
+**One row.** One accepted food order from the October 17-24, 2022 source cohorts in an anonymized Chinese city, including prebooked orders; acceptances run to 00:23 on October 25.
 
-**Predicted.** Total minutes from order placement to delivery, including the time already elapsed at acceptance.
+**Predicted.** Minutes from courier acceptance to delivery.
 
-**Known at prediction time.** Acceptance time, elapsed order and dispatch times, merchant and accepting courier, district, pickup and destination coordinates, courier location at acceptance, and the prebook flag. The platform's promise and meal-ready predictions are excluded.
+**Known at prediction time.** Acceptance time, elapsed order and dispatch times, merchant and accepting courier, business area of the accepted waybill, pickup and destination coordinates, courier location at acceptance, and the prebook flag. The platform's promise and meal-ready predictions are excluded.
 
-**What the test data stands for.** Three future acceptance days, October 22-24. Each midnight refit trains on earlier accepted orders whose delivery was already recorded. Merchants and couriers can recur.
+**What the test data stands for.** Three future acceptance days, October 22-24; the newest window runs from October 24 to the end of the data (00:23 on October 25). Each nightly refit takes its data 3 hours before midnight, leaving time to train, tune and roll out, and trains on the orders accepted and delivered by then. Merchants and couriers can recur.
 
-**Our changes to the source.** Select accepted waybills, omit one absent arrival label, exclude both platform forecasts for independent prediction, and evaluate acceptance-time ETA updates on future days rather than broader assignment optimization.
+**Our changes to the source.** Select accepted waybills, omit one absent arrival label, predict the minutes remaining after acceptance rather than the total since placement, exclude both platform forecasts for independent prediction, and evaluate acceptance-time ETA updates on future days rather than broader assignment optimization.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The challenge names delivery timing prediction. Inputs describe the order by acceptance without the platform's blackbox forecasts. Only delivered orders have labels. Eight days in one city limit generalization; prebooked orders can have long known waits. The recorded promise is an external reference with unverified snapshot timing, not a predictor.
+> **Use case fit: direct (the rows, features and split mirror the use case).** The challenge names delivery timing prediction. Inputs describe the order by acceptance without the platform's blackbox forecasts. Only delivered orders have labels. Eight days in one city limit generalization; prebooked orders can have long known waits. The recorded promise is an external reference with unverified snapshot timing, not a predictor; prebooked orders therefore also lack the delivery slot the customer most likely booked.
 
 ## Files in this folder
 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
-| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/meituan_food_delivery_time.md`](../../../../curation/records/meituan_food_delivery_time.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/meituan_food_delivery_time.md`](../../../../curation/records/meituan_food_delivery_time.md)
 - The original source: <https://github.com/meituan/Meituan-INFORMS-TSL-Research-Challenge>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -139,7 +138,7 @@ Only curators run `build`, when the dataset ships.
 | data_tags | Non-IID, Temporal, Spatial |
 | reference | meituan2024 |
 | rows x columns | 568,545 x 16 |
-| task.target | delivery_minutes |
+| task.target | remaining_minutes |
 | task.problem_type | regression |
 | task.metric | rmse |
 | task.split_regime | temporal_non_iid |
@@ -181,23 +180,29 @@ Only curators run `build`, when the dataset ships.
 
 The first 5 of 568,545 rows of the final frame (the oldest rows: the frame is sorted by `accepted_at`); 12 of 16 columns, the target first. Cells are cut at 40 characters.
 
-| delivery_minutes | poi_id | courier_id | da_id | is_prebook | sender_lng | sender_lat | recipient_lng | recipient_lat | grab_lng | grab_lat | accepted_at |
+| remaining_minutes | poi_id | courier_id | da_id | is_prebook | sender_lng | sender_lat | recipient_lng | recipient_lat | grab_lng | grab_lat | accepted_at |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 59.2833 | 2221 | 247 | 0 | 0 | 174551066 | 45850719 | 174527950 | 45815592 | 174556864 | 45867384 | 2022-10-17 00:01:00 |
-| 26.3333 | 669 | 864 | 19 | 0 | 174553324 | 45898368 | 174565608 | 45890492 | 174561019 | 45895660 | 2022-10-17 00:01:01 |
-| 34.1167 | 3305 | 1174 | 7 | 0 | 174568380 | 45860310 | 174558465 | 45860258 | 174562480 | 45865501 | 2022-10-17 00:01:51 |
-| 41.5833 | 1812 | 1125 | 13 | 0 | 174581294 | 45887569 | 174568359 | 45859329 | 174570278 | 45907184 | 2022-10-17 00:01:58 |
-| 25.45 | 2751 | 4557 | 6 | 0 | 174940194 | 46043601 | 174938747 | 46062099 | 174941695 | 46042451 | 2022-10-17 00:02:00 |
+| 47.7 | 2221 | 247 | 0 | 0 | 174551066 | 45850719 | 174527950 | 45815592 | 174556864 | 45867384 | 2022-10-17 00:01:00 |
+| 22.2167 | 669 | 864 | 19 | 0 | 174553324 | 45898368 | 174565608 | 45890492 | 174561019 | 45895660 | 2022-10-17 00:01:01 |
+| 33.2167 | 3305 | 1174 | 7 | 0 | 174568380 | 45860310 | 174558465 | 45860258 | 174562480 | 45865501 | 2022-10-17 00:01:51 |
+| 40.4667 | 1812 | 1125 | 13 | 0 | 174581294 | 45887569 | 174568359 | 45859329 | 174570278 | 45907184 | 2022-10-17 00:01:58 |
+| 24.95 | 2751 | 4557 | 6 | 0 | 174940194 | 46043601 | 174938747 | 46062099 | 174941695 | 46042451 | 2022-10-17 00:02:00 |
 
 ## Curation notes
 
 - Prediction point: immediately after courier acceptance. This is an ETA update, not pre-assignment prediction.
-  Total placement-to-arrival minutes remain the target; elapsed minutes are known inputs (USE-3, USE-6).
+  The target is the minutes from acceptance to arrival, the part still unknown; the minutes elapsed since
+  placement are a known input, not part of the target (USE-3, USE-5, USE-6). The total since placement
+  (the first target) made the score a test of adding back the known elapsed time on prebooked orders.
 - The ZIP contains 654,343 attempts for 568,546 orders, exactly one accepted attempt each. Rejected attempts
-  have structural zero event times. Keep accepted attempts; omit one absent delivery label (arrive_time=0),
+  have structural zeros in grab, fetch and arrive times and the courier coordinates. Keep accepted attempts; omit one absent delivery label (arrive_time=0),
   leaving 568,545 labeled orders. Do not clip or log unusual durations or discard prebooked orders.
+- Long durations (CLEAN-11): 42 orders have over 3 hours remaining after acceptance; 33 are prebooks, 9 are
+  not (2 over 6 hours, at most 652 minutes). Kept: nothing marks them as errors, and dropping training rows
+  over 180 minutes changes no score. The ETA family drops trips over 3 hours (Lusaka trips, NYC and Porto taxis).
 - Source: 2024 background Tables 1-2; October 2024 supplement sections 2.4-2.5; Wang et al. 2025 section 3.1.
-  The latter places grab_lat and grab_lng at acceptance, correcting the earlier assignment description.
+  The latter places grab_lat and grab_lng at acceptance, correcting the earlier assignment description;
+  they match the dispatch snapshots' courier positions (median 35 m within 30 seconds).
   Coordinates stay in the source's shifted integer units; no external geocoding or spatial matching.
 - Myunghwan (2026-11-09) chose independent ETA prediction without both platform outputs. Drop
   estimate_arrived_time and estimate_meal_prepare_time from model inputs, including derived durations.
@@ -207,35 +212,75 @@ The first 5 of 568,545 rows of the final frame (the oldest rows: the frame is so
 - The recorded promise baseline is evaluated from raw rows in the decisions evidence only. Issuance history
   is unverified, so it is not a certified prospective comparator. Meal-ready forecast revisions are irrelevant
   to the primary model because that field and its missingness are excluded entirely.
-- Retain prebooked orders and their flag: long total times can include days before acceptance. Compare with
-  elapsed-only and promise baselines, not only a constant mean. No target-based duration filtering.
-- Drop CSV index, order and waybill IDs, redundant dt, acceptance indicator and future fetch time. Arrival
+- Retain prebooked orders and their flag: their days before acceptance are in the elapsed input, not in the
+  target. Compare with the promise and a training-mean baseline. No target-based duration filtering.
+- Drop CSV index, order and waybill IDs, dt (the source's cohort date; it differs from the local creation
+  date for 1,758 orders), acceptance indicator and future fetch time. Arrival
   time certifies the entire observed training interval ended before the test window, then leaves the model frame. Merchant,
-  courier and district IDs stay categorical. No full-wave membership, wave ends or future aggregates enter.
+  courier and business-area (da_id, the accepted waybill's: it follows the accepting courier in the 1,963 orders
+  where it changes, not the order's district) IDs stay categorical. No full-wave membership, wave ends or future aggregates enter.
 - Convert Unix timestamps to naive China local time (UTC+8). Recompute weekend from acceptance time, since
   the original flag describes order creation. Keep one acceptance datetime and elapsed durations.
-- Three daily future windows with expanding history; every observed order event must precede refit
-  (SPLIT-9, SPLIT-10). Verify creation, push, dispatch, acceptance, pickup and delivery clocks: arrival is
-  the latest actual event in every labeled order, so the arrival-before-midnight guard purges entire
-  unfinished training intervals. Predicted meal-ready and promised times are forecasts, not observed events. Eight source days do not test unseen cities, seasons, couriers or merchants. The 62 acceptances after midnight October 25 stay in the frame but outside the three complete-day test windows.
+- Three daily future windows with expanding history; every observed order event must precede the refit's
+  data snapshot, 3 hours before each window's midnight (SPLIT-9, SPLIT-10). Verify creation, push, dispatch,
+  acceptance, pickup and delivery clocks: arrival is the latest actual event in every labeled order, so the
+  arrival-before-snapshot guard purges entire unfinished training intervals. Predicted meal-ready and promised times are forecasts, not observed events. Eight source days do not test unseen cities, seasons, couriers or merchants. The newest window holds every
+  acceptance from October 24 00:00 to the end of the data, with the 62 acceptances up to 00:23 on October 25.
 - Supporting dispatch snapshots cover only three noon checkpoints daily, not continuous workload. Completed
   waves contain future information and the supplement documents a wave-start indexing defect; no joins used.
+- Potential leak, kept on purpose (LEAK-9, an evaluation leak): within a test day the accepting courier's
+  next acceptances (time to the next one, accepts in the next 30/60 minutes, where the next pickup is)
+  tell when this order was delivered. Read from other test rows they lowered LightGBM RMSE from
+  7.72/8.29/7.45 to 7.07/7.61/6.76 minutes (22/23/24 October, measured 2026-11-21 on complete days; gain
+  0.65-0.70 on 3 of 3 days); no column
+  drop closes it without removing the courier's legitimate history. Each test order is predicted from the
+  training rows and its own features only; a method that reads other test rows is called out and not
+  benchmarked (as for loan_default_prediction_imperial_college).
+- Metric (MET-8): RMSE in minutes scores the mean remaining time, not the padded ETA a customer is shown.
+- Split walk (the split decision tree, SPLIT-36, from the record's collection type Dated Event Log): [LOG.meets] the model predicts orders after the data, cases after the data → Order and windows step → [ORDER.order] the acceptance time is recorded: yes → [ORDER.windows] three one-day test windows, the oldest training on 59.5% of the rows: yes → leaf L-ORDER.windows, Temporal · windows on the time key, the split the definition ships (`split_leaf`). The gap follows the gap rules: three hours, the time a nightly refit needs to extract its data, train with tuning and roll out (the source states none; the curator's sign-off of 2026-11-24, Andrej), and training keeps only orders delivered before that snapshot.
 
 ## Splits
 
-Daily midnight refits predict the next acceptance day's orders, newest window first. Use October 22-24,
-the final three complete local acceptance days. Every actual training event must precede midnight and therefore
-the earliest test acceptance; arrival is verified as the latest of all six actual event clocks.
-Cadence and window count follow the eight-day operational release, not model scores. Each train side
-holds at least half of all labeled rows. Unknown labels leave training; refit boundary effects are measured.
+Leaf: L-ORDER.windows (dated event log, cases after the data: windows on the acceptance time, the gap by the
+gap rules). The source is silent on the horizon, the refit cadence and any deployment delay: a nightly refit
+that predicts the next local acceptance day is assumed. Gap: 3 hours, signed off by the curator (2026-11-24,
+Andrej): a refit cannot serve at the moment its data ends, since the data must be extracted and the model
+trained with per-split tuning and rolled out, so each training side is the data snapshot at 21:00 before the
+window's midnight, after the evening peak. Training keeps the orders accepted and delivered before the
+snapshot; arrival is verified as the latest of all six actual event clocks, so every training event precedes
+the snapshot, and the test windows stay whole local days. The orders accepted in the gap (5,827 / 5,768 /
+5,179 for October 22 / 23 / 24) and the ones still undelivered at the snapshot (1,556 / 1,325 / 1,301) are
+left out. The label delay (p99 55-58 minutes, at most 652) still selects the last training hour before the
+snapshot: the kept orders are 1.8-2.2 minutes faster in remaining time than all orders of that hour, as at
+midnight, where training on the filtered side scored within 0.02 RMSE of every true label (2026-11-21). Cost
+of the gap against a midnight snapshot: +0.02 to +0.09 LightGBM RMSE minutes; 1 hour -0.03 to +0.01, 6 or 12
+hours +0.24 to +0.69 (2026-11-23). The half-the-rows floor fixed the windows: only October 22-24, the three
+newest days, train on at least half the labeled rows (338,395 / 416,321 / 494,654 rows, 59.5% / 73.2% /
+87.0%; October 21 would train on about 48.7% even without a gap), 3 windows against SPLIT-33's 3, newest
+first. The newest window runs from October 24 00:00 to the end of the data, so the 62 acceptances up to 00:23
+on October 25 are scored (67,411 test rows; 77,719 and 77,637 on October 23 and 22). Protocol (LEAK-9): each
+test order is predicted from the training rows and its own features only; no feature or model step may use
+other test rows (the same courier's next acceptances in the test day were worth 0.65-0.70 RMSE), and a method
+that reads other test rows is called out and not benchmarked.
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 345,355 to 500,764 rows, test 67,349 to 77,719 rows. Prediction horizon: 1 days.
+3 repeat(s) x 1 fold(s) with seed 4267; train 338,395 to 494,654 rows, test 67,411 to 77,719 rows. Prediction horizon: 1 days. Gap between train and test: 3 hours.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 500764 | 67349 | 2022-10-17 00:01:00 | 2022-10-23 23:53:56 | 2022-10-24 00:00:04 | 2022-10-24 23:59:59 |
-| 1 | 0 | 423008 | 77719 | 2022-10-17 00:01:00 | 2022-10-22 23:54:16 | 2022-10-23 00:00:01 | 2022-10-23 23:59:57 |
-| 2 | 0 | 345355 | 77637 | 2022-10-17 00:01:00 | 2022-10-21 23:53:35 | 2022-10-22 00:00:02 | 2022-10-22 23:59:56 |
+| 0 | 0 | 494654 | 67411 | 2022-10-17 00:01:00 | 2022-10-23 20:51:58 | 2022-10-24 00:00:04 | 2022-10-25 00:23:29 |
+| 1 | 0 | 416321 | 77719 | 2022-10-17 00:01:00 | 2022-10-22 20:52:00 | 2022-10-23 00:00:01 | 2022-10-23 23:59:57 |
+| 2 | 0 | 338395 | 77637 | 2022-10-17 00:01:00 | 2022-10-21 20:52:43 | 2022-10-22 00:00:02 | 2022-10-22 23:59:56 |
+
+
+### The test windows
+
+Each test window against its train side, by statistics of the data, never of a model: the target, and the population stability index (PSI) of each feature, its largest value and the features that drift most (below 0.1 little shift, above 0.25 a large one), and the share of test rows with a category the train side never shows. Up to 20,000 rows per side. The candidates the windows were chosen from: `.venv/bin/python -m data_foundry.curation.cli dataset windows meituan_food_delivery_time`.
+
+| window | period | weekdays | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
+|---|---|---|---|---|---|---|---|---|---|
+| 0 | Oct 2022 | Mon, Tue | 67411 | 0.87 | mean 25.36, median 23.87, p10 13.15, p90 39.72 | mean 25.93, median 24.27, p10 13.52, p90 40.57 | 2.509 | is_weekend (2.51), courier_id (0.02), poi_id (0.01) | 0.0134 |
+| 1 | Oct 2022 | Sun | 77719 | 0.732 | mean 26.48, median 24.88, p10 13.68, p90 41.28 | mean 25.61, median 24.15, p10 13.27, p90 39.79 | 8.995 | is_weekend (8.99), courier_id (0.02), poi_id (0.01) | 0.0084 |
+| 2 | Oct 2022 | Sat | 77637 | 0.595 | mean 25.92, median 24.4, p10 13.63, p90 40.22 | mean 25.63, median 24.07, p10 13.22, p90 39.92 | 18.419 | is_weekend (18.42), poi_id (0.02), courier_id (0.02) | 1 |
 
 ## Decisions
 
@@ -256,23 +301,23 @@ Rejected attempts are not zero-duration deliveries. Retain prebooked and unusual
 
 ### 2. Future-day windows and operational baselines
 
-Retain recurring merchants and couriers for future orders, using only labels known at midnight. Known prebooking waits inflate total-duration variance: compare absolute-minute errors against the platform promise and elapsed time plus a mean remaining duration fitted on each train side, rather than interpreting high total-target R-squared as resolution of future uncertainty.
+Retain recurring merchants and couriers for future orders, using only labels known at the data snapshot 3 hours before midnight. The target is the time still to come after acceptance, so a prebook's known wait is an input, not error: compare minute errors against the platform promise and the training side's mean remaining time.
 
-| test day | train | test | unavailable labels excluded | merchant seen fraction | courier seen fraction | pair seen fraction | recorded promise RMSE minutes (external reference) | elapsed plus train mean remaining RMSE minutes |
-|---|---|---|---|---|---|---|---|---|
-| 2022-10-24 | 500764 | 67349 | 370 | 0.9985 | 0.9878 | 0.5176 | 12.1408 | 10.68 |
-| 2022-10-23 | 423008 | 77719 | 407 | 0.9979 | 0.991 | 0.4883 | 11.7875 | 11.4935 |
-| 2022-10-22 | 345355 | 77637 | 423 | 0.9981 | 0.9852 | 0.448 | 11.7552 | 11.0142 |
+| test window | train | test | accepted in the 3-hour gap | undelivered at the snapshot, excluded | merchant seen fraction | courier seen fraction | pair seen fraction | recorded promise RMSE minutes (external reference) | train mean remaining RMSE minutes |
+|---|---|---|---|---|---|---|---|---|---|
+| 2022-10-24 to end of data | 494654 | 67411 | 5179 | 1301 | 0.9984 | 0.9871 | 0.5144 | 12.1377 | 10.6782 |
+| 2022-10-23 | 416322 | 77719 | 5768 | 1325 | 0.9979 | 0.9905 | 0.4842 | 11.7875 | 11.491 |
+| 2022-10-22 | 338395 | 77637 | 5827 | 1556 | 0.9981 | 0.9847 | 0.4434 | 11.7552 | 11.0131 |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
 - **info** `dataset_conflicting_duplicate_rows`: 2 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 Accepted on purpose:
 
-- `splits_rows_unused`: Myunghwan (2026-11-09) approved retaining the 62 October 25 acceptances outside the three complete October 22-24 acceptance-day test windows. These tail rows are retained in the frame but never scored; no incomplete test day is introduced.
+- `meta_time_horizon_mismatch`: Andrej (2026-11-24, issue 5 B): the newest test window keeps the 62 acceptances up to 00:23 on 25 October (issue 2 C), so it runs 24 hours 23 minutes (67,411 rows); the check counts its span as 2 days against the 1-day horizon. The other two windows are whole local days.
 
 ## Data checks
 
@@ -288,16 +333,16 @@ Accepted on purpose:
 | da_id | category | 0 | 0 | 23 | 0, 9, 5, 7, 6, 2, 1, 3, 18, 13 |
 | is_prebook | category | 0 | 0 | 2 | 0, 1 |
 | is_weekend | category | 0 | 0 | 2 | 0, 1 |
-| accepted_at | datetime64\[ns\] | 0 | 0 | 273044 | 2022-10-18 11:15:53, 2022-10-18 11:05:58, 2022-10-19 11:27:26, 2022-10-20 11:23… |
+| accepted_at | datetime64\[ns\] | 0 | 0 | 273044 | 2022-10-18 11:15:53, 2022-10-20 11:23:00, 2022-10-19 11:27:26, 2022-10-18 11:05… |
 | elapsed_minutes | float64 | 0 | 0 | 9871 | 0.65, 0.7, 0.6667, 0.7167, 0.6167, 0.6333, 0.6833, 0.7333, 0.75, 0.7667 |
 | dispatch_to_accept_minutes | float64 | 1 | 0 | 1360 | 0.1, 0.1167, 0.1333, 0.15, 0.0833, 0.1667, 0.1833, 0.0667, 0.2, 0.2167 |
 | push_to_accept_minutes | float64 | 0 | 0 | 8488 | 0.5667, 0.55, 0.5833, 0.5167, 0.4833, 0.6, 0.5333, 0.4333, 0.5, 0.4667 |
-| delivery_minutes | float64 | 0 | 0 | 12207 | 26.4, 28.1, 24.1, 25.3667, 23.9667, 25.6833, 25.75, 24.3167, 21.6167, 22.4833 |
+| remaining_minutes | float64 | 0 | 0 | 4660 | 20.25, 24.6333, 23.4833, 23.0333, 19.7, 20.7, 21.4333, 21.3667, 19.65, 21.2 |
 | sender_lng | int64 | 0 | 0 | 4743 | 174545760, 174555690, 174550790, 174565946, 174554750, 174583985, 174573167, 17… |
 | sender_lat | int64 | 0 | 0 | 4747 | 45876300, 45896150, 45887243, 45898786, 45894980, 45862946, 45895200, 45885886,… |
 | recipient_lng | int64 | 0 | 0 | 119000 | 174556771, 174556765, 174556762, 174556767, 174556770, 174556764, 174556766, 17… |
-| recipient_lat | int64 | 0 | 0 | 112058 | 45851112, 45851115, 45851111, 45851109, 45851107, 45851118, 45891515, 45891272,… |
-| grab_lng | int64 | 0 | 0 | 117903 | 174555736, 174552897, 174555756, 174552877, 174552937, 174555727, 174552924, 17… |
+| recipient_lat | int64 | 0 | 0 | 112058 | 45851112, 45851115, 45851111, 45851107, 45851109, 45851118, 45891515, 45891272,… |
+| grab_lng | int64 | 0 | 0 | 117903 | 174555736, 174552897, 174555756, 174552937, 174552877, 174555727, 174552924, 17… |
 | grab_lat | int64 | 0 | 0 | 111128 | 45905962, 45905965, 45905967, 45905946, 45905942, 45905940, 45905939, 45905981,… |
 
 </details>
@@ -306,7 +351,7 @@ Accepted on purpose:
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | 47.401 | 1.317 | 6341.05 | 0.261 | log | 5.19761e+06 | 4.68691e+06 | lognormal |
+| 0 | 0 | 0 | 3.188 | -0.417 | 122.846 | 0.19 | log | 4.83081e+06 | 5.14011e+06 | exponential |
 
 ### Numeric features
 
@@ -321,7 +366,7 @@ Accepted on purpose:
 | elapsed_minutes | 568545 | 9.77593 | 77.7305 | 0.05 | 10293.5 |
 | dispatch_to_accept_minutes | 568544 | 0.436491 | 1.33229 | 0 | 319.767 |
 | push_to_accept_minutes | 568545 | 7.27762 | 56.5759 | 0.0166667 | 10293.1 |
-| delivery_minutes | 568545 | 35.4924 | 79.6307 | 1.96667 | 10336.5 |
+| remaining_minutes | 568545 | 25.7165 | 11.0836 | 1.25 | 652.1 |
 
 ### Categorical features
 
@@ -331,9 +376,9 @@ Accepted on purpose:
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | accepted_at | 1 | 2022-10-18 11:15:53 | 19 | 0 |
-| accepted_at | 2 | 2022-10-18 11:05:58 | 18 | 0 |
+| accepted_at | 2 | 2022-10-20 11:23:00 | 18 | 0 |
 | accepted_at | 3 | 2022-10-19 11:27:26 | 18 | 0 |
-| accepted_at | 4 | 2022-10-20 11:23:00 | 18 | 0 |
+| accepted_at | 4 | 2022-10-18 11:05:58 | 18 | 0 |
 | accepted_at | 5 | 2022-10-21 11:20:31 | 18 | 0 |
 | courier_id | 1 | 82 | 535 | 0.09 |
 | courier_id | 2 | 313 | 493 | 0.09 |
@@ -368,3 +413,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 3762163ad5c46702e89e5c9e4b7d51badc5395bb |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
+| stale | yes: the definition now gives checksum `v2:0cf10db6da52cf76db504c123023260cf23c2088c5cdd1c70c044bdee6c7cc00` |

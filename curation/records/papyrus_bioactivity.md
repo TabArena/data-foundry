@@ -3,14 +3,25 @@ unique_name: papyrus_bioactivity
 name: 'Papyrus: a large-scale curated dataset aimed at bioactivity predictions'
 checked_by:
 - Myunghwan
+- Andrej
 data_foundry_status:
 - WIP (Triage)
 - 'DF: Yes'
 claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 3
+tags:
+- Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Revised Later'
+- 'Entities: Recur'
+- Expanding Science Catalogue
 original_source: Other
+collection_period: 1971-2024 (the years of the documents behind the activities; release 2024.2, on ChEMBL 34)
 domain: chemistry & material science
+required_split:
+- Temporal (NON-IID)
 problem_type: Regression
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
@@ -77,13 +88,214 @@ CC (2026-11-10, Myunghwan): update the Papyrus claim and add its verified build 
 
 **Assessment (AI, 2026-11-10):** integrate the accepted Papyrus package into draft PR59, preserving original source/build commits f3f5797fde2b9cd7eeca788bb5bbf35e5f905499 and9b5ce230726f7afb2893208f356a57793750609b and the exact three package files. DF:Yes is the accepted integration proposal; retain actual Myunghwan/triage/WIP mirror until main. Official claim note and expiry refreshed at520660544f9453244dc4a84f69209624faf71152; original claim time/stage preserved, expiry2026-11-17T09:13:56Z. All six previous packages and all seven prior rejection/hold decisions remain unchanged. No rebuild/model fit, raw/container upload, legacy retirement, registry change, ready transition or merge.
 
+**Assessment (AI, 2026-11-21):** collection facts set from the split audit of PR #59, measured by re-running the definition on the publisher's two files. The source is a cut of a bioactivity database that keeps growing (releases 05.4 to 05.7, on ChEMBL 30 to 34; the paper: "as Papyrus is a static dataset, updates or corrections are possible but limited. The authors are planning to update this dataset every year along with the releases of ChEMBL"), so the collection type is `Expanding Science Catalogue`. Every activity carries the year of the document that first reports the compound-protein pair (`Year`) and the years of every document its mean averages (`all_years`), both published in the release: `Samples: Over Time`, `Time: Dated`. The kept pairs' documents run from 1976 to 2023 (1971-2024 over the whole high-quality slice), which is `collection_period`. The label averages those documents and takes in later ones (`Target: Revised Later`): 134,588 of 692,017 rows (19.4%) combine more than one measurement, and 31,125 (4.5%) take in a document published after the row's own `Year`, by a median of 4 years (up to 44). Compounds and proteins recur (`Entities: Recur`): 129,427 compounds are measured against several proteins, in 365,480 rows.
+
+The re-run reproduces the shipped frame exactly, and with it every count the curation notes state: 692,017 rows, 455,964 canonical compounds, 5,057 proteins, 174,933 scaffolds, 557,429 single-measurement labels, 11,732 masked `Unclassified protein` cells, 60 rows without a sequence over 9 proteins, 129,427 multi-protein compounds, and no duplicate compound-protein pair. The protein table is internally consistent: one sequence per protein id, and every one of the 5,048 proteins with both has a length equal to its sequence length. Feature arrival holds: the structure and the protein's identity, sequence, organism, classification, length and variant are all properties the chemist holds before the assay, and nothing dated or outcome-derived enters the predictors. Two facts are new. 3,015 rows (1,803 compounds, 1,608 of which have no dated row at all) carry no `Year`, all from undated ChEMBL deposits, which a split by date would have to place or drop. And the newest year is cut by the release: 2023 holds 4,202 rows against 29,053 in 2022, at an unchanged label mean (6.54 against 6.62), so it is a coverage cut rather than a change in what was measured. The split question these facts raise is issue 1.
+
+CC (2026-11-24, Andrej): review issue 1, change to C: "Option C: Windows on the year a compound's measurements end." The split is now expanding one-year windows on `entry_year`, the newest document year behind any of a compound's means (the source's `all_years`), taken per source connectivity so chemical aliases share one year; it orders and splits the rows and is no model input. The scaffold grouping and the `scaffold` column leave with it — the column was the group key, never a model input, and the Bemis-Murcko scaffold stays recomputable from the shipped SMILES. `split_leaf = "L-CAT.entry-date"`, the leaf the split tree reaches with this key (the answer of 2026-11-24). The 1,667 compounds with no dated document (2,791 rows, 0.40%) take the earliest year, 1976, and always train. The windows themselves wait for the Horizon sign-off (review item H).
+
+CC (2026-11-24, Andrej): the Horizon's test windows, as asked on the review page: 2022 and 2023 together, then 2021, then 2020 (option D). The definition builds them in `_make_splits` from the constant `TEST_WINDOWS`, since one `TemporalSplits` window length cannot state a two-year window beside one-year ones, and declares a horizon of two years, the newest window's span. Training is every compound whose measurements ended before the window: 93.6%, 87.3% and 81.2% of the rows. The sign-off itself stays open as review item H.
+
+CC (2026-11-25, Andrej): the declared horizon (two years, the newest window's span; no gap; test windows 2022 with 2023, then 2021, then 2020) is checked and signed off as implemented, option D ("Perfect, I sign off."). Asked first whether a rule or the framework stood against windows of unequal length: neither does. The window length is the curator's judgment, the rule on small windows asks for the wider window where a short one would only add noise, the horizon check measures the newest window, and ten temporal definitions of the working copy build their windows in `_make_splits` as this one does.
+
+CC (2026-11-25, Andrej): the declared split (windows on `entry_year`, the year a compound's measurements end: 2022 with 2023, then 2021, then 2020, each training on every compound whose measurements ended before it; leaf L-CAT.entry-date) is checked, as implemented. The review's Outcome now names these windows in place of "one-year windows".
+
+CC (2026-11-25, Andrej): verdict ship; nothing open in the review. The build is stale until rebuilt.
+
 ## Review
 
-**Outcome:** added. Myunghwan accepted inclusion on 2026-11-10 ("ship it"). Validity: the confirmed label-dependent ordering leak is repaired; the task preserves published mean log potency and uses a train-fitted, pointwise evaluation contract with compound scaffolds held out across proteins. Value: useful signal remains beyond converged linear and protein-mean controls. Quality: the exact unknown classification is made missing and molecular structures are typed. Provenance and measured signal favor inclusion; endpoint and laboratory heterogeneity, omitted stereochemistry, the measured-only cohort and limited sequence representation constrain the approximate use case. No unresolved Must violation is demonstrated. Scientific review is complete with RMSE as declared and zero separate issues. The separately requested local build is verified.
+**Outcome:** added. Myunghwan accepted inclusion on 2026-11-10 ("ship it"). Validity: the confirmed label-dependent ordering leak is repaired; the task preserves published mean log potency and uses a train-fitted, pointwise evaluation contract with test windows (2022 with 2023, then 2021, then 2020) on the year each compound's measurements end (Andrej, 2026-11-24, issue 1 C; windows signed off 2026-11-25). Value: useful signal remains beyond converged linear and protein-mean controls. Quality: the exact unknown classification is made missing and molecular structures are typed. Provenance and measured signal favor inclusion; endpoint and laboratory heterogeneity, omitted stereochemistry, the measured-only cohort and limited sequence representation constrain the approximate use case. No unresolved Must violation is demonstrated. Scientific review is complete with RMSE as declared and zero separate issues. The separately requested local build is verified.
 
-**Main points:** Accepted with RMSE as declared. Preserve the pooled compound–protein task, source means, scaffold holdout and train-fitted pointwise contract, including the disclosed864same-thrombin matches and lack of chronological guarantee. The separately requested local build is verified; repository publication remains separate.
+**Main points:** Accepted with RMSE as declared. Preserve the pooled compound–protein task, source means and the train-fitted pointwise contract, now split by the year each compound's measurements end (issue 1 C), including the disclosed 864 same-thrombin matches; the test windows (2022 with 2023, then 2021, then 2020) are signed off, and nothing is left open. The separately requested local build is verified; repository publication remains separate.
 
 **Record judgment:** Scientific inclusion accepted by Myunghwan on 2026-11-10. Exact response: “ship it”, to the recommendation to ship with RMSE as declared. Independent consistency review found no exception or further issue. Scientific acceptance required no definition, data, model or split change. The subsequent requested local build `01a1c4a3-5dd9-7593-8c3b-19181baab684` reproduces qualification and traced-input checksums without warnings. Full historical panel below is retained.
+
+**Horizon:**
+
+* **Verdict:** the curator's three windows, 2022 with 2023, then 2021, then 2020, with no gap (option D, implemented 2026-11-24); asked because issue 1 C makes the task temporal.
+* **Length:** one year: the source dates a document by its year alone, so a year is the finest step, and neither the source nor the pre-assay use case names a refit cadence, which makes the length the curator's sign-off. The smallest window, 2023, holds 7,698 rows, far above the minimum of 33 scored units; the scored unit is the row, since the RMSE has no group input and no window cuts a compound.
+* **Gap:** none: a published measurement is known when its paper appears, and the key of issue 1 C leaves no training label in flight (0 of the 604,169, 647,885 and 684,319 training rows take in a document from the test year or later).
+* **Time frame:** the dates are the source's own, the `Year` and `all_years` columns of release 05.7 (2024.2, on ChEMBL 34); over the shipped rows the last document behind a compound's means runs 1976-2023. 2,791 rows (1,667 compounds, 0.40%) carry no dated document and take 1976, so they always train. 2023 is the release's newest year and holds about a fifth of a usual year, because ChEMBL curates a paper some time after it appears. Candidate windows, each training on every compound whose measurements ended earlier:
+
+  | Test year | Test rows | Test compounds | Test proteins | Train share | Label mean | Label SD | Rows of a human protein | Rows of a mean over several documents |
+  |---|---|---|---|---|---|---|---|---|
+  | 2023 | 7,698 | 2,814 | 1,325 | 98.9% | 6.33 | 1.25 | 87.6% | 31.9% |
+  | 2022 | 36,434 | 19,978 | 2,069 | 93.6% | 6.52 | 1.32 | 85.9% | 23.8% |
+  | 2021 | 43,716 | 24,837 | 2,016 | 87.3% | 6.53 | 1.34 | 87.5% | 21.0% |
+  | 2020 | 42,209 | 24,770 | 1,860 | 81.2% | 6.60 | 1.30 | 89.5% | 20.4% |
+  | 2019 | 37,278 | 21,750 | 1,703 | 75.8% | 6.45 | 1.30 | 84.5% | 21.4% |
+  | 2018 | 39,717 | 25,211 | 1,702 | 70.1% | 6.55 | 1.25 | 85.9% | 23.4% |
+  | 2017 | 38,807 | 23,382 | 1,664 | 64.5% | 6.52 | 1.28 | 84.3% | 20.7% |
+  | 2016 | 40,465 | 24,290 | 1,455 | 58.6% | 6.53 | 1.29 | 84.0% | 21.4% |
+  | 2015 | 54,454 | 36,412 | 1,377 | 50.8% | 6.85 | 1.32 | 85.6% | 19.2% |
+
+* **Options:**
+
+  | | Option | What it does | Test windows | Pro | Con |
+  |---|---|---|---|---|---|
+  | A | The three newest years | One-year windows 2023, 2022 and 2021, newest first, no gap; training 98.9%, 93.6% and 87.3% of the rows | 3: 7,698, 36,434 and 43,716 rows (2,814, 19,978 and 24,837 compounds) | the newest window is a test window, as the deployment period; exactly the 3 splits an IID split of 692,017 rows would get; every row stays in the frame | the newest window is the thinnest, a fifth of a usual year, because the release stops in the middle of the catalogue's work on 2023 |
+  | B | 2022, 2021, 2020, as issue 1 C named them | The same three windows the option text named; training 93.6%, 87.3% and 81.2% | 3: 36,434, 43,716 and 42,209 rows (19,978, 24,837 and 24,770 compounds) | three windows of a usual size; no window depends on a year the release cuts short | the newest year is not tested, which the newest-window rule forbids; the 7,698 rows of 2023 have to leave the frame, since the splitter requires the newest window to hold the newest rows |
+  | D | 2022 with 2023, then 2021, then 2020 (implemented) | The curator's layout: the newest window joins 2022 and 2023, the two before it are single years; training 93.6%, 87.3% and 81.2% of the rows | 3: 44,132, 43,716 and 42,209 rows (22,792, 24,837 and 24,770 compounds) | the newest data is tested and no row leaves the frame; three windows of nearly the same size, where A's newest holds a fifth of the others; the thin 2023 is carried by 2022 rather than scored on its own | the newest window scores compounds up to two years after its training cut, while the 2021 and 2020 windows score one year ahead, so one declared horizon covers two reaches |
+  | C | Nine one-year windows, 2023 back to 2015 | As A, with 2020 to 2015 added; training 98.9% down to 50.8%, every window above the half-the-rows floor | 9: A's three and 42,209, 37,278, 39,717, 38,807, 40,465 and 54,454 rows | six more test periods, over a decade in which the catalogue's protein mix moves; all above the floor | three times the splits the task's size asks for, at three times the fitting cost; the rule asks for as many windows as reach the target, not more |
+
+* **Recommendation:** D, the curator's layout, now implemented. It keeps what A and B each lose: the newest data is tested, as the rule asks[^p22a], and no window is a fifth of its neighbours, since the year the release cuts short rides with 2022 instead of being scored alone. Three windows is exactly the count the task's size asks for, so C's six extra test periods buy evidence the rule does not ask for and the benchmark pays for. What D costs: the newest window spans two years and the other two one, so its score reaches two years ahead while theirs reach one. **Decision:** the curator's layout (D), the three newest years (A), the three years issue 1 C named (B), or nine windows back to 2015 (C)?
+
+[^p22b]: **SPLIT-17** (Should): widen windows that get too small; where windows near the least test window make each window's score noise, use wider windows and fewer splits, since finer windows add no test rows and cut the test pool into smaller, noisier pieces.
+
+[^p22a]: **SPLIT-15** (Must for the newest window, Should for the others): the newest window is always a test window, the deployment period; the number of windows aims at **SPLIT-33**'s count for two thirds of the scored units (3 for 692,017 rows: one repeat of 3-fold cross-validation once a train side holds 250,000 units or more), and within the floor and the least test window, as many windows as reach it. **SPLIT-14** (Must): every window trains on at least half the data and tests at least 33 scored units, counted as SPLIT-33 counts them (a temporal split has no group, so the row). **SPLIT-36** (Should): a window length the source does not give is a person's sign-off, and the definition names its leaf in `split_leaf`. **SPLIT-10**: the gap covers the delay between the prediction point and the label; here the key of issue 1 C makes every training label final at the cut. **SPLIT-12** (Should): the horizon is a human judgment from the source, and the curator signs off the horizon and the test windows of every new temporal dataset.
+
+**Notes for the AI:** D is implemented: `Temporal(on="entry_year", horizon=2, horizon_unit="years", time_unit="years", time_of="label")` with the windows in `_make_splits` from the module constant `TEST_WINDOWS` ((2022, 2024), (2021, 2022), (2020, 2021)), each training on every row of an earlier `entry_year`. A, B and C are declarative instead: `TemporalSplits(window=1, unit="unique", cutoffs=...)` with the years of the option, `horizon=1`, and `_make_splits` removed; on B the rows whose `entry_year` is 2023 leave in `_clean` (the splitter refuses cutoffs whose newest window does not hold the newest rows) and the splits comment names the dropped year and the departure from the newest-window rule; on C the comment names the target of 3 and why more windows ship. Every option keeps the gap at none.
+
+**Andrej (2026-11-24, discuss):** Use the following three test splits: 2022+2023 combined, 2021, 2020.
+
+**Answer (AI, 2026-11-24, later):** applied as option D, the row the definition now ships. The windows and what each tests, measured on the shipped frame:
+
+| Test window | Test rows | Test compounds | Test proteins | Train rows | Train share | Label mean | Label SD |
+|---|---|---|---|---|---|---|---|
+| 2022-2023 | 44,132 | 22,792 | 2,372 | 647,885 | 93.6% | 6.49 | 1.31 |
+| 2021 | 43,716 | 24,837 | 2,016 | 604,169 | 87.3% | 6.53 | 1.34 |
+| 2020 | 42,209 | 24,770 | 1,860 | 561,960 | 81.2% | 6.60 | 1.30 |
+
+- Two consequences worth your word, both named in the splits comment: the declared horizon is now two years, the newest window's span, while the 2021 and 2020 windows test one year ahead; and `TemporalSplits` cannot state windows of two different lengths, so the three windows are built in the definition, from a constant that names them.
+- The rest is unchanged: no gap, every training label final at its cut, all rows of a compound in one window, and 3 splits, the count the task's size asks for. `dataset check`: 0 errors, 0 warnings, 1 info (a horizon in years cannot be cross-checked against an integer year column); 692,017 rows, 7 inputs, the three windows above.
+
+**Andrej (2026-11-25, discuss):** Are there rules or specific implementation choices preventing this split?
+
+**Answer (AI, 2026-11-25):** no: neither point the option's Con named was an obstacle, and the Con now names only the task property that remains.
+
+- Windows of different lengths break no rule. The window length is the curator's judgment from the use case and the source, and only the newest window is fixed by rule[^p22a]; the rule on small windows asks for exactly this remedy, wider windows and fewer splits where a window near the floor makes its score noise[^p22b], which is what joining the cut-short 2023 to 2022 does. Precedent: `medical_facility_operational_data` (14-day windows in place of equal-count 42-53-day ones) and `meituan_food_delivery_time`, whose newest window runs past the day boundary to the end of the data.
+- The declared horizon is right as the field is defined: the container holds one `time_horizon`, and the check that cross-checks it measures the newest test window, which is the two years declared. The 2021 and 2020 windows reach one year; that is the Con above, not a rule.
+- Building the windows in the definition is the ordinary mechanism, not a workaround: 13 definitions of the working copy build their splits there, 10 of them temporal (meituan, chicago_traffic_crashes, brazilian_ecommerce, hotel_booking_demand, alfa_battle_2_0_task_2, african_credit_scoring_challenge, medical_facility_operational_data, sf_permit_time, fugaku_hpc_job_failure_1m and this one). `TemporalSplits` is the shorthand for one repeated window length.
+
+**Resolved (2026-11-25, Andrej):** D, signed off ("Perfect, I sign off."). The shipped windows are 2022 with 2023, then 2021, then 2020, training on 93.6%, 87.3% and 81.2% of the rows, no gap, horizon two years, built in `_make_splits` from `TEST_WINDOWS`. Nothing changed in the definition with the sign-off; the Con of option D was rewritten to the task property it names, since the check above found no rule or framework obstacle behind the other two points.
+
+**Issues for the curator:**
+1. **Hold the compounds out by their scaffold, or by the year their first paper appeared?**
+
+   - **Problem:**
+     - The source splits this same pooled compound-protein task by publication year and says why - the time split "better assesses the prediction performance of the models and minimizes congeneric series being split between training and test sets" - while this definition holds out chemical scaffolds and keeps no date at all[^p21a].
+     - The scaffold folds do split those series: for 92-94% of the test compounds a compound from one of their own papers sits in training, against 15-32% under a forward split by year.
+     - The release carries the dates to split on, but a pair's mean averages documents published after its first year, which is why the definition, and the curator's standing requirement that a temporal variant establish all training outcomes before the test prediction, set a date split aside.
+   - **Background:** Papyrus is a cut of ChEMBL and five smaller sets that keeps growing (releases 05.4 to 05.7, on ChEMBL 30 to 34; the paper: "The authors are planning to update this dataset every year along with the releases of ChEMBL"), and the kept pairs' documents run from 1976 to 2023. Its use case, a potency estimate for a candidate compound before the assay, reaches compounds the catalogue does not hold yet, and the paper names no scope that would keep the model to the chemistry it already holds, so the choice falls to the measurements below. The first split audit (2026-11-09) found the scaffold regime right with notes and left chronology "explicitly unproven"; it predates the split rules this review applies.
+   - **Effect on the task:** under scaffold groups a test compound stands for a ring system the catalogue has not measured, but its paper's other compounds, its assay and its era are nearly always in training, and the model is scored partly on the targets and assay types of the 1990s. Under year windows it stands for a pair the literature publishes next, with its paper held out and the target mix the one the field is turning to, which is the position of the chemist in the use case and the split the source itself reports.
+   - **Experiments:** on the frame rebuilt from the publisher's two files (692,017 rows, 455,964 compounds, 5,057 proteins, identical to the shipped one). A window's test compounds are those whose first document is of that year; the training side is every compound first reported earlier, and the random draw is a training side of the same size.
+
+     A compound from the test compound's own paper in training (the series the source says a time split keeps together), on every test compound of each split:
+
+     | Split | Test compounds | Share with a training paper-mate |
+     |---|---|---|
+     | Scaffold fold 0 (shipped) | 160,017 | 92.3% |
+     | Scaffold fold 1 | 149,753 | 93.6% |
+     | Scaffold fold 2 | 146,194 | 93.8% |
+     | Entry date, 2015 | 36,388 | 14.6% |
+     | Entry date, 2018 | 24,564 | 21.9% |
+     | Entry date, 2020 | 23,272 | 28.4% |
+     | Entry date, 2021 | 23,318 | 32.2% |
+     | Entry date, 2022 | 18,171 | 30.8% |
+     | Random draw, 2015 to 2022 sizes | as above | 99.2-99.3% |
+
+     Close training analogues, the measurement the guideline names for a catalogue: the share of test compounds with a training compound at Tanimoto 0.7 or more (Morgan radius 2, 2,048 bits), 1,000 sampled test compounds a window, the same ones under each key.
+
+     | Test window | Entry date | Random draw | Scaffold key |
+     |---|---|---|---|
+     | 2015 | 14.3% | 16.6% | 6.9% |
+     | 2018 | 15.2% | 16.6% | 9.1% |
+     | 2020 | 17.8% | 19.2% | 10.0% |
+     | 2021 | 14.2% | 18.8% | 10.0% |
+     | 2022 | 17.4% | 17.3% | 6.2% |
+     | The three shipped scaffold folds, on their own test compounds | | | 46.7%, 47.5%, 46.9% |
+
+     What the catalogue takes in moves with the era, while the label itself stays put:
+
+     | Era | Rows | Proteins | Human | Membrane receptors | Epigenetic regulators | IC50 | Ki | Mean label |
+     |---|---|---|---|---|---|---|---|---|
+     | 1976-2000 | 29,803 | 812 | 34.1% | 34.1% | 0.0% | 64.3% | 31.9% | 6.67 |
+     | 2001-05 | 37,851 | 1,110 | 67.6% | 27.3% | 0.6% | 61.4% | 33.5% | 6.65 |
+     | 2006-10 | 136,474 | 2,234 | 76.5% | 26.6% | 1.0% | 63.9% | 25.0% | 6.37 |
+     | 2011-15 | 223,112 | 2,834 | 83.9% | 19.9% | 3.2% | 69.0% | 25.2% | 6.65 |
+     | 2016-20 | 190,007 | 2,825 | 86.2% | 18.4% | 7.7% | 69.0% | 21.0% | 6.54 |
+     | 2021-23 | 71,755 | 1,831 | 87.9% | 16.8% | 9.3% | 72.2% | 18.3% | 6.59 |
+
+     Untuned LightGBM on Morgan counts and the protein columns, 150,000 training rows and 25,000 test rows a split, one seed; RMSE on the pChEMBL scale, lower is better. It sizes the step, it does not choose the key.
+
+     | Split | RMSE | Training mean only |
+     |---|---|---|
+     | Scaffold fold 0 | 0.985 | 1.339 |
+     | Scaffold fold 1 | 0.964 | 1.340 |
+     | Scaffold fold 2 | 0.973 | 1.339 |
+     | Entry date, 2020 | 1.136 | 1.289 |
+     | Entry date, 2021 | 1.148 | 1.331 |
+     | Entry date, 2022 | 1.130 | 1.296 |
+
+     What a split by date would cost: the share of the frame each window trains on, and the training rows whose mean is not final at its cut.
+
+     | Window | Training rows | Of all rows | Training rows whose mean takes in a later document | Rows of a compound measured again later |
+     |---|---|---|---|---|
+     | 2020 | 583,053 | 84.3% | 1.70% | 4.08% |
+     | 2021 | 620,860 | 89.7% | 1.15% | 3.13% |
+     | 2022 | 657,868 | 95.1% | 0.66% | 1.93% |
+
+   - **Consistency:** qsar_tid_11, the thrombin cut of ChEMBL with which this set shares 864 pairs by the panel's own count, moved from scaffold groups to first-publication-year windows on 2026-11-11, and apistox ships windows on the decade of first publication; chromophore_optical_properties_db is asked the same question in its issue 3 of this round, where the forward split leaves 3.9-7.1% close analogues against 44-56% at random. qsar_biodeg and superconductivity kept the family key, because their sources keep their models to chemistry like the data holds; this source does not. Unlike all of those, here the date is no stricter than a random draw by the Tanimoto measure, and is dramatically stricter by the paper-mate one.
+   - **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Scaffold groups (implemented) | Keeps the three scaffold folds and the frame; adds the time-basis tag and a `Time basis:` line with the measurements above, and drops the "unseen chemical series" wording the paper-mate share contradicts | the key that leaves the fewest close analogues, 6-10% against 17-19% at random; the default for molecules; nothing to rebuild | trains on a paper-mate of 92-94% of the test compounds, which the chemist does not have; the test stands for series from the whole span, not for what the literature reports next; the source's own split stays untested |
+     | B | Windows on the first document's year | Declares the compound's earliest year as a time column that is no input; three one-year windows (2020, 2021, 2022), each training on every compound first reported earlier, no gap | the source's own axis, and the key the sibling ChEMBL set uses; a paper-mate for only 28-32% of test compounds | 0.7-1.7% of training rows carry a mean that takes in a later document, which the standing requirement forbids; the 3,015 undated rows need a rule; a rebuild and a horizon sign-off |
+     | C | Windows on the year a compound's measurements end | As B, but keyed on the last year of any document behind the compound's means, so every training label is final at its cut; windows 2020, 2021, 2022 (training 80.8%, 86.9%, 93.2% of the rows) | no training label in flight, which is what the standing requirement asks; the same hold-out of the test compound's papers as B | the window mixes compounds first reported in it with older ones measured again, so a test compound is not always new chemistry; a rebuild and a horizon sign-off |
+
+   - **Recommendation:** C. The source's aim reaches the compounds the catalogue does not hold yet and its own evaluation of this task is temporal; the scaffold key leaves the test compound's own paper in training for 92-94% of the test compounds, which is the shortcut the date is meant to close, and what the catalogue takes in moves with the era. C is B with the one objection the definition and the curator raised removed: keying on the last contributing year leaves no training label in flight. A stays defensible if the Tanimoto measure is read as the one that decides, since by it the date is no stricter than a random draw. **Decision:** keep the scaffold groups (A), or split by the entry date (B or C)?
+
+   **Notes for the AI:** On A, add `data_tags = ("UnseenGroup",)` and a `Time basis: UnseenGroup` line to the curation notes with the source's pre-assay aim, the measured shares (paper-mate 92-94%, close analogues 47% on the shipped folds against 6-10% for a year cohort's scaffold hold-out), the era drift, and what the split cannot test - the next years' target mix and endpoint shift, and the source's own temporal split; change `task_summary.split`, which says "The test compounds are from unseen chemical series", since the series are in training; the splits comment names the leaf (SPLIT-37 step 5) and why the source's split is not followed (SPLIT-36), and `splits.md`'s SPLIT-37 table takes a `papyrus_bioactivity` row (scaffold 6-10%, entry date 14-18%, random 17-19%, with the paper-mate shares beside them). On B or C, declare `temporal = Temporal(column="entry_year", feature=False)` with the year built in `_clean` from `Year` (B) or from the maximum of `all_years` (C), taken per compound so a compound's rows stay on one side (the source's own cut is per row and would split a compound); place or drop the 3,015 rows with no `Year` (1,608 of their compounds have no dated row at all; qsar_tid_11 gave its undated deposit the year its ChEMBL release loaded it); leave 2023 out of the windows or merge it into 2022, since the release cuts it short (4,202 rows against 29,053 in 2022, at an unchanged label mean); no gap is needed, since a published measurement is known when its paper appears; add a `**Horizon:**` block for the window length, the step and the gap, and keep the protein columns and the pointwise contract unchanged. The scaffold column stays in either case: the group of record under A, a disclosed structure under B and C. Measurement code and outputs: the papyrus split audit's run folder (`prepare.py`, `years.py`, `analogs.py`, `analogs2.py`, `docs.py`, `models.py`). With the decision, set `split_leaf` to the leaf the chosen option reaches (cross-dataset item, Andrej 2026-11-24): A `L-FAMILY.key`; B or C `L-CAT.entry-date` only if the entry-date question is answered yes as in the answer of 2026-11-24, otherwise the shipped windows are a departure that a reviewer adds to the table "Definitions that ship another split" in split_tree.md before `split_leaf` is set.
+
+   **Answer (AI, 2026-11-24):** the latest split rules (PR #110, on main since 2026-11-24) route this choice through the split tree, and the tree's walk ends at option A, so the recommended C would ship as a departure that a reviewer confirms.
+   - The walk from the record's collection type (Expanding Science Catalogue): the use case reaches the compounds the catalogue adds next `[CAT.next-items]`: yes. "Does each item carry a final date of entry into this catalogue, with a final label?" `[CAT.entry-date]`: no as the data is shipped, since the record carries `Target: Revised Later` (a compound's mean takes in later documents: 1.70 / 1.15 / 0.66% of the training rows at the 2020 / 2021 / 2022 cuts). Option C's key, the year a compound's measurements end, would make every training label final at its cut, so under C this question can be read yes.
+   - Even then, "Does arrival change how the target is recorded or which items are taken in, or does a forward split leave clearly fewer close training neighbours than a random draw?" `[CAT.arrival]` has no yes in the record: the close-analogue test gives 14-18% under a forward split against 17-19% under a random draw, not clearly fewer, and no change in recording or intake with the date was measured.
+   - Either "no" leads to the family-key step: a scaffold can be computed, so the leaf is Grouped · `UnseenGroup` (the family key) `[L-FAMILY.key]`, option A.
+   - The recommendation's reasons (the source's own temporal evaluation, the paper-mate share of 92-94% under scaffold folds) are not questions the tree asks; with B or C they become the departure's reason, recorded in the table "Definitions that ship another split" in split_tree.md once a reviewer confirms it. A measurement of step 4a (whether assay types or the targets taken in shift with the entry year) could still turn `[CAT.arrival]` to yes.
+
+   **Andrej (2026-11-24, discuss):** Could it be that we miss a question for whether the dates or order can be restored?
+
+   **Answer (AI, 2026-11-24, later):** yes, and with it and one new measurement the walk reaches the entry-date leaf with option C.
+   - The gap: the catalogue's entry-date question `[CAT.entry-date]` asks whether each item carries a final date of entry with a final label. Unlike the order question of the event logs `[ORDER.order]`, which accepts an order rebuilt from the data and checked (SPLIT-22), it never asks whether a final date can be rebuilt. Here it can: the year a compound's last measurement arrives (option C's key) makes every training label final at its cut.
+   - The arrival question `[CAT.arrival]`, its first half measured now (one Slurm job on the shipped frame): what the catalogue takes in shifts with the entry year. Each forward window's mix of protein families, organisms and sources differs from its training side's 10 to 30 times more than a random split's (total variation distance, 0 = same mix):
+
+     | Window (C: the year a compound's measurements end) | Families | Random | Organisms | Random | Sources | Random |
+     |---|---|---|---|---|---|---|
+     | 2020 | 0.152 | 0.009 | 0.114 | 0.008 | 0.091 | 0.003 |
+     | 2021 | 0.150 | 0.008 | 0.110 | 0.008 | 0.072 | 0.003 |
+     | 2022 | 0.152 | 0.010 | 0.091 | 0.009 | 0.069 | 0.003 |
+
+   - For example, GPCRs are 20.5% of the rows before 2020 and 14.0% in 2020-2022; kinases 19.6% and 22.7%; lyases 2.6% and 5.2%. Keyed on the first year (B) the shift is the same size (families 0.149-0.168).
+   - So: entry date yes if a rebuilt final date counts (C), arrival yes (intake shifts; the close-analogue half stays no), windows yes (three one-year windows training on 80.8-93.2%) → Temporal · entry date `[L-CAT.entry-date]`, the leaf of apistox and qsar_tid_11. Without the rebuild clause C stays a departure for a reviewer.
+   - The clause is a rule change, so it is a cross-dataset item ("Let the catalogue's entry-date question accept a final date rebuilt from the data?"). The recommendation here stays C; it now follows the tree once that item takes B.
+
+   **Answer (AI, 2026-11-24, evening):** the rebuild clause is in the split tree now (the cross-dataset item, B). The walk with option C: entry date yes (the year a compound's last measurement arrives, rebuilt and checked against the documents' years), arrival yes (intake shifts with the entry year), windows yes → Temporal · entry date `[L-CAT.entry-date]`. Option C is therefore the tree's own leaf, A (scaffold groups) a departure; the recommendation stays C.
+
+   [^p21a]: Béquignon et al. 2023, J Cheminform 15:3, doi:10.1186/s13321-022-00672-x, "Bioactivity modelling" in the methods and the results. Its proteochemometric models, the pooled form this definition ships, train on the pairs published before 2013 and are tested on 2013 and later: average Pearson r 0.79 against 0.42 and RMSE 0.75 against 1.17, over its five protein-family subsets, not over this frame.
+   [^p21b]: SPLIT-37 steps 3 to 5: the source's purpose sets which items the test stands for; the entry date replaces the family key when the use case reaches the items the catalogue adds next, the labels are final, and either arrival changes which items are selected (4a) or a forward split leaves clearly fewer close training neighbours than a random draw (4b, Tanimoto 0.7 on Morgan radius 2 for molecules); otherwise the family key stands and its `Time basis: UnseenGroup` line gives the forward split's share against a random draw's. The wave 4b looks for is "a family key still trains on the siblings that arrived with the test item, which the actor does not have". SPLIT-31: a molecule dataset with exact structures groups on the Bemis-Murcko scaffold. SPLIT-36: a definition that ships another split than its leaf names the leaf and the reason in its splits comment, and a question no answer fits goes to a reviewer. SPLIT-9 and the record's CC of 2026-11-10: a temporal variant must establish that all training outcomes were collected before the test prediction.
+
+   **Andrej (2026-11-24, change):** Option C: Windows on the year a compound's measurements end.
+
+   **Resolved (2026-11-24, Andrej):** C, applied. `entry_year` is the newest document year behind any of a
+   compound's means (the source's `all_years`), taken per source connectivity so chemical aliases share one
+   year and every row of a compound carries it; it orders and splits the rows and is no model input. The
+   scaffold grouping and the `scaffold` column leave: the column was the group key, never a model input, and
+   the scaffold stays recomputable from the shipped SMILES. `split_leaf = "L-CAT.entry-date"`, the leaf the
+   tree reaches with this key. The 1,667 compounds with no dated document (2,791 rows, 0.40%) take the
+   earliest year, 1976, and always train. No training label is in flight at any cut, which was the objection
+   to a date split:
+
+   | Test window | Train rows | Train share | Training rows taking in a document of the test year or later | Test rows | Test compounds |
+   |---|---|---|---|---|---|
+   | 2023 | 684,319 | 98.9% | 0 | 7,698 | 2,814 |
+   | 2022 | 647,885 | 93.6% | 0 | 36,434 | 19,978 |
+   | 2021 | 604,169 | 87.3% | 0 | 43,716 | 24,837 |
+
+   Under the first document's year (option B) 0.7-1.7% of the training rows would still be in flight. Which
+   years the windows cover is the Horizon block's question (item H), where the three newest years are
+   implemented and the 2020-2022 windows the option text named are offered as B. `dataset check`: 0 errors, 0 warnings, 1 info; 692,017 rows and the same 7 inputs as before, 3 windows (train 684,319 / 647,885 / 604,169 rows). The info says a horizon in years cannot be cross-checked against an integer year column.
+
 
 **Review panel:** ship (mediator; documentation changes applied). Full tier: seven evidence roles, advocate and critic with one rebuttal each, mediator and review editor. Independent attacks confirmed a target-dependent ordering channel, and an independent audit validated its repair. The existing pointwise evaluation contract prohibits the held-out record-count shortcut. Completed evidence supports inclusion with zero separate curator issues and no consistency exception. Earlier incomplete-run and order-safety statements are historical; the supplements and completed mediator synthesis supersede them.
 

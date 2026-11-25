@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: economic_well_being_prediction_challenge
 container_format: 2
-checksum: v2:67814a2cb764b9b4774b509d02aeb05b24c17f34e225e371229d3163fcf821f3
+checksum: v2:77496c3c1883740c9defa7843446578bb2f83984d04bbfc5c78170c894e0e01f
 build:
   uuid: 01a1ae48-ee3d-73ae-bf99-a2b037658716
   checksum: v2:67814a2cb764b9b4774b509d02aeb05b24c17f34e225e371229d3163fcf821f3
@@ -19,11 +19,11 @@ build:
     polars: 2.0.0
 build_stale: true
 data:
-  n_rows: 21454
-  n_features: 12
+  n_rows: 28618
+  n_features: 16
   dtypes:
-    category: 1
-    float64: 11
+    category: 2
+    float64: 15
     int64: 1
   n_test_dataset_rows: null
 task:
@@ -32,76 +32,92 @@ task:
   metric: rmse
   metric_origin: source
   scoring_columns: null
-  split_regime: temporal_non_iid
+  split_regime: grouped_non_iid
   stratify_on: null
-  time_on: year
-  group_on: null
-  group_labels: null
+  time_on: null
+  group_on: country
+  group_labels: per_sample
   group_time_on: null
-  grouping: null
+  grouping:
+    prediction_unit: row
+    aggregation: null
+    context: none
+    n_groups: 25
+    test_groups_per_fold:
+      min: 1
+      max: 1
 splits:
-  n_repeats: 16
-  n_folds: 1
+  n_repeats: 1
+  n_folds: 16
   random_state: 4267
-  time_horizon: 1
-  time_horizon_unit: years
+  time_horizon: null
+  time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 14231
-    max: 19133
+    min: 25923
+    max: 28288
   n_test:
-    min: 139
-    max: 1585
+    min: 330
+    max: 2695
 bundle_checks:
   ok: true
   errors: []
   warnings: []
   infos:
   - dataset_conflicting_duplicate_rows
-  - meta_time_horizon_unit
-  - economic_valid_time_country_verified
-  accepted: {}
+  accepted:
+    groups_test_groups_few: 'Accepted (Andrej, 2026-11-24): a test country stands
+      for a country without surveys of its own, so one whole country per split is
+      the task (16 test countries of 25). The signal carries over to unseen countries:
+      LightGBM R^2 0.60 on the 16 held-out countries against 0.78 on a random split
+      (group probe), and a random forest beats night lights alone on 15 of the 16
+      shipped splits (2026-11-24).'
+    splits_rows_never_tested: 'Accepted (Andrej, 2026-11-24): the test countries are
+      the 16 surveyed in 2014-2016, one per split; the other 9 countries (5,923 rows,
+      20.7%) train in every split and are never tested.'
+    splits_dimensions_off_protocol: 'Accepted (Andrej, 2026-11-24): leave one country
+      out, 1 x 16, chosen over 3 x 3 country folds, whose repeats share most of their
+      training countries; the splits comment says why.'
 decisions:
-- Remove explicit future-state information
-- Future-year prediction in an unseen country
+- Test.csv's 7 countries added with labels recovered from the source table
+- Rows per country and file; the countries surveyed in 2014-2016 are each tested once
 ---
 
 # economic_well_being_prediction_challenge
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `Target`, scored with `rmse` on temporal splits by `year`. 21,454 rows and 12 features. Source: Zindi (2021).
+Regression of `Target`, scored with `rmse` on grouped splits by `country`. 28,618 rows and 16 features. Source: Zindi (2021).
 
-Built as `01a1ae48-ee3d-73ae-bf99-a2b037658716` on 2026-11-06. See [Build](#build).
+Built as `01a1ae48-ee3d-73ae-bf99-a2b037658716` on 2026-11-06, but `dataset.py` has changed since: it now gives checksum `v2:77496c3c1883740c9defa7843446578bb2f83984d04bbfc5c78170c894e0e01f`, so the build is stale. See [Build](#build).
 
 ## In brief
 
-**Question.** What is a survey cluster's wealth index in a later year and an unseen country?
+**Question.** What is a survey cluster's wealth index in a country without surveys of its own?
 
-**Use case.** An agency estimates historical local wealth where survey coverage is missing, to inform geographic targeting of support. A model trained on earlier surveys is evaluated on later surveys in another country.
+**Use case.** An agency maps local wealth today for the past survey years of a country without surveys of its own, filling the gaps between the more expensive surveys to inform geographic targeting of support. It holds every map layer as read today. A model trained on the surveys of other countries is evaluated on every survey of a held-out country.
 
-**One row.** One survey-cluster observation in the released training file: 21,454 rows, 18 countries, 1994–2016.
+**One row.** One survey cluster: 28,618 rows, 25 countries, 1994–2016; 21,454 from the released training file and 7,164 from the source's test file, whose labels are recovered from the source's cluster table.
 
 **Predicted.** The source's cluster-average, asset-related wealth index, from zero to one with higher values indicating greater wealth. It describes the survey year, not future income.
 
-**Known at prediction time.** Proposed inputs are the released survey year, urban/rural context, settlement history, water, population density, nighttime lights and distances. The represented years of water, population and lights remain unresolved. Known future settlement intervals are masked; survey-time alignment is not fully verified.
+**Known at prediction time.** The survey year, urban/rural context, built-up area by epoch through 2014, land cover, water, population density, nighttime lights and distances, each as read today: one read of each layer serves every row, whatever its survey year, as the source released them. The prediction point is today, so later reads are known.
 
-**What the test data stands for.** Temporal × unseen-country evaluation: sixteen country-year tests in 2014–2016. Each model trains only on earlier years and excludes every row from its test country. Thus both year and country differ from training.
+**What the test data stands for.** Leave one country out: each of the 16 countries surveyed in 2014-2016 is held out once with all its survey years, the other 24 countries train; the source's own 7 test countries are among the 25.
 
-**Our changes to the source.** We mask explicit future settlement periods and their not-built residual, omit four temporally unmapped land-cover snapshots, and impose forward-year country exclusions. We keep all rows and labels.
+**Our changes to the source.** We add the source's 7 test countries, with labels recovered from the source's cluster table, and keep the training file's rows and labels as released; 30 test rows whose cluster cannot be told apart from a neighbour's are left out. We hold out whole countries and drop the row ID. We keep the source's feature values, the later reads of the layers included.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The source's target formula, cross-survey harmonization and several covariate epochs are not documented. Myunghwan accepts calendar-year timing as an approximation; same-year endpoints are allowed. Later reconstructions of past states are allowed, but unknown represented epochs are not certified safe.
+> **Use case fit: approximate (a stand-in with a known gap).** The source documents neither its label (a pooled asset index, rescaled) nor several layer epochs; recovered test-file labels differ from the hidden ones by up to about 0.0013, the source's per-row deviation. Every layer is the read the agency holds today (Andrej, 2026-11-24). The test stands for a country never surveyed, not for the gap between two surveys of one country.
 
 ## Files in this folder
 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
-| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/economic_well_being_prediction_challenge.md`](../../../../curation/records/economic_well_being_prediction_challenge.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/economic_well_being_prediction_challenge.md`](../../../../curation/records/economic_well_being_prediction_challenge.md)
 - The original source: <https://zindi.world/competitions/aims-data-science-hackathon>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -110,15 +126,28 @@ Built as `01a1ae48-ee3d-73ae-bf99-a2b037658716` on 2026-11-06. See [Build](#buil
 `dataset.py` reads its raw files from `local-data-warehouse/economic_well_being_prediction_challenge/`. To get them:
 
 ```text
-Obtain Train.csv from the Economic Well-Being Prediction Challenge data page:
+Obtain Train.csv and Test.csv from the Economic Well-Being Prediction Challenge data page:
 https://zindi.world/competitions/economic-well-being-prediction-challenge/data
-Place it at local-data-warehouse/economic_well_being_prediction_challenge/Train.csv.
-The inspected curator-provided file is 5,829,604 bytes; SHA-256
-caf159ff5c84630ca3ec61793ab362073cfed396e348ecca12f60f4d13efa93c.
-Login or acceptance of the source terms may be needed. An independent publisher checksum is unavailable.
-No other competition files are read. The original AIMS task and the public rerun describe the same task;
-no byte-for-byte comparison against the original AIMS download has been made.
+(login or acceptance of the source terms may be needed; an independent publisher checksum is unavailable).
+Train.csv is 5,829,604 bytes, SHA-256 caf159ff5c84630ca3ec61793ab362073cfed396e348ecca12f60f4d13efa93c; public
+copies on GitHub have the same SHA-256 (checked 2026-11-21). Test.csv is 1,805,196 bytes, SHA-256
+e1d61ea14428f23643547b5a322ffc9015e4df0fc9bb798ec675cf2475c149ab, equal to the public copy at
+https://raw.githubusercontent.com/simiel/economic-well-being-prediction-competition/226eb21c40bb46b7d24319c0ee0a5b896e01ee4a/Test.csv
+Then the source's cluster table (Yeh et al. 2020, MIT) and the Natural Earth coastline, both at pinned commits:
+
+d=local-data-warehouse/economic_well_being_prediction_challenge && mkdir -p $d
+curl -sSfL -o $d/dhs_wealth_index.csv https://raw.githubusercontent.com/sustainlab-group/africa_poverty/cb769c744872e52c35f9c60e94b0dc2a696d389a/data/dhs_wealth_index.csv
+curl -sSfL -o $d/ne_50m_coastline.geojson https://raw.githubusercontent.com/nvkelso/natural-earth-vector/a726d63745ff99cf26a03ae1c7cfb0d4f12fa517/geojson/ne_50m_coastline.geojson
+
+dhs_wealth_index.csv is 5,073,675 bytes, SHA-256 e68c0466599a6fa3cfc6bcfaa9e5626276ed1e50f184deed7ed4f89c2e0efba8;
+ne_50m_coastline.geojson is 1,640,858 bytes, SHA-256
+271f1c4c1908312bac6b29d158ea1356544beafc129f260005300913aa5ea283. `_prepare_raw_files` checks all four hashes and
+writes Test_labelled.csv and join_check.csv next to them (no coordinates, no survey or cluster ids); the build
+reads only local files. The original AIMS task and the public rerun describe the same task; no byte-for-byte
+comparison against the original AIMS download has been made.
 ```
+
+On first use, `_prepare_raw_files` writes `Test_labelled.csv`, `join_check.csv` into the same folder.
 
 Then, from the repository root:
 
@@ -136,15 +165,16 @@ Only curators run `build`, when the dataset ships.
 | source | Zindi: https://zindi.world/competitions/aims-data-science-hackathon |
 | year | 2021 |
 | domain | social science |
-| license | CC BY-SA 4.0 |
-| data_tags | Non-IID, Temporal, Spatial |
+| license | CC BY-SA 4.0 (competition rules); the labels are cluster-level wealth indices from DHS surveys, whose terms of use bar commercial use; used for non-commercial academic research only. |
+| data_tags | Non-IID, Grouped, Spatial, UnseenGroup |
 | reference | Zindi2021EconomicWellBeing |
-| rows x columns | 21,454 x 13 |
+| rows x columns | 28,618 x 18 |
 | task.target | Target |
 | task.problem_type | regression |
 | task.metric | rmse |
-| task.split_regime | temporal_non_iid |
-| task.time_on | year |
+| task.split_regime | grouped_non_iid |
+| task.group_on | country |
+| task.group_labels | per_sample |
 
 **Metric**
 
@@ -157,9 +187,9 @@ Only curators run `build`, when the dataset ships.
 | definition | sqrt(mean((y - p)^2)) |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
 
-- categorical (1): `urban_or_rural`
+- categorical (2): `country`, `urban_or_rural`
 - string (0): none
 - datetime (0): none
 
@@ -182,135 +212,188 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 21,454 rows of the final frame (the oldest rows: the frame is sorted by `year`); 12 of 13 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 28,618 rows of the final frame (random rows: the frame is shuffled); 12 of 18 columns, the target first. Cells are cut at 40 characters.
 
-| Target | year | urban_or_rural | ghsl_water_surface | ghsl_built_pre_1975 | ghsl_built_1975_to_1990 | ghsl_built_1990_to_2000 | ghsl_built_2000_to_2014 | ghsl_not_built_up | ghsl_pop_density | nighttime_lights | dist_to_capital |
+| Target | country | year | urban_or_rural | ghsl_water_surface | ghsl_built_pre_1975 | ghsl_built_1975_to_1990 | ghsl_built_1990_to_2000 | ghsl_built_2000_to_2014 | ghsl_not_built_up | ghsl_pop_density | landcover_crops_fraction |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0.185907 | 1994 | Rural | 0 | 0.0237329 | 0.00196538 | nan | nan | nan | 38.398 | 1.58129 | 261.597 |
-| 0.314011 | 1994 | Urban | 0.0906178 | 0.301812 | 0 | nan | nan | nan | 358.91 | 12.6971 | 4.46936 |
-| 0.145829 | 1994 | Rural | 0 | 0.000943595 | 0.000351535 | nan | nan | nan | 20.0955 | 1.17452 | 296.081 |
-| 0.263937 | 1994 | Urban | 0 | 0.0237329 | 0.00196538 | nan | nan | nan | 38.398 | 1.58129 | 261.597 |
-| 0.145209 | 1994 | Rural | 0.134028 | 0.00186744 | 0.00378438 | nan | nan | nan | 20.6619 | 1.43503 | 292.31 |
+| 0.616366 | Nigeria | 2008 | Urban | 0.000341631 | 0.293853 | 0.144908 | 0.0397309 | 0.136431 | 0.384735 | 435.914 | 4.18952 |
+| 0.225305 | Lesotho | 2014 | Rural | 0 | 0 | 0 | 0 | 4.2865e-05 | 0.999957 | 0.206114 | 18.3624 |
+| 0.289198 | Cameroon | 2004 | Rural | 0 | 0.00167953 | 0.00546071 | 0.00113835 | 0 | 0.991721 | 8.43047 | 2.12163 |
+| 0.358282 | Tanzania | 2004 | Rural | 0 | 0 | 0 | 0 | 0 | 1 | 1.1919 | 40.0469 |
+| 0.181243 | Sierra Leone | 2013 | Rural | 0.000406174 | 0.0032171 | 0.00121157 | 0.00252168 | 0.00736384 | 0.98528 | 2.83238 | 6.56059 |
 
 ## Curation notes
 
-We start with the curator-provided Train.csv from Zindi's Economic Well-Being Prediction Challenge.
+We start with the curator-provided Train.csv and Test.csv from Zindi's Economic Well-Being Prediction Challenge, and recover the labels of Test.csv, which Zindi never released, from the source's cluster table.
 
-- Prediction point: estimate a survey-year index using proposed same-year or earlier-state inputs and a model fitted to earlier survey years from other countries. This annual reconstruction permits same-calendar-year epoch endpoints; ordering against actual interviews cannot be verified. Some represented epochs remain unresolved. Myunghwan permits later-created measurements of past states (2026-10-31) and resolved the timing review using calendar-year approximation (2026-11-02). Exact feature epochs remain unverified.
-- Target: Myunghwan accepted prediction of the supplied source index with approximate fit when approving ship (2026-11-02). Retain all 21,454 supplied labels unchanged. They are a cluster-average wealth index on 0–1, not currency or a poverty probability. Exact survey instruments, construction, harmonization and reference normalization remain unverified; do not attribute a particular survey programme or PCA formula.
-- Temporal repair: mask ghsl_built_1990_to_2000 before 2000 and ghsl_built_2000_to_2014 before 2014. Also mask ghsl_not_built_up before 2014: its through-2014 residual can reconstruct the combined future construction from the other fractions. Only calendar-year precision is available: through-2000 and through-2014 fields remain on their endpoint-year rows. In 2014 tests the two 2014-ending fields are missing throughout training but observed in test, an intentional coverage change.
-- Omit four landcover_* columns: the source links a 2015–2019 product without saying which epoch was sampled. This is future state for pre-2015 rows, and we cannot assign a safe epoch to later rows. No replacement historical extraction was available; preserve the original raw file for repair.
-- Potential leak, unresolved: retain population density, nighttime lights and water under Myunghwan's instruction to keep columns absent established leakage. Their represented epochs are unknown; population products have several historical epochs. Source searches and repeated-location checks do not establish temporal safety. If later-state content is established, mask affected years or replace with historical values; omit an unrepaired field. Later production alone is no exclusion.
-- Year-comparison check (2026-11-02): water, population and light means vary in all 52 consecutive observed-year comparisons within 18 countries. The fixed 2000–2014 construction layer also varies in all 52 because survey years can sample different clusters. Five exact distance-signature groups span 1994–1995 (25 rows), with all 14 numeric geographic inputs unchanged; these are location proxies, not verified cluster IDs. This check cannot date the source layers. Myunghwan resolved issue 1 with year-level approximation; an established actual later-state measurement would still require repair.
-- Decode the source’s R/U urban_or_rural codes to Rural/Urban categorical labels (CLEAN-12, current main). Meanings are unchanged; unknown codes raise. Keep it as a category: the source starter notebook explicitly uses it. Generic metadata boilerplate does not identify this field as prohibited. Country and ID are used only to construct and verify splits, then removed from the model frame; year remains a numeric time input. No country/year frequency encodings or full-data statistics are added.
-- Keep all rows and numeric scales. Original labels are unique, and repeated predictor profiles are not established collection errors. Country exclusion prevents same-country repeats crossing a split. Zero numeric measurements remain zero; the source documents no alternative missing-code convention.
-- Evaluation: temporal × unseen-country, as explicitly confirmed by Myunghwan (2026-11-02). The sixteen tests are each observed country-year cell in 2014–2016. Every training side uses strictly earlier years, excludes the test country entirely and exceeds half the full sample. This adds a future-time requirement to the source's unseen-country task. Training sides overlap; country-year tests are not independent repeated samples.
-- Candidate-specific override of SPLIT-3 (Myunghwan, 2026-11-02; preserved 2026-11-05): temporal × unseen-country is the explicitly accepted future-year survey-gap task in an unseen country. Either single-regime substitution changes that task (USE-1, Must, P3); this is a higher-ranked use-case override, not an ordinary waiver of a Must. The global rule is unchanged.
-- Temporal limitation: survey year orders label content. Target harmonization using future actual states cannot be ruled out. Label publication dates are absent, a limitation on literal historical deployment claims rather than an extra acceptance gate for this retrospective task. These are open limits, not accepted warnings or cleared leakage findings.
+- Test.csv joined (Andrej, 2026-11-24, review issue 9, option b): the competition's rows are the clusters with coordinates of the africa_poverty cluster table of Yeh et al. 2020 (`data/dhs_wealth_index.csv` of github.com/sustainlab-group/africa_poverty at commit cb769c74, MIT); Train.csv and Test.csv together hold 28,648 of its 28,649 clusters with coordinates, in 25 countries (cluster counts equal in 95 of 96 country-years; Nigeria 2008 rural has one source cluster more). `_prepare_raw_files` assigns each Zindi row one-to-one to a cluster within country x year x urban: the distance to the capital is recomputed at the table's coordinates on the WGS84 ellipsoid from a capital point fitted per country to Zindi's released distances (every pair agrees within 0.002 km), and the distance to Natural Earth's 50 m coastline (pinned commit), which differs from Zindi's shoreline by a median 2.4 km, only breaks near-ties. The coordinates, survey ids and cluster ids stay in the raw folder and are never shipped.
+- Recovered labels: Target = 0.245034 x wealthpooled + 0.343664, refit on Train.csv (21,336 rows within 0.01 of the first fit). On Train.csv the join finds the right cluster (recovered label within 0.0014 of Target) for 21,321 of 21,454 rows (99.38%); Zindi's Target is the rescaled index plus a per-row deviation spread over about +-0.0013 (sd 0.0007 and mean 0 in every country-year), so the recovered Test.csv labels differ from Zindi's hidden values by up to about 0.0013. The 133 Train.csv misses are 131 Central African Republic 1994-95 rows at shared locality points, which no distance separates, and one Cameroon 2004 pair 0.0012 km apart in distance to the capital.
+- The bar, matched to the data (Andrej, 2026-11-24): a match is accepted only where it is unambiguous, the distance to the capital within 0.002 km, no other cluster of the cell within 0.002 km of it as well, and no other cluster of the cell at the same coordinate. On Train.csv the accepted matches are 21,146 rows, and all 21,146 give the right cluster; the build stops if this share falls below 99.9%. Train.csv rows keep their released Target whatever the match. Of Test.csv's 7,194 rows, 7,164 are accepted and added (none at a shared coordinate; 30 rows of Angola, Benin, Burkina Faso, Uganda and Zimbabwe have a second cluster within 0.002 km and are left out). No source indicator column ships: the framework has no non-input column besides the target, the group and the metric's scoring columns, and a row's file follows from its country.
+- Prediction point: today. The agency maps the past survey years of a country without surveys of its own (the source's aim, "filling in the gaps between the more expensive surveys"), with a model fitted to the surveys of other countries, and holds every layer as read today. So every input is used as the source released it, one read of each layer on rows of every survey year, as the source itself did (its 2015-2019 land cover on rows from 1998). This replaces, for this use case, Myunghwan's rule of 2026-10-31 against fields that describe a later state than the survey (Andrej, 2026-11-24, review issue 4). Calendar-year timing stays the accepted approximation (Myunghwan, 2026-11-02).
+- Target: Myunghwan accepted prediction of the supplied source index with approximate fit when approving ship (2026-11-02). Retain all 21,454 supplied labels of Train.csv unchanged. They are a cluster-average wealth index on 0–1, not currency or a poverty probability: the source table's `wealthpooled` (an asset index from one principal component pooled over all surveys, averaged per cluster), min-max rescaled over the 25 countries, plus Zindi's per-row deviation of about +-0.0013 (review issue 9).
+- Potential leak, kept on purpose: the index was rescaled with one min-max over the whole release, rows of later years included (exactly one 0, Ethiopia 2005, and one 1, Nigeria 2013, both Train.csv rows; in those two countries' splits one test label sets an end of the scale). An affine rescale passes no row-level information; revisit if the source documents a per-survey normalisation.
+- Keep the four landcover_* columns (crops, urban, permanent and seasonal water within 10 km): the source links a 2015-2019 Copernicus product without saying which epoch was sampled, so for rows before 2015 they are a later read, which the agency mapping today holds. Built-up by epoch (GHSL, through 2014) is kept unmasked on every row for the same reason: it is today's layer, also where an epoch ends after the survey year.
+- Water, population density and nighttime lights are each one read used on every row; their represented epochs are not documented. Water describes stable water bodies, and at the same place it does not change between surveys. Potential leak, kept on purpose: ghsl_pop_density is most likely GHS-POP's 2015 epoch (it responds to 2000-2014 construction like the 2015-2019 land cover, log coefficient 0.46 against 0.32) and is used on the 24,196 rows before 2015; kept because the agency maps today with today's layers (review issue 4). Potential leak, kept on purpose: nighttime_lights is one read of an undated layer (values up to 383, so VIIRS from 2012 or a radiance-calibrated DMSP composite) used on rows from 1994 on; kept because the agency maps today with today's read (review issue 5). At the same place it does not change over 13 or more years (log change -0.016) while the target rises by +0.158, so it carries no later state of the label; revisit if the source names the product.
+- Same-place check (2026-11-21, on Train.csv): 1,204 pairs of clusters of one country at the same place (both distances within 0.3 km, pre-1975 built-up within 0.005), surveyed up to 22 years apart. Water, population and lights do not change between them (population and lights: mean log change within ±0.035 in every band of years), while the target rises by +0.158 at 13 or more years. The country-year means of these inputs differ in all 52 consecutive comparisons only because each survey samples different clusters; the fixed 2000-2014 layer differs in all 52 for the same reason.
+- dist_to_capital and dist_to_shoreline are distances in km to the official capital and to the shoreline: coastal clusters lie about 210 km from it in Côte d'Ivoire, 480 km in Nigeria and 350 km in Tanzania (Yamoussoukro, Abuja and Dodoma, not Abidjan, Lagos or Dar es Salaam), and within a few km in Senegal and Sierra Leone.
+- Decode the source’s R/U urban_or_rural codes to Rural/Urban categorical labels (CLEAN-12, current main). Meanings are unchanged; unknown codes raise. Keep it as a category: the source starter notebook explicitly uses it. Generic metadata boilerplate does not identify this field as prohibited. Country is the group, not an input; ID is dropped; year remains a numeric input. No country/year frequency encodings or full-data statistics are added.
+- Keep all rows and numeric scales. Original labels are unique, and repeated predictor profiles are not established collection errors. 129 rows share all inputs with a row of another target value: they are Central African Republic clusters of 1994-95, whose positions are locality points (41 exact location groups, 205 rows, some holding a Rural and an Urban row at one point); Test.csv has no clusters at a shared coordinate. Country groups keep them on one side. Zero numeric measurements remain zero; the source documents no alternative missing-code convention (population density is 0 on 2,262 rows, 2,250 of them with no built-up in any GHSL epoch).
+- Licence: the competition grants CC BY-SA 4.0. The labels are cluster means of DHS and Malaria Indicator Surveys (the competition does not name DHS; the africa_poverty cluster table of Yeh et al. 2020 holds the same index), and the DHS terms of use (https://dhsprogram.com/data/terms-of-use.cfm) bar any marketing or commercial venture and the redistribution of DHS micro-level data; the shipped rows are cluster-level indices, not micro-level data, and carry no coordinates, survey ids or cluster ids (the join of review issue 9 reads coordinates only in the raw folder). The benchmark uses the data for non-commercial academic research only (Andrej, 2026-11-24, review issue 10).
+- Scope: the inputs are mapped quantities aggregated to 5 km (built-up fractions, modelled population, calibrated lights, water, land-cover fractions) plus GIS distances, read as measurements of a place, as for covertype, the GeoAI NO2 challenge and AirQo; no raw reflectance is used to recognise image content (the reason crop-type datasets were rejected).
+- Metric: RMSE, the source's metric, scores the wealth level. With one country per split, one offset for the whole country is 0.1-53% of a split's squared error for a random forest (Lesotho lowest, Malawi highest; mean 17%, measured 2026-11-24 on the 16 splits), while geographic targeting acts on the ranking of places within a country, which RMSE scores only in part.
+- Temporal limitation: survey year orders label content. Target harmonization using future actual states cannot be ruled out. Label publication dates are absent, a limitation on literal historical deployment claims rather than an extra acceptance gate for this task, whose prediction point is today.
+- Split walk (the split decision tree, SPLIT-36, from the record's collection type Survey): [SUR.meets] the model estimates wealth for a country without surveys of its own, a place outside what the training surveys covered → Place step → [PLACE.several] the data holds 25 countries: yes → leaf L-PLACE.groups, Grouped · `UnseenGroup`, whole countries held out with all their survey years. The definition ships this leaf's split (Andrej, 2026-11-24), one country at a time for the 16 countries surveyed in 2014-2016 (6 of them the source's own test countries), as the source tests unseen countries over all years.
+- Time basis: UnseenGroup: survey clusters of 25 countries, 1994-2016; a test country stands for a country without surveys of its own, mapped for the years the other countries' surveys cover, which are all in training. Not tested: a later year.
 
 ## Splits
 
-Joint temporal × unseen-country evaluation: one test for each country observed in 2016, 2015 and 2014,
-newest year first, countries alphabetically within each year. For test country c in year t, training
-contains every row with year < t and country != c; test contains country == c and year == t.
-The backend stores Temporal metadata; the custom memberships enforce both chronology and whole-country
-exclusion. This is a joint evaluation regime. Each country-year test is stored as one temporal repeat with one fold. No test-country history is
-available to the learner. Country and opaque ID are dropped after index construction. All training
-sides exceed 50% of the original rows. Earlier rows are retained for training; not every row is tested.
-Annual survey content is ordered; publication delays remain unknown. The one-year horizon describes
-the test window, not an outcome follow-up duration. These tests share training data and countries.
+Leave one country out (Andrej, 2026-11-24): one split per country surveyed in 2014-2016 (Angola, Burkina Faso,
+DR Congo, Ethiopia, Ghana, Kenya, Lesotho, Malawi, Mali, Nigeria, Rwanda, Tanzania, Togo, Uganda, Zambia,
+Zimbabwe), each holding out that country with all its survey years and training on the other 24 countries.
+Sixteen splits with sixteen different test countries, chosen over 3 x 3 country folds, whose repeats share
+most of their training countries. The other 9 countries (Benin, Cameroon, Central African Republic, Cote
+d'Ivoire, Guinea, Mozambique, Senegal, Sierra Leone, Swaziland) train in every split and are never tested. Six
+of the source's own 7 test countries (Test.csv, 1998-2016; all but Benin) are tested here, each with its
+recovered labels; the source tests unseen countries over all years, and this split tests the same, one country
+at a time. The split decision tree reaches L-PLACE.groups for this survey (Survey: a country without surveys
+of its own lies outside what the training surveys covered; the place step: several countries). A test
+country's clusters of every year are on the test side; no later year is tested.
 
-16 repeat(s) x 1 fold(s) with seed 4267; train 14,231 to 19,133 rows, test 139 to 1,585 rows. Prediction horizon: 1 years.
+1 repeat(s) x 16 fold(s) with seed 4267; train 25,923 to 28,288 rows, test 330 to 2,695 rows.
 
 <details>
 <summary>Show all 16 splits</summary>
 
-| repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
-|---|---|---|---|---|---|---|---|
-| 0 | 0 | 19133 | 622 | 1994 | 2015 | 2016 | 2016 |
-| 1 | 0 | 19005 | 192 | 1994 | 2015 | 2016 | 2016 |
-| 2 | 0 | 18544 | 269 | 1994 | 2015 | 2016 | 2016 |
-| 3 | 0 | 17921 | 139 | 1994 | 2015 | 2016 | 2016 |
-| 4 | 0 | 15748 | 245 | 1994 | 2014 | 2015 | 2015 |
-| 5 | 0 | 17022 | 581 | 1994 | 2014 | 2015 | 2015 |
-| 6 | 0 | 17011 | 177 | 1994 | 2014 | 2015 | 2015 |
-| 7 | 0 | 15756 | 322 | 1994 | 2014 | 2015 | 2015 |
-| 8 | 0 | 17454 | 309 | 1994 | 2014 | 2015 | 2015 |
-| 9 | 0 | 16287 | 469 | 1994 | 2014 | 2015 | 2015 |
-| 10 | 0 | 14394 | 423 | 1994 | 2013 | 2014 | 2014 |
-| 11 | 0 | 14402 | 1585 | 1994 | 2013 | 2014 | 2014 |
-| 12 | 0 | 14803 | 399 | 1994 | 2013 | 2014 | 2014 |
-| 13 | 0 | 14231 | 140 | 1994 | 2013 | 2014 | 2014 |
-| 14 | 0 | 14706 | 183 | 1994 | 2013 | 2014 | 2014 |
-| 15 | 0 | 15069 | 201 | 1994 | 2013 | 2014 | 2014 |
+| repeat | fold | n_train | n_test |
+|---|---|---|---|
+| 0 | 0 | 27772 | 846 |
+| 0 | 1 | 27623 | 995 |
+| 0 | 2 | 27833 | 785 |
+| 0 | 3 | 26897 | 1721 |
+| 0 | 4 | 27199 | 1419 |
+| 0 | 5 | 25992 | 2626 |
+| 0 | 6 | 27824 | 794 |
+| 0 | 7 | 26661 | 1957 |
+| 0 | 8 | 27323 | 1295 |
+| 0 | 9 | 25923 | 2695 |
+| 0 | 10 | 27634 | 984 |
+| 0 | 11 | 26168 | 2450 |
+| 0 | 12 | 28288 | 330 |
+| 0 | 13 | 27045 | 1573 |
+| 0 | 14 | 27580 | 1038 |
+| 0 | 15 | 27431 | 1187 |
 
 </details>
 
+## Group structure
+
+One group is a country, held out with all its survey years: a test country stands for a country without surveys of its own, as in the source's test of 7 countries over 1998-2016, which the dataset holds too. The test countries are the 16 surveyed in 2014-2016, one per split.
+
+| field | value |
+|---|---|
+| group column | `country` |
+| labels | per_sample |
+| order inside a group | none |
+| prediction unit | row |
+| known about a group when predicting | none |
+
+| statistic | value |
+|---|---|
+| groups | 25 |
+| rows per group (min / median / max) | 231 / 984.0 / 2,695 |
+| largest group | 9.4% of the rows |
+| test groups per fold | 1 |
+| groups of two or more rows with a single label | 0.0% |
+| nearest neighbour in the same group | 84.6% of the rows (chance: 5.4%) |
+| label variance explained by the group | 0.15 (shuffled groups: 0.00) |
+
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+
 ## Decisions
 
-### 1. Remove explicit future-state information
+### 1. Test.csv's 7 countries added with labels recovered from the source table
 
-Mask by represented period, not production date.
+Zindi's Train.csv and Test.csv are the coordinate-bearing clusters of the africa_poverty table; each Zindi row is assigned to its cluster within country x year x urban by the recomputed distance to the capital, the shoreline breaking near-ties, and kept only where the match is unambiguous. On Train.csv the accepted matches give the released Target up to Zindi's per-row deviation (right_cluster: within 0.0014); Test.csv rows get the refit rescale of wealthpooled.
 
-| column | period_end | masked_rows |
-|---|---|---|
-| ghsl_built_1990_to_2000 | 2000 | 1364 |
-| ghsl_built_2000_to_2014 | 2014 | 15198 |
-| ghsl_not_built_up | 2014 | 15198 |
+| part | status | rows | right_cluster |
+|---|---|---|---|
+| test | accepted | 7164 | nan |
+| test | near-tie in the distance to the capital | 30 | nan |
+| train | accepted | 21146 | 21146 |
+| train | near-tie in the distance to the capital | 135 | 133 |
+| train | shared coordinate | 173 | 42 |
 
-### 2. Future-year prediction in an unseen country
+### 2. Rows per country and file; the countries surveyed in 2014-2016 are each tested once
 
-Every country-year test excludes all country history.
+Leave one country out over the 16 countries with a survey in 2014-2016, all their years.
 
-| test | year | country | train_rows | test_rows | country_overlap |
-|---|---|---|---|---|---|
-| 0 | 2016 | Ethiopia | 19133 | 622 | 0 |
-| 1 | 2016 | Ghana | 19005 | 192 | 0 |
-| 2 | 2016 | Malawi | 18544 | 269 | 0 |
-| 3 | 2016 | Tanzania | 17921 | 139 | 0 |
-| 4 | 2015 | Kenya | 15748 | 245 | 0 |
-| 5 | 2015 | Malawi | 17022 | 581 | 0 |
-| 6 | 2015 | Mali | 17011 | 177 | 0 |
-| 7 | 2015 | Nigeria | 15756 | 322 | 0 |
-| 8 | 2015 | Rwanda | 17454 | 309 | 0 |
-| 9 | 2015 | Tanzania | 16287 | 469 | 0 |
-| 10 | 2014 | Ghana | 14394 | 423 | 0 |
-| 11 | 2014 | Kenya | 14402 | 1585 | 0 |
-| 12 | 2014 | Lesotho | 14803 | 399 | 0 |
-| 13 | 2014 | Malawi | 14231 | 140 | 0 |
-| 14 | 2014 | Rwanda | 14706 | 183 | 0 |
-| 15 | 2014 | Togo | 15069 | 201 | 0 |
+| country | Test.csv | Train.csv | tested |
+|---|---|---|---|
+| Angola | 846 | 0 | True |
+| Benin | 740 | 0 | False |
+| Burkina Faso | 995 | 0 | True |
+| Cameroon | 0 | 1041 | False |
+| Central African Republic | 0 | 231 | False |
+| Cote d'Ivoire | 0 | 481 | False |
+| Democratic Republic of Congo | 785 | 0 | True |
+| Ethiopia | 0 | 1721 | True |
+| Ghana | 0 | 1419 | True |
+| Guinea | 0 | 593 | False |
+| Kenya | 0 | 2626 | True |
+| Lesotho | 0 | 794 | True |
+| Malawi | 0 | 1957 | True |
+| Mali | 0 | 1295 | True |
+| Mozambique | 0 | 879 | False |
+| Nigeria | 0 | 2695 | True |
+| Rwanda | 0 | 984 | True |
+| Senegal | 0 | 903 | False |
+| Sierra Leone | 0 | 785 | False |
+| Swaziland | 0 | 270 | False |
+| Tanzania | 0 | 2450 | True |
+| Togo | 0 | 330 | True |
+| Uganda | 1573 | 0 | True |
+| Zambia | 1038 | 0 | True |
+| Zimbabwe | 1187 | 0 | True |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 3 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
-- **info** `dataset_conflicting_duplicate_rows`: 129 row(s) (0.6%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
-- **info** `meta_time_horizon_unit`: `time_horizon_unit='years'` implies calendar time, but `time_on='year'` has dtype int64, so the horizon cannot be cross-checked. (hint: Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use `time_horizon_unit='steps'` for a plain numeric time index.)
-- **info** `economic_valid_time_country_verified`: All explicit future-period cells masked; all 16 tests strictly later and wholly country-disjoint. Unspecified feature epochs remain unverified; annual endpoint alignment does not establish interview-time order.
+- **info** `dataset_conflicting_duplicate_rows`: 129 row(s) (0.5%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+
+Accepted on purpose:
+
+- `groups_test_groups_few`: Accepted (Andrej, 2026-11-24): a test country stands for a country without surveys of its own, so one whole country per split is the task (16 test countries of 25). The signal carries over to unseen countries: LightGBM R^2 0.60 on the 16 held-out countries against 0.78 on a random split (group probe), and a random forest beats night lights alone on 15 of the 16 shipped splits (2026-11-24).
+- `splits_rows_never_tested`: Accepted (Andrej, 2026-11-24): the test countries are the 16 surveyed in 2014-2016, one per split; the other 9 countries (5,923 rows, 20.7%) train in every split and are never tested.
+- `splits_dimensions_off_protocol`: Accepted (Andrej, 2026-11-24): leave one country out, 1 x 16, chosen over 3 x 3 country folds, whose repeats share most of their training countries; the splits comment says why.
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (13 rows)</summary>
+<summary>Show the table (18 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| country | category | 0 | 0 | 25 | Nigeria, Kenya, Tanzania, Malawi, Ethiopia, Uganda, Ghana, Mali, Zimbabwe, Came… |
 | urban_or_rural | category | 0 | 0 | 2 | Rural, Urban |
-| ghsl_built_2000_to_2014 | float64 | 15198 | 70.84 | 5362 | 0.0, 0.0109, 0.0014, 0.0001, 0.0004, 0.0005, 0.0001, 0.0018, 0.0616, 0.001 |
-| ghsl_not_built_up | float64 | 15198 | 70.84 | 5548 | 1.0, 0.9996, 0.9819, 0.9017, 0.9984, 0.9991, 0.9995, 0.9998, 0.9969, 0.5189 |
-| ghsl_built_1990_to_2000 | float64 | 1364 | 6.36 | 16063 | 0.0, 0.0512, 0.0003, 0.0001, 0.0091, 0.0002, 0.0001, 0.0016, 0.0044, 0.0142 |
-| ghsl_water_surface | float64 | 0 | 0 | 4354 | 0.0, 0.0906, 0.0985, 0.134, 0.0109, 0.02, 0.0005, 0.0371, 0.0158, 0.1639 |
-| ghsl_built_pre_1975 | float64 | 0 | 0 | 13311 | 0.0, 0.3018, 0.0209, 0.0237, 0.0507, 0.0407, 0.0164, 0.0001, 0.0738, 0.0023 |
-| ghsl_built_1975_to_1990 | float64 | 0 | 0 | 15741 | 0.0, 0.0009, 0.002, 0.0117, 0.0122, 0.0003, 0.0707, 0.0007, 0.004, 0.0038 |
-| ghsl_pop_density | float64 | 0 | 0 | 19882 | 0.0, 358.9101, 44.3966, 38.398, 35.611, 60.9827, 20.4011, 12.4686, 40.5331, 13.… |
-| nighttime_lights | float64 | 0 | 0 | 11255 | 0.0, 12.6971, 0.6865, 1.5813, 1.2285, 1.311, 2.1482, 1.5654, 0.9671, 1.435 |
-| dist_to_capital | float64 | 0 | 0 | 21290 | 4.4694, 278.6301, 261.5968, 369.8154, 303.8057, 83.0055, 430.6334, 307.522, 304… |
-| dist_to_shoreline | float64 | 0 | 0 | 21290 | 969.5297, 1223.3273, 895.4535, 682.5467, 685.1395, 899.9594, 729.6785, 660.5836… |
-| Target | float64 | 0 | 0 | 21454 | 0.1859, 0.314, 0.1458, 0.2639, 0.1452, 0.3719, 0.1606, 0.206, 0.1367, 0.2989 |
-| year | int64 | 0 | 0 | 19 | 2014, 2011, 2008, 2015, 2010, 2013, 2012, 2016, 2009, 2003 |
+| ghsl_water_surface | float64 | 0 | 0 | 6102 | 0.0, 0.0906, 0.0985, 0.0109, 0.134, 0.02, 0.0371, 0.0005, 0.0505, 0.0158 |
+| ghsl_built_pre_1975 | float64 | 0 | 0 | 17405 | 0.0, 0.3018, 0.0209, 0.0237, 0.0164, 0.0407, 0.0507, 0.0738, 0.0001, 0.0429 |
+| ghsl_built_1975_to_1990 | float64 | 0 | 0 | 20601 | 0.0, 0.0009, 0.002, 0.0122, 0.0003, 0.0707, 0.0117, 0.0007, 0.004, 0.0088 |
+| ghsl_built_1990_to_2000 | float64 | 0 | 0 | 22631 | 0.0, 0.0726, 0.0013, 0.0021, 0.0003, 0.0249, 0.0136, 0.0059, 0.0059, 0.0419 |
+| ghsl_built_2000_to_2014 | float64 | 0 | 0 | 24004 | 0.0, 0.0129, 0.0009, 0.0048, 0.0125, 0.0694, 0.0006, 0.0035, 0.008, 0.001 |
+| ghsl_not_built_up | float64 | 0 | 0 | 25248 | 1.0, 0.522, 0.976, 0.9674, 0.9743, 0.8433, 0.9988, 0.9255, 0.8371, 0.7907 |
+| ghsl_pop_density | float64 | 0 | 0 | 26173 | 0.0, 358.9101, 44.3966, 38.398, 40.5331, 35.611, 60.9827, 20.4011, 12.4686, 29.… |
+| landcover_crops_fraction | float64 | 0 | 0 | 28416 | 1.9923, 0.0, 8.1643, 15.6315, 14.6089, 12.0862, 9.6488, 17.9384, 11.7873, 15.77… |
+| landcover_urban_fraction | float64 | 0 | 0 | 27887 | 0.0, 44.4383, 9.4504, 7.7564, 14.7865, 14.3596, 3.7043, 8.2476, 4.3022, 3.7017 |
+| landcover_water_permanent_10km_fraction | float64 | 0 | 0 | 15179 | 0.0, 4.8691, 0.0817, 0.377, 0.2425, 5.266, 0.7517, 0.9136, 7.2495, 0.2932 |
+| landcover_water_seasonal_10km_fraction | float64 | 0 | 0 | 23636 | 0.0, 1.7199, 0.4529, 0.6447, 0.0032, 0.4626, 0.0005, 0.0006, 0.0466, 1.8641 |
+| nighttime_lights | float64 | 0 | 0 | 14466 | 0.0, 12.6971, 0.6865, 1.5813, 2.1482, 1.311, 1.2285, 1.5654, 0.9671, 0.2251 |
+| dist_to_capital | float64 | 0 | 0 | 28454 | 4.4694, 278.6301, 261.5968, 307.522, 430.6334, 303.8057, 83.0055, 369.8154, 304… |
+| dist_to_shoreline | float64 | 0 | 0 | 28454 | 969.5297, 1223.3273, 895.4535, 660.5836, 729.6785, 685.1395, 899.9594, 682.5467… |
+| Target | float64 | 0 | 0 | 28617 | 0.7193, 0.3084, 0.523, 0.6257, 0.0337, 0.2189, 0.153, 0.1329, 0.1403, 0.5682 |
+| year | int64 | 0 | 0 | 19 | 2014, 2011, 2015, 2010, 2013, 2012, 2008, 2016, 2009, 2006 |
 
 </details>
 
@@ -318,27 +401,31 @@ Every country-year test excludes all country history.
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | 0.666 | 0.457 | 0.038 | 0.019 | log1p | -2043.5 | -3268.6 | lognormal |
+| 0 | 0 | 0 | 0.73 | 0.523 | 0.039 | 0.02 | log1p | -3601.7 | -11352.8 | lognormal |
 
 ### Numeric features
 
 <details>
-<summary>Show the table (12 rows)</summary>
+<summary>Show the table (16 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| year | 21454 | 2010.06 | 4.79958 | 1994 | 2016 |
-| ghsl_water_surface | 21454 | 0.0282588 | 0.0974905 | 0 | 0.969956 |
-| ghsl_built_pre_1975 | 21454 | 0.0382224 | 0.113562 | 0 | 0.877116 |
-| ghsl_built_1975_to_1990 | 21454 | 0.0286437 | 0.0773675 | 0 | 0.68501 |
-| ghsl_built_1990_to_2000 | 20090 | 0.0123881 | 0.0322797 | 0 | 0.515534 |
-| ghsl_built_2000_to_2014 | 6256 | 0.0164532 | 0.0399901 | 0 | 0.649159 |
-| ghsl_not_built_up | 6256 | 0.905972 | 0.202185 | 0.0102898 | 1 |
-| ghsl_pop_density | 21454 | 95.7568 | 209.705 | 0 | 1741.26 |
-| nighttime_lights | 21454 | 8.50654 | 21.0904 | 0 | 382.933 |
-| dist_to_capital | 21454 | 289.722 | 238.812 | 0.105306 | 1897.35 |
-| dist_to_shoreline | 21454 | 402.609 | 321.517 | 0.11208 | 1769.52 |
-| Target | 21454 | 0.350736 | 0.194376 | 0 | 1 |
+| year | 28618 | 2010.27 | 4.55507 | 1994 | 2016 |
+| ghsl_water_surface | 28618 | 0.0269854 | 0.0951832 | 0 | 0.9911 |
+| ghsl_built_pre_1975 | 28618 | 0.0407348 | 0.118094 | 0 | 0.894608 |
+| ghsl_built_1975_to_1990 | 28618 | 0.0277642 | 0.0728322 | 0 | 0.68501 |
+| ghsl_built_1990_to_2000 | 28618 | 0.0136771 | 0.0341543 | 0 | 0.515534 |
+| ghsl_built_2000_to_2014 | 28618 | 0.0183299 | 0.0402042 | 0 | 0.649159 |
+| ghsl_not_built_up | 28618 | 0.872509 | 0.242156 | 0.00085934 | 1 |
+| ghsl_pop_density | 28618 | 94.7125 | 209.457 | 0 | 1902.88 |
+| landcover_crops_fraction | 28618 | 21.1072 | 16.3107 | 0 | 80.0649 |
+| landcover_urban_fraction | 28618 | 14.0339 | 23.8639 | 0 | 98.7841 |
+| landcover_water_permanent_10km_fraction | 28618 | 1.66287 | 7.13876 | 0 | 99.164 |
+| landcover_water_seasonal_10km_fraction | 28618 | 0.694467 | 2.38471 | 0 | 56.2016 |
+| nighttime_lights | 28618 | 9.18167 | 25.736 | 0 | 403.456 |
+| dist_to_capital | 28618 | 300.707 | 269.087 | 0.105306 | 1908.11 |
+| dist_to_shoreline | 28618 | 473.749 | 355.804 | 0.11208 | 1769.52 |
+| Target | 28618 | 0.345418 | 0.198482 | 0 | 1 |
 
 </details>
 
@@ -346,8 +433,13 @@ Every country-year test excludes all country history.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| urban_or_rural | 1 | Rural | 14061 | 65.54 |
-| urban_or_rural | 2 | Urban | 7393 | 34.46 |
+| country | 1 | Nigeria | 2695 | 9.42 |
+| country | 2 | Kenya | 2626 | 9.18 |
+| country | 3 | Tanzania | 2450 | 8.56 |
+| country | 4 | Malawi | 1957 | 6.84 |
+| country | 5 | Ethiopia | 1721 | 6.01 |
+| urban_or_rural | 1 | Rural | 18669 | 65.24 |
+| urban_or_rural | 2 | Urban | 9949 | 34.76 |
 
 ## Build
 
@@ -360,3 +452,4 @@ Every country-year test excludes all country history.
 | data_foundry_version | 0.0.5 |
 | git_sha | b4ac95ff0f853de54117555ae24bd013c3630fd4 |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
+| stale | yes: the definition now gives checksum `v2:77496c3c1883740c9defa7843446578bb2f83984d04bbfc5c78170c894e0e01f` |

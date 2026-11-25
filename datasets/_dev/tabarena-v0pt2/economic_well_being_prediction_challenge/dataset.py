@@ -2,72 +2,257 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.bundle_checks import CheckResult
+from data_foundry.time_basis import TimeBasis
 from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Grouping,
     Metric,
     Source,
     SplitPlan,
     TaskSummary,
-    Temporal,
     decode,
     drop_columns,
 )
 
 CODE_LABELS = {"urban_or_rural": {"R": "Rural", "U": "Urban"}}
 
-PERIOD_ENDS = {
-    "ghsl_built_1990_to_2000": 2000,
-    "ghsl_built_2000_to_2014": 2014,
-    "ghsl_not_built_up": 2014,
-}
-LAND_COVER = (
-    "landcover_crops_fraction",
-    "landcover_urban_fraction",
-    "landcover_water_permanent_10km_fraction",
-    "landcover_water_seasonal_10km_fraction",
+# The countries surveyed in 2014-2016, the newest survey years: each is held out once, with all its survey years.
+TEST_COUNTRIES = (
+    "Angola",
+    "Burkina Faso",
+    "Democratic Republic of Congo",
+    "Ethiopia",
+    "Ghana",
+    "Kenya",
+    "Lesotho",
+    "Malawi",
+    "Mali",
+    "Nigeria",
+    "Rwanda",
+    "Tanzania",
+    "Togo",
+    "Uganda",
+    "Zambia",
+    "Zimbabwe",
 )
-TEST_YEARS = (2016, 2015, 2014)
+
+# The raw files, pinned: Zindi's Train.csv and Test.csv, the source's cluster table and the shoreline.
+SOURCE_TABLE = "dhs_wealth_index.csv"
+COASTLINE = "ne_50m_coastline.geojson"
+RAW_SHA256 = {
+    "Train.csv": "caf159ff5c84630ca3ec61793ab362073cfed396e348ecca12f60f4d13efa93c",
+    "Test.csv": "e1d61ea14428f23643547b5a322ffc9015e4df0fc9bb798ec675cf2475c149ab",
+    SOURCE_TABLE: "e68c0466599a6fa3cfc6bcfaa9e5626276ed1e50f184deed7ed4f89c2e0efba8",
+    COASTLINE: "271f1c4c1908312bac6b29d158ea1356544beafc129f260005300913aa5ea283",
+}
+# Written by `_prepare_raw_files`: Test.csv's accepted rows with their recovered Target, and the join's per-row check
+# (no coordinates, no survey or cluster ids).
+LABELLED_TEST = "Test_labelled.csv"
+JOIN_CHECK = "join_check.csv"
+
+# The join (review issue 9): Zindi's distance to the capital is recomputed exactly at the source table's coordinates
+# (WGS84 ellipsoid, from a capital point fitted per country); the shoreline distance (Natural Earth) differs from
+# Zindi's by kilometres, so it only breaks near-ties. A match is accepted when it is unambiguous: the distance to the
+# capital agrees within CAPITAL_TOL_KM, no other cluster of the cell agrees as well, and no other cluster of the cell
+# sits at the same coordinate.
+CAPITAL_TOL_KM = 0.002
+COST_SCALE_KM = {"capital": 0.002, "shoreline": 3.0}
+RIGHT_CLUSTER = 0.0014  # Zindi's Target is the rescaled index plus a per-row deviation of about +-0.0013
+CAPITAL_START = {  # the official capitals, the start of the fit
+    "Angola": (-8.84, 13.23),
+    "Benin": (6.50, 2.60),
+    "Burkina Faso": (12.37, -1.53),
+    "Cameroon": (3.87, 11.52),
+    "Central African Republic": (4.37, 18.56),
+    "Cote d'Ivoire": (6.82, -5.28),
+    "Democratic Republic of Congo": (-4.32, 15.31),
+    "Ethiopia": (9.03, 38.74),
+    "Ghana": (5.56, -0.20),
+    "Guinea": (9.64, -13.58),
+    "Kenya": (-1.29, 36.82),
+    "Lesotho": (-29.31, 27.48),
+    "Malawi": (-13.96, 33.79),
+    "Mali": (12.64, -8.00),
+    "Mozambique": (-25.97, 32.57),
+    "Nigeria": (9.08, 7.40),
+    "Rwanda": (-1.95, 30.06),
+    "Senegal": (14.72, -17.47),
+    "Sierra Leone": (8.48, -13.23),
+    "Swaziland": (-26.31, 31.14),
+    "Tanzania": (-6.16, 35.75),
+    "Togo": (6.13, 1.22),
+    "Uganda": (0.35, 32.58),
+    "Zambia": (-15.39, 28.32),
+    "Zimbabwe": (-17.83, 31.05),
+}
+
+
+def _sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as f:
+        for block in iter(lambda: f.read(1 << 20), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def _haversine_km(lat1, lon1, lat2, lon2):
+    lat1, lon1, lat2, lon2 = map(np.radians, (lat1, lon1, lat2, lon2))
+    a = np.sin((lat2 - lat1) / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin((lon2 - lon1) / 2) ** 2
+    return 2 * 6371.0088 * np.arcsin(np.sqrt(a))
+
+
+def _ellipsoid_km(lat1, lon1, lat2, lon2):
+    """Lambert's formula for the WGS84 ellipsoid (agrees with Zindi's distance to the capital within 0.002 km)."""
+    a, f = 6378.137, 1 / 298.257223563
+    b1 = np.arctan((1 - f) * np.tan(np.radians(lat1)))
+    b2 = np.arctan((1 - f) * np.tan(np.radians(lat2)))
+    dl = np.radians(lon2 - lon1)
+    sig = 2 * np.arcsin(np.sqrt(np.sin((b2 - b1) / 2) ** 2 + np.cos(b1) * np.cos(b2) * np.sin(dl / 2) ** 2))
+    sig = np.maximum(sig, 1e-12)
+    p, q = (b1 + b2) / 2, (b2 - b1) / 2
+    x = (sig - np.sin(sig)) * np.sin(p) ** 2 * np.cos(q) ** 2 / np.cos(sig / 2) ** 2
+    y = (sig + np.sin(sig)) * np.cos(p) ** 2 * np.sin(q) ** 2 / np.sin(sig / 2) ** 2
+    return a * (sig - f / 2 * (x + y))
+
+
+def _shoreline_km(lat: np.ndarray, lon: np.ndarray, geojson: Path) -> np.ndarray:
+    """Distance to the Natural Earth coastline, its segments densified to 0.1 km."""
+    from sklearn.neighbors import BallTree
+
+    pts = []
+    for feature in json.loads(geojson.read_text())["features"]:
+        g = feature["geometry"]
+        for line in g["coordinates"] if g["type"] == "MultiLineString" else [g["coordinates"]]:
+            a = np.asarray(line, dtype=float)
+            if len(a) > 1:
+                n = np.maximum(1, np.ceil(_haversine_km(a[:-1, 1], a[:-1, 0], a[1:, 1], a[1:, 0]) / 0.1)).astype(int)
+                for i in range(len(a) - 1):
+                    pts.append(a[i] + np.linspace(0, 1, n[i], endpoint=False)[:, None] * (a[i + 1] - a[i]))
+            pts.append(a[-1:])
+    coast = np.vstack(pts)
+    coast = coast[(coast[:, 0] > -40) & (coast[:, 0] < 70) & (coast[:, 1] > -50) & (coast[:, 1] < 45)]
+    _, nn = BallTree(np.radians(coast[:, ::-1]), metric="haversine").query(np.radians(np.c_[lat, lon]), k=30)
+    return _ellipsoid_km(lat[:, None], lon[:, None], coast[nn, 1], coast[nn, 0]).min(axis=1)
+
+
+def _fit_capitals(zindi: pd.DataFrame, src: pd.DataFrame) -> dict[str, tuple[float, float]]:
+    """Per country, the capital point whose distances, sorted within each country x year x urban cell, best match
+    Zindi's released distances (assignment-free).
+    """
+    from scipy.optimize import minimize
+
+    keys = ["country", "year", "urban_or_rural"]
+    cells_z = {k: np.sort(g["dist_to_capital"].to_numpy()) for k, g in zindi.groupby(keys)}
+    cells_s = {k: g[["LATNUM", "LONGNUM"]].to_numpy() for k, g in src.groupby(keys)}
+    capitals = {}
+    for country, start in CAPITAL_START.items():
+        cells = [k for k in cells_z if k[0] == country and k in cells_s]
+
+        def loss(p, cells=cells):
+            total = 0.0
+            for k in cells:
+                a = cells_z[k]
+                b = np.sort(_ellipsoid_km(cells_s[k][:, 0], cells_s[k][:, 1], p[0], p[1]))
+                m = min(len(a), len(b))
+                total += np.abs(a[:m] - b[:m]).sum()
+            return total
+
+        fit = minimize(
+            loss, np.array(start), method="Nelder-Mead", options={"xatol": 1e-6, "fatol": 1e-6, "maxiter": 4000}
+        )
+        capitals[country] = (float(fit.x[0]), float(fit.x[1]))
+    return capitals
+
+
+def _join(zindi: pd.DataFrame, src: pd.DataFrame) -> pd.DataFrame:
+    """Assign Zindi's rows one-to-one to the source table's clusters within country x year x urban (the distance to
+    the capital decides, the shoreline breaks near-ties) and flag the ambiguous matches.
+    """
+    from scipy.optimize import linear_sum_assignment
+
+    keys = ["country", "year", "urban_or_rural"]
+    cells_s = dict(iter(src.groupby(keys)))
+    out = []
+    for k, g in zindi.groupby(keys):
+        s = cells_s.get(k)
+        if s is None:
+            out += [
+                {"row": i, "wealthpooled": np.nan, "capital_gap_km": np.nan, "near_tie": False, "shared": False}
+                for i in g.index
+            ]
+            continue
+        dc = np.abs(g["dist_to_capital"].to_numpy()[:, None] - s["capital_km"].to_numpy()[None, :])
+        ds = np.abs(g["dist_to_shoreline"].to_numpy()[:, None] - s["shoreline_km"].to_numpy()[None, :])
+        ri, ci = linear_sum_assignment(dc / COST_SCALE_KM["capital"] + ds / COST_SCALE_KM["shoreline"])
+        candidates = (dc <= CAPITAL_TOL_KM).sum(axis=1)
+        place = s["LATNUM"].round(6).astype(str) + "," + s["LONGNUM"].round(6).astype(str)
+        shared = place.map(place.value_counts()).to_numpy() > 1
+        for r, c in zip(ri, ci):
+            out.append(
+                {
+                    "row": g.index[r],
+                    "wealthpooled": s["wealthpooled"].iloc[c],
+                    "capital_gap_km": dc[r, c],
+                    "near_tie": candidates[r] > 1,
+                    "shared": bool(shared[c]),
+                }
+            )
+        out += [
+            {"row": g.index[r], "wealthpooled": np.nan, "capital_gap_km": np.nan, "near_tie": False, "shared": False}
+            for r in sorted(set(range(len(g))) - set(ri))
+        ]
+    m = pd.DataFrame(out).set_index("row").sort_index(kind="stable")
+    m["accepted"] = (m["capital_gap_km"] <= CAPITAL_TOL_KM) & ~m["near_tie"] & ~m["shared"]
+    return m
 
 
 class EconomicWellBeingPredictionChallenge(AbstractCuratedDataset):
     task_summary = TaskSummary(
-        question="What is a survey cluster's wealth index in a later year and an unseen country?",
+        question="What is a survey cluster's wealth index in a country without surveys of its own?",
         use_case=(
-            "An agency estimates historical local wealth where survey coverage is missing, to inform geographic "
-            "targeting of support. A model trained on earlier surveys is evaluated on later surveys in another country."
+            "An agency maps local wealth today for the past survey years of a country without surveys of its own, "
+            "filling the gaps between the more expensive surveys to inform geographic targeting of support. It holds "
+            "every map layer as read today. A model trained on the surveys of other countries is evaluated on every "
+            "survey of a held-out country."
         ),
-        row="One survey-cluster observation in the released training file: 21,454 rows, 18 countries, 1994–2016.",
+        row=(
+            "One survey cluster: 28,618 rows, 25 countries, 1994–2016; 21,454 from the released training file and "
+            "7,164 from the source's test file, whose labels are recovered from the source's cluster table."
+        ),
         predicted=(
             "The source's cluster-average, asset-related wealth index, from zero to one with higher values "
             "indicating greater wealth. It describes the survey year, not future income."
         ),
         known=(
-            "Proposed inputs are the released survey year, urban/rural context, settlement history, water, population "
-            "density, nighttime lights and distances. The represented years of water, population and lights remain "
-            "unresolved. Known future settlement intervals are masked; survey-time alignment is not fully verified."
+            "The survey year, urban/rural context, built-up area by epoch through 2014, land cover, water, population "
+            "density, nighttime lights and distances, each as read today: one read of each layer serves every row, "
+            "whatever its survey year, as the source released them. The prediction point is today, so later reads are "
+            "known."
         ),
         split=(
-            "Temporal × unseen-country evaluation: sixteen country-year tests in 2014–2016. Each model trains "
-            "only on earlier years and excludes every "
-            "row from its test country. Thus both year and country differ from training."
+            "Leave one country out: each of the 16 countries surveyed in 2014-2016 is held out once with all its "
+            "survey years, the other 24 countries train; the source's own 7 test countries are among the 25."
         ),
         changes=(
-            "We mask explicit future settlement periods and their not-built residual, omit four temporally "
-            "unmapped land-cover snapshots, and impose forward-year country exclusions. We keep all rows and labels."
+            "We add the source's 7 test countries, with labels recovered from the source's cluster table, and keep "
+            "the training file's rows and labels as released; 30 test rows whose cluster cannot be told apart from a "
+            "neighbour's are left out. We hold out whole countries and drop the row ID. We keep the source's feature "
+            "values, the later reads of the layers included."
         ),
         fit="approximate",
         fit_reason=(
-            "The source's target formula, cross-survey harmonization and several covariate epochs are not "
-            "documented. Myunghwan accepts calendar-year timing as an approximation; same-year endpoints are allowed. "
-            "Later reconstructions "
-            "of past states are allowed, but unknown represented epochs are not certified safe."
+            "The source documents neither its label (a pooled asset index, rescaled) nor several layer epochs; "
+            "recovered test-file labels differ from the hidden ones by up to about 0.0013, the source's per-row "
+            "deviation. Every layer is the read the agency holds today (Andrej, 2026-11-24). The test stands for a "
+            "country never surveyed, not for the gap between two surveys of one country."
         ),
     )
 
@@ -77,7 +262,10 @@ class EconomicWellBeingPredictionChallenge(AbstractCuratedDataset):
             role="publication",
             platform="Zindi",
             url="https://zindi.world/competitions/aims-data-science-hackathon",
-            license="CC BY-SA 4.0",
+            license=(
+                "CC BY-SA 4.0 (competition rules); the labels are cluster-level wealth indices from DHS surveys, whose "
+                "terms of use bar commercial use; used for non-commercial academic research only."
+            ),
             year="2021",
             bibtex=r"""
         @misc{Zindi2021EconomicWellBeing,
@@ -92,30 +280,53 @@ class EconomicWellBeingPredictionChallenge(AbstractCuratedDataset):
     )
     domain = "social science"
     data_tags = ("Spatial",)
+    split_leaf = "L-PLACE.groups"
+    time_basis = TimeBasis(
+        "UnseenGroup",
+        "survey clusters of 25 countries, 1994-2016; a test country stands for a country without surveys of its own, "
+        "mapped for the years the other countries' surveys cover, which are all in training. Not tested: a later year.",
+    )
     download_description = """
-        Obtain Train.csv from the Economic Well-Being Prediction Challenge data page:
+        Obtain Train.csv and Test.csv from the Economic Well-Being Prediction Challenge data page:
         https://zindi.world/competitions/economic-well-being-prediction-challenge/data
-        Place it at local-data-warehouse/economic_well_being_prediction_challenge/Train.csv.
-        The inspected curator-provided file is 5,829,604 bytes; SHA-256
-        caf159ff5c84630ca3ec61793ab362073cfed396e348ecca12f60f4d13efa93c.
-        Login or acceptance of the source terms may be needed. An independent publisher checksum is unavailable.
-        No other competition files are read. The original AIMS task and the public rerun describe the same task;
-        no byte-for-byte comparison against the original AIMS download has been made.
+        (login or acceptance of the source terms may be needed; an independent publisher checksum is unavailable).
+        Train.csv is 5,829,604 bytes, SHA-256 caf159ff5c84630ca3ec61793ab362073cfed396e348ecca12f60f4d13efa93c; public
+        copies on GitHub have the same SHA-256 (checked 2026-11-21). Test.csv is 1,805,196 bytes, SHA-256
+        e1d61ea14428f23643547b5a322ffc9015e4df0fc9bb798ec675cf2475c149ab, equal to the public copy at
+        https://raw.githubusercontent.com/simiel/economic-well-being-prediction-competition/226eb21c40bb46b7d24319c0ee0a5b896e01ee4a/Test.csv
+        Then the source's cluster table (Yeh et al. 2020, MIT) and the Natural Earth coastline, both at pinned commits:
+
+        d=local-data-warehouse/economic_well_being_prediction_challenge && mkdir -p $d
+        curl -sSfL -o $d/dhs_wealth_index.csv https://raw.githubusercontent.com/sustainlab-group/africa_poverty/cb769c744872e52c35f9c60e94b0dc2a696d389a/data/dhs_wealth_index.csv
+        curl -sSfL -o $d/ne_50m_coastline.geojson https://raw.githubusercontent.com/nvkelso/natural-earth-vector/a726d63745ff99cf26a03ae1c7cfb0d4f12fa517/geojson/ne_50m_coastline.geojson
+
+        dhs_wealth_index.csv is 5,073,675 bytes, SHA-256 e68c0466599a6fa3cfc6bcfaa9e5626276ed1e50f184deed7ed4f89c2e0efba8;
+        ne_50m_coastline.geojson is 1,640,858 bytes, SHA-256
+        271f1c4c1908312bac6b29d158ea1356544beafc129f260005300913aa5ea283. `_prepare_raw_files` checks all four hashes and
+        writes Test_labelled.csv and join_check.csv next to them (no coordinates, no survey or cluster ids); the build
+        reads only local files. The original AIMS task and the public rerun describe the same task; no byte-for-byte
+        comparison against the original AIMS download has been made.
     """
     curation_comments = """
-        We start with the curator-provided Train.csv from Zindi's Economic Well-Being Prediction Challenge.
+        We start with the curator-provided Train.csv and Test.csv from Zindi's Economic Well-Being Prediction Challenge, and recover the labels of Test.csv, which Zindi never released, from the source's cluster table.
 
-        - Prediction point: estimate a survey-year index using proposed same-year or earlier-state inputs and a model fitted to earlier survey years from other countries. This annual reconstruction permits same-calendar-year epoch endpoints; ordering against actual interviews cannot be verified. Some represented epochs remain unresolved. Myunghwan permits later-created measurements of past states (2026-10-31) and resolved the timing review using calendar-year approximation (2026-11-02). Exact feature epochs remain unverified.
-        - Target: Myunghwan accepted prediction of the supplied source index with approximate fit when approving ship (2026-11-02). Retain all 21,454 supplied labels unchanged. They are a cluster-average wealth index on 0–1, not currency or a poverty probability. Exact survey instruments, construction, harmonization and reference normalization remain unverified; do not attribute a particular survey programme or PCA formula.
-        - Temporal repair: mask ghsl_built_1990_to_2000 before 2000 and ghsl_built_2000_to_2014 before 2014. Also mask ghsl_not_built_up before 2014: its through-2014 residual can reconstruct the combined future construction from the other fractions. Only calendar-year precision is available: through-2000 and through-2014 fields remain on their endpoint-year rows. In 2014 tests the two 2014-ending fields are missing throughout training but observed in test, an intentional coverage change.
-        - Omit four landcover_* columns: the source links a 2015–2019 product without saying which epoch was sampled. This is future state for pre-2015 rows, and we cannot assign a safe epoch to later rows. No replacement historical extraction was available; preserve the original raw file for repair.
-        - Potential leak, unresolved: retain population density, nighttime lights and water under Myunghwan's instruction to keep columns absent established leakage. Their represented epochs are unknown; population products have several historical epochs. Source searches and repeated-location checks do not establish temporal safety. If later-state content is established, mask affected years or replace with historical values; omit an unrepaired field. Later production alone is no exclusion.
-        - Year-comparison check (2026-11-02): water, population and light means vary in all 52 consecutive observed-year comparisons within 18 countries. The fixed 2000–2014 construction layer also varies in all 52 because survey years can sample different clusters. Five exact distance-signature groups span 1994–1995 (25 rows), with all 14 numeric geographic inputs unchanged; these are location proxies, not verified cluster IDs. This check cannot date the source layers. Myunghwan resolved issue 1 with year-level approximation; an established actual later-state measurement would still require repair.
-        - Decode the source’s R/U urban_or_rural codes to Rural/Urban categorical labels (CLEAN-12, current main). Meanings are unchanged; unknown codes raise. Keep it as a category: the source starter notebook explicitly uses it. Generic metadata boilerplate does not identify this field as prohibited. Country and ID are used only to construct and verify splits, then removed from the model frame; year remains a numeric time input. No country/year frequency encodings or full-data statistics are added.
-        - Keep all rows and numeric scales. Original labels are unique, and repeated predictor profiles are not established collection errors. Country exclusion prevents same-country repeats crossing a split. Zero numeric measurements remain zero; the source documents no alternative missing-code convention.
-        - Evaluation: temporal × unseen-country, as explicitly confirmed by Myunghwan (2026-11-02). The sixteen tests are each observed country-year cell in 2014–2016. Every training side uses strictly earlier years, excludes the test country entirely and exceeds half the full sample. This adds a future-time requirement to the source's unseen-country task. Training sides overlap; country-year tests are not independent repeated samples.
-        - Candidate-specific override of SPLIT-3 (Myunghwan, 2026-11-02; preserved 2026-11-05): temporal × unseen-country is the explicitly accepted future-year survey-gap task in an unseen country. Either single-regime substitution changes that task (USE-1, Must, P3); this is a higher-ranked use-case override, not an ordinary waiver of a Must. The global rule is unchanged.
-        - Temporal limitation: survey year orders label content. Target harmonization using future actual states cannot be ruled out. Label publication dates are absent, a limitation on literal historical deployment claims rather than an extra acceptance gate for this retrospective task. These are open limits, not accepted warnings or cleared leakage findings.
+        - Test.csv joined (Andrej, 2026-11-24, review issue 9, option b): the competition's rows are the clusters with coordinates of the africa_poverty cluster table of Yeh et al. 2020 (`data/dhs_wealth_index.csv` of github.com/sustainlab-group/africa_poverty at commit cb769c74, MIT); Train.csv and Test.csv together hold 28,648 of its 28,649 clusters with coordinates, in 25 countries (cluster counts equal in 95 of 96 country-years; Nigeria 2008 rural has one source cluster more). `_prepare_raw_files` assigns each Zindi row one-to-one to a cluster within country x year x urban: the distance to the capital is recomputed at the table's coordinates on the WGS84 ellipsoid from a capital point fitted per country to Zindi's released distances (every pair agrees within 0.002 km), and the distance to Natural Earth's 50 m coastline (pinned commit), which differs from Zindi's shoreline by a median 2.4 km, only breaks near-ties. The coordinates, survey ids and cluster ids stay in the raw folder and are never shipped.
+        - Recovered labels: Target = 0.245034 x wealthpooled + 0.343664, refit on Train.csv (21,336 rows within 0.01 of the first fit). On Train.csv the join finds the right cluster (recovered label within 0.0014 of Target) for 21,321 of 21,454 rows (99.38%); Zindi's Target is the rescaled index plus a per-row deviation spread over about +-0.0013 (sd 0.0007 and mean 0 in every country-year), so the recovered Test.csv labels differ from Zindi's hidden values by up to about 0.0013. The 133 Train.csv misses are 131 Central African Republic 1994-95 rows at shared locality points, which no distance separates, and one Cameroon 2004 pair 0.0012 km apart in distance to the capital.
+        - The bar, matched to the data (Andrej, 2026-11-24): a match is accepted only where it is unambiguous, the distance to the capital within 0.002 km, no other cluster of the cell within 0.002 km of it as well, and no other cluster of the cell at the same coordinate. On Train.csv the accepted matches are 21,146 rows, and all 21,146 give the right cluster; the build stops if this share falls below 99.9%. Train.csv rows keep their released Target whatever the match. Of Test.csv's 7,194 rows, 7,164 are accepted and added (none at a shared coordinate; 30 rows of Angola, Benin, Burkina Faso, Uganda and Zimbabwe have a second cluster within 0.002 km and are left out). No source indicator column ships: the framework has no non-input column besides the target, the group and the metric's scoring columns, and a row's file follows from its country.
+        - Prediction point: today. The agency maps the past survey years of a country without surveys of its own (the source's aim, "filling in the gaps between the more expensive surveys"), with a model fitted to the surveys of other countries, and holds every layer as read today. So every input is used as the source released it, one read of each layer on rows of every survey year, as the source itself did (its 2015-2019 land cover on rows from 1998). This replaces, for this use case, Myunghwan's rule of 2026-10-31 against fields that describe a later state than the survey (Andrej, 2026-11-24, review issue 4). Calendar-year timing stays the accepted approximation (Myunghwan, 2026-11-02).
+        - Target: Myunghwan accepted prediction of the supplied source index with approximate fit when approving ship (2026-11-02). Retain all 21,454 supplied labels of Train.csv unchanged. They are a cluster-average wealth index on 0–1, not currency or a poverty probability: the source table's `wealthpooled` (an asset index from one principal component pooled over all surveys, averaged per cluster), min-max rescaled over the 25 countries, plus Zindi's per-row deviation of about +-0.0013 (review issue 9).
+        - Potential leak, kept on purpose: the index was rescaled with one min-max over the whole release, rows of later years included (exactly one 0, Ethiopia 2005, and one 1, Nigeria 2013, both Train.csv rows; in those two countries' splits one test label sets an end of the scale). An affine rescale passes no row-level information; revisit if the source documents a per-survey normalisation.
+        - Keep the four landcover_* columns (crops, urban, permanent and seasonal water within 10 km): the source links a 2015-2019 Copernicus product without saying which epoch was sampled, so for rows before 2015 they are a later read, which the agency mapping today holds. Built-up by epoch (GHSL, through 2014) is kept unmasked on every row for the same reason: it is today's layer, also where an epoch ends after the survey year.
+        - Water, population density and nighttime lights are each one read used on every row; their represented epochs are not documented. Water describes stable water bodies, and at the same place it does not change between surveys. Potential leak, kept on purpose: ghsl_pop_density is most likely GHS-POP's 2015 epoch (it responds to 2000-2014 construction like the 2015-2019 land cover, log coefficient 0.46 against 0.32) and is used on the 24,196 rows before 2015; kept because the agency maps today with today's layers (review issue 4). Potential leak, kept on purpose: nighttime_lights is one read of an undated layer (values up to 383, so VIIRS from 2012 or a radiance-calibrated DMSP composite) used on rows from 1994 on; kept because the agency maps today with today's read (review issue 5). At the same place it does not change over 13 or more years (log change -0.016) while the target rises by +0.158, so it carries no later state of the label; revisit if the source names the product.
+        - Same-place check (2026-11-21, on Train.csv): 1,204 pairs of clusters of one country at the same place (both distances within 0.3 km, pre-1975 built-up within 0.005), surveyed up to 22 years apart. Water, population and lights do not change between them (population and lights: mean log change within ±0.035 in every band of years), while the target rises by +0.158 at 13 or more years. The country-year means of these inputs differ in all 52 consecutive comparisons only because each survey samples different clusters; the fixed 2000-2014 layer differs in all 52 for the same reason.
+        - dist_to_capital and dist_to_shoreline are distances in km to the official capital and to the shoreline: coastal clusters lie about 210 km from it in Côte d'Ivoire, 480 km in Nigeria and 350 km in Tanzania (Yamoussoukro, Abuja and Dodoma, not Abidjan, Lagos or Dar es Salaam), and within a few km in Senegal and Sierra Leone.
+        - Decode the source’s R/U urban_or_rural codes to Rural/Urban categorical labels (CLEAN-12, current main). Meanings are unchanged; unknown codes raise. Keep it as a category: the source starter notebook explicitly uses it. Generic metadata boilerplate does not identify this field as prohibited. Country is the group, not an input; ID is dropped; year remains a numeric input. No country/year frequency encodings or full-data statistics are added.
+        - Keep all rows and numeric scales. Original labels are unique, and repeated predictor profiles are not established collection errors. 129 rows share all inputs with a row of another target value: they are Central African Republic clusters of 1994-95, whose positions are locality points (41 exact location groups, 205 rows, some holding a Rural and an Urban row at one point); Test.csv has no clusters at a shared coordinate. Country groups keep them on one side. Zero numeric measurements remain zero; the source documents no alternative missing-code convention (population density is 0 on 2,262 rows, 2,250 of them with no built-up in any GHSL epoch).
+        - Licence: the competition grants CC BY-SA 4.0. The labels are cluster means of DHS and Malaria Indicator Surveys (the competition does not name DHS; the africa_poverty cluster table of Yeh et al. 2020 holds the same index), and the DHS terms of use (https://dhsprogram.com/data/terms-of-use.cfm) bar any marketing or commercial venture and the redistribution of DHS micro-level data; the shipped rows are cluster-level indices, not micro-level data, and carry no coordinates, survey ids or cluster ids (the join of review issue 9 reads coordinates only in the raw folder). The benchmark uses the data for non-commercial academic research only (Andrej, 2026-11-24, review issue 10).
+        - Scope: the inputs are mapped quantities aggregated to 5 km (built-up fractions, modelled population, calibrated lights, water, land-cover fractions) plus GIS distances, read as measurements of a place, as for covertype, the GeoAI NO2 challenge and AirQo; no raw reflectance is used to recognise image content (the reason crop-type datasets were rejected).
+        - Metric: RMSE, the source's metric, scores the wealth level. With one country per split, one offset for the whole country is 0.1-53% of a split's squared error for a random forest (Lesotho lowest, Malawi highest; mean 17%, measured 2026-11-24 on the 16 splits), while geographic targeting acts on the ranking of places within a country, which RMSE scores only in part.
+        - Temporal limitation: survey year orders label content. Target harmonization using future actual states cannot be ruled out. Label publication dates are absent, a limitation on literal historical deployment claims rather than an extra acceptance gate for this task, whose prediction point is today.
+        - Split walk (the split decision tree, SPLIT-36, from the record's collection type Survey): [SUR.meets] the model estimates wealth for a country without surveys of its own, a place outside what the training surveys covered → Place step → [PLACE.several] the data holds 25 countries: yes → leaf L-PLACE.groups, Grouped · `UnseenGroup`, whole countries held out with all their survey years. The definition ships this leaf's split (Andrej, 2026-11-24), one country at a time for the 16 countries surveyed in 2014-2016 (6 of them the source's own test countries), as the source tests unseen countries over all years.
     """
 
     target = "Target"
@@ -125,95 +336,148 @@ class EconomicWellBeingPredictionChallenge(AbstractCuratedDataset):
         original="Root Mean Squared Error",
         reference="https://zindi.world/competitions/economic-well-being-prediction-challenge",
     )
-    temporal = Temporal(on="year", horizon=1, horizon_unit="years")
+    grouping = Grouping(
+        on="country",
+        labels="per_sample",
+        prediction_unit="row",
+        context="none",
+        definition=(
+            "One group is a country, held out with all its survey years: a test country stands for a country without "
+            "surveys of its own, as in the source's test of 7 countries over 1998-2016, which the dataset holds too. "
+            "The test countries are the 16 surveyed in 2014-2016, one per split."
+        ),
+    )
     splits_comment = """
-        Joint temporal × unseen-country evaluation: one test for each country observed in 2016, 2015 and 2014,
-        newest year first, countries alphabetically within each year. For test country c in year t, training
-        contains every row with year < t and country != c; test contains country == c and year == t.
-        The backend stores Temporal metadata; the custom memberships enforce both chronology and whole-country
-        exclusion. This is a joint evaluation regime. Each country-year test is stored as one temporal repeat with one fold. No test-country history is
-        available to the learner. Country and opaque ID are dropped after index construction. All training
-        sides exceed 50% of the original rows. Earlier rows are retained for training; not every row is tested.
-        Annual survey content is ordered; publication delays remain unknown. The one-year horizon describes
-        the test window, not an outcome follow-up duration. These tests share training data and countries.
+        Leave one country out (Andrej, 2026-11-24): one split per country surveyed in 2014-2016 (Angola, Burkina Faso,
+        DR Congo, Ethiopia, Ghana, Kenya, Lesotho, Malawi, Mali, Nigeria, Rwanda, Tanzania, Togo, Uganda, Zambia,
+        Zimbabwe), each holding out that country with all its survey years and training on the other 24 countries.
+        Sixteen splits with sixteen different test countries, chosen over 3 x 3 country folds, whose repeats share
+        most of their training countries. The other 9 countries (Benin, Cameroon, Central African Republic, Cote
+        d'Ivoire, Guinea, Mozambique, Senegal, Sierra Leone, Swaziland) train in every split and are never tested. Six
+        of the source's own 7 test countries (Test.csv, 1998-2016; all but Benin) are tested here, each with its
+        recovered labels; the source tests unseen countries over all years, and this split tests the same, one country
+        at a time. The split decision tree reaches L-PLACE.groups for this survey (Survey: a country without surveys
+        of its own lies outside what the training surveys covered; the place step: several countries). A test
+        country's clusters of every year are on the test side; no later year is tested.
     """
-    accepted_check_warnings = {}
+    accepted_check_warnings = {
+        "groups_test_groups_few": "Accepted (Andrej, 2026-11-24): a test country stands for a country without "
+        "surveys of its own, so one whole country per split is the task (16 test countries of 25). The signal "
+        "carries over to unseen countries: LightGBM R^2 0.60 on the 16 held-out countries against 0.78 on a random "
+        "split (group probe), and a random forest beats night lights alone on 15 of the 16 shipped splits "
+        "(2026-11-24).",
+        "splits_rows_never_tested": "Accepted (Andrej, 2026-11-24): the test countries are the 16 surveyed in "
+        "2014-2016, one per split; the other 9 countries (5,923 rows, 20.7%) train in every split and are never "
+        "tested.",
+        "splits_dimensions_off_protocol": "Accepted (Andrej, 2026-11-24): leave one country out, 1 x 16, chosen over "
+        "3 x 3 country folds, whose repeats share most of their training countries; the splits comment says why.",
+    }
+
+    prepared_raw_files = (LABELLED_TEST, JOIN_CHECK)
+
+    def _prepare_raw_files(self, raw_dir: Path) -> None:
+        # Recover the labels of Test.csv from the source table (review issue 9), validated on Train.csv's labels
+        for name, digest in RAW_SHA256.items():
+            if _sha256(raw_dir / name) != digest:
+                raise ValueError(f"{name} differs from the pinned file (SHA-256 {digest})")
+        dtype = {"ID": "str", "country": "str", "urban_or_rural": "str"}
+        train = pd.read_csv(raw_dir / "Train.csv", dtype=dtype).assign(part="train")
+        test = pd.read_csv(raw_dir / "Test.csv", dtype=dtype).assign(part="test")
+        zindi = pd.concat([train, test], ignore_index=True)
+        src = pd.read_csv(
+            raw_dir / SOURCE_TABLE, usecols=["country", "year", "URBAN_RURA", "LATNUM", "LONGNUM", "wealthpooled"]
+        )
+        src = src.dropna(subset=["LATNUM", "LONGNUM"]).rename(columns={"URBAN_RURA": "urban_or_rural"})
+        if set(src["country"]) != set(CAPITAL_START) or set(zindi["country"]) != set(CAPITAL_START):
+            raise ValueError("the countries of the source table and of Zindi's files differ")
+        capitals = _fit_capitals(zindi, src)
+        src["capital_km"] = [
+            _ellipsoid_km(la, lo, *capitals[c]) for la, lo, c in zip(src.LATNUM, src.LONGNUM, src.country)
+        ]
+        src["shoreline_km"] = _shoreline_km(src["LATNUM"].to_numpy(), src["LONGNUM"].to_numpy(), raw_dir / COASTLINE)
+        m = zindi.join(_join(zindi, src))
+        # Target = a * wealthpooled + b, refit on Train.csv's matched rows (outliers off by > 0.01 left out of the fit)
+        t = m[(m["part"] == "train") & m["wealthpooled"].notna()]
+        design = np.c_[t["wealthpooled"], np.ones(len(t))]
+        coef = np.linalg.lstsq(design, t["Target"], rcond=None)[0]
+        inlier = np.abs(t["Target"] - design @ coef) < 0.01
+        coef = np.linalg.lstsq(design[inlier.to_numpy()], t.loc[inlier, "Target"], rcond=None)[0]
+        m["recovered"] = coef[0] * m["wealthpooled"] + coef[1]
+        m["right_cluster"] = (m["recovered"] - m["Target"]).abs() <= RIGHT_CLUSTER
+        accepted_train = m[(m["part"] == "train") & m["accepted"]]
+        if accepted_train["right_cluster"].mean() < 0.999:
+            raise ValueError(f"the join finds the right cluster for only {accepted_train['right_cluster'].mean():.4%}")
+        cols = [
+            "ID",
+            "part",
+            "country",
+            "year",
+            "urban_or_rural",
+            "Target",
+            "recovered",
+            "capital_gap_km",
+            "near_tie",
+            "shared",
+            "accepted",
+            "right_cluster",
+        ]
+        m[cols].assign(a=coef[0], b=coef[1]).to_csv(raw_dir / JOIN_CHECK, index=False)
+        labelled = m[(m["part"] == "test") & m["accepted"]]
+        labelled[[*test.columns.drop("part"), "recovered"]].rename(columns={"recovered": "Target"}).to_csv(
+            raw_dir / LABELLED_TEST, index=False
+        )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
-        return pd.read_csv(raw_dir / "Train.csv", dtype={"ID": "str", "country": "str", "urban_or_rural": "str"})
+        dtype = {"ID": "str", "country": "str", "urban_or_rural": "str"}
+        train = pd.read_csv(raw_dir / "Train.csv", dtype=dtype)
+        test = pd.read_csv(raw_dir / LABELLED_TEST, dtype=dtype)
+        return pd.concat([train.assign(file="Train.csv"), test.assign(file="Test.csv")], ignore_index=True)
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
-        df = raw.copy()
-        for column, end in PERIOD_ENDS.items():
-            df.loc[df["year"] < end, column] = np.nan
-        return decode(drop_columns(df, list(LAND_COVER)), CODE_LABELS)
-
-    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=["country", "urban_or_rural"], string=["ID"])
-
-    def _make_splits(self, df: pd.DataFrame) -> SplitPlan:
-        splits = {}
-        for test_year in TEST_YEARS:
-            countries = sorted(df.loc[df["year"] == test_year, "country"].unique())
-            for country in countries:
-                train = np.flatnonzero((df["year"] < test_year) & (df["country"] != country))
-                test = np.flatnonzero((df["year"] == test_year) & (df["country"] == country))
-                if not len(test) or len(train) < len(df) / 2:
-                    raise ValueError("A country-year split lacks the declared support")
-                splits[len(splits)] = {0: (train.tolist(), test.tolist())}
-        return SplitPlan(splits=splits, df=df.drop(columns=["country", "ID"]))
-
-    def _extra_checks(self, container) -> list[CheckResult]:
-        source = self.df
-        bad = []
-        for repeat, folds in container.experiment_metadata.splits.items():
-            for fold, (train, test) in folds.items():
-                tr, te = source.iloc[train], source.iloc[test]
-                if tr["year"].max() >= te["year"].min() or set(tr["country"]) & set(te["country"]):
-                    bad.append((repeat, fold))
-        wrong_cells = {
-            column: int(source.loc[source["year"] < end, column].notna().sum()) for column, end in PERIOD_ENDS.items()
-        }
-        if bad or any(wrong_cells.values()):
-            return [CheckResult("economic_valid_time_country_error", "error", f"Bad splits {bad}, cells {wrong_cells}")]
-        return [
-            CheckResult(
-                "economic_valid_time_country_verified",
-                "info",
-                "All explicit future-period cells masked; all 16 tests strictly later and wholly country-disjoint. "
-                "Unspecified feature epochs remain unverified; annual endpoint alignment does not establish interview-time order.",
-            )
-        ]
+        return decode(drop_columns(raw, ["ID", "file"]), CODE_LABELS)
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
-        masking = pd.DataFrame(
-            [
-                {"column": column, "period_end": end, "masked_rows": int((raw["year"] < end).sum())}
-                for column, end in PERIOD_ENDS.items()
-            ]
+        rows = raw.groupby(["country", "file"]).size().unstack(fill_value=0)
+        rows["tested"] = rows.index.isin(TEST_COUNTRIES)
+        check = pd.read_csv(self.raw_dir / JOIN_CHECK)
+        check["status"] = np.select(
+            [check["accepted"], check["shared"], check["near_tie"]],
+            ["accepted", "shared coordinate", "near-tie in the distance to the capital"],
+            "no match within 0.002 km",
         )
-        source = self.df
-        plan = self.make_splits(source)
-        support = []
-        for repeat, folds in plan.splits.items():
-            train, test = folds[0]
-            support.append(
-                {
-                    "test": repeat,
-                    "year": int(source.iloc[test]["year"].min()),
-                    "country": str(source.iloc[test]["country"].iloc[0]),
-                    "train_rows": len(train),
-                    "test_rows": len(test),
-                    "country_overlap": len(set(source.iloc[train]["country"]) & set(source.iloc[test]["country"])),
-                }
-            )
+        join = check.groupby(["part", "status"]).agg(rows=("ID", "size"), right_cluster=("right_cluster", "sum"))
+        join.loc[join.index.get_level_values("part") == "test", "right_cluster"] = np.nan
         return [
             Decision(
-                "Remove explicit future-state information", "Mask by represented period, not production date.", masking
+                title="Test.csv's 7 countries added with labels recovered from the source table",
+                why=(
+                    "Zindi's Train.csv and Test.csv are the coordinate-bearing clusters of the africa_poverty table; "
+                    "each Zindi row is assigned to its cluster within country x year x urban by the recomputed "
+                    "distance to the capital, the shoreline breaking near-ties, and kept only where the match is "
+                    "unambiguous. On Train.csv the accepted matches give the released Target up to Zindi's per-row "
+                    "deviation (right_cluster: within 0.0014); Test.csv rows get the refit rescale of wealthpooled."
+                ),
+                evidence=join.reset_index(),
             ),
             Decision(
-                "Future-year prediction in an unseen country",
-                "Every country-year test excludes all country history.",
-                pd.DataFrame(support),
+                title="Rows per country and file; the countries surveyed in 2014-2016 are each tested once",
+                why="Leave one country out over the 16 countries with a survey in 2014-2016, all their years.",
+                evidence=rows.reset_index(),
             ),
         ]
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(categorical=["country", "urban_or_rural"])
+
+    def _make_splits(self, df: pd.DataFrame) -> SplitPlan:
+        # Leave one country out, one repeat: fold i tests on the i-th country surveyed in 2014-2016, all its years
+        country = df["country"].astype(str).to_numpy()
+        newest = sorted(df.loc[df["year"] >= 2014, "country"].astype(str).unique())
+        assert tuple(newest) == TEST_COUNTRIES, newest
+        splits = {
+            0: {
+                i: (np.flatnonzero(country != c).tolist(), np.flatnonzero(country == c).tolist())
+                for i, c in enumerate(TEST_COUNTRIES)
+            }
+        }
+        return SplitPlan(splits=splits)

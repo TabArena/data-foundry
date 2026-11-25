@@ -3,6 +3,7 @@ unique_name: geoai_ground_level_no2_estimation_challenge
 name: geoai-ground-level-no2-estimation-challenge
 checked_by:
 - Myunghwan
+- Andrej
 data_foundry_status:
 - WIP (Triage)
 - 'DF: Yes'
@@ -11,10 +12,15 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Non-IID (Grouped)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Entities: Recur'
+- Panel Data
 collections:
 - New (BeyondArena)
 original_source: Zindi
 year: '2024'
+collection_period: 1 Jan 2019 - 31 Dec 2021
 domain: environmental science & climate
 required_split:
 - Grouped (NON-IID)
@@ -71,11 +77,25 @@ CC (2026-11-05, Myunghwan): Requested another add-dataset, review-added-datasets
 
 **Build verification (AI, 2026-11-05):** The qualification refresh build is complete: format 2, UUID `01a1ae48-7d06-76ac-9741-a58d8233b176`, from clean review commit `a40b46997a5bb7b08a2bac87187c74c109512466`. All 27 checks passed with zero errors or warnings. Saved-container reload verified. A check using only the traced Train.csv (10,000,397 bytes) reproduced checksum `v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20`, exactly equal to the preceding November build. Rows, all nine splits, metadata and raw-input selection are unchanged. The new input backup passed ZIP CRC and source SHA-256 checks. Earlier containers remain retained as referenced audit baselines; no raw files or containers were removed.
 
+**Assessment (AI, 2026-11-21):** collection facts set from the split audit: 79 fixed monitoring stations read daily on one calendar over 1,096 dates (unit x occasion); the reading arrives with its day, so no `Target:` fact.
+
+**Assessment (AI, 2026-11-21):** review panel (full re-check, without blind review and task gamer: the curator's archive is not on this machine; nothing re-measured): ship after changes; disputed: the siting gap's direction (EV-7, settled: mechanism only), the satellite timing notes (USE-3, settled: written into `known` and a bullet); for the curator: issues 2-3. Wording fixes applied to the definition, build 01a1ae48 stale until rebuilt. Priority 3: gap 0, use case 0 (approximate), source +, shape +, risk 0.
+
+CC (2026-11-24, Andrej): issue 2, change, "Option B: Declare the time basis and the leaf." The definition declares `time_basis = TimeBasis("RetrospectiveFillIn", ...)` (stations outside the network, the 2019-2021 period; not tested: a later year or another region) and `split_leaf = "L-FILL.whole"`; `data_tags` stays ("Spatial",), the build adds the tag and the `Time basis:` line. Rows, folds and score unchanged; the build is stale until rebuilt from Myunghwan's archive.
+
+CC (2026-11-24, Andrej): issue 3, discuss, "Agree." with the latest answer (2026-11-24, recommendation b): option b, the use case drops "identify areas needing monitoring" and ends "to map daily exposure between monitors", a decision the station-held-out daily RMSE tests. Fit stays approximate for the monitoring-site gap.
+
+**Assessment (AI, 2026-11-24):** code-only checks, since the Zindi archive is not on this machine (no data check, README not regenerated): the definition loads with the time basis validated; record collection facts against the definition: 0 problems; `L-FILL.whole` is a grouped leaf with `RetrospectiveFillIn` and the definition ships station groups with that tag: 0 placement problems; split-tree tests 18 passed, 1 skipped; ruff check and format clean.
+
+CC (2026-11-24, Andrej): the declared split (grouped on the station ID, whole stations held out with all their days, time basis `RetrospectiveFillIn`, leaf L-FILL.whole) is checked, as implemented.
+
+CC (2026-11-24, Andrej): verdict ship. Open before a build: README.md and the container are stale until rebuilt from the source archive, which is not on this machine.
+
 ## Review
 
-**Outcome:** added. Recommend shipping the previously accepted retrospective unseen-station task. The focused recheck found unchanged source values, target, inputs, whole-station folds and source RMSE; no new validity issue was identified. Historical probes still support useful predictive signal, and minimal cleaning preserves the released measurements and missing inputs. Source and dataset size support inclusion; ground-label processing, regional coverage and product timing remain documented limits. No new curator decision is needed. The requested new build is verified, with the same checksum as the preceding build.
+**Outcome:** added. Ship: on 2026-11-24 Andrej declared the time basis `RetrospectiveFillIn` and the split-tree leaf `L-FILL.whole` (issue 2, B) and dropped "identify areas needing monitoring" from the use case, which now ends "to map daily exposure between monitors" (issue 3, b); rows, target, inputs, whole-station split and source RMSE are unchanged. Validity: whole stations are held out as in the source challenge, and copying the nearest station's same-day reading scores worse than the model on 9 of 9 folds. Value: all inputs reach RMSE 10.26 against 11.40 for place and date alone. The numbers come from the panels of 2026-10-30 and 2026-11-05, on the same rows, folds and scorer; nothing was re-measured since, because Myunghwan's archive is not on this machine, and the 2026-11-24 changes were checked on the code only.
 
-**Main points:** No new decision. Myunghwan's 2026-10-30 acceptance and resolved issue 1 remain in force under the repeated instruction to use the past decisions.
+**Main points:** No open decision. Not a decision: the build and README.md stay stale until rebuilt from Myunghwan's archive, which also allows the measurements the mediator lists.
 
 **Record judgment:** source, year, regression target and grouped regime agree with the definition. Priority 3: source and shape positive; use case approximate; no thin accepted domain or regime and no demonstrated material leak.
 
@@ -102,7 +122,747 @@ CC (2026-11-05, Myunghwan): Requested another add-dataset, review-added-datasets
 
 [^geoai-labels]: USE-8 and EV-7 require honest scope and uncertainty; CLEAN-11/15 retain unproven extremes and omit missing targets. [Original challenge and data description](https://zindi.africa/competitions/geoai-ground-level-no2-estimation-challenge/data).
 
-**Review panel:** ship (independent mediator). The qualification refresh uses a focused claim audit, precedent check, mediator and editor; earlier full and focused panels remain dated evidence. Independent comparisons establish unchanged task, data, metadata, folds and checksum. Issue 1 remains resolved under the explicit reuse instruction; no new curator decision. The editor's presentation repairs are applied and the requested new build is verified. Earlier completed-build reports below remain history.
+3. **Drop "identify areas needing monitoring" from the use case?**
+
+   - **Problem:**
+     - The use case ends with "to map exposure and identify areas needing monitoring".
+     - Deciding where to monitor acts on annual means and limit exceedances, while the target and RMSE score daily station values.
+   - **Background:** the EU air-quality directive assesses zones on annual means and on the count of days and hours above limit values ([Directive 2008/50/EC](https://eur-lex.europa.eu/eli/dir/2008/50/oj)), and network design follows those; the domain practitioner (2026-11-21) raised it.
+   - **Effect on the task:** none on the data; the stated use promises a decision the score does not measure.
+   - **Consistency:** none decided on this point; the use case names a decision the target and the score serve[^x21g2].
+   - **Panel:** no disagreement; the domain practitioner, critic, advocate and mediator agree.
+   - **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep (implemented) | No change | keeps the text Myunghwan accepted | promises a decision the score does not measure |
+     | B | Drop the clause | The use case ends "to map daily exposure between monitors" | the use matches what is scored | changes text Myunghwan accepted |
+
+   - **Recommendation:** B: deciding where to place monitors works from annual means, which a daily station score does not test. **Decision:** keep the clause (A), or drop it (B)?
+
+   **Notes for the AI:** On B, `use_case` becomes "An air-quality analyst reconstructs daily pollution at unmonitored locations within the observed region, using the complete 2019-2021 archive from other stations after all daily products are available, to map daily exposure between monitors."
+
+   [^x21g2]: **USE-1** (Must): the use case names an actor, a moment and a decision the target serves.
+
+   **Andrej (2026-11-23, discuss):** But is this still a valid use case then? Also, what did the source do?
+
+   **Answer (AI, 2026-11-23):** Yes: daily exposure between monitors is a real use, and it is what the station-held-out daily RMSE tests. Neither source names deciding where to monitor; the clause came from the screening's guess ("exposure maps, monitoring").
+
+   * **Problem:**
+     - What the sources state and score:
+
+       | Source | Stated aim | Task | How it is scored |
+       |---|---|---|---|
+       | [Zindi challenge](https://zindi.world/competitions/geoai-ground-level-no2-estimation-challenge) (2024, this data) | "develop ML models to estimate surface NO2 concentrations using only public remote sensing data as predictor variables"; "explore innovative approaches to NO2 monitoring and modelling"; winners hand in "a model file ... that can be used to estimate surface NO2 levels" | daily NO2 at stations in Lombardy and Veneto, 2019-2021 | leaderboard: "Root Mean Squared Error"; jury: "in-situ data from selected ground stations not provided to participants" with r, RMSE and MAE, "regardless of season and location in the study area"; "The ground truth data used for evaluation are independent from the training data set" |
+       | [Cedeno Jimenez, Pugliese Viloria and Brovelli 2023](https://doi.org/10.3390/ijgi12030107), IJGI 12, 107 | "an alternative to ground sensor measurements"; "relevant for regions where no NO2 ground sensors are present, which in most cases, is a limitation for LMICs" | one daily mean over the 16 stations of the Metropolitan City of Milan (12:00-15:00), 2019 to September 2022, from Sentinel-5P and ground weather stations | first 80% of the days for training, last 20% for test, "the way in which the algorithm is planned to be used (i.e., daily consecutive estimations)"; best RMSE 2.89 µg/m3 |
+
+     - "Monitoring" on the Zindi page means estimating concentrations ("NO2 monitoring and modelling"), not siting stations. The paper aims at the reverse of siting: estimates where no station exists, in other countries.
+     - The paper is the precursor, not the same task: one city mean, no station held out, ground weather as input. Its future work ("replacing the use of meteorological ground sensors with only satellite-based data") is the challenge's "only public remote sensing data". The [GEOAIR outputs page](https://www.cirgeo.unipd.it/geoair/index.php?id=outputs) lists the challenge as run by Politecnico di Milano (the paper's group) and Padova.
+   * **Background:** who uses daily NO2 at places without a monitor:
+
+     | User | Decision | Source | Tested by the station-held-out daily RMSE? |
+     |---|---|---|---|
+     | Epidemiologists | assign daily exposure to addresses or areas for short-term health studies | [de Hoogh et al. 2019](https://pubmed.ncbi.nlm.nih.gov/31415154/) (daily NO2 for Switzerland, made available "to facilitate health research"); [ISPRA with the Lazio epidemiology department](https://www.isprambiente.gov.it/en/news/new-high-resolution-maps-of-air-pollution-in-italy) (1 km maps of NO2, PM10 and PM2.5 for "population exposure" and "epidemiological research") | yes: a daily value at a place without a monitor, in the period the network covers |
+     | Air-quality agencies | supplement fixed stations with modelling when assessing zones under [Directive (EU) 2024/2881](https://eur-lex.europa.eu/eli/dir/2024/2881/oj), which ISPRA names for its maps | ISPRA page above | partly: assessment acts on annual means and counts of exceedances, which daily estimates feed but the score does not test |
+     | Health-impact and exposure-inequality studies | burden by area or population group | ISPRA page above | partly: these usually work from annual means |
+     | Daily alerts | warn the public on the day | none of the sources | no: the satellite inputs arrive days late and final CHIRPS about seven weeks (the definition's fit reason) |
+
+     - Holding out whole stations over the same days is the leave-sites-out validation of daily exposure models, the domain practitioner's point of 2026-11-21, and the source jury's design.
+     - Gaps that stay with any wording, already in the fit reason (fit approximate): the test points are monitoring sites, which are chosen (traffic sites among them); the inputs are satellite only; the region and period are those of training.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Keep the clause (implemented) | No change | text Myunghwan accepted | promises a siting decision that neither source states and the score does not test |
+     | b | Drop it, lead with daily exposure | use case ends "to map daily exposure between monitors" (the Notes for the AI above) | names a decision practitioners take with these estimates and the score tests[^x23g3] | changes text Myunghwan accepted |
+     | c | The source's wording | use case ends "to estimate surface NO2 where no ground station measures it" | closest to the Zindi text | names no decision; the paper's "where no sensors are present" means other countries, a transfer this split does not test |
+
+   * **Recommendation:** b. The fit stays approximate for the monitoring-site gap. **Decision:** a, b or c?
+
+   [^x23g3]: **USE-1** (Must): the use case names an actor, a moment and a decision. **USE-9** (Should): data that mirror another use practitioners have take that use; b removes a promise rather than rephrasing to excuse a gap.
+
+   **Answer (AI, 2026-11-24):** The new split rules change no option and no recommendation here. The split tree reads this use case at its first panel question: a station not in the network, within the period the data covers, is a fill-in. Options a and b keep "unmonitored locations within the observed region" and the 2019-2021 archive, so both reach the leaf of issue 2 (whole stations held out, time basis `RetrospectiveFillIn`). Option c also estimates inside the covered period, so it reaches the same leaf; its con stands, since the paper's "regions where no NO2 ground sensors are present" is a transfer the time basis of issue 2 names as untested. Recommendation b stands. **Decision:** a, b or c?
+
+   **Andrej (2026-11-24, discuss):** Agree.
+
+   **Resolved (2026-11-24, Andrej):** b, as the latest answer recommends: `use_case` drops "identify areas needing monitoring" and ends "to map daily exposure between monitors", the Notes for the AI's text; the fit stays approximate for the monitoring-site gap. Code-only checks pass (definition loads, ruff clean); no data check and no README regeneration, since the Zindi archive is not on this machine.
+
+2. **Declare the time basis `RetrospectiveFillIn` and the split-tree leaf, as the other datasets with this split do?**
+
+   - **Problem:**
+     - The split tree, walked from how the data was collected (fixed stations read every day), ends at "Grouped · `RetrospectiveFillIn` (whole units, areas or groups)", which is the split this definition ships.[^x21g1]
+     - The two other datasets that reach this leaf (5g_energy_consumption, fraud_detection_in_electricity_and_gas_consumption_1m) declare `time_basis = TimeBasis("RetrospectiveFillIn", ...)` and `split_leaf = "L-FILL.whole"` on the open split PRs; this definition declares neither and has only `data_tags = ("Spatial",)`.
+     - Nobody chose the difference: the definition was written before the split rules.
+   - **Background:** the tree reads the use case "unmonitored locations within the observed region, using the complete 2019-2021 archive" as filling in the covered period, with whole stations missing that the station ID keys. The leaf's same-time check holds: the target is each station's own reading, not a value all stations share on a day, and copying the nearest station's same-day reading scores worse than the model on 9 of 9 folds (2026-11-05 panel).
+   - **Effect on the task:** none on rows, folds or scores. The build adds the `RetrospectiveFillIn` tag and renders the `Time basis:` line into the curation comments, which says what the split tests (stations outside the network, the same period) and what it cannot (a later year, another region); the checksum moves.
+   - **Experiments:** none needed. Code checks on 2026-11-24 (no data): the current definition passes with the note that the split is not temporal and does not say why; option B, written as in the Notes for the AI, passes the definition check, the record's collection facts and the leaf check (it ships the grouped split and the tag that leaf names).
+   - **Consistency:** 5g_energy_consumption and fraud_detection_in_electricity_and_gas_consumption_1m declare this time basis and leaf; A departs from them, B follows.
+   - **Panel:** no disagreement; the precedent checker, advocate, critic and mediator agree (2026-11-21, under the old tag name `Retrospective`).
+   - **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep as is (implemented) | no time basis and no leaf; the splits comment says the split tests neither forecasting nor other regions | no rebuild | departs from the two other datasets with this split, with no fact that sets it apart |
+     | B | Declare the time basis and the leaf | `time_basis = TimeBasis("RetrospectiveFillIn", ...)` and `split_leaf = "L-FILL.whole"`; `data_tags` stays `("Spatial",)`, the build adds the tag and the line | the same metadata as the two other datasets; states that other stations' same-day readings are the use | the checksum moves, so a rebuild from Myunghwan's archive |
+
+   - **Recommendation:** B: nothing sets this dataset apart from the two others with its split, and the change touches no row, fold or score. **Decision:** keep as is (A), or declare the time basis and the leaf (B)?
+
+   **Notes for the AI:** On B: import `TimeBasis` from `data_foundry.time_basis`; add `split_leaf = "L-FILL.whole"` and `time_basis = TimeBasis("RetrospectiveFillIn", "daily readings of 79 ground monitors of ARPA Lombardia and ARPAV (Veneto), 2019-01-01 to 2021-12-31, with same-day satellite and precipitation inputs; the use case reconstructs daily NO2 at locations without a monitor in that period, while the other stations of the same days are measured (date and coordinates are features), so their same-day readings are the use, not a leak (copying the nearest same-day station scores worse than the model on 9 of 9 folds). Not tested: a later year, or a region outside the network.")`; do not add the tag to `data_tags` or a `Time basis:` bullet to `curation_comments` by hand (the definition check refuses both beside a `TimeBasis`); add to the splits comment "The split tree gives Grouped · RetrospectiveFillIn (whole units, areas or groups), L-FILL.whole"; the record says the build is stale until rebuilt from the archive.
+
+   [^x21g1]: **SPLIT-32** (Should): a definition that follows a use-case prototype declares it as its time basis, with the fact behind it and what the split cannot test; `RetrospectiveFillIn` fills in what is missing for the time the data covers, and no row of a test row's time may carry its target. **SPLIT-36** (Should): the split comes from walking the split tree from the record's collection type, and the definition names the leaf it reaches in `split_leaf`. The walk: [PAN.when] fill in the covered period, [FILL.later] no (the labels arrive with their day), [FILL.scattered] whole units (stations not in the network), [FILL.key] yes (station ID), leaf [L-FILL.whole].
+
+   **Andrej (2026-11-24, change):** Option B: Declare the time basis and the leaf.
+
+   **Resolved (2026-11-24, Andrej):** B: `dataset.py` imports `TimeBasis` and declares `split_leaf = "L-FILL.whole"` and `time_basis = TimeBasis("RetrospectiveFillIn", ...)` with the reason from the Notes for the AI; `data_tags` stays ("Spatial",); the splits comment names the leaf and the split-walk bullet says the time basis is declared. Code-only checks (no data on this machine): the definition loads with the time basis validated, the record's collection facts agree with it (0 problems), the leaf check finds 0 placement problems (grouped split, `RetrospectiveFillIn`), split-tree tests 18 passed and 1 skipped, ruff clean. The data check did not run and README.md was not regenerated; the build is stale until rebuilt from Myunghwan's archive.
+
+**Review panel:** ship after changes (mediator, 2026-11-21, full re-check without blind review and task gamer: data not available). Applied without a decision: the known and fit_reason wording, the satellite overpass and processor bullet, both agencies named, the unmeasured one-vote-per-station note. Disputed and settled: the siting gap is named as a mechanism, not a direction of bias (no station-type data); the satellite timing and quality filters go into `known` and a notes bullet. For the curator: issues 2 and 3. Issue 1 stays resolved. Earlier panels (2026-10-30, 2026-11-05): ship; their reports below are history.
+
+<details><summary>Mediator (2026-11-21)</summary>
+
+**Mediator: geoai (geoai_ground_level_no2_estimation_challenge), 2026-11-21**
+
+Inputs read: claim auditor, domain practitioner, precedent checker, advocate and critic openings and rebuttals, column
+audit (`pr59_columns/findings/geoai.md`), `dataset.py`, the record (Comments and `## Review`). Not available this
+round: data, `check.log`, probes, blind review, task gamer (geoai's archive is not on this machine). No experiment run:
+every open fact needs the archive. Data-backed numbers below are from the 2026-10-30 and 2026-11-05 reports in the
+record, measured on rows, folds and scorer verified identical to the current definition (checksum `v2:79bbb806…`).
+
+**Judgment record**
+
+```text
+Verdict: ship after changes (text and one tag; no change to rows, target, inputs, split or metric).
+Validity: USE-1 holds (source task: stations withheld, "ground truth ... independent from the training data set");
+  SPLIT-1/3 hold (whole stations out, 3x3, 26-27 test stations per fold, no shared station or coordinate);
+  LEAK-16 holds (0 cross-fold copies; nearest-station copy 12.47 vs 10.37, worse 9/9);
+  SPLIT-32 q2 holds (other stations' same-day labels are the use, not the target);
+  USE-3 holds in substance, `known` text incomplete (fix below); USE-5/EV-7: bullet 4 names one "ARPA" (fix below);
+  USE-8 holds (fit approximate), gaps not named (fix below).
+Value: TP-4 holds (coords+date 11.40 vs all inputs 10.26 RMSE; no single rule reaches it); TP-2 spread
+  ridge 0.396 to LightGBM 0.634 R² (untuned, indicative).
+Quality: SPLIT-32/36 departure (no `Retrospective` tag, no `Time basis:` line) not chosen, timing of PR #59;
+  MET-17 note half missing (inequality stated, ranking effect unmeasured).
+Weighed: source + (ITU/Zindi, codebook, CC BY-SA 4.0), shape + (82,051 rows, 79 stations), use case 0 (actor
+  inferred, approximate), risk 0. Priority 3 unchanged.
+For the curator: N1 (time basis tag + line), N2 (use-case clause); request: the archive for the rebuild and four
+  pending measurements.
+```
+
+Advocate and critic agree on the verdict and on every remedy. Two details were disputed; both are settled by the rules
+(below), so neither goes to the curator.
+
+**Disputed points, settled**
+
+| Point | Advocate | Critic | Settled | Rule |
+|---|---|---|---|---|
+| `fit_reason` says the held-out sites "over-represent hotspots" | Direction unmeasured; state the mechanism only | Include the effect | **Advocate.** No one has joined the station IDs to the ARPA registries; the traffic/background mix of the 79 stations is unknown. Name the mechanism (no input encodes siting; a TROPOMI pixel is about 3.5 x 5.5 km), not a direction. | EV-7 (Must) |
+| Processor change and QA thresholds: "fit note" without a text fix | Called it a fit note, listed no edit | Write it into `known` and a comments bullet | **Critic.** USE-3 asks the point to say what is known and when; the definition says only "for that day" and nothing on QA or processor versions. Wording fix. | USE-3 (Must) |
+| Order of work: tag now or with the rebuild | Edit `dataset.py` now, record build `01a1ae48` as stale | Wait for the archive, one rebuild | **Edit now, rebuild later.** Rows and folds do not change, so the 11-05 evidence still applies (EV-8); the record must say the build is stale and this round re-measured nothing (EV-7). Logistics, not a curator call, unless Andrej prefers to hold all edits until the archive is back. | EV-7, EV-8 |
+
+**Changes to make now (no decision needed)**
+
+1. `task_summary.known` (USE-3): the column audit's text: "The location and date; that day's CHIRPS precipitation;
+   daytime land-surface temperature, aerosol index, cloud fraction, satellite nitrogen dioxide columns and tropopause
+   pressure from single early-afternoon satellite overpasses on that day."
+2. `fit_reason` (USE-8): column audit's second sentence (latency: days for Sentinel-5P, about seven weeks for final
+   CHIRPS; daily QC undocumented) plus one clause: "satellite-only inputs by the source's design (no meteorology or land
+   use); held-out monitoring sites, whose traffic or background siting no input encodes, stand in for unmonitored
+   places." No direction of bias.
+3. Comments bullet on the satellite inputs (USE-3, EV-7): one overpass; NO2_trop QA ≥ 0.75 (40.7% missing) vs ≥ 0.5 for
+   the other five (14.8%, same 12,118 rows); TROPOMI processor v1.4 (Dec 2020) and v2.2 (Jul 2021) inside the period,
+   shared by train and test because folds share all dates. Do not name the LST product until DataDescription.pdf is
+   read (the 0.02 K grid is an inference from 13 README values; the source says "NOAA").
+4. Comments bullet 4 (USE-5, EV-7): the codebook says "ARPA"; the source page says Lombardy and Veneto, which have
+   separate agencies (ARPA Lombardia, ARPAV). Name both, and say the daily-mean rule may differ between them and is
+   unmeasured (integer-looking Veneto values vs decimal Lombardy values in the README sample; rounding alone costs at
+   most about 0.29 RMSE). This stays inside resolved issue 1 (undocumented aggregation, accepted by Myunghwan); it does
+   not reopen it.
+5. Metric bullet (MET-17, Should): score stays per row (each station-day is its own estimate on a daily map). The
+   inequality is stated (298 to 1,093 labelled days, two stations at about 72% missing); add "how far one vote per
+   station moves the ranking: not yet measured" until the Kendall tau exists. Precedent: asp_potassco and
+   video_transcoding (per row, with the note).
+6. Record (EV-7): the 2026-11-21 Assessment says this round re-measured nothing on the data, lists what waits for the
+   archive (below), and that the 11-05 evidence was verified on identical rows, folds and scorer.
+
+**Issues for the curator (ranked)**
+
+**N1. Add `Retrospective` and a `Time basis:` line?** (SPLIT-32 Should, SPLIT-36 Should) — NEW
+- Problem: the tree leaf (Panel data → fill in the covered period → whole units missing) is Grouped · `Retrospective`
+  (whole units). Both v0.2 definitions there carry the tag and the line (5g_energy_consumption `("Retrospective",)`;
+  fraud_detection_in_electricity_and_gas_consumption_1m `("Spatial", "Retrospective")`). geoai has `("Spatial",)`
+  only. Nobody chose this: PR #59 predates the split rules.
+- Effect: the same-time check is in prose but not where the validator reads it. The split itself is right.
+- Evidence: all panel members agree; the same-time reading rests on the 11-05 gamer (closest pair 7 km, r = 0.968,
+  equal labels on 0.094% of days; copying the nearest same-day station worse on 9/9 folds).
+- Options: A add the tag and the precedent checker's line (checksum moves; rebuild needs the archive); B keep and
+  explain the departure in `splits_comment`.
+- Recommendation: **A**. It could be applied as plain rule compliance; it is an item only because it moves the
+  checksum of a curator-accepted build and the split PRs own time-basis tags. geoai is on no `splits/*` branch and not
+  on main (only PR #59), so the edit goes into PR #59.
+
+**N2. Drop "and identify areas needing monitoring" from the use case?** (USE-1 Must) — NEW
+- Problem: network design under Directive 2008/50/EC acts on annual means and exceedance counts per zone; the target
+  and RMSE score station-day estimates.
+- Effect: the use case claims a second decision the metric does not score.
+- Evidence: practitioner finding 5; advocate and critic both concede.
+- Options: A drop the clause, lead with daily exposure reconstruction and gap-filling; B keep.
+- Recommendation: **A**. An item because the use case text was accepted by Myunghwan (2026-10-30).
+
+**Request (not a decision): the archive.** Rebuild after N1 and the edits above, and measure:
+
+| Item | Measure |
+|---|---|
+| MET-17 sentence | Per-row vs 1/n_station weighted RMSE ranking of 2-3 models over 9 folds, Kendall tau |
+| Two-agency labels | Share of integer `GT_NO2` by ID prefix (`X…` vs province codes); fractional parts × 24 and × 240 |
+| Siting (optional) | Join station IDs to ARPA registries; RMSE by station type |
+| Column-audit leftovers | NO2_trop missing share and median by month (processor steps); LST mod 0.02; DataDescription.pdf collection IDs; second ~72%-missing station |
+
+None of these can change validity: the worst case (integers from a different daily rule) would add a note, and a low
+tau would add a sentence, not a weight (each row is a decision of its own).
+
+**Open issues already in the record**
+
+- Issue 1 (labels with undocumented aggregation/QC): resolved 2026-10-30 by Myunghwan. **Keep as resolved.** Change 4
+  refines its note; it does not reopen it.
+- Horizon block "H" and 2026-11-21 split-audit issues: **none exist in the record.** The split audit left only the
+  2026-11-21 Assessment line (facts). N1 covers what a Horizon block would have raised. Nothing to keep, revise or
+  withdraw.
+
+**Agreed facts**
+
+- 82,051 labelled station-days, 79 stations (unique coordinates), 1,096 dates 2019-01-01 to 2021-12-31; 4,533
+  rows without target dropped; 7 zeros and max 188.23 kept; inputs not imputed.
+- Source task: daily NO2 at stations withheld from participants, same period; leaderboard RMSE on the original scale
+  (Pearson r and MAE jury-only). Six Zindi test stations cover the full period (file-size arithmetic).
+- Shipped split: whole stations, 3x3, 26-27 test stations per fold, `context="none"`.
+- Satellite NO2 columns are column densities (mol/m²), not the surface target. All inputs exist at the retrospective
+  point; latency days (S5P) to about seven weeks (CHIRPS final).
+- Signal: dummy 15.9-19.0 RMSE per fold; coords+date 11.40; all inputs 10.26; group probe R² 0.396 / 0.554 / 0.631 /
+  0.634 (ridge / kNN / RF / LightGBM, untuned, median-imputed).
+- Last checks: 27 passed, 0 errors, 0 warnings (11-05); none ran this round.
+- Licence CC BY-SA 4.0; login-only download is a note (EV-4), not a verdict reason.
+
+**Consistency with precedent**
+
+- Split, `context="none"` and same-day other-station labels: same leaf and same reading as 5g_energy_consumption.
+- S5P retrievals as physical inputs (SEL-15): as airqo_african_air_quality_prediction_challenge (Myunghwan, 11-05);
+  geoai's 79 stations set it apart from airqo's 4-city deferral.
+- Source RMSE (MET-4): as 5g and airqo.
+- MET-17 per row with a note: as asp_potassco_classification and video_transcoding_time_prediction.
+- The only departure (no time-basis tag) is N1, unchosen. No drift; no third exception of a kind.
+- Observation, no item: the screening banner "AI-FILLED — UNVERIFIED … NOT from inspecting the data" at the top of
+  Comments predates the 10-30 data checks; the editor may want to scope it to the screening paragraph.
+
+</details>
+
+<details><summary>Advocate (2026-11-21)</summary>
+
+**Advocate opening: geoai (geoai_ground_level_no2_estimation_challenge), 2026-11-21**
+
+Position: ship as defined, with three text fixes and one metadata fix. No change to rows, target, inputs, split or
+metric. Nothing ran this round (the data is not on this machine; no check.log, probe, blind-review or task-gamer
+output). Every number below is from earlier data-backed reports in the record's `## Review` (2026-10-30 and 11-05) or
+from this round's claim audit, domain practitioner, precedent check and column audit. None of this round's agents
+refuted a claim.
+
+**1. The task is the source's own task, scored the source's way (USE-1 Must, SPLIT-1 Must, MET-4 Should)**
+
+- Zindi/ITU scores estimates "in-situ data from selected ground stations not provided to participants"; "the ground
+  truth data used for evaluation are independent from the training data set" (claim audit 11-21, claims 1, 15, 21).
+- The definition holds whole stations out over all dates: 3x3 folds, 26-27 test stations per fold, zero shared
+  stations or coordinates in all nine folds (claim audit 11-05; README 11-21).
+- RMSE on the original µg/m³ scale is the leaderboard metric. The practitioner keeps it: it is the field's first number,
+  and FAIRMODE's quality objective is an RMSE (domain practitioner 11-21, question 5).
+- The precedent check walks the split tree to Panel data -> fill in the covered period -> Grouped · `Retrospective`
+  (whole units). The shipped split is that leaf (SPLIT-36). 5g_energy_consumption is the same decision.
+- Answers: any claim that the split or metric is wrong. The source, the tree and the field agree.
+
+**2. Same-day labels at other stations are the use, not a leak (SPLIT-32 question 2 Should, LEAK-16 Must)**
+
+- SPLIT-32 asks whether any training sample of a test sample's time carries its target. The 11-05 gamer measured it:
+  - the closest pair (X5607/X10452, 7 km, r = 0.968) has equal labels on 0.094% of days, interstation RMSE 4.89;
+  - copying the nearest same-day station: RMSE 12.47 against the 10.37 baseline (worse on 9/9 folds);
+  - the same-day mean of all training stations: 11.84 (worse on 9/9);
+  - a half blend gains 0.24 (7/9). That is kriging-style signal, which the practitioner uses daily.
+- Zero exact covariate copies across folds; zero duplicate station-days (LEAK-16).
+- So no day needs to be grouped. 5g's time-basis line makes the same reading ("while the other stations of the same
+  hours are measured"; precedent check 11-21).
+
+**3. The task has signal beyond place and calendar, and models spread (TP-4 Must, TP-2 Should)**
+
+| Model (untuned, 9 station folds) | Score |
+|---|---|
+| Train-mean dummy | RMSE 15.9-19.0 per fold (target sd 17.1) |
+| LightGBM on coordinates and date only | RMSE 11.40 |
+| LightGBM on all 11 inputs | RMSE 10.26 (10.37 in the 11-05 kit) |
+| Group probe R²: ridge / kNN / random forest / LightGBM | 0.396 / 0.554 / 0.631 / 0.634 |
+
+- No single feature or published rule reaches the methods (TP-4 step 1 not met). The satellite inputs add 1.1 RMSE over
+  place and date.
+- Ridge to LightGBM spans 0.24 R². The probe is untuned and median-imputes the whole frame, so I claim spread, not
+  TP-3's tuned spread. It is enough to rule out `Trivial` and `No Signal`.
+
+**4. The inputs are known at the declared point; the date is a fair input (USE-3 Must, LEAK-10, time-column actor test)**
+
+- Column audit 11-21: all 11 inputs exist at the retrospective point. Nothing is post-outcome, lagged or fitted on the
+  whole release. Sentinel-5P arrives within days, final CHIRPS in about 7 weeks. The use case is after the fact.
+- The satellite NO2 columns are column densities in mol/m², not the surface target (GEE catalogue; claim 8; LEAK-2).
+- The analyst holds the date and place when mapping a past day, so both are inputs (time-column actor test).
+- The NO2 processor changes (v1.4 Dec 2020, v2.2 Jul 2021) hit train and test alike, because every fold shares all
+  dates. That is a fit note, not a split problem (column audit 11-21).
+
+**5. The label limits are real, small, and already accepted (USE-8 Must, CLEAN-11/15, curator decision)**
+
+- Myunghwan accepted the undocumented daily aggregation and QC on 2026-10-30 ("thse limits are fine"; issue 1,
+  resolved). He kept that on 11-05.
+- This round's new hypothesis (two agencies, ARPAV integer means vs ARPA Lombardia decimals; claim audit N2,
+  practitioner finding 3) refines that accepted limit. Rounding to whole µg/m³ costs at most about 0.29 RMSE against
+  ~10.
+- Mildest remedy: name both ARPAs in the codebook bullet. Measure the integer share by ID prefix when the archive is back
+  on NFS. No data change unless the integers turn out to come from a different daily rule.
+- Monitoring sites stand in for unmonitored places, and station type is missing (practitioner finding 1). That is
+  why fit is `approximate` already. Remedy: name the mechanism (traffic vs background siting) in `fit_reason`, and say
+  "satellite-only by design" (finding 2). Wording only. USE-8 asks for a named gap, not an exclusion.
+
+**6. The two process gaps have cheap fixes that keep the dataset (SPLIT-32/36 Should, MET-17 Should)**
+
+- **Time basis** (precedent check finding 1, NEW). The `Retrospective` tag and `Time basis:` line are missing because
+  PR #59 predates the split rules. No one chose to depart. Fix (option a): add the tag and the precedent checker's
+  sketched line. It is metadata only. The checksum moves, so a rebuild follows when the data is available.
+- **MET-17 note** (claim audit N1, NEW). Each station-day is its own estimate on a daily map, so the score correctly
+  stays per row. MET-17 then asks one sentence on how far one vote per station moves the ranking. Only about 2 of 79
+  stations are short (298 vs median 1,068 rows), so the effect should be small. Fix: measure Kendall tau when the data
+  is back, and add the sentence. The metric does not change.
+- Use-case wording (practitioner finding 5): drop "identify areas needing monitoring". Network design works on annual
+  means, not daily station-day error. Lead with daily exposure reconstruction.
+
+**7. Access and this round's missing data are no verdict reasons (PROV-1 Must, EV-4 Must)**
+
+- The source is known: Zindi/ITU AI for Good with GEOAIR, a codebook (DataDescription.pdf), CC BY-SA 4.0 (claim 24).
+  PROV-1 holds.
+- The login-only download is a "request-only download" under EV-4: a one-line note, never a reason for a verdict. The
+  definition pins the archive and Train.csv SHA-256. Three builds reproduced their checksums from the traced Train.csv
+  alone (10-30; and two on 11-05, both `v2:79bbb806…`; the October checksum differs only by a serialized empty
+  metadata field). Zindi's "private property of the client" terms belong on the release
+  checklist (EV-4), not here.
+- That this round could not re-measure is a gap in our evidence, not a defect in the dataset. The 11-05 evidence was
+  verified bit-identical against the current rows, folds and scorer (claim audit 11-05). The open measurements (N1,
+  N2, column-audit leftovers) are listed and none can change validity.
+
+**What I concede now**
+
+- The time-basis tag and line, the MET-17 sentence, the use-case wording and the `fit_reason` sharpening are real gaps.
+  All of them are fixes inside the dataset, not reasons to hold it.
+- The second ~72%-missing station is not visible in the summaries (claim 5). The two-agency label hypothesis is
+  untested.
+
+</details>
+
+<details><summary>Advocate rebuttal (2026-11-21)</summary>
+
+**Advocate rebuttal: geoai, 2026-11-21**
+
+We agree on the verdict: ship, no exclusion, keep RMSE, the whole-station split, the inputs and the cleaning. All six
+of the critic's points are fixes to text or metadata. I concede all six in substance and dispute two details.
+
+| # | Critic's point | Answer | Why |
+|---|---|---|---|
+| 1 | `fit_reason` leaves out siting, satellite-only inputs and input latency (USE-8) | **Concede the remedy. Dispute one effect sentence.** | My opening (point 5) proposed the same wording. But "a siting mix that over-represents hotspots" is a hypothesis: nobody has joined the station IDs to the ARPA registries, so the traffic/background mix of the 79 stations is unmeasured. The wording should state the mechanism (no input encodes station siting; a TROPOMI pixel is about 3.5 x 5.5 km) and leave out the direction of the bias until it is measured (EV-7). The practitioner gave the measurement: join station type and report RMSE by type. |
+| 2 | Use case names network design, which the daily target does not score (USE-1) | **Concede.** | The same as my opening point 6. Drop "and identify areas needing monitoring" and lead with daily exposure reconstruction. |
+| 3 | The label is called one agency's; the values suggest two pipelines (USE-5, EV-7) | **Concede.** | Name ARPA Lombardia and ARPAV in bullet 4. Say the daily rule may differ between them and that this is unmeasured. Measure the integer share by ID prefix when the archive is available. Rounding costs at most about 0.29 RMSE, so this stays a note inside resolved issue 1 unless the integers come from a different daily rule. |
+| 4 | No `Retrospective` tag and no `Time basis:` line (SPLIT-32/36) | **Concede. Dispute only the order of work.** | Add option (a) now; the precedent checker's sketch is ready. The edit does not have to wait for the archive. Make it in `dataset.py` and record that build `01a1ae48` is stale until a rebuild from the curator-supplied archive. The rows and folds do not change, so the 11-05 evidence still applies (EV-8). |
+| 5 | MET-17 note missing (MET-17) | **Concede.** | The score stays per row. The Kendall tau measurement and its one sentence wait for the data. Until then, the notes can say the measurement is pending. |
+| 6 | `known` and the comments omit the overpass, the QA thresholds and the processor change; LST is "NOAA" on a 0.02 K grid (USE-3) | **Concede.** | Use the column audit's `known` text and add one bullet on QA 0.75 vs 0.5 and processor v1.4/v2.2. I agree that the LST product should not be named until DataDescription.pdf confirms it: the 0.02 K grid is an inference from 13 README values (claim 25). |
+| Closing | The record should say the 11-21 round verified nothing on the data (EV-7) | **Concede, with one addition.** | The note should also say that the data-backed evidence comes from 11-05, measured on rows, folds and a scorer verified identical to the current definition (11-05 claim audit). That keeps "not re-measured" apart from "unverified". |
+
+The critic raised no new fact against validity or value, so my opening points 1 to 4 and 7 stand: the source task and
+split, no same-day leak, signal and spread beyond place and date, inputs known at the prediction point, and a known
+source. Agreed result: ship after the wording and tag fixes. The rebuild, the MET-17 sentence and the two-agency check
+follow when the archive is available.
+
+</details>
+
+<details><summary>Critic (2026-11-21)</summary>
+
+**Critic opening brief: geoai (geoai_ground_level_no2_estimation_challenge), 2026-11-21**
+
+Position: ship only after the changes below. None of them is an exclusion reason. The task is real (unseen-station
+daily NO2, source RMSE, whole-station folds), and no audit found a leak or a wrong label. What is wrong is that the
+definition's text says less than the evidence now shows, and one Should of the split rules is not met.
+
+Ground for all points: the data is not on this machine. This round ran no check, probe, blind review or task gamer
+(claim auditor: no check.log, leak/, task/, dtype/ or group.log). Every data fact below comes from the README of build
+`01a1ae48` or from the 11-05 panels in the record's `## Review`.
+
+**1. fit_reason does not name the gaps that make the fit approximate (USE-8, Must; USE-5)**
+
+- Problem: fit_reason says only "Monitoring-site coverage approximates unmonitored locations" and that latency and
+  label QC are not established. Three concrete gaps are known and unnamed:
+  - Held-out points are monitoring sites, chosen and classed by the agencies (traffic, background, industrial). A
+    TROPOMI pixel (about 3.5 x 5.5 km) cannot see a street canyon, and no input encodes station type. Part of the
+    target is siting variance no input explains (domain practitioner, finding 1).
+  - Satellite-only inputs by the source's design: no meteorology (wind, boundary-layer height) and no land use, which
+    every operational model uses (practitioner, finding 2; Zindi page "only public remote sensing data").
+  - Inputs arrive within days (Sentinel-5P) to about seven weeks (final CHIRPS) after the day (column audit 11-21).
+- Effect: a reader takes the score as error at unmonitored places. It is error at other monitors, with a siting mix
+  that over-represents hotspots.
+- Remedy (wording, no rebuild of data): fit_reason = the column audit's text plus one clause: "satellite-only by the
+  source's design; held-out monitoring sites, whose traffic or background siting no input encodes, stand in for
+  unmonitored places."
+
+**2. The use case names a decision the daily target does not serve (USE-1, Must)**
+
+- Problem: use_case ends "to map exposure and identify areas needing monitoring". Network design under Directive
+  2008/50/EC acts on annual means and exceedance counts per zone, not on station-day accuracy (practitioner,
+  finding 5).
+- Effect: the benchmark claims a second decision its target and metric do not score.
+- Remedy: drop "and identify areas needing monitoring"; lead with daily exposure reconstruction and gap-filling.
+
+**3. The label is called one agency's daily mean; the values point to two pipelines (USE-5, Must; EV-7, Must)**
+
+- Problem: comments bullet 4 says "ARPA" in the singular. Station IDs come in two forms: Veneto province codes (PD04,
+  VI04, RO03, VE03, ARPAV) and `X…` sensor IDs (ARPA Lombardia). In the README sample, PD04 is an integer (16), the
+  `X` stations carry decimals; the ten most frequent targets are integers; the maximum 188.2333333 fits a mean of
+  one-decimal hourly values (claim auditor N2, practitioner finding 3; both NEW, unmeasured).
+- Effect: likely small (rounding costs at most about 0.29 RMSE against about 10), but the daily-validity rules of the
+  two agencies are undocumented, and the notes state one source.
+- Remedy: when the archive is on NFS, measure the share of integer targets by ID prefix. Until then, bullet 4 names
+  both agencies and says the daily rule may differ between them. Do not state the single-agency reading as checked
+  (EV-7).
+
+**4. No `Retrospective` tag and no `Time basis:` line (SPLIT-32, Should; SPLIT-36, Should)**
+
+- Problem: the tree leaf is Grouped · `Retrospective` (whole units). Both v0.2 definitions in that leaf carry the
+  tag and the line (5g_energy_consumption; fraud_detection_in_electricity_and_gas_consumption_1m). geoai has
+  `("Spatial",)` only. Nobody chose this; PR #59 predates the split rules (precedent checker, finding 1, NEW).
+- Effect: the same-time check (other stations' same-day readings are the use, not a leak; nearest pair 7 km,
+  r = 0.968, copying a neighbour gains only 0.008 per the 11-05 gamer) is in prose but not where the validator reads it.
+- Remedy: precedent checker's option (a): add `Retrospective` and the sketched `Time basis:` line. The checksum moves,
+  so this needs a rebuild, which needs the curator-supplied archive on NFS.
+
+**5. Unequal stations, and the notes do not say how far one vote per station moves the ranking (MET-17, Should)**
+
+- Problem: per-row scoring is right (each station-day is its own estimate on a daily map). But stations range from 298
+  to 1,093 labelled days. MET-17 then asks the notes for how unequal the units are (bullet 3 has it) and how far one
+  vote per unit moves the ranking (missing) (claim auditor N1, NEW).
+- Effect: small; only about two stations are short.
+- Remedy: no metric change. Once the data is on NFS, score two or three models per row and with 1/n_station weights
+  over the nine folds, report Kendall tau, add one sentence to the metric bullet.
+
+**6. Known inputs and the processor change are not written down (USE-3, Must; quality)**
+
+- Problem: `known` says "for that day". The six satellite columns are one early-afternoon Sentinel-5P overpass;
+  NO2_trop uses QA >= 0.75 (40.7% missing) against QA >= 0.5 for the rest (14.8%). The TROPOMI NO2 processor changes
+  inside the period (v1.4 Dec 2020, v2.2 Jul 2021), a likely step in level and missingness. LST is said to be "NOAA"
+  but sits on a 0.02 K grid, the MODIS scaling (column audit 11-21, claim auditor claim 25).
+- Effect: none on the split (grouped, all dates shared); a reader cannot tell when an input exists or why NO2_trop is
+  missing more often.
+- Remedy: the column audit's `known` text; one comments bullet on the QA thresholds and the processor change; the LST
+  product confirmed against DataDescription.pdf before it is named. No data change.
+
+**What I do not argue**
+
+- No exclusion: every point is a note, a wording fix or a tag. Validity holds on all tested claims (claim auditor:
+  nothing refuted).
+- Keep RMSE, the whole-station split, the inputs and the cleaning. A spatial-block split or added covariates would be
+  our own task (practitioner; minimal preprocessing).
+
+**Order of work**
+
+Points 1, 2, 3 (wording part) and 6 need no measurement and can be written now. Points 3 (measurement), 4 and 5
+need the archive on NFS. Every one of them edits the definition's metadata, so the shipped container moves only with
+one rebuild from the curator-supplied archive. Until then the record should say the 11-21 round verified nothing on
+the data (EV-7).
+
+</details>
+
+<details><summary>Critic rebuttal (2026-11-21)</summary>
+
+**Critic rebuttal: geoai, 2026-11-21**
+
+We agree on the verdict: ship after text and metadata fixes, no change to rows, target, inputs, split or metric. Two
+differences remain: one fix the advocate leaves out (the `known` text and the processor note), and how the
+two-agency label is written down while it is unmeasured.
+
+| Advocate point | Reply | Why |
+|---|---|---|
+| 1. Source task, source metric, tree leaf | Concede | Claim audit 11-21 claims 1, 15, 21; the precedent check walks the tree to this leaf. I never disputed the split or RMSE. |
+| 2. Same-day labels at other stations are the use | Concede | The 11-05 gamer numbers (copying the nearest station 12.47 against 10.37, worse on 9/9 folds; the closest pair has equal labels on 0.094% of days) settle SPLIT-32 question 2. My point 4 asks only that this reading go into the `Time basis:` line. |
+| 3. Signal beyond place and date, models spread | Concede | Coordinates and date alone give 11.40, all inputs 10.26. Ridge to LightGBM spans 0.24 R². I never argued `Trivial` or `No Signal`. |
+| 4. Inputs known at the retrospective point; processor change is a fit note | Concede the substance; dispute the remedy | The advocate calls the processor change "a fit note" but lists no fix that writes it. The definition does not mention it, and `known` still says only "for that day". USE-3 (Must) asks that the prediction point say what is known and when. The column audit's `known` text and one comments bullet (one early-afternoon overpass, QA thresholds for NO2_trop of 0.75 against 0.5 for the rest, processor v1.4 in Dec 2020 and v2.2 in Jul 2021) belong in the same edit as the others. My point 6 stands as a wording fix. |
+| 5. Label limits real, small, already accepted | Concede in part | Myunghwan accepted the undocumented daily aggregation and QC (issue 1). He did not accept a single-agency statement: comments bullet 4 says "ARPA" in the singular, and that is an unchecked claim of its own (EV-7, Must). We agree on the remedy: name both agencies now, and measure the share of integer targets by ID prefix later. The siting mechanism and "satellite-only by design" go into `fit_reason`. We agree there too. |
+| 6. Time basis, MET-17 note, use-case wording | Concede | Same remedies as my points 2, 4 and 5. |
+| 7. Access and missing data are no verdict reasons | Concede, with one condition | EV-4 makes the login-only download a note, not a verdict. The 11-05 evidence matched the current rows and folds. The condition: the record's 11-21 entry must say that this round re-measured nothing and which items wait for the archive (N1, N2, the second station at about 72% missing, the column-audit leftovers), so no later reader takes them as checked (EV-7). |
+
+**No new points**
+
+**Joint list for the mediator**
+
+- **Wording (no measurement):**
+  - `fit_reason`: the siting mechanism, satellite-only by design, and the input latency.
+  - `use_case`: drop "identify areas needing monitoring".
+  - `known`: the column audit's text.
+  - A comments bullet on the QA thresholds and the processor change.
+  - Bullet 4: name both ARPAs.
+- **Metadata:** the `Retrospective` tag and a `Time basis:` line.
+- **When the archive is on this machine:**
+  - The integer share by ID prefix.
+  - The Kendall tau with one vote per station, and its sentence.
+  - The LST product, checked against DataDescription.pdf.
+- **One rebuild covers all of these.** Until then, the record states what this round could not verify.
+
+</details>
+
+<details><summary>Claim audit (2026-11-21)</summary>
+
+**Claim audit: geoai (geoai_ground_level_no2_estimation_challenge), 2026-11-21**
+
+**What I could test**
+
+- The data is not on this machine. I searched once more for a public copy of `Train.csv` (web search on its column
+  names `GT_NO2` and `NO2_trop`, for GitHub, Kaggle and Hugging Face). I found none. A direct call to the Zindi API was
+  blocked by the session's permission policy, so I did not try it again.
+- I tested what I could against four things: the README's built summaries (build `01a1ae48`, checksum `v2:79bbb806…`,
+  the same as the current definition according to the record), the Zindi challenge page and data page (both read
+  2026-11-21 on zindi.world), the Google Earth Engine catalogue page for Sentinel-5P OFFL L3 NO2, and the file sizes
+  on the Zindi data page.
+- Probe outputs: there is no check.log, README_check.md, leak/, task/, dtype/ or group.log in
+  the run folder. Only `precedent/register.json` and the
+  other agents' reports are there. Nothing ran this round because there is no data.
+- Earlier data-backed evidence in the record (the 2026-11-05 claim audit, column audit and task gamer, run on the
+  curator-supplied archive) is reused only where I cross-checked it for consistency. I did not re-measure it.
+
+**Claims table**
+
+| # | Claim | Source | Test | Result | Evidence | Rule |
+|---|---|---|---|---|---|---|
+| 1 | Question: estimate daily NO2 at a station held out of training | task_summary.question; grouping.definition | Read the challenge page | Holds | Jury scores "in-situ data from selected ground stations not provided to participants"; "ground truth data used for evaluation are independent from the training data set" | USE-1, SPLIT-1 |
+| 2 | Use case: an analyst maps exposure at unmonitored locations, retrospectively; the actor is our interpretation | task_summary.use_case; comments bullet 1 | Read the challenge page | Holds as an interpretation | The page states the goal ("estimate surface NO2 … using only public remote sensing data") but names no actor. The record labels the actor as inferred. | USE-1, USE-8 |
+| 3 | Row: 79 northern Italian stations, 2019-2021, 82,051 rows | task_summary.row | README: n_rows, n_groups, LAT/LON ranges, Date n_unique | Holds | 82,051 rows; 79 groups; LAT 44.92–45.89, LON 8.74–12.59 (Lombardy/Veneto); 1,096 dates = 365+366+365 | EV-1 |
+| 4 | 86,584 raw = 79 × 1,096; 4,533 missing targets dropped | comments bullet 3 | Arithmetic | Holds (arithmetic only) | 79 × 1,096 = 86,584; 86,584 − 4,533 = 82,051. Also 10,000,397 B / 86,584 rows = 115.5 B/row, a plausible CSV row | CLEAN-15 |
+| 5 | Coverage 298–1,093 days per station; two stations lack about 72% | comments bullet 3 | README group table | Partly holds | min 298, max 1,093. 298/1,096 = 27.2% labelled, so 72.8% missing for one station. The second station is not visible in the summaries. | USE-8 |
+| 6 | Seven zero targets; maximum 188.2333333 kept | comments bullet 3 | README target table | Consistent | non_positive_pct 0.01 (7/82,051 = 0.0085%, which rounds to 0.01); max 188.233 | CLEAN-11/15 |
+| 7 | Target is ARPA daily ground NO2 in µg/m³ | comments bullet 4; task_summary.predicted | DataDescription.pdf is not on this machine; checked the README values | Untested here (earlier audit read the PDF) | Values 0–188, mean 24.5, in the normal range for daily NO2 in the Po valley in µg/m³ | USE-5 |
+| 8 | Satellite NO2 columns are column densities in mol/m², not the surface quantity | comments bullet 4 | GEE catalogue page | Holds | GEE: the NO2 bands are in mol/m²; README values about 1e-4 | LEAK-2 |
+| 9 | Daily aggregation and QC of the labels are not supplied | comments bullet 4; fit_reason | Read the data page | Holds; see finding N2 | The page gives no aggregation. The value pattern points to two pipelines (finding N2). | EV-7 |
+| 10 | Dates are day-first with mixed separators, 2019-01-01 to 2021-12-31; Test.csv is month-first | comments bullet 5; `_clean` | Code read; README Date n_unique 1,096 | Holds for train (code + count). Test.csv date format untested here | `_clean` parses `%d/%m/%y` and `%d-%m-%y` separately and asserts unique (ID, Date) | CLEAN-12 |
+| 11 | ID is group-only; ID_Zindi is dropped; two ID_Zindi values repeat | comments bullet 6 | README: n_features 11 = 10 numeric inputs + Date; ID is the group column | First two hold; the repeat is untested here | dtypes: 1 category (ID), 1 datetime, 11 float64 (incl. target), so 11 features without ID | CLEAN-3 |
+| 12 | All 8 physical predictors + LAT, LON, Date are kept; inputs are not imputed | comments bullet 7 | README feature summary | Holds | 8 physical columns + 3 = 11. Missingness preserved: LST 45.8%, NO2_trop 40.7%, five columns at 14.77% (12,118) | CLEAN-2 |
+| 13 | Negative NO2 retrievals are ordinary noise; none below −0.001 mol/m²; cloud fraction exceeds 1 by 4.4e-8 | comments bullet 8 | GEE page; README minima | Holds | GEE: "negative vertical column values are often observed … not to filter … except … lower than -0.001 mol/m^2". README min NO2_total −1.19e-5, NO2_trop −2.53e-5. CloudFraction max prints as 1 (the 4.4e-8 comes from the earlier column audit) | CLEAN-11 |
+| 14 | NO2_trop has more missing values because of a stricter QA filter | column audit 11-21 (not in the definition) | GEE page | Consistent | GEE: QA 75% for the tropospheric band, 50% for the others; 40.7% vs 14.8% missing | EV-2 |
+| 15 | Leaderboard metric is RMSE on the original scale; correlation and MAE are jury metrics only | comments bullet 9; `Metric.source("rmse", original=…, reference=page)` | Read the evaluation section | Holds | "The evaluation metric for this competition is Root Mean Squared Error"; no transform; public 20% / private 80% of test rows. Jury: "Pearson correlation (r), Root Mean Square Error (RMSE) and Mean Absolute Error (MAE)" | MET-1, MET-3, MET-4, MET-11 |
+| 16 | RMSE is computable per row on every fold; no scoring columns needed | README task block | README: scoring_columns null; 26,637–27,875 test rows and 26–27 stations per fold; target variance 292.7 | Holds (earlier audit's dummy RMSE 15.94–19.02 per fold, consistent with sd 17.1) | Unit = station-day, which exists; RMSE needs no extra input | MET-2 |
+| 17 | RMSE means the same here as in the source | implied | Compare tasks | Holds | Same target, same scale and same regime (unseen stations, same period). Our test folds have 26–27 stations against the source's 6 | MET-2 |
+| 18 | Score per row with no unit weight, while stations differ in size (298 vs about 1,068 rows) | implied by comments bullet 9 and the 298–1,093 coverage | Read MET-17 | Per-row holds (each station-day is a decision on its own map). The note MET-17 then asks for is missing; see finding N1 | Notes give the inequality but not how far one vote per station moves the ranking | MET-17 |
+| 19 | The six Zindi test stations cover the same 2019-2021 dates; overlapping dates are as in the source | comments bullet 10; splits_comment | File-size arithmetic from the data page | Consistent (indirect) | Test.csv 705.1 KB / (6 × 1,096 = 6,576) = 107 B/row against 115.5 B/row for train with target. SampleSubmission 83.5 KB / 6,576 = 12.7 B/row, about one `ID_xxxxxx,value` line. Both fit 6 stations × the full period | SPLIT-1, EV-1 |
+| 20 | Each station has a unique coordinate pair | grouping.definition | README n_unique | Holds | LAT 79 unique, LON 79 unique, ID 79 | SPLIT-24 |
+| 21 | Split: whole stations held out across all dates; does not measure forecasting or extrapolation | task_summary.split; splits_comment | README split block | Holds | grouped_non_iid on ID, 3×3, 26–27 test groups per fold. The scope sentence is honest | SPLIT-1/3 |
+| 22 | Known at prediction time: location, date and that day's products | task_summary.known | GEE page; column audit 11-21 | Holds for the declared retrospective point. Wording gap is KNOWN | Inputs arrive days (S5P) to about 7 weeks (CHIRPS final) after the day; the use case is retrospective | USE-3, LEAK-10 |
+| 23 | Fit approximate: latency and label QC not established | fit_reason | Read the sources | Holds | Neither page gives latency or QC | USE-8, EV-7 |
+| 24 | Licence CC BY-SA 4.0; year 2024; host ITU AI for Good | sources | Challenge page | Holds | "under a CC-BY SA 4.0 license"; 22 May–15 Nov 2024 (the timeline text says 11 Nov); "AI for Good is organized by ITU" | PROV-8/9/10 |
+| 25 | Precipitation is CHIRPS; LST is "NOAA" | record screening; data page | README LST values | CHIRPS holds. For LST, the values sit on a 0.02 K grid (KNOWN, column audit) | 13 of 13 LST values shown in the README are even hundredths (chance on a 0.01 grid: 0.5^13 = 1e-4). That is the MODIS MOD11A1 scale factor; the source page says "NOAA". No definition text names the LST product, so no shipped claim is refuted | PROV-2 |
+| 26 | Earlier model evidence: LightGBM about 10.26–10.37 RMSE; group-probe R² 0.634 | Assessments 10-30 and 11-05 | Consistency: sqrt(292.7 × (1 − 0.634)) | Consistent | 10.35, inside the reported 10.26–10.37 | EV-8 |
+| 27 | No row copies across the split; near stations are signal, not copies | implied; gamer 11-05 | Not re-testable | Untested here (KNOWN, gamer: 0 exact copies; nearest pair 7 km, r = 0.968; copying a neighbour within 1 km gains only 0.008) | — | LEAK-16 |
+| 28 | Priority 3, risk 0, gap 0 | Assessments | Judgement | No refuting evidence | — | — |
+| 29 | Accepted warnings: none; 27 checks pass | accepted_check_warnings = {}; README | README bundle_checks | Holds for the last build. No check ran this round (no data) | ok: true, 0 errors and 0 warnings | EV-3 |
+
+**Findings (none refuted; two NEW, both minor)**
+
+**N1 (NEW, Should, MET-17): the notes do not say how far one vote per station moves the ranking.**
+- The score stays per row correctly: each station-day is its own estimate on a daily map.
+- Stations are unequal: one has 298 rows, against a median of 1,068. MET-17 then asks the notes to say how unequal
+  the units are (bullet 3 does) and how far one vote per unit moves the ranking. The second part is missing.
+- Expected effect is small: only about two of the 79 stations are short.
+- Mildest remedy: once the data is on NFS, score the nine folds of two or three models per row and with station
+  weights 1/n_station, report Kendall tau, and add one sentence to the metric bullet. No change to the metric.
+
+**N2 (NEW, low, EV-7 / USE-5): the target probably comes from two agencies with different precision and daily rules.**
+- Station IDs have two forms: Veneto province codes (PD04, VI04, RO03, VE03) and numeric `X…` sensor IDs (the ARPA
+  Lombardia style).
+- In the README sample rows, PD04 is an integer (16). The `X` stations carry decimals (53.2, 8.3, 26.55, 17.3).
+  The maximum 188.2333333 is 45,176/240, which fits a mean of hourly 0.1-precision values with a varying number of
+  valid hours.
+- The ten most frequent target values are all integers (12, 13, 11, …).
+- Comments bullet 4 says "ARPA" in the singular. There are two ARPAs (Lombardia and Veneto) with their own
+  daily-validity rules.
+- Rounding alone costs at most about 0.29 RMSE, so this is not a validity problem. It refines the accepted
+  "aggregation not supplied" limit.
+- Remedy: measure, then possibly name both agencies in bullet 4. No data change.
+
+**Untested, with what to measure (when the archive is on NFS)**
+
+| Claim | Measure |
+|---|---|
+| 5 (second station at about 72% missing) | Labelled days per ID, sorted; list the two smallest |
+| 7 (ARPA, µg/m³) and LST product | Text of DataDescription.pdf Table 1: agency per region, LST collection ID |
+| 10 (Test.csv month-first and dates) | Parse Test.csv Date; min/max; rows per test station (expect 6 × 1,096) |
+| 11 (two ID_Zindi repeats) | `raw.ID_Zindi.duplicated().sum()`; check that no (ID, Date) repeats |
+| 13 (cloud fraction 1 + 4.4e-8) | `CloudFraction.max() - 1` |
+| 16 (dummy RMSE per fold) | Score the train-mean prediction with `data_foundry.v2.metrics.scorer` on all 9 folds |
+| N1 | Per-row vs 1/n_station weighted RMSE ranking, Kendall tau over 9 folds |
+| N2 | Share of integer GT_NO2 by ID prefix (`X` vs province code); fractional parts × 24 and × 240; days per station with non-integer values |
+| Column-audit leftovers | NO2_trop missing share and median by month (processor v1.4 Dec 2020, v2.2 Jul 2021); LST values mod 0.02; satellite missingness by GT quintile |
+
+**Ranked**
+
+- Nothing is refuted. Every validity claim I could test holds: the source task, unseen-station holdout, target,
+  inputs, cleaning, metric and licence.
+- N1 is a missing sentence (Should).
+- N2 is a provenance refinement.
+- Neither changes the data, the split or the metric.
+
+Sources: [Zindi challenge](https://zindi.world/competitions/geoai-ground-level-no2-estimation-challenge),
+[Zindi data page](https://zindi.world/competitions/geoai-ground-level-no2-estimation-challenge/data),
+[GEE S5P OFFL L3 NO2](https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S5P_OFFL_L3_NO2).
+
+</details>
+
+<details><summary>Domain practitioner (2026-11-21)</summary>
+
+**Domain practitioner: geoai_ground_level_no2_estimation_challenge (2026-11-21)**
+
+Actor: an air-quality analyst at a regional agency or in an exposure-assessment team. I reconstruct daily ground NO2 at places with no monitor, after the fact. I worked from `dataset.py`, the generated README, the record (Comments, Review, the 2026-11-21 column audit) and the sources listed at the end. I had no data, so I ran nothing. The panel run folder has only `precedent/`. `check.log`, the probe outputs and `REVIEW.md` are missing, as is a 2026-11-21 Horizon or split-issue block in the record's `## Review`. Only the Assessment line of the split audit is there.
+
+**Verdict**
+
+| question | answer |
+|---|---|
+| Fit | **approximate** (agrees with `fit="approximate"`). The task is the standard station-held-out reconstruction of daily NO2. But the held-out points are monitoring sites, not the unmonitored places I map. And the inputs are the challenge's satellite-only set, not the set I would always use. |
+| Metric scores my decision | **partly yes, keep RMSE** (MET-4). RMSE in µg/m3 per station-day is what my field reports first. I would also look at each station's mean error. That view complements RMSE and does not replace it. |
+| Would I use the model | Yes, as a satellite-only gap-filling layer for daily background exposure. No, for traffic hotspots or for compliance at a site. |
+
+**The five questions, as the analyst**
+
+1. **Inputs at prediction time.** For retrospective mapping I have every input: the coordinates, the date, CHIRPS precipitation, LST and the Sentinel-5P columns of that day. The column audit gives the latencies: days for the satellite products, about seven weeks for final CHIRPS. I always have the same-day readings of the surrounding monitoring network too. The benchmark gives them only implicitly: training stations share the date, so a model can learn each day's regional level. That is how kriging works in my practice, and it fits `context="none"`. The inputs I would always have that are missing are meteorology (wind speed, boundary-layer height from ERA5) and static covariates (road density, land use, population, emission inventories). The challenge leaves them out on purpose ("only public remote sensing data"), so this is the source's design, not our cut.
+2. **Target.** A daily mean concentration in µg/m3 is a quantity I act on directly. I use it for short-term exposure in epidemiology and for filling gaps in the daily record. A number is the right output (regression). For network planning I would act on annual means and exceedance counts instead (finding 5).
+3. **Row and test.** One row is one station-day, and that matches one estimate on my daily map. Holding out whole stations over the same dates matches retrospective reconstruction: the same period, other places. That is the leave-stations-out validation the literature uses. The test points are monitoring sites, though, and monitoring sites are chosen (finding 1).
+4. **Trust.** I trust the model more because its error is measured at unseen stations and because it uses the same-day network. Three things make me trust it less. A TROPOMI pixel is about 3.5 x 5.5 km and cannot see the street canyon a traffic station measures. Wind and mixing height are not inputs. The NO2 processor changes during 2020-2021 (column audit, KNOWN).
+5. **Metric.** RMSE on the concentration scale is the challenge's leaderboard metric (MET-4). It is also the first number in this literature, next to R² and MAE. The EU FAIRMODE model quality objective is an RMSE scaled by measurement uncertainty. Pooled RMSE weights winter peaks and high stations most, and those are the exposures that matter. I see no MET-2 failure: the unit (station-day) exists, and no input is missing. I would not change it (MET-1, MET-4, MET-10). MET-6 to MET-9 do not apply: this is not a classification task.
+
+**Findings (ranked by how much they change the task)**
+
+| # | finding | evidence | rule | status |
+|---|---|---|---|---|
+| 1 | **Monitoring sites are not unmonitored locations.** Agencies classify stations as traffic, background or industrial, and urban, suburban or rural. Traffic stations sit at hotspots and read much higher NO2 than a background grid cell, and the satellite pixel cannot resolve that. Station type is missing, and so is any proxy for it (road distance, land use). So part of the target is site-siting variance that no input can explain, and the held-out stations over-represent hotspots compared with the places I map. The fit_reason says this only generally ("Monitoring-site coverage approximates unmonitored locations"). Naming the mechanism would make the gap concrete. Measurable without changing the task: the station IDs look like public agency codes (`X5958`-style ARPA Lombardia sensor IDs; `PD04`, `VI04`, `VE03`, `RO03` ARPAV Veneto codes). Joining their public station type and reporting RMSE by type would show how much of the error is siting. Not a reason to change the data. | README sample rows; agency station registries (not fetched) | USE-8 (approximate, named gap), USE-5 | NEW (mechanism); the general gap is KNOWN |
+| 2 | **The practitioner's standard inputs are absent by the source's design.** Meteorology (boundary-layer height, wind) and static land-use or traffic covariates drive NO2 in every operational model I know, including the Lombardy work behind this challenge (Cedeno Jimenez et al. 2023 used ground meteorology and kriging; its stated next step was satellite-only inputs, which this challenge implements). So this is a satellite-only variant of my task. Adding covariates would be our own feature engineering, against minimal preprocessing. Keep the inputs as they are, and say "satellite-only by design" in fit_reason. | Zindi overview ("only public remote sensing data"); Cedeno Jimenez et al. 2023 | USE-8, USE-9 (no better-fitting use case found) | NEW (as a fit statement) |
+| 3 | **Label construction may differ between the two agencies.** The maximum, 188.2333333, equals 4517.6/24: a 24-hour mean of hourly values with one decimal (Lombardy, decimal values). The Veneto sample row (`PD04`, 16) and the most frequent values (12, 13, 11, ...) are integers. So ARPAV daily means may be rounded to whole µg/m3. The hourly coverage rule for a valid daily mean (the EU's 75%) is not documented. The effect is small (rounding of at most ±0.5 against an RMSE near 10), but it is a regional difference in labels, and only the data can confirm it. To measure: the share of integer targets by ID prefix (`X*` against Veneto codes). | README sample and top values; arithmetic | USE-5, CLEAN (keep labels) | NEW (hypothesis); aggregation undocumented is KNOWN (issue 1, resolved) |
+| 4 | **Random station folds test interpolation inside the network.** Stations cluster around Milan, the Po plain cities and the Veneto cities. Many held-out stations have a close neighbour in training, which is easier than mapping a rural gap far from any station. This matches the challenge, and the notes already disclaim geographic extrapolation. No change. | README (LAT 44.92-45.89, LON 8.74-12.59, 79 stations); splits_comment | USE-8 | KNOWN |
+| 5 | **"Identify areas needing monitoring" overstates the use case.** Network design under Directive 2008/50/EC rests on annual means and exceedances against assessment thresholds per zone, not on daily station-day accuracy. Daily estimates support it only after aggregation. The use case should lead with daily exposure reconstruction (short-term exposure, gap-filling of the daily record) and drop or soften the monitoring-design clause. Wording only. | task_summary.use_case | USE-1, USE-8 | NEW |
+| 6 | Inputs arrive with a lag (satellite within days, final CHIRPS about seven weeks), and the NO2 processor changes in Dec 2020 and Jul 2021. I agree with the column audit's fit_reason and known rewrites. | column audit 2026-11-21 | USE-3, USE-8 | KNOWN |
+
+**What an expert would change**
+
+- Keep the task, the split and RMSE.
+- Sharpen the use case (finding 5) and fit_reason (findings 1, 2 and 6): "satellite-only, monitoring sites stand in for unmonitored places, with traffic and background siting not represented".
+- Measure findings 1 and 3 when the archive is on NFS. Neither changes the data unless the integer labels turn out to be a different aggregation, not just rounding.
+- Do not add meteorology or land-use features, and do not move to a spatial-block split. The source defined this satellite-only, unseen-station question, and a random station split is the field's standard validation.
+
+**Sources**
+
+- Zindi challenge page: https://zindi.world/competitions/geoai-ground-level-no2-estimation-challenge (objective "only public remote sensing data", RMSE leaderboard, Pearson r and MAE for the jury, evaluation stations "not provided to participants")
+- Cedeno Jimenez, Pugliese Viloria, Brovelli (2023), "Estimating Daily NO2 Ground Level Concentrations Using Sentinel-5P and Ground Sensor Meteorological Measurements", IJGI 12, 107: https://doaj.org/article/15234d30ec4c4ecf9c1cf2c3c386adb8
+- Fania et al. (2024), Remote Sensing 16, 1206 (Sentinel-5P + ERA5, ARPA ground truth, Italy): https://mdpi.com/2072-4292/16/7/1206
+- Apulia daily NO2 XGBoost preprint (meteorology and land-use as main drivers): https://www.preprints.org/frontend/manuscript/d31308a3b6061236ef9712be12f81219/download_pub
+- EGU25-16433 (Italy-wide daily NO2 maps from 300+ stations with ERA5-Land): https://meetingorganizer.copernicus.org/EGU25/EGU25-16433.html
+- Domain background (station classification, the 75% data-coverage rule, FAIRMODE MQO, Directive 2008/50/EC) from my own knowledge; not fetched this session.
+- Repo: `datasets/_dev/tabarena-v0pt2/geoai_ground_level_no2_estimation_challenge/dataset.py` and `README.md`, `curation/records/geoai_ground_level_no2_estimation_challenge.md`, the run folder, `use_case.md`, `metrics.md`.
+
+</details>
+
+<details><summary>Precedent check (2026-11-21)</summary>
+
+**Precedent check: geoai_ground_level_no2_estimation_challenge (2026-11-21)**
+
+**What I checked**
+
+- Decision register run on the login node (2 threads): 43 flags; none names geoai or a `Retrospective` panel. Output:
+  the run folder.
+- Definition: `datasets/_dev/tabarena-v0pt2/geoai_ground_level_no2_estimation_challenge/dataset.py`. Record: CC lines of
+  2026-10-30 and 2026-11-05, issue 1 (resolved), Assessment of 2026-11-21.
+- The record has **no 2026-11-21 issues and no Horizon block**. The only output of this round's split audit is the
+  Assessment line that sets the facts. There are no check or probe logs for geoai under `pr59_panel/` (no data on NFS),
+  so I read none.
+- Precedents: the split tree's Panel data branch (`split_tree.md`). The leaf's examples, `5g_energy_consumption` and
+  `fraud_detection_in_electricity_and_gas_consumption_1m`, read from `origin/splits/basis-panel`, because the split PRs
+  for the dataset groups are not merged into this worktree. Also the Zindi Sentinel-5P sibling
+  `airqo_african_air_quality_prediction_challenge`, `airqo_low_cost_air_quality_monitor_calibration_challenge`, and
+  SPLIT-32 question 2 in `splits.md`.
+
+**Walking the tree**
+
+- Panel data, then "fill in the covered period". The use case maps unmonitored places within 2019-2021, and the
+  challenge's test stations cover the same dates.
+- Labels-arrive-later step ④: no. The Assessment of 11-21 says the reading arrives with its day. The missing targets
+  are monitor downtime, not a label delay.
+- Whole units missing → **Grouped · `Retrospective` (whole units)**. The shipped split matches this leaf.
+
+**Per decision**
+
+| Decision | Verdict | Closest precedent | Facts compared |
+|---|---|---|---|
+| Group by station, all dates on one side, test dates overlap training (SPLIT-1/3/32/36) | Consistent | 5g_energy_consumption (Retrospective, whole stations in one logged week); fraud_detection_in_electricity_and_gas_consumption_1m | Same leaf. Fill-in of units the network does not measure, over the covered period |
+| Other stations' same-day labels in training; `context="none"` (SPLIT-32 q2: "no sample of a test sample's time carries its target") | Consistent in substance | 5g's `Time basis:` line: "while the other stations of the same hours are measured" | Same reading of the check: the other units at the same time are the use, not a leak. The 11-05 gamer found same-day neighbour blends gain only modestly and found no identical labels. So no row of the test day carries the target, and grouping by day is not called for. Not written down here (see finding 1) |
+| `data_tags = ("Spatial",)`, no time basis, no `Time basis:` line (SPLIT-32, SPLIT-36) | **Departs, without a stated reason** | 5g: `("Retrospective",)` + line; fraud_detection: `("Spatial", "Retrospective")` + line | Same leaf, same kind of facts. The likely cause is that PR #59 predates the split work, not a curator's choice. **NEW**, finding 1 |
+| Drop the 4,533 rows without a target, keep extremes and zeros (CLEAN-11/15) | Consistent | Issue 1, resolved 2026-10-30 (Myunghwan) | Unchanged |
+| Date, latitude and longitude as inputs (time-column actor test) | Consistent | 5g keeps day and hour as features | The retrospective analyst holds the date and the place. Coordinates are unseen in test under the station split |
+| Satellite and weather retrievals as tabular physical inputs (SEL-15) | Consistent | airqo_african CC 2026-11-05 (Myunghwan): S5P retrievals are physical measurements | Same curator, same product. airqo was deferred for 4 cities and unstable transfer. geoai has 79 stations, which sets it apart |
+| Source RMSE (MET-4) | Consistent | 5g, airqo_african: Zindi RMSE | Unchanged |
+| `required_split: Grouped`; facts Panel Data, Samples Over Time, Time Dated, Entities Recur, no Target fact | Consistent | `test_collection_types`: Panel Data needs a recorded occasion; Time: Dated satisfies it | Column audit 11-21 confirms the facts |
+| Priority 3 | Consistent | 11-05 assessments | No new fact |
+
+No drift by this curator. No third exception of a kind. The register flags (CLEAN-19 amendment, metric
+exceptions, label maturity) concern other datasets and do not match these facts.
+
+**Finding 1 (NEW): the definition does not name its time basis**
+
+Should the definition carry `Retrospective` and a `Time basis:` line, like the other whole-unit fill-in panels?
+
+- **Problem:**
+  - The tree leaf is Grouped · `Retrospective` (whole units). Both v0.2 definitions under that leaf carry the tag and
+    the line: 5g_energy_consumption `("Retrospective",)`, fraud_detection_in_electricity_and_gas_consumption_1m
+    `("Spatial", "Retrospective")`. geoai has `("Spatial",)` only.
+  - SPLIT-32 asks the line to name the time covered, the need, the same-time check ("no sample of a test sample's
+    time carries its target"), and what the split cannot test. The `curation_comments` already hold all of that in
+    prose: 2019-2021, unmonitored stations, other-station same-day data legitimate, no future-year or distant-region
+    test. They just lack the tag and the line.
+  - The likely cause is timing: PR #59 was written before the split rules. Nobody chose to depart.
+
+| | Option | Pro | Con |
+|---|---|---|---|
+| a | Add `Retrospective` to `data_tags` and a `Time basis:` line (sketch below) | Matches 5g and fraud_detection. The time-basis validator then checks it | Changes the metadata, so the checksum moves. Needs a rebuild |
+| b | Keep as is and write in `splits_comment` why no time basis is named | No rebuild | Leaves an unexplained departure from both leaf precedents |
+
+Sketch for (a): "Time basis: Retrospective: 79 ARPA stations read daily, 2019-01-01 to 2021-12-31. The reading
+arrives with its day, and the use case fills in places without a monitor over that period, while the other stations of
+the same days are measured. Nearby stations correlate but no other station's same-day reading equals the target, so
+days are not grouped. Not tested: a later year, or a station outside Lombardy and Veneto."
+
+**Recommendation:** a.
+
+Rule IDs: SPLIT-32 (time basis and its line, same-time check), SPLIT-36 (leaf decides, departures named).
+
+**Not tested**
+
+- I could not measure the same-time check (whether a training station's same-day NO2 nearly equals a test station's).
+  geoai's data is not on NFS. The verdict rests on the 11-05 gamer result recorded in the record.
+- Whether the missing targets cluster late in time (step ④). I rely on the documentation that the reading arrives with
+  its day. The two stations missing ~72% of their labels could not be inspected.
+
+</details>
+
+<details><summary>Column audit (2026-11-21)</summary>
+
+**geoai column audit (2026-11-21) — no decision; docs only; data not obtained (Zindi login)**
+- All 11 inputs known at the retrospective prediction point; no post-outcome, lag, whole-release-fitted column. No ERA5; precip = CHIRPS.
+- Six satellite columns = one Sentinel-5P L3 NO2 overpass (GEE): NO2_trop QA>=0.75 (40.7% missing), others QA>=0.5 (14.8%, same 12,118 rows).
+- Facts hold (Panel Data, Samples Over Time, Time Dated, Entities Recur, 2019-2021). No Features: Read Later.
+- Caveat: TROPOMI NO2 processor v1.4 (Dec 2020), v2.2 (Jul 2021) inside the period — level/missingness step; not a split problem (grouped, all dates shared).
+Doc fixes:
+- task_summary.known -> "The location and date; that day's CHIRPS precipitation; daytime land-surface temperature, aerosol index, cloud fraction, satellite nitrogen dioxide columns and tropopause pressure from single early-afternoon satellite overpasses on that day."
+- fit_reason 2nd sentence -> "Monitoring-site coverage approximates unmonitored locations. Inputs arrive within days (satellite) to about seven weeks (CHIRPS final precipitation) after the day, which suits retrospective mapping but not same-day use. The ground-truth daily quality-control procedure is not documented."
+- curation_comments bullet on the S5P bands/QA, processor change, LST 0.02 K grid (MODIS/VIIRS scaling; source says NOAA) — confirm vs DataDescription.pdf.
+To measure when archive on NFS: NO2_trop missing/median by month (DJF 19/20 vs 20/21); trop-missing superset of total-missing; LST multiples of 0.02; same-cell precip identical; satellite missing by GT quintile; DataDescription.pdf collection IDs.
+
+</details>
 
 
 <details><summary>Current checksum reconciliation</summary>
