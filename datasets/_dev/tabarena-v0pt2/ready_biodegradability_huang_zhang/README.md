@@ -2,13 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: ready_biodegradability_huang_zhang
 container_format: 2
-checksum: v2:462042ef41db095038e7f021cbc36e525b5cb30bb172fd3f772d5cc677bd94b8
+checksum: v2:9f4b721345dc00e6fa9e01baf02ea9b7b9bb96b746035e5f319200488710a046
 build: null
 build_stale: false
 raw_files:
   class_all.csv: 428fb480260301f054fae588e768f3ed33397b5cad4d4bc8ae8dc7459a60b121
+  iuclid_echa.csv: 4502fae3312b8a73229714ed90bc9ef59d0b8a4dab99b6a3d54f3402b22f8720
 data:
-  n_rows: 5719
+  n_rows: 5714
   n_features: 1
   dtypes:
     category: 1
@@ -30,10 +31,10 @@ task:
     prediction_unit: row
     aggregation: null
     context: none
-    n_groups: 4334
+    n_groups: 4329
     test_groups_per_fold:
-      min: 1408
-      max: 1472
+      min: 1430
+      max: 1456
   special_features:
     SMILES: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 splits:
@@ -45,19 +46,24 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 3600
-    max: 3937
+    min: 3613
+    max: 3922
   n_test:
-    min: 1782
-    max: 2119
+    min: 1792
+    max: 2101
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - meta_license_unknown
+  warnings: []
   infos: []
-  accepted: {}
+  accepted:
+    meta_license_unknown: 'The article states no licence for the supporting information
+      that holds the data, and the repository the file is copied from is GPL-3.0 for
+      its code, which does not govern the data it redistributes, so no licence can
+      be declared. Accepted as on qsar_biodeg (2026-11-02): noted, not blocking, and
+      to be regularised before the data ships outside the group (Andrej, 2026-11-25).'
 decisions:
+- Structures that are not the substance the row is about
 - Copies of one compound
 ---
 
@@ -65,9 +71,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `Biodegradable`, scored with `roc_auc` on grouped splits by `scaffold`. 5,719 rows and 1 features. Source: Other (2022).
+Binary classification of `Biodegradable`, scored with `roc_auc` on grouped splits by `scaffold`. 5,714 rows and 1 features. Source: Other (2022).
 
-Not built yet. The current definition gives checksum `v2:462042ef41db095038e7f021cbc36e525b5cb30bb172fd3f772d5cc677bd94b8`.
+Not built yet. The current definition gives checksum `v2:9f4b721345dc00e6fa9e01baf02ea9b7b9bb96b746035e5f319200488710a046`.
 
 ## In brief
 
@@ -75,7 +81,7 @@ Not built yet. The current definition gives checksum `v2:462042ef41db095038e7f02
 
 **Use case.** For example, a producer or a registrant screens a chemical's structure before commissioning a ready-biodegradability test, which runs at least 28 days and costs thousands of dollars, or a regulator ranks registered chemicals for a persistence assessment.
 
-**One row.** One chemical with a ready-biodegradability result, from Huang and Zhang's ClassDataset_all: 4,389 chemicals read off screening-test records and 1,330 compiled from the literature (5,719 of their 6,139, after copies of one compound are resolved).
+**One row.** One chemical with a ready-biodegradability result, from Huang and Zhang's ClassDataset_all: 4,389 chemicals read off screening-test records and 1,325 compiled from the literature (5,714 of their 6,139, after copies of one compound are resolved).
 
 **Predicted.** Whether the chemical passes the standard test, that is at least 60% degradation in 28 days (70% where the method follows dissolved organic carbon); 33.8% do.
 
@@ -83,9 +89,9 @@ Not built yet. The current definition gives checksum `v2:462042ef41db095038e7f02
 
 **What the test data stands for.** Whole chemical series are held out: chemicals that share a ring skeleton stay on one side, so a test chemical of a series belongs to a family the model has not seen. Chemicals without a ring and those whose only skeleton is a bare benzene ring, half the set, are held out one by one, so for them the split is a draw.
 
-**Our changes to the source.** We ship the structure in place of the pKa and speciation columns the copy adds, drop the chemicals whose structure carries both classes, and split by chemical series instead of at random.
+**Our changes to the source.** We ship the structure in place of the pKa and speciation columns the copy adds, put ECHA's own structure on the 19 chemicals whose dossier contradicts the one published, drop the chemicals whose structure carries both classes, and split by chemical series instead of at random.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The structure is all a screener has before the test, and a held-out series stands for a family not yet tested. The label is the day-28 reading and leaves out the 10-day window the OECD 301 series requires before a chemical counts as readily biodegradable: on the quarter of the chemicals a REACH export reaches, the registrants' own conclusion turns 89 of 778 positives negative, 1.6% of all rows.
+> **Use case fit: direct (the rows, features and split mirror the use case).** The structure is all a screener has before the test, and a held-out series stands for a family not yet tested. The label is the day-28 reading and leaves out the 10-day window the OECD 301 series requires before a chemical counts as readily biodegradable: on the quarter of the chemicals a REACH export reaches, the registrants' own conclusion turns 89 of 779 positives negative, 1.6% of all rows.
 
 ## Files in this folder
 
@@ -96,7 +102,7 @@ Not built yet. The current definition gives checksum `v2:462042ef41db095038e7f02
 
 - The curation record, with the triage decision, its sources and the review: [`curation/records/ready_biodegradability_huang_zhang.md`](../../../../curation/records/ready_biodegradability_huang_zhang.md)
 - The original source: <https://doi.org/10.1021/acs.est.2c01764>
-- A copy (Körner et al. 2024, datasets/external_data/class_all.csv): <https://github.com/pkoerner6/Prediction-of-Aerobic-Biodegradability-of-Organic-Chemicals>
+- A copy (Körner et al. 2024, datasets/external_data/class_all.csv and datasets/iuclid_echa.csv): <https://github.com/pkoerner6/Prediction-of-Aerobic-Biodegradability-of-Organic-Chemicals>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
 ## Rebuild
@@ -104,21 +110,29 @@ Not built yet. The current definition gives checksum `v2:462042ef41db095038e7f02
 `dataset.py` reads its raw files from `local-data-warehouse/ready_biodegradability_huang_zhang/`. To get them:
 
 ```text
-mkdir -p local-data-warehouse/ready_biodegradability_huang_zhang && wget -O local-data-warehouse/ready_biodegradability_huang_zhang/class_all.csv https://raw.githubusercontent.com/pkoerner6/Prediction-of-Aerobic-Biodegradability-of-Organic-Chemicals/main/datasets/external_data/class_all.csv
+mkdir -p local-data-warehouse/ready_biodegradability_huang_zhang && wget -O local-data-warehouse/ready_biodegradability_huang_zhang/class_all.csv https://raw.githubusercontent.com/pkoerner6/Prediction-of-Aerobic-Biodegradability-of-Organic-Chemicals/main/datasets/external_data/class_all.csv && wget -O local-data-warehouse/ready_biodegradability_huang_zhang/iuclid_echa.csv https://raw.githubusercontent.com/pkoerner6/Prediction-of-Aerobic-Biodegradability-of-Organic-Chemicals/main/datasets/iuclid_echa.csv
 
 class_all.csv (2,242,462 bytes), sha256
 428fb480260301f054fae588e768f3ed33397b5cad4d4bc8ae8dc7459a60b121 (downloaded 2026-11-25)
+
+iuclid_echa.csv (6,517,235 bytes), sha256
+4502fae3312b8a73229714ed90bc9ef59d0b8a4dab99b6a3d54f3402b22f8720 (downloaded 2026-11-25)
 
 pubs.acs.org refuses a command-line download of the article's supporting information (403), which is where
 the data files are, so the file comes from Körner et al.'s repository, which redistributes Huang and Zhang's
 three classification sets with pKa and speciation columns added. The article itself is readable: the
 accepted manuscript is free at https://par.nsf.gov/servlets/purl/10350359, and every sentence quoted below
 was checked against it on 2026-11-25.
+
+The second file is Körner et al.'s own export of the ECHA registration dossiers. No row of it ships: it is
+read for ECHA's molecular formula, molecular weight and structure per CAS number, which adjudicate the rows
+whose structure is not the substance they are about (curation_comments).
 ```
 
 | file | source | bytes | rows | sha256 (start) |
 |---|---|---|---|---|
-| `class_all.csv` | Körner et al. 2024, datasets/external_data/class_all.csv | 2,242,462 |  | `428fb480260301f0` |
+| `class_all.csv` | Körner et al. 2024, datasets/external_data/class_all.csv and datasets/iuclid_echa.csv | 2,242,462 |  | `428fb480260301f0` |
+| `iuclid_echa.csv` | Körner et al. 2024, datasets/external_data/class_all.csv and datasets/iuclid_echa.csv | 6,517,235 |  | `4502fae3312b8a73` |
 
 Then, from the repository root:
 
@@ -139,8 +153,8 @@ Only curators run `build`, when the dataset ships.
 | license |  |
 | data_tags | Non-IID, Grouped, UnseenGroup |
 | reference | huang2022classification |
-| copy: Körner et al. 2024, datasets/external_data/class_all.csv | GitHub (2024): https://github.com/pkoerner6/Prediction-of-Aerobic-Biodegradability-of-Organic-Chemicals; license: GPL-3.0 |
-| rows x columns | 5,719 x 3 |
+| copy: Körner et al. 2024, datasets/external_data/class_all.csv and datasets/iuclid_echa.csv | GitHub (2024): https://github.com/pkoerner6/Prediction-of-Aerobic-Biodegradability-of-Organic-Chemicals; license: GPL-3.0 |
+| rows x columns | 5,714 x 3 |
 | task.target | Biodegradable |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -190,15 +204,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 5,719 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+The first 5 of 5,714 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
 | Biodegradable | SMILES | scaffold |
 |---|---|---|
-| No | CC(C)(C)c1nn(-c2cc(C(=O)\[O-\])cc(C(=O)\[O… | c1ccc(-n2cc(N=Nc3nnc(SCCSc4nnc(N=Nc5cnn… |
-| No | CCCC(c1cc(C(C)(C)C)c(O)cc1C)c1cc(C(C)(C… | c1ccc(Cc2ccccc2)cc1 |
-| No | C\[Si\](C)(C)O\[Si\](C)(CCCOCC(O)CO)O\[Si\](C… | single: C\[Si\](C)(C)O\[Si\](C)(CCCOCC(O)CO… |
-| No | CCCCC(CC)COC(=O)C\[S\]\[Sn\](\[CH3\])(\[CH3\])\[… | single: CCCCC(CC)COC(=O)C\[S\]\[Sn\](\[CH3\])… |
-| No | CC12CCCC(C)(CC1)C2=NO | N=C1C2CCCC1CC2 |
+| No | CCN(CC)c1ccc(/N=N/c2c(Br)cc(\[N+\](=O)\[O-… | c1ccc(N=Nc2ccccc2)cc1 |
+| Yes | CCCCC(CC)C(=O)\[O-\].CCCCC(CC)C(=O)\[O-\].\[… | single: CCCCC(CC)C(=O)\[O-\].CCCCC(CC)C(=… |
+| Yes | O=S(\[O-\])CO.O=S(\[O-\])CO.\[Zn+2\] | single: O=S(\[O-\])CO.O=S(\[O-\])CO |
+| No | CS(=O)(=O)c1nccc(Cl)n1 | c1cncnc1 |
+| No | C=Cc1ccc(Cl)cc1 | single: C=Cc1ccc(Cl)cc1 |
 
 ## Curation notes
 
@@ -244,21 +258,40 @@ We start with class_all.csv from Körner et al.'s repository, which carries Huan
   (`add_pka_values.py` in their repository), one modelling choice of the structure, as the Dragon descriptors
   did on qsar_biodeg and the other QSAR siblings (CLEAN-24). `name`, `name_type` and `cas` are identifiers
   (CLEAN-21), and the 1,546 literature rows carry no CAS number at all; `source`, which names the part a row
-  comes from, is provenance of the compilation rather than a property of the chemical (CLEAN-22).
+  comes from, is provenance of the compilation rather than a property of the chemical (CLEAN-22). The three
+  dossier columns joined on from the ECHA export are read in `_clean` and leave with them.
+- Structures that are not the substance the row is about (PROV-13, Andrej's decision of 2026-11-25): the
+  compilation's identifiers and its structures were retrieved separately, and Körner et al. report mismatched
+  chemical identifiers in it. ECHA's own dossiers adjudicate the rows that carry a CAS number: their export
+  gives one molecular formula and one molecular weight for 2,764 registered substances, and the two always
+  agree with each other, the weight being computed from the formula, so what decides a row is the
+  disagreement with the shipped structure. It reaches 1,901 of the 6,139 rows (31.0%), and 34 of those
+  (1.8%) carry a structure that is neither the composition ECHA's formula gives nor, once salts and repeated
+  fragments are resolved, the substance ECHA's own structure draws, and whose weight is more than 0.5 from
+  ECHA's: 2,2-bis(methylthio)propane is drawn as a fluorophenyl thiourea sulfonamide, a trimethoxysilyl
+  sorbate as phenothiazine, a difluorophenyl isoxazole as chlorobenzene. 19 of them take ECHA's structure,
+  which is where the dossier's own structure parses and has the composition its formula gives; the other 15
+  keep the structure as published, 11 of them because the dossier carries no structure at all and 4 because
+  its structure contradicts its own formula. A row the repair cannot reach but the file contradicts by
+  itself leaves: 4 rows name a carbon skeleton (limonene, an azo dye, a zinc neodecanoate, a
+  butylpyridinium aluminate) and hold no carbon at all, being drawn as calcium oxide, sodium sulfate, zinc
+  sulfate and ammonium aluminium sulfate. What is not done here, for its scale: the 270 of 3,767 shared CAS
+  numbers whose structure differs from Körner et al.'s own curated one, which would be an adjudication of
+  its own, and the 1,546 literature rows, which carry no CAS number to adjudicate by.
 - Copies (LEAK-19, LEAK-20): the key is the compound as a 2D encoding sees it - the structure without
   RDKit's list of common salts and solvents (`FragmentRemover`: halides, metal ions, water, sulfate, ammonia
   and others; organic counter-ions stay) and without stereochemistry, read as the connectivity block of its
   InChIKey, which holds a stripped salt's anion, a protonated amine and a tautomer together with the neutral
-  form another row writes (the house key for molecules, as on qsar_oral_toxicity). 729 of the structures hold
-  more than one fragment, and 585 of them lose something to the remover. 330 compounds occur in more than one
-  row (704 rows), 110 of them found only by the InChIKey step. 46 compounds (109 rows) carry both classes and
-  are dropped whole: 26 are one structure already to the stereo-free SMILES, and the other 20 are a salt and
-  its free form, two salts of one acid, or a tautomer pair, that the sources read differently. Of the 284
-  compounds that agree, the first row is kept (311 rows dropped). 5,719 chemicals remain, 33.8% readily
-  biodegradable against 34.9% before, 4,389 of them from the original part and 1,330 from the literature one.
-  The two parts share no exact structure, but 205 compounds of the literature part (207 rows) are a chemical
-  of the first part under this key, 23 of them carrying both classes; the rule above settles them with the
-  rest.
+  form another row writes (the house key for molecules, as on qsar_oral_toxicity). It runs on the repaired
+  structures, after the 4 rows above have left. 723 of the structures hold more than one fragment, and 581 of
+  them lose something to the remover. 332 compounds occur in more than one row (708 rows), 110 of them found
+  only by the InChIKey step. 45 compounds (107 rows) carry both classes and are dropped whole: 25 are one
+  structure already to the stereo-free SMILES, and the other 20 are a salt and its free form, two salts of
+  one acid, or a tautomer pair, that the sources read differently. Of the 287 compounds that agree, the
+  first row is kept (314 rows dropped). 5,714 chemicals remain, 33.8% readily biodegradable against 34.9%
+  before, 4,389 of them from the original part and 1,325 from the literature one. The two parts share no
+  exact structure, but 210 compounds of the literature part (212 rows) are a chemical of the first part
+  under this key, 23 of them carrying both classes; the rule above settles them with the rest.
 - What the key does not merge: the number of organic fragments is part of it, so a sodium and a zinc
   dithiocarbamate, or a mono- and a di-salt of one acid, stay apart, and the InChI code normalises a
   removable proton but not a carbanion, so chloro(propan-2-yl)magnesium stays apart from the alkane. All 110
@@ -274,8 +307,8 @@ We start with class_all.csv from Körner et al.'s repository, which carries Huan
 - Note: the label reads the test at day 28 and ignores the 10-day window that the OECD 301 series requires
   before a regulator calls a chemical readily biodegradable. In Körner et al.'s own REACH export 505 of the
   6,035 ready records that carry a conclusion read "readily biodegradable, but failing 10-day window". That
-  export reaches 1,630 of the chemicals shipped here by CAS number (28.5%), agreeing with the class on 91.5%
-  of them, and its conclusions would turn 89 of their 778 positives negative (11.4%, 1.6% of all chemicals
+  export reaches 1,631 of the chemicals shipped here by CAS number (28.5%), agreeing with the class on 91.5%
+  of them, and its conclusions would turn 89 of their 779 positives negative (11.4%, 1.6% of all chemicals
   here; measured 2026-11-25). The gap is uneven: 1.4% of the 301 C records called readily biodegradable
   carry the flag, against 13.1% to 22.6% under 301 B, D, E, F and 310, and the guideline is not a column
   here. It covers a quarter of the set, so taking it would mean two different labels in one target column,
@@ -285,72 +318,71 @@ We start with class_all.csv from Körner et al.'s repository, which carries Huan
   duration: the authors' regression task, a task of its own, read here only to check the label and the test
   mix), the three curated sets under `datasets/curated_data/` (Körner et al.'s own compilation, built from
   their ECHA export with Lunghini et al. 2020's set concatenated onto it rather than cut out of this file,
-  and weighed against it in the record), `iuclid_echa.csv` (their REACH export of 2,858 registered
-  substances, read for the 10-day window above and for ECHA's own formula, weight and structure per CAS
-  number), `chemical_speciation.xlsx` (the hand-checked species at pH 7.4 behind the dropped speciation
+  and weighed against it in the record), `chemical_speciation.xlsx` (the hand-checked species at pH 7.4 behind the dropped speciation
   columns), `substance_file.xlsx` (the example notebook's input) and
-  `reach_study_results/RegisteredSubstances_organic6.pkl` (the raw pull behind the REACH export). None of
+  `reach_study_results/RegisteredSubstances_organic6.pkl` (the raw pull behind `iuclid_echa.csv`). None of
   them holds a chemical of Huang and Zhang's series that this file does not. The primary release, the
   article's supporting information, could not be listed at all (403), so this list is of the copy.
 - Split (SPLIT-31, SPLIT-36, leaf L-FAMILY.key): grouped on the Bemis-Murcko scaffold of the compound, the
-  structure without common salts and solvents (`scaffold_groups`): 4,334 groups, 4,012 chemicals alone (2,064
-  without a ring, 36.1%, 980 whose only skeleton is the bare benzene ring, 17.1%, which holds more than a
-  tenth of the set and is therefore no series, and 968 with a scaffold no other chemical here has) and 322
+  structure without common salts and solvents (`scaffold_groups`): 4,329 groups, 4,009 chemicals alone (2,061
+  without a ring, 36.1%, 980 whose only skeleton is the bare benzene ring, 17.2%, which holds more than a
+  tenth of the set and is therefore no series, and 968 with a scaffold no other chemical here has) and 320
   series of 2 to 103 chemicals. No other scaffold reaches a tenth, the largest series being cyclohexane with
-  1.8% of the chemicals. Under the groups 18.8% of the test chemicals have a training chemical at Tanimoto
-  0.7 or more (Morgan radius 2, 2,048 bits, on the compound; median nearest 0.521), against 21.4% under a
-  random split (0.547), measured over the 9 folds on 2026-11-25. The source split at random and reports that
+  1.8% of the chemicals. Under the groups 19.0% of the test chemicals have a training chemical at Tanimoto
+  0.7 or more (Morgan radius 2, 2,048 bits, on the compound; median nearest 0.520), against 21.4% under a
+  random split (0.545), measured over 3 folds on 2026-11-25. The source split at random and reports that
   "higher similarities among the training, validation, and test datasets always gave better model
   performance", so its published figures say nothing about this split (SPLIT-5).
-- What the grouping buys, and where it buys nothing: the close-analogue share is 6.7% for the chemicals that
-  sit in a series, 14.6% for the bare-benzene ones and 36.3% for the ring-less third, which is the
+- What the grouping buys, and where it buys nothing: the close-analogue share is 6.2% for the chemicals that
+  sit in a series, 16.3% for the bare-benzene ones and 36.9% for the ring-less third, which is the
   analogue-dense part of the set (homologous series of acids, alcohols, glycol ethers and surfactants) and
-  is split at random, where a random split of everything leaves it 33.9%. The consequence is measured and
-  small: untuned LightGBM on the recommended encoding scores 0.846 on ring-less test rows that have a close
-  training analogue and 0.842 on those that do not. Holding the bare-benzene chemicals out as one family
-  instead, which the rule above forbids, would cost 0.025 ROC AUC on those rows (0.863 against 0.888) and
-  0.005 on the task (0.881 against 0.886), all measured on 2026-11-25.
+  is split at random, where a random split of everything leaves it 34.7%. The consequence is measured:
+  untuned LightGBM on the recommended encoding scores 0.861 on ring-less test rows that have a close
+  training analogue and 0.837 on those that do not. Holding the bare-benzene chemicals out as one family
+  instead, which the rule above forbids, would cost 0.042 ROC AUC on those rows (0.849 against 0.890) and
+  0.010 on the task (0.878 against 0.888), all measured on 2026-11-25.
 - Note: the raw file is ordered by chemistry, not by a clock. Neighbouring rows share a ring skeleton in 9.6%
   of the pairs against 2.8% after a shuffle, and share a class in 66.4% against 54.6%, which is why the class
   rate swings between a fifth and a half from one tenth of the file to the next without a trend (the rank
   correlation of the class with the position is -0.04 in each part). The rows are shuffled before the split
   and nothing of the order ships; the grouping holds out the series the order lines up.
 - Note: this set covers the sibling qsar_biodeg, which carries Mansouri et al.'s 1,055 chemicals from Japan's
-  testing programme. 1,005 of those 1,055 (95.3%) are here as one compound, 976 of them (97.1%) with the same
+  testing programme. 1,001 of those 1,055 (94.9%) are here as one compound, 972 of them (97.1%) with the same
   class (measured 2026-11-25 on the key above). The two compilations end at different original sources, so
   neither is a copy of the other (PROV-4); which of them ships is the curator's call on the pair, recorded in
   the records. What the sibling is not is the same label on fewer chemicals: it is OECD 301 C alone, where
   the pass rate is 27.2% against 33.8% here, while this label pools seven protocols.
-- Note on the rows themselves: 148 chemicals (2.59%) are substances of more than one organic component
-  (rosin salts, hydrocarbon reaction masses, polyvalent metal resinates; 44 of three components or more, up
-  to 361 heavy atoms), whose encoding sums the descriptors over the components, so for them the feature
-  vector describes the mixture rather than a molecule; their pass rate is 0.405 against 0.338 overall. They
-  stay, because a registrant does commission this test for such substances. 7 chemicals (0.12%) hold no
-  carbon at all (borates, a perchlorate, sodium sulfate, calcium oxide): the remover would empty them, so
-  they keep their structure as published, and they are their own group.
-- Time basis: UnseenGroup: The source builds a screen for chemicals nobody has tested: its reason is the cost and the length of the test itself, and it ships free online predictors that take a structure. Its question is a chemical from outside the collection, not the collection's next entry, so the scaffold split stands (SPLIT-37, the source's scope). No date is in the data: neither this file, nor the authors' regression workbook, nor Körner et al.'s REACH export carries a test or dossier date, and the eChem portal links each record to a dossier page that was not read. The CAS number is a coarse order of first registration and covers 75.9% of the rows; along it the readily biodegradable share falls from 45.0% in the oldest fifth to 18.5% in the newest (Spearman -0.172), but holding out the newest 30% of those rows scores 0.871 ROC AUC against 0.875 for a random and 0.873 for a scaffold-grouped split of the same rows (measured 2026-11-25), and a registration number dates the substance rather than the test, so no temporal option is given up. The split therefore cannot test whether the chemicals registered later are labelled differently from those already in the catalogue.
+- Note on the rows themselves: 147 chemicals (2.57%) are substances of more than one organic component
+  (rosin salts, hydrocarbon reaction masses, polyvalent metal resinates; 43 of three components or more, up
+  to 368 heavy atoms), whose encoding sums the descriptors over the components, so for them the feature
+  vector describes the mixture rather than a molecule; their pass rate is 0.408 against 0.338 overall. They
+  stay, because a registrant does commission this test for such substances. 4 chemicals (0.07%) hold no
+  carbon at all, and all four are inorganic by their own name (three borates and sodium chlorate): the
+  remover would empty them, so they keep their structure as published, and they are their own group. The
+  four carbon-free rows whose name is organic left above.
+- Time basis: UnseenGroup: The source builds a screen for chemicals nobody has tested: its reason is the cost and the length of the test itself, and it ships free online predictors that take a structure. Its question is a chemical from outside the collection, not the collection's next entry, so the scaffold split stands (SPLIT-37, the source's scope). No date is in the data: neither this file, nor the authors' regression workbook, nor Körner et al.'s REACH export carries a test or dossier date, and the eChem portal links each record to a dossier page that was not read. The CAS number is a coarse order of first registration and covers 76.8% of the rows; along it the readily biodegradable share falls from 45.0% in the oldest fifth to 18.4% in the newest (Spearman -0.172), but holding out the newest 30% of those rows scores 0.864 ROC AUC against 0.880 for a random and 0.869 for a scaffold-grouped split of the same rows (measured 2026-11-25), so the order costs little beyond what the scaffold split already asks, and a registration number dates the substance rather than the test, so no temporal option is given up. The split therefore cannot test whether the chemicals registered later are labelled differently from those already in the catalogue.
 
 ## Splits
 
-Grouped splits on the Bemis-Murcko scaffold of the compound (the structure without common salts and solvents): all chemicals of one series stay on one side, so a model predicts chemicals of a series it has not seen; chemicals without a ring (36.1%), and those whose only skeleton is the bare benzene ring (17.1%), are held out one by one, so for those two groups the split is a draw. Chemicals with similar but not identical scaffolds can be on both sides: 18.8% of the test chemicals still have a training chemical at Tanimoto 0.7 or more, against 21.4% under a random split; by part, 6.7% of the chemicals that sit in a series, 14.6% of the bare-benzene ones and 36.3% of the ring-less ones, where a random split of everything leaves 33.9%. The measured consequence is small: 0.846 ROC AUC on ring-less test rows with a close training analogue against 0.842 on those without.
+Grouped splits on the Bemis-Murcko scaffold of the compound (the structure without common salts and solvents): all chemicals of one series stay on one side, so a model predicts chemicals of a series it has not seen; chemicals without a ring (36.1%), and those whose only skeleton is the bare benzene ring (17.2%), are held out one by one, so for those two groups the split is a draw. Chemicals with similar but not identical scaffolds can be on both sides: 19.0% of the test chemicals still have a training chemical at Tanimoto 0.7 or more, against 21.4% under a random split; by part, 6.2% of the chemicals that sit in a series, 16.3% of the bare-benzene ones and 36.9% of the ring-less ones, where a random split of everything leaves 34.7%. What that costs is measured: 0.861 ROC AUC on ring-less test rows with a close training analogue against 0.837 on those without.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 3,600 to 3,937 rows, test 1,782 to 2,119 rows.
+3 repeat(s) x 3 fold(s) with seed 4267; train 3,613 to 3,922 rows, test 1,792 to 2,101 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 3937 | 1782 |
-| 0 | 1 | 3600 | 2119 |
-| 0 | 2 | 3901 | 1818 |
-| 1 | 0 | 3710 | 2009 |
-| 1 | 1 | 3808 | 1911 |
-| 1 | 2 | 3920 | 1799 |
-| 2 | 0 | 3716 | 2003 |
-| 2 | 1 | 3899 | 1820 |
-| 2 | 2 | 3823 | 1896 |
+| 0 | 0 | 3847 | 1867 |
+| 0 | 1 | 3689 | 2025 |
+| 0 | 2 | 3892 | 1822 |
+| 1 | 0 | 3922 | 1792 |
+| 1 | 1 | 3893 | 1821 |
+| 1 | 2 | 3613 | 2101 |
+| 2 | 0 | 3718 | 1996 |
+| 2 | 1 | 3881 | 1833 |
+| 2 | 2 | 3829 | 1885 |
 
 ## Group structure
 
-One group is a chemical series: the chemicals whose structure, without common salts and solvents, shares one Bemis-Murcko scaffold (ring systems and the chains linking them; Bemis and Murcko 1996), computed with RDKit. A chemical without a ring (36.1%) is a group of its own, and so is one whose only skeleton is the bare benzene ring (17.1%), which holds more than a tenth of the set and is no series (SPLIT-31). A producer or a registrant screens a chemical that has not been tested, often one of a series nobody has measured, which is why Huang and Zhang open with the cost of the test and publish predictors for new structures; so whole series are held out. Each row is one prediction, made from the chemical's structure alone.
+One group is a chemical series: the chemicals whose structure, without common salts and solvents, shares one Bemis-Murcko scaffold (ring systems and the chains linking them; Bemis and Murcko 1996), computed with RDKit. A chemical without a ring (36.1%) is a group of its own, and so is one whose only skeleton is the bare benzene ring (17.2%), which holds more than a tenth of the set and is no series (SPLIT-31). A producer or a registrant screens a chemical that has not been tested, often one of a series nobody has measured, which is why Huang and Zhang open with the cost of the test and publish predictors for new structures; so whole series are held out. Each row is one prediction, made from the chemical's structure alone.
 
 | field | value |
 |---|---|
@@ -362,32 +394,47 @@ One group is a chemical series: the chemicals whose structure, without common sa
 
 | statistic | value |
 |---|---|
-| groups | 4,334 |
+| groups | 4,329 |
 | rows per group (min / median / max) | 1 / 1.0 / 103 |
 | largest group | 1.8% of the rows |
-| test groups per fold | 1,408 to 1,472 |
-| groups of two or more rows with a single label | 69.9% |
+| test groups per fold | 1,430 to 1,456 |
+| groups of two or more rows with a single label | 69.7% |
 | label variance explained by the group | 0.87 (shuffled groups: 0.76) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Decisions
 
-### 1. Copies of one compound
+### 1. Structures that are not the substance the row is about
 
-A chemical appears in several rows as a salt, as a charged or a protonated form, as a tautomer, as a stereoisomer or in both parts of the compilation. The key is the InChIKey connectivity block of the structure without common salts, solvents and stereochemistry, which is what a 2D encoding sees: a compound carrying both classes is dropped whole (LEAK-20), and of the rest one row is kept (LEAK-19). 6,139 rows become 5,719, and the readily biodegradable share moves from 0.349 to 0.338.
+A row carries a structure that is not the substance its CAS number names: the compilation's identifiers and structures were retrieved separately, and Körner et al. 2024 report mismatches between them. ECHA's own registration dossiers, exported in the same release, give a molecular formula, a molecular weight and a structure per CAS number. Where the formula and the weight agree with each other and both disagree with the shipped structure, the structure is replaced by ECHA's own, and where the row's own name states a carbon skeleton its structure does not have, the row is dropped (PROV-13, the curator's decision of 2026-11-25). 34 of the 1,901 rows ECHA reaches are contradicted, 19 of them repaired and 15 kept as published, the dossier holding no usable structure; 4 rows leave on their own name.
+
+| index | rows |
+|---|---|
+| all | 6139 |
+| a CAS number ECHA registers | 1901 |
+| a structure ECHA's dossier contradicts | 34 |
+| repaired from the dossier | 19 |
+| dropped, the name contradicting the structure | 4 |
+
+### 2. Copies of one compound
+
+A chemical appears in several rows as a salt, as a charged or a protonated form, as a tautomer, as a stereoisomer or in both parts of the compilation. The key is the InChIKey connectivity block of the structure without common salts, solvents and stereochemistry, which is what a 2D encoding sees: a compound carrying both classes is dropped whole (LEAK-20), and of the rest one row is kept (LEAK-19). 6,135 rows become 5,714, and the readily biodegradable share moves from 0.349 to 0.338.
 
 | index | compounds | rows |
 |---|---|---|
-| all | 5765 | 6139 |
-| in more than one row | 330 | 704 |
-| with both classes | 46 | 109 |
+| all | 5759 | 6135 |
+| in more than one row | 332 | 708 |
+| with both classes | 45 | 107 |
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 0 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `meta_license_unknown`: The license is None (unknown or missing) for ['Other publication']. (hint: Record the license if one exists — downstream users need it to redistribute the data.)
+
+Accepted on purpose:
+
+- `meta_license_unknown`: The article states no licence for the supporting information that holds the data, and the repository the file is copied from is GPL-3.0 for its code, which does not govern the data it redistributes, so no licence can be declared. Accepted as on qsar_biodeg (2026-11-02): noted, not blocking, and to be regularised before the data ships outside the group (Andrej, 2026-11-25).
 
 ## Data checks
 
@@ -396,15 +443,15 @@ A chemical appears in several rows as a salt, as a charged or a protonated form,
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | Biodegradable | category | 0 | 0 | 2 | No, Yes |
-| SMILES | string | 0 | 0 | 5719 | CC(C)(C)c1nn(-c2cc(C(=O)\[O-\])cc(C(=O)\[O-\])c2)c(N)c1N=Nc1nnc(SCCSc2nnc(N=Nc3c(C(… |
-| scaffold | string | 0 | 0 | 4334 | C1CCCCC1, c1ccc(Cc2ccccc2)cc1, c1ccc2ccccc2c1, c1ccncc1, c1ccc(-c2ccccc2)cc1, C… |
+| SMILES | string | 0 | 0 | 5714 | CCN(CC)c1ccc(/N=N/c2c(Br)cc(\[N+\](=O)\[O-\])cc2C#N)c(NC(C)=O)c1, CCCCC(CC)C(=O)\[O-… |
+| scaffold | string | 0 | 0 | 4329 | C1CCCCC1, c1ccc(Cc2ccccc2)cc1, c1ccc2ccccc2c1, c1ccncc1, c1ccc(-c2ccccc2)cc1, c… |
 
 ### Target distribution
 
 | Biodegradable | count | pct |
 |---|---|---|
-| No | 3785 | 66.18 |
-| Yes | 1934 | 33.82 |
+| No | 3781 | 66.17 |
+| Yes | 1933 | 33.83 |
 
 ### Numeric features
 
@@ -417,18 +464,18 @@ No numeric features to summarize.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Biodegradable | 1 | No | 3785 | 66.18 |
-| Biodegradable | 2 | Yes | 1934 | 33.82 |
-| SMILES | 1 | CC(C)(C)c1nn(-c2cc(C(=O)\[O-\])cc(C(=O)\[O-\])c2)c(N)c1N=Nc1nnc(SCCS... | 1 | 0.02 |
-| SMILES | 2 | CCCC(c1cc(C(C)(C)C)c(O)cc1C)c1cc(C(C)(C)C)c(O)cc1C | 1 | 0.02 |
-| SMILES | 3 | C\[Si\](C)(C)O\[Si\](C)(CCCOCC(O)CO)O\[Si\](C)(C)C | 1 | 0.02 |
-| SMILES | 4 | CCCCC(CC)COC(=O)C\[S\]\[Sn\](\[CH3\])(\[CH3\])\[S\]CC(=O)OCC(CC)CCCC | 1 | 0.02 |
-| SMILES | 5 | CC12CCCC(C)(CC1)C2=NO | 1 | 0.02 |
+| Biodegradable | 1 | No | 3781 | 66.17 |
+| Biodegradable | 2 | Yes | 1933 | 33.83 |
+| SMILES | 1 | CCN(CC)c1ccc(/N=N/c2c(Br)cc(\[N+\](=O)\[O-\])cc2C#N)c(NC(C)=O)c1 | 1 | 0.02 |
+| SMILES | 2 | CCCCC(CC)C(=O)\[O-\].CCCCC(CC)C(=O)\[O-\].\[Zr+2\] | 1 | 0.02 |
+| SMILES | 3 | O=S(\[O-\])CO.O=S(\[O-\])CO.\[Zn+2\] | 1 | 0.02 |
+| SMILES | 4 | CS(=O)(=O)c1nccc(Cl)n1 | 1 | 0.02 |
+| SMILES | 5 | C=Cc1ccc(Cl)cc1 | 1 | 0.02 |
 | scaffold | 1 | C1CCCCC1 | 103 | 1.8 |
-| scaffold | 2 | c1ccc(Cc2ccccc2)cc1 | 61 | 1.07 |
-| scaffold | 3 | c1ccc2ccccc2c1 | 60 | 1.05 |
+| scaffold | 2 | c1ccc(Cc2ccccc2)cc1 | 62 | 1.09 |
+| scaffold | 3 | c1ccc2ccccc2c1 | 61 | 1.07 |
 | scaffold | 4 | c1ccncc1 | 53 | 0.93 |
-| scaffold | 5 | c1ccc(-c2ccccc2)cc1 | 50 | 0.87 |
+| scaffold | 5 | c1ccc(-c2ccccc2)cc1 | 50 | 0.88 |
 
 </details>
 

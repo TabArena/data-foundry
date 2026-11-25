@@ -3,6 +3,7 @@ unique_name: aquatic_toxicity_lunghini_consensus
 name: 'Consensus QSAR models estimating acute aquatic toxicity for three trophic levels organisms: Algae, Daphnia and Fish (data)'
 checked_by:
 - AI (UNVERIFIED)
+- Andrej
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Andrej
@@ -68,9 +69,15 @@ type_adapter_id: curation-record-v1
 - Why: Same target and unit (one toxicity value per chemical) as qsar_aquatic_toxicity (Daphnia magna 48 h) and qsar_fish_toxicity (fish 96 h), structure given
 - Adds: One aggregated value per chemical (the shape of the UCI tasks, unlike ADORE's per-test entries) over up to 3,680 compounds against 546 and 908; structures given; open CC BY 4.0
 
+CC (2026-11-25, Andrej): review of the added dataset (Review 1, 2).
+
+CC (2026-11-25, Andrej): review issue 1, A: the dataset predicts for the untested substance, with the structure as its one feature. The file's `pEC50 - DAPHNIA` and `pEC50 - ALGA` stay out, so the two endpoints remain datasets of their own; nothing in the definition changes.
+
+**Assessment (AI, 2026-11-25):** issue 2, the metric's origin, stays open and is answered on the review: Andrej asked why the source's original metric is not used. Read from the article (the first author's thesis reproduces it at journal pages 655 to 675; the pages were read as images on 2026-11-25): the only criterion the authors deliberately select by is the cross-validated determination coefficient, "selected as fitness function" of the genetic algorithm that picks each model's descriptor space and SVM hyperparameters (p. 660); the models themselves are reported with r2 and RMSE side by side in fivefold cross-validation repeated 10 times, on the external test set and on the confidential industrial set (p. 661, Tables 4 and 5), with Q2 ranges from leave-one-out and bootstrapping for the individual models and Y-scrambling over 50 repetitions against chance correlation. For the fish endpoint this record ships, the All-Public consensus scores r2 0.67 and RMSE 0.73 in cross-validation, r2 0.73 and RMSE 0.61 on the external test set at 66% data coverage, and the final merged model r2 0.71 and RMSE 0.69. Whenever the article compares models it compares them by RMSE: the abstract's "RMSE_ext = 0.56-0.78 ... in line with those of state-of-the-art models", "their error (RMSE) is still higher than the ECHA models" (p. 668) and "ECOSAR is performing significantly worse than any model (RMSE = 1.57-1.94) ... our models are performing similarly to VEGA and T.E.S.T. tools, with comparable RMSE values" (p. 669). So the declared `rmse` is already the number the source judges models with, and the recommendation is to record it as the source's rather than as the fallback; the identity with the authors' r2 rests on Table S5, which the publisher still gates (checked 2026-11-25, HTTP 403). Declaring `r2` instead is not recommended: its value depends on each fold's spread, which the article itself shows (the ECHA fish model has the lower cross-validated RMSE, 0.60 against 0.73, while the All-Public one has the higher r2, 0.67 against 0.64). No score and no row changes under any of the three.
+
 ## Review
 
-**Outcome:** added. The fish 96-hour LC50 of the Lunghini et al. 2020 consensus collection: 2,186 chemicals, the structure as the only feature, scaffold-grouped splits, `rmse`. The review panel recommends shipping after changes, and the changes are applied. Judgment record:
+**Outcome:** added. The fish 96-hour LC50 of the Lunghini et al. 2020 consensus collection: 2,186 chemicals, the structure as the only feature, scaffold-grouped splits, `rmse`. The review panel recommends shipping after changes, and the changes are applied. Andrej settled the prediction point on 2026-11-25 (issue 1, A: the untested substance), and asked on the metric's origin, which stays open as issue 2. Judgment record:
 
 ```text
 Verdict: ship after changes (applied).
@@ -90,7 +97,7 @@ For the curator: 2 issues - issue 1 a framing call (which prediction point), iss
   Nothing reaches the remedy ladder's third rung, and no agent asked for exclusion.
 ```
 
-**Main points:** Two calls, neither of which blocks shipping: which moment the dataset predicts for (the untested substance, as built, or the registration dossier, which would add the file's Daphnia and algae values as two sparse features), and whether `rmse` is recorded as the source's own criterion or as the fallback. Applied without a decision: the three substances the file draws under two molecular formulas are repaired from the chemical registry instead of dropped whole (2,183 rows to 2,186), the target is rounded back to the three decimals the file publishes, the use case is narrowed to the screening moment, and the statements about the source, the split and the sibling overlap are rewritten from the article - which is open and was read - and from the shipped frame. The record's `Time: Lost` becomes `Time: Dated`, since a parent source dates most of these entries.
+**Main points:** The prediction point is settled: the dataset predicts for the untested substance, with the structure as its one feature, and the file's Daphnia and algae values stay out (issue 1, A). One call is open, and it blocks nothing: whether `rmse` is recorded as the source's own criterion or as the fallback (issue 2, where Andrej's question is answered - the article compares models by RMSE in its prose, while the criterion it selects models by is the cross-validated determination coefficient; the recommendation is to record `rmse` as the source's). Applied without a decision: the three substances the file draws under two molecular formulas are repaired from the chemical registry instead of dropped whole (2,183 rows to 2,186), the target is rounded back to the three decimals the file publishes, the use case is narrowed to the screening moment, and the statements about the source, the split and the sibling overlap are rewritten from the article - which is open and was read - and from the shipped frame. The record's `Time: Lost` becomes `Time: Dated`, since a parent source dates most of these entries.
 
 **Issues for Andrej:**
 
@@ -127,6 +134,10 @@ For the curator: 2 issues - issue 1 a framing call (which prediction point), iss
    [^1b]: **USE-6** (Must): anything known at the prediction point is a legitimate input. **USE-7**: a value that is missing at the prediction point ships missing rather than dropping its row. **USE-8**: the fit reason names the population a model fitted here is good for, including a gap of this kind.
    [^1c]: Three citations from the debate that the mediator set aside: **LEAK-1**'s text is "Write down the prediction point and the use case first (USE-1, USE-3)", which is procedural and cannot decide which moment is written down; **PROV-7** narrows PROV-4 and PROV-6 and is about duplicates, not about whether a measured column may be a feature; **CLEAN-22** ("Keep every relevant feature") excludes a column for what it is - a leak, an identifier, a copy, the measurement that defines the label - and a Daphnia 48-hour EC50 is none of those.
 
+   **Andrej (2026-11-25, ok):** As implemented (A).
+
+   **Resolved (2026-11-25, Andrej):** A: the dataset predicts for the untested substance, with the structure as its one feature; `pEC50 - DAPHNIA` and `pEC50 - ALGA` stay out, and the two endpoints stay available as datasets of their own. Nothing changes in `dataset.py` or in the frame (2,186 chemicals, one feature, scaffold groups); the use case and the fit reason already name that moment alone, which this settles.
+
 2. **Record `rmse` as the source's own criterion, or as the regression fallback?**
 
    * **Problem:**
@@ -149,6 +160,44 @@ For the curator: 2 issues - issue 1 a framing call (which prediction point), iss
 
    [^2a]: **MET-1** (Must): the declared metric scores the real task, and the notes record where we looked; a reason that asserts something false about the source fails it.
    [^2b]: **MET-5** (Should): a paper's metric is the source's metric only when it is one deliberate choice - "the criterion it ranks, tunes or selects models by" - and a paper that reports several metrics side by side without naming the deciding one has no unique original, so the fallback is declared. **MET-11** (Must): a metric may stand for the source's as `source` when it "ranks every pair of models the same by identity", and the `definition` says the identity.
+
+   **Andrej (2026-11-25, discuss):** Why don't we use the source's original metric?
+
+   **Answer (AI, 2026-11-25):** We do score by the number the source judges models with - the article compares models by RMSE in its own prose - and `rmse` ships; what the definition does not yet claim is that it stands for the one criterion the authors deliberately *selected* models by, the cross-validated determination coefficient, which is why its origin still reads `fallback`.
+
+   * **Problem:**
+     - The article grades every model with two numbers at once and never names one in a sentence: for each consensus model it reports "the r2 determination coefficient and the RMSE parameters ... (formulas are reported in Table S5)" (p. 661, Model generation and validation), and for the individual models the ranges of Q2 from leave-one-out and from bootstrapping (Table 4, p. 666).
+     - One criterion is deliberate, but it selects rather than grades: "Cross-validated determination coefficient was selected as fitness function" (p. 660, Model generation and validation) of the genetic algorithm that picks each model's ISIDA descriptor space and SVM hyperparameters, from which the top 15 models are kept and ensembled.
+     - When the article does compare models, it compares them by RMSE: the abstract's headline is "Reasonable predictive performances were achieved (RMSE_ext = 0.56-0.78) which are in line with those of state-of-the-art models"; "their error (RMSE) is still higher than the ECHA models" (p. 668); "ECOSAR is performing significantly worse than any model (RMSE = 1.57-1.94) ... our models are performing similarly to VEGA and T.E.S.T. tools, with comparable RMSE values" (p. 669).
+     - So the declared metric is already the source's number. `rmse` carries `origin: fallback` only because the reported pair has no named winner (MET-5), and because standing for the genetic algorithm's criterion would need the r2 formula of Table S5[^2c], which the publisher still gates (checked again 2026-11-25: HTTP 403).
+   * **What the source scored, on the fish endpoint this record ships** (All-Public is the public collection the deposit holds; ECHA is their dossier-only model, Table 4 p. 666, Table 5 p. 668, and the final merged model p. 668):
+
+     | Set and protocol | Reported | Fish, All-Public | Fish, ECHA |
+     |---|---|---|---|
+     | individual models, leave-one-out | Q2 range over the 15 | 0.67-0.71 | 0.63-0.67 |
+     | individual models, bootstrap | Q2 range over the 15 | 0.60-0.66 | 0.60-0.63 |
+     | consensus, fivefold CV repeated 10 times | r2, RMSE | 0.67, 0.73 | 0.64, 0.60 |
+     | consensus, external test set | r2, RMSE, data coverage | 0.73, 0.61, 66% | 0.65, 0.56, 65% |
+     | consensus, confidential industrial set | r2, RMSE, data coverage | 0.54, 0.97, 67% | 0.58, 0.92, 64% |
+     | final model, public and industrial merged | r2, RMSE | 0.71, 0.69 | - |
+
+     Chance correlation was checked by Y-scrambling with 50 repetitions (p. 661); no threshold, cost or weighting is fixed anywhere.
+   * **Effect on the task:** none on the data or on the scoring under any option: the folds, the target and the numbers a benchmark reports are the same. Only the task card changes, and with it what the record asserts about the source.
+   * **What would settle the identity:** Table S5. On one fixed test fold, 1 - MSE/Var(y) ranks every pair of models exactly as RMSE does, a squared Pearson correlation does not. Across sets the two part company even in this article: the ECHA fish model has the lower cross-validated RMSE (0.60 against 0.73) while the All-Public one has the higher r2 (0.67 against 0.64), because the two sets differ in spread.
+   * **Consistency:** `open_soil_spectral_library` keeps the criterion a paper tunes by although it grades by another; `qsar_fish_toxicity`, the sibling on the same target and the same scale, ships `rmse` as the fallback.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Keep the fallback (implemented) | the reason stays as rewritten, quoting p. 660 and p. 661 | asserts nothing that an unread table could overturn; the same origin as the sibling | reads as though the source scored nothing for this task, when it compares models by RMSE three times |
+     | b | `rmse` as the source's | `Metric.source("rmse", original="the cross-validated determination coefficient the genetic algorithm maximises; the models are then reported and compared by r2 and RMSE", reference=<the open route>, definition=<the identity and the unread Table S5>)` | records that our metric is the one the article compares models by, with the one gap stated; the `open_soil_spectral_library` shape | the "one deliberate choice" rests on the article's prose, since every table prints r2 beside RMSE |
+     | c | Declare the source's own quantity, `r2` | the registry's `r2` (1 - SS_res/SS_tot) as `Metric.source`, the determination coefficient as the original | the literal name of the criterion the authors select by | r2 depends on each fold's spread, so grouped folds of 220 chemicals are no longer comparable with one another, and the sibling on the same target would score on another scale |
+
+   * **Recommendation:** b. RMSE is what the article uses whenever it says one model is better than another, including against ECOSAR, VEGA and T.E.S.T., and it is the number the abstract carries; recording that is more faithful than calling the metric a fallback, and it costs nothing, since the scoring is identical. Option c is the one to avoid: it would make the fold-to-fold numbers depend on each fold's spread and break the comparison with `qsar_fish_toxicity`. Option a stays defensible for anyone who reads MET-5's "side by side" clause strictly. **Decision:** keep the fallback (a), record `rmse` as the source's (b), or declare `r2` (c)?
+
+   **Notes for the AI:** on b, replace `Metric.fallback(reason=...)` with `Metric.source(...)` as the option names it, keeping in `definition` both the identity (1 - MSE/Var(y) ranks as RMSE does on a fixed fold) and the fact that Table S5 is unread (MET-5, MET-11), and re-run `dataset check`; the `curation_comments` metric bullet takes the three prose comparisons as its evidence. On c also re-run the task probe, whose figures are RMSE. On a nothing changes.
+
+   [^2c]: **MET-5** and **MET-11** as cited in the issue above. **MET-1** (Must): the declared metric scores the real task, and the notes record where we looked - the article was read from the first author's thesis, which reproduces it at journal pages 655 to 675 (`theses.fr/2020STRAF016/document`), and the pages quoted here were read as images on 2026-11-25.
 
 **Review panel:** ship after changes (mediator). Claim audit: the companion article is open and was read, which refutes two of the definition's statements about the source; the sibling-overlap figures are refuted on the shipped frame, and the claims about the data, the target and the splits hold. Column audit: no leak a probe missed, and two of the three two-formula pairs are repairable from the registry rather than droppable (the mediator resolved the third). Split audit: the split is right, its description was not. Blind review: "not a tabular task" - settled against it, since the harness read the SMILES as a categorical string where the benchmark encodes it as a structure. Task gamer: no exploit above the +-0.0005 noise floor, and the benzene carve-out leaves three fifths of the rows as singletons. Precedent check: 5 findings, three departures corrected and two citations fixed. Debate: agreed on the repair, the rounding, the wording and that no re-split is called for; disputed: which prediction point ships (issue 1), the metric's origin (issue 2), and a `Selection Bias` marker, settled against adding one.
 
