@@ -135,7 +135,8 @@ The protocol is the default, not a constraint on the task (SPLIT-1 in
   (`RowBudget.suffix`: `_1m`, `_2p5m`, `_10m`).
 - **Another budget for one dataset.** Not possible today: a definition of the working copy that declares `row_budget`
   is refused, so all of TabArena v0.2 trains and tests on the same budget. A custom `_make_splits` keeps its sides
-  within the budget itself (sample there), since the build refuses a plain name whose splits go over it.
+  within the budget itself (sample there), since the build refuses a plain name whose splits go over it. It samples
+  on the whole frame and returns the rows it keeps in `SplitPlan.df`, so the training-floor check counts every row.
 
 ## Examples
 

@@ -377,18 +377,15 @@ def run_all_checks(
                 dups_wo_target = 0
                 pct_dups_wo_target = 0.0
             else:
-                # Candidate set should be much smaller; run exact duplicated on it
-                candidates_df = data.loc[stage_mask]
-
-                # Total duplicates (exact row duplicates) within candidates
-                total_dups = int(candidates_df.duplicated().sum())
-                pct_dups = total_dups / n_rows * 100 if n_rows > 0 else 0.0
-
-                # Duplicates ignoring the target: check duplicates on cols_wo_target within the same candidate set
-
-                # exact duplicates ignoring the target, evaluated on the candidate set
+                # Compare the candidates by a 64-bit hash of each row, built one column at a time: no copy of the
+                # candidate rows and no integer code per column (a wide `_1m` frame would need tens of GB for those)
+                mask = stage_mask.to_numpy()
                 cols_wo_target = [c for c in cols if c != target_feature]
-                dups_wo_target = int(candidates_df.duplicated(subset=cols_wo_target).sum())
+                without_target = _row_hashes(data, mask, cols_wo_target)
+                with_target = _combine(without_target, _column_hash(data[target_feature], mask))
+                total_dups = int(pd.Series(with_target).duplicated().sum())
+                pct_dups = total_dups / n_rows * 100 if n_rows > 0 else 0.0
+                dups_wo_target = int(pd.Series(without_target).duplicated().sum())
                 pct_dups_wo_target = dups_wo_target / n_rows * 100 if n_rows > 0 else 0.0
 
         except Exception as e:
@@ -443,3 +440,22 @@ def run_all_checks(
 
     print("\nData quality checks completed.")
     return df_head, summary, numeric_stats, cat_stats, target_df
+
+
+def _column_hash(values: pd.Series, mask: np.ndarray) -> np.ndarray:
+    """A 64-bit hash of each masked value (missing values hash alike, as ``duplicated`` treats them)."""
+    return pd.util.hash_pandas_object(values[mask], index=False).to_numpy()
+
+
+def _combine(left: np.ndarray, right: np.ndarray) -> np.ndarray:
+    """Fold a column's hashes into the row hashes so far (order-dependent, like a row's column order)."""
+    with np.errstate(over="ignore"):
+        return (left * np.uint64(0x100000001B3)) ^ right
+
+
+def _row_hashes(data: pd.DataFrame, mask: np.ndarray, columns: list[str]) -> np.ndarray:
+    """A 64-bit hash of each masked row over ``columns``; two rows collide by chance with probability about 2**-64."""
+    hashes = np.zeros(int(mask.sum()), dtype=np.uint64)
+    for column in columns:
+        hashes = _combine(hashes, _column_hash(data[column], mask))
+    return hashes

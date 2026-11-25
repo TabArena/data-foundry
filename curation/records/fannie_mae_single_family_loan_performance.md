@@ -2,11 +2,12 @@
 unique_name: fannie_mae_single_family_loan_performance
 name: Fannie Mae Single-Family Loan Performance Data
 checked_by:
-- AI (UNVERIFIED)
+- Myunghwan
+data_foundry_status:
+- 'DF: Suspended'
 suggestion: TBD -> Yes
-priority: 4
+priority: 1
 tags:
-- AI-Filled (Verify)
 - Non-IID (Temporal)
 original_source: Company
 year: '2013'
@@ -20,8 +21,6 @@ source_links:
 - https://www.fanniemae.com/loanperformance
 - https://capitalmarkets.fanniemae.com/media/9066/display
 - https://capitalmarkets.fanniemae.com/credit-risk-transfer/single-family-credit-risk-transfer/fannie-mae-release-actual-loss-single-family-loan-performance-data
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -43,3 +42,7 @@ type_adapter_id: curation-record-v1
 - as published: loan-level origination data plus monthly performance for a subset of Fannie Mae's fully amortizing, full-documentation, conventional fixed-rate single-family mortgages of 30 years or less, acquired ...; target: per active loan and period, the next status: default (serious delinquency or a credit-event zero balance code), payoff (prepaid) or still active, the three ...; access: registration.
 - Why: mortgage is the Baesens textbook panel (621,653 loan-quarters, 2000 Q2-2015 Q1, from a consultancy whose site is gone; its assessment says 'No larger source exists'), with origination FICO/LTV/rate and the previous quarter's balance and LTV as features. Fannie Mae's file has the same loan-period panel and the same ...
 - Adds: Millions of loans instead of a textbook sample, 26 years (to 2026, through the 2008 crisis and the 2020 forbearance period), monthly periods, a delinquency field the old file lacks, and official documentation. A different source from the already recorded Freddie Mac loan-level dataset. Terms: registration on Data ...
+
+CC (2026-11-05, Myunghwan): Carry forward the requested pause of Fannie Mae pursuit and move to another candidate. Lower its pursuit priority for the intended redistributable public benchmark while a suitable data-release route is unresolved. Preserve the earlier screening acceptance and the instruction to stay faithful to the source task; this is not a scientific No.
+
+**Assessment (AI, 2026-11-05):** Preserve the already recorded operational priority 1, chosen by the agent after the curator requested a downgrade. The inspected agreement did not establish permission to redistribute raw or processed benchmark rows; its public-research-results exception does not itself authorize a row-level benchmark release. Registered source access and an applicable release route remain unresolved. The original prepaid/defaulted/current task, class definitions and follow-up must be established from source evidence before selecting a cohort or constructing labels. The curator did not request class balancing or approve the earlier one-month/90-day defaults. Suspend current pursuit as TBD -> Yes / DF: Suspended, without a license-based rejection marker or a claim that the task is scientifically invalid. Reopen if suitable access and release arrangements support the intended benchmark, with source-faithful task qualification and curator review.

@@ -2606,7 +2606,9 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
     ):
         fail("`TemporalSplits(sample_by=...)` sets how a version samples to its budget; it needs a `row_budget`.")
     if budget is not None:
-        if custom_splits:
+        # A declared budget would go unread by custom splits. A collection's budget comes with the `_<suffix>` name, so
+        # a version that builds its own splits caps its test sides itself; the build's budget checks still hold it.
+        if custom_splits and declared is not None:
             fail("`row_budget` is ignored when the class implements `_make_splits`; sample there instead.")
         if declared is not None and not cls.unique_name.endswith(f"_{budget.suffix}"):
             fail(

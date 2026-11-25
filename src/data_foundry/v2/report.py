@@ -245,7 +245,12 @@ def render_report(
     out += _bundle_checks_section(result)
     out += _data_checks_section(result)
     out += _build_section(fm)
-    return "\n".join(out).rstrip() + "\n"
+    return _finish_report(out)
+
+
+def _finish_report(lines: list[str]) -> str:
+    """Keep generated pages acceptable to ``git diff --check``."""
+    return re.sub(r"(?m)^[ \t]+$", "", "\n".join(lines)).rstrip() + "\n"
 
 
 # --- sections -----------------------------------------------------------------------------------------------
