@@ -1,5 +1,14 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-23, ai4d_lab_tanzania_tourism_classification_challenge retired as `Too Small` (Andrej's decision of 2026-11-20, no container built)
+
+- The release is three dated survey waves (2012, 2013, 2014), recovered by matching its rows to the statistics
+  bureau's per-year files. The relation is not flat forward in time (trained on 2012-2013 and tested on 2014, log loss
+  +0.058 for LightGBM and +0.045 for Kumo-Tabular over training on 2014 itself; 2012 to 2013, +0.079 and +0.072).
+  Three waves give neither three windows on half the data nor the four whole periods a grouped split needs.
+- The record is `No (Retired)` with `Too Small`, a CC line and the decision in its `## Review`; `v2_path` cleared.
+  The folder is removed. It can come back if per-row years are published for four or more waves.
+
 ## 2026-11-23, open_university_learning_analytics_dataset retired as `Too Small` (Andrej's decision of 2026-11-20, no container built)
 
 - The relation is measured not flat across the four start dates (2013B, 2013J, 2014B, 2014J): each date held out is
