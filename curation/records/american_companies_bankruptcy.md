@@ -7,7 +7,7 @@ checked_by:
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Andrej
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 2
 decision_markers:
 - Data Quality Issue
@@ -94,6 +94,12 @@ CC (2026-11-25, Andrej): review issue 2, a: "Reply (a): Keep the protocol line."
 CC (2026-11-25, Andrej): review issue 3, B: "Option B: The id as a categorical input." `company_name` ships as `company` (8,971 levels), categorical: a lender knows which company a statement belongs to.
 
 **Assessment (AI, 2026-11-25):** marks applied. Issue 3: `company` ships as a categorical input (21 features); the notes' bullet on the dropped id, the protocol bullet and the splits comment now say it ships. `dataset check`: 0 errors, 0 warnings (1 accepted), 1 info. Task probe on 5 of the 9 windows: random forest ROC AUC 0.920, LightGBM 0.915, linear 0.832, `net_income` alone 0.793, no flags (before the id, on 5 of the then eleven windows: 0.916, 0.908, 0.829 and 0.794; the measured effect of the id is the review's table, +0.002 on average). Issue 2: no change.
+
+CC (2026-11-25, Andrej): the declared metric (roc_auc, the source's: Lombardo et al. 2022, Section 8) is checked, as implemented.
+
+CC (2026-11-25, Andrej): the declared split (temporal on `fyear`: nine one-year windows, 2018, 2016 to 2010 and 2008, each trained on every earlier year, no gap) is checked, as implemented.
+
+CC (2026-11-25, Andrej): verdict ship; nothing open in the review. The build is stale until rebuilt.
 
 ## Review
 
