@@ -173,9 +173,18 @@ CC (2026-11-25, Andrej): the declared split (three one-day windows on 12, 11 and
 
 CC (2026-11-25, Andrej): verdict ship; nothing open in the review. The build is stale until rebuilt.
 
+CC (2026-11-25, Andrej): the value in the Outcome is corrected. The task probe's ROC AUC of 0.547-0.552 understates the task: the probe trains on the newest 200k rows of each training side, which hold only 11% of the test learners. Measured on the final features (LightGBM, a fixed 200k test sample per day):
+
+| Training rows | Learner id | 10 Mar | 11 Mar | 12 Mar | Test learners seen in training |
+|---|---|---|---|---|---|
+| Newest 200k (the probe's cap) | yes | 0.586 | 0.587 | 0.585 | 11% |
+| Random 1M | yes | 0.631 | 0.632 | 0.628 | 70% |
+| Whole side (9-11M) | no | 0.638 | 0.639 | 0.637 | 73% |
+| Whole side (9-11M) | yes | 0.651 | 0.654 | 0.649 | 73% |
+
 ## Review
 
-**Outcome:** added as `duolingo_spaced_repetition_recall_1m`. Ship: the full re-check of 2026-11-21 kept the data and the task; the curator's decisions of 2026-11-24 and 2026-11-25 reshaped its label and inputs. Label: the source's own, more than half of the session's exercises right, scored with the source's pooled ROC AUC (issue 11 B), in place of the 75% cutoff. Inputs, all known before the session: the clock, two languages, the word, the learner (`user_id`, issue 13 B), two history counts and `delta_to_previous_lesson`, the time from the word's last practice to the end of the learner's previous lesson (issue 9 D); the realized exercise count `session_seen` is dropped as a leak (issue 10 B). Split: one-day windows on 12, 11 and 10 March with a one-day gap (H A, issue 8 A); each training side holds every earlier session (86.5%, 78.3%, 70.8% of the rows) and test days keep at most 500k sessions (issue 12 B). Validity: the timestamp is the lesson's end, so the label exists at it; a later test row's practice counters can reveal an earlier row's result, which predicting each test row from its own inputs keeps closed (issue 7). Value: modest; the task probe gives ROC AUC 0.552 (linear) and 0.547 (LightGBM) against 0.500, ahead on 3 of 3 days, with the flags `no_spread` and `drift_baseline` left for the tuned benchmark. `dataset check`: 0 errors, 0 warnings. Nothing open.
+**Outcome:** added as `duolingo_spaced_repetition_recall_1m`. Ship: the full re-check of 2026-11-21 kept the data and the task; the curator's decisions of 2026-11-24 and 2026-11-25 reshaped its label and inputs. Label: the source's own, more than half of the session's exercises right, scored with the source's pooled ROC AUC (issue 11 B), in place of the 75% cutoff. Inputs, all known before the session: the clock, two languages, the word, the learner (`user_id`, issue 13 B), two history counts and `delta_to_previous_lesson`, the time from the word's last practice to the end of the learner's previous lesson (issue 9 D); the realized exercise count `session_seen` is dropped as a leak (issue 10 B). Split: one-day windows on 12, 11 and 10 March with a one-day gap (H A, issue 8 A); each training side holds every earlier session (86.5%, 78.3%, 70.8% of the rows) and test days keep at most 500k sessions (issue 12 B). Validity: the timestamp is the lesson's end, so the label exists at it; a later test row's practice counters can reveal an earlier row's result, which predicting each test row from its own inputs keeps closed (issue 7). Value: LightGBM on the whole training side scores ROC AUC 0.649-0.654 with the learner id and 0.637-0.639 without (2026-11-25); the task probe's 0.547-0.552 comes from its cap of the newest 200k training rows, which hold only 11% of the test learners. `dataset check`: 0 errors, 0 warnings. Nothing open.
 
 **Main points:** No open decision. Not a decision: the build is stale after this round's changes.
 
