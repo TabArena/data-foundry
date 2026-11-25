@@ -3,15 +3,20 @@ unique_name: distribution_transformers_at_cauca_department
 name: Distribution Transformers at Cauca Department
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
 priority: 2
 tags:
 - New IID
+- 'Samples: One Moment'
+- 'Target: Later'
+- Database Snapshot
 collections:
 - New (BeyondArena)
 original_source: Other
+collection_period: '2020'
 required_split:
 - Random (IID)
 problem_type: Binary Classification
@@ -54,6 +59,93 @@ CC (2026-10-26, Lennart): verdict ship.
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `client_type` (a level outside the scale is a state of its own).
 
 CC (2026-11-01, Lennart): marks on the review board of PR #37: client_type stays unordered (non-residential types beside the strata), noted in the definition.
+
+CC (2026-11-13, Andrej): time basis `DelayedTarget` instead of `ForcedIIDFromTemporal` (Review issue 1, B):
+- One inventory ranked at the start of 2020, the year's burns after it: one shared moment and a closed window, which the sharpened one-moment rule names a `DelayedTarget`.
+- The random split stays.
+
+CC (2026-11-16, Andrej): time basis `StationaryRelation` instead of `DelayedTarget`, which was dropped before it shipped:
+- Trained on the 2019 burns and tested on 2020, LightGBM scores ROC AUC 0.648 against 0.639 on the random folds: the one forward window of the source's two years costs nothing.
+- The random split stays.
+
+CC (2026-11-18, Andrej): time basis `AssumedStationaryRelation` in place of `StationaryRelation` (Review issue 3, C; stationarity reasoning): the operator ranks its transformers for the year right after the inventory, and burns follow lightning density and network exposure, which one year does not change. The stationary-relation test of 2026-11-18 is inconclusive on the source's one forward period, so the tag rests on this reason; the random folds stay.
+
+## Review
+
+**Outcome:** added. The time basis went from `ForcedIIDFromTemporal` to `DelayedTarget` (2026-11-13), to `StationaryRelation` when `DelayedTarget` was retired (2026-11-16), and to `AssumedStationaryRelation` (2026-11-18).
+
+**Main points:** The time basis is `AssumedStationaryRelation` (Andrej, 2026-11-18); issue 1 was resolved on 2026-11-13
+as `DelayedTarget`, changed on 2026-11-16 and 2026-11-18 (CC lines).
+
+**Issues for Andrej:**
+
+1. **Retag `DelayedTarget` instead of `ForcedIIDFromTemporal`, now that a one-moment release is forced only when its target is of that moment?**
+
+   * **Problem:**
+     - The definition is tagged `ForcedIIDFromTemporal` (Lennart, 2026-10-21), from when every release with too few periods was forced[^8a-x].
+     - Every row is predicted at one shared moment, the start of 2020, when the operator ranks its transformers, and the target arrives after it, with the burns during 2020, a year that has closed for every transformer, which is a `DelayedTarget`[^32a-x].
+     - The tag alone changes: the split stays random.
+   * **Background:** both files carry one inventory of the same transformers; trained on the 2019 burns and tested on 2020, LightGBM scores ROC AUC 0.648 against 0.639 on the random folds.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | the tag and its line stay | the decision of 2026-10-21 stands | the tag says time was lost, which the one shared moment contradicts |
+     | B | `DelayedTarget` | the tag and its `Time basis:` line name the shared moment and the target's window | follows the record's facts and the sharpened rule; the measured transfer from 2019 to 2020 shows no cost | changes a decided tag |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   **Notes for the AI:** on B, swap the tag in `data_tags` and write the `Time basis:` line as SPLIT-32 asks for a `DelayedTarget` (the moment, the window, closed for every row, what the split cannot test: the next moment); add a CC line; the split code does not change.
+
+   [^8a-x]: **SPLIT-8** (Must, sharpened 2026-11-13): a release that is one moment, every row predicted at the same point, is forced only when its use case looks forward from a target of that moment or of unknown timing; otherwise SPLIT-32 gives it `Retrospective` or `DelayedTarget`.
+   [^32a-x]: **SPLIT-32** (Should): `DelayedTarget` is one shared prediction moment with the target arriving after it, in a window closed for every row; a random or grouped split then draws train and test from that one moment and window.
+
+   **Andrej (2026-11-13, change):** Option B: DelayedTarget.
+
+   **Resolved (2026-11-13, Andrej):** B. The tag is `DelayedTarget`, with its `Time basis:` line in the definition; the split does not change.
+
+3. **`AssumedStationaryRelation`, or `ForcedIIDFromTemporal`, now that the test is inconclusive?**
+
+   * **Problem:**
+     - Time: Two label years (2019, 2020 burns) on one static inventory of the same 15,873 transformers, no per-row dates; the stationary-relation test (2026-11-18) is inconclusive on the single period even pooled, and the source (Mendeley v4, Data in Brief 2021) holds no further year.
+     - Use: The Cauca grid operator ranks its transformers at the start of a year for that year's burns: use right after the collected period (2019 burns -> 2020 ranking), the definition's own use case.
+     - Mechanism: Burns follow lightning density, overhead exposure, network length and load (physical drivers recorded as features); one year between inventory and use does not change that physics, though weather intensity and grid investment vary by year.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | distribution_transformers_at_cauca_department itself | LightGBM trained on 2019 burns, tested on 2020: ROC AUC 0.648 vs 0.639 random folds | flat on one forward window (thin); v3 test inconclusive | same data, the only forward window |
+     | aps_failure / other equipment-failure sets in the collection | no dated equipment-failure set tested flat or not flat | none | failure of grid/vehicle equipment |
+
+   * **For a stationary use case:**
+     - Use right after the collected period: rank this year's risk from last year's inventory and history.
+     - Physical drivers (lightning density, overhead network, circuit end) that a year does not change.
+     - The one forward window costs nothing (0.648 forward vs 0.639 random).
+     - No adversary, price or market in the outcome.
+   * **Against:**
+     - One forward window only, and the v3 test is inconclusive, so no measured support for longer horizons.
+     - Year-to-year lightning and rainfall vary (ENSO cycles in Colombia), moving the burn rate.
+     - Grid investment and replacement after burns change the fleet; the inventory was taken after the 2020 burns (post-outcome concerns, power_kva/installation_type dropped).
+     - Whether the 2020 label covers the whole year is not stated.
+   * **Earlier views:**
+     - CC (2026-10-21, Lennart): forced from temporal, cost measured against valid windows (SPLIT-8 amended).
+     - CC (2026-11-13, Andrej): DelayedTarget instead of ForcedIIDFromTemporal (issue 1 B).
+     - CC (2026-11-16, Andrej): StationaryRelation, from the 2019->2020 window costing nothing.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | `StationaryRelation` as shipped (implemented) | No change | No rebuild | The test it rests on is inconclusive |
+     | B | `ForcedIIDFromTemporal` | The folds stay; the line names the inconclusive test | Claims only what is measured | |
+     | C | `AssumedStationaryRelation` | The folds stay; the line opens `AssumedStationaryRelation (Andrej, 2026-11-18): the operator ranks its transformers for the year right after the inventory, and burns follow lightning density and network exposure, which one year does not change` | Documents why random folds stand for later samples | One forward window only, and the v3 test is inconclusive, so no measured support for longer horizons.; Year-to-year lightning and rainfall vary (ENSO cycles in Colombia), moving the burn rate. |
+
+   * **Recommendation:** C, both valid reasons hold: use right after the period and a physical mechanism, and the one forward window agrees; 'measure' no longer helps since the source's two years were measured (inconclusive) and no later year exists, so only a release with more years could settle it. Confidence: medium. **Decision:** A, B or C?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, change):** Option C: AssumedStationaryRelation.
+
+   **Resolved (2026-11-18, Andrej):** C. `data_tags` names `AssumedStationaryRelation` in place of `StationaryRelation`, and the `Time basis:` line opens `AssumedStationaryRelation (Andrej, 2026-11-18): the operator ranks its transformers for the year right after the inventory, and burns follow lightning density and network exposure, which one year does not change`; the random folds stay.
 
 ## Reference
 

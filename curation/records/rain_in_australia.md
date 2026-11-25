@@ -9,10 +9,16 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- 'Entities: Recur'
+- Panel Data
 collections:
 - TabArena Reject
 original_source: GOV Website
 year: '2026'
+collection_period: Nov 2007 - Jan 2026
 domain: environmental science & climate
 required_split:
 - Temporal (NON-IID)
@@ -49,7 +55,7 @@ CC (2026-10-26, Lennart): the year is the definition's 2026: we ship rattle's we
 
 CC (2026-10-26, Lennart): issue 5: drop the 2,571 rows without their own 9 am rain reading and the 201 rows whose next row is far later; their label covers 48 hours or more, another quantity than the 24-hour call (USE-5).
 
-**Assessment (AI, 2026-10-26):** answers on the review page: 26 contiguous 14-day windows over the last year triple the test rows (16,457) and halve the standard error of the mean ROC AUC (0.008 against 0.016) without an exception to SPLIT-15 (issue 2); a naive forecast of the rain amount with a > 1 mm rule reaches ROC AUC 0.75 against 0.849 for the full model, ahead in 9 of 9 windows (issue 4); under TP-10 as amended on 2026-10-22 `RainToday` (the target of the day before) fails leg 2 and `Rainfall` is allowed (issue 4); patching the 2016-17 gap from the Kaggle snapshot adds 19,003 training rows with no measurable gain (-0.0009, SE 0.0022) from the period where the copies disagree most (issue 3); the neighbours' 9 am readings add +0.020 ROC AUC (SE 0.0045) with a time-zone guard but are a feature build CLEAN-19 does not admit as written (issue 6).
+**Assessment (AI, 2026-10-26):** answers in the review: 26 contiguous 14-day windows over the last year triple the test rows (16,457) and halve the standard error of the mean ROC AUC (0.008 against 0.016) without an exception to SPLIT-15 (issue 2); a naive forecast of the rain amount with a > 1 mm rule reaches ROC AUC 0.75 against 0.849 for the full model, ahead in 9 of 9 windows (issue 4); under TP-10 as amended on 2026-10-22 `RainToday` (the target of the day before) fails leg 2 and `Rainfall` is allowed (issue 4); patching the 2016-17 gap from the Kaggle snapshot adds 19,003 training rows with no measurable gain (-0.0009, SE 0.0022) from the period where the copies disagree most (issue 3); the neighbours' 9 am readings add +0.020 ROC AUC (SE 0.0045) with a time-zone guard but are a feature build CLEAN-19 does not admit as written (issue 6).
 
 CC (2026-10-26, Lennart): issue 2: "Do so": 26 contiguous 14-day test windows over the last year instead of 9 spaced six weeks apart (follows SPLIT-15; no exception needed).
 
@@ -65,9 +71,9 @@ CC (2026-10-26, Lennart): the declared metric, ROC AUC (the fallback; the source
 
 CC (2026-10-26, Lennart): verdict ship.
 
-**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `WindDir9am` (a partial order); `WindGustDir_prev_day` (a partial order); `WindDir3pm_prev_day` (a partial order).
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels): left unordered: `WindDir9am` (a partial order); `WindGustDir_prev_day` (a partial order); `WindDir3pm_prev_day` (a partial order).
 
-CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 3 calendar or compass cycles ordered; cloud cover 9 (sky obscured, 3 rows) set to missing (CLEAN-10).
+CC (2026-10-31, Lennart): decided in the dtype review of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 3 calendar or compass cycles ordered; cloud cover 9 (sky obscured, 3 rows) set to missing (CLEAN-10).
 
 CC (2026-11-11, Lennart): Review issue 7, B ("Option B: One every 16 weeks over eight years."): the 26 fortnights are spread one every 16 weeks from 19 May 2018 to 30 January 2026 in place of the last year, so the 2019 drought and the wet La Niña years are tested; the count of windows and its reason, the test rows (CC 2026-10-26), stay.
 
@@ -78,6 +84,8 @@ CC (2026-11-11, Lennart): the declared horizon (14 days, no gap, 26 windows star
 CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note naming the columns (cross-dataset item "Accept splits_feature_missing_in_test where a column starts or stops being recorded within the history?", A: the data as the deployed model met it).
 
 **Assessment (AI, 2026-11-11):** 12 station readings are missing in at least one test fortnight and recorded for 50% to 93% of its train side.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `Date`, windows of 14 days, 26 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 

@@ -8,11 +8,17 @@ data_foundry_status:
 suggestion: 'Yes'
 priority: 3
 tags:
+- Non-IID (Temporal)
 - Review Prio 1 (Atlas)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- Dated Event Log
 collections:
 - New (BeyondArena)
 original_source: GOV Website
 year: '2016'
+collection_period: Jan 2016 - Jun 2016
 domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)
@@ -98,6 +104,8 @@ CC (2026-11-10, Lennart): the declared horizon (7 days, a one-day gap, windows s
 **Assessment (AI, 2026-11-10):** applied in dataset.py: `temporal` with the three cutoffs; test 52,607, 49,284 and 59,653 trips, train 1,382,016, 1,169,775 and 766,644 (95.8%, 81.1%, 53.1% of the 1,442,651 cleaned trips). Late labels recounted on the frame (pickup + duration): without the gap 77, 112 and 100 training trips would end after the window starts (the splits comment's 119 for the old start of 17 June is 117 on today's frame), with the one-day gap none (SPLIT-9, SPLIT-10). The 8,028 trips of 23 June, the newest window's gap day, are in no split, so the container holds 1,434,623; the April train side is under the 1M budget and is fitted whole. `task_summary` (split and row count), `splits_comment` and the notes' Split and row-budget bullets rewritten; the stale 52,779 to 54,532 trips per window are gone, and the LightGBM scores are labelled as measured on the June weeks. Horizon audit (split-auditor, model-free): the Kaggle test set is a random 30% of the same days; no source gives a refit cadence (Uber's DeepETA post: "Periodic auto retraining"); the largest PSI of any eligible week is 0.003; 14 days gives 6 candidates from 8 April, calendar months two windows above the floor (SPLIT-14). `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
 **Assessment (AI, 2026-11-11):** the horizon CC of 2026-11-10 gave as one reason for a week that calendar months would leave only May and June above the 50% floor; under SPLIT-14 as amended on 2026-11-11 months give three windows (June 83.5%, May 66.3%, April 49.1% of the trips). The week stands on its other reasons (no source gives a horizon or a cadence, the week holds each weekday once, the default of the ETA tasks whose labels arrive within a day); the splits comment and the Horizon block are reworded (Lennart, 2026-11-11: "reopen cooking and nyc as needed or change the wording").
+
+CC (2026-11-17, Andrej): the declared split (temporal on `pickup_datetime`, windows of 7 days, 3 windows at fixed cutoffs, gap 1 day) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 

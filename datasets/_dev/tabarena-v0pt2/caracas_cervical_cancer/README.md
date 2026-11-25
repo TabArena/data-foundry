@@ -217,6 +217,10 @@ We start with risk_factors_cervical_cancer.csv from UCI: 858 patients of the gyn
 - Note: a label-free distance to the nearest other patient gives ROC AUC 0.70, above the untuned models (random forest 0.68). It follows the number of nonzero answers (Spearman 0.57), so we read it as the risk load of the questionnaire, not as generated data (the generated-data probe finds no rule leaves).
 - Impossible answers become missing: 2 first intercourses after the patient's current age and 2 STD diagnoses longer ago than her age (the age is the clinic's record).
 - Anomaly: other answers contradict each other without being impossible and stay as recorded: 5 patients have a `dx_*` flag set while `dx` is 0, and 7 report an STD with no STD diagnosis counted (the questions may count different things).
+- Time basis: ForcedIIDFromTemporal: the patients came to the service over time, and the file carries no visit
+  date, so the time is lost. A dated release would test patients later than those used for training. Not taken
+  as stationary (Andrej, 2026-11-18): A behavioural questionnaire under changing screening and vaccination
+  policy gives no mechanism that time leaves unchanged.
 
 ## Splits
 

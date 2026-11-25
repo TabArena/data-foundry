@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, set_missing
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis, set_missing
 
 # The corrected code table of UCI 573 (codetable.txt): code -> label per column
 CODES = {
@@ -178,6 +178,16 @@ class CreditG(AbstractCuratedDataset):
           people liable. "no checking account", "unknown / no savings account" and "unknown / no property" are states
           outside their scales: missing, by the curator's rule, as the data has no other missing value.
     """
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        consumer credits granted from 1973 to 1975, each judged good or bad over
+        its own term (4 to 72 months, no stated horizon); neither UCI 573's file (sorted by class) nor Statlog's (no
+        order) keeps a grant date, so random loans stand in for later applicants. A dated release would allow a split
+        by grant year. Not taken as stationary (Andrej, 2026-11-18): A 1973-1975 bank sample scored for later
+        applicants spans decades of changed currency, products and rules; no domain reason holds.
+        """,
+    )
 
     # Task
     target = "good_or_bad_customer"

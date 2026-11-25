@@ -16,11 +16,14 @@ decision_markers:
 - No Good Target / Scientific Discovery
 tags:
 - Tiny Data
+- 'Samples: One Moment'
+- Survey
 collections:
 - New (BeyondArena)
 - TabSTAR
 original_source: UCI
 year: '2019'
+collection_period: Unknown
 domain: medical & healthcare
 required_split:
 - Random (IID)
@@ -55,17 +58,17 @@ CC (2026-10-14, Lennart): Drop the duplicates: 488 rows.
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — The source is a data descriptor for a 7-class obesity-level task with no defined evaluation metric, and we changed the task to BMI regression (weight and height dropped), so no source metric applies.
 
 **Assessment (AI, 2026-10-27):** The open questions for the curator are in the record's Review (review of the Tiny Data datasets, written from the earlier findings, no review panel); the AI recommends shipping it. Priority 1: gap -, use case - (nobody predicts BMI from habits), source +, shape -, risk - (a target built by us, disputed).
-**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 7 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `FCVC`, `NCP`, `CAEC`, `CH2O`, `FAF`, `TUE`, `CALC` (the README lists their levels).
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels): 7 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `FCVC`, `NCP`, `CAEC`, `CH2O`, `FAF`, `TUE`, `CALC` (the README lists their levels).
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nhanes_bmi_from_habits` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 5 coded columns carry their words.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Keep with the task text corrected: real answers and a real signal (TabPFN R² 0.18, shuffled -0.01) with a spread of methods, but the BMI-from-habits target is ours and Andrej disputes that anyone makes this prediction (issue 1), and the signal is mostly age, sex and family history (issue 2). Priority 1: gap 0, use case 0, source 1, shape 0, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Keep with the task text corrected: real answers and a real signal (TabPFN R² 0.18, shuffled -0.01) with a spread of methods, but the BMI-from-habits target is ours and Andrej disputes that anyone makes this prediction (issue 1), and the signal is mostly age, sex and family history (issue 2). Priority 1: gap 0, use case 0, source 1, shape 0, risk -1.
 
-CC (2026-11-11, Andrej): task text rewritten (the question names age, sex and family history, which carry about 90% of the gain over the mean; the use case no longer says the source's tool works from habits alone, since it also asks for weight and height); the self-reported, rounded weights (40.8% at multiples of 5 kg) and the 37 minors noted in the curation comments; the random split described as a Snapshot of the 30-day survey (the tag follows once PR #50 is in). Whether the dataset stays is still open (Review issue 1).
+CC (2026-11-11, Andrej): task text rewritten (the question names age, sex and family history, which carry about 90% of the gain over the mean; the use case no longer says the source's tool works from habits alone, since it also asks for weight and height); the self-reported, rounded weights (40.8% at multiples of 5 kg) and the 37 minors noted in the curation comments; the random split described as a Snapshot of the 30-day survey. Whether the dataset stays is still open (Review issue 1).
 
-CC (2026-11-11, Andrej): retired (`No (Retired)`, `No Good Target / Scientific Discovery`; BeyondArena v0.2 review page, issue 1, B): the source's own tool takes weight and height, and its label is the body mass index class computed from them, so the published task is circular. Without weight and height only a target we built is left, a body mass index from habit answers that no source and no stated user predicts where a scale is at hand. The folder stays until the retirement PR removes it and clears `v2_path`; the claim stays.
+CC (2026-11-11, Andrej): retired (`No (Retired)`, `No Good Target / Scientific Discovery`; Review issue 1, B): the source's own tool takes weight and height, and its label is the body mass index class computed from them, so the published task is circular. Without weight and height only a target we built is left, a body mass index from habit answers that no source and no stated user predicts where a scale is at hand. The folder stays until the retirement PR removes it and clears `v2_path`; the claim stays.
 
 ## Review
 
@@ -73,7 +76,7 @@ CC (2026-11-11, Andrej): retired (`No (Retired)`, `No Good Target / Scientific D
 2019, https://doi.org/10.1016/j.dib.2019.104344): the body mass index predicted from sex, age, family history and 11
 habit answers, over the source's 488 real respondents. Retired on 2026-11-11 (issue 1, B).
 Reviewed on 2026-11-04 without a panel, from the gathered evidence (the record, an earlier check on the v0.2 rows, the
-model runs on the shipped data, one new check); both issues of 2026-10-27 are still open. Validity: the 1,613
+model runs on the shipped data, one new check); both issues of 2026-10-27 were open then. Validity: the 1,613
 synthetic rows and 10 repeated submissions are dropped (Lennart, 2026-10-14); the source's obesity level is a fixed
 rule on weight and height, so both are dropped and the body mass index is predicted from the other answers, the
 remedy the rule for labels computed from the columns names. Andrej disputes that anyone makes this prediction (issue
@@ -86,7 +89,7 @@ case is as thin. Weighed: real answers and a documented source +, real signal an
 prediction nobody may need -, signal mostly demographic -.
 
 **Main points:** Retired (issue 1, B, 2026-11-11): the source's tool takes weight and height, and nobody predicts
-a body mass index from habits alone. The folder leaves in a retirement PR. Issues 2 and 3 were resolved the same day.
+a body mass index from habits alone. The folder was removed in PR #97. Issues 2 and 3 were resolved the same day.
 
 **Record judgment:** real survey answers with a target we rebuilt from the source's own rule; the signal is real but
 mostly demographic, and the use case is one the source states but nobody would need where a scale is at hand.
@@ -262,7 +265,7 @@ mostly demographic, and the use case is one the source states but nobody would n
 
    * **Recommendation:** B, if issue 1 keeps the dataset. **Decision:** A, B or C?
 
-   **Notes for the AI:** once PR #50 is in, on B: `data_tags = ("Snapshot",)` (no tag is listed now) and the curation
+   **Notes for the AI:** on B: `data_tags = ("Snapshot",)` (no tag is listed now) and the curation
    bullet "- Time basis: Snapshot: one web survey open for 30 days (dates not stated; published 2019) in Mexico, Peru
    and Colombia; sex, age, family history, habits, weight and height reported in the same form, so the body mass
    index is of the same moment. Not tested: respondents of a later time or another population."; `dataset check`.
@@ -275,8 +278,7 @@ mostly demographic, and the use case is one the source states but nobody would n
      time is lost.
 
    **Resolved (2026-11-11, Andrej):** B: the `Time basis: Snapshot` line is in `curation_comments` (one 30-day web
-   survey; not tested: respondents of a later time or another population). The `Snapshot` tag enters `data_tags` once PR
-   #50 is in the working copy. The record's facts stay.
+   survey; not tested: respondents of a later time or another population). The `Snapshot` tag is in `data_tags`. The record's facts stay.
 
 ## Reference
 
