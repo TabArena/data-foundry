@@ -64,7 +64,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
 
 **Outcome:** added. A question on `CrossSectional` (2026-11-13) was withdrawn when the prototype was dropped.
 
-**Main points:** The BeyondArena v0.2 review's issues are in this review from 2026-11-25 as 6, 7, 8, 9; the parked ones are open again. Better-data check (2026-11-25, issue 5): Replace it with web_page_phishing_detection (Hannousse and Yahiouche 2021), split grouped by registered domain: the check left open on 2026-11-09 passes, since its URL-only features separate the classes far less than PhiUSIIL's (best fixed rule on the URL 0.78 ROC AUC, against 0.9998), and the task still separates methods (LightGBM 0.989 against logistic regression 0.980). Earlier: Nothing open: issue 1 was withdrawn on 2026-11-13. Issue 2 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
+**Main points:** New 2026-11-25 (issue 10): a dated phishing table, PhreshPhish, for a real temporal split. The BeyondArena v0.2 review's issues are in this review from 2026-11-25 as 6, 7, 8, 9; the parked ones are open again. Better-data check (2026-11-25, issue 5): Replace it with web_page_phishing_detection (Hannousse and Yahiouche 2021), split grouped by registered domain: the check left open on 2026-11-09 passes, since its URL-only features separate the classes far less than PhiUSIIL's (best fixed rule on the URL 0.78 ROC AUC, against 0.9998), and the task still separates methods (LightGBM 0.989 against logistic regression 0.980). Earlier: Nothing open: issue 1 was withdrawn on 2026-11-13. Issue 2 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
 
 **Issues for Andrej:**
 
@@ -425,6 +425,97 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
    **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 5 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
 
    **Note (AI, 2026-11-25):** the BeyondArena v0.2 review's issue 4, parked there on 2026-11-11 and never written into this record; it is kept here under its new number.
+
+10. **Add PhreshPhish as a dated phishing task, next to Hannousse or in its place?**
+
+   * **Problem:**
+     - PhreshPhish dates every row of both classes (666,315 pages, July 2024 to December 2025, benign pages from browsing telemetry, not a top list), and no fixed URL rule separates them (depth-2 tree 0.77 to 0.85 ROC AUC), so it allows windows by date, which Hannousse, undated, cannot.
+     - It is no table yet: it ships URL and HTML only, so the features must be built, and two class-dependent recording conventions must be removed first (query strings stripped from benign URLs; the HTML capture format changed for phishing pages in October 2025).
+     - Add it next to Hannousse (B), replace Hannousse (C), add only its URL features (D), or keep Hannousse only (A)?
+   * **Background:** The search for a phishing table with a date per row, checked on the files where marked (all other rows from data cards and papers):
+
+     | Candidate | Rows | Date per row | Both classes dated the same way | Legitimate side | Features | Access, licence | Verdict |
+     |---|---|---|---|---|---|---|---|
+     | PhreshPhish (Dalton et al. 2025, Hugging Face phreshphish/phreshphish v1.0.1) (checked: URL, label and date of all rows; HTML of 7 of 77 files, 64,492 pages) | 666,315 (368,989 benign, 298,326 phishing) | `date` (collection day), 2024-07-02 to 2025-12-16 | yes, one crawler for both; but no benign page from November 2024 to May 2025, and the monthly phishing share runs from 15% to 100% | pages from 6 million users' browsing telemetry plus searches for targeted brands; 26% of benign hosts are subdomains, wikipedia.org alone 15,308 rows | URL and HTML only; a table can be built without a crawler (URL lexical plus HTML tag counts) | open, CC BY 4.0, the card asks for anti-phishing research only; 36.6 GB compressed (about 193 GB of HTML) | best candidate |
+     | PILWD-134K (Sánchez-Paniagua et al. 2022; record pilwd_134k_phishing) (card only) | 134,000 | August 2019 to September 2020 | stated, not checked | legitimate login pages | raw captures; the paper's 54 features would be rebuilt | on request from an institutional account, terms not stated | not available today |
+     | CompPhish (Goenka, Mendeley fmbs4kp9wz v4) (checked: feature file) | 15,358 | none (collection September 2024 to August 2025 stated for the whole set) | no dates | DataForSEO top-1000 homepages (`https://www.google.com.hk/`) | 70 | open, CC BY 4.0 | not dated; top-list homepages |
+     | PhishVN (Mendeley b97hxbxtpd v4) (checked) | 53,116 | `collected_at` on 4,613 rows only | no: phishing rows carry a detection date (2,587, 2020-02 to 2025-02), benign a certification date (2,026, 2021-04 to 2026-03), the rest none | Tranco top list and a Vietnamese trust registry | 21 URL features, domain-only URLs | open, CC BY 4.0 | dates mean different events per class |
+     | URL-Phish (Mendeley 65z9twcx3r v2) (checked) | 116,600 (16,600 phishing) | none | no dates | institutional and company homepages (77% with no path, against 44% of phishing) | 22 URL features | open | not dated |
+     | PhishTank and OpenPhish feeds (card only) | feed | submission or verification time | phishing only | none | URL only | PhishTank key; OpenPhish archive commercial | no legitimate class |
+     | Phishing lifespan crawl (Zenodo 14880589) (card only) | 286,237 URLs | 30-minute crawl, 2021 to 2024 | phishing only | none | raw captures, 40 GB | open, CC BY 4.0 | no legitimate class |
+     | PhiShark2026 (arXiv 2608.23199) (card only) | 67,502 scans | not stated | not stated | "screened benign reference" | raw evidence | no hosting or licence found | not available |
+     | Curated phishing e-mail corpora (Champa et al., Zenodo 8339691) (checked: CEAS_08, Nazario) | 39,154 and 1,565 | `date` | CEAS_08: both classes in August 2008, but spam against ham, with forged spam dates up to 2100; Nazario: phishing only | Enron, TREC and SpamAssassin mailboxes of other years | text | open, CC BY 4.0 | another task (spam), or one class |
+     | phiusil_phishing (checked) | 235,795 | none (`FILENAME` ids only, in separate ranges per class) | no dates | ranked homepages | 51 | open | not dated (its own record's issue) |
+     | web_page_phishing_detection (Hannousse) (checked 11-25) | 11,430 | none; one crawl in late July to early August 2020 | no dates | Alexa top 500 and Yandex results | 87 | open, CC BY 4.0 | current replacement, forced split |
+
+   * **Effect on the task:** The task stays "is this page phishing", from the URL and the page. PhreshPhish's own split is temporal: train up to 2025-09-08, test after, with test pages that were near-duplicates of a training page removed. Rows from September 8 on are therefore pruned, the earlier ones not.
+   * **Experiments:** 2026-11-25, batch. Features built by us: 26 URL lexical features computed on the URL with its query and fragment removed in both classes; 22 HTML tag counts (forms, inputs, password and hidden inputs, links and external links, scripts, iframes, images, buttons, title, keyword counts) by regular expression; the serialization-dependent values (a leading DOCTYPE, raw length, line count) only as probes. Registered domain by a public-suffix heuristic. Untuned depth-1 and depth-2 trees as fixed rules, logistic regression on standardised features, LightGBM defaults; ROC AUC.
+
+     Class-form probes (one feature, orientation-free ROC AUC, or share by class):
+
+     | Probe | Benign | Phishing | ROC AUC alone |
+     |---|---|---|---|
+     | URL has a query string | 68 of 368,989 rows | 11.7% | 0.558 (length of the query) |
+     | URL host starts with `www.` | 58% | 7% | 0.754 |
+     | URL has no path | 7.5% | 50.8% | 0.717 |
+     | page starts with a DOCTYPE, 2024-07 to 2025-09 | 0% to 1% | 0% | 0.601 over the sample |
+     | page starts with a DOCTYPE, 2025-10 and 2025-11 | 0% | 80% | (December 2025 benign: 98%) |
+     | median raw HTML length | 237k to 279k characters | 16k to 77k | 0.817 |
+
+     The whole sample, by split (test share as PhreshPhish's own test split):
+
+     | Features | Rows | Split | Depth-1 tree | Depth-2 tree | Logistic regression | LightGBM |
+     |---|---|---|---|---|---|---|
+     | URL, query removed | 666,315 | random | 0.792 | 0.852 | 0.940 | 0.983 |
+     | URL, query removed | 666,315 | random, grouped by registered domain | 0.803 | 0.846 | 0.938 | 0.969 |
+     | URL, query removed | 666,315 | temporal, source split (test 2025-09-08 to 12-16) | 0.800 | 0.769 | 0.919 | 0.965 |
+     | URL, query removed | 666,315 | temporal, train to 2025-06, test 2025-07-01 to 09-07 | 0.736 | 0.833 | 0.846 | 0.892 |
+     | URL plus query and fragment lengths | 666,315 | temporal, source split | 0.800 | 0.769 | 0.932 | 0.975 |
+     | HTML tag counts | 64,492 | random | 0.811 | 0.853 | 0.895 | 0.981 |
+     | HTML tag counts | 64,492 | temporal, source split | 0.742 | 0.831 | 0.892 | 0.948 |
+     | URL + HTML tag counts | 64,492 | random | 0.811 | 0.900 | 0.956 | 0.994 |
+     | URL + HTML tag counts | 64,492 | random, grouped by registered domain | 0.786 | 0.882 | 0.938 | 0.983 |
+     | URL + HTML tag counts | 64,492 | temporal, source split | 0.742 | 0.846 | 0.944 | 0.983 |
+     | serialization probes only | 64,492 | random | 0.727 | 0.799 | 0.848 | 0.926 |
+     | serialization probes only | 64,492 | temporal, source split | 0.739 | 0.777 | 0.223 | 0.325 |
+
+     Monthly windows on the months both classes were collected (2025-06 to 2025-11, 304,402 rows), training on all earlier months of that span; the random comparator draws the same train and test sizes from the pooled months:
+
+     | Features | Test month | Train rows | Test rows | Phishing share in test | LightGBM temporal | LightGBM random | Logistic regression temporal | Logistic regression random |
+     |---|---|---|---|---|---|---|---|---|
+     | URL | 2025-08 | 69,857 | 55,348 | 25% | 0.941 | 0.979 | 0.893 | 0.908 |
+     | URL | 2025-09 | 125,205 | 43,846 | 17% | 0.906 | 0.976 | 0.856 | 0.901 |
+     | URL | 2025-10 | 169,051 | 114,043 | 47% | 0.957 | 0.979 | 0.932 | 0.922 |
+     | URL | 2025-11 | 283,094 | 21,308 | 90% | 0.982 | 0.980 | 0.934 | 0.924 |
+     | URL | mean of 4 | | | | 0.946 | 0.979 | 0.904 | 0.914 |
+     | URL + HTML tag counts (sample) | mean of 4 | 6,517 to 27,744 | 2,260 to 11,517 | 17% to 90% | 0.974 | 0.992 | 0.926 | 0.936 |
+
+     - The depth-2 rule on the URL reads path depth, then `www.` or URL entropy; no rule comes near PhiUSIIL's 0.9998, and it is in the range of Hannousse's 0.780.
+     - A random split overstates the score by 0.02 to 0.07 ROC AUC for LightGBM in three of four months, so the date matters.
+     - The serialization probes flip between periods (0.926 random, 0.325 forward): the capture format dates the row, and the date tells the class.
+   * **Consistency:** a class-dependent recording convention is harmonised before use, also one that changed over time while the class mix changed[^conv]; here that means the URL without its query in both classes and only tag counts from the HTML, never the DOCTYPE, raw length or line count. Hannousse was taken for its URL showing no shortcut of PhiUSIIL's kind[^form]; PhreshPhish passes the same test. A better dataset is its own record, and the old one keeps the verdict its own data earn[^better].
+   * **Unknown:**
+     - Whether the October 2025 capture change also moved the tag counts of phishing pages (the median number of links on a phishing page was 7 to 20 in June to September 2025 and 4 in October and November; on a benign page it stayed at about 128).
+     - Whether "only for anti-phishing research" on the card restricts a general benchmark; CC BY 4.0 itself does not.
+     - The HTML features rest on 7 of 77 files (64,492 pages); the full table needs the 36.6 GB download.
+     - PhreshPhish has no record yet.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep Hannousse only (implemented) | web_page_phishing_detection stays the one phishing task, forced split grouped by registered domain | built and reviewed; author-made features with look-ups | no date per row, so no forward test; legitimate side is a top list |
+     | B | Add PhreshPhish next to Hannousse | new record and build: URL features without the query, HTML tag counts, no serialization features; monthly windows on 2025-06 to 2025-11, grouped by registered domain within the training side | a real forward test (4 monthly windows, 21,308 to 114,043 test rows); benign pages from real browsing, not a top list; 58 times Hannousse's size | features are ours, not the authors'; benign gap from November 2024 to May 2025 limits the window span; the capture change is not fully tested; two phishing tasks |
+     | C | Replace Hannousse by PhreshPhish | as B, and retire web_page_phishing_detection | one phishing task, dated | discards a built and reviewed dataset with look-up features PhreshPhish lacks |
+     | D | Add PhreshPhish with URL features only | as B without the HTML (all 666,315 rows from 75 MB of URLs and dates) | no 36.6 GB download; no HTML capture question; the forward gap is clearest here (0.946 against 0.979) | a URL-only task; drops the page, half the signal practitioners use |
+
+   * **Recommendation:** B: PhreshPhish is the only open phishing table found whose rows of both classes carry the same date, its URL shows no fixed-rule shortcut, and the date changes the score; Hannousse keeps its own verdict and covers the look-up features. D if the HTML download or the capture change is too much. **Decision:** A, B, C or D?
+
+   **Notes for the AI:** on B or D: open a record `phreshphish_phishing` (Other, 2025, technology & internet, Binary Classification, links https://huggingface.co/datasets/phreshphish/phreshphish and https://arxiv.org/abs/2507.10854), then /add-dataset. Strip query and fragment from every URL before any feature; never compute a feature from raw HTML length, line count or a leading DOCTYPE; keep only rows from months where both classes were collected (2025-06 to 2025-11, plus 2024-08 to 2024-10 if a longer span is wanted, with the gap noted); group by registered domain (gitbook.io, webflow.io and pages.dev hold 15,475 to 19,872 phishing rows each); test whether the tag counts of phishing pages shift at the October 2025 capture change before keeping them (B). Mention the source's test-split pruning in the notes. On C, also issue a retirement item in web_page_phishing_detection's own review.
+
+   [^conv]: LEAK-13 (Must): class-specific recording conventions are harmonised; a convention that changed over time counts too when the classes changed over the same time, since it dates the row and the date tells the class.
+   [^form]: LEAK-13 to LEAK-15 (Must): classes recorded in different forms or from different sources are checked for a shortcut that separates them, and such a dataset is not shipped.
+   [^better]: PROV-4 (Must): a better dataset from another source is its own record, and the old one keeps the verdict its own data earn until the curator decides.
+
 ## Reference
 
 Phishing detection based Associative Classification data mining
