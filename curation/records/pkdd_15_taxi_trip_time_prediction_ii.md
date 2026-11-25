@@ -10,9 +10,16 @@ priority: 2
 decision_markers:
 - Needs extensive data wrangling
 tags:
+- Non-IID (Temporal)
 - Review Prio 1 (Atlas)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
+- Dated Event Log
 original_source: Kaggle
 year: '2015'
+collection_period: Jul 2013 - Jun 2014
 domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)

@@ -12,8 +12,11 @@ suggestion: No (Retired)
 decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 - Missing source information
+tags:
+- 'Samples: No Time Dimension'
 original_source: Kaggle
 year: '2022'
+collection_period: Not applicable (generated)
 required_split:
 - Random (IID)
 source_links:
@@ -55,7 +58,7 @@ CC (2026-10-21, Lennart): an upload whose first platform cannot be traced is kep
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Kaggle dataset (likely a course dataset) with no stated task metric; no first publication.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Retire as generated: seven of ten columns carry next to nothing beyond the class (within-class shuffle AUC 0.48-0.53 against 0.54-0.76 on the real bank_marketing), tenure is flat over age, and a hand-written class-first Bayes net beats all 41 benchmark methods. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Retire as generated: seven of ten columns carry next to nothing beyond the class (within-class shuffle AUC 0.48-0.53 against 0.54-0.76 on the real bank_marketing), tenure is flat over age, and a hand-written class-first Bayes net beats all 41 benchmark methods. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
 
 CC (2026-11-04, Andrej): retired as generated data (`No (Retired)`, `AHDS`, `Missing source information`). The table comes from a data-science course (SuperDataScience, Deep Learning A-Z) and names no bank, period or generation method.
 - **How it was generated:** a class-rooted Bayes net (a sampler that draws the label first, then each column given the label and at most two other columns), written down by hand: churn first; country, gender, activity and number of products given churn; a zero balance given churn, country and products; a positive balance around one shared centre (about 120,000), its spread given churn and country; age given churn and activity; credit score given churn (capped at 850); tenure, salary and the card flag independent noise.
@@ -81,7 +84,7 @@ trees, 0.228 for logistic regression), but they separate on how well they recove
 issue beyond the origin. Weighed: a widely used teaching table with real-looking marginals +, the generator written
 down and beating every method -, marks of generation in three calibrated tests -, no traceable bank -.
 
-**Main points:** Retire as generated data (issue 1)? Retired.
+**Main points:** Retired as generated data (issue 1, 2026-11-04). Nothing open.
 
 **Record judgment:** not valid as real data: a course table drawn by a class-rooted Bayes net, which, written down,
 beats every method; the earlier keep rested on a course counting as a source while the data

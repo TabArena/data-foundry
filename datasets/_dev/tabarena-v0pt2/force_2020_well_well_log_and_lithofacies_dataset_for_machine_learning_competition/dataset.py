@@ -14,6 +14,7 @@ from data_foundry.v2 import (
     Metric,
     Source,
     TaskSummary,
+    TimeBasis,
     drop_columns,
 )
 
@@ -238,10 +239,33 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
         - Anomaly: the labels are a hand interpretation; the organisers put the reachable accuracy near 80% (repository blog post, p. 9).
         - Metric: the competition's penalty matrix scores the hard labels (the spec); the top three teams trained on multiclass log loss (technical retrospective in the repository, p. 3-4).
         - No duplicate rows or repeated (WELL, DEPTH_MD) pairs.
+        - All 118 wells are dated in the national register (the Norwegian Offshore Directorate's factpages: entry,
+          completion and release date; 115 released exactly two years after completion, releases from 1969 to 2018).
+          The release order was measured as a split and not taken (see the splits comment): wells reach the public
+          database one by one, so a new well's released neighbours are already public, and the labels were all
+          made once for the 2020 competition (2026-11-12).
         - Partial order, left unordered (2026-11-01, CLEAN-14): `GROUP`: the groups stack by geological age, but
           regional equivalents that never occur in the same well (Viking, Tyne and Boknfjord in the Upper Jurassic, for
           example) have no order between them.
+        - The curves a well carries change with its completion year (Sodir register): shear sonic in 0% of the
+          wells completed before 1990, 35% in the 1990s, 82% in the 2000s, 92% in the 2010s; SP and mud weight gone after
+          2000. A change in how features are recorded, kept as a note (SPLIT-37 step 4(a), Andrej, 2026-11-18): the newest
+          wells, which the use case meets, are logged like the newest training wells. Windows on the release date cost
+          little against random wells of the same size (mean penalty 0.698 against 0.674).
     """
+    time_basis = TimeBasis(
+        "UnseenGroup",
+        """
+        the use case interprets a well not yet
+        drilled, from its logs, so the split holds out whole wells. The lithology at a depth is a property of the
+        rock, and the wells reach the public one by one, not in waves: a split by release date holds out no more than
+        random wells (the splits comment). It cannot test wells logged with later tools or in parts of the North Sea
+        the 118 wells do not cover.
+        """,
+        set_by="Andrej",
+        on="2026-11-13",
+        note="`Timeless` before",
+    )
 
     # Task
     target = "lithology"
@@ -271,7 +295,7 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
         """,
     )
     splits_comment = """
-        Grouped 3-fold cross-validation by well over all 118 wells (37 to 41 whole wells per test fold, one repeat) replaces the competition's 98 training, 10 open-test and 10 blind wells: the organisers found the blind set too small to represent the lithologies ("With hindsight we should have chosen a larger blind dataset", blog post, p. 3). Test wells have drilled neighbours, as the competition's held-out wells had (14 of its 20 share a licence block with a training well): the median distance from a test well to the nearest training well is 8 km and 55-76% share a licence block, so the score stands for new wells in explored areas, not frontier wells (random forest log loss 0.763 grouped by well, 0.814 by licence block, 1.015 by quadrant). Halite (4 wells) and Anhydrite (10) are absent from one test fold.
+        Grouped 3-fold cross-validation by well over all 118 wells (37 to 41 whole wells per test fold, one repeat) replaces the competition's 98 training, 10 open-test and 10 blind wells: the organisers found the blind set too small to represent the lithologies ("With hindsight we should have chosen a larger blind dataset", blog post, p. 3). Test wells have drilled neighbours, as the competition's held-out wells had (14 of its 20 share a licence block with a training well): the median distance from a test well to the nearest training well is 8 km and 55-76% share a licence block, so the score stands for new wells in explored areas, not frontier wells (random forest log loss 0.763 grouped by well, 0.814 by licence block, 1.015 by quadrant). A split by the wells' public release date holds out no more than a random draw of wells (2026-11-12; random forest on every 5th depth sample, four expanding windows against training sides of the same size on the same test wells): mean penalty 0.698 and log loss 0.811 forward by release date, 0.674 and 0.802 with random wells, 0.768 and 0.924 with wells from other quadrants; 62% of the forward test wells keep a training well in their licence block (median 10 km to the nearest), as random draws do (62%, 9.5 km). Halite (4 wells) and Anhydrite (10) are absent from one test fold.
     """
     accepted_check_warnings = {
         "splits_test_class_missing": "Halite occurs in 4 wells (14,711 rows) and Anhydrite in 10 (1,807 rows). The "

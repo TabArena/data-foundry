@@ -16,11 +16,13 @@ decision_markers:
 - Trivial
 tags:
 - Tiny Data
+- 'Samples: No Time Dimension'
 collections:
 - New (BeyondArena)
 - TabSTAR
 original_source: UCI
 year: '1987'
+collection_period: Unknown
 domain: medical & healthcare
 required_split:
 - Random (IID)
@@ -53,13 +55,13 @@ CC (2026-10-14, Andrej): Disagreement: I think the redefined target is circular 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — UCI page defines no metric; Protos reported classification accuracy on the 24 original diagnoses, a different target from our 3 grouped types, so no metric is defined for the shipped task.
 
 **Assessment (AI, 2026-10-27):** The open questions for the curator are in the folder's `REVIEW.md` (review of the Tiny Data datasets, written from the earlier findings, no review panel); the AI recommends not to ship it. Priority 2: gap +, use case - (the only version with a decision behind it carries no signal), source +, shape -, risk - (the label is read off its five defining tests; recommended not to ship).
-**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 6 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `air`, `ar_c`, `ar_u`, `bone`, `o_ar_c`, `o_ar_u` (the README lists their levels); their codes that mean unknown (don't know, refused, not asked) are missing in `bone` (CLEAN-10); left unordered: `speech` (a partial order).
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels): 6 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `air`, `ar_c`, `ar_u`, `bone`, `o_ar_c`, `o_ar_u` (the README lists their levels); their codes that mean unknown (don't know, refused, not asked) are missing in `bone` (CLEAN-10); left unordered: `speech` (a partial order).
 
-CC (2026-11-01, Lennart): marks on the review board of PR #37: speech stays unordered (where normal sits is not documented), noted in the definition.
+CC (2026-11-01, Lennart): decided in the dtype review of PR #37: speech stays unordered (where normal sits is not documented), noted in the definition.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `hbdc_audiogram_air_bone_gap` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the folder's `REVIEW.md`. Retire: the shipped type of hearing loss is read off its five defining tests (accuracy 0.903 of 0.938), and the version before testing, from the case history, predicts nothing beyond the majority class; the disagreement waits for Lennart. Priority 2: gap 1, use case 0, source 1, shape 0, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the folder's `REVIEW.md`. Retire: the shipped type of hearing loss is read off its five defining tests (accuracy 0.903 of 0.938), and the version before testing, from the case history, predicts nothing beyond the majority class; the disagreement waits for Lennart. Priority 2: gap 1, use case 0, source 1, shape 0, risk -1.
 
 CC (2026-11-05, Andrej): retired (`No (Retired)`, `No Good Target / Scientific Discovery`): the type of hearing loss we ship is read off the tests that define it, and without those tests nothing is left to predict. The data is the teaching collection of the Protos expert system (195 cases, 1987); the target is Lennart's redefinition of 2026-10-06: normal, sensorineural, or conductive or mixed.
 - **The label is the definition of five of its features:** audiology defines the type of loss by the audiogram (hearing thresholds by air and by bone conduction; a gap between them means a conductive part) and the tympanogram (how the eardrum moves). These tests are columns (`airBoneGap`, `air`, `bone`, `boneAbnormal`, `tymp`): alone they reach accuracy 0.903 against 0.938 with all 65 features (5-fold logistic regression, majority class 0.728); `airBoneGap` = t is conductive or mixed in 23 of 23 cases, an abnormal `tymp` in 33 of 34.
@@ -71,7 +73,7 @@ CC (2026-11-10, Andrej): marker changed to `Trivial`: a textbook rule, not fitte
 - **The rule:** conductive or mixed when there is an air-bone gap or the tympanogram is not type A; otherwise sensorineural when air conduction is abnormal or any of the audiogram's 40 pattern codes (`m_sn_gt_2k`, `notch_4k` and the like) is set; otherwise normal. It assigns 194 of 195 cases (accuracy 0.995, balanced 0.998), against 0.968 for the best of logistic regression, random forest and gradient boosting (5-fold x 5 repeats).
 - **How it came about:** read on air conduction alone the rule reached 0.764: the coarse air-conduction code reads normal for 45 sensorineural ears whose high-frequency losses sit in the pattern codes, which name the type themselves; no normal ear has one set.
 - **What is left without the audiogram:** the 11 case-history answers keep a small signal (log loss 0.713 against 0.762 for the class shares, outside 20 shuffled runs), so "the majority class" above holds for accuracy only; reassessed as a task of its own it has no decision, as the audiogram is the routine first test of a hearing complaint.
-Marker `No Good Target / Scientific Discovery` removed. Evidence: Slurm jobs 1374813 and the rule check of 2026-11-10.
+Marker `No Good Target / Scientific Discovery` removed. Evidence: the model runs and the rule check of 2026-11-10.
 
 CC (2026-11-11, Lennart): retirement as `Trivial` agreed with Andrej: the rule beats every tuned method (TP-4). On
 the 60 v2 splits the unfitted rule above (calibrated once on each training side for log loss) scores log loss 0.047

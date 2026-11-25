@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary, TimeBasis
 
 
 class BloodTransfusion(AbstractCuratedDataset):
@@ -67,6 +67,21 @@ class BloodTransfusion(AbstractCuratedDataset):
         - We renamed the target and mapped binary values to "Yes"/"No".
         - Anomaly: the data has a lot of duplicates (29%) and several duplicates with different target values.
     """
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        one random draw of 748 donors from the donor database
+        before the March 2007 drive, with months since the last and the first donation and the number of donations
+        counted to one shared reference date; the target is whether the donor gave at the March 2007 drive, and no
+        history count includes it (donors with recency 0 give at 40%, as at 2 to 4 months). One drive is one period,
+        too few for three windows (SPLIT-8), so the random split tests other donors of the same drive. Draws before
+        later drives would allow a temporal split. Not tested: the next drive. Not taken as stationary (Andrej,
+        2026-11-18): Use right after the moment counts for ASR, but behavioural response to a seasonal university
+        drive moves, and similar behavioural sets measured not flat; mixed.
+        """,
+        set_by="Andrej",
+        on="2026-11-16",
+    )
 
     # Task
     target = "DonatedBloodInMarch2007"
