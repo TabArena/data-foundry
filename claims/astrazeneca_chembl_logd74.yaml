@@ -1,6 +1,6 @@
 name: astrazeneca_chembl_logd74
 holder: Andrej
-stage: triage
+stage: add
 claimed_at: '2026-11-25T13:00:23Z'
-expires_at: '2026-12-02T13:00:23Z'
-note: TabBench-Bio re-screening on the current rules (Andrej)
+expires_at: '2026-12-02T15:11:57Z'
+note: add-dataset (Andrej)

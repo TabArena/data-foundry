@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-25 15:04 UTC: 224 claim(s) (Andrej 193, Lennart 12, Myunghwan 19).
+As of 2026-11-25 15:11 UTC: 224 claim(s) (Andrej 193, Lennart 12, Myunghwan 19).
 
 ## Andrej
 
@@ -20,7 +20,7 @@ As of 2026-11-25 15:04 UTC: 224 claim(s) (Andrej 193, Lennart 12, Myunghwan 19).
 | `aps_failure` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `aquatic_toxicity_lunghini_consensus` | add | 2026-11-25 | 2026-12-02 | add-dataset (better-data replacements, 2026-11-25) |
 | `asp_potassco_classification` | review | 2026-11-11 | 2026-11-18 (expired) | BeyondArena v0.2 review page (Andrej) |
-| `astrazeneca_chembl_logd74` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
+| `astrazeneca_chembl_logd74` | add | 2026-11-25 | 2026-12-02 | add-dataset (Andrej) |
 | `audiology_diagnosis` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `australian_vehicle_insurance_2004_2005` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `bacteria_id_raman` | review | 2026-11-25 | 2026-12-02 | Curator review of the two RamanBench definitions; taken over from Lennart by agreement |
@@ -73,13 +73,13 @@ As of 2026-11-25 15:04 UTC: 224 claim(s) (Andrej 193, Lennart 12, Myunghwan 19).
 | `gcm_multiclass_cancer` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
 | `genomic_prediction_maize_flowering_time` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
 | `genomic_prediction_rice_flowering_time` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
-| `genomic_prediction_soy_yield` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
+| `genomic_prediction_soy_yield` | add | 2026-11-25 | 2026-12-02 | add-dataset (Andrej) |
 | `genomic_prediction_switchgrass_height` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
 | `give_me_some_credit` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `gossis_icu_hospital_mortality` | review | 2026-11-11 | 2026-11-18 (expired) | BeyondArena v0.2 review page (Andrej): replaces wids_diabetes_mellitus |
 | `gse10893_breast_cancer_subtype` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
 | `gse147221_schizophrenia_methylation` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
-| `gse40279_methylation_age` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
+| `gse40279_methylation_age` | add | 2026-11-25 | 2026-12-02 | add-dataset (Andrej) |
 | `gse42861_rheumatoid_arthritis_methylation` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
 | `gse50660_smoking_methylation` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
 | `gusto_i_mi_mortality` | add | 2026-11-25 | 2026-12-02 | add-dataset (better-data replacements, 2026-11-25) |
