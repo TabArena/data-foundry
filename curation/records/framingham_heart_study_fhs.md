@@ -78,13 +78,17 @@ CC (2026-11-18, Andrej): time basis stays `ForcedIIDFromTemporal` (Review issue 
 
 CC (2026-11-20, Andrej): random folds over participants stay, a written departure from the measured-not-flat rule (Review issue 3, A): the shipped task holds one exam, so no later period can be held out; with ages matched the shift remains for LightGBM (-0.040 ROC AUC on exam 3) and vanishes for Kumo-Tabular.
 
+CC (2026-11-23, Andrej): the departure decided in Review issue 3 (A, 2026-11-20) is listed in the departures table of `split_tree.md`: the tree's leaf is Retire · Too Small (`L-FORCED.too-small`), and the definition ships random 3 x 3 folds, `ForcedIIDFromTemporal`.
+
+CC (2026-11-23, Andrej): the time basis is `AssumedStationaryRelation` (Review issue 4): one baseline exam ships, so no later period exists to hold out; the measured shift is one model family's once age is matched, and secular drift in risk matters over decades, not within one exam. The random 3 x 3 folds stay; framingham leaves the departures table.
+
 ## Review
 
 **Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below (issues 2 and 3).
 
-**Main points:** Measured on the teaching file's exams: not flat, so `ForcedIIDFromTemporal` stays (issue 2, A,
-2026-11-18); the random folds over participants stay as a written departure from the measured-not-flat rule (issue
-3, A, 2026-11-20). Nothing is left open.
+**Main points:** Measured on the teaching file's exams: not flat (issue 2, A, 2026-11-18); the random folds over
+participants stay (issue 3, A, 2026-11-20), now tagged `AssumedStationaryRelation` on the curator's reason (issue 4,
+2026-11-23). Nothing is left open.
 
 **Issues for Andrej:**
 
@@ -298,6 +302,18 @@ CC (2026-11-20, Andrej): random folds over participants stay, a written departur
    **Andrej (2026-11-20, ok):** As implemented (A).
 
    **Resolved (2026-11-20, Andrej):** A: the 3 x 3 random folds over the 4,199 participants stay, `ForcedIIDFromTemporal`; the `Time basis:` line now names the departure from the rule that a relation measured not flat is never split at random, with the age-matched numbers (LightGBM -0.040 on exam 3, Kumo-Tabular flat) and the reason: one exam, no later period to hold out. Not rebuilt.
+
+4. **Tag the random folds `AssumedStationaryRelation` instead of keeping them as a departure under `ForcedIIDFromTemporal`?**
+
+   * **Problem:** the tree's leaf for a relation measured not flat with one period is Retire · Too Small (`L-FORCED.too-small`); issue 3 kept the random folds as a departure. `AssumedStationaryRelation` is set only by a person, with a reason for this dataset.
+   * **Options:**
+
+     | | Option | What it does |
+     |---|---|---|
+     | A | `ForcedIIDFromTemporal`, listed departure (implemented) | No change |
+     | B | `AssumedStationaryRelation` on the curator's reason | The tag and its `Time basis:` line change, the folds stay; the departures-table row is removed |
+
+   **Resolved (2026-11-23, Andrej):** B. `TimeBasis("AssumedStationaryRelation", ...)` set by Andrej on 2026-11-23, with the reason: one baseline exam ships, so no later period exists to hold out; the shift measured across the parent file's exams is one model family's once age is matched (LightGBM -0.040 ROC AUC on exam 3, Kumo-Tabular flat), and secular drift in risk matters over decades, not within one exam. The earlier `ForcedIIDFromTemporal` line follows as "Before:". The row leaves the departures table of `split_tree.md`. Not rebuilt.
 
 ## Reference
 

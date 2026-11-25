@@ -32,8 +32,9 @@ from data_foundry.v2 import discover_definitions
 REPO = resolve_curation_root().parent
 V02 = REPO / "datasets/_dev/tabarena-v0pt2"
 RECORDS = REPO / "curation/records"
-PERSON_QUESTIONS = {"CAT.exception", "ORDER.exception", "FORCED.reason", "FORCED.risk"}
-"""The questions "Who answers" names: the windows exception, the two reasons SPLIT-32 allows, the leakage risk."""
+PERSON_QUESTIONS = {"CAT.exception", "ORDER.exception", "CAT.small", "ORDER.small", "FORCED.reason", "FORCED.risk"}
+"""The questions "Who answers" names: the windows exception, a small table's flat reading signed off, the two reasons
+SPLIT-32 allows, the leakage risk."""
 
 
 @pytest.fixture(scope="module")
@@ -149,8 +150,10 @@ def test_at_most_three_examples(tree: SplitTree) -> None:
 
 
 def test_departures_name_a_leaf(tree: SplitTree) -> None:
-    """Every row of the departures table names a leaf of the tree, and the definition is no example of it."""
-    assert tree.departures
+    """Every row of the departures table names a leaf of the tree, and the definition is no example of it.
+
+    The table may be empty: a resolved departure leaves it.
+    """
     for row in tree.departures:
         leaf = tree.leaf(row["leaf"])
         assert leaf is not None, row

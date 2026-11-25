@@ -6,7 +6,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, TimeBasis
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+)
 
 FACIAL = (
     "Max1R13_",
@@ -182,33 +191,18 @@ class InfraredThermographyTemperature(AbstractCuratedDataset):
         - We convert `Time` to the decimal hour `TimeOfDay`, and drop `SubjectID` (the measurement date and a number) and `Date`.
         - We drop subjects 170208-03 and 180228-01, one measurement under two codes a year apart: their images and oral readings agree, while the date, ethnicity and room readings differ (decision table).
         - One `Distance` of 79.0, among 0.60-0.77 m that day, is in centimetres: we set 0.79 m.
-        - IID over subjects: each row is a new person, in the file once, and the day's conditions (`T_atm`, `Humidity`, `Distance`, `T_offset1`) are recorded for every new person, so they are features, not a group to hold out. The source calibrated on a random 60% of the subjects. The measurement day carries a small part of the target and more of the calibration offset (decision table); `hidden_groups.py` finds no hit.
+        - The measurement day is no group to hold out: each row is a new person, in the file once, and the day's conditions (`T_atm`, `Humidity`, `Distance`, `T_offset1`) are recorded for every new person, so they are features. The source calibrated on a random 60% of the subjects. The measurement day carries a small part of the target and more of the calibration offset (decision table); `hidden_groups.py` finds no hit.
         - The split comparisons are evidence, not the reason (random forest, 10 x 3 folds unless stated): folds grouped by day score as random ones do (R^2 0.699 against 0.700). The set-up changed between the two study years (two locations; median distance 0.80 m in the first winter, 0.60 m in the second). In 6 expanding windows over the newest half of the days, training on all earlier subjects instead of a random set of the same size changes the RMSE by +0.5% to +6.7% across ridge, forest and LightGBM; the first window of the second year is 5-29% worse with a bias of +0.1 °C, and a first-year calibration over-predicts the second year by 0.06-0.09 °C.
         - Not trivial: a one-feature segmented calibration of `T_Max1` in the source's style (our 4-knot linear spline; Wang 2022 gives no knots) reaches RMSE 0.276 °C, an additive model of every numeric feature 0.264 °C, better on 29 of 30 splits.
         - Anomaly: `Age` has an overlapping bin 21-30 for 10 subjects, and `aveOralM` lies on a 0.05 °C grid shifted by -0.01 °C, which does not change the RMSE. Both kept.
         - Scope (SEL-15, amended 2026-10-21, Lennart): each column is a blackbody-compensated temperature at a named facial site, the camera is used as a thermometer, the target is the same physical quantity measured by mouth, and the release holds no images, so the readings are measurements, not image descriptors (SEL-13). satimage and wilt, where an imaging sensor's values serve to recognise what the image shows, are the counter-cases.
-        - Split decision (2026-10-21, Lennart): IID, not temporal. The task learns a calibration, a function of the inputs that should be the same on two different days when the other inputs are the same, so we expect no real signal across time. The year-to-year shift measured above (a first-year calibration over-predicts the second year by 0.06-0.09 °C; past-only training costs +0.5% to +6.7% RMSE) is recorded, and a temporal variant stays a candidate (SPLIT-31).
+        - Split decision (2026-10-21, Lennart), replaced 2026-11-23: IID, not temporal. The task learns a calibration, a function of the inputs that should be the same on two different days when the other inputs are the same, so we expect no real signal across time. The year-to-year shift measured above (a first-year calibration over-predicts the second year by 0.06-0.09 °C; past-only training costs +0.5% to +6.7% RMSE) is recorded, and a temporal variant stays a candidate (SPLIT-31).
+        - Split decision (2026-11-23, Andrej): temporal, three two-month windows on the visit date from the 15th of March, January and November, each training on half the subjects or more (splits comment). The stationary-relation test over the newest three periods (2026-11-19, RMSE in °C, 5 seeds) reads Nov-Dec 2017 not flat for Kumo-Tabular (+0.010 ± 0.003, floor 0.001; Jan-Feb 2018 +0.001 ± 0.007 and Mar-Apr 2018 -0.002 ± 0.004 flat), at the change of set-up between the study years; the windows test what a camera calibrated once meets on later people.
         - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed
           by the curator's rule (missing when the column has no other missing value, else the lowest level; a state that
           is simply not on the scale, such as Other, is missing).
     """
-    time_basis = TimeBasis(
-        "StationaryRelation",
-        """
-        two-month windows train on
-        half the subjects only from January 2018, two windows, too few; the stationary-relation test on those two
-        (2026-11-19, RMSE in °C, 5 seeds) reads flat: Kumo-Tabular +0.001 ± 0.007 (Jan-Feb 2018) and -0.002 ± 0.004
-        (Mar-Apr 2018), floors 0.002-0.004; LightGBM inconclusive. Nov-Dec 2017, which trains on 48%, reads not flat
-        for Kumo-Tabular (+0.010 ± 0.003, floor 0.001): it falls at the change of set-up between the study years
-        (location, camera distance about 0.8 to 0.6 m), after which a first-year calibration over-predicts by
-        0.06-0.09 °C. Earlier evidence: the calibration is meant to hold whatever the day (Lennart, 2026-10-21), and
-        folds grouped by day score as random ones do (R^2 0.699 against 0.700). It cannot test a later set-up.
-        """,
-        set_by="Andrej",
-        on="2026-11-20",
-    )
-
     # Task
     target = "aveOralM"
     problem_type = "regression"
@@ -223,8 +217,25 @@ class InfraredThermographyTemperature(AbstractCuratedDataset):
     )
 
     # Splits
+    temporal = Temporal(
+        on="VisitDate",
+        splits=TemporalSplits(
+            window=2,
+            unit="months",
+            cutoffs=("2018-03-15", "2018-01-15", "2017-11-15"),
+            min_train_fraction=0.5,
+        ),
+        time_of="label",
+    )
+    accepted_check_warnings = {
+        "splits_below_target": (
+            "Three windows of the 30 splits an IID split of 1,001 subjects would get: two-month windows on half the "
+            "subjects or more leave room for three. A table this small with three windows gets the stationary-relation "
+            "test, and it reads Nov-Dec 2017 not flat, so the windows ship (Andrej, 2026-11-23)."
+        ),
+    }
     splits_comment = """
-        Default splits: repeated 3-fold cross-validation over the subjects, one row each. Wang et al. (2022, Sec. 2.5) calibrated on a random 60% of the subjects and tested on the other 40%, and note that a random split of one pool may bias the estimate upwards (Sec. 4.5). Subjects measured on the same day fall on both sides of a split: 94-99% of the test subjects of a fold share their day with a training subject. Each row is a new person, and the day's conditions are recorded as features for every person. The set-up changed between the two study years (two locations, the median distance from 0.80 to 0.60 m), and a first-year calibration over-predicts the second year by 0.06-0.09 °C. The curation notes compare this split with folds grouped by day, which score the same, and with a temporal split on the date. We keep IID (Lennart, 2026-10-21): the calibration is a function of the inputs that should not depend on the day, so we expect no real signal across time; the measured shift between the years is the cost, and a temporal variant stays a candidate.
+        Three expanding two-month windows on the visit date, newest first: from 15 March 2018 to the last visit (14 May 2018), from 15 January and from 15 November 2017. Each trains on every subject imaged before the window starts (89%, 60% and 53% of the subjects), so every window meets the half-data floor. Target: the 30 splits an IID split of 1,001 subjects would get; three two-month windows fit above the floor. A table this small with only three windows also gets the stationary-relation test, which reads Nov-Dec 2017 not flat, so the windows ship. No gap: the oral reading that sets the label is taken minutes after the image, in the same visit. The visit date comes from the date part of `SubjectID` and is no input (`time_of="label"`): it orders and splits the subjects only. The windows start mid-month because the newest window must hold the newest visits; starting on the 1st (Mar, Jan, Nov) would need a newest window stretched into May and a 48% window under the floor. The set-up changed between the study years (two locations, the median distance from 0.80 to 0.60 m), a first-year calibration over-predicts by 0.06-0.09 °C, and the stationary-relation test reads Nov-Dec 2017 not flat (Kumo-Tabular +0.010 ± 0.003 RMSE, floor 0.001). A screening camera calibrated once is used on later people, which these windows test (Andrej, 2026-11-23). Wang et al. (2022, Sec. 2.5) calibrated on a random 60% of the subjects and note that a random split of one pool may bias the estimate upwards (Sec. 4.5); the earlier random 10 x 3 folds (Lennart, 2026-10-21) are compared in the curation notes.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -258,6 +269,8 @@ class InfraredThermographyTemperature(AbstractCuratedDataset):
         df.loc[df["Distance"] > 10, "Distance"] = df["Distance"] / 100
         # the time of the measurement as the decimal hour
         df["Time"] = pd.to_timedelta(df["Time"]).dt.total_seconds() / 3600
+        # the visit date, from the date part of the subject id (yymmdd-n): orders and splits the subjects, no input
+        df["VisitDate"] = pd.to_datetime(raw.loc[df.index, "SubjectID"].str.split("-").str[0], format="%y%m%d")
         return df.rename(columns={"Time": "TimeOfDay"})
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
@@ -348,7 +361,7 @@ class InfraredThermographyTemperature(AbstractCuratedDataset):
                 retakes,
             ),
             Decision(
-                "IID over subjects; the measurement day is not held out",
+                "The measurement day is not a group to hold out",
                 "154 days with 1-15 subjects (median 6). For each quantity, the share of its variance between the "
                 "day means, the same share with shuffled days, the permutation p-value and the intraclass "
                 "correlation. The day carries a small part of the target and more of the offset between the oral "

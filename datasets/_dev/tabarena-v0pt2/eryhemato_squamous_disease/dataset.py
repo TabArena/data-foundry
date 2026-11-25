@@ -116,9 +116,11 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
         alone). The random split puts both parts on both sides, so each test patient has training patients of its own
         part: on the shipped splits, logistic regression's log loss on one part's patients is 0.536 and 0.345 when it
         trains on a random mix of both parts, against 0.688 and 0.425 when it trains on as many patients of the other
-        part alone; told the part, it improves by another 0.014, and the case mix of the parts adds nothing. Read as
-        two collection periods, too few for three windows; dates of examination would allow a split
-        by period. Not taken as stationary (Andrej, 2026-11-18): The rule lists structure in the file order as a fact
+        part alone; told the part, it improves by another 0.014. The source does not say what the parts are: two
+        collection periods, two examiners, or one series extended by diagnosis; between them the share of
+        seborrheic dermatitis falls from 24.3% to 10.2%. The parts are not read as periods (Andrej, 2026-11-23), so no
+        period can be held out, and the case mix is the measured cost of the random split; dates of examination
+        would allow a split by period. Not taken as stationary (Andrej, 2026-11-18): The rule lists structure in the file order as a fact
         against, and here it is measured as a sizeable cost.
         """,
     )
