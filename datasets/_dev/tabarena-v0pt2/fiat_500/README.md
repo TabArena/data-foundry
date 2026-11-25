@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: fiat_500
 container_format: 2
-checksum: v2:8903fd19b4b0a6b1375a93befdf22b7b834b7f0c6604e522ce443ec1eb326711
+checksum: v2:c14e1c28c2fbfa64ab4845aa164a48da3b3e122536c9be9588ff8a15a65d84c3
 build:
   uuid: 01a13a7d-c2b9-7b23-b0e5-6674aebfe128
   checksum: v2:fc49148e6879f51937dde279b4bb33c5cd645dbee32afd580bccb977e6b1a6e6
@@ -57,7 +57,8 @@ bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos: []
+  infos:
+  - meta_time_basis_renamed
   accepted: {}
 decisions: []
 ---
@@ -68,7 +69,7 @@ decisions: []
 
 Regression of `price`, scored with `rmse` on IID splits. 1,434 rows and 7 features. Source: Kaggle (2020).
 
-Built as `01a13a7d-c2b9-7b23-b0e5-6674aebfe128` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:8903fd19b4b0a6b1375a93befdf22b7b834b7f0c6604e522ce443ec1eb326711`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2b9-7b23-b0e5-6674aebfe128` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:c14e1c28c2fbfa64ab4845aa164a48da3b3e122536c9be9588ff8a15a65d84c3`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -122,7 +123,7 @@ Only curators run `build`, when the dataset ships.
 |---|---|
 | source | Kaggle: https://www.kaggle.com/datasets/paolocons/another-fiat-500-dataset-1538-rows |
 | year | 2020 |
-| domain | technology & internet |
+| domain | business & marketing |
 | license | CC0: Public Domain |
 | data_tags | IID, Retrospective |
 | reference | paolocons2020fiat |
@@ -188,8 +189,7 @@ We start with automobile_dot_it_used_fiat_500_in_Italy_dataset_filtered.csv from
 - We keep one row per car, its first listing (1,434 rows): 104 rows repeat the model, engine power, age, mileage and owners of another. 18 are exact copies, most 12-14 rows after the first (the crawler saw the listing on two result pages), and one car with an odd mileage such as 9,248 km appears at up to 9 places a median 396 km apart, mostly at one price (Lennart, 2026-10-14).
 - Partial order, left unordered (2026-11-01, CLEAN-14): `model`: pop is the base trim; lounge and sport are both
   above it but not ranked against each other.
-- Time basis: Retrospective: one crawl of listings (published on Kaggle in 2020; the crawl date is not stated),
-  whose prices the use case fills in for the same market. It cannot test a later market.
+- Time basis: Retrospective: one crawl of listings (published on Kaggle in 2020; the crawl date is not stated), whose prices the use case fills in for the same market. It cannot test a later market.
 
 ## Splits
 
@@ -237,8 +237,9 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
+- **info** `meta_time_basis_renamed`: `Retrospective` is the old name of `RetrospectiveFillIn`: declare `TimeBasis('RetrospectiveFillIn', ...)`.
 
 ## Data checks
 
@@ -292,4 +293,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8903fd19b4b0a6b1375a93befdf22b7b834b7f0c6604e522ce443ec1eb326711` |
+| stale | yes: the definition now gives checksum `v2:c14e1c28c2fbfa64ab4845aa164a48da3b3e122536c9be9588ff8a15a65d84c3` |

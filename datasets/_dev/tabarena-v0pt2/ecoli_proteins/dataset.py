@@ -25,8 +25,8 @@ class EcoliProteins(AbstractCuratedDataset):
             "membrane with an uncleavable signal sequence (11%) or outer membrane (6%)."
         ),
         known=(
-            "Six scores computed from the sequence: two signal-sequence recognition methods, a lipoprotein signal "
-            "score, an amino-acid content score and two membrane-spanning region predictions."
+            "Five scores computed from the sequence: two signal-sequence recognition methods, a lipoprotein signal "
+            "score and two membrane-spanning region predictions."
         ),
         split=(
             "Random proteins, so the test data stands for proteins of unknown location; over the SWISS-PROT entry "
@@ -34,7 +34,8 @@ class EcoliProteins(AbstractCuratedDataset):
         ),
         changes=(
             "We drop the three rarest locations (inner- and outer-membrane lipoproteins, and inner membrane with a "
-            "cleavable signal sequence), each with fewer than 10 proteins."
+            "cleavable signal sequence), each with fewer than 10 proteins, and the amino-acid content score, a "
+            "discriminant fitted to the labels."
         ),
         fit="direct",
         fit_reason=(
@@ -76,6 +77,12 @@ class EcoliProteins(AbstractCuratedDataset):
         - We drop the sequence name column, which is a unique identifier.
         - We drop three classes with less than 10 samples each: omL (5), imL (2), and imS (2).
         - We drop "chg", which becomes constant after our preprocessing steps.
+        - We drop "aac", the score of a discriminant analysis of the amino-acid content of outer-membrane and
+          periplasmic proteins. It was fitted to the labels of the authors' protein database, the predecessor of this
+          dataset (Nakai & Kanehisa 1991, Proteins 11(2):95-110), and cannot be refitted per split, so it leaks the
+          labels (the reason `yeast` was rejected). Dropped and the task kept, as the amended LEAK-27 says when the
+          other columns still make a real one (Andrej, 2026-11-11). Without it, outer-membrane proteins (6% of rows)
+          are barely recognised: TabPFN recall 0.02 instead of 0.90 (stratified 3-fold x 20).
         - Split by protein family (Andrej, 2026-11-23): `protein_families.csv` next to this file maps each of the 327 shipped proteins from its SWISS-PROT entry name to a UniProt accession (289 by ID mapping, 20 by a text search of renamed entries; UniProt REST, 2026-11-23) and to its UniProt protein family (270), else to its set of Pfam domains (39), else to itself (18 unresolved). 219 families, at most 12 proteins in one; 11 families hold proteins of more than one location. UniRef50 clusters are too fine to group anything (312 of 319 hold one protein). On 20 x 3 folds without `aac`, family-held-out folds cost logistic regression +0.015 ± 0.004 and TabPFN +0.012 ± 0.005 log loss against random folds (0.472 and 0.463), the ranking unchanged; under random folds 41% of test proteins had a family member in training and carried 33% of the loss.
     """
     time_basis = TimeBasis(
@@ -86,7 +93,8 @@ class EcoliProteins(AbstractCuratedDataset):
         decide. Holding out whole families tests a protein whose family the training set lacks, as the localisation
         of a newly sequenced protein meets it; under random folds 41% of the test proteins had a family member in
         training. The entry years and the stationary-relation test (2026-11-19, flat narrowly; the location mix moves,
-        cytoplasm 54% of entries up to 1989 against 34% from 1990) go in the notes. Not tested: a later entry year.
+        cytoplasm 54% of entries up to 1989 against 34% from 1990) go in the notes; that test ran on the six
+        scores, `aac` included, before `aac` was dropped. Not tested: a later entry year.
         """,
         set_by="Andrej",
         on="2026-11-23",
@@ -155,6 +163,7 @@ class EcoliProteins(AbstractCuratedDataset):
             columns=[
                 "Sequence Name",  # avoid leakage from look the name and otherwise unique identifier.
                 "chg",  # constant after preprocessing
+                "aac",  # discriminant fitted to the labels; leaks them
             ]
         )
         return df

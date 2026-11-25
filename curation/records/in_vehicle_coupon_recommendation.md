@@ -57,6 +57,9 @@ CC (2026-10-27, Lennart): marker Selection Bias, from the AI review of PR #16: t
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 1 coded columns carry their words.
 
+CC (2026-11-10, Andrej): "Option B: Drop direction_opp." (Review issue 1): `direction_opp` dropped in `_clean`, 23 features.
+- It is 1 minus `direction_same` in all 12,684 rows, an exact copy of another column (CLEAN-5); the nested distance flags stay separate.
+
 CC (2026-11-18, Andrej): time basis `ForcedGroupedFromTemporal` in place of `Timeless` (Review issue 2, B; full-information split check): the recommender serves drivers after the survey, which keeps no interview order, so the forced step holds out whole respondents. The split is unchanged.
 
 CC (2026-11-18, Andrej): collection facts `Samples: Over Time` and `Time: Lost` in place of `Samples: No Time Dimension`, with the time basis `ForcedGroupedFromTemporal`: the respondents answered one by one during the 2017 survey, and the release keeps no interview date or order.
@@ -65,12 +68,41 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 3, A; stationarity r
 
 ## Review
 
-**Outcome:** added. Full-information split check of 2026-11-18: the time basis tag disagreed with the split tree; decided below (issues 2 and 3).
+**Outcome:** added. Review of 2026-11-04 (ship as defined, with one small cleaning step, issue 1) and the
+full-information split check of 2026-11-18: the time basis tag disagreed with the split tree; decided below (issues 2
+and 3).
 
-**Main points:** The respondent folds are tagged `ForcedGroupedFromTemporal` in place of `Timeless` (issue 2, B,
+**Main points:** `direction_opp`, a copy of `direction_same` with the values swapped, is dropped (issue 1, B,
+2026-11-10). The respondent folds are tagged `ForcedGroupedFromTemporal` in place of `Timeless` (issue 2, B,
 2026-11-18), and the forced tag stays (issue 3, A, 2026-11-18). Nothing is left open.
 
 **Issues for Andrej:**
+
+1. **Drop `direction_opp`, which is `direction_same` with 0 and 1 swapped?**
+
+   * **Problem:**
+     - In every one of the 12,684 rows `direction_opp` equals 1 minus `direction_same` (whether the venue lies in the same or the opposite direction as the trip).
+     - The second column adds no information, only a second copy of the same split.
+   * **Experiments:** checked on the source rows of the shipped container: complement in all rows. The distance flags
+     `toCoupon_GEQ15min` and `toCoupon_GEQ25min` are nested (every row with 25 minutes or more also has 15 or more)
+     and are left as they are: flags that can be set together stay separate columns[^1b].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep both (implemented) | no change | as the source publishes them | one column is a relabelled copy of another |
+     | B | Drop `direction_opp` | 23 features instead of 24 | no copy | none found |
+
+   * **Recommendation:** B, a copy of another column goes[^1a]. **Decision:** keep both (A) or drop `direction_opp`
+     (B)?
+
+   [^1a]: **CLEAN-5** (Should): drop constant columns, all-missing columns and exact copies of another column.
+   [^1b]: **CLEAN-13** (Must): yes/no flags that can be set together stay separate columns, the lossless form.
+
+   **Andrej (2026-11-10, change):** Option B: Drop direction_opp.
+
+   **Resolved (2026-11-10, Andrej):** B: `_clean` drops `direction_opp` next to `toCoupon_GEQ5min`, it leaves the
+   categorical list, and a curation note says why (23 features); the nested distance flags stay.
 
 2. **Tag the respondent folds `ForcedGroupedFromTemporal` instead of `Timeless`?**
 

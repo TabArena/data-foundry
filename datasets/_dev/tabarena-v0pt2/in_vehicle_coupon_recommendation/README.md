@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: in_vehicle_coupon_recommendation
 container_format: 2
-checksum: v2:745f921d95a1856959de0869b2e7be719928f50b76368a0d59aee4dceac237a0
+checksum: v2:1d3b4ff24b76aa587295c82eebb7e85e89266ed0fd5171f193bf21ea6dd3c924
 build:
   uuid: 01a111fc-e38e-7ad4-90c9-b80013f7640e
   checksum: v2:cdd74cb8121009f4ed1bc57984fff0bdc1db9da0b6bdb2b832dc53dd0698ee73
@@ -20,9 +20,9 @@ build:
 build_stale: true
 data:
   n_rows: 12684
-  n_features: 24
+  n_features: 23
   dtypes:
-    category: 24
+    category: 23
     int64: 2
   n_test_dataset_rows: null
 task:
@@ -74,9 +74,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `AcceptCoupon`, scored with `roc_auc` on grouped splits by `respondent`. 12,684 rows and 24 features. Source: Other (2017).
+Binary classification of `AcceptCoupon`, scored with `roc_auc` on grouped splits by `respondent`. 12,684 rows and 23 features. Source: Other (2017).
 
-Built as `01a111fc-e38e-7ad4-90c9-b80013f7640e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:745f921d95a1856959de0869b2e7be719928f50b76368a0d59aee4dceac237a0`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e38e-7ad4-90c9-b80013f7640e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1d3b4ff24b76aa587295c82eebb7e85e89266ed0fd5171f193bf21ea6dd3c924`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -139,7 +139,7 @@ Only curators run `build`, when the dataset ships.
 | data_tags | Non-IID, Grouped, ForcedGroupedFromTemporal |
 | reference | wang2017bayesian |
 | copy: UCI 603 | UCI: https://doi.org/10.24432/C5GS4P; license: CC BY 4.0 |
-| rows x columns | 12,684 x 26 |
+| rows x columns | 12,684 x 25 |
 | task.target | AcceptCoupon |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -159,9 +159,9 @@ Only curators run `build`, when the dataset ships.
 | definition | Area under the ROC curve on AcceptCoupon. |
 
 <details>
-<summary>Feature types: 16 categorical, 8 ordinal, 0 string, 0 datetime</summary>
+<summary>Feature types: 15 categorical, 8 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (16): `respondent`, `expiration`, `destination`, `passenger`, `weather`, `coupon`, `gender`, `maritalStatus`, `has_children`, `occupation`, `car`, `toCoupon_GEQ15min`, `toCoupon_GEQ25min`, `direction_same`, `direction_opp`, `AcceptCoupon`
+- categorical (15): `respondent`, `expiration`, `destination`, `passenger`, `weather`, `coupon`, `gender`, `maritalStatus`, `has_children`, `occupation`, `car`, `toCoupon_GEQ15min`, `toCoupon_GEQ25min`, `direction_same`, `AcceptCoupon`
 - ordinal (8): `age (below 21 < 21 to 25 < 26 to 30 < 31 to 35 < 36 to 40 < 41 to 45 < 46 to 49 < 50 or older)`, `education (Some High School < High School Graduate < Some college - no degree < Associates degree < Bachelors degree < Graduate degree (Masters or Doctorate))`, `income (Less than $12500 < $12500 - $24999 < $25000 - $37499 < $37500 - $49999 < $50000 - $62499 < $62500 - $74999 < $75000 - $87499 < $87500 - $99999 < $100000 or More)`, `Bar (never < less1 < 1~3 < 4~8 < gt8)`, `CoffeeHouse (never < less1 < 1~3 < 4~8 < gt8)`, `CarryAway (never < less1 < 1~3 < 4~8 < gt8)`, `RestaurantLessThan20 (never < less1 < 1~3 < 4~8 < gt8)`, `Restaurant20To50 (never < less1 < 1~3 < 4~8 < gt8)`
 - string (0): none
 - datetime (0): none
@@ -187,15 +187,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 12,684 rows of the final frame (random rows: the frame is shuffled); 12 of 26 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 12,684 rows of the final frame (random rows: the frame is shuffled); 12 of 25 columns, the target first. Cells are cut at 40 characters.
 
 | AcceptCoupon | destination | passenger | weather | temperature | time | coupon | expiration | gender | age | maritalStatus | has_children |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Yes | Home | Alone | Snowy | 30 | 18 | Coffee House | 1d | Male | 21 to 25 | Single | 0 |
-| No | No Urgent Place | Partner | Sunny | 80 | 10 | Coffee House | 1d | Male | 21 to 25 | Unmarried partner | 0 |
-| No | No Urgent Place | Friend(s) | Sunny | 80 | 22 | Coffee House | 1d | Female | 50 or older | Married partner | 1 |
-| No | Work | Alone | Rainy | 55 | 7 | Carry out & Take away | 2h | Male | 36 to 40 | Single | 0 |
-| Yes | No Urgent Place | Friend(s) | Sunny | 55 | 14 | Carry out & Take away | 1d | Male | 26 to 30 | Single | 0 |
+| No | Work | Alone | Sunny | 80 | 7 | Coffee House | 2h | Female | 36 to 40 | Divorced | 1 |
+| Yes | No Urgent Place | Friend(s) | Sunny | 80 | 18 | Restaurant(&lt;20) | 2h | Female | 50 or older | Married partner | 1 |
+| Yes | Home | Alone | Rainy | 55 | 18 | Bar | 1d | Male | 21 to 25 | Single | 0 |
+| Yes | No Urgent Place | Friend(s) | Sunny | 80 | 10 | Coffee House | 2h | Male | 26 to 30 | Single | 0 |
+| Yes | No Urgent Place | Friend(s) | Snowy | 30 | 14 | Restaurant(&lt;20) | 1d | Female | 31 to 35 | Married partner | 0 |
 
 ## Curation notes
 
@@ -203,6 +203,9 @@ The first 5 of 12,684 rows of the final frame (random rows: the frame is shuffle
 - We removed text data from the "time" feature to make it numeric.
 - We drop constant columns.
 - We fixed a typo in the feature names.
+- `direction_opp` dropped (Andrej, 2026-11-10; CLEAN-5): it is 1 minus `direction_same` in all 12,684 rows, a
+  copy of the same flag. The nested distance flags `toCoupon_GEQ15min` and `toCoupon_GEQ25min` stay separate
+  (CLEAN-13).
 - Anomaly: the data has many binned numeric features that are treated as categorical features with text describing the bins.
 - Anomaly: the numeric features in the dataset are low-cardinality (<25)
 - We simulate a cold-start model (as used before a recommender has any history for a user): predict whether a person accepts a coupon from their profile, stated habits and the scenario, for people not seen in training. The data is a survey (Wang et al. 2017, Sec. 6.2): each MTurk respondent first gave demographics and preferences, then answered hypothetical driving scenarios (22 per person in the file, 19 fixed questionnaire versions), all in one sitting and without timestamps, so there is no real interaction history for a warm-start setting. A random split puts about two-thirds of each person's other answers in train, which lets a model learn that person's tendency to say yes (ROC AUC 0.83 random vs 0.76 grouped; leak audit 2026-09-24).
@@ -213,16 +216,7 @@ The first 5 of 12,684 rows of the final frame (random rows: the frame is shuffle
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
   words (`CODE_LABELS`), in the same order.
-- Time basis: ForcedGroupedFromTemporal (Andrej, 2026-11-18; `Timeless` before): the recommender meets new
-  drivers after the survey, but the 2017 survey is undated and keeps no interview order, so no later respondents
-  can be held out; each driver answered about 22 scenarios, so whole respondents are held out. Each row is one
-  scenario of a fixed questionnaire, answered in the same sitting as the profile (Wang et al. 2017, Sec. 6.2).
-  The file has no timestamp; its order is the questionnaire versions (Coffee House coupons fall from 38-43% of
-  the first three deciles to 13.5% of the last), and the acceptance drift that remains after the scenario cells
-  are removed is 3-4 percentage points over the file (Spearman -0.034, 2026-11-06). Not tested: a later cohort
-  of drivers, and whether a stated yes becomes a redemption. Not taken as stationary (Andrej, 2026-11-18): A
-  consumer-offer task from a 2017 MTurk sample used on later real drivers, with file-order structure; Andrej
-  moved it to forced today and nothing in the mechanism argues for interchangeability.
+- Time basis: ForcedGroupedFromTemporal (Andrej, 2026-11-18; `Timeless` before): the recommender meets new drivers after the survey, but the 2017 survey is undated and keeps no interview order, so no later respondents can be held out; each driver answered about 22 scenarios, so whole respondents are held out. Each row is one scenario of a fixed questionnaire, answered in the same sitting as the profile (Wang et al. 2017, Sec. 6.2). The file has no timestamp; its order is the questionnaire versions (Coffee House coupons fall from 38-43% of the first three deciles to 13.5% of the last), and the acceptance drift that remains after the scenario cells are removed is 3-4 percentage points over the file (Spearman -0.034, 2026-11-06). Not tested: a later cohort of drivers, and whether a stated yes becomes a redemption. Not taken as stationary (Andrej, 2026-11-18): A consumer-offer task from a 2017 MTurk sample used on later real drivers, with file-order structure; Andrej moved it to forced today and nothing in the mechanism argues for interchangeability.
 
 ## Splits
 
@@ -279,7 +273,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 ### Feature summary
 
 <details>
-<summary>Show the table (26 rows)</summary>
+<summary>Show the table (25 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -304,7 +298,6 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | toCoupon_GEQ15min | category | 0 | 0 | 2 | 1, 0 |
 | toCoupon_GEQ25min | category | 0 | 0 | 2 | 0, 1 |
 | direction_same | category | 0 | 0 | 2 | 0, 1 |
-| direction_opp | category | 0 | 0 | 2 | 1, 0 |
 | AcceptCoupon | category | 0 | 0 | 2 | Yes, No |
 | respondent | category | 0 | 0 | 587 | cdaf7cd8387b, 044f8932a39a, a1b3481eaf7a, 588ec4237f7f, 4b2b9ddba4fd, 2dec139a6… |
 | temperature | int64 | 0 | 0 | 3 | 80, 55, 30 |
@@ -329,7 +322,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 ### Categorical features
 
 <details>
-<summary>Show the table (91 rows)</summary>
+<summary>Show the table (89 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -378,8 +371,6 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | destination | 1 | No Urgent Place | 6283 | 49.53 |
 | destination | 2 | Home | 3237 | 25.52 |
 | destination | 3 | Work | 3164 | 24.94 |
-| direction_opp | 1 | 1 | 9960 | 78.52 |
-| direction_opp | 2 | 0 | 2724 | 21.48 |
 | direction_same | 1 | 0 | 9960 | 78.52 |
 | direction_same | 2 | 1 | 2724 | 21.48 |
 | education | 1 | Some college - no degree | 4351 | 34.3 |
@@ -393,8 +384,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | gender | 2 | Male | 6173 | 48.67 |
 | has_children | 1 | 0 | 7431 | 58.59 |
 | has_children | 2 | 1 | 5253 | 41.41 |
+| income | 1 | $25000 - $37499 | 2013 | 15.87 |
+| income | 2 | $12500 - $24999 | 1831 | 14.44 |
 
-(31 more rows not shown)
+(29 more rows not shown)
 
 </details>
 
@@ -409,4 +402,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:745f921d95a1856959de0869b2e7be719928f50b76368a0d59aee4dceac237a0` |
+| stale | yes: the definition now gives checksum `v2:1d3b4ff24b76aa587295c82eebb7e85e89266ed0fd5171f193bf21ea6dd3c924` |

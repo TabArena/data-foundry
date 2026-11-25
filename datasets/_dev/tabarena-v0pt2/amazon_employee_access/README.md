@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: amazon_employee_access
 container_format: 2
-checksum: v2:6fbe0edffcb8a4d35247369da3392c126e9c2dce5edeea5361ae87ee5e88c3cb
+checksum: v2:9ad39dbc29cb027ac74cbafb372adbea16f335255d139dea2981e2b68b368969
 build:
   uuid: 01a111fc-c1ef-71ea-8931-5bb5679fad84
   checksum: v2:1f6e14acca44e0951d49562b7d2dc4a9d1264b8ce0c60f2fb26d2b2fd244da8e
@@ -20,9 +20,9 @@ build:
 build_stale: true
 data:
   n_rows: 32769
-  n_features: 9
+  n_features: 8
   dtypes:
-    category: 10
+    category: 9
   n_test_dataset_rows: null
 task:
   target: ResourceApproved
@@ -65,9 +65,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `ResourceApproved`, scored with `roc_auc` on IID splits. 32,769 rows and 9 features. Source: Kaggle (2013).
+Binary classification of `ResourceApproved`, scored with `roc_auc` on IID splits. 32,769 rows and 8 features. Source: Kaggle (2013).
 
-Built as `01a111fc-c1ef-71ea-8931-5bb5679fad84` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6fbe0edffcb8a4d35247369da3392c126e9c2dce5edeea5361ae87ee5e88c3cb`, so the build is stale. See [Build](#build).
+Built as `01a111fc-c1ef-71ea-8931-5bb5679fad84` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9ad39dbc29cb027ac74cbafb372adbea16f335255d139dea2981e2b68b368969`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -79,11 +79,11 @@ Built as `01a111fc-c1ef-71ea-8931-5bb5679fad84` on 2026-10-06, but `dataset.py` 
 
 **Predicted.** Whether the request was approved (94% were).
 
-**Known at prediction time.** The requested resource, the employee's manager, and the employee's role (two levels of role grouping, department, title, role family and role code), all as anonymous codes.
+**Known at prediction time.** The requested resource, the employee's manager, and the employee's role (two levels of role grouping, department, title and role family), all as anonymous codes.
 
 **What the test data stands for.** Random requests, so the test data stands for new requests within the same organisation; the same manager, role or resource can appear on both sides.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The role and the resource are known when a request arrives, and approval is the decision to automate. The requests carry no dates, so the split cannot follow time; the competition's test held other employees.
+> **Use case fit: direct (the rows, features and split mirror the use case).** The role and the resource are known when a request arrives, and approval is the decision to automate. The requests carry no dates, so the split cannot follow time; Kaggle's test requests come from the same requesters: 88.6% from a requester profile of its training file.
 
 ## Files in this folder
 
@@ -123,7 +123,7 @@ Only curators run `build`, when the dataset ships.
 | license | Public Domain |
 | data_tags | IID, ForcedIIDFromTemporal |
 | reference | hamner2013amazon |
-| rows x columns | 32,769 x 10 |
+| rows x columns | 32,769 x 9 |
 | task.target | ResourceApproved |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -141,9 +141,9 @@ Only curators run `build`, when the dataset ships.
 | definition | ROC AUC of the probability that access is approved (ACTION) |
 
 <details>
-<summary>Feature types: 10 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 9 categorical, 0 string, 0 datetime</summary>
 
-- categorical (10): `RESOURCE`, `MGR_ID`, `ROLE_ROLLUP_1`, `ROLE_ROLLUP_2`, `ROLE_DEPTNAME`, `ROLE_TITLE`, `ROLE_FAMILY_DESC`, `ROLE_FAMILY`, `ROLE_CODE`, `ResourceApproved`
+- categorical (9): `RESOURCE`, `MGR_ID`, `ROLE_ROLLUP_1`, `ROLE_ROLLUP_2`, `ROLE_DEPTNAME`, `ROLE_TITLE`, `ROLE_FAMILY_DESC`, `ROLE_FAMILY`, `ResourceApproved`
 - string (0): none
 - datetime (0): none
 
@@ -168,13 +168,13 @@ Only curators run `build`, when the dataset ships.
 
 The first 5 of 32,769 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
-| ResourceApproved | RESOURCE | MGR_ID | ROLE_ROLLUP_1 | ROLE_ROLLUP_2 | ROLE_DEPTNAME | ROLE_TITLE | ROLE_FAMILY_DESC | ROLE_FAMILY | ROLE_CODE |
-|---|---|---|---|---|---|---|---|---|---|
-| Yes | 28109 | 3225 | 117961 | 118327 | 118929 | 118784 | 126514 | 290919 | 118786 |
-| Yes | 21373 | 5054 | 117961 | 118300 | 118597 | 118530 | 278014 | 118131 | 118532 |
-| Yes | 39262 | 18686 | 117961 | 118386 | 121883 | 117905 | 290919 | 290919 | 117908 |
-| Yes | 38721 | 4757 | 118212 | 118213 | 118458 | 119849 | 290535 | 118638 | 119851 |
-| Yes | 73194 | 48492 | 117961 | 118225 | 118403 | 118321 | 240983 | 290919 | 118322 |
+| ResourceApproved | RESOURCE | MGR_ID | ROLE_ROLLUP_1 | ROLE_ROLLUP_2 | ROLE_DEPTNAME | ROLE_TITLE | ROLE_FAMILY_DESC | ROLE_FAMILY |
+|---|---|---|---|---|---|---|---|---|
+| Yes | 42362 | 1080 | 117961 | 118327 | 118378 | 120952 | 120953 | 118453 |
+| Yes | 78178 | 83254 | 247952 | 118164 | 117878 | 117899 | 117899 | 19721 |
+| Yes | 32270 | 52735 | 117961 | 118052 | 120356 | 122067 | 127906 | 118424 |
+| Yes | 33642 | 78685 | 118216 | 118587 | 117920 | 117879 | 135898 | 19721 |
+| Yes | 42347 | 3053 | 117961 | 118225 | 120663 | 118641 | 306399 | 118643 |
 
 ## Curation notes
 
@@ -182,13 +182,9 @@ The first 5 of 32,769 rows of the final frame (random rows: the frame is shuffle
 - We renamed the target "ACTION" to "ResourceApproved" and mapped binary values to "Yes"/"No".
 - Anomaly: the data might contain sub-groups related to managers and resources.
 - Anomaly: likely, similar to the test data, each sample represents a unique employee.
-- Time basis: ForcedIIDFromTemporal: access requests made one by one over 2010 and 2011 (the competition's
-  text); the release keeps no request date and Kaggle's training file is shuffled (denial rate flat over its
-  tenths, chi-squared p = 0.45), so random requests stand in for the requests to come. UCI 216's dated access
-  history uses other ids and cannot date them; a dated release would allow a split by request date. Not taken as
-  stationary (Andrej, 2026-11-18): A use right after the period would support ASR, but the benchmark stands for
-  later requests under a policy and role structure that change; Lennart's earlier view was a question, not
-  evidence.
+- We drop `ROLE_CODE`: it maps one to one onto `ROLE_TITLE` (343 values each, every title one code and every
+  code one title), an exact copy of another column under other labels (Andrej, 2026-11-10).
+- Time basis: ForcedIIDFromTemporal: access requests made one by one over 2010 and 2011 (the competition's text); the release keeps no request date and Kaggle's training file is shuffled (denial rate flat over its tenths, chi-squared p = 0.45), so random requests stand in for the requests to come. UCI 216's dated access history uses other ids and cannot date them; a dated release would allow a split by request date. Not taken as stationary (Andrej, 2026-11-18): A use right after the period would support ASR, but the benchmark stands for later requests under a policy and role structure that change; Lennart's earlier view was a question, not evidence.
 
 ## Splits
 
@@ -229,7 +225,6 @@ Default splits.
 | ROLE_TITLE | category | 0 | 0 | 343 | 118321, 117905, 118784, 117879, 118568, 117885, 118054, 118685, 118777, 118451 |
 | ROLE_FAMILY_DESC | category | 0 | 0 | 2358 | 117906, 240983, 117913, 279443, 117886, 130134, 117897, 117879, 168365, 133686 |
 | ROLE_FAMILY | category | 0 | 0 | 67 | 290919, 118424, 19721, 117887, 292795, 118398, 308574, 118453, 118331, 118643 |
-| ROLE_CODE | category | 0 | 0 | 343 | 118322, 117908, 118786, 117880, 118570, 117888, 118055, 118687, 118779, 118454 |
 
 ### Target distribution
 
@@ -245,7 +240,7 @@ No numeric features to summarize.
 ### Categorical features
 
 <details>
-<summary>Show the table (47 rows)</summary>
+<summary>Show the table (42 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -259,11 +254,6 @@ No numeric features to summarize.
 | RESOURCE | 3 | 75078 | 409 | 1.25 |
 | RESOURCE | 4 | 25993 | 409 | 1.25 |
 | RESOURCE | 5 | 3853 | 404 | 1.23 |
-| ROLE_CODE | 1 | 118322 | 4649 | 14.19 |
-| ROLE_CODE | 2 | 117908 | 3583 | 10.93 |
-| ROLE_CODE | 3 | 118786 | 1772 | 5.41 |
-| ROLE_CODE | 4 | 117880 | 1256 | 3.83 |
-| ROLE_CODE | 5 | 118570 | 1043 | 3.18 |
 | ROLE_DEPTNAME | 1 | 117878 | 1135 | 3.46 |
 | ROLE_DEPTNAME | 2 | 117941 | 763 | 2.33 |
 | ROLE_DEPTNAME | 3 | 117945 | 659 | 2.01 |
@@ -310,4 +300,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6fbe0edffcb8a4d35247369da3392c126e9c2dce5edeea5361ae87ee5e88c3cb` |
+| stale | yes: the definition now gives checksum `v2:9ad39dbc29cb027ac74cbafb372adbea16f335255d139dea2981e2b68b368969` |

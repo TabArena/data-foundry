@@ -75,21 +75,31 @@ CC (2026-11-08, Lennart): issue 4, A (as implemented): the month of the last cal
 
 CC (2026-11-08, Lennart, in chat): the protocol line for the newest window's recurring clients (703 test records whose later record in the same window gives the label away; no use of other test rows) is enough ("that sounds valid to me"); the five windows stay as they are.
 
+CC (2026-11-12, Andrej): split by quarter on the restored contact dates instead of random clients (Review issue 5, c): the row of a client's next campaign states this row's outcome in `poutcome` (6,009 of 6,013 linked rows), and random folds put that later row in training for 8.7% to 9.2% of test rows. `bank-full.csv` is ordered by date (UCI), so the year counter from the month's wrap-arounds, with the day and month, gives each contact's date back (5 May 2008 to 17 November 2010); nine test windows of three months back from November 2010, the date no model input. Replaced on 2026-11-20 by the ten windows of issue 9.
+
+CC (2026-11-13, Andrej): the nine quarterly windows stay (Review issue 8, a): a window's noise follows its subscribers, not its contacts, so the noisiest quarter carries 16% of the noise of the nine-window mean; windows of equal contacts span months of different subscription rates and rank periods again. Replaced on 2026-11-20 by the ten windows of issue 9.
+
+CC (2026-11-13, Andrej): `campaign` and `contact` dropped (Review issues 6 and 7, B):
+- `campaign` counts this campaign's calls including the last (UCI), so it exists only once the calls are over and stops at the subscription (14.6% subscribed at one call, 4.9% at eight or more); `previous` is the pre-campaign count. Already dropped by issue 2 (Lennart, 2026-11-08).
+- `contact` is the last call's phone type, grouped by UCI with the dropped last-contact fields. The type itself tells little (22.7% against 19.1% subscribed); the column's weight is its `unknown` level, which marks April to June 2008 and later calls whose outcome sits far from the known ones (2010 windows: 3% to 9% against 54% to 61%).
+
 CC (2026-11-17, Andrej): the declared split (temporal on `time_index`, up to 5 windows while training keeps 50% of the rows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
-CC (2026-11-20, Andrej): Review issue 6, B: `balance` is one reading per client (linked records share it to the euro in 17.1% of pairs against 1.2% for different clients; no excess of slightly changed values); its date is unknown, but logistic regression loses only 0.002 to 0.003 ROC AUC without it whether or not the client has a later record, so it stays with that note (LEAK-10).
+CC (2026-11-20, Andrej): Review issue 10, B: `balance` is one reading per client (linked records share it to the euro in 17.1% of pairs against 1.2% for different clients; no excess of slightly changed values); its date is unknown, but logistic regression loses only 0.002 to 0.003 ROC AUC without it whether or not the client has a later record, so it stays with that note (LEAK-10).
 
-CC (2026-11-20, Andrej): Review issue 5, B: windows follow the calling (four campaign periods, then calendar quarters of the trickle; ten windows, 53.2% to 98.7% training), and the day's call count becomes an input, because the subscription rate follows the calling volume (5.8% on days with 200 or more calls, 48.5% on days with 20 or fewer, also for first-time clients) and the bank knows how many clients it calls that day.
+CC (2026-11-20, Andrej): Review issue 9, B: windows follow the calling (four campaign periods, then calendar quarters of the trickle; ten windows, 53.2% to 98.7% training), and the day's call count becomes an input, because the subscription rate follows the calling volume (5.8% on days with 200 or more calls, 48.5% on days with 20 or fewer, also for first-time clients) and the bank knows how many clients it calls that day.
 
-CC (2026-11-21, Andrej): Review issue 7: `time_index` is no model input (`time_of="label"`). It is the record's position in a file ordered by the date of the last contact, and 61.2% of the records take more than one call, so that date falls after the prediction point and is set by when the calling stopped; the same reason keeps the rebuilt date out of the inputs. 13 features now. The `dataset_sequential_id_column` warning is accepted in the definition with that reason.
+CC (2026-11-21, Andrej): Review issue 11: `time_index` is no model input (`time_of="label"`). It is the record's position in a file ordered by the date of the last contact, and 61.2% of the records take more than one call, so that date falls after the prediction point and is set by when the calling stopped; the same reason keeps the rebuilt date out of the inputs. 13 features now. The `dataset_sequential_id_column` warning is accepted in the definition with that reason.
 
 CC (2026-11-21, Andrej): the model numbers in the notes (the window scores and the worth of `campaign`, `contact`, `pdays` and `balance`) stay as measured on the five windows of 4,521 records and are not re-run on the ten windows the definition now ships; the notes say which windows each number was taken on, and that the shipped windows differ.
+
+**Assessment (AI, 2026-11-23):** Review issue 7 (B, 2026-11-13) applied onto the ten-window definition: `contact` dropped in `_clean` with the other last-contact fields and taken out of `categorical`; `known`, `changes`, the prediction-point bullet and the `contact` and `job` notes updated. 45,211 rows, 12 features (13 before). On the twelve inputs without the time key 62 records copy another with the label and 5 more with the other label (55 and 1 with `contact`); in the ten windows two test records have an input copy in training (one with each label; one with the other label before). `dataset check`: 0 errors, 0 warnings. The model numbers on `contact` stay as measured on the random split, the five windows and the nine quarterly windows of 2026-11-12 (CC 2026-11-21), not re-run on the ten. Not rebuilt.
 
 ## Review
 
 **Outcome:** added. UCI's bank-full file (45,211 records of a Portuguese bank's term-deposit phone campaigns, May 2008 to November 2010, one per client and campaign), predicting a subscription before the campaign's first call, scored by ROC AUC on ten time windows of the rebuilt date of the last contact (five windows of the file's date order until 2026-11-20). A focused re-review of 2026-11-06 recommended shipping after changes; those that needed no decision are made in `dataset.py`, and the README is regenerated; the build stays stale until you ask. Settled on 2026-11-08: the split, by time on the file's date order, in place of the random split kept under your earlier call (issue 1); the prediction point, before the campaign, so `campaign` is dropped (issue 2); the duplicates, kept with a note (issue 3), now 811 exact copies on the twelve inputs since `campaign` left (274 before); and the record's `year`, set to 2012. Open: whether the month of the last call comes back as an input (issue 4). New on the windows: the newest one holds both records of 703 recurring clients, and the later record gives 419 subscribers away to a model that reads other test records; a protocol line covers it. Not checked on this tier: whether the authors' 2014 release of the same campaigns (with the month and weekday of each call, economic context and the true phone type of May-June 2008) is the better version; no provenance reviewer ran.
 
-Validity: LEAK-17 and SPLIT-29 fixed by the split by time (issue 1): a client's later record never trains, and SPLIT-1, SPLIT-5, SPLIT-7, SPLIT-19 and SPLIT-22 hold on the file's date order. Inside the newest window recurring clients leave an evaluation leak, covered by a protocol line (LEAK-9). USE-3 holds: the prediction point is before the campaign's first call, and `campaign` is dropped (issue 2). LEAK-10 holds for `contact` and `pdays`. LEAK-41 and MET-15 do not apply (no weight).
+Validity: LEAK-17 and SPLIT-29 fixed by the split by time (issue 1): a client's later record never trains, and SPLIT-1, SPLIT-5, SPLIT-7, SPLIT-19 and SPLIT-22 hold on the file's date order. Inside the newest window recurring clients leave an evaluation leak, covered by a protocol line (LEAK-9). USE-3 holds: the prediction point is before the campaign's first call, and `campaign` is dropped (issue 2). LEAK-10 holds for `pdays`; `contact`, whose weight was its `unknown` level, is dropped (issue 7, 2026-11-13). LEAK-41 and MET-15 do not apply (no weight).
 
 Value: MET-1, MET-2 and MET-5 hold (ROC AUC is the source's selection criterion); 279 to 2,129 positives per test window. On the windows the signal is weak but there: LightGBM 0.522 to 0.679 (mean 0.586), logistic regression mean 0.614, against 0.76 on the random split; the task probes' best family (random forest, 0.631) beats the dummy on 5 of 5 windows, flagged `no_spread` (TP-3), which the tuned results cannot settle here, as they ran on the random split. These window numbers were measured on the five windows shipped until 2026-11-20, which the ten windows replace, and are kept as measured (CC 2026-11-21).
 
@@ -97,9 +107,9 @@ Quality: CLEAN-10 applied (`job`'s "unknown" missing; the reason for `pdays` = -
 
 Weighed: source + (a paper with a stated metric), use case + (a real decision), split + (by time, as the source evaluates), signal - on the windows.
 
-Left for you: nothing. Settled on 2026-11-20: issues 5 and 6. Settled on 2026-11-08: issues 1, 2, 3 and 4 and the `year` field (the record now takes the definition's 2012, UCI's release, in place of 2011, the ESM paper, which only analysed the data).
+Left for you: nothing. Settled on 2026-11-21: issue 11. Settled on 2026-11-20: issues 9 and 10. Settled on 2026-11-12 and 2026-11-13: issues 5 to 8. Settled on 2026-11-08: issues 1, 2, 3 and 4 and the `year` field (the record now takes the definition's 2012, UCI's release, in place of 2011, the ESM paper, which only analysed the data).
 
-**Main points:** Open: none. Settled on 2026-11-08: the month of the last call stays out of the inputs (issue 4); split by time on the file's date order, reversing your call that kept the random split (issue 1); before the campaign, so `campaign` is dropped (issue 2); the exact copies kept with a note (issue 3); the record's `year` set to 2012. Settled on 2026-11-20: ten windows that follow the calling (four campaign periods, six calendar quarters of the trickle), with the day's call count `calls_that_day` as an input (issue 5, B), and the `balance` note (issue 6, B).
+**Main points:** Open: none. Settled on 2026-11-08: the month of the last call stays out of the inputs (issue 4); split by time on the file's date order, reversing your call that kept the random split (issue 1); before the campaign, so `campaign` is dropped (issue 2); the exact copies kept with a note (issue 3); the record's `year` set to 2012. Settled on 2026-11-20: ten windows that follow the calling (four campaign periods, six calendar quarters of the trickle), with the day's call count `calls_that_day` as an input (issue 9, B), and the `balance` note (issue 10, B). Settled on 2026-11-21: `time_index` is no model input (issue 11). Settled on 2026-11-12 and 2026-11-13 (Andrej): quarterly windows on the rebuilt date (issue 5, c), kept although uneven (issue 8, a), both replaced by issue 9; `campaign` dropped (issue 6, B, as issue 2 had done); `contact` dropped (issue 7, B), applied on 2026-11-23 to the ten windows.
 
 **Record judgment:** valid, keep (`Yes`), after changes. The record's `year` (2011, the ESM paper, which only analysed the data) disagreed with the definition's 2012 (UCI's release, donated 2012-02-13); it was set to 2012 on 2026-11-08 (Lennart, `update`). Its `required_split` is `Temporal (NON-IID)`, with the tag `Non-IID (Temporal)`, since 2026-11-08 (issue 1). Its comment that the features "seem to be time-invariant" is superseded by an Assessment line of 2026-11-06 giving the measured shift by year; a second line of that date records this panel.
 
@@ -334,7 +344,202 @@ Left for you: nothing. Settled on 2026-11-20: issues 5 and 6. Settled on 2026-11
    [^m4c]: Issue 2 of this file (2026-11-08, Lennart): before the campaign, `campaign` dropped. **USE-3** (Must): name
      the prediction point, when the model is used and what is known then.
 
-5. **Windows: 5 of the target's 9; which layout?**
+5. **Group the splits on the client columns, or split by quarter on the dates the file order gives back?**
+
+   * **Problem:**
+     - The file has one row per client and campaign with the client columns copied, and the row of the client's next
+       campaign records this row's outcome in `poutcome`: linked on the seven copied client columns (non-zero balance,
+       age +0 or +1, `previous` grown by this row's `campaign`), it gives this row's label in 6,009 of 6,013 rows.
+     - Random splits put that later row in training for 8.7% to 9.2% of test rows[^w5a].
+     - `bank-full.csv` is "ordered by date (from May 2008 to November 2010)" (UCI's `bank-names.txt`), and the day and
+       month give every contact's date back (5 May 2008 to 17 November 2010, never backwards).
+   * **Background:** the authors evaluated their models on the most recent contacts and with a rolling window (Moro,
+     Cortez and Rita 2014, abstract); subscriptions follow the economy (3.7% in the second quarter of 2008, 36.7% to
+     55.1% from the third quarter of 2009), which this file does not record (the sibling `bank-additional-full.csv`
+     does). In a window every test contact comes after its training contacts, so the later row is never in training.
+   * **Experiments:** untuned LightGBM and logistic regression (LR), ROC AUC, the frame of 2026-11-12 (45,211
+     contacts, 13 features); nine windows of three months back from November 2010, each trained on every earlier
+     contact:
+
+     | Split | LightGBM | LR | Subscribed in test |
+     |---|---|---|---|
+     | a, random 3 x 3 folds (then implemented) | 0.758 | 0.745 | 11.7% |
+     | b, client folds 3 x 3 | 0.756 | 0.745 | 11.7% |
+     | c, newest window (September to November 2010) | 0.705 | 0.732 | 45.9% |
+     | c, nine windows, mean | 0.616 | 0.623 | 7.3% to 57.4% (training 4.7% to 11.2%) |
+
+     - Most of the drop is the mix of periods in random folds: on the same test rows, training on as many contacts
+       drawn from the whole file scores only 0.009 more than training on the earlier ones (LR 0.005).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Random clients (then implemented) | stratified random 3 x 3 folds | the TabArena v0.1 task unchanged | 8.9% of test rows have their label in a later training row; the score partly ranks periods |
+     | b | Client folds | grouped on the seven client columns | removes the link at no cost in rows | the score still mixes 2008 with 2010; time unused |
+     | c | Quarterly windows | the contact date restored from the file order; nine windows of three months back from November 2010; the date no input | the bank's use and the source's own test; removes the link too | test windows of 592 to 8,551 contacts at 7% to 57% subscribed; the economy behind the drift is not in this file |
+     | d | Random clients without `poutcome` | drop the column | removes the forward link | other rows of the client still give its label away; drops history a deployed model has |
+
+   * **Recommendation:** c. **Decision:** a, b, c or d?
+
+   [^w5a]: **LEAK-17** (Must): repeated entities in different rows leak the target across the split even when the
+     rows differ. **LEAK-43** (Should): a later record of the same unit that holds this record's label in a feature
+     carries the label forward, so the split keeps a unit's later records out of training for its earlier ones.
+
+   **Andrej (2026-11-12, re: answer of 2026-11-06):** Agree.
+
+   **Resolved (2026-11-12, Andrej):** c: quarterly windows. `_clean` restored `contact_date` from the file order and
+   stopped if a date went backwards; nine windows of three months back from November 2010, the date no model input.
+   Replaced on 2026-11-20 by issue 9 (B: ten windows on the rebuilt date, four campaign periods and six calendar
+   quarters), which keeps the split by time on the rebuilt date.
+
+6. **Drop `campaign`, the count of this campaign's calls up to the one that ended it?**
+
+   * **Problem:**
+     - `campaign` is the "number of contacts performed during this campaign and for this client (numeric, includes
+       last contact)" (UCI), so it is counted up to the call that ended the client's campaign; the subscription share
+       falls from 14.6% at one call to 4.9% at eight or more.
+     - The bank picks whom to call before the campaign's first call, when no count exists[^w6a].
+   * **Experiments:** untuned, ROC AUC, the frame of 2026-11-12:
+
+     | Features | LightGBM, random folds | LR, random folds | LightGBM, nine quarters | LR, nine quarters |
+     |---|---|---|---|---|
+     | As then shipped | 0.758 | 0.745 | 0.610 | 0.623 |
+     | Without `campaign` | 0.752 | 0.737 | 0.612 | 0.618 |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep | `campaign` stays | the v0.1 task's columns | a value counted after the prediction point and cut short by the outcome |
+     | B | Drop `campaign` | the column leaves with `duration` | only values the bank has when it picks; `previous` keeps the pre-campaign count | departs from the v0.1 task |
+
+   * **Recommendation:** B. **Decision:** keep (A) or drop (B)?
+
+   [^w6a]: **LEAK-10** (Must): a feature holds only what existed at the prediction point. **USE-3** (Must): name the
+     prediction point.
+
+   **Andrej (2026-11-13, discuss):** Now with a temporal split, is that a feature that can be used?
+
+   **Answer (AI, 2026-11-13):** No. A split changes which rows train, not what a row holds: the count exists only once
+   the calls are over, in any split; its pre-campaign version, `previous`, is already a feature. Under the nine
+   windows it is worth nothing to LightGBM and 0.005 to LR.
+
+   **Andrej (2026-11-13, re: answer of 2026-11-13):** Reply (B): Drop campaign
+
+   **Resolved (2026-11-13, Andrej):** B: `campaign` dropped. The same outcome as issue 2 (Lennart, 2026-11-08), which
+   had already dropped it on the definition this record follows; nothing further changes.
+
+7. **Drop `contact`, the last call's phone type, whose `unknown` marks a period and calls whose outcome differs?**
+
+   * **Problem:**
+     - UCI lists `contact` with day, month and duration as "related with the last contact of the current campaign",
+       the group the definition otherwise drops.
+     - Its `unknown` holds every contact of April to June 2008 (12,443, 3.7% subscribed) and, outside that quarter,
+       577 contacts whose subscription share sits far from that of the known ones of the same quarter (6% against 60%
+       in July to September 2010, 36% against 7% in October to December 2008).
+   * **Background:**
+     - Outside the unknowns the phone type tells little: in 2009 and 2010, 22.7% of the contacts by cell phone
+       subscribed and 19.1% of those by landline.
+     - The unknowns outside April to June 2008 are mostly new clients (88% have no earlier campaign), which points to
+       a separate list or recording route; why their outcome differs is not documented.
+   * **Experiments:** untuned, ROC AUC, the frame of 2026-11-12:
+
+     | Features | LightGBM, random folds | LR, random folds | LightGBM, nine quarters (mean / newest) | LR, nine quarters (mean / newest) |
+     |---|---|---|---|---|
+     | As then shipped | 0.758 | 0.745 | 0.610 / 0.697 | 0.623 / 0.731 |
+     | Without `contact` | 0.739 | 0.722 | 0.614 / 0.673 | 0.619 / 0.688 |
+
+     - Under the windows the column gives 0.024 and 0.035 (LightGBM) and 0.044 and 0.051 (LR) on the two windows of
+       June to November 2010, where its unknowns subscribe far from the known contacts, and costs LightGBM 0.025 to
+       0.059 on the three oldest (September 2008 to May 2009): `unknown` meant April to June 2008 in training, and the
+       model carries that quarter's low rate onto later unknowns.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep (then implemented) | `contact` stays with its three levels | the phone type the bank may know in advance; no change | a last-contact field the source groups with the dropped ones; its `unknown` marks a period and a recording tied to the outcome; under the windows nothing on average |
+     | B | Drop `contact` | the column leaves with the other last-contact fields | the definition's last-contact rule applied to the whole group; no period or recording marker left | loses the small cell phone against landline difference (22.7% against 19.1%) |
+
+   * **Recommendation:** B: the source groups it with the last call, and what it gives is a quarter's level and a
+     recording, not the client's phone[^w7a]. **Decision:** keep (A) or drop (B)?
+
+   [^w7a]: **LEAK-2** (Must): a flagged column is rarely alone; drop every column carrying the marker. **LEAK-10**
+     (Must): missingness that encodes the outcome is out. **LEAK-13** (Must): a convention that changed over time
+     counts when the classes changed over the same time.
+
+   **Andrej (2026-11-13, discuss):** Now with a temporal split, is that a feature that can be used?
+
+   **Answer (AI, 2026-11-13):** The phone type, yes, very likely: where two linked records of a client both record a
+   type, it is the same in 3,571 of 3,721 (cellular to cellular 3,353 of 3,412, landline to landline 218 of 309), so
+   the bank has it before calling. But what models use is the `unknown` level, a recording state, and the windows show
+   it has no stable meaning (counts, no model):
+
+   | Window | `unknown` contacts | Subscribed: `unknown` | Subscribed: cell phone |
+   |---|---|---|---|
+   | Before September 2008 (training only) | 12,688 | 3.7% | 6.0% |
+   | September to November 2008 | 74 | 37.8% | 5.8% |
+   | December 2009 to February 2010 | 22 | 22.7% | 52.6% |
+   | March to May 2010 | 31 | 38.7% | 58.6% |
+   | June to August 2010 | 128 | 8.6% | 61.3% |
+   | September to November 2010 | 70 | 2.9% | 53.9% |
+
+   **Recommendation:** B, unchanged: the usable part, the phone type, is small, and the column's weight comes from
+   `unknown`.
+
+   **Andrej (2026-11-13, re: answer of 2026-11-13):** Reply (B): Drop contact
+
+   **Resolved (2026-11-13, Andrej):** B: `contact` dropped in `_clean` with the other last-contact fields and taken
+   out of `categorical`; `known` loses the phone type, `changes` names it; a curation bullet gives the reason and the
+   numbers (cell phone 22.7% against landline 19.1%; `unknown` 2.9% to 8.6% against 54% to 61% in the 2010 windows;
+   ROC AUC 0.610 with, 0.614 without over the nine windows). Applied on 2026-11-23 onto the ten windows of issue 9;
+   the model numbers stay as measured on the windows named (CC 2026-11-21), not re-run on the ten.
+
+8. **Which temporal split: the nine quarters, windows of equal count, fewer windows, whole months or equal subscribers?**
+
+   * **Problem:**
+     - The nine quarterly windows test 592 to 8,551 contacts, because the bank called 5,575 clients in May 2009 and
+       75 to 353 a month in 2010.
+     - A window's noise follows its subscribers, not its contacts, so the quarters differ 14-fold in contacts but
+       only 2.4-fold in the standard error of their ROC AUC.
+   * **Experiments:** untuned LightGBM and LR on the frame of 2026-11-12, ROC AUC with its standard error from
+     DeLong's variance; "month alone" scores each test contact by its month's subscription rate, no model:
+
+     | Design | Windows | LightGBM, mean | SE of the mean | Noisiest window's share of it | Month alone, mean |
+     |---|---|---|---|---|---|
+     | a, quarters (then implemented) | 9 | 0.610 | 0.0060 | 16% | 0.552 |
+     | b, equal contacts | 9 | 0.599 | 0.0060 | 23% | 0.583 |
+     | c, equal contacts | 5 | 0.597 | 0.0059 | 42% | 0.628 |
+     | c, equal contacts | 3 | 0.594 | 0.0061 | 60% | 0.646 |
+     | e, whole months, at least 2,500 contacts | 6 | 0.602 | 0.0056 | 29% | 0.562 |
+     | f, equal subscribers | 9 | 0.628 | 0.0054 | 15% | 0.570 |
+
+     - The noise of the mean is the same under every design: the 50% floor fixes the test pool (21,173 contacts).
+     - Campaign waves (asked as d): gaps of more than a week only in 2008, so two windows, under the minimum of three.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Nine quarters (then implemented) | 3-month windows back from November 2010 | one horizon; noise spread almost evenly; the least period ranking inside a window | test sizes 592 to 8,551 |
+     | b | Nine windows of equal contacts | about 2,350 contacts each | even test sizes | spans of 7 to 288 days; noisier oldest windows; more period ranking |
+     | c | Five (or three) windows of equal contacts | 4,000 to 4,500 (7,000) contacts each | fewer, larger windows | the score ranks periods again; one window carries 42% (60%) of the noise |
+     | e | Six windows of whole months | months merged until a window holds 2,500 contacts | calendar boundaries | spans of 1 to 11 months; noisiest window 29% |
+     | f | Nine windows of equal subscribers | about 460 subscribers each | the evenest noise | test sizes still 851 to 6,966; boundaries set from the labels |
+
+   * **Recommendation:** a. **Decision:** a, b, c, e or f?
+
+   **Andrej (2026-11-12, dataset note):** I am not happy with the splits because the windows are too uneven - what
+   are better ways to split while respecting the temporal order.
+
+   **Answer (AI, 2026-11-12):** the quarters are uneven in contacts but not in noise, and no design that keeps the
+   order lowers the noise of the mean; the evidence and the options are above.
+
+   **Andrej (2026-11-13, re: answer of 2026-11-12):** Agree.
+
+   **Resolved (2026-11-13, Andrej):** a: the nine quarters stay, with one sentence in `splits_comment` on why.
+   Replaced on 2026-11-20 by issue 9 (B: ten windows that follow the calling, four campaign periods and six calendar
+   quarters of the trickle).
+
+9. **Windows: 5 of the target's 9; which layout?**
 
    * **Problem:**
      - Five windows of 4,521 records ship where an IID split of 45,211 records would get nine[^split15]; the splits comment does not say why there are fewer.
@@ -522,7 +727,7 @@ Left for you: nothing. Settled on 2026-11-20: issues 5 and 6. Settled on 2026-11
 
    **Andrej (2026-11-20, in chat):** In chat: (1) records were matched on the balance to the euro, so does `balance` hold one reading for a client's records at different times? (2) Earlier subscribers show "success" later: is that a leak? (3) Can we ship it? (4) How many entities can we trace in history, how many not? (5) Run the balance check. (6) Are the reconstructed dates exact? (7) Which splits would you ship?
 
-   **Answer (AI, 2026-11-20):** ship once the windows are decided: the carry-over of a label is history under the split by time, the dates are exact to the day, every client is counted, and `balance` is one reading per client with no sign that it falls after the calls (issue 6 words the note).
+   **Answer (AI, 2026-11-20):** ship once the windows are decided: the carry-over of a label is history under the split by time, the dates are exact to the day, every client is counted, and `balance` is one reading per client with no sign that it falls after the calls (issue 10 words the note).
 
    - **(1) `balance` is one value per client.** Matching on the exact balance makes equal balances true by construction, so the records were linked again without it: same job, marital status, education, credit default, housing and personal loan, age +0 or +1, and the later record's `previous` equal to the earlier one's `previous` plus its calls. Control: the same profile and age, the contact count not adding up (mostly different clients).
 
@@ -579,7 +784,7 @@ Left for you: nothing. Settled on 2026-11-20: issues 5 and 6. Settled on 2026-11
 
    - **(7) The windows:** E, as recommended above. In chat I first suggested C (nine calendar quarters, every window over half); C meets the window rules too, but it joins the April and May campaigns into one window of 8,935 records and cuts the January campaign's trickle on 1 April, where E cuts only at gaps or at a burst's first day, as your note of 2026-11-19 asks.
 
-   - **(3) Ship?** Yes, after issue 5: the use case is real, the prediction point drops this campaign's calls, the client carry-over is history under the split by time, and the copies are explained. What stays: the date of the `balance` reading (issue 6) and a weak, noisy signal on the windows (LightGBM mean 0.586, logistic regression 0.614), which is the task, above chance, not a defect.
+   - **(3) Ship?** Yes, after issue 9: the use case is real, the prediction point drops this campaign's calls, the client carry-over is history under the split by time, and the copies are explained. What stays: the date of the `balance` reading (issue 10) and a weak, noisy signal on the windows (LightGBM mean 0.586, logistic regression 0.614), which is the task, above chance, not a defect.
 
    **Andrej (2026-11-20, discuss):** Reconsider all given information and make a recommendion on which split to ship if any, if the goal is to respect our rules while keeping the use case realistic.
 
@@ -603,7 +808,7 @@ Left for you: nothing. Settled on 2026-11-20: issues 5 and 6. Settled on 2026-11
      - Two kinds of window: campaign windows (7-17% subscribed, mostly new clients) and trickle quarters (36-57%, mostly returning clients). Both are how the bank called; the mean over E's ten windows gives the trickle 6 of 10 votes for 12% of the records. The splits comment should name the two kinds; G halves the trickle's weight if that matters more than the count.
      - Within a window a client's later record repeats an earlier test record's label in `poutcome`: the protocol line stays (no use of other test rows). A within-window filter on the rebuilt client key is possible but traces 73% of repeats, so it would not close it.
      - The signal on time windows is weak (LightGBM mean 0.586, logistic regression 0.614 on A): the task, above chance, not a defect.
-     - `balance`'s note (issue 6, B) rests on A's windows; its numbers are recomputed on E's.
+     - `balance`'s note (issue 10, B) rests on A's windows; its numbers are recomputed on E's.
    * **Not shipping** has no rule behind it: the target is real, the inputs exist before the first call, the dates are exact, the carry-over is history across windows.
 
    **Recommendation:** E. **Decision:** A, B, C, D, E, F or G?
@@ -672,7 +877,7 @@ Left for you: nothing. Settled on 2026-11-20: issues 5 and 6. Settled on 2026-11
 
    **Andrej (2026-11-20, discuss):** Reply (B): E, plus the day's call count as an input
 
-   **Resolved (2026-11-20, Andrej):** B: layout E (ten windows: four campaign periods and six calendar quarters of the trickle, cut at gaps or a burst's first day, each trained on every earlier record, no gap) and a new input `calls_that_day`, the number of records with the same rebuilt date (1 to 825). The rebuilt date ships no input; `time_index` stays one, as before. (2026-11-21, Andrej, issue 7: it is no input either.) `splits_below_target` no longer fires (10 of 9). `dataset check`: 0 errors; one open warning (`time_index` numbered like an id, as before).
+   **Resolved (2026-11-20, Andrej):** B: layout E (ten windows: four campaign periods and six calendar quarters of the trickle, cut at gaps or a burst's first day, each trained on every earlier record, no gap) and a new input `calls_that_day`, the number of records with the same rebuilt date (1 to 825). The rebuilt date ships no input; `time_index` stays one, as before. (2026-11-21, Andrej, issue 11: it is no input either.) `splits_below_target` no longer fires (10 of 9). `dataset check`: 0 errors; one open warning (`time_index` numbered like an id, as before).
 
    | Start | End | Train share | Test records | Subscribed |
    |---|---|---|---|---|
@@ -694,10 +899,10 @@ Left for you: nothing. Settled on 2026-11-20: issues 5 and 6. Settled on 2026-11
    [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
    [^split15]: **SPLIT-15** (Must for the newest window, Should for the others): the number of windows aims at the count an IID split would get, 9 here; the window length, step and gap follow the use case and are not shortened to reach it; fewer are accepted, never under 3, with the target, the count and what stops more in the splits comment; overlapping windows only as an offered option.
 
-6. **Say in the note that `balance` is one reading per client, with the measurement?**
+10. **Say in the note that `balance` is one reading per client, with the measurement?**
 
    * **Problem:**
-     - The note on `balance` says it "may be one reading of unknown date". A link without the balance now shows it is one value per client: same-client pairs share the balance to the euro 17.1% of the time against 1.2% for different clients, with no excess of slightly changed balances (2.5% against 3.2%), while age moves +1 in 71% of the cross-year pairs (turn of 2026-11-20 on issue 5).
+     - The note on `balance` says it "may be one reading of unknown date". A link without the balance now shows it is one value per client: same-client pairs share the balance to the euro 17.1% of the time against 1.2% for different clients, with no excess of slightly changed balances (2.5% against 3.2%), while age moves +1 in 71% of the cross-year pairs (turn of 2026-11-20 on issue 9).
      - Its date stays unknown. If it were read after the calls, a subscription could move it, which is why the worth was measured: on the five windows logistic regression loses 0.002 to 0.003 ROC AUC without it whether or not the client has a later record; LightGBM's larger and uneven loss (0.068 against 0.031, almost all from the oldest window) does not hold up across windows.
 
    * **Options:**
@@ -710,13 +915,13 @@ Left for you: nothing. Settled on 2026-11-20: issues 5 and 6. Settled on 2026-11
 
    * **Recommendation:** B: keep the column with a note that states it is one reading per client and gives the measurement. **Decision:** A, B or C?
 
-   **Notes for the AI:** on B, replace the `balance` note in `dataset.py` with: "Note: `balance` is the "average yearly balance, in euros" (UCI), one value per client: linked without it (profile, age +0/+1, contacts adding up), the same client's records share it to the euro in 17.1% of pairs against 1.2% for different clients, with no excess of slightly changed balances, while age moves. The source does not date it. A reading after the calls could carry a subscription, but on the five windows logistic regression loses 0.002 to 0.003 ROC AUC without it whether or not the client has a later record, so it stays (LEAK-10; as tunisian_fraud_detection_challenge's registry fields). Revisit if the source dates it." Recompute the numbers on the windows issue 5 settles. On C, drop it in `_clean` and rerun the window scores. CC line, CHANGELOG entry.
+   **Notes for the AI:** on B, replace the `balance` note in `dataset.py` with: "Note: `balance` is the "average yearly balance, in euros" (UCI), one value per client: linked without it (profile, age +0/+1, contacts adding up), the same client's records share it to the euro in 17.1% of pairs against 1.2% for different clients, with no excess of slightly changed balances, while age moves. The source does not date it. A reading after the calls could carry a subscription, but on the five windows logistic regression loses 0.002 to 0.003 ROC AUC without it whether or not the client has a later record, so it stays (LEAK-10; as tunisian_fraud_detection_challenge's registry fields). Revisit if the source dates it." Recompute the numbers on the windows issue 9 settles. On C, drop it in `_clean` and rerun the window scores. CC line, CHANGELOG entry.
 
    **Andrej (2026-11-20, change):** Option B: State it and give the measurements.
 
-   **Resolved (2026-11-20, Andrej):** B: the `balance` note in the definition now says it is one value per client (17.1% identical for linked records against 1.2% for different clients, no excess of slightly changed balances) and that logistic regression loses 0.002 to 0.003 ROC AUC without it whether or not the client has a later record, so it stays. The numbers are on today's five windows; they are recomputed when issue 5 settles the windows. (2026-11-21, Andrej: not recomputed - the numbers stay as measured on the five windows, and the note says the ten windows replace them.)
+   **Resolved (2026-11-20, Andrej):** B: the `balance` note in the definition now says it is one value per client (17.1% identical for linked records against 1.2% for different clients, no excess of slightly changed balances) and that logistic regression loses 0.002 to 0.003 ROC AUC without it whether or not the client has a later record, so it stays. The numbers are on today's five windows; they are recomputed when issue 9 settles the windows. (2026-11-21, Andrej: not recomputed - the numbers stay as measured on the five windows, and the note says the ten windows replace them.)
 
-7. **Is `time_index` available at the prediction point?**
+11. **Is `time_index` available at the prediction point?**
 
    * **Problem:**
      - `time_index` is the record's position in the file, which UCI orders by the date of the last contact. It is the declared temporal order and ships as a model input, while the rebuilt date it ranks is kept out of the inputs because the campaign's end sets it (LEAK-10).
