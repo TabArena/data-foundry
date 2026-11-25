@@ -3,7 +3,7 @@ unique_name: fosp_cancer_registry_survival
 name: Hospital-Based Cancer Registry of Sao Paulo (RHC/SP), 3-year survival after diagnosis
 checked_by:
 - Andrej
-suggestion: 'Yes'
+suggestion: TBD -> Yes
 priority: 2
 tags:
 - Non-IID (Temporal)
@@ -62,6 +62,8 @@ type_adapter_id: curation-record-v1
 - Adds: a large Latin-American oncology registry; no cancer registry in the records. Risks: drop presenca_rec (recurrence, after outcome); exclude patients followed less than the horizon (LEAK-23/24); one table per diagnosis year
 
 CC (2026-11-25, Andrej): accepted for adding in the screening review (issues 1 A (all sites, 3-year overall survival, short follow-up dropped), 2 A (after first-course treatment) and 3 A (one-year windows)).
+
+CC (2026-11-25, Andrej): back to `TBD -> Yes` until the data can be used without an access request: the RHC/SP files need a registration (all years but 2000).
 
 ## Review
 

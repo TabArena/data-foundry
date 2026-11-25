@@ -3,7 +3,7 @@ unique_name: seer_osteosarcoma_survival
 name: 'SEER osteosarcoma (C40-C41): 5-year survival'
 checked_by:
 - Andrej
-suggestion: 'Yes'
+suggestion: TBD -> Yes
 priority: 2
 tags:
 - Dated Event Log
@@ -44,6 +44,8 @@ type_adapter_id: curation-record-v1
 Candidate from Shaktah et al. 2026, "Established machine learning matches tabular foundation models in clinical predictions", BMC Med Inform Decis Mak 26:364 (https://doi.org/10.1186/s12911-026-03654-3), one of its twelve binary clinical tasks.
 
 CC (2026-11-25, Andrej): accepted for adding in the screening review (issue 2 A (one-year windows); issue 1 (cohort) open until the use case is written at /add-dataset).
+
+CC (2026-11-25, Andrej): back to `TBD -> Yes` until the data can be used without an access request: SEER Research Data needs a per-person data-use agreement.
 
 ## Review
 

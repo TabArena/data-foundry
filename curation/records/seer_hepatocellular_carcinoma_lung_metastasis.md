@@ -3,7 +3,7 @@ unique_name: seer_hepatocellular_carcinoma_lung_metastasis
 name: 'SEER hepatocellular carcinoma (C22): lung metastasis at diagnosis'
 checked_by:
 - Andrej
-suggestion: 'Yes'
+suggestion: TBD -> Yes
 priority: 2
 tags:
 - Dated Event Log
@@ -43,6 +43,8 @@ type_adapter_id: curation-record-v1
 Candidate from Shaktah et al. 2026, "Established machine learning matches tabular foundation models in clinical predictions", BMC Med Inform Decis Mak 26:364 (https://doi.org/10.1186/s12911-026-03654-3), one of its twelve binary clinical tasks.
 
 CC (2026-11-25, Andrej): accepted for adding in the screening review (issues 1 A (HCC from 2010, Unknown dropped; revisit on the added dataset) and 2 A (at diagnosis)).
+
+CC (2026-11-25, Andrej): back to `TBD -> Yes` until the data can be used without an access request: SEER Research Data needs a per-person data-use agreement.
 
 ## Review
 

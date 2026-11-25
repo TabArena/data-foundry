@@ -3,7 +3,7 @@ unique_name: seer_renal_cell_carcinoma_5y_survival
 name: 'SEER renal cell carcinoma: 5-year overall survival'
 checked_by:
 - Andrej
-suggestion: 'Yes'
+suggestion: TBD -> Yes
 priority: 2
 tags:
 - Dated Event Log
@@ -46,6 +46,8 @@ Candidate from Shaktah et al. 2026, "Established machine learning matches tabula
 CC (2026-11-25, Andrej): accepted for adding in the screening review (issue 2 A (after first-course treatment); issue 1 (cohort) open).
 
 CC (2026-11-25, Andrej): kidney cancer cohort settled in the screening review (issue 1 A, C64 with RCC histologies, as liver cancer issue 1).
+
+CC (2026-11-25, Andrej): back to `TBD -> Yes` until the data can be used without an access request: SEER Research Data needs a per-person data-use agreement.
 
 ## Review
 
