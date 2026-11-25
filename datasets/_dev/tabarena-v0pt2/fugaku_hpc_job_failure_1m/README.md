@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: fugaku_hpc_job_failure_1m
 container_format: 2
-checksum: v2:32c8b66e36ba62d860a64ab054e5ae8a7fdc45d9c7fd3299fbdbdd2fa49ef1e0
+checksum: v2:f90a1cab1bd4961106784e31b70ea5431d6ec090d20a2899eaf6975ef543d54a
 build:
   uuid: 01a1e3af-55a4-7df0-bd28-5009e8991055
   checksum: v2:4cfcfaad3da1a6271ad90e17ac9589a303bd8573baf5fe23acdd52e508f09f8d
@@ -70,13 +70,7 @@ bundle_checks:
   infos:
   - dataset_duplicates_skipped
   - dataset_pure_feature_value_skipped
-  accepted:
-    time_newest_period_short: 'Accepted (Andrej, 2026-11-24, with the _1m version
-      of review issue 5): the frame keeps every training row but only a 500,000-row
-      sample of each test window, so its newest 30 days hold 3,055 rows a day against
-      a median of 22,831 (13%). In the full source they hold 59% of the median (14,015
-      against 23,854 a day), because the April 2024 observations begin on 4 April
-      (the cohort-limit note).'
+  accepted: {}
 decisions:
 - Full-source terminal-label availability and the test-window cap
 ---
@@ -87,7 +81,7 @@ decisions:
 
 Binary classification of `exit state`, scored with `roc_auc` on temporal splits by `adt`. 24,025,345 rows and 393 features. Source: Other (2024).
 
-Built as `01a1e3af-55a4-7df0-bd28-5009e8991055` on 2026-11-16, but `dataset.py` has changed since: it now gives checksum `v2:32c8b66e36ba62d860a64ab054e5ae8a7fdc45d9c7fd3299fbdbdd2fa49ef1e0`, so the build is stale. See [Build](#build).
+Built as `01a1e3af-55a4-7df0-bd28-5009e8991055` on 2026-11-16, but `dataset.py` has changed since: it now gives checksum `v2:f90a1cab1bd4961106784e31b70ea5431d6ec090d20a2899eaf6975ef543d54a`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -170,16 +164,16 @@ byte count and digest before it becomes an accepted raw input.
     PY
 
 Preparation reads all source rows' submission/end times and labels, checks the original zero/nonzero mapping,
-and caps each test window at the collection's 500,000 test rows; every training row stays. It then expands the
-384-value source vectors of the rows the splits use only. source_metadata.parquet and selection_membership.parquet
-retain local selection lineage; selection.json records full-source monthly counts, cutoff exclusions and class
-support per side. These are reproducible intermediates,
-not additional upstream releases and not model inputs. The preparation code and constants participate in the
-framework's prepared-input cache hash. _make_splits repeats native selection against full-source metadata and
-checks exact source positions before removing lineage columns. No container is built by dataset check.
+and expands the 384-value source vectors of every source row, in submission-time order. source_metadata.parquet
+keeps the local lineage; selection.json records full-source monthly counts, cutoff exclusions and class support
+per side. These are reproducible intermediates, not additional upstream releases and not model inputs. The
+preparation code and constants participate in the framework's prepared-input cache hash. _make_splits draws the
+windows on the full-source metadata, caps each test window at the collection's 500,000 test rows (every
+training row stays), checks the source positions, and keeps the rows the splits use without the lineage
+columns. No container is built by dataset check.
 ```
 
-On first use, `_prepare_raw_files` writes `prepared_source_representations.parquet`, `selection.json`, `source_metadata.parquet`, `selection_membership.parquet` into the same folder.
+On first use, `_prepare_raw_files` writes `prepared_source_representations.parquet`, `selection.json`, `source_metadata.parquet` into the same folder.
 
 Then, from the repository root:
 
@@ -338,10 +332,6 @@ Training labels end strictly before each refit. Source positions and availabilit
 
 - **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 9,465,985,930 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
 - **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 9,465,985,930 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
-
-Accepted on purpose:
-
-- `time_newest_period_short`: Accepted (Andrej, 2026-11-24, with the _1m version of review issue 5): the frame keeps every training row but only a 500,000-row sample of each test window, so its newest 30 days hold 3,055 rows a day against a median of 22,831 (13%). In the full source they hold 59% of the median (14,015 against 23,854 a day), because the April 2024 observations begin on 4 April (the cohort-limit note).
 
 ## Data checks
 
@@ -542,4 +532,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | a6a4ac56259a656b235696d1e74d0a8c36f68f68 |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:32c8b66e36ba62d860a64ab054e5ae8a7fdc45d9c7fd3299fbdbdd2fa49ef1e0` |
+| stale | yes: the definition now gives checksum `v2:f90a1cab1bd4961106784e31b70ea5431d6ec090d20a2899eaf6975ef543d54a` |

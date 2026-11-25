@@ -186,13 +186,13 @@ class FugakuHpcJobFailure1m(AbstractCuratedDataset):
             PY
 
         Preparation reads all source rows' submission/end times and labels, checks the original zero/nonzero mapping,
-        and caps each test window at the collection's 500,000 test rows; every training row stays. It then expands the
-        384-value source vectors of the rows the splits use only. source_metadata.parquet and selection_membership.parquet
-        retain local selection lineage; selection.json records full-source monthly counts, cutoff exclusions and class
-        support per side. These are reproducible intermediates,
-        not additional upstream releases and not model inputs. The preparation code and constants participate in the
-        framework's prepared-input cache hash. _make_splits repeats native selection against full-source metadata and
-        checks exact source positions before removing lineage columns. No container is built by dataset check.
+        and expands the 384-value source vectors of every source row, in submission-time order. source_metadata.parquet
+        keeps the local lineage; selection.json records full-source monthly counts, cutoff exclusions and class support
+        per side. These are reproducible intermediates, not additional upstream releases and not model inputs. The
+        preparation code and constants participate in the framework's prepared-input cache hash. _make_splits draws the
+        windows on the full-source metadata, caps each test window at the collection's 500,000 test rows (every
+        training row stays), checks the source positions, and keeps the rows the splits use without the lineage
+        columns. No container is built by dataset check.
     """
     curation_comments = (
         """
@@ -230,13 +230,6 @@ class FugakuHpcJobFailure1m(AbstractCuratedDataset):
             "decision-specific accuracy choice is specified. Under MET-5/6/8 use binary ROC AUC; the target is unchanged."
         )
     )
-    accepted_check_warnings = {
-        "time_newest_period_short": "Accepted (Andrej, 2026-11-24, with the _1m version of review issue 5): the "
-        "frame keeps every training row but only a 500,000-row sample of each test window, so its newest 30 days hold "
-        "3,055 rows a day against a median of 22,831 (13%). In the full source they hold 59% of the median (14,015 "
-        "against 23,854 a day), because the April 2024 observations begin on 4 April (the cohort-limit note).",
-    }
-
     # This horizon describes the period between refits, not a deadline for the terminal-exit target.
     split_leaf = "L-ORDER.windows"
     temporal = Temporal(on="adt", horizon=4, horizon_unit="months", gap=1, gap_unit="days")
@@ -245,7 +238,6 @@ class FugakuHpcJobFailure1m(AbstractCuratedDataset):
         "prepared_source_representations.parquet",
         "selection.json",
         "source_metadata.parquet",
-        "selection_membership.parquet",
     )
     # The _1m version: this definition builds its own splits, so it caps the test windows itself; train sides stay whole.
     splits_comment = """
@@ -272,7 +264,7 @@ class FugakuHpcJobFailure1m(AbstractCuratedDataset):
     """
 
     def _prepare_raw_files(self, raw_dir: Path) -> None:
-        # One-time full-cohort selection before expanding the large source vectors. Selection is repeated below.
+        # Every source row with its expanded vectors, sorted by submission time; the splits are drawn in _make_splits.
         _prepare(raw_dir, RAW_FILES, _window_spec())
 
     def _load_raw(self, raw_dir: Path) -> dict:
@@ -287,39 +279,26 @@ class FugakuHpcJobFailure1m(AbstractCuratedDataset):
         # _prepare reads the source representations, the four requests fixed at submission, the submission time and
         # nonpredictor lineage.
         # It expands source vectors without fitting an encoder, and keeps original completed/failed labels.
-        # All post-submission fields stay in source metadata or are never read; source positions are removed in _make_splits.
+        # All post-submission fields stay in source metadata or are never read; source positions are removed in
+        # _make_splits.
         return raw["data"]
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(categorical=["usr", "jnam", "jobenv_req", "freq_req"], datetime=["adt"])
 
     def _make_splits(self, df: pd.DataFrame) -> SplitPlan:
-        # Recompute the native budget on ALL source metadata, never on an already-reduced denominator.
-        selected, _, population = _select_temporal(self.raw["metadata"], _window_spec())
-        key = pd.MultiIndex.from_arrays([df._source_file.astype("uint8"), df._source_row.astype("uint32")])
-        expected = pd.MultiIndex.from_frame(selected[["_source_file", "_source_row"]])
-        assert key.is_unique
-        assert len(df) == len(selected)
-        positions = key.get_indexer(expected)
-        assert np.all(positions >= 0), "Prepared source membership drifted from native sampling."
-        assert np.array_equal(df[self.target].astype(str).to_numpy()[positions], selected[self.target].astype(str))
-        assert np.array_equal(df.adt.to_numpy()[positions], selected.adt.to_numpy())
-        roles = selected._split_roles.to_numpy()
-        assert np.array_equal(df._split_roles.to_numpy()[positions].astype("uint8"), roles)
-        splits = {
-            i: {
-                0: (
-                    positions[(roles & (1 << (2 * i))) != 0].tolist(),
-                    positions[(roles & (1 << (2 * i + 1))) != 0].tolist(),
-                )
-            }
-            for i in range(3)
-        }
-        return SplitPlan(
-            splits=splits,
-            df=df.drop(columns=["_source_file", "_source_row", "_split_roles"]),
-            before_sampling=population,
-        )
+        # The frame holds every source row in the order of the source metadata; the splits come from the metadata, and
+        # the frame keeps the rows they use (the capped test windows leave the rest out), in one copy.
+        meta = self.raw["metadata"]
+        assert len(df) == len(meta), "The prepared frame must hold every source row."
+        assert np.array_equal(df._source_file.to_numpy().astype(np.uint8), meta._source_file.to_numpy())
+        assert np.array_equal(df._source_row.to_numpy().astype(np.uint32), meta._source_row.to_numpy())
+        assert np.array_equal(df[self.target].astype(str).to_numpy(), meta[self.target].astype(str).to_numpy())
+        kept, splits, _ = _select_temporal(meta, _window_spec())
+        columns = [i for i, c in enumerate(df.columns) if c not in ("_source_file", "_source_row")]
+        frame = df.iloc[kept, columns]
+        frame.index = pd.RangeIndex(len(frame))
+        return SplitPlan(splits=splits, df=frame)
 
     def _decisions(self, raw: dict, df: pd.DataFrame) -> list[Decision]:
         return [
@@ -381,7 +360,8 @@ def _verified_metadata(raw_dir: Path, manifest: dict) -> tuple[pd.DataFrame, lis
     return meta, audit
 
 
-def _select_temporal(meta: pd.DataFrame, windows: TemporalSplits) -> tuple[pd.DataFrame, dict, SplitPlan]:
+def _select_temporal(meta: pd.DataFrame, windows: TemporalSplits) -> tuple[np.ndarray, dict, dict]:
+    """The label-filtered windows with capped test sides: the kept source positions, their splits, and a report."""
     assert windows.unit == "months", "This preparation's label cutoff is the start of a calendar month."
     splits = windows.splits(meta, "adt")
     report = []
@@ -405,52 +385,48 @@ def _select_temporal(meta: pd.DataFrame, windows: TemporalSplits) -> tuple[pd.Da
         )
         splits[repeat][0] = (train[known], test)
     assert min(w["train_after_maturity"] for w in report) >= len(meta) * 0.5
-    population = SplitPlan(df=meta, splits={repeat: dict(folds) for repeat, folds in splits.items()})
-    # Cap the test windows only, class-proportional, on the full source denominator; train sides stay whole.
+    # Cap the test windows only, class-proportional; train sides stay whole. The draw depends on the row count, the
+    # seed and the labels, so it is the same in the preparation and in _make_splits.
+    positions = meta[["exit state"]].assign(_position=np.arange(len(meta)))
     selected, splits, trimmed = sample_temporal_splits(
-        meta, splits, RowBudget(train=TABARENA_V0PT2_ROW_BUDGET.train, test=TEST_CAP), stratify_on="exit state"
+        positions, splits, RowBudget(train=TABARENA_V0PT2_ROW_BUDGET.train, test=TEST_CAP), stratify_on="exit state"
     )
-    roles = np.zeros(len(selected), dtype=np.uint8)
+    kept = selected["_position"].to_numpy()
     for repeat, folds in splits.items():
-        train, test = folds[0]
-        assert repeat < 4, "The stored uint8 role mask supports up to four windows."
-        roles[np.asarray(train)] |= np.uint8(1 << (2 * repeat))
-        roles[np.asarray(test)] |= np.uint8(1 << (2 * repeat + 1))
+        train, test = (kept[np.asarray(side)] for side in folds[0])
         report[repeat].update(
             {
                 "train": len(train),
                 "test": len(test),
-                "train_failed": int(selected["exit state"].iloc[train].eq("failed").sum()),
-                "test_failed": int(selected["exit state"].iloc[test].eq("failed").sum()),
+                "train_failed": int(meta["exit state"].iloc[train].eq("failed").sum()),
+                "test_failed": int(meta["exit state"].iloc[test].eq("failed").sum()),
             }
         )
-        assert selected.edt.iloc[train].lt(pd.Timestamp(report[repeat]["cutoff"])).all()
-        assert selected.adt.iloc[train].max() < selected.adt.iloc[test].min()
-    assert np.all(roles != 0)
-    selected["_split_roles"] = roles
+        assert meta.edt.iloc[train].lt(pd.Timestamp(report[repeat]["cutoff"])).all()
+        assert meta.adt.iloc[train].max() < meta.adt.iloc[test].min()
     return (
-        selected,
+        kept,
+        splits,
         {
             "source_rows": len(meta),
-            "selected_rows": len(selected),
+            "selected_rows": len(kept),
             "trimmed": trimmed,
             "windows": report,
             "sampling": "native sample_temporal_splits, default seed 4267, class-stratified test windows of at most 500k "
             "rows; every training row kept",
             "equal_time_order": "publisher filename order, then source row offset",
         },
-        population,
     )
 
 
-def _write_selected(raw_dir: Path, manifest: dict, selected: pd.DataFrame) -> None:
+def _write_frame(raw_dir: Path, manifest: dict, meta: pd.DataFrame) -> None:
     target = raw_dir / "prepared_source_representations.parquet"
     temporary = target.with_suffix(".parquet.part")
     writer = None
     written = 0
     try:
         for source_file, name in enumerate(sorted(manifest)):
-            file_rows = selected.loc[selected._source_file.eq(source_file)].sort_values("_source_row", kind="stable")
+            file_rows = meta.loc[meta._source_file.eq(source_file)].sort_values("_source_row", kind="stable")
             if file_rows.empty:
                 continue
             positions = file_rows._source_row.to_numpy()
@@ -489,7 +465,7 @@ def _write_selected(raw_dir: Path, manifest: dict, selected: pd.DataFrame) -> No
                     names += ["mszl", "mszl_unlimited"]
                     arrays += [pa.array(vector[:, j], type=pa.float32()) for j in range(384)]
                     names += [f"embedding_{j:03d}" for j in range(384)]
-                    for c in ["adt", "exit state", "_source_file", "_source_row", "_split_roles"]:
+                    for c in ["adt", "exit state", "_source_file", "_source_row"]:
                         values = metadata[c].astype(str) if c == "exit state" else metadata[c]
                         arrays.append(pa.array(values))
                         names.append(c)
@@ -505,8 +481,8 @@ def _write_selected(raw_dir: Path, manifest: dict, selected: pd.DataFrame) -> No
             writer.write_table(table)
             written += len(table)
             del table
-            print(f"Prepared selected source rows: {name}, {len(file_rows):,}", flush=True)
-        assert written == len(selected), (written, len(selected))
+            print(f"Prepared source rows: {name}, {len(file_rows):,}", flush=True)
+        assert written == len(meta), (written, len(meta))
     finally:
         if writer is not None:
             writer.close()
@@ -516,9 +492,7 @@ def _write_selected(raw_dir: Path, manifest: dict, selected: pd.DataFrame) -> No
 def _prepare(raw_dir: Path, manifest: dict, windows: TemporalSplits) -> None:
     meta, monthly = _verified_metadata(raw_dir, manifest)
     meta.to_parquet(raw_dir / "source_metadata.parquet", index=False)
-    selected, report, _ = _select_temporal(meta, windows)
-    del meta
-    _write_selected(raw_dir, manifest, selected)
-    selected.to_parquet(raw_dir / "selection_membership.parquet", index=False)
+    _, _, report = _select_temporal(meta, windows)
+    _write_frame(raw_dir, manifest, meta)
     report["monthly"] = monthly
     (raw_dir / "selection.json").write_text(json.dumps(report, indent=2) + "\n")

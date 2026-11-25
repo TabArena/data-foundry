@@ -9,7 +9,7 @@ from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry.v2 import DatasetDefinitionError, SplitPlan, get_dataset
+from data_foundry.v2 import get_dataset
 from data_foundry.v2.cli import add_dataset_parser
 from data_foundry.v2.dataset import NEWEST_PERIOD_RATIO, AbstractCuratedDataset, newest_period_rate
 from data_foundry.v2.splits import (
@@ -241,48 +241,3 @@ def test_a_newest_period_cut_short_is_found() -> None:
     assert ratio_cut < NEWEST_PERIOD_RATIO
     assert newest_period_rate(pd.Series(np.arange(10))) is None  # no date
     assert newest_period_rate(pd.Series(np.repeat(days[:90], 5))) is None  # fewer than four spans
-
-
-def test_custom_sampling_checks_the_eligible_history_without_waiving_the_floor() -> None:
-    """A cap is a draw from eligible history, and a genuinely short history must still fail."""
-    sampled = {r: {0: (list(range(20)), [20, 21])} for r in range(3)}
-    container = SimpleNamespace(experiment_metadata=SimpleNamespace(splits=sampled), dataset=range(25))
-    definition = SimpleNamespace(temporal=object(), _frame_rows=100, _window_size_findings=lambda *_: [])
-    floor = "splits_train_under_floor"  # SPLIT-14: no window trains on under 30% of the rows
-    assert any(r.slug == floor for r in AbstractCuratedDataset._floor_findings(definition, container))
-    for sizes, expected_error in [([90, 70, 55], False), ([90, 45, 25], True)]:
-        definition._before_sampling = SplitPlan(
-            df=pd.DataFrame(index=range(100)),
-            splits={r: {0: (range(size), [90, 91])} for r, size in enumerate(sizes)},
-        )
-        found = AbstractCuratedDataset._floor_findings(definition, container)
-        assert any(r.slug == floor and r.severity == "error" for r in found) is expected_error
-
-
-@pytest.mark.parametrize(
-    "fault", ["missing_frame", "nested", "different_folds", "smaller", "negative", "outside", "duplicates", "overlap"]
-)
-def test_custom_sampling_refuses_invalid_eligibility(fault: str) -> None:
-    """The eligibility context cannot omit folds or contain smaller/out-of-range source sides."""
-    population = SplitPlan(df=pd.DataFrame(index=range(100)), splits={0: {0: (list(range(70)), [90, 91])}})
-    plan = SplitPlan(
-        df=pd.DataFrame(index=range(25)), splits={0: {0: (list(range(20)), [20, 21])}}, before_sampling=population
-    )
-    if fault == "missing_frame":
-        population.df = None
-    elif fault == "nested":
-        population.before_sampling = SplitPlan(splits={})
-    elif fault == "different_folds":
-        population.splits = {1: population.splits[0]}
-    elif fault == "overlap":
-        population.splits[0][0] = (list(range(70)), [60, 61])
-    else:
-        train = {
-            "smaller": [0],
-            "negative": [-1, *range(69)],
-            "outside": [*range(69), 100],
-            "duplicates": [0] * 70,
-        }[fault]
-        population.splits[0][0] = (train, [90, 91])
-    with pytest.raises(DatasetDefinitionError, match="before_sampling"):
-        AbstractCuratedDataset._check_before_sampling(SimpleNamespace(temporal=object()), plan)

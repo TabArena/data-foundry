@@ -810,14 +810,11 @@ class SplitPlan:
         df: The frame the splits index into, when the split step reduces or reorders it (sub-sampling).
             None keeps the input frame.
         comment: The splits comment, for a comment computed from the data (else ``splits_comment``).
-        before_sampling: The eligible temporal population and splits before a custom row sample. The temporal
-            training-floor check uses these positions; the container still stores only ``splits`` and ``df``.
     """
 
     splits: Splits
     df: pd.DataFrame | None = None
     comment: str | None = None
-    before_sampling: SplitPlan | None = None
 
 
 def fit_splits_to_budget(

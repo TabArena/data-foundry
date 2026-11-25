@@ -1261,32 +1261,6 @@ class AbstractCuratedDataset(ABC):
             )
             raise DatasetDefinitionError(msg)
 
-    def _check_before_sampling(self, plan: SplitPlan) -> None:
-        """Validate the eligible population supplied by a custom temporal sampler."""
-        if plan.before_sampling is not None:
-            population = plan.before_sampling
-            if self.temporal is None or population.df is None or population.before_sampling is not None:
-                raise DatasetDefinitionError("`before_sampling` needs one temporal population frame and its splits.")
-            actual = {(r, f): sides for r, folds in plan.splits.items() for f, sides in folds.items()}
-            eligible = {(r, f): sides for r, folds in population.splits.items() for f, sides in folds.items()}
-            if actual.keys() != eligible.keys():
-                raise DatasetDefinitionError("`before_sampling` must describe exactly the sampled splits.")
-            for key, sides in eligible.items():
-                for positions, sampled in zip(sides, actual[key], strict=True):
-                    values = np.asarray(positions)
-                    if len(values) < len(sampled) or (
-                        len(values)
-                        and (
-                            not np.issubdtype(values.dtype, np.integer)
-                            or values.min() < 0
-                            or values.max() >= len(population.df)
-                            or len(np.unique(values)) != len(values)
-                        )
-                    ):
-                        raise DatasetDefinitionError("`before_sampling` has invalid or smaller eligible split sides.")
-                if np.intersect1d(*sides, assume_unique=True).size:
-                    raise DatasetDefinitionError("`before_sampling` has overlapping training and test positions.")
-
     def make_splits(self, df: pd.DataFrame | None = None) -> SplitPlan:
         """Run :meth:`_make_splits` on ``df`` (default: :attr:`df`) and normalise it to a SplitPlan.
 
@@ -1298,7 +1272,6 @@ class AbstractCuratedDataset(ABC):
         plan = self._make_splits(df)
         if not isinstance(plan, SplitPlan):
             plan = SplitPlan(splits=plan)
-        self._check_before_sampling(plan)
         self._check_collection_budget(plan.splits)
         plan.splits = _in_row_order(plan.splits)
         if plan.df is None:
@@ -1437,7 +1410,6 @@ class AbstractCuratedDataset(ABC):
         df, test = self.process()
         plan = self.make_splits(df)
         self._frame_rows = len(df)  # the floor counts every row, also those a row budget leaves out of the container
-        self._before_sampling = plan.before_sampling
         on = self.temporal.on if self.temporal is not None else None
         self._newest_rate = newest_period_rate(df[on]) if on is not None and on in df.columns else None
         horizon, unit = _horizon(type(self))
@@ -1644,26 +1616,16 @@ class AbstractCuratedDataset(ABC):
         units) is a warning the splits comment answers.
 
         The shares count every row of the curated frame: a `_1m` version's container keeps every training row but
-        samples its test windows. A custom capped plan may supply its eligible population in
-        ``SplitPlan.before_sampling``; the training floor then applies before that sample, while the least test window
-        and the window count are read off the shipped container.
+        samples its test windows.
         """
         if self.temporal is None:
             return []
+        n_rows = getattr(self, "_frame_rows", None) or len(container.dataset)
         splits = container.experiment_metadata.splits
         windows = [(repeat, train, test) for repeat, folds in splits.items() for train, test in folds.values()]
         if not windows:
             return []
-        n_rows = getattr(self, "_frame_rows", None) or len(container.dataset)
-        population = getattr(self, "_before_sampling", None)
-        if population is not None:
-            shares = {
-                repeat: len(train) / len(population.df)
-                for repeat, folds in population.splits.items()
-                for train, _test in folds.values()
-            }
-        else:
-            shares = {repeat: len(train) / n_rows for repeat, train, _test in windows}
+        shares = {repeat: len(train) / n_rows for repeat, train, _test in windows}
         under = {r: s for r, s in shares.items() if s < FLOOR_CORE}
         low = {r: s for r, s in under.items() if s < FLOOR_LOWER}
         findings = []

@@ -30,14 +30,19 @@ def test_fugaku_1m_keeps_whole_train_sides_and_caps_the_test_windows(monkeypatch
         }
     )
     frame["edt"] = frame.adt + pd.to_timedelta(np.where(row % 19 == 0, 400, 2), unit="D")
-    selected, report, population = module._select_temporal(frame, module._window_spec())
-    assert population.df is frame
+    kept, splits, report = module._select_temporal(frame, module._window_spec())
+    eligible = module._window_spec().splits(frame, "adt")
     assert report["trimmed"]
     assert any(window["excluded_late_labels"] > 0 for window in report["windows"])
+    assert np.all(np.diff(kept) > 0)  # source order kept, each source row at most once
     for repeat, window in enumerate(report["windows"]):
-        train, test = [(selected._split_roles & (1 << (2 * repeat + side))) != 0 for side in [0, 1]]
-        eligible_train, eligible_test = (np.asarray(side) for side in population.splits[repeat][0])
-        assert sorted(selected._source_row[train]) == sorted(frame._source_row.iloc[eligible_train])
-        assert 0 < test.sum() <= 2
-        assert set(selected._source_row[test]) <= set(frame._source_row.iloc[eligible_test])
-        assert selected.edt[train].lt(pd.Timestamp(window["cutoff"])).all()
+        train, test = (kept[np.asarray(side)] for side in splits[repeat][0])
+        all_train, all_test = (np.asarray(side) for side in eligible[repeat][0])
+        mature = (
+            frame.edt.iloc[all_train].lt(pd.Timestamp(window["cutoff"])).to_numpy()
+            & frame.adt.iloc[all_train].lt(pd.Timestamp(window["cutoff"]) - module.GAP).to_numpy()
+        )
+        assert sorted(train) == sorted(all_train[mature])  # every mature earlier row trains
+        assert 0 < len(test) <= 2
+        assert set(test) <= set(all_test)
+        assert frame.edt.iloc[train].lt(pd.Timestamp(window["cutoff"])).all()

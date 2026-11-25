@@ -1,5 +1,12 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-25 (evening), fugaku_hpc_job_failure_1m: every source row prepared (no container built)
+
+- The preparation writes every source row and `_make_splits` caps the test windows at 500,000 rows, so the training
+  floor counts the full source without `SplitPlan.before_sampling`, which the framework drops. The shipped rows, split
+  roles and window counts are unchanged (compared row by row). The accepted thin-newest-period warning no longer fires
+  and is removed. Check 0 errors, 0 warnings; peak 90.9 GB.
+
 ## 2026-11-25 (afternoon), economic_well_being_prediction_challenge: every country tested once (no container built)
 
 - The split is whole countries in 9 folds, one repeat (seven folds of 3 countries, two of 2, the framework's grouped
