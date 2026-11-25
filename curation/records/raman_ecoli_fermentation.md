@@ -3,6 +3,9 @@ unique_name: raman_ecoli_fermentation
 name: E. coli Fermentation
 checked_by:
 - AI (UNVERIFIED)
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Andrej
 suggestion: TBD -> Yes
 priority: 2
 decision_markers:
@@ -21,9 +24,9 @@ collections:
 - RamanBench
 original_source: Other
 year: '2025'
+collection_period: Unknown
 required_split:
 - Grouped (NON-IID)
-collection_period: Unknown
 problem_type: Regression
 original_data_state: One Table
 source_links:
