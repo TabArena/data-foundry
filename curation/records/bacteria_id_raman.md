@@ -236,9 +236,9 @@ log loss on 2026-10-21). Priority 4 becomes 3 (the fit is approximate).
 5. **The split tree's Clinical Study branch does not give the shipped split: keep the pooled patient split, or hold out the 2019 cohort?**
 
    * **Problem:**
-     - The record now names the collection type `Clinical Study` (SPLIT-34): patients of a clinical study, labelled by an outcome, with no date in the rows. The tree's branch from there asks where and for whom the model is used, and offers two ways on: another hospital or site (the Place step), or later patients at the same clinic, which, with no date per row, goes to the Order and windows step.
-     - The shipped design does neither. It pools the 25 patients of 2018 (Palo Alto) with the 25 of 2019 (Stanford) and draws test folds of patients across both (2 folds x 30 repeats).
-     - The data holds exactly the two cohorts the Place step asks for, and they are a site and a year at once.
+     - The record now names the collection type `Clinical Study`: patients of a study, labelled by an outcome, with no date in their rows[^c34].
+     - The branch from there offers a site step and, with no date per row, an order step, and the shipped design takes neither[^c36].
+     - It pools the 25 patients of 2018 with the 25 of 2019 and draws test folds across both, although those two cohorts are a site and a year at once.
    * **Effect on the task:** the definition's own notes measure it. Trained on the 2018 patients and tested on the 2019 ones, a logistic regression on 100 principal components scores a per-spectrum log loss of 0.368, against 0.229 pooled with each patient weighted once. One spectrum tells the year at ROC AUC 0.994, grouped by patient, so the measurement session is readable and the pooled split lets a model use a session its real deployment would not have seen.
    * **What the definition already says:** `fit_reason` names the pooling as one of the four gaps ("The two years are pooled, while a lab trains on its past"), so the shipped task states the limitation rather than splitting on it.
    * **Options:**
@@ -250,6 +250,9 @@ log loss on 2026-10-21). Priority 4 becomes 3 (the fit is approximate).
      | C | Ship A, name B as a companion view | the pooled split scores; the year split is named in the notes as a second reading | keeps 60 splits and records the honest number | two numbers to explain; the companion is not scored |
 
    * **Recommendation:** C, unless you read the use case as a new site adopting the model, in which case B. A alone leaves the tree's branch unanswered, and the 0.368 against 0.229 is too large to leave only in `fit_reason`. **Decision:** A, B or C?
+
+   [^c34]: **SPLIT-34** (Must): the record names one collection type, and the split decision tree starts from it.
+   [^c36]: **SPLIT-36** (Must): the split follows the tree's walk from that type, or the definition records the departure.
 
    **Notes for the AI:** on B, `_make_splits` builds one fold from the file a patient comes from (2018 or 2019), `splits_comment` and `task_summary.split` say so, the protocol dimensions warning is re-accepted, and issue 2 (the fold count) falls away. On C, the companion view goes in `curation_comments` beside the fit gaps with both numbers. Either way, record the collection type and the branch in the record. Re-run `dataset check` and the task probe.
 

@@ -305,9 +305,9 @@ for byte (issue 1 for the rest).
 7. **Confirm the collection type and the time basis the walk gives?**
 
    * **Problem:**
-     - The definition predates SPLIT-32 and SPLIT-34, so it carried neither a collection type nor a time basis; both are now required and both are filled in.
-     - Collection type `Experimental Results`: a closed set of specimens measured by a laboratory, which is what the 41 maps are.
-     - The walk from there: the model meets a new item of the kinds the data contains (a new rock of minerals the reference maps carry, not a new mineral), the experiment was repeated per item (many map points per specimen), so the leaf is Grouped · `Timeless` (the item) [L-EXP.item], beside micro_mass and musk.
+     - The definition predates both declarations, so it carried neither a collection type nor a time basis[^m32].
+     - The type is `Experimental Results`: a closed set of specimens measured by one laboratory, which is what the 41 maps are.
+     - The model meets a new rock of minerals the reference maps already carry and each specimen was mapped many times, so the walk ends at whole items held out with all their rows, the leaf Grouped · `Timeless` (the item), beside micro_mass and musk.
    * **What changes:** `split_leaf = "L-EXP.item"` and `time_basis = TimeBasis("Timeless", ...)` in `dataset.py`, the `Experimental Results` tag on the record. The rows, features, grouping key, folds and metric are untouched.
    * **Why not `UnseenGroup`:** every class the test rocks carry is in the reference maps, so the model does not meet a kind the data lacks; what it meets is a new specimen of known minerals.
    * **Consistency:** micro_mass holds out strains, musk holds out molecules, both under `Timeless` (the item); this is the same shape with rocks.
@@ -319,6 +319,8 @@ for byte (issue 1 for the rest).
      | B | Another type or basis | the walk is redone from a different reading of the use case | | the reference maps and the slabs are one laboratory's designed campaign; no other type fits them |
 
    * **Recommendation:** A. **Decision:** confirm A, or name the reading you prefer?
+
+   [^m32]: **SPLIT-32** (Must): a definition whose split is not temporal declares why. **SPLIT-34** (Must): the record names one collection type, and the tree starts from it.
 
    **Notes for the AI:** on a change, redo the walk from the type you name and rewrite `split_leaf`, `time_basis` and the record's tag; `dataset check` after.
 
