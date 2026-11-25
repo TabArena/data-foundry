@@ -79,11 +79,23 @@ CC (2026-11-25, Andrej): the declared horizon (one two-year survey cycle, no gap
 
 **Assessment (AI, 2026-11-25):** the curator's questions measured on the definition's 39,601 people, untuned LightGBM, 3 seeds. Issue 1: CDC's own analysts drop every 2011-2018 scan with an invalid region (Stierman et al., Am J Clin Nutr 2021, NCHS); dropping the 893 (140, 148, 241 and 364 per cycle) moves the windows' RMSE by -0.05 to +0.01 points. CDC's 1999-2006 imputation would add 2,943 partly imputed old-era people (median BMI 30.3; their percent fat varies across the five records by a median of 1.6 points) and moves the RMSE by at most 0.016. No published cross-calibration covers NHANES's QDR-4500A and Discovery A. Issue 2: the framework ships every column in every window, so a measure the test rows lack reaches the model as all missing. With the six measures kept, the 2011-2012 window's RMSE rises from 3.43 to 5.36 (bias +3.43) and the others' by 0.01 to 0.10. A method that drops the columns its test rows lack matches the 11-feature scores, or improves them by up to 0.015 with the sagittal diameter.
 
+CC (2026-11-25, Andrej): issue 1, b ("Reply (b): Drop all 893"): every 2011-2018 scan with an invalid body region is dropped, as CDC's analysts do when they compare the eras (Stierman et al. 2021), so both eras keep a scan only when every region is valid; the definition keeps 38,708 people.
+
+CC (2026-11-25, Andrej): issue 2, d ("Reply (d): Keep the sagittal diameter only"): the sagittal abdominal diameter (`BMDAVSAD`, 2011-2016) is an input again, the one era-only measure that windows hold in both training and test rows (2013-2014 and 2015-2016); the skinfolds, thigh, calf and hip stay out. `splits_feature_missing_in_test` is accepted: the 2011-2012 window has no training value of it.
+
+**Assessment (AI, 2026-11-25):** both decisions applied and measured on the rebuilt definition.
+- Rows: 38,708 (39,601 less the 893 scans with any of the twelve region invalidity codes not 0; no code is missing among completed scans). Per cycle 4,671, 6,425, 5,797, 4,875 (1999-2006, unchanged), 4,381, 4,908, 4,357 and 3,294 (2011-2018).
+- Windows: test 3,294, 4,357, 4,908 and 4,381 people (2017, 2015, 2013, 2011), training 35,414, 31,057, 26,149 and 21,768 (91.5%, 80.2%, 67.6%, 56.2%); a fifth window, 2005-2006, would train on 43.6%. Non-Hispanic Asians are 607 (13.9%) of the 2011-2012 test people.
+- Sagittal diameter: the variable is `BMDAVSAD` in BMX_G, BMX_H and BMX_I ("Average Sagittal Abdominal Diameter (cm)"), absent from BMX to BMX_D and BMX_J. Present in 4,334, 4,845 and 4,319 kept rows of 2011, 2013 and 2015 (99%), in no other row; 9.6 to 40.6 cm. The 2017-2018 test rows all lack it while 38% of that window's training rows have it.
+- Selection: of the examined adults aged 20-59 in 2017-2018, 28% with BMI 40 or more have a kept scan, against 70% below BMI 30 (49% and 74% with the invalid-region scans).
+- `dataset check`: 0 errors, 1 warning (8 distinct cycles); `splits_below_target` and `splits_feature_missing_in_test` accepted (the latter fires on the 2011-2012 window only: 100% missing in training, 1% in test). Leak probe: R^2 0.845 with all features, no single feature above 0.34, no exact feature copies across the split; the 2017-2018 cycle has fewer rows than the band before it (3,294, z -3.4): the cycle had the fewest scans (3,658 with a percent fat), the most without a whole-body value (15.6%) and the most invalid-region scans dropped (364); not censoring, the label being same-day. Task probe: LightGBM RMSE 3.399 against 4.242 for linear regression and 8.565 for the training mean, ahead of the mean on all four windows; dtype probe: no column flagged.
+- Side effect in the 2017-2018 window (untuned LightGBM, 5 seeds): RMSE 3.405 with the sagittal diameter against 3.350 without (the window's test rows lack it), and the mean error for its 544 Asian people (measured minus predicted) is -0.91 points with the Asian level against +0.58 without the diameter; the 2013-2014 and 2015-2016 windows gain 0.004 and 0.012, 2011-2012 is unchanged (3.434).
+
 ## Review
 
-**Outcome:** added; the AI recommends shipping it. 39,601 people of NHANES 1999-2006 and 2011-2018 with a whole-body DXA percent fat CDC measured, 11 inputs from a tape, a scale and the interview (sex, age, ethnicity, weight, height, BMI, waist and upper-arm circumference, upper-leg and upper-arm length, the survey cycle), RMSE in percent-fat points (fallback). Split: one two-year cycle per window, the four newest (2017-2018, 2015-2016, 2013-2014, 2011-2012), each training on every earlier cycle (90.8% to 55.0% of the people), no gap. Validity: no leak (only the target is read from the scan file; the task gamer gained nothing above noise); the label is CDC's measured value, imputed scans dropped, now also 90 people whose flag said measured but whose value differs across CDC's five imputation records. Value: LightGBM RMSE 3.41 against 4.29 for linear regression and 8.65 for the training mean (percent-fat points, lower is better), ahead of the mean on all four windows. Quality: the six measures taken in some cycles only are dropped (issue 2). Weighed: the reference-method label, the size and the source's own forward validation against a sample that thins the heaviest people and tests no one over 59 (issue 3). The panel recommends shipping after five changes, all applied: the 90-row filter, four windows, the no-gap reason, a non-Hispanic Asian level from 2011, and the notes on weighting, selection and the tested ages. Replaces `body_density_prediction`'s task with another reference method; the two scores are not comparable. Decided 2026-11-25: the four one-cycle windows (H, as implemented) and the `Selection Bias` marker (issue 3, B); open, with answers: issues 1 and 2. `dataset check`: 0 errors, 1 warning (8 distinct cycles).
+**Outcome:** added; the AI recommends shipping it. 38,708 people of NHANES 1999-2006 and 2011-2018 with a whole-body DXA percent fat CDC measured on a scan with every body region valid, 12 inputs from a tape, a scale, an abdominal caliper and the interview (sex, age, ethnicity, weight, height, BMI, waist and upper-arm circumference, upper-leg and upper-arm length, the sagittal abdominal diameter of 2011-2016, the survey cycle), RMSE in percent-fat points (fallback). Split: one two-year cycle per window, the four newest (2017-2018, 2015-2016, 2013-2014, 2011-2012), each training on every earlier cycle (91.5% to 56.2% of the people), no gap. Validity: no leak (only the target and the region validity codes are read from the scan file); the label is CDC's measured value, imputed scans dropped, also 90 people whose flag said measured but whose value differs across CDC's five imputation records. Value: LightGBM RMSE 3.40 against 4.24 for linear regression and 8.57 for the training mean (percent-fat points, lower is better), ahead of the mean on all four windows. Weighed: the reference-method label, the size and the source's own forward validation against a sample that thins the heaviest people and tests no one over 59 (issue 3). The panel's five changes are applied: the 90-row filter, four windows, the no-gap reason, a non-Hispanic Asian level from 2011, and the notes on weighting, selection and the tested ages. Replaces `body_density_prediction`'s task with another reference method; the two scores are not comparable. Decided 2026-11-25: the four one-cycle windows (H, as implemented); both eras keep only scans with every region valid, the 893 newer-scanner scans with an invalid region dropped (issue 1, b); the sagittal diameter back as the one era-only input, the five other era-only measures out (issue 2, d); the `Selection Bias` marker (issue 3, B). `dataset check`: 0 errors, 1 warning (8 distinct cycles); `splits_below_target` and `splits_feature_missing_in_test` accepted.
 
-**Main points:** Settled 2026-11-25: the windows (H) and `Selection Bias` (issue 3). Open: align the eras by dropping the 893 newer-scanner scans with an invalid region, CDC's analysts' own rule (issue 1, recommended b)? Bring back the sagittal diameter only, since nothing drops a column the test rows lack (issue 2, recommended d)?
+**Main points:** Open: whether the sagittal diameter stays now that every 2017-2018 test row lacks it (issue 4). Settled 2026-11-25: the windows (H), the 893 newer-scanner scans with an invalid region dropped so both eras keep only fully valid scans (issue 1, b), the sagittal diameter back as the one era-only input (issue 2, d) and `Selection Bias` (issue 3). Nothing is open.
 
 **Record judgment:** valid. CDC's whole-body DXA, the reference measurement body-fat equations replace, with the exam's tape-and-scale measures of the same day; the relative fat mass equation was built and validated forward on these files. The sample thins the heaviest people and tests ages 8-59 only.
 
@@ -204,6 +216,10 @@ CC (2026-11-25, Andrej): the declared horizon (one two-year survey cycle, no gap
    [^i1c]: Covey MK, Smith DW, Berry JK, Hacker ED. Importance of cross-calibration when replacing DXA scanners. J Nurs Meas 2008;16(3):155-170 (abstract only); Dowthwaite JN et al. Cross-calibrated dual-energy X-ray absorptiometry scanners demonstrate systematic bias in pediatric and young adult females. J Clin Densitom 2018;21(2):281-294 (Deming equations QDR 4500W to Discovery A; abstract only). NHANES DXX_G to DXX_J and the 1999-2000 documentation: phantom cross-calibration within each era.
    [^i1d]: **CLEAN-1** (Should): cleaning rules that hold for the train and the test period alike. **USE-5** (Must): "Check how the source built its label before accepting it"; here CDC says imputed values are not measurements.
 
+   **Andrej (2026-11-25, discuss):** Reply (b): Drop all 893
+
+   **Resolved (2026-11-25, Andrej):** b: every 2011-2018 scan with an invalid region is dropped, as CDC's analysts do (Stierman et al. 2021), so both eras keep a scan only when every region is valid. `dataset.py` reads the twelve region invalidity codes of DXX_G to DXX_J and keeps a completed 2011-2018 scan only when all are 0; the curation notes, the `row`, `changes`, the Selection Bias note, the splits comment and the `splits_below_target` reason carry the new counts. 38,708 people (2011-2018: 4,381, 4,908, 4,357 and 3,294 per cycle); the windows train on 91.5%, 80.2%, 67.6% and 56.2%. CC line in the comments. `dataset check`: 0 errors, 1 warning (8 distinct cycles); leak probe: no leak (the newest cycle's lower row count is the dropped scans, not censoring); task probe: LightGBM RMSE 3.399 against 4.242 for linear regression and 8.565 for the training mean; dtype probe: no column flagged.
+
 2. **Bring back the measures NHANES took in some cycles only?**
 
    * **Problem:**
@@ -267,6 +283,10 @@ CC (2026-11-25, Andrej): the declared horizon (one two-year survey cycle, no gap
 
    [^i2c]: **CLEAN-22** (Must): columns leave for what they are, never for how many there are. The cross-dataset item of 2026-11-11 (A) kept columns that start or stop within the history. Here four columns stop before the first test window, so no test row has them, and hip starts in the last test window, so no training row has it.
 
+   **Andrej (2026-11-25, discuss):** Reply (d): Keep the sagittal diameter only
+
+   **Resolved (2026-11-25, Andrej):** d: the sagittal abdominal diameter (`BMDAVSAD` in BMX_G to BMX_I, "Average Sagittal Abdominal Diameter (cm)") is an input again as `sagittal_abdominal_diameter_cm`, 12 features; the skinfolds, thigh, calf and hip stay out. The notes say where it is missing (every row of 1999-2006 and 2017-2018, 1% of 2011-2016) and why it ships (the 2013-2014 and 2015-2016 windows hold it in training and test rows); `question`, `known`, `changes` and `fit_reason` name it. `splits_feature_missing_in_test` fired on the 2011-2012 window (no training value, 1% missing in test) and is accepted with the CC date. Measured: the 2013-2014 and 2015-2016 windows gain 0.004 and 0.012 RMSE points; in 2017-2018, whose test rows all lack it, RMSE is 3.405 against 3.350 without it and the Asian level's mean error turns from +0.58 to -0.91 points (comments). `dataset check`: 0 errors.
+
 3. **Set the `Selection Bias` marker?**
 
    * **Problem:**
@@ -291,6 +311,33 @@ CC (2026-11-25, Andrej): the declared horizon (one two-year survey cycle, no gap
    **Andrej (2026-11-25, change):** Option B: Set Selection Bias.
 
    **Resolved (2026-11-25, Andrej):** B: the record carries `Selection Bias` (the thinned heavy tail, no one aged 60 or over tested, pregnant women and people over the table limit never scanned), with a CC line; nothing changed in the definition, whose `fit_reason` and notes already name the gap.
+
+4. **Keep the sagittal abdominal diameter, now that every 2017-2018 test row lacks it?**
+
+   * **Problem:**
+     - The answer behind issue 2's choice (d) said the diameter leaves no column that every test row lacks, but it does: CDC measured it in 2011-2016 only, so every 2017-2018 test row lacks it while 38% of that window's training rows have it.
+     - On that newest window the diameter makes the score worse (LightGBM RMSE 3.405 with it, 3.350 without) and turns the correction for Non-Hispanic Asians into an over-correction, since every Asian training row has the diameter and none of those test rows does.
+     - Keep the diameter as applied, or drop it again (issue 2's A)?
+   * **Experiments:** LightGBM, 5 seeds, the definition's four windows, RMSE in percent-fat points (lower is better); the Asian rows' mean error is measured minus predicted, for the 544 Non-Hispanic Asian test people of 2017-2018:
+
+     | Window | With the diameter (as applied) | Without it |
+     |---|---|---|
+     | 2017-2018 | 3.405 | 3.350 |
+     | 2015-2016 | gains 0.012 over without | |
+     | 2013-2014 | gains 0.004 over without | |
+     | 2011-2012 | 3.434 | 3.434 |
+     | 2017-2018 Asian rows, mean error | -0.91 | +0.58 |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the diameter (implemented) | as issue 2 (d) applied it | gains 0.004 to 0.012 on the 2013 and 2015 windows | worse on the newest window (+0.055), and the Asian rows over-corrected there; the newest window is the deployment period |
+     | B | Drop it again | issue 2's A: the eleven measures every cycle shares | no column missing in a test window; the newest window scores best | gives up the small gain on 2013 and 2015 |
+
+   * **Recommendation:** B: the newest window is the period a deployed model faces, and there the diameter hurts; the gain elsewhere is under 0.015. **Decision:** keep A, or change to B?
+
+   **Notes for the AI:** on B, remove `BMDAVSAD` / `sagittal_abdominal_diameter_cm` from `_clean` and the features, drop the acceptance of `splits_feature_missing_in_test`, restore the eleven-measure notes and re-run `dataset check` and the task probe. Numbers from the run that applied issue 2 (d) on 2026-11-25.
 
 **Review panel:** ship after changes (mediator). Full panel. Claims: 27 tested, 21 hold, 2 refuted (the 90 people with a varying imputed label, fixed; the eras' different scan rules, issue 1), 4 untested or open (the no-gap reason and the metric's weighting, both fixed in the notes). Blind review: include with changes; its main concern, how the imputed scans were handled, is answered by the filter. Task gamer: no exploit above noise. Agreed: no leak, the split leaf, four windows, the 90-row filter, the non-Hispanic Asian level, the notes. Disputed: the 893 scans with an invalid region (issue 1), the measures taken in some cycles only (issue 2). The reports cite the builder's draft issues: its issue 1, the scanner break, is now the horizon (H); its issue 2 is issue 2; its issue 3, the children, stays as built (kept) and is not raised.
 
