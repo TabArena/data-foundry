@@ -64,7 +64,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
 
 **Outcome:** added. A question on `CrossSectional` (2026-11-13) was withdrawn when the prototype was dropped.
 
-**Main points:** Nothing open: issue 1 was withdrawn on 2026-11-13. Issue 2 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
+**Main points:** Better-data check (2026-11-25, issue 5): Replace it with web_page_phishing_detection (Hannousse and Yahiouche 2021), split grouped by registered domain: the check left open on 2026-11-09 passes, since its URL-only features separate the classes far less than PhiUSIIL's (best fixed rule on the URL 0.78 ROC AUC, against 0.9998), and the task still separates methods (LightGBM 0.989 against logistic regression 0.980). Earlier: Nothing open: issue 1 was withdrawn on 2026-11-13. Issue 2 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
 
 **Issues for Andrej:**
 
@@ -127,6 +127,58 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
    **Andrej (2026-11-18, ok):** as implemented.
 
    **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (An adversarial domain whose central feature (HTTPS) is known to have reversed its meaning; nothing supports interchangeable later samples.)
+
+5. **Replace the retired website_phishing by web_page_phishing_detection (Hannousse), UCI 327, PILWD, or nothing?**
+
+   * **Problem:**
+     - The open check is done: on Hannousse's 11,430 pages the best rule on URL features alone scores ROC AUC 0.72 (one split) and 0.78 (two splits), against 0.9998 for PhiUSIIL's fixed rule and 0.94 for the path length of phishing_websites_vrbancic, so its URLs carry no form artefact of that kind.
+     - Retirement of website_phishing is agreed (Andrej, 2026-11-09), and the candidates are the same as on 2026-11-09; the short search found two newer dated releases (PhreshPhish 2024-2025, CompPhish 2024-2025), neither a usable table today.
+     - Replace it with Hannousse (a), UCI 327 (b), PILWD (c), or nothing (d)?
+   * **Background:** "v0.2-page issue N" is the issue's number on the BeyondArena v0.2 review page; those parked issues were never written into this record, whose own issue numbers differ. website_phishing in v0.2: 1,250 sites, nine signals coded -1/0/1, binary, random split tagged forced from temporal (v0.2-page issues 2 and 3, settled); its codebook is contradicted by the data (v0.2-page issue 1), which is why it is retired. v0.2-page issue 4 (keep the repeated sites, "if kept") becomes moot once it is retired and closes with it. The candidates (counts checked on the files on 2026-11-09 and today where marked; the rest from data cards and papers):
+
+     | Candidate | Rows | What it adds | Split it allows | Access, licence | Concerns | Verdict |
+     |---|---|---|---|---|---|---|
+     | web_page_phishing_detection (Hannousse and Yahiouche 2021, Mendeley v3, `dataset_B_05_2020.csv`) (checked) | 11,430 (50% phishing), 87 raw features | 9x the sites; raw values (56 URL, 24 page content, 7 external look-ups); URLs and extraction scripts; a paper | grouped by registered domain (3,971 legitimate and 2,688 phishing domains, 351 rows on the largest); no date per row, one crawl in May 2020, so forced from temporal | open, CC BY 4.0 | still two lists (PhishTank and OpenPhish against Alexa top domains), so Selection Bias; `www` in 67% of legitimate URLs against 21% of phishing ones | better |
+     | UCI 327 (Mohammad, Thabtah and McCluskey; record phishing_url_websites) (checked 11-09) | 11,055, 30 coded signals | a codebook that holds | random only: no URLs or dates; 47% of rows repeat another | open, CC BY 4.0 | the same weaknesses as website_phishing: coded scores, two lists, no groups | not better |
+     | PILWD (pilwd_134k_phishing, Sánchez-Paniagua et al. 2022) | 134,000 captures, Aug 2019 to Sep 2020 | legitimate login pages, so the lists are less apart; dates | temporal | on request to institutions, terms not stated | raw HTML, screenshots and files, no table: the 54 features would have to be rebuilt | not available |
+     | phishing_websites_vrbancic (checked 11-09) | 88,647 | size | random | open | 81% of legitimate rows are bare Alexa domains; path length alone 0.94 | not better (form artefact) |
+     | phiusil_phishing | 235,795 | size | random | open | a fixed rule scores 0.9998 | not better (record No) |
+     | PhreshPhish (Dalton et al. 2025, huggingface.co/datasets/phreshphish/phreshphish) (new, card only) | 666,315 pages, Jul 2024 to Dec 2025 | dated rows; benign pages from browsing telemetry, not a top list; the authors' own split is temporal | temporal | open on Hugging Face, CC BY 4.0, "anti-phishing research" only | URL and HTML only, no feature table; 36.6 GB as listed | not a table today (not downloaded) |
+     | CompPhish (Goenka, Mendeley 10.17632/fmbs4kp9wz.4) (new, card only) | 15,358, 70 features | collected Sep 2024 to Aug 2025, URLs and HTML | no per-row date stated | open, CC BY 4.0 | legitimate side is the DataForSEO top-1000 list, the homepage-against-phishing design behind PhiUSIIL's artefact | not checked; likely the same artefact |
+
+   * **Effect on the task:** Hannousse keeps the task (is this page phishing, from URL, page and look-up signals) with features of the same kinds as the nine signals, as raw values instead of codes. The external look-ups are the strongest group (google_index alone 0.865): they were looked up once at the May 2020 crawl, which the forced-from-temporal tag already names. Grouping by registered domain costs 0.006 ROC AUC with all features, so the many pages per phishing domain did not inflate the random score much.
+   * **Experiments:** 2026-11-25, Slurm, on `dataset_B_05_2020.csv` (the file downloaded on 2026-11-09, sha256 21093e29...); registered domain from the URL with tldextract's bundled suffix list; 5-fold x 3 repeats, ROC AUC; untuned models (depth-1 and depth-2 trees as fixed rules, logistic regression on standardised features, LightGBM defaults).
+
+     | Features | Split | Depth-1 tree | Depth-2 tree | Logistic regression | LightGBM |
+     |---|---|---|---|---|---|
+     | URL only (56) | random | 0.724 | 0.802 | 0.933 | 0.971 |
+     | URL only (56) | grouped by domain | 0.724 | 0.780 | 0.913 | 0.947 |
+     | URL only without nb_www (55) | grouped by domain | 0.611 | 0.710 | 0.899 | 0.951 |
+     | page content only (24) | grouped by domain | 0.750 | 0.792 | 0.829 | 0.914 |
+     | external look-ups only (7) | grouped by domain | 0.865 | 0.917 | 0.925 | 0.946 |
+     | URL + content (80) | grouped by domain | 0.750 | 0.828 | 0.947 | 0.974 |
+     | all (87) | random | 0.865 | 0.924 | 0.985 | 0.995 |
+     | all (87) | grouped by domain | 0.865 | 0.917 | 0.980 | 0.989 |
+
+     The depth-2 rule on the URL reads `nb_www`, then `phish_hints` or the longest path word. URL strings by class: `www.` 67% of legitimate against 21% of phishing, no path 38% against 19%, a query 3% against 24%. Reference points: PhiUSIIL fixed rule 0.9998 (11-09), vrbancic path length 0.941 and its no-directory rule 0.891 (11-09, `vrbancic_check.log`), website_phishing one-hot logistic regression 0.978 against TabPFN-3.5 0.983 (2026-10-15).
+   * **Consistency:** the same decision as the other nine in this batch: a better dataset is its own record and the old one keeps the verdict its own data earn; here that verdict is already retire (codebook contradicted), so the choice is only whether a replacement enters[^better]. Hannousse's two lists are a Selection Bias the benchmark keeps elsewhere when no shortcut separates them[^sel]; PhiUSIIL and vrbancic were turned down for a shortcut that separates the classes[^form], which Hannousse does not show.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep website_phishing as is (implemented) | no retirement, no replacement | no work | against the agreed retirement; codebook contradicted |
+     | B | Replace by web_page_phishing_detection | retire website_phishing (v0.2-page issue 1, C) and build Hannousse with a split grouped by registered domain, forced from temporal, Selection Bias | open, documented, raw values, URLs and scripts; 9x the sites; no URL shortcut (best URL rule 0.78); separates methods (0.989 against 0.980) | still two lists; one crawl, no row dates; external look-ups dated to May 2020; ROC AUC near the ceiling, so log loss would separate methods better |
+     | C | Replace by UCI 327 | retire, build UCI 327's 30 coded signals | codebook holds; closest to the retired task | coded scores, no URLs or dates, 47% repeats: the weaknesses of the retired file |
+     | D | Replace by PILWD | request access, rebuild the paper's 54 features from raw captures | dated; legitimate login pages | request-only, terms not stated; heavy feature extraction |
+     | E | No replacement | retire only | nothing to build | no phishing task in the benchmark until a dated table such as PhreshPhish is built |
+
+   * **Recommendation:** B: the 2026-11-09 recommendation holds, and the one check it left open passes: no fixed rule on the URL comes near PhiUSIIL's shortcut, and gradient boosting still beats logistic regression on every feature group. E if two collected lists are too much on their own. **Decision:** A, B, C, D or E?
+
+   **Notes for the AI:** on B: v0.2-page issue 1 of website_phishing closes as C (record No (Retired), Data Quality Issue, CC (<date>, Andrej): line, Andrej in checked_by, folder removed, CHANGELOG), v0.2-page issue 4 closes as moot; move web_page_phishing_detection to Yes with a CC line and run /add-dataset on Mendeley v3 `dataset_B_05_2020.csv` (doi 10.17632/c2gw7fy2j4.3): binary `status`, derive the registered domain from `url` (tldextract, public suffixes without private domains, so blogspot.com and appspot.com stay one group each), group the split by it, drop `url`; tags Samples: Over Time, Time: Lost; data_tags ForcedIIDFromTemporal with a Time basis: line (one crawl in May 2020, look-ups of that month); Selection Bias; consider log_loss as the metric since ROC AUC sits at 0.99. Note in curation the `www` asymmetry (0.72 alone) as a form difference of the two lists, kept since dropping `nb_www` changes LightGBM by 0.004. On C, build UCI 327's `Training Dataset.arff`. On D, request PILWD first. On E, v0.2-page issue 1 C only. Evidence: ~/claude_jobs/better_data_1125/work/website_phishing/ (scripts/url_check.py, scripts/domains.py, url_check_1411438.log); earlier: ~/claude_jobs/marks_1109/website_phishing/. Sources: https://data.mendeley.com/datasets/c2gw7fy2j4/3, https://arxiv.org/abs/2010.12847, https://huggingface.co/datasets/phreshphish/phreshphish, https://arxiv.org/abs/2507.10854, https://data.mendeley.com/datasets/fmbs4kp9wz/4.
+
+   [^better]: Selection pattern "Small or dated, and the task is still done today" with PROV-4 (Must): a better dataset from another source is its own record, and the old one keeps the verdict its own data earn until the curator decides.
+   [^sel]: The Selection Bias marker: rows not drawn from the population the use case predicts for; the verdict usually stays Yes (Andrej, 2026-10-20; Lennart, 2026-10-27).
+   [^form]: LEAK-13 to LEAK-15 (Must): classes recorded in different forms or from different sources are checked for a shortcut that separates them, and such a dataset is not shipped.
 
 ## Reference
 

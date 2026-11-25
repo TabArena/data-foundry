@@ -84,7 +84,7 @@ one density implies negative body fat (issue 2); `Outdated`, `Not Representative
 none tested. Weighed: a direct, still common use case against a small, dated sample with a much larger public one in
 triage.
 
-**Main points:** Parked (2026-11-11) on Andrej's note until it is decided whether better suited datasets replace this task: `nhanes_dxa_body_fat` as replacement (issue 1) and the impossible height (issue 2) wait. The `Timeless` split is settled (issue 3), and the type stays `Experimental Results` (issues 4 and 5, 2026-11-18).
+**Main points:** Better-data check (2026-11-25, issue 6): Keep body density until nhanes_dxa_body_fat is added, then retire it as replaced: NHANES holds 39,691 people with a measured whole-body DXA scan and tape-and-scale measures (verified), predicts the same body fat from the same kind of measurements and separates tree models from linear ones, while the 252 men of 1985 do not; it reframes the target from density by underwater weighing to DXA percent fat, which the new record must state. Earlier: Parked (2026-11-11) on Andrej's note until it is decided whether better suited datasets replace this task: `nhanes_dxa_body_fat` as replacement (issue 1) and the impossible height (issue 2) wait. The `Timeless` split is settled (issue 3), and the type stays `Experimental Results` (issues 4 and 5, 2026-11-18).
 
 **Record judgment:** valid task, better data available. The Discussion calls the task valid but limited, since much
 more data could be collected; Andrej's CC of 2026-10-15 names the replacement, and the data-scouting run of
@@ -285,6 +285,81 @@ more data could be collected; Andrej's CC of 2026-10-15 names the replacement, a
    **Andrej (2026-11-18, ok):** As implemented (A).
 
    **Resolved (2026-11-18, Andrej):** A, as implemented: `Experimental Results` (252 volunteers measured once by a study protocol; body density is neither a diagnosis nor a follow-up outcome). The split stays random, `Timeless`. Nothing changes.
+
+6. **Keep body_density_prediction until nhanes_dxa_body_fat is added, then retire it as replaced, or keep it as it is?**
+
+   * **Problem:**
+     - NHANES, downloaded on 2026-11-25, holds 39,691 people with a measured whole-body DXA percent fat and tape-and-scale measures (21,858 in 1999-2006, 17,833 in 2011-2018), 157 times the 252 men, and there untuned LightGBM beats a linear model by 19% (RMSE 3.42 against 4.21 percent-fat points) while on the 252 men the linear model wins (0.0107 against 0.0120 in density).
+     - The use case is the same (body fat from a tape and a scale instead of a lab test), but the target changes from body density by underwater weighing to percent fat by DXA, and the feature set narrows, so NHANES is a reframing of the target rather than a bigger copy of this one.
+     - Keep body density until nhanes_dxa_body_fat is added and then retire it as replaced, keep it as it is, keep both, or retire it now?
+   * **Background:**
+     - The answer of 2026-11-04 (issue 1) recommended keeping body density until nhanes_dxa_body_fat is added; the candidate's counts rested on its AI-filled record (about 21,800 people, "not recounted"). This check counts the files.
+     - Same task or reframing: body density is itself a stand-in; the use case turns it into percent fat by Siri's formula, a fixed one-to-one map, so predicting density and predicting the Siri percent fat are the same task. DXA measures percent fat by another method (X-ray, three compartments) that does not give the same number as underwater weighing for a person, so scores are not comparable across the two datasets and the new record names DXA percent fat as its target.
+     - Features: body density has age, weight, height and ten circumferences (neck, chest, abdomen, hip, thigh, knee, ankle, biceps, forearm, wrist). NHANES has sex, age, ethnicity, weight, height, waist, upper-arm circumference, upper-leg and arm length in both eras; thigh and calf circumference and two skinfolds in 1999-2006 only; hip in 2017-2018 only; no neck, chest, knee, ankle, forearm or wrist. The waist is taken at the iliac crest (abdomen at the navel in the old study), the arm relaxed (biceps flexed).
+     - Population: 252 men aged 22 to 81 of one study, against a national survey sample of both sexes, aged 8 to 85 in 1999-2004, 8 to 69 in 2005-2006 and 8 to 59 in 2011-2018; pregnant women are not scanned, and very heavy or tall people are excluded from the scan.
+     - Candidates:
+
+       | Candidate | Rows | Target | What it adds | Split it allows | Access, licence | Concerns | Verdict |
+       |---|---|---|---|---|---|---|---|
+       | nhanes_dxa_body_fat (NHANES DXX + BMX + DEMO, 8 cycles) | 39,691 measured scans (21,858 in 1999-2006, 17,833 in 2011-2018); 45,092 with the imputed scans of 1999-2006 | whole-body percent fat by DXA (DXDTOPF), 11.5 to 56.2, SD 8.8 | both sexes, children to old age, skinfolds in 1999-2006, survey cycles | random by person; or by era (cycles 1999-2006 then 2011-2018, two eras with another scanner) | open download from CDC, public domain | 5,401 missing scans of 1999-2006 filled by multiple imputation (take the measured ones only); scan exclusions select the sample; regional DXA values are outcomes of the same scan, never features | better |
+       | NHANES 2021-2023 (BMX_L, the link in the record's comments) | no DXA file (DXX_L returns 404; no P_DXX for 2017-March 2020 either) | none | | | | body measures only | not available |
+       | UK Biobank body composition (record comments) | not checked | DXA in an imaging subset | | | restricted access | | not available |
+       | Kaggle body-fat files (women's body fat, gym members, Korean body performance) | small or from a bioimpedance scale | not a reference measurement, or synthetic | | | | | not better (from their data cards) |
+
+   * **Effect on the task:** none on this definition. A replacement keeps the use case and changes the target to DXA percent fat and the features to the survey's measures; it adds women and children and drops the six circumferences NHANES does not take.
+   * **Experiments:** NHANES files DXX, BMX and DEMO of 1999-2006 (DXX to DXX_D) and 2011-2018 (DXX_G to DXX_J) downloaded from wwwn.cdc.gov on 2026-11-25; one row per person (imputation 1 of 1999-2006, kept only where the total imputation flag is 0; status "complete" with a percent fat in 2011-2018); body density from the Kaggle copy the definition downloads. Run on Slurm on 2026-11-25: untuned LightGBM (400 trees, learning rate 0.05, 31 leaves) against linear regression (median-imputed, standardised); RMSE averaged over repeated 3-fold splits (10 repeats for 252 rows, 3 for NHANES).
+
+     - Counts per cycle:
+
+     | Cycle | People in DXX | With percent fat | Measured | Imputed | Measured with weight, height, waist | Ages |
+     |---|---|---|---|---|---|---|
+     | 1999-2000 | 6,235 | 5,878 | 4,671 | 1,207 | 4,640 | 8-85 |
+     | 2001-2002 | 8,242 | 7,621 | 6,425 | 1,196 | 6,321 | 8-85 |
+     | 2003-2004 | 7,656 | 7,291 | 5,877 | 1,414 | 5,812 | 8-85 |
+     | 2005-2006 | 6,893 | 6,469 | 4,885 | 1,584 | 4,859 | 8-69 |
+     | 2011-2012 | 5,692 | 4,521 | 4,521 | 0 | 4,476 | 8-59 |
+     | 2013-2014 | 6,033 | 5,056 | 5,056 | 0 | 5,006 | 8-59 |
+     | 2015-2016 | 5,780 | 4,598 | 4,598 | 0 | 4,565 | 8-59 |
+     | 2017-2018 | 5,114 | 3,658 | 3,658 | 0 | 3,617 | 8-59 |
+
+     - Baseline spread:
+
+     | Data | Rows | Features | Target (SD) | Linear | LightGBM | Linear with pairwise interactions |
+     |---|---|---|---|---|---|---|
+     | body density, as shipped | 252 | 13 | density (0.0191) | 0.0107 (R² 0.68) | 0.0120 (R² 0.59) | unstable (the 29.5-inch height) |
+     | body density, scored as Siri percent fat | 252 | 13 | percent fat (8.5) | 4.74 | 5.32 | unstable |
+     | body density, 6 measures NHANES also takes | 252 | 6 | percent fat (8.5) | 4.80 (R² 0.67) | 5.63 (R² 0.55) | unstable |
+     | NHANES 2011-2018, tape and scale | 17,833 | 9 | DXA percent fat (8.6) | 4.21 (R² 0.76) | 3.42 (R² 0.84) | 3.53 |
+     | NHANES 1999-2006, tape and scale | 21,858 | 10 | DXA percent fat (9.0) | 4.00 | 3.34 | 3.45 |
+     | NHANES 1999-2006, with skinfolds | 21,858 | 12 | DXA percent fat (9.0) | 3.32 | 2.88 (R² 0.90) | 2.92 |
+     | NHANES both eras, common measures | 39,691 | 8 | DXA percent fat (8.8) | 4.22 | 3.39 | 3.53 |
+     | NHANES 1999-2006, men 22-81, the same 6 measures | 5,956 | 6 | DXA percent fat (5.7) | 3.04 (R² 0.71) | 3.08 (R² 0.70) | 2.95 |
+     | the same, 252 men sampled | 252 | 6 | DXA percent fat (5.5) | 3.16 (R² 0.65) | 3.62 (R² 0.55) | 3.22 |
+
+     - Across eras (scanner QDR-4500A in 1999-2006, Discovery A with Apex software in 2011-2018), ages 8-59, common measures:
+
+     | Model | Train 1999-2006, test 2011-2018 | Random within 2011-2018 | Mean bias |
+     |---|---|---|---|
+     | Linear | 4.54 | 4.21 | -0.63 |
+     | LightGBM | 3.59 | 3.44 | -0.26 |
+
+     - Reading: on men like the old study's, NHANES behaves like body density (the linear model ties or wins; on 252 sampled men LightGBM trails by 0.46 points, against 0.58 on the old file). The gap between the methods comes from the mixed population (sex, children, ages), which a linear model with interactions largely closes; the era shift costs 4% to 8%. Scripts, data and log: ~/claude_jobs/better_data_1125/work/body_density_prediction/ (scripts/build_nhanes.py, scripts/baselines.py, out/nhanes.parquet, out/baselines.csv, out/bl_1411439.log).
+   * **Consistency:** fiat_500 takes the same decision in this batch (keep until a Craigslist F-150 record replaces it). Both follow the pattern that a better dataset is its own record and the old one keeps the verdict its own data earn[^better]; this pair is the case the pattern names.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep as is (implemented) | ships as defined; no replacement planned | keeps the verdict its own data earn | 252 men of 1985 stay the benchmark's body-fat task; a task where a linear model wins |
+     | B | Keep until nhanes_dxa_body_fat is added, then retire as replaced | ships as defined; once the NHANES record is accepted, No (Retired) | the use case stays in the benchmark meanwhile; the replacement is 157 times larger, both sexes, and separates methods | the target changes to DXA percent fat; six circumferences are lost |
+     | C | Keep both | both ship once NHANES is added | two reference methods, two populations | one use case twice, once at 0.6% of the size |
+     | D | Retire now | No (Retired), folder removed | no small, dated sample | no body-fat task until the NHANES record is added |
+
+   * **Recommendation:** B: it restates the answer of 2026-11-04, now verified on the files. NHANES carries the same use case with features of the same kind and 39,691 measured people, and it separates methods where the old file does not; the change of target is a reframing the new record states, not a reason to keep both. Body density stays valid until the replacement is checked and accepted[^valid]. **Decision:** A, B, C or D?
+
+   **Notes for the AI:** On B: a dated CC line in body_density_prediction's record ("keep until nhanes_dxa_body_fat is accepted, then retire as replaced"); the record's CC of 2026-10-15 already names the candidate. When accepted: No (Retired), folder removed, CHANGELOG entry; issues 2 (the 29.5-inch height) then lapse. Correct the nhanes_dxa_body_fat record at its screening: 39,691 measured scans (21,858 + 17,833), not about 21,800; 1999-2006 eligibility 8 and over (8-69 in 2005-2006), not 8-59; 1999-2006 hold 5 imputations each (column `_MULT_`), measured rows where `DXITOT` (`DXITOTST` in 2005-2006) is 0; 2011-2018 rows with `DXAEXSTS` 1 and `DXDTOPF` present; no DXA after 2017-2018. Choices for that record's own review: which era or both (both on the 8 common measures, or 1999-2006 alone with thigh, calf and skinfolds), random split by person or by era, and whether to keep children. Files: https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/<year>/DataFiles/{DXX,BMX,DEMO}<suffix>.xpt with year 1999/2001/2003/2005/2011/2013/2015/2017 and suffix ""/_B/_C/_D/_G/_H/_I/_J; join on SEQN; target DXDTOPF; never use other DXA columns as features.
+
+   [^better]: Pattern "Small or dated, and the task is still done today": a larger or newer public dataset with the same target and use case, and features of the same kind, is its own record; the old record is not rejected automatically and keeps the verdict its own data earn until the curator decides. Cases: body_density_prediction and NHANES DXA body fat.
+   [^valid]: Keep two questions apart (TP-6): is the task valid, and is it the best version? A valid task stays.
 
 ## Reference
 

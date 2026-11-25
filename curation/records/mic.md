@@ -73,7 +73,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
 
 **Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below (issue 1, A, 2026-11-18).
 
-**Main points:** `ForcedIIDFromTemporal` stays (issue 1, A, 2026-11-18). Nothing is left open.
+**Main points:** Better-data check (2026-11-25, issue 5): Add GUSTO-I (gusto_i_mi_mortality) next to mic and let v0.2-page issue 1 decide mic on its own data: GUSTO-I is the clean, 24-times-larger death task, but it does not separate methods (LightGBM 0.826 against logistic regression 0.826 ROC AUC, splines best on 15 of 15 folds), so it cannot stand in for mic's multiclass task. Earlier: `ForcedIIDFromTemporal` stays (issue 1, A, 2026-11-18). Nothing is left open.
 
 **Issues for Andrej:**
 
@@ -113,6 +113,60 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
    **Andrej (2026-11-18, ok):** as implemented.
 
    **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (Care drifts measurably within the file and has changed since; both are facts against.)
+
+5. **Which dataset carries death after a heart attack: mic alone, GUSTO-I next to it, or GUSTO-I instead?**
+
+   * **Problem:**
+     - The open unknown is filled: on GUSTO-I's 40,830 patients untuned LightGBM on all 28 inputs scores what a logistic regression does (ROC AUC 0.826 and 0.826, log loss 0.2011 against 0.1997), a regression with splines beats both on every fold, and the five classic predictors alone reach 0.810.
+     - mic still carries the parked blank-history leak (v0.2-page issue 1: 60 patients with a blank history, 54 dead; blanks alone predict death at 0.78, and still at 0.74 after dropping the 60), and it is the only open data with causes of death and complications.
+     - Keep mic alone (A), add GUSTO-I next to it (B), replace mic by GUSTO-I (C), or retire mic with no replacement (D)?
+   * **Background:** "v0.2-page issue N" is the issue's number on the BeyondArena v0.2 review page; those parked issues were never written into this record, whose own issue numbers differ. mic in v0.2: 1,699 patients of one Krasnoyarsk hospital (1992-1995), 102 admission inputs, 8-class lethal outcome (271 deaths), log loss, random split tagged forced from temporal (v0.2-page issues 2 and 3, settled). v0.2-page issue 1 is parked: the AI answers of 2026-11-04 to 11-10 found the blanks follow the block a patient was filed in (deaths filed together); filling was withdrawn on Andrej's note, and the last answer (2026-11-10) recommended retiring mic, with keeping the 35 near-complete columns as the fallback. v0.2-page issue 4 (2026-11-11) searched the candidates and recommended B; its table stands and is shortened here:
+
+     | Dataset | Patients (deaths) | Inputs | Outcome | Split it allows | Access | Concerns | Verdict |
+     |---|---|---|---|---|---|---|---|
+     | mic (Krasnoyarsk, 1992-1995) | 1,700 (271) | 102 at admission | death by cause, 8 classes | random, forced from temporal | CC BY 4.0 | blank-history leak (v0.2-page issue 1); small | - |
+     | GUSTO-I trial, 15 countries, 1990-1993 (hbiostat.org/data/repo/gusto.rda) (checked) | 40,830 (2,851, 7.0%) | 28: age, sex, Killip class, blood pressure, pulse, infarct site, ST leads, history, risk factors, height, weight, trial arm, region | death by day 30, binary | random, or grouped by region or site group (16 / 48 / 121 levels) | open, "Permission is granted to anyone ... reference the original paper" | no method spread (below); trial cohort of the thrombolysis era; 4 duplicate rows; `tpa` blank by arm (redundant with `tx`) | better data for death; not a replacement for the task |
+     | MIMIC-IV / eICU AMI cohorts | about 4,700-12,000 | EHR | in-hospital death | dated | credentialed, no redistribution | a cohort to build | not available |
+     | WHAS500, Vellore NSTEMI, Alkmaar, registries | 149-313,825 | - | death | - | small, unreleased or on application | - | not better or not available |
+
+   * **Effect on the task:** GUSTO-I answers only the death part of mic's task, on clean and larger data; the eight classes (cause of death and complications) exist only in mic. On GUSTO-I a few strong, smooth predictors carry most of the information (Lee et al.: about 90% in five), so a well-specified regression is the reference and flexible models gain nothing; a benchmark entry there rewards calibration and smoothness, not interactions. How v0.2-page issue 1 bears on each option: A and B keep mic, so v0.2-page issue 1 must still be settled, and every variant tested so far either leaves a blank signal (drop the 60: 0.74) or removes the ECG, blood tests and blood pressures (35 columns: no blanks, death AUC 0.75-0.80); B adds a death task that has no such leak next to it. C and D retire mic, which closes v0.2-page issue 1 as retired (the recommendation of 2026-11-10); C then keeps a myocardial-infarction death task in the benchmark, D does not.
+   * **Experiments:** 2026-11-25, Slurm. GUSTO-I: `gusto.rda` from hbiostat.org (downloaded 2026-11-11), read with pyreadr; inputs without `day30`, `tpa` and the site-group ids; 5-fold x 3 repeats, random and grouped by site group (`grps`, 121 groups); logistic regression (one-hot categories, standardised numbers, optionally cubic splines with 4 knots), LightGBM defaults. mic: the 1,700 patients of the source file, v0.2-page issue 1's variants, the same folds as in v0.2-page issue 1 (5-fold x 3); logistic regression with missing indicators, LightGBM defaults.
+
+     GUSTO-I, death by day 30:
+
+     | Model | ROC AUC, random | Log loss, random | ROC AUC, grouped by site | Log loss, grouped | Folds better than LR, all (AUC; log loss) |
+     |---|---|---|---|---|---|
+     | LR, five predictors (age, systolic BP, pulse, Killip, location) | 0.810 | 0.2059 | 0.810 | 0.2060 | 0 of 15; 0 of 15 |
+     | LR, five predictors, splines | 0.817 | 0.2036 | 0.817 | 0.2037 | 0 of 15; 0 of 15 |
+     | LR, all features | 0.826 | 0.1996 | 0.826 | 0.1997 | - |
+     | LR, all features, splines | 0.830 | 0.1985 | 0.830 | 0.1985 | 15 of 15; 13-14 of 15 |
+     | LightGBM, five predictors | 0.810 | 0.2072 | 0.810 | 0.2074 | 0 of 15; 0 of 15 |
+     | LightGBM, all features | 0.827 | 0.2010 | 0.826 | 0.2011 | 5-9 of 15; 3-4 of 15 |
+
+     mic under v0.2-page issue 1's variants (death ROC AUC from a binary model; 8-class log loss):
+
+     | Variant | Patients (deaths) | Inputs | Death AUC, LR | Death AUC, LightGBM | Log loss, LR | Log loss, LightGBM |
+     |---|---|---|---|---|---|---|
+     | as shipped | 1,700 (271) | 101 | 0.893 | 0.912 | 0.603 | 1.017 |
+     | drop the 60 | 1,640 (217) | 101 | 0.873 | 0.895 | 0.567 | 0.955 |
+     | 35 near-complete columns, 78 patients dropped | 1,622 (248) | 35 | 0.800 | 0.760 | 0.589 | 1.083 |
+
+     Untuned LightGBM overfits mic's 8-class log loss (about 1.0 against 0.6); the benchmark's tuned models do not, so mic's spread is read on death AUC: gradient boosting leads by 0.02 with the blanks or without the 60, and trails by 0.04 once no blank is left.
+   * **Consistency:** the batch's pattern: a better dataset from another source is its own record, and the old one keeps the verdict its own data earn[^better]; here as for website_phishing, the old dataset carries its own parked problem (v0.2-page issue 1), decided apart from the new record. A task where a simple model is the answer is not by itself a reason to turn it down: the Cleveland heart-disease dataset is disputed because an untrained 6-point score comes close to a logistic regression and the best model; on GUSTO-I the five predictors stay 0.02 below the full model.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep mic alone (implemented) | no new record built; mic as v0.2-page issue 1 decides | no work; keeps the only open multiclass outcome after a heart attack | the clean death data stays unbuilt; v0.2-page issue 1's leak is the task's only check on death |
+     | B | Add GUSTO-I next to mic | build gusto_i_mi_mortality (binary, ROC AUC or log loss, split by region or random); mic stays as v0.2-page issue 1 decides | 40,830 patients, no blank pattern, open permission; grouped split by region costs nothing; a leak-free check on mic's death signal | no method spread (LR = LightGBM; splines best); thrombolysis era; v0.2-page issue 1 still to settle |
+     | C | Replace mic by GUSTO-I | as B, and v0.2-page issue 1 closes with mic retired | one clean heart-attack task instead of a small leaky one | loses the causes of death and complications; trades a task that separates methods (0.02 on death AUC) for one that does not |
+     | D | Retire mic, no replacement | v0.2-page issue 1 closes with mic retired, GUSTO-I not built | nothing to build | no heart-attack task left in the benchmark |
+
+   * **Recommendation:** B: the 2026-11-11 recommendation holds; GUSTO-I is the clean, large death task and its lack of spread is the domain's (a few smooth predictors), not a defect, while mic keeps the multiclass outcome it alone has; whether mic stays is v0.2-page issue 1's decision, not this one's. C if v0.2-page issue 1 retires mic and one heart-attack task is enough. **Decision:** A, B, C or D?
+
+   **Notes for the AI:** on B or C: move gusto_i_mi_mortality to Yes with a CC (<date>, Andrej): line and Andrej in checked_by; add https://hbiostat.org/data/repo/gusto.rda and the hbiostat permission text (https://hbiostat.org/data) to source_links and the record; /add-dataset from that file: target `day30`; drop `tpa` (blank for the SK+tPA arm, redundant with `tx`) and keep `tx` (randomised, known at admission); `sho`, `hig`, `dia`, `hyp`, `hrt`, `ttr` are derived flags of the paper's model (check against Lee et al. before keeping them next to their sources); 4 duplicate rows; split random or grouped by `regl` (16 regions; site group `grps` gave the same scores); note 40,830 of 41,021 enrolled; tags Samples: Over Time, Time: Lost, Clinical Study; the thrombolysis-era cohort as an Outdated question for the reviewer. On C also retire mic through v0.2-page issue 1 (record No (Retired), Class-dependent Recording, CC line, folder removed, CHANGELOG). On D, v0.2-page issue 1's retirement only. On A, nothing here. Evidence: ~/claude_jobs/better_data_1125/work/mic/ (scripts/gusto_spread.py, scripts/mic_spread.py, spread_1411436.log, mic_spread.out, gusto.csv read from dl_gusto/gusto.rda); earlier: ~/claude_jobs/marks_1111/mic/alt/, ~/claude_jobs/marks_1110/mic/. Sources: Lee et al. 1995 https://doi.org/10.1161/01.cir.91.6.1659.
+
+   [^better]: Selection pattern "Small or dated, and the task is still done today" with PROV-4 (Must): a better dataset from another source is its own record, not a duplicate, and the old one keeps the verdict its own data earn until the curator decides.
 
 ## Reference
 

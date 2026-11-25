@@ -115,7 +115,7 @@ model's error, no action. Weighed: a documented source and a real decision +, me
 rests on a cut that cannot be proven -, a summary of the finished visit -, better data found
 (`ga_merchandise_store_sessions`, not screened yet) -.
 
-**Main points:** issue 1 settled on 2026-11-11 (repeats kept with a note); issue 4 on 2026-11-13 (`Target: Later`);
+**Main points:** Better-data check (2026-11-25, issue 7): Keep online_shoppers until a session record built from Google's GA360 sample of the Merchandise Store replaces it: that sample is readable here, has 45 times the usable visits over 12 months, and its hits let each visit be cut at a prediction point inside it, which removes the finished-visit gap of issue 3 and allows a forward split by month; the other event logs checked are weaker. Earlier: issue 1 settled on 2026-11-11 (repeats kept with a note); issue 4 on 2026-11-13 (`Target: Later`);
 issue 6 on 2026-11-19 (leave one month out, `ForcedGroupedFromTemporal`, `Month` the group and no input), which
 replaces the random split forced from temporal of issue 2 (2026-11-11); issue 3 on 2026-11-20 (the finished-visit
 rows stay as an approximate stand-in, the gap named in `fit_reason`). Nothing open.
@@ -359,6 +359,69 @@ a mark.
    **Andrej (2026-11-19, discuss):** Reply (C): Leave one month out, but this would still be ForcedGrouped
 
    **Resolved (2026-11-19, Andrej):** C, tagged `ForcedGroupedFromTemporal`: seven folds, each month held out once and trained on all others (June 95.8% ... November 56.4%, December 74.9%); `Month` is the group and no input (a held-out month would be an unseen level); a `Time basis:` line gives the not-flat test. `dataset check`: 0 errors; `task_group_count_low`, `splits_dimensions_off_protocol` and `groups_test_groups_few` accepted with this decision, and `groups_largest_share_high` (November 44% of the visits) accepted as a real month: for you to confirm. Not rebuilt.
+
+7. **Keep online_shoppers until a GA360 session record (cut at the 3rd pageview, split by month) replaces it, or keep it as it is?**
+
+   * **Problem:**
+     - Google's GA360 sample (903,653 visits, 2016-08-01 to 2017-08-01) cut at each visit's 3rd pageview gives 306,997 visits (3.7% buy) whose features end before any checkout step, and on it untuned LightGBM reaches ROC AUC 0.874 against 0.856 for logistic regression when trained on earlier months and tested on the next.
+     - The same visits with their finished-visit totals added score 0.977, so the gap issue 3 accepted but could not measure is large in a store's own export; online_shoppers holds only finished-visit rows (6,875 visits, June to December, split by leaving one month out).
+     - Keep online_shoppers until a GA360 session record replaces it, keep it as it is, keep both, or retire it now?
+   * **Background:**
+     - Current state: 6,875 visits of one shop (Sakar et al. 2019, UCI 468), June to December of one year, 16 features, 20% buy; split by leaving one month out (`ForcedGroupedFromTemporal`, issue 6), `Target: Later` (issue 4), repeats kept (issue 1). Issue 3 (2026-11-20) kept the finished-visit rows as an approximate stand-in, "revisit when the hit-level data ships". Nothing else is open.
+     - `online_shoppers_purchase_intention` is the same table (OpenML 45560: 12,330 visits, 1,908 buyers, Sakar et al. as source, as in UCI 468), already `No` as `Duplicate`; not a candidate.
+     - `google_analytics_customer_revenue_prediction` (`Yes`, priority 2) uses the same GA360 sessions for another task: each customer's revenue in a later window. Kaggle's v1 train.csv has the same 903,653 sessions as the BigQuery sample, without hits; v2 (train_v2 25.4 GB, test_v2 7.6 GB, August 2016 to October 2018) adds hits and 15 months, not downloaded here.
+     - Candidates (the in-visit cut is the same for all: a visit enters at its 3rd page or item view, provided no checkout or purchase came earlier; the label is a purchase later in the visit):
+
+       | Candidate | Visits (all → at the cut) | Buy rate at the cut | What it adds | Split it allows | Access, licence | Concerns | Verdict |
+       |---|---|---|---|---|---|---|---|
+       | GA360 sample, Google Merchandise Store (BigQuery `google_analytics_sample`, = `ga_merchandise_store_sessions`) | 903,653 → 306,997 (714,167 users) | 3.7% (11,415 buyers) | hit-level timeline, page paths, product views and cart adds before the cut; traffic source, device, country, visit number | 12 months by date: forward windows, each training on at least 70% | BigQuery, Google account needed; read here with the project's service account (about 0.3 GB scanned; GA4 about 1.2 GB); no licence stated, all users have viewer access | an obfuscated demo export; the session task and the prediction point are ours to define; 33% of cut visits belong to users with several | better |
+       | GA4 sample, same store (BigQuery `ga4_obfuscated_sample_ecommerce`) | 360,129 → 107,670 | 4.5% (4,822) | event names (item views, cart adds, promotions, scrolls) | 3 months only (Nov 2020 to Jan 2021): ten-day windows | BigQuery, as above | 3 months; LightGBM below logistic regression | not better: shorter and does not separate methods |
+       | YooChoose, RecSys Challenge 2015 (Kaggle mirror) | 9,249,729 → 4,417,474 | 8.2% | item, category and timestamp per click; the challenge's own task (will the session buy) | 6 months (Apr to Sep 2014) | Kaggle; CC BY-NC-ND 4.0 | no page type, device or source: AUC 0.63 at the cut | not better: features too thin for a tabular task |
+       | REES46 cosmetics shop (Kaggle; the multi-category store of the same platform, 14.7 GB for two months, not downloaded) | 4,535,941 → 685,450 | 10.0% | product, brand, price, cart and remove events | 5 months (Oct 2019 to Feb 2020) | Kaggle; free use with attribution | 39,205 of 155,617 buying sessions (25%) hold no view: purchases are often logged under a session of their own, so the session label is broken | not better: label artefact |
+       | Retailrocket (Kaggle) | 1,761,675 (sessionised by 30-minute gaps; no session id) → 157,394 | 3.1% | view, add-to-cart, transaction per item | 4.5 months (May to Sep 2015) | Kaggle; CC BY-NC-SA 4.0 | no session id; 9,463 of 14,297 buying sessions fall out at the cut (transactions without 3 views) | not better: sessions are reconstructed and most buyers lost |
+       | Diginetica, CIKM Cup 2016 | not read | about 18,025 purchases over 5 months (paper) | views, queries, products | dates | Google Drive behind the CodaLab page; no licence found | no device or source | not checked on files; smaller than GA360 |
+
+   * **Effect on the task:** none on this definition. The replacement keeps the use case (show an offer during a visit) and adds what issue 3 found missing: features that end at a prediction point inside the visit, and a forward split by month instead of one forced from temporal. It changes the shop (Google's merchandise store in place of a Turkish one) and the features (hit-level counts in place of the analytics' page-type figures; no `PageValues`).
+   * **Experiments:** run on Slurm on 2026-11-25. GA360 and GA4 read from BigQuery the same day (queries in the scripts folder); YooChoose, REES46 cosmetics and Retailrocket downloaded from Kaggle the same day. Untuned LightGBM (500 trees, learning rate 0.05, 31 leaves) against logistic regression (one-hot categories, log-scaled counts); ROC AUC; every window trained on all earlier data. online_shoppers on its shipped split (leave one month out).
+
+     | Data | Rows | Split | LightGBM | Logistic regression | Gap |
+     |---|---|---|---|---|---|
+     | online_shoppers, finished visit (shipped) | 6,875 | 7 months, each held out | 0.843 (0.788 to 0.895) | 0.832 (0.781 to 0.886) | +0.011 |
+     | GA360, cut at 3rd pageview | 306,997 | May, June, July 2017 | 0.874 (0.866 to 0.884) | 0.856 (0.848 to 0.864) | +0.018 |
+     | GA4, cut at 3rd pageview | 107,670 | three ten-day windows of Jan 2021 | 0.712 (0.672 to 0.734) | 0.727 (0.721 to 0.732) | -0.015 |
+     | REES46 cosmetics, cut at 3rd view | 400,000 of 685,450 | three windows of Jan-Feb 2020 | 0.756 | 0.720 | +0.036 |
+     | Retailrocket, cut at 3rd view | 157,394 | three windows of Aug-Sep 2015 | 0.769 | 0.761 | +0.008 |
+     | YooChoose, cut at 3rd click | 400,000 of 4,417,474 | three windows of Aug-Sep 2014 | 0.627 | 0.595 | +0.032 |
+
+     - The finished-visit gap, measured where the hits allow it (same rows, same windows, the visit's final totals added):
+
+     | Data | LightGBM at the cut | LightGBM with final totals | Best single final total |
+     |---|---|---|---|
+     | GA360 | 0.874 | 0.977 | final pageviews alone 0.932 |
+     | GA4 | 0.712 | 0.973 | |
+     | REES46 cosmetics | 0.756 | 0.926 | |
+     | Retailrocket | 0.769 | 0.964 | |
+     | YooChoose (buys in a separate file) | 0.627 | 0.745 | |
+
+     - GA360 per month at the cut: 21,930 to 30,721 visits and a buy rate of 2.9% to 4.5%; 4 buyers had fewer than 3 pageviews and 133 reached a checkout step before the 3rd, so the cut keeps 11,415 of 11,552 buyers (98.8%). Country is set for 99.9% of rows (61% United States).
+     - Scripts and results: ~/claude_jobs/better_data_1125/work/online_shoppers_purchasing_intention_dataset/ (scripts/ga360_cut.sql, ga4_cut.sql, derive.py, baseline.py; results_*.csv; derived/*_stats.json).
+   * **Consistency:** fiat_500 and body_density_prediction take the same decision in this batch (keep until the better record is added, then retire as replaced); all follow the pattern that a better dataset is its own record and the old one keeps the verdict its own data earn[^better]. Issue 3 named this replacement as the reason to revisit; option B is that revisit.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep as is (implemented) | online_shoppers ships; no replacement planned | keeps the verdict its own data earn; nothing to build | finished-visit rows whose gap is large in a comparable export; a forced split on 7 months |
+     | B | Keep until a GA360 session record replaces it | a new record for GA360 visits cut at the 3rd pageview, split forward by month; online_shoppers retired as replaced once it is accepted | a prediction point inside the visit; 45 times the visits; 12 months for a forward split; methods separate | an obfuscated demo export and a task we define; BigQuery needs a Google account (Kaggle v2 is the 33 GB alternative); waits for the new record |
+     | C | Keep both | as B, and online_shoppers stays | two shops for the same use case | one use case twice, the older one with the finished-visit gap |
+     | D | Retire now | No (Retired), folder removed | no finished-visit stand-in | no session purchase task until the GA360 record is added |
+
+   * **Recommendation:** B: GA360 is the only candidate that is larger, dated over a full year and rich enough in features (0.874 at the cut, methods separate by 0.018), and it answers issue 3 directly; online_shoppers stays valid until the replacement is checked and accepted[^valid]. **Decision:** A, B, C or D?
+
+   **Notes for the AI:** On B: a dated CC line in online_shoppers' record naming `ga_merchandise_store_sessions` as the replacement; when that record is accepted, online_shoppers becomes No (Retired), folder removed, CHANGELOG entry. Build `ga_merchandise_store_sessions` from `bigquery-public-data.google_analytics_sample.ga_sessions_*` with ~/claude_jobs/better_data_1125/work/online_shoppers_purchasing_intention_dataset/scripts/ga360_cut.sql (pipe the SQL into `bq query --use_legacy_sql=false --format=csv --max_rows=2000000` through stdin: a leading `--` comment breaks the argument form); drop rows with `funnel_before_cut`, never ship `fin_*`, `sid` or `uid`. Questions for that record's own review: the prediction point (3rd pageview here; a time cut is the alternative), whether visits of returning users across the cutoff stay (the shop knows its returning visitors; visit number is a feature[^entity]), the month windows, and its overlap with `google_analytics_customer_revenue_prediction` (same sessions, a user-level revenue task; both can stand as different tasks, or one record holds both). If BigQuery is not to be used, Kaggle `ga-customer-revenue-prediction` train_v2.csv/test_v2.csv carry the hits as JSON (33 GB, competition rules non-commercial; not checked here whether its hits are complete). On C: as B without the retirement. On D: No (Retired), folder removed, CHANGELOG entry.
+
+   [^better]: Pattern "Small or dated, and the task is still done today": a larger or newer public dataset with the same target and use case is its own record; the old record is not rejected automatically and keeps the verdict its own data earn until the curator decides.
+   [^valid]: Keep two questions apart (TP-6): is the task valid, and is it the best version? A valid task stays.
+   [^entity]: SPLIT-13: an entity that recurs across the cutoff is part of the task when the model predicts for known entities, and a question when the use case is a new entity.
 
 ## Reference
 
