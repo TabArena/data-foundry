@@ -3,11 +3,14 @@ unique_name: nhanes_dxa_body_fat
 name: NHANES whole-body dual-energy X-ray absorptiometry (DXX) with body measures (BMX)
 checked_by:
 - AI (UNVERIFIED)
+- Andrej
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Andrej
 suggestion: TBD -> Yes
 priority: 4
+decision_markers:
+- Selection Bias
 tags:
 - AI-Filled (Verify)
 - Non-IID (Temporal)
@@ -15,6 +18,7 @@ tags:
 - 'Time: Dated'
 - Survey
 original_source: GOV Website
+year: '2008'
 collection_period: 1999-2006, 2011-2018
 domain: medical & healthcare
 problem_type: Regression
@@ -66,15 +70,20 @@ type_adapter_id: curation-record-v1
 
 **Assessment (AI, 2026-11-25):** review panel (full): ship after changes (five applied: 90 people with a varying imputed label dropped, four windows, the no-gap reason on the same-day scan, a non-Hispanic Asian level from 2011, the notes on weighting, selection and tested ages); disputed: CLEAN-1 (keep the 893 2011-2018 scans with an invalid region), CLEAN-22 (the six measures taken in some cycles only); for the curator: issues 1-3 and the horizon H. Priority 4: gap 0, use case +, source +, shape +, risk 0 (gap: medical, regression and temporal are not thin among the accepted definitions; use case: the relative fat mass and Lee papers name the estimate and the obesity decision, fit direct; risk: no leak, the open issues move no score and none argues against shipping).
 
+CC (2026-11-25, Andrej): review of the added dataset (Review H, 1, 2, 3):
+- `Selection Bias` set (issue 3, B): the heaviest people often have no usable scan (in 2017-2018, 50% of examined adults aged 20-59 with BMI 40 or more have one, against 75% below BMI 30), and no one aged 60 or over is tested; nothing changes in the definition.
+- `year` set to 2008, the definition's (the first DXA file, 1999-2000, was published in January 2008).
+- Asked whether the 893 newer-scanner scans with an invalid region can be aligned across the eras instead of kept or dropped (issue 1), and whether measures brought back would still be dropped for models when the test rows lack them (issue 2); both answered, open.
+
+CC (2026-11-25, Andrej): the declared horizon (one two-year survey cycle, no gap, windows starting 2017, 2015, 2013 and 2011; Review H, as implemented) is checked: the cycle is the finest time the release holds and the source's own forward step, and the scan is taken at the same examination as the measures, so no label waits.
+
+**Assessment (AI, 2026-11-25):** the curator's questions measured on the definition's 39,601 people, untuned LightGBM, 3 seeds. Issue 1: CDC's own analysts drop every 2011-2018 scan with an invalid region (Stierman et al., Am J Clin Nutr 2021, NCHS); dropping the 893 (140, 148, 241 and 364 per cycle) moves the windows' RMSE by -0.05 to +0.01 points. CDC's 1999-2006 imputation would add 2,943 partly imputed old-era people (median BMI 30.3; their percent fat varies across the five records by a median of 1.6 points) and moves the RMSE by at most 0.016. No published cross-calibration covers NHANES's QDR-4500A and Discovery A. Issue 2: the framework ships every column in every window, so a measure the test rows lack reaches the model as all missing. With the six measures kept, the 2011-2012 window's RMSE rises from 3.43 to 5.36 (bias +3.43) and the others' by 0.01 to 0.10. A method that drops the columns its test rows lack matches the 11-feature scores, or improves them by up to 0.015 with the sagittal diameter.
+
 ## Review
 
-**Outcome:** added; the AI recommends shipping it. 39,601 people of NHANES 1999-2006 and 2011-2018 with a whole-body DXA percent fat CDC measured, 11 inputs from a tape, a scale and the interview (sex, age, ethnicity, weight, height, BMI, waist and upper-arm circumference, upper-leg and upper-arm length, the survey cycle), RMSE in percent-fat points (fallback). Split: one two-year cycle per window, the four newest (2017-2018, 2015-2016, 2013-2014, 2011-2012), each training on every earlier cycle (90.8% to 55.0% of the people), no gap. Validity: no leak (only the target is read from the scan file; the task gamer gained nothing above noise); the label is CDC's measured value, imputed scans dropped, now also 90 people whose flag said measured but whose value differs across CDC's five imputation records. Value: LightGBM RMSE 3.41 against 4.29 for linear regression and 8.65 for the training mean (percent-fat points, lower is better), ahead of the mean on all four windows. Quality: the six measures taken in some cycles only are dropped (issue 2). Weighed: the reference-method label, the size and the source's own forward validation against a sample that thins the heaviest people and tests no one over 59 (issue 3). The panel recommends shipping after five changes, all applied: the 90-row filter, four windows, the no-gap reason, a non-Hispanic Asian level from 2011, and the notes on weighting, selection and the tested ages. Replaces `body_density_prediction`'s task with another reference method; the two scores are not comparable. Left for the curator: the windows (H) and issues 1 to 3.
+**Outcome:** added; the AI recommends shipping it. 39,601 people of NHANES 1999-2006 and 2011-2018 with a whole-body DXA percent fat CDC measured, 11 inputs from a tape, a scale and the interview (sex, age, ethnicity, weight, height, BMI, waist and upper-arm circumference, upper-leg and upper-arm length, the survey cycle), RMSE in percent-fat points (fallback). Split: one two-year cycle per window, the four newest (2017-2018, 2015-2016, 2013-2014, 2011-2012), each training on every earlier cycle (90.8% to 55.0% of the people), no gap. Validity: no leak (only the target is read from the scan file; the task gamer gained nothing above noise); the label is CDC's measured value, imputed scans dropped, now also 90 people whose flag said measured but whose value differs across CDC's five imputation records. Value: LightGBM RMSE 3.41 against 4.29 for linear regression and 8.65 for the training mean (percent-fat points, lower is better), ahead of the mean on all four windows. Quality: the six measures taken in some cycles only are dropped (issue 2). Weighed: the reference-method label, the size and the source's own forward validation against a sample that thins the heaviest people and tests no one over 59 (issue 3). The panel recommends shipping after five changes, all applied: the 90-row filter, four windows, the no-gap reason, a non-Hispanic Asian level from 2011, and the notes on weighting, selection and the tested ages. Replaces `body_density_prediction`'s task with another reference method; the two scores are not comparable. Decided 2026-11-25: the four one-cycle windows (H, as implemented) and the `Selection Bias` marker (issue 3, B); open, with answers: issues 1 and 2. `dataset check`: 0 errors, 1 warning (8 distinct cycles).
 
-**Main points:** Sign off the four one-cycle windows (H). Keep the 893 newer-scanner scans with an invalid region (issue 1)? Which of the six measures taken in some cycles only come back (issue 2)? Set `Selection Bias` (issue 3)?
-
-**Record fields that disagree with the definition:**
-
-- `year`: record `(empty)`, definition `2008`.
+**Main points:** Settled 2026-11-25: the windows (H) and `Selection Bias` (issue 3). Open: align the eras by dropping the 893 newer-scanner scans with an invalid region, CDC's analysts' own rule (issue 1, recommended b)? Bring back the sagittal diameter only, since nothing drops a column the test rows lack (issue 2, recommended d)?
 
 **Record judgment:** valid. CDC's whole-body DXA, the reference measurement body-fat equations replace, with the exam's tape-and-scale measures of the same day; the relative fat mass equation was built and validated forward on these files. The sample thins the heaviest people and tests ages 8-59 only.
 
@@ -110,6 +119,10 @@ type_adapter_id: curation-record-v1
 [^h1]: Woolcott and Bergman 2018, Sci Rep 8:10980: "NHANES 1999-2004 data (n = 12,581) were used for model development and NHANES 2005-2006 data (n = 3,456) were used for model validation".
 [^h2]: **SPLIT-10** (Should): a gap where a label is known only some time after its row; none here, the scan being same-day.
 [^h3]: **SPLIT-15** (Must for the newest window, Should for the others): the other windows are argued from the use case, "which periods a deployed model must handle (other years, seasons, holidays, events, a change of rules or of the data collection)"; the evidence is statistics of the data, never a model's score. **SPLIT-14** (Must): every window trains on at least 50% of the data; under that, the curator's exception, never below 30%. **SPLIT-33**: 39,601 rows would get 9 splits.
+
+**Andrej (2026-11-25, ok):** As implemented (A).
+
+**Resolved (2026-11-25, Andrej):** A: one two-year cycle per window, no gap, the four newest cycles (2017-2018, 2015-2016, 2013-2014, 2011-2012), each trained on every earlier cycle (90.8% to 55.0% of the people); nothing changed in the definition with the sign-off. `dataset check`: 0 errors.
 
 **Issues for the curator:**
 
@@ -150,6 +163,47 @@ type_adapter_id: curation-record-v1
 
    [^i1a]: **CLEAN-1** (Should): adopt the cleaning rules "that hold for the train and the test period alike". The remedy ladder: the mildest remedy that settles the issue, here a note.
 
+   **Andrej (2026-11-25, discuss):** Why are the only options keeping or dropping, can't we align this to get rid of the measurement inconsistency?
+
+   **Answer (AI, 2026-11-25):** the source publishes two alignments of the invalid regions: CDC's own analysts drop every 2011-2018 scan with an invalid region (option b, one rule in both eras), and CDC's 1999-2006 region imputation could bring the old era's partly invalid scans back (new option d); no published equation aligns the two scanners.
+
+   * **Problem:**
+     - CDC's own analysts align the eras by dropping: comparing 1999-2006 with 2011-2018 DXA percent fat, Stierman et al. (NCHS, 2021) write "Those with any missing data during 2011–2018 did not have total body adiposity measures calculated and were excluded"[^i1b]. That is option b, and it gives both eras one rule: a scan counts only when every region is valid (1999-2006 keeps only scans with no region imputed).
+     - Imputing the region is CDC's handling for 1999-2006 only ("No publicly-released DXA data from 2011–2018 were imputed", same paper). The old era's partly invalid scans come back only with a label partly made by CDC's imputation model, which used weight and waist, two of our inputs. CDC: "Imputed values should not be treated as measured variables".
+     - The 2011-2018 scans need no imputation for the target: their whole-body total is published. An imputation of our own would replace a measured total with a model's guess, which is weaker than either published route.
+     - Scanner and software: no published cross-calibration covers NHANES's pair (QDR-4500A with software 8.26 and 12.x, then Discovery A with Apex 4.0 and the NHANES BCA option). NHANES's documentation reports phantom cross-calibration within each era, with corrections "found to be small and correction of the participant data not required". It gives no conversion between the eras. The only shared adjustment is the 5% lean-to-fat correction, applied in both eras. CDC's trend paper compares the eras directly and says only that the different machines "could lead to variability, though use of quality control scans should keep such variability to a minimum". The published in-vivo equations are for other models (QDR 4500W against Discovery Wi or A: Covey et al. 2008; Dowthwaite et al. 2018, 130 girls and young women)[^i1c]. A shift of our own cannot be estimated from the data, because the scanner change coincides with a real change in body fat between the eras (+0.7 points in youth, Stierman et al.).
+   * **Background:** the old era's partly invalid scans that CDC imputed. Completed scans (exam status 1) with at least one region imputed, label = the mean of the five records; counted on the downloaded files:
+
+     | | People | Median BMI | Regions imputed | Spread of the percent fat across the five records (points) |
+     |---|---|---|---|---|
+     | 1999-2006 partly imputed | 2,943 (595 / 680 / 830 / 838 per cycle) | 30.3 (kept 1999-2006 rows: 24.8) | one region in 1,493; the trunk in 1,321 | median 1.6, 90th percentile 3.8, max 13.4 |
+     | 2011-2018 with an invalid region (kept now) | 893 (140 / 148 / 241 / 364) | 33.6 (fully valid: 24.9) | the published total, no imputation | none |
+
+   * **Experiments:** untuned LightGBM, 3 seeds, RMSE in percent-fat points (lower is better) on the four windows as defined; b scores its own (valid) test rows:
+
+     | Window | a Keep (implemented) | a on valid test rows | b Drop all 893 | c Drop trunk-noise | d Keep + 1999-2006 partly imputed |
+     |---|---|---|---|---|---|
+     | 2017-2018 | 3.398 | 3.353 | 3.350 (3,294 test rows) | 3.398 | 3.394 |
+     | 2015-2016 | 3.324 | 3.308 | 3.301 (4,357) | 3.317 | 3.315 |
+     | 2013-2014 | 3.371 | 3.372 | 3.369 (4,908) | 3.371 | 3.356 |
+     | 2011-2012 | 3.427 | 3.434 | 3.434 (4,381) | 3.426 | 3.425 |
+
+     The invalid-region test rows score 3.78 (2017-2018) and 3.61 (2015-2016) under a, and 3.76 and 3.63 under d: adding the old era's heavy scans to training does not help predict them.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Keep with a note (implemented) | Keeps all 893 | CDC's published total; keeps the heavy tail | two rules across the eras; 149 labels include a trunk CDC calls noisy |
+     | b | Drop all 893 | Keeps a 2011-2018 scan only when every region is valid | the source's own alignment (CDC's analysts, 2021); one rule in both eras; scores within 0.05 of a | 893 heavy people fewer (364 in the newest test window); the heavy tail thins further, which `Selection Bias` now flags |
+     | c | Drop the trunk-noise scans only | Drops the 154 scans with the trunk coded for obesity noise | removes the labels CDC flags as least accurate | still two rules across the eras |
+     | d | Keep, and add 1999-2006's partly imputed scans | Adds 2,943 training people with the mean of CDC's five imputations as the label | aligns the other way, keeping partly invalid scans in both eras; uses CDC's published imputation; the heaviest old-era people come back | part of each added label is CDC's model output from weight and waist, two of our inputs (spread up to 13.4 points); departs from CDC's "not measured" warning; scores move by at most 0.016 |
+
+   * **Recommendation:** b. It is the only alignment the source itself publishes for the measured data. It applies the 1999-2006 rule (every region valid) to 2011-2018, and it moves no score by more than 0.05. d aligns through imputed labels, and the task drops those on purpose[^i1d]. No option aligns the scanners: no conversion exists for NHANES's pair. **Decision:** a, b, c or d?
+
+   [^i1b]: Stierman B, Ogden CL, Yanovski JA, Martin CB, Sarafrazi N, Hales CM. Changes in adiposity among children and adolescents in the United States, 1999-2006 to 2011-2018. Am J Clin Nutr 2021;114(4):1495-1504 (NCHS authors), Methods and Limitations.
+   [^i1c]: Covey MK, Smith DW, Berry JK, Hacker ED. Importance of cross-calibration when replacing DXA scanners. J Nurs Meas 2008;16(3):155-170 (abstract only); Dowthwaite JN et al. Cross-calibrated dual-energy X-ray absorptiometry scanners demonstrate systematic bias in pediatric and young adult females. J Clin Densitom 2018;21(2):281-294 (Deming equations QDR 4500W to Discovery A; abstract only). NHANES DXX_G to DXX_J and the 1999-2000 documentation: phantom cross-calibration within each era.
+   [^i1d]: **CLEAN-1** (Should): cleaning rules that hold for the train and the test period alike. **USE-5** (Must): "Check how the source built its label before accepting it"; here CDC says imputed values are not measurements.
+
 2. **Bring back the measures NHANES took in some cycles only?**
 
    * **Problem:**
@@ -181,6 +235,38 @@ type_adapter_id: curation-record-v1
    [^i2a]: **CLEAN-22** (Must): "Columns leave for what they are (a leak, an identifier, a copy, the measurement that defines the label), never for how many there are." The cross-dataset item "Accept `splits_feature_missing_in_test` where a column starts or stops being recorded" (Resolved 2026-11-11, Lennart, A): keep the data as the deployed model met it.
    [^i2b]: **EV-4**: a model's score is no reason to drop a column.
 
+   **Andrej (2026-11-25, discuss):** If we would add back the columns, would this mean that in the pipeline they would still be dropped for models during training whenever we know that we wouldn't face these columns in test?
+
+   **Answer (AI, 2026-11-25):** no: nothing in the pipeline drops a column that the test rows lack. The model trains on it and then gets it as missing in every test row, and in the 2011-2012 window this costs a model that does not check 1.9 RMSE points.
+
+   * **Problem:**
+     - The definition ships one table and, per window, the row numbers of its training and test sides. Every window has the same columns, and nothing in `data_foundry.v2` drops a column per window. `splits_feature_missing_in_test` only warns: it fires when a column is at least 95% missing on one side and at most 50% missing on the other. Accepting it changes nothing in the data.
+     - So the model gets the column with its values on the training rows and as missing on every test row. A standard preprocessing step fitted on the training rows keeps it. AutoGluon 1.6.3's default feature pipeline, run on these windows, drops a column only when the training side lacks it: hip in every window, and the sagittal diameter in 2011-2012. It keeps the skinfolds, thigh and calf, which are missing in every test row.
+     - A method could drop such columns itself, since the test rows' inputs are known at prediction time, or impute them. Doing so is the method's choice, not the framework's.
+     - The cost depends on the window. In 2011-2012 every training row has the skinfolds, thigh and calf, so the trees never learn a missing branch and send every test row down a default one. In the later windows the 2011+ training rows lack the same measures, so missing already stands for the newer cycles.
+   * **Experiments:** untuned LightGBM, 3 seeds, RMSE in percent-fat points (lower is better), on the definition's rows:
+
+     | Window | a Common measures (implemented) | b All six, missing where not taken | b, the method drops the columns its test rows lack | Columns missing in every test row | Columns missing in every training row |
+     |---|---|---|---|---|---|
+     | 2017-2018 | 3.398 | 3.493 | 3.398 | skinfolds, thigh, calf, sagittal diameter | hip |
+     | 2015-2016 | 3.324 | 3.333 | 3.309 | skinfolds, thigh, calf, hip | hip |
+     | 2013-2014 | 3.371 | 3.431 | 3.365 | skinfolds, thigh, calf, hip | hip |
+     | 2011-2012 | 3.427 | 5.357 (bias +3.43) | 3.427 | skinfolds, thigh, calf, hip | sagittal diameter, hip |
+
+     The third column equals adding the sagittal diameter alone (option d): it is the only one of the six that some windows hold on both sides (2013-2014 and 2015-2016).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Common measures only (implemented) | 11 features | no column a test row lacks; scores as above | drops the sagittal diameter that the 2013 and 2015 test rows carry; rests on a reason the decision of 2026-11-11 turned down |
+     | b | Keep all six | 17 features; `splits_feature_missing_in_test` accepted | follows the decision of 2026-11-11; the data as published | four columns (the skinfolds, thigh, calf) are missing in every test row of every window, and hip has no training row in any; the framework passes them as missing; a method that does not drop them loses 1.9 points in 2011-2012, so that window ranks methods by how they handle a column the test rows lack |
+     | c | Keep the tape measures | Thigh, calf and hip; the use case read as tape and scale | the use case stays strict | thigh and calf are 1999-2006 only, so c has b's 2011-2012 problem; drops the sagittal diameter |
+     | d | Keep the sagittal diameter only | Adds the 2011-2016 sagittal diameter (12 features) | the one era-only measure that test rows carry; better by 0.006 to 0.015 in two windows; no column that every test row lacks | departs from the decision of 2026-11-11 for five columns: no test row has the four 1999-2006 measures, no training row has hip; adds a caliper measure to a tape-and-scale question |
+
+   * **Recommendation:** d. It brings back the only measure a test row can use. Of the five columns it leaves out, four are missing in every test row of every window and hip in every training row, so no window can use them, and with them the 2011-2012 score would depend on a method's missing-value handling rather than on body fat[^i2c]. Choose b to follow the decision of 2026-11-11 without an exception. **Decision:** a, b, c or d?
+
+   [^i2c]: **CLEAN-22** (Must): columns leave for what they are, never for how many there are. The cross-dataset item of 2026-11-11 (A) kept columns that start or stop within the history. Here four columns stop before the first test window, so no test row has them, and hip starts in the last test window, so no training row has it.
+
 3. **Set the `Selection Bias` marker?**
 
    * **Problem:**
@@ -201,6 +287,10 @@ type_adapter_id: curation-record-v1
    **Notes for the AI:** B: add `Selection Bias` to the record's `decision_markers` with a CC line; nothing changes in the definition.
 
    [^i3a]: selection.md, "Selection bias": rows not drawn from the population the use case predicts for are marked `Selection Bias`, a concern flag, usually on a `Yes` record; name the gap in `fit_reason` and give the evidence in the record.
+
+   **Andrej (2026-11-25, change):** Option B: Set Selection Bias.
+
+   **Resolved (2026-11-25, Andrej):** B: the record carries `Selection Bias` (the thinned heavy tail, no one aged 60 or over tested, pregnant women and people over the table limit never scanned), with a CC line; nothing changed in the definition, whose `fit_reason` and notes already name the gap.
 
 **Review panel:** ship after changes (mediator). Full panel. Claims: 27 tested, 21 hold, 2 refuted (the 90 people with a varying imputed label, fixed; the eras' different scan rules, issue 1), 4 untested or open (the no-gap reason and the metric's weighting, both fixed in the notes). Blind review: include with changes; its main concern, how the imputed scans were handled, is answered by the filter. Task gamer: no exploit above noise. Agreed: no leak, the split leaf, four windows, the 90-row filter, the non-Hispanic Asian level, the notes. Disputed: the 893 scans with an invalid region (issue 1), the measures taken in some cycles only (issue 2). The reports cite the builder's draft issues: its issue 1, the scanner break, is now the horizon (H); its issue 2 is issue 2; its issue 3, the children, stays as built (kept) and is not raised.
 
