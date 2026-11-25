@@ -378,12 +378,15 @@ class _Ctx:
         return name in self.df.columns
 
     def numeric_time(self, column: str) -> np.ndarray | None:
-        """Return ``column`` as a sortable float array, or None if it is not time-like."""
+        """Return ``column`` as a sortable float array, or None if it is not time-like.
+
+        Missing values (NaT) come back as NaN, never as the int64 sentinel ``astype("int64")`` gives them.
+        """
         series = self.df[column]
-        if pd.api.types.is_datetime64_any_dtype(series):
-            return series.astype("int64").to_numpy(dtype="float64")
-        if isinstance(series.dtype, pd.PeriodDtype):
-            return series.astype("int64").to_numpy(dtype="float64")
+        if pd.api.types.is_datetime64_any_dtype(series) or isinstance(series.dtype, pd.PeriodDtype):
+            values = series.astype("int64").to_numpy(dtype="float64")
+            values[series.isna().to_numpy()] = np.nan
+            return values
         if pd.api.types.is_numeric_dtype(series) and not pd.api.types.is_bool_dtype(series):
             return series.to_numpy(dtype="float64", na_value=np.nan)
         return None
@@ -398,7 +401,6 @@ class _Ctx:
         return pd.factorize(joined, use_na_sentinel=False)[0]
 
 
-_Check = "Callable[[_Ctx], Iterable[CheckResult]]"
 _CHECKS: list[Callable[[_Ctx], Iterable[CheckResult]]] = []
 
 
@@ -1483,6 +1485,8 @@ def _check_time_column(ctx: _Ctx) -> Iterator[CheckResult]:
 
     if task.time_on is not None and ctx.has_column(task.time_on):
         values = ctx.numeric_time(task.time_on)
+        if values is not None:
+            values = values[~np.isnan(values)]  # missing time stamps are reported above
         if values is not None and not np.all(values[:-1] <= values[1:]):
             yield CheckResult(
                 "task_time_on_not_sorted",
@@ -1530,7 +1534,8 @@ def _check_group_columns(ctx: _Ctx) -> Iterator[CheckResult]:
             "task_group_on_missing_values",
             "warning",
             f"`group_on={task.group_on!r}` has {n_missing:,} row(s) with a missing group value.",
-            hint="Those rows are lumped into one artificial group; check whether they should be dropped.",
+            hint="The grouped split builder refuses a missing group key: fill the key (from the source) or drop "
+            "those rows in the definition.",
         )
 
     if task.group_labels == "per_group" and ctx.has_column(ctx.target):
@@ -1695,8 +1700,8 @@ def _check_splits_temporal(ctx: _Ctx) -> Iterator[CheckResult]:
     leaking: list[str] = []
     test_end: list[tuple[str, float]] = []
     for repeat_i, fold_i, train, test in ctx.flat_splits:
-        if not train.size or not test.size:
-            continue
+        if not train.size or not test.size or np.isnan(values[train]).all() or np.isnan(values[test]).all():
+            continue  # missing time stamps are reported by _check_time_column
         train_max = np.nanmax(values[train])
         test_min = np.nanmin(values[test])
         if not train_max < test_min:
@@ -1954,6 +1959,18 @@ def _check_temporal_metadata(ctx: _Ctx) -> Iterator[CheckResult]:
         )
 
 
+_DAYS_PER_UNIT = {
+    "minutes": 1 / 1440,
+    "hours": 1 / 24,
+    "days": 1.0,
+    "weeks": 7.0,
+    "months": 30.44,
+    "quarters": 91.31,
+    "years": 365.25,
+}
+"""Days per calendar unit, for comparing a declared horizon with the span of a test window."""
+
+
 @_check
 def _check_time_horizon_plausible(ctx: _Ctx) -> Iterator[CheckResult]:
     """Cross-check the declared horizon against the observed test window."""
@@ -1974,25 +1991,37 @@ def _check_time_horizon_plausible(ctx: _Ctx) -> Iterator[CheckResult]:
         return
     test_values = series.iloc[test]
 
+    time_unit = getattr(task, "time_unit", None)  # format 2: what one step of a numeric time column counts
     if unit == "steps":
         observed = float(test_values.nunique())
         observed_label = f"{observed:,.0f} distinct time points"
     elif pd.api.types.is_datetime64_any_dtype(series):
-        days_per_unit = {"days": 1.0, "weeks": 7.0, "months": 30.44, "years": 365.25}
-        if unit not in days_per_unit:
+        if unit not in _DAYS_PER_UNIT:
             return
         observed = (test_values.max() - test_values.min()).total_seconds() / 86400 + 1
-        horizon_value *= days_per_unit[unit]
+        horizon_value *= _DAYS_PER_UNIT[unit]
         observed_label = f"{observed:,.0f} days"
         unit = "days"
+    elif time_unit in _DAYS_PER_UNIT and unit in _DAYS_PER_UNIT and pd.api.types.is_numeric_dtype(series):
+        steps = float(test_values.max() - test_values.min()) + 1
+        observed = steps * _DAYS_PER_UNIT[time_unit]
+        horizon_value *= _DAYS_PER_UNIT[unit]
+        observed_label = f"{steps:,.0f} {time_unit} (~{observed:,.0f} days)"
+        unit = "days"
     else:
+        hint = (
+            "Declare what one step of the time column counts, `Temporal(..., time_unit=...)`, so the horizon can be "
+            "cross-checked."
+            if ctx.container.format_version >= 2
+            else "Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use "
+            "`time_horizon_unit='steps'` for a plain numeric time index."
+        )
         yield CheckResult(
             "meta_time_horizon_unit",
             "info",
             f"`time_horizon_unit={splits_metadata.time_horizon_unit!r}` implies calendar time, but "
             f"`time_on={task.time_on!r}` has dtype {series.dtype}, so the horizon cannot be cross-checked.",
-            hint="Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use "
-            "`time_horizon_unit='steps'` for a plain numeric time index.",
+            hint=hint,
         )
         return
 
@@ -2627,33 +2656,6 @@ def _compare_frames(before: pd.DataFrame, after: pd.DataFrame, *, label: str) ->
         )
 
     if not _storage_free(before).reset_index(drop=True).equals(_storage_free(after).reset_index(drop=True)):
-        results.append(
-            CheckResult(
-                "export_values_changed",
-                "error",
-                f"`{label}` values differ after the save/load round-trip.",
-                hint="Compare with `before.compare(after)` to find the offending column.",
-            ),
-        )
-    return results
-
-    changed = {
-        column: (str(before[column].dtype), str(after[column].dtype))
-        for column in before.columns
-        if str(before[column].dtype) != str(after[column].dtype)
-    }
-    if changed:
-        results.append(
-            CheckResult(
-                "export_dtype_changed",
-                "error",
-                f"`{label}` dtypes changed on round-trip: {dict(list(changed.items())[:5])}.",
-                hint="Parquet plus `dtypes.json` restoration could not reproduce the dtype. Use a dtype that "
-                "survives (e.g. `datetime64[ns]` instead of a period, `category` with plain string categories).",
-            ),
-        )
-
-    if not before.reset_index(drop=True).equals(after.reset_index(drop=True)):
         results.append(
             CheckResult(
                 "export_values_changed",

@@ -312,12 +312,7 @@ class Spectrum(SpecialColumnGroup):
         a processed one or a peak list as it is, a vibrational spectrum as it is, then with ALS and SNV, with SNV
         alone and as its Savitzky-Golay first derivative.
         """
-        details = feature.details
-        if details.technique == "mass_spectrometry":
-            if details.state == "raw":
-                return (MS_RAW_ENCODING, DRIAMS_ENCODING, CROMWELL_LOG2_ENCODING)
-            return (AS_IS_ENCODING,)
-        return (AS_IS_ENCODING, *VIBRATIONAL_CANDIDATES)
+        return _candidate_encodings(feature.details.technique, feature.details.state)
 
     @classmethod
     def encode(cls, frame: pd.DataFrame, feature: SpecialFeature, encoding: Encoding) -> pd.DataFrame:
@@ -331,7 +326,9 @@ class Spectrum(SpecialColumnGroup):
 
         values = df[feature.columns]
         not_numeric = [
-            c for c in feature.columns if not pd.api.types.is_numeric_dtype(values[c]) or values[c].dtype == bool
+            c
+            for c in feature.columns
+            if not pd.api.types.is_numeric_dtype(values[c]) or pd.api.types.is_bool_dtype(values[c])
         ]
         if not_numeric:
             yield CheckResult(
@@ -363,11 +360,18 @@ class Spectrum(SpecialColumnGroup):
             )
 
 
+def _candidate_encodings(technique: str, state: str) -> tuple[Encoding, ...]:
+    """The candidate encodings of a spectrum of ``technique`` in ``state``, the recommended one first."""
+    if technique == "mass_spectrometry":
+        if state == "raw":
+            return (MS_RAW_ENCODING, DRIAMS_ENCODING, CROMWELL_LOG2_ENCODING)
+        return (AS_IS_ENCODING,)
+    return (AS_IS_ENCODING, *VIBRATIONAL_CANDIDATES)
+
+
 def spectrum_encoding(technique: str, state: str) -> Encoding:
     """The recommended encoding of a spectrum of ``technique`` in ``state`` (the table of the module docstring)."""
-    if technique == "mass_spectrometry" and state == "raw":
-        return MS_RAW_ENCODING
-    return AS_IS_ENCODING
+    return _candidate_encodings(technique, state)[0]
 
 
 def _sqrt(values: np.ndarray) -> np.ndarray:

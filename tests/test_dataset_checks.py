@@ -490,3 +490,12 @@ def test_problem_type_overrides_classification_flag():
     )
     _, _, _, _, target_df = out
     assert "skew_y" in target_df.columns
+
+
+def test_run_all_checks_takes_an_empty_frame() -> None:
+    """No row to read a constant column from: the report still runs."""
+    empty = pd.DataFrame({"f1": pd.Series([], dtype=float), "target": pd.Series([], dtype=float)})
+    out = run_all_checks(
+        data=empty, target_feature="target", problem_type="regression", classification=False, print_report=False
+    )
+    assert len(out) == 5

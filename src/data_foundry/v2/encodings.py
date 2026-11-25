@@ -35,6 +35,7 @@ RDKit is in the ``build`` extra, skrub and sentence-transformers in the ``encodi
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
 
@@ -43,6 +44,8 @@ import pandas as pd
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -175,7 +178,7 @@ def encode_datetime(values: pd.Series, *, prefix: str | None = None) -> pd.DataF
     return out
 
 
-def _text_vectorizer(values: pd.Series) -> object:
+def _text_vectorizer(values: pd.Series, *, min_df: int = 2) -> object:
     """Word TF-IDF for prose; character 2- to 5-grams when most values are one token (codes, identifiers)."""
     from sklearn.feature_extraction.text import TfidfVectorizer  # noqa: PLC0415 - scikit-learn is in `build`
 
@@ -183,9 +186,9 @@ def _text_vectorizer(values: pd.Series) -> object:
     one_token = float((~sample.str.strip().str.contains(r"\s")).mean()) if len(sample) else 0.0
     if one_token >= ONE_TOKEN_SHARE:
         return TfidfVectorizer(
-            analyzer="char", ngram_range=(2, 5), max_features=20_000, min_df=2, sublinear_tf=True, dtype=np.float32
+            analyzer="char", ngram_range=(2, 5), max_features=20_000, min_df=min_df, sublinear_tf=True, dtype=np.float32
         )
-    return TfidfVectorizer(max_features=20_000, min_df=2, sublinear_tf=True, dtype=np.float32)
+    return TfidfVectorizer(max_features=20_000, min_df=min_df, sublinear_tf=True, dtype=np.float32)
 
 
 def encode_text_tfidf(
@@ -195,12 +198,30 @@ def encode_text_tfidf(
 
     Returns the train and the test rows, each on its own index, with columns ``<prefix>0`` onwards (fewer than
     ``components`` when the vocabulary is smaller). Missing values are empty text.
+
+    A term must appear in two training rows. When no term does (a small training side, or one fold of a small
+    dataset), the vocabulary is refitted with terms seen once. When the training side holds no term at all (every
+    value missing or blank), both frames come back with no columns and a warning is logged, so one fold does not
+    stop a benchmark run.
     """
     from sklearn.decomposition import TruncatedSVD  # noqa: PLC0415 - scikit-learn is in `build`
 
     fit = train.astype("string").fillna("")
-    vectorizer = _text_vectorizer(fit)
-    matrix = vectorizer.fit_transform(fit.to_numpy())
+    matrix = None
+    for min_df in (2, 1):
+        vectorizer = _text_vectorizer(fit, min_df=min_df)
+        try:
+            matrix = vectorizer.fit_transform(fit.to_numpy())
+            break
+        except ValueError:  # "empty vocabulary" or "After pruning, no terms remain"
+            continue
+    if matrix is None:
+        logger.warning(
+            "encode_text_tfidf: `%s` has no term in its %d training row(s); the column is encoded as no columns.",
+            train.name,
+            len(train),
+        )
+        return pd.DataFrame(index=train.index), pd.DataFrame(index=test.index)
     n = max(1, min(components, matrix.shape[1] - 1, matrix.shape[0] - 1))
     svd = TruncatedSVD(n_components=n, random_state=0)
     columns = [f"{prefix}{i}" for i in range(n)]
