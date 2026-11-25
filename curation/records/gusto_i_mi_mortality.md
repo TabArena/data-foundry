@@ -81,9 +81,18 @@ CC (2026-11-25, Andrej): review issue 4, A (ok, as implemented): the ages 108, 1
 
 **Assessment (AI, 2026-11-25):** Andrej's second question on issue 3 (discuss, the heart_disease precedent) answered in the review and left open. Detrano et al. 1989 scored reliability (mean predicted against observed, overall and by quintiles) and the percent correctly classified over thresholds 0.2 to 0.8, with no ROC analysis; heart_disease's `roc_auc` is the binary fallback, and its own reason says ROC AUC does not score reliability. On heart_disease's three held-out hospitals logistic regression is third of four models by ROC AUC (0.824) but last by log loss (0.711) and Brier (0.209), since it misjudges each hospital's disease rate. Recommended: log loss for GUSTO-I now; heart_disease's metric raised as a separate decision (not changed here).
 
+CC (2026-11-25, Andrej): review issue 3, b: "Reply (b): Log loss for both, decided together". The metric is log loss for GUSTO-I and for heart_disease, one reading of the metric rules for two sources that score calibration.
+- **Why not ROC AUC:** the case study on this file scores calibration next to the c statistic (ROC AUC) and says "the c statistic is insensitive to systematic errors in calibration"; the choice of clot-dissolving drug acts on the absolute risk, and the regions' death rates run from 5.3% to 8.4%.
+- **Original named:** the case study's c statistic (0.813 internal, 0.812 US to non-US) stays in the metric reason as the original; log loss is declared from context.
+- **heart_disease:** moved to log loss in the same round (its source, Detrano et al. 1989, scored reliability and accuracy over thresholds, never ROC AUC).
+
+CC (2026-11-25, Andrej): the declared metric (log loss, from context; the case study's c statistic named as the original) is checked: the source scores calibration next to the c statistic and argues the c statistic misses it, the treatment decision acts on the absolute risk, and log loss separates a logistic regression with splines from a plain one on 7 of 8 region folds, as ROC AUC does.
+
+**Assessment (AI, 2026-11-25):** issue 3 (b) applied. `dataset.py`: `Metric.from_context("log_loss", ...)` replaces the roc_auc fallback; the reason quotes the case study's sentence on the c statistic, names the c statistic as the original, and gives the absolute-risk decision and the regions' death rates (5.3% to 8.4%); the probe note gives the log-loss figures. Check: 0 errors, 0 warnings (2 accepted), 3 info; metric `log_loss` (origin context). Task probe on the 8 region folds, log loss: linear 0.2006, random forest 0.2039, LightGBM 0.2044, age alone 0.2322, class shares 0.2547 (linear beats the class shares on every split, by 21.2% of their loss); no flag. heart_disease changed in the same round (its own record).
+
 ## Review
 
-**Outcome:** added. The GUSTO-I trial's 40,826 patients with an ST-elevation heart attack, death by day 30 from what is known at presentation, held out by whole region (16 regions, two per test fold in one round of 8 folds, Andrej 2026-11-25); the review panel recommends shipping after changes, which are applied; the three ages of 108 to 110 stay with a note (Andrej). Judgment record:
+**Outcome:** added. The GUSTO-I trial's 40,826 patients with an ST-elevation heart attack, death by day 30 from what is known at presentation, held out by whole region (16 regions, two per test fold in one round of 8 folds, Andrej 2026-11-25); the review panel recommends shipping after changes, which are applied; the three ages of 108 to 110 stay with a note, and the task is scored by log loss (Andrej). Judgment record:
 
 ```text
 Verdict: ship after changes (applied).
@@ -95,15 +104,17 @@ Validity: open permission text; the use case is real and the fit direct (the thr
   fill pattern kept with a note. Split: whole regions, leaf L-PLACE.groups, 1 x 8 folds of 2 regions; the regions
   rebuild the source's US and non-US cohorts exactly; grouped and random folds score alike.
 Value: tuned methods separate (+0.003 to +0.004 ROC AUC over a plain logistic regression, 7 of 8 region
-  folds); the untuned task probe on the shipped inputs raises no flag; not Trivial (the TIMI score, not fitted on
-  these data, 0.794 against about 0.827).
+  folds; by log loss, the declared metric, 0.1997 and 0.1996 against 0.2008); the untuned task probe on the
+  shipped inputs raises no flag; not Trivial (the TIMI score, not fitted on these data, 0.794 against about
+  0.827 ROC AUC).
 Quality: the five flags of the source's simplified models kept as released (none is an exact copy); 7 impossible
   pulse and pressure values set to missing.
 Weighed: size +, source +, era -, small spread -.
-Decided: issue 1 (1 x 8 folds), issue 4 (ages kept). Open: issues 2 (next to mic or in its place), 3 (metric).
+Decided: issue 1 (1 x 8 folds), issue 3 (log loss, from context, with heart_disease), issue 4 (ages kept). Open:
+  issue 2 (next to mic or in its place).
 ```
 
-**Main points:** Andrej chose one round of 8 folds of 2 regions (issue 1) and kept the three ages of 108 to 110 with a note (issue 4); two calls stay open, neither a validity question: whether the dataset joins next to `mic` or replaces it (one call with `mic`'s issue 5), and the metric (issue 3, answered twice: the source scores calibration, slope, c statistic and net benefit side by side, and argues the c statistic misses calibration; heart_disease's own source scored calibration and accuracy, never ROC AUC, so that precedent is a fallback that does not stand against log loss; log loss recommended, heart_disease's metric a separate call). Applied without a decision: `height` dropped (its fills leak the outcome), the five flags kept as released (the builder had dropped them), impossible pulse and pressure values set to missing, `groups_test_groups_few` accepted with its reason, and the wording of the use case, fit and split. The record now carries `Outdated` and `Class-dependent Recording` (the height fills), both for the curator to confirm.
+**Main points:** Andrej chose one round of 8 folds of 2 regions (issue 1) and kept the three ages of 108 to 110 with a note (issue 4), and chose log loss from context for this dataset and heart_disease together (issue 3: the source scores calibration next to the c statistic and argues the c statistic misses it; heart_disease's source scored calibration and accuracy, never ROC AUC). One call stays open, not a validity question: whether the dataset joins next to `mic` or replaces it (one call with `mic`'s issue 5). Applied without a decision: `height` dropped (its fills leak the outcome), the five flags kept as released (the builder had dropped them), impossible pulse and pressure values set to missing, `groups_test_groups_few` accepted with its reason, and the wording of the use case, fit and split. The record now carries `Outdated` and `Class-dependent Recording` (the height fills), both for the curator to confirm.
 
 **Issues for the curator:**
 
@@ -287,6 +298,10 @@ Decided: issue 1 (1 x 8 folds), issue 4 (ages kept). Open: issues 2 (next to mic
 
    [^3g]: **MET-8** (Should): with no fixed threshold metric or no unique metric, score by a strictly proper rule or a ranking metric, the fallback `roc_auc` for binary tasks; "A source that scores calibration together with hard-label accuracy (Detrano 1989's reliability and percent correctly classified) asked for probabilities."
    [^3h]: **MET-11** (Must), its context origin: the source defines no metric, but the task makes one obvious, so the default would score the wrong thing; the reason says why. **MET-5** (Should): a paper that reports several metrics side by side has no unique original.
+
+   **Andrej (2026-11-25, discuss):** "Reply (b): Log loss for both, decided together"
+
+   **Resolved (2026-11-25, Andrej):** b: log loss for GUSTO-I and for heart_disease, decided together. `dataset.py` declares `Metric.from_context("log_loss", ...)` in place of the roc_auc fallback; the reason quotes the case study's sentence that the c statistic "is insensitive to systematic errors in calibration", gives the absolute-risk decision and the regions' death rates of 5.3% to 8.4%, and names the case study's c statistic (0.813 internal, 0.812 US to non-US) as the original; the probe note gives the log-loss figures. Check: 0 errors, 0 warnings (2 accepted), 3 info. Task probe by log loss: linear 0.2006, random forest 0.2039, LightGBM 0.2044, age alone 0.2322, class shares 0.2547; no flag. heart_disease moves to log loss from context in its own definition and record, on Detrano et al. 1989's reliability and accuracy over thresholds; this reverses its roc_auc fallback of 2026-10-21.
 
 4. **Keep the ages 108, 108 and 110, or set them to missing?**
 

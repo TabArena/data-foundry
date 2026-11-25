@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: heart_disease
 container_format: 2
-checksum: v2:de5d1b9abe25e43478626fe755d04231d6e7627dee8f7b801e41b30f872a154b
+checksum: v2:c76aebd865eb884ebd766e024ad5fdeb9e5d7a946592f19d120a16a4a52345cd
 build: null
 build_stale: false
 data:
@@ -15,8 +15,8 @@ data:
 task:
   target: heart_disease_diagnosis
   problem_type: binary_classification
-  metric: roc_auc
-  metric_origin: fallback
+  metric: log_loss
+  metric_origin: context
   scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: heart_disease_diagnosis
@@ -77,9 +77,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `heart_disease_diagnosis`, scored with `roc_auc` on grouped splits by `hospital`. 796 rows and 13 features. Source: UCI (1988).
+Binary classification of `heart_disease_diagnosis`, scored with `log_loss` on grouped splits by `hospital`. 796 rows and 13 features. Source: UCI (1988).
 
-Not built yet. The current definition gives checksum `v2:de5d1b9abe25e43478626fe755d04231d6e7627dee8f7b801e41b30f872a154b`.
+Not built yet. The current definition gives checksum `v2:c76aebd865eb884ebd766e024ad5fdeb9e5d7a946592f19d120a16a4a52345cd`.
 
 ## In brief
 
@@ -142,7 +142,7 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 796 x 15 |
 | task.target | heart_disease_diagnosis |
 | task.problem_type | binary_classification |
-| task.metric | roc_auc |
+| task.metric | log_loss |
 | task.split_regime | grouped_non_iid |
 | task.stratify_on | heart_disease_diagnosis |
 | task.group_on | hospital |
@@ -152,10 +152,10 @@ Only curators run `build`, when the dataset ships.
 
 | field | value |
 |---|---|
-| name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
-| definition | area under the ROC curve |
-| reason | Detrano et al. 1989 score reliability, the mean predicted probability against the disease rate (calibration in the large) and by quintiles (p. 306), and clinical utility, the percent correctly classified over the thresholds 0.2 to 0.8 they call relevant for angiography decisions (p. 307): no single threshold, so a threshold-free metric (MET-7); UCI's heart-disease.names reports accuracy at 0.5, a default. No costs of errors: UCI's costs/ folder holds the prices of the tests, and Statlog's 5:1 heart cost matrix belongs to a later 270-row cut of the Cleveland file, not to this source. ROC AUC per held-out hospital does not score reliability. roc_auc is the binary fallback. |
+| name | `log_loss` (standard; takes proba; lower is better) |
+| origin | context: obvious from the task: the source defines no metric |
+| definition | mean of -log p(true class) |
+| reason | Detrano et al. 1989 tested a probability model "for reliability and clinical utility" (abstract): reliability, the mean predicted probability against the disease rate (calibration in the large) and by quintiles (p. 306), and clinical utility, the percent correctly classified over the thresholds 0.2 to 0.8 they call relevant for angiography decisions (p. 307): no single threshold, so no threshold metric (MET-7); UCI's heart-disease.names reports accuracy at 0.5, a default. No costs of errors: UCI's costs/ folder holds the prices of the tests, and Statlog's 5:1 heart cost matrix belongs to a later 270-row cut of the Cleveland file, not to this source. The paper has no ROC curve and no c statistic, and its main finding is one of calibration: "Both algorithms overpredicted the probability of disease at the Hungarian and American centers" (abstract). Log loss is declared from context (Andrej, 2026-11-25, decided together with gusto_i_mi_mortality; it replaces the roc_auc fallback of 2026-10-21): the source scores reliability, which ROC AUC per held-out hospital does not see, and the split holds out whole hospitals to pose that question; log loss, a strictly proper rule, scores the reliability and the ranking together (MET-8, MET-11). A model that misjudges a held-out hospital's disease rate loses on it while its ROC AUC holds: a logistic regression (C 0.3) that predicts 0.26 for Cleveland's 0.46 and 0.45 for Long Beach's 0.74 is third of four models by ROC AUC (0.824) but last by log loss (0.711). The untuned task probe scores log loss 0.509 (linear), 0.521 (random forest) and 0.658 (LightGBM) against 0.746 for the training disease rate (2026-11-25). |
 
 <details>
 <summary>Feature types: 7 categorical, 2 ordinal, 0 string, 0 datetime</summary>
@@ -214,9 +214,7 @@ We start with the processed files of three hospitals from UCI's Heart Disease co
 - Duplicates: the Long Beach pair of equal rows is one patient entered twice (the raw file gives both the same exercise and angiogram dates and the same ten vessel readings, which no other Long Beach pair shares), so one is dropped. The Hungarian pair is two patients (exams in March and May 1986) and stays.
 - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
   categories in the order of the source's codebook (`ORDINAL_LEVELS`).
-- Time basis: UnseenGroup: the source's question is whether a model carries over to another hospital (Detrano et al.
-  built it on the Cleveland patients and applied it to Budapest and Long Beach), so the split holds out each
-  hospital and does not weigh the patients' dates. It cannot test a later period at a hospital the model knows.
+- Time basis: UnseenGroup: the source's question is whether a model carries over to another hospital (Detrano et al. built it on the Cleveland patients and applied it to Budapest and Long Beach), so the split holds out each hospital and does not weigh the patients' dates. It cannot test a later period at a hospital the model knows.
 
 ## Splits
 
@@ -258,7 +256,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ### 1. Split by hospital: train on two, test on the third
 
-The source built its model at one hospital and applied it at the others (Detrano et al. 1989, p. 305), and the hospitals differ in disease rate and in which tests they recorded, as a new hospital would. Trained on the other two hospitals, logistic regression reaches ROC AUC 0.880 on Cleveland, 0.898 on Hungary and 0.732 on Long Beach. The paper has the Cleveland model overpredicting disease by 10 points in Budapest and 5 in Long Beach (abstract, p. 307); our models overpredict in Hungary too but underpredict in Long Beach, mostly for its patients without an exercise test. ROC AUC within one hospital does not score this.
+The source built its model at one hospital and applied it at the others (Detrano et al. 1989, p. 305), and the hospitals differ in disease rate and in which tests they recorded, as a new hospital would. Trained on the other two hospitals, logistic regression reaches ROC AUC 0.880 on Cleveland, 0.898 on Hungary and 0.732 on Long Beach. The paper has the Cleveland model overpredicting disease by 10 points in Budapest and 5 in Long Beach (abstract, p. 307); our models overpredict in Hungary too but underpredict in Long Beach, mostly for its patients without an exercise test. ROC AUC within one hospital does not score this; log loss, the declared metric, does.
 
 | hospital | patients | disease_pct | ca_missing_pct | thal_missing_pct | slope_missing_pct | chol_missing_pct | no_exercise_test |
 |---|---|---|---|---|---|---|---|

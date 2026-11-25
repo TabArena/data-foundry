@@ -197,20 +197,28 @@ class GustoIMiMortality(AbstractCuratedDataset):
         - Class-dependent recording (record marker `Class-dependent Recording`): the heights the source's single imputation filled in mark patients who died. 2,132 heights (5.2% of the rows) are neither whole or half centimetres nor a converted inch value (171.8, 171.3, 170.3, ...), spread less than measured heights, and 19.9% of these patients died against about 6% of the others. The gap holds in 15 of 16 regions and given everything known at presentation (age, sex, Killip class, blood pressure, pulse, infarct location, ST leads, previous MI, region: odds ratio 2.65, p = 2e-54), so the fill follows the outcome (an early death left the height unmeasured, or the outcome entered the imputation), which a model at the door cannot know (LEAK-10 through LEAK-38's conditional test). A model that spots the fills gains 0.0045 ROC AUC (LightGBM, 9 of 9 folds of the earlier 3 x 3 region folds) and a fill flag 0.007 for a regression. Milder fixes fail: the fills set to missing keep the signal (LEAK-40), and heights rounded to whole centimetres still let a model find the filled rows at ROC AUC 0.82 (LEAK-13). So `height` is dropped: it costs a logistic regression nothing (+0.0001) and tuned LightGBM 0.001 to 0.002, the leak itself; without it the filled-height rows cannot be found from the other columns (ROC AUC 0.535). The 1,026 weights of the same look carry no outcome signal (adjusted odds ratio 1.01, p = 0.91; a weight-fill flag adds 0.0000), so `weight` stays. The categorical columns may hold fills the file cannot show; the 28-row pattern above is the visible trace.
         - Impossible values set to missing (CLEAN-11, 7 cells): a pulse of 1 to 9 (4 patients, 3 of them Killip I, one with systolic pressure 180), and a pulse or systolic pressure of 0 in a Killip I patient, who is not in shock (3 patients). The other zeros stay as recorded: systolic pressure 0 in 5 patients of Killip III or IV and pulse 0 in 2 of them, all dead, an unmeasurable pressure in shock. Ages over 100 in 3 patients (108, 108, 110, whole numbers while 98.8% of ages carry a fraction) and under 25 in 26 are kept as recorded.
         - Outdated (record marker `Outdated`, SEL-18): the care is that of the thrombolysis era; primary angioplasty, stents and newer antiplatelet drugs have lowered the death rate since, while thrombolysis remains the therapy where angioplasty cannot be done in time. The task is still made today, so the fit stays direct (USE-8) and the era is a note.
-        - Note: the builder's untuned task probes flagged `no_spread` (logistic regression, random forest and LightGBM ROC AUC 0.819, 0.817 and 0.820 by region, with `height` in and the five flags out); on the shipped inputs and the 8 region folds they score 0.829, 0.823 and 0.823 with no flag, and age alone 0.733 (2026-11-25). A few smooth predictors carry most of the signal (Lee et al.: five carry 90% of the prognostic information). Tuned methods separate: on the shipped inputs and the 8 region folds (2026-11-25), a logistic regression with splines reaches 0.8264 and a lightly tuned LightGBM 0.8272 against 0.8234 for a plain logistic regression (splines +0.0030, standard error 0.0008, better on 7 of 8 folds; LightGBM +0.0038, standard error 0.0014, 7 of 8; log loss 0.1997 and 0.1996 against 0.2008). Not `Trivial`: the TIMI risk score for STEMI (Morrow et al. 2000), a published score not fitted on these data, reaches 0.794 on the whole file.
+        - Note: the builder's untuned task probes flagged `no_spread` (logistic regression, random forest and LightGBM ROC AUC 0.819, 0.817 and 0.820 by region, with `height` in and the five flags out); on the shipped inputs and the 8 region folds they score ROC AUC 0.829, 0.823 and 0.823, and age alone 0.733, with no flag; by log loss, the declared metric, 0.2006, 0.2039 and 0.2044, age alone 0.2322 and the class shares 0.2547, again with no flag (2026-11-25). A few smooth predictors carry most of the signal (Lee et al.: five carry 90% of the prognostic information). Tuned methods separate: on the shipped inputs and the 8 region folds (2026-11-25), a logistic regression with splines reaches 0.8264 and a lightly tuned LightGBM 0.8272 against 0.8234 for a plain logistic regression (splines +0.0030, standard error 0.0008, better on 7 of 8 folds; LightGBM +0.0038, standard error 0.0014, 7 of 8); by log loss 0.1997 and 0.1996 against 0.2008 (splines better on 7 of 8 folds, LightGBM on 5 of 8). Not `Trivial`: the TIMI risk score for STEMI (Morrow et al. 2000), a published score not fitted on these data, reaches 0.794 on the whole file.
         - Codes get their words: the 1/2 history codes become no/yes, `dia` and the five flags 0/1 no/yes (CLEAN-12); Killip class is an ordered category (CLEAN-14); the target `day30` becomes `death_by_day_30` (Yes/No, CLEAN-25).
     """
 
     # Task
     target = "death_by_day_30"
     problem_type = "binary_classification"
-    metric = Metric.fallback(
-        reason='Lee et al. 1995 report chi-square statistics per predictor and that the model "accurately estimated '
-        'the likelihood of death" (abstract; the full text could not be reached); the GUSTO-I case study on this file '
-        "(Steyerberg and Vergouwe 2014, Eur Heart J, https://pmc.ncbi.nlm.nih.gov/articles/PMC4155437/) scores its "
-        "models by the c statistic together with calibration in the large and the calibration slope, so no single "
-        "deliberate metric (MET-5). roc_auc is the binary fallback and the c statistic the case study reports "
-        "(0.813 internal, 0.812 US to non-US); log loss would also score the calibration the case study weighs."
+    metric = Metric.from_context(
+        "log_loss",
+        reason="No single deliberate metric in the sources (MET-5): Lee et al. 1995 report chi-square statistics per "
+        'predictor and that the model "accurately estimated the likelihood of death" (abstract; the full text could '
+        "not be reached), and the GUSTO-I case study on this file (Steyerberg and Vergouwe 2014, Eur Heart J, "
+        "https://pmc.ncbi.nlm.nih.gov/articles/PMC4155437/) scores its models by four measures side by side: "
+        "calibration in the large, the calibration slope, the c statistic and net benefit over a range of "
+        "thresholds. The original is the case study's c statistic (ROC AUC; 0.813 internal, 0.812 US to non-US), "
+        "which is also the binary fallback. Log loss is declared from context (Andrej, 2026-11-25): the case study "
+        'says that "the c statistic is insensitive to systematic errors in calibration" and scores calibration next '
+        "to it; the choice of thrombolytic acts on the absolute risk, since the benefit of the stronger drug scales "
+        "with it; and the regions' death rates run from 5.3% to 8.4%, which a ranking within a held-out region does "
+        "not see. Log loss, a strictly proper rule, scores calibration and discrimination together (MET-8, MET-11). "
+        "On the 8 region folds it separates a logistic regression with splines from a plain one on 7 of 8 folds, as "
+        "ROC AUC does (2026-11-25).",
     )
     grouping = Grouping(
         on="region",
