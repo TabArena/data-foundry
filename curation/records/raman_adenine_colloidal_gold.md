@@ -3,6 +3,9 @@ unique_name: raman_adenine_colloidal_gold
 name: Adenine Colloidal (Gold)
 checked_by:
 - AI (UNVERIFIED)
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Andrej
 suggestion: TBD -> 2nd Tier
 priority: 2
 decision_markers:
@@ -19,8 +22,8 @@ collections:
 - RamanBench
 original_source: Other
 year: '2019'
-domain: chemistry & material science
 collection_period: Unknown
+domain: chemistry & material science
 problem_type: Regression
 original_data_state: One Table
 source_links:
