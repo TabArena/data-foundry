@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-25 15:11 UTC: 224 claim(s) (Andrej 193, Lennart 12, Myunghwan 19).
+As of 2026-11-25 15:52 UTC: 227 claim(s) (Andrej 196, Lennart 12, Myunghwan 19).
 
 ## Andrej
 
@@ -49,6 +49,7 @@ As of 2026-11-25 15:11 UTC: 224 claim(s) (Andrej 193, Lennart 12, Myunghwan 19).
 | `credit_approval` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `credit_card_clients_default` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `credit_g` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
+| `deafness_gene_carrier_hearing_loss` | add | 2026-11-25 | 2026-12-02 | add-dataset (Shaktah benchmark batch) |
 | `deeploc2_fungi_membrane_esm2` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
 | `dementia_prediction` | review | 2026-11-11 | 2026-11-18 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `diabetes_130_us` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -137,6 +138,7 @@ As of 2026-11-25 15:11 UTC: 224 claim(s) (Andrej 193, Lennart 12, Myunghwan 19).
 | `otto_group_product_classification_challenge` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `pancreatic_cancer_mouse_detection` | review | 2026-11-11 | 2026-11-18 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `peer_tem1_beta_lactamase_esm2` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
+| `pheochromocytoma_paraganglioma_metastasis` | add | 2026-11-25 | 2026-12-02 | add-dataset (Shaktah benchmark batch) |
 | `polish_companies_bankruptcy` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `porto_seguro` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `predict_students_dropout_and_academic_success` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -198,6 +200,7 @@ As of 2026-11-25 15:11 UTC: 224 claim(s) (Andrej 193, Lennart 12, Myunghwan 19).
 | `web_page_phishing_detection` | add | 2026-11-25 | 2026-12-02 | add-dataset (better-data replacements, 2026-11-25) |
 | `website_phishing` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `wids_diabetes_mellitus` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
+| `wild_type_attr_cardiac_amyloidosis` | add | 2026-11-25 | 2026-12-02 | add-dataset (Shaktah benchmark batch) |
 | `wine_quality` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `wine_world_cost` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `wisconsin_local_government_property_insurance_fund` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
