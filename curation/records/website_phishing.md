@@ -60,6 +60,8 @@ CC (2026-11-17, Andrej): the declared split (random, 10x3 folds, `ForcedIIDFromT
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. An adversarial domain whose central feature (HTTPS) is known to have reversed its meaning; nothing supports interchangeable later samples.
 
+CC (2026-11-25, Andrej): Review issue 10, B: "Add PhreshPhish as a dated phishing task", next to web_page_phishing_detection; record `phreshphish_phishing_pages`.
+
 ## Review
 
 **Outcome:** added. A question on `CrossSectional` (2026-11-13) was withdrawn when the prototype was dropped.
@@ -515,6 +517,10 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
    [^conv]: LEAK-13 (Must): class-specific recording conventions are harmonised; a convention that changed over time counts too when the classes changed over the same time, since it dates the row and the date tells the class.
    [^form]: LEAK-13 to LEAK-15 (Must): classes recorded in different forms or from different sources are checked for a shortcut that separates them, and such a dataset is not shipped.
    [^better]: PROV-4 (Must): a better dataset from another source is its own record, and the old one keeps the verdict its own data earn until the curator decides.
+
+   **Andrej (2026-11-25, change):** Add PhreshPhish as a dated phishing task.
+
+   **Resolved (2026-11-25, Andrej):** B: PhreshPhish is added next to web_page_phishing_detection as its own record, `phreshphish_phishing_pages`, screened and built with the recording conventions this issue names removed; whether it later takes Hannousse's place is decided once both are reviewed.
 
 ## Reference
 
