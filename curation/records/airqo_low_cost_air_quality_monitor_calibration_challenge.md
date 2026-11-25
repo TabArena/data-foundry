@@ -4,15 +4,23 @@ name: airqo-low-cost-air-quality-monitor-calibration-challenge
 checked_by:
 - Myunghwan
 - Lennart
+- Andrej
 data_foundry_status:
 - WIP (DF)
 claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 3
+tags:
+- Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Entities: Recur'
+- Panel Data
 collections:
 - New (BeyondArena)
 original_source: Zindi
 year: '2021'
+collection_period: Jul 2019 - Feb 2021
 domain: environmental science & climate
 required_split:
 - Temporal (NON-IID)
@@ -69,11 +77,11 @@ CC (2026-11-04, Lennart): the reference's single-hour spikes are set missing by 
 
 CC (2026-11-04, Lennart): the split is temporal, three monthly windows over the newest season (December 2020 to February 2021), each trained on every earlier hour ("ok (a)"): AirQo corrects new readings with models retrained periodically, by season, and random folds gave the model the neighbouring reference hours. It replaces the site-balanced random folds of 2026-10-28. (superseded 2026-11-05: five monthly windows from October 2020, issue 1 A; the paper names seasonal retraining as future work, not as AirQo practice)
 
-**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled. Train sides 8,207-10,093 hours, test months 834-1,049; `dataset check` passes. (superseded 2026-11-04: the full review panel ran in a second pass, and Review issues 1-4 are open)
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of PR #33 and the research behind each mark, and all are settled. Train sides 8,207-10,093 hours, test months 834-1,049; `dataset check` passes. (superseded 2026-11-04: the full review panel ran in a second pass, and Review issues 1-4 are open)
 
 **Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes (stale retrospective text fixed in the definition; widen the test windows to five months, keep the Makerere test-window spike as a label, drop the 92-hour Nakawa reference outage, one dead-channel rule for both sensors); disputed: SPLIT-20 (widen the windows or record an exception), CLEAN-11 (clause and rank of the Nakawa outage); for the curator: issues 1-4. Priority 3: gap 0, use case 0, source +, shape +, risk 0 (no thin domain, problem type or regime; AirQo names the use but the fit is approximate, network transfer cannot be tested with three sites; Zindi codebook and Adong et al. 2022; 10,927 hourly rows, 16 features, temporal; no leak, the open issues are repairable cleaning and window choices).
 
-**Assessment (AI, 2026-11-04):** text corrections of the second-pass panel applied (Lennart's go-ahead on the review page): the outage-hour figures above, and `splits_comment` now gives the panel's LightGBM RMSE 12.94 against 18.26 instead of the pre-temporal 14.05 against 18.39. No data, split, feature or metric change. (superseded 2026-11-05: 12.30 against 16.69 on the five windows)
+**Assessment (AI, 2026-11-04):** text corrections of the second-pass panel applied (Lennart's go-ahead): the outage-hour figures above, and `splits_comment` now gives the panel's LightGBM RMSE 12.94 against 18.26 instead of the pre-temporal 14.05 against 18.39. No data, split, feature or metric change. (superseded 2026-11-05: 12.30 against 16.69 on the five windows)
 
 CC (2026-11-05, Lennart): five monthly windows from October 2020 instead of the three dry-season months (issue 1, A; SPLIT-20, as aeolus and perth_house_prices). The test covers October 2020 to February 2021, both seasons, and October and November score all three sites; train sides 6,204-10,001 hours (57-92%), test months 599-1,312. Nakawa enters October with 63 hours of history (2020-09-19 to 2020-09-23), close to a new-site test (USE-10). Untuned LightGBM mean RMSE 16.69 (27.5 / 16.8 / 12.5 / 13.0 / 13.6, February first) against 36.70 for the training mean and 21.82 for raw sensor 1; random folds score 12.30 on the same test months.
 
@@ -89,13 +97,23 @@ CC (2026-11-05, Lennart): the spike rule stays and drops its hours in every wind
 
 CC (2026-11-05, Lennart): Nakawa 2020-10-13 05:00 (3.06 times the sensors before a morning rise) is dropped with the other 11 single-hour reference errors (Review issue 5, A).
 
-CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
 
 CC (2026-11-11, Lennart): REVIEW issue 6 (a sixth test month), "Reply (c): Six months with August 2020" to the consistency check: the test windows are October 2020 to February 2021 and August 2020, the end of the June-August dry season that no other test month holds; September 2020 stays out, as Nakawa has no hour before it. August 2020 trains on 47.7% of the hours, the one window under half beside the five months at 57.3% to 92.3%, signed off (SPLIT-14 as amended on 2026-11-11); all its 576 hours are at Makerere.
 
 CC (2026-11-11, Lennart): the declared horizon (one month, no gap, windows starting 2021-02-01, 2021-01-01, 2020-12-01, 2020-11-01, 2020-10-01 and 2020-08-01) is checked, as the monthly refit is the curator's judgment of 2026-11-04, between the hourly feed and a season, and no source gives a cadence.
 
 **Assessment (AI, 2026-11-11):** applied in dataset.py: `temporal` declares the cutoffs 2021-02-01, 2021-01-01, 2020-12-01, 2020-11-01, 2020-10-01 and 2020-08-01 (one month, no gap; read in the column's UTC+3 zone); test 834, 1,048, 836, 596, 1,310 and 576 hours, train 9,994, 8,946, 8,110, 7,514, 6,204 and 5,166 (92.3%, 82.6%, 74.9%, 69.4%, 57.3%, 47.7% of 10,828). August's mean reference is 41.4 (58.8 on its train side), and Makerere has 306 earlier hours (15-31 July 2020). `task_summary.split` and `splits_comment` are rewritten (the six months and why, the counts, the shares, September's reason, the horizon's reason); in `curation_comments` the RMSE, copy-share and leak-probe bullets are dated to the five windows of 2026-11-05 (not measured again with August), the CC bullet of 2026-11-05 is marked superseded and a CC bullet of 2026-11-11 is added; `accepted_check_warnings` accepts `splits_train_under_half` with the sign-off. `dataset check`: 0 errors, 0 warnings (README not regenerated).
+
+CC (2026-11-17, Andrej): Review issue 9, A, as implemented: Six one-month windows on `created_at` (test August 2020 and October 2020 to February 2021: 576 / 1,310 / 596 / 836 / 1,048 / 834 hours), each trained on every earlier hour (47.7 / 57.3 / 69.4 / 74.9 / 82.6 / 92.3% of 10,828), no gap, temporal.
+
+CC (2026-11-17, Andrej): verdict ship (blind split walk).
+
+CC (2026-11-17, Andrej): the declared split (temporal on `created_at`, windows of 1 month, 6 windows at fixed cutoffs, no gap) is checked (blind split walk).
+
+CC (2026-11-19, Andrej): train floor (Review issue 10, A as implemented): August 2020 (47.7% of the hours) stays as the curator's exception to the half-data floor (SPLIT-14 as amended 2026-11-19); no window is under 30%.
+
+CC (2026-11-19, Andrej): windows below the target count kept (Review issue 11, A as implemented): six monthly windows; September 2020 stays out and earlier months train on under 47.7%; the reason is in the splits comment.
 
 ## Review
 
@@ -114,7 +132,9 @@ half (47.7%), signed off, and kept the monthly windows without a gap (Horizon, A
 
 **Main points:** Settled on 2026-11-11: six test months, August 2020 and October 2020 to February 2021, with September
 left out for Nakawa's missing history (issue 6), and the one-month horizon without a gap; issues 1 to 5 were settled on
-2026-11-05. Nothing is left open.
+2026-11-05. Settled on 2026-11-17: the temporal split on `created_at` stays rather than leaving a site out (issue 9).
+Settled on 2026-11-19: August 2020 stays as the curator's exception to the half-data floor (issue 10), and the six
+monthly windows stay below the target count (issue 11). Nothing is left open.
 
 **Horizon:**
 
@@ -489,6 +509,110 @@ reasons; the windows are issue 6's (c). The record has the horizon CC line. `dat
    rewritten; the `curation_comments` figures measured on the five windows are dated to 2026-11-05, and a CC bullet
    records the choice. The record has the decision and the horizon CC lines. `dataset check`: 0 errors, 0 warnings
    (README not regenerated).
+
+9. **Split: leave one of the three collocation sites out instead of six monthly windows on created_at?**
+
+   * **Problem:**
+     - The definition's use case is the next monthly refit at the same three collocated devices (Lennart, 2026-11-04/05/11), so the tree gives windows of whole months on the shared hourly calendar with no gap, as shipped.
+     - The blind walk, without that decision, read AirQo's network aim (devices with no reference monitor) and reached leave-one-site-out (`UnseenGroup`).
+     - With three sites whose periods barely overlap (USEmbassy from 2019-07, Makerere from 2020-07, Nakawa from 2020-09), a site fold mostly tests another period, and left-out sites score RMSE 24.84 against 19.90 for the raw sensor (untuned LightGBM).
+   * **Background:** AirQo's stated aim is to calibrate the rest of its network, i.e. devices with no reference monitor, so the tree gives new units held out whole, here the three collocation sites. Three sites with nearly disjoint periods make that a weak test; the definition's same-device monthly framing gives Temporal · whole periods instead, a reviewer's choice. Confidence of the blind walk: low.
+   * **Walk:** the questions as answered without the current split[^tree]:
+     - Does the model fill in the period the panel covers, or predict after it? (use case): predict after it. Evidence: Zindi page: 'AirQo want to use your solution to calibrate our network'; 'they have a pipeline set up ready and waiting to plug it in' - readings arriving after the data. https://zindi.world/competitions/airqo-low-cost-air-quality-monitor-calibration-challenge
+     - Which units does the model predict for? (use case): only new units (devices of the network without a reference monitor). Evidence: Calibration exists for devices that have no collocated reference; the three collocated devices have one. The Zindi page says finalists discuss applying their models to other devices on the network. The dossier notes call new-site transfer 'AirQo's network use'. The definition's own use case (the same three devices, later months) conflicts; see leaf_if.
+   * **What the blind dossier lacked, and what it changes:** 'Which units does the model predict for?' changes from 'only new units' to 'the same units' if the curator's documented framing is taken: the record and dataset.py state that new-site transfer, AirQo's network use, 'cannot be tested with three sites whose periods barely overlap' and set the fit to approximate, and Lennart decided (2026-11-04/05/11) that the model corrects later months at the three collocated devices (refit monthly; Adong et al. 2022: 'important to retrain these models periodically'). With a shared hourly calendar, six monthly windows (Aug 2020, Oct 2020-Feb 2021; train…
+   * **Missing from the blind dossier:** Nothing decisive; the record adds the curator's decision and the Adong et al. (2022) retraining sentence. The dossier already carried the monthly-refit use case, which leaked the split shape.
+   * **Source split:** yes, Zindi competition (AirQo low-cost monitor calibration, 2021): predefined Test.csv (2,733 unlabeled rows), about 20% of each site's hours over the same dates as Train: an interleaved draw within the period, construction not documented ("Dossier/record: 'The supplied Test.csv has 2,733 rows, approximately 20 percent within each site, over overlapping dates. It has no reference labels.'") https://zindi.africa/competitions/airqo-low-cost-air-quality-monitor-calibration-challenge. Credible: no, A within-period draw of hours gives the model neighbouring hours' reference labels; no reason tied to AirQo's use (correcting new readings after calibration) is given.. Against the tree's leaf: no, The source draws test hours within each site's period; my blind leaf holds whole sites out and the revised leaf tests later months, neither of which an interleaved draw does.
+   * **Key to split on:** site (3 collocation sites: USEmbassy, Makerere, Nakawa).
+   * **What changes on the tree's leaf:** the split declaration in `dataset.py`, from `Temporal(on="created_at")`, window 1, unit months to `Grouping(on="site")`; the tag and its basis line. The rows, features, target and metric do not change, so the task is the same; the folds do, so the container is rebuilt.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: the dossier's use case sentence ('a model refit at the start of each month corrects that month's new hourly readings') and its notes ('The test now holds 4,631 hours ... over both seasons') state the shipped split's shape; the tree also names this dataset among the examples of 'Temporal · whole periods'. Both ignored as evidence; the source's own aim was used instead.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Six one-month windows on `created_at` (test August 2020 and October 2020 to February 2021: 576 / 1,310 / 596 / 836 / 1,048 / 834 hours), each trained on every earlier hour (47.7 / 57.3 / 69.4 / 74.9 / 82.6 / 92.3% of 10,828), no gap, temporal (implemented) | No change. | Tests the next month at known devices across three seasons; random hourly folds scored a quarter better (RMSE 11.23 against 15.34) from neighbouring hours' labels, which the windows exclude. | AirQo's main use, correcting devices without a reference monitor, stays untested; August scores Makerere only. |
+     | B | Leave one site out: three folds, each testing all hours of USEmbassy, Makerere or Nakawa and training on the other two sites, `UnseenGroup` | `temporal` is replaced by `Grouping(on="site")`; site stays a feature only if the curator wants it (a held-out site's value is unseen); three folds instead of six windows. | Tests the transfer to a device the model has not seen, AirQo's network use. | Three folds of one site each, confounded with period and season; models lose to the raw sensor there (RMSE 24.84 against 19.90); per-site row counts not counted. |
+
+   * **Recommendation:** A, because the definition's use case is later months at the three known devices, and three sites with nearly disjoint periods cannot test the transfer to new devices.. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). Applying a change: the definition's split declaration, its time basis tag and line, the record's CC line; if A is kept, the tree's departure table with the reason.
+
+   [^tree]: **SPLIT-36** (Should): walk the decision tree from the record's collection type, answering each question as if no split had been decided; a split the source prescribes is evidence, not an answer.
+
+   **Andrej (2026-11-17, ok):** as implemented.
+
+   **Resolved (2026-11-17, Andrej):** A, as implemented: Six one-month windows on `created_at` (test August 2020 and October 2020 to February 2021: 576 / 1,310 / 596 / 836 / 1,048 / 834 hours), each trained on every earlier hour (47.7 / 57.3 / 69.4 / 74.9 / 82.6 / 92.3% of 10,828), no gap, temporal.
+
+10. **Train floor: keep the window under half the data as the curator's exception, or drop it?**
+
+   * **Problem:**
+     - August 2020 trains on 47.7% of the hours, beside the five months from October 2020 to February 2021 on 57.3% to 92.3%.
+     - Since 2026-11-19, every window trains on at least half the data, and a window under half is the curator's exception for the dataset, down to 30%[^split14]; the sign-off (Lennart, 2026-11-11, review issue 6, c) was given under the earlier rule, which admitted such windows beside two at half or more.
+     - The definition has 6 windows (the README's 5 predate the August window); the target an IID split would get[^split33] for 10,828 rows is 9; without the window under half it keeps 5.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the window as the curator's exception (implemented) | The accepted warning is reworded to the new rule; split unchanged | Keeps the periods it tests, as signed off; more windows toward the target | It trains on less than half the data |
+     | B | Drop the window under half | The windows under half leave the declaration; a rebuild | Every window trains on half the data or more | 1 fewer window and the period it tests |
+
+   * **Recommendation:** A, the sign-off's reason (periods or test rows the newest windows lack) still holds, and no window is under 30%. **Decision:** A or B?
+
+   **Notes for the AI:** on A, reword the `splits_train_under_half` acceptance (drop "SPLIT-14's two tiers admit it", name the curator's exception and this decision) and add a CC line; on B, remove the windows from the declaration, rebuild, and update the splits comment.
+
+   **Andrej (2026-11-19, ok):** As implemented (A).
+
+   **Resolved (2026-11-19, Andrej):** A, as implemented: August 2020 (47.7% of the hours) stays as the curator's exception to the half-data floor; the accepted `splits_train_under_half` warning now names this decision. The split is unchanged.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count.
+
+11. **Windows: 6 of the target's 9; which layout?**
+
+   * **Problem:**
+     - Six monthly windows ship where an IID split of 10,828 hours would get nine[^split15]; the splits comment does not say why there are fewer.
+     - Today's windows (from the splits comment):
+
+       | Test month | Train side | Train share | Test hours | Sites scored |
+       |---|---|---|---|---|
+       | Feb 2021 | 9,994 | 92.3% | 834 | USEmbassy, Makerere |
+       | Jan 2021 | 8,946 | 82.6% | 1,048 | all three (45 USEmbassy) |
+       | Dec 2020 | 8,110 | 74.9% | 836 | Makerere, Nakawa |
+       | Nov 2020 | 7,514 | 69.4% | 596 | all three |
+       | Oct 2020 | 6,204 | 57.3% | 1,310 | all three |
+       | Aug 2020 | 5,166 | 47.7% | 576 | Makerere |
+
+     - Fixed: the one-month window is the curator's cadence (Lennart, 2026-11-04; no source gives one), with no gap, in a task about known sites. Settled: September 2020 stays out, as 63 of its 462 hours are at Nakawa, which has no earlier hour (issue 1, A over C; issue 6, c over a and d); August 2020 stays as the curator's exception (issue 10, A, today).
+     - What stops more windows: every month from October on is in; September is out by decision. Before August, July 2020 holds Makerere's first hours (306, from 15 July), a site with no earlier hour, as September's Nakawa hours; from July 2019 to June 2020 USEmbassy is the only site. The 30% floor needs 3,249 training hours, so some USEmbassy-only months of the first half of 2020 could be tested as exceptions[^split14]; their hours per month are not counted here, as the raw `Train.csv` is not on this machine.
+     - Stable test sizes would cut months in the middle (576 to 1,310 hours a month), against the monthly refit; not offered.
+   * **Window counts:** months from the splits comment and issue 6; C and D not counted.
+
+     | Layout | Windows | Train share | Test hours | Window length |
+     |---|---|---|---|---|
+     | A, shipped | 6 | 47.7-92.3% | 576-1,310 | 1 month |
+     | B, September added without Nakawa's hours | 7 | 47.7-92.3% | 399-1,310 | 1 month |
+     | C, earlier USEmbassy-only months, down to 30% | 6 + up to a few | 30-92.3% | not counted | 1 month |
+     | D, overlapping months, a new one every half month | not counted | 47.7-92.3% | not counted | 1 month |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Six months (implemented) | adds the reason to the splits comment | as decided on issues 1, 6 and 10 | 6 of 9 |
+     | B | Seven months: September 2020 scored without Nakawa's 63 hours | a custom split leaves those hours out of September's test (issue 6's option a, now beside August rather than instead of it) | one more month above half (53.0%); every scored hour at a site with history | a custom split; a third rainy month next to October; declined on 2026-11-11 when it competed with August |
+     | C | Earlier months as the curator's exception | months before July 2020 whose train side keeps 30% | tests the USEmbassy-only period | counts not yet made; one site per month, from a year when the other two sites did not exist; July cannot be scored whole |
+     | D | Overlapping one-month windows | `step` of half a month | more windows at the decided length | an hour is scored in two windows; mid-month starts against the monthly refit; offered only, as the target is not reached otherwise[^split15] |
+
+   * **Recommendation:** A: each month left out is out by a decision on new-site hours or under the floor, and the remaining routes (a custom September, months of one site before the network existed, overlaps) add little the six months lack. **Decision:** A, B, C or D?
+
+   **Notes for the AI:** on A, add to `splits_comment`: "Six of the nine windows an IID split of this size would get: September 2020 is out (Nakawa's hours have no history), and July 2020 and earlier train on under 47.7% of the hours, July scoring Makerere's first hours." On B: `_make_splits` with the six months plus September 2020, whose test drops Nakawa's 63 hours (399 hours, train 5,742, 53.0%); CC line. On C: count each month's hours and train share from `Train.csv` first (`dataset windows`), then add the months above 30% as cutoffs and accept `splits_train_under_half`. On D: count first; `step` needs a calendar unit finer than the month (e.g. `window=30, unit="days", step=15`).
+
+   **Andrej (2026-11-19, ok):** As implemented (A).
+
+   **Resolved (2026-11-19, Andrej):** A, as implemented: six monthly windows; September 2020 stays out and earlier months train on under 47.7%. The splits comment names the target count and what stops more windows; `splits_below_target` is accepted with that reason. The split is unchanged.
+
+   [^split15]: **SPLIT-15** (Must for the newest window, Should for the others): the number of windows aims at the count an IID split would get, 9 here; the window length, step and gap follow the use case and are not shortened to reach it; fewer are accepted, never under 3, with the target, the count and what stops more in the splits comment; overlapping windows only as an offered option.
 
 **Review panel:** ship after changes (mediator). Tier full, a second pass after Lennart's PR #33 review (2026-11-04), 12 reports. Claims: 24, 12 hold, 9 refuted (stale or overstated text, fixed in `dataset.py`; the record's `required_split` is in the field row and its 15-hour figures in issue 4), 1 concern (issue 2), 2 untested. Blind review: include with changes; its main concerns are that the eight site descriptors repeat the site label (kept: legitimate for known sites, LEAK-34) and that the windows mix later time with newer sites. Task gamer: its best exploit, the previous hour's reference, lowers mean RMSE from 18.21 to 16.28, a leak under the stated prediction point; nothing else beat the noise. Agreed: no leak, the temporal regime, the site descriptors kept, RMSE, the text fixes, the spike rule on training rows only, one dead-channel rule for both sensors. Disputed: SPLIT-20, widen the windows or keep them with an exception (issue 1); the clause and rank of the Nakawa outage (issue 3).
 

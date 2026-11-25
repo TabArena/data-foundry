@@ -202,10 +202,18 @@ We start with FLIR_groups1and2.csv from PhysioNet (version 1.0.0): 1,020 subject
 - Anomaly: `Age` has an overlapping bin 21-30 for 10 subjects, and `aveOralM` lies on a 0.05 °C grid shifted by -0.01 °C, which does not change the RMSE. Both kept.
 - Scope (SEL-15, amended 2026-10-21, Lennart): each column is a blackbody-compensated temperature at a named facial site, the camera is used as a thermometer, the target is the same physical quantity measured by mouth, and the release holds no images, so the readings are measurements, not image descriptors (SEL-13). satimage and wilt, where an imaging sensor's values serve to recognise what the image shows, are the counter-cases.
 - Split decision (2026-10-21, Lennart): IID, not temporal. The task learns a calibration, a function of the inputs that should be the same on two different days when the other inputs are the same, so we expect no real signal across time. The year-to-year shift measured above (a first-year calibration over-predicts the second year by 0.06-0.09 °C; past-only training costs +0.5% to +6.7% RMSE) is recorded, and a temporal variant stays a candidate (SPLIT-31).
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+- Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
   categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed
   by the curator's rule (missing when the column has no other missing value, else the lowest level; a state that
   is simply not on the scale, such as Other, is missing).
+- Time basis: StationaryRelation (SPLIT-32; Andrej, 2026-11-20): two-month windows train on
+  half the subjects only from January 2018, two windows, too few; the stationary-relation test on those two
+  (2026-11-19, RMSE in °C, 5 seeds) reads flat: Kumo-Tabular +0.001 ± 0.007 (Jan-Feb 2018) and -0.002 ± 0.004
+  (Mar-Apr 2018), floors 0.002-0.004; LightGBM inconclusive. Nov-Dec 2017, which trains on 48%, reads not flat
+  for Kumo-Tabular (+0.010 ± 0.003, floor 0.001): it falls at the change of set-up between the study years
+  (location, camera distance about 0.8 to 0.6 m), after which a first-year calibration over-predicts by
+  0.06-0.09 °C. Earlier evidence: the calibration is meant to hold whatever the day (Lennart, 2026-10-21), and
+  folds grouped by day score as random ones do (R^2 0.699 against 0.700). It cannot test a later set-up.
 
 ## Splits
 

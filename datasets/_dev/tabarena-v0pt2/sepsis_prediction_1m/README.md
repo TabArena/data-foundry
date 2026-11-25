@@ -89,7 +89,7 @@ Built as `01a111fc-109e-7d32-85ac-ecdf6eea551e` on 2026-10-06, but `dataset.py` 
 
 **Use case.** Every hour of an intensive-care stay, an early-warning system scores the patient's risk of sepsis in the next six hours, so the care team can start treatment early (PhysioNet/Computing in Cardiology Challenge 2019).
 
-**One row.** One hour of one intensive-care stay at one of two US hospitals; 1.5 million hours of whole stays sampled from the challenge's public data.
+**One row.** One hour of one intensive-care stay at one of two US hospitals: the 1,552,210 hours of the 40,336 stays in the challenge's public data.
 
 **Predicted.** Whether sepsis begins within six hours or has already begun: the label turns on six hours before onset and stays on.
 
@@ -221,8 +221,11 @@ In the original competition, one had to predict for unseen patients from the exi
   (as it shows the target), but it is group metadata, not a model feature: the 42 features leave it out.
 - The target (2026-11-01, CLEAN-25): `SepsisLabel` ships its classes as words (1 is the event). Binary: "Yes" is
   the event, the class that sorts second, so it is the metrics' positive class.
-
-Version of `sepsis_prediction`: We sub-sample the frame to 1.5M rows by whole patients (stratified on the target) and use grouped 3-fold cross-validation, so every fold trains on about 1M and tests on about 500k rows (v2 split protocol).
+- The row budget (1M train, 500k test rows): We keep the whole frame (1,552,210 hours of 40,336 patients) and use grouped 3-fold cross-validation over it (v2 split protocol). Each fold tests on at most 500k rows, whole patients drawn from its third, and trains on every other row (about 1.05M). The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M rows with `subsample_train`, whose default draws whole patients at random. Both draws are stratified by each patient's most frequent label.
+- Time basis: UnseenGroup (Andrej, 2026-11-18; `ForcedGroupedFromTemporal` before): the use case scores new
+  ICU patients, whom the data does not hold, so whole patients are held out with all their hours. The source
+  keeps only hours since admission, so the calendar order across patients is lost. Not tested: patients
+  admitted later, which a dated release would allow.
 
 ## Splits
 

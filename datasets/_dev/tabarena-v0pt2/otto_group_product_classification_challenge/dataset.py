@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary, TimeBasis
 
 
 class OttoGroupProductClassificationChallenge(AbstractCuratedDataset):
@@ -64,6 +64,18 @@ class OttoGroupProductClassificationChallenge(AbstractCuratedDataset):
         - Features and data is clean. Top Kaggle experts applied no relevant preprocessing.
         - We drop the index column.
     """
+    time_basis = TimeBasis(
+        "Retrospective",
+        """
+        the use case cleans up the existing
+        catalogue, assigning the products of one 2015 extract to their main categories, which subsidiaries file
+        differently; the event counts are read at the extract, and the competition chose its test products at random.
+        Not tested: products listed after the 2015 extract, or a revised category tree.
+        """,
+        set_by="Andrej",
+        on="2026-11-13",
+        note="`Timeless` before",
+    )
 
     # Task
     target = "target"
