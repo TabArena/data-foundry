@@ -121,6 +121,43 @@ CC (2026-11-25, Andrej): screening review: issue 1 A (drop the source's two leak
 
    * **Recommendation:** c, with a's score beside it at /add-dataset; b repeats the task. **Decision:** a, b or c?
 
+   **Andrej (2026-11-25, discuss):** How many features would we have for the validation task and how would they differ from the derivation task features?
+
+   **Answer (AI, 2026-11-25):** about as many, nearly all the same; it adds patients, not features.
+
+   * **Problem:**
+     - Built as Huda's notebook builds them: each ICD-10 code mapped with the released ICD map to its description, category and sub-chapter, one flag per name, kept when at least 2% of cases have it; the E85 amyloidosis codes that define the label removed first.
+     - The leak flag of issue 1 separates the classes there too, and the heart-failure sub-chapter is in every patient, so it carries nothing[^a2].
+   * **Data:** validation file, 15,394 patients, 22,222 distinct codes (99.9% in the map).
+
+     | Feature set | Count |
+     |---|---|
+     | all three levels, amyloidosis codes removed | 23,853 |
+     | in at least 2% of the cases (Huda's rule) | 1,742 |
+     | derivation flags | 1,874 |
+     | derivation flags present in the validation set at all | 1,863 |
+     | shared by both 2% sets | 1,628 |
+     | new in the validation set (acute and late-stage conditions, e.g. respiratory failure, ischaemic heart disease) | 114 |
+     | derivation flags under 2% there | 246 |
+
+     | Flag | Cases | Controls |
+     |---|---|---|
+     | `cardiomyopathy_in_diseases_classified_elsewhere` | 52.4% | 1.4% |
+     | `cardiomyopathy` | 51.9% | 26.5% |
+     | `other_forms_of_heart_disease` | 100% | 100% |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Keep the derivation file (implemented) | 2,142 patients, Huda's 1,874 flags | the paper's own model task; the curated wild-type label | small |
+     | b | A second record from the validation file | its own definition next to this one | 7x the patients | the same task and nearly the same features twice; 597 patients in both |
+     | c | Build this record from the validation file instead | 15,394 patients, about 1,742 flags built with Huda's map, E85 codes and the issue 1 leak flags removed | 7x the patients; the feature build is ours, so the leak cut is ours | a broader label (any cardiac amyloidosis) |
+
+   * **Recommendation:** c, unchanged: the two tasks share almost every feature, so the larger file is the better version of the same task. **Decision:** a, b or c?
+
+   [^a2]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the target away; out: a part, a consequence or another encoding of the target.
+
    [^a1]: **PROV-6** (Must): different versions or cuts of one underlying dataset are duplicates too when neither adds a distinct task: a swapped target, another slice of the same cohort, added or dropped rows or columns.
 
    [^split36]: **SPLIT-36** (Should): a definition's split is decided by walking the split decision tree; a forced leaf is for the curator to look at.

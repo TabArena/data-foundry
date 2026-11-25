@@ -45,6 +45,8 @@ Candidate from Shaktah et al. 2026, "Established machine learning matches tabula
 
 CC (2026-11-25, Andrej): accepted for adding in the screening review (issue 2 A (after first-course treatment); issue 1 (cohort) open).
 
+CC (2026-11-25, Andrej): kidney cancer cohort settled in the screening review (issue 1 A, C64 with RCC histologies, as liver cancer issue 1).
+
 ## Review
 
 **Outcome:** not added; screened `TBD -> Yes`, priority 2. Five-year overall survival of renal cell carcinoma in SEER (192,912 patients of 2004-2015 in Jiang et al. 2024); the cohort is cut where five years of follow-up are complete.
@@ -84,6 +86,10 @@ CC (2026-11-25, Andrej): accepted for adding in the screening review (issue 2 A 
      | d | Pool for every SEER record | reopen liver issue 1 to the pooled cohort with a fixed label | one rule for the SEER records | goes against the source task |
 
    * **Recommendation:** b; a if the pooled table is what you want, with its fact written as the exception. The answer also settles osteosarcoma issue 1. **Decision:** a, b, c or d?
+
+   **Andrej (2026-11-25, change):** Reply (b): Take A, like liver cancer.
+
+   **Resolved (2026-11-25, Andrej):** A: C64 with RCC histologies, as the source paper and as liver cancer issue 1; the consistency check is answered with (b), so no exception is written.
 
    [^cc1]: **USE-5** (Must): predict what the actor would act on, at the resolution they act on it. Check how the source built its label before accepting it.
 

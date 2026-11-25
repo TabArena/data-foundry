@@ -73,6 +73,8 @@ CC (2026-11-25, Andrej): accepted for adding in the screening review (issue 2 A 
    * /add-dataset writes the use case first, builds osteosarcoma only and all bone tumours side by side, and brings the case and death counts per window and the two scores back to this issue in the added dataset's review.
    * Your answer to the consistency check on kidney cancer issue 1 (one cancer or the whole site) applies here too.
 
+   **Andrej (2026-11-25, discuss):** Agree.
+
    [^use5]: **USE-5** (Must): predict what the actor would act on, at the resolution they act on it. Check how the source built its label before accepting it.
    [^source]: Source task before our own: the source's own task and split are tested first and preferred when valid.
 
