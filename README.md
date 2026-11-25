@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-19 16:07 UTC: 170 claim(s) (Andrej 139, Lennart 12, Myunghwan 19).
+As of 2026-11-25 12:57 UTC: 172 claim(s) (Andrej 141, Lennart 12, Myunghwan 19).
 
 ## Andrej
 
@@ -20,9 +20,10 @@ As of 2026-11-19 16:07 UTC: 170 claim(s) (Andrej 139, Lennart 12, Myunghwan 19).
 | `asp_potassco_classification` | review | 2026-11-11 | 2026-11-18 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `audiology_diagnosis` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `australian_vehicle_insurance_2004_2005` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
+| `bacteria_id_raman` | review | 2026-11-25 | 2026-12-02 | Curator review of the two RamanBench definitions; taken over from Lennart by agreement |
 | `bad_customer_detection` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `bank_customer_churn` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
-| `bank_marketing` | review | 2026-11-12 | 2026-11-19 | BeyondArena v0.2 review page (Andrej) |
+| `bank_marketing` | review | 2026-11-12 | 2026-11-19 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `biogeographical_ancestry_prediction` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `biomechanical_orthopaedic_prediction` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `bioresponse` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -116,6 +117,7 @@ As of 2026-11-19 16:07 UTC: 170 claim(s) (Andrej 139, Lennart 12, Myunghwan 19).
 | `qsar_fish_toxicity` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `qsar_oral_toxicity` | review | 2026-11-11 | 2026-11-18 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `qsar_tid_11` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
+| `raman_mlrod` | review | 2026-11-25 | 2026-12-02 | Curator review of the two RamanBench definitions; taken over from Lennart by agreement |
 | `regensburg_pediatric_appendicitis` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `rossmann_store_sales` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `santander_customer_satisfaction` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -125,7 +127,7 @@ As of 2026-11-19 16:07 UTC: 170 claim(s) (Andrej 139, Lennart 12, Myunghwan 19).
 | `sat11_hand_algo_runtime` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `sberbank_housing_market_forecasting` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `sdss_17` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
-| `sdss_dr17_star_galaxy_quasar` | triage | 2026-11-12 | 2026-11-19 | BeyondArena v0.2 review page (Andrej): DR17's full set, from sdss_17 issue 8 |
+| `sdss_dr17_star_galaxy_quasar` | triage | 2026-11-12 | 2026-11-19 (expired) | BeyondArena v0.2 review page (Andrej): DR17's full set, from sdss_17 issue 8 |
 | `seismic_bumps` | add | 2026-11-19 | 2026-11-26 | add-dataset (Andrej, review page) |
 | `sepsis_survival_minimal_clinical_records` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `sf_permit_time` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -137,7 +139,7 @@ As of 2026-11-19 16:07 UTC: 170 claim(s) (Andrej 139, Lennart 12, Myunghwan 19).
 | `superconductivity` | review | 2026-11-11 | 2026-11-18 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `taiwanese_bankruptcy_prediction` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `thyroid_discordant` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
-| `thyroid_discordant_archive` | review | 2026-11-12 | 2026-11-19 | BeyondArena v0.2 review page (Andrej): rebuild of thyroid_discordant from the archive (its issue 4, option C) |
+| `thyroid_discordant_archive` | review | 2026-11-12 | 2026-11-19 (expired) | BeyondArena v0.2 review page (Andrej): rebuild of thyroid_discordant from the archive (its issue 4, option C) |
 | `tour_travels_churn` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `video_transcoding_time_prediction` | review | 2026-11-11 | 2026-11-18 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `wadden_sea_sibes_macoma_abundance` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
@@ -172,13 +174,13 @@ As of 2026-11-19 16:07 UTC: 170 claim(s) (Andrej 139, Lennart 12, Myunghwan 19).
 | `2024_lusaka_mobility_prediction_hackathon` | review | 2026-10-28 | 2026-11-06 (expired) | Curator accepted; build, reload and traced-input reproduction complete. Submitted in PR #33: https://github.com/TabArena/data-foundry/pull/33 . Accepted approximations and source/descriptor limits are documented. Awaiting PR review/merge; retain Myunghwan ownership until merged. |
 | `ai4d_lab_tanzania_tourism_classification_challenge` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `airqo_low_cost_air_quality_monitor_calibration_challenge` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
-| `bigsoldb_2` | triage | 2026-11-10 | 2026-11-19 | Myunghwan accepted molecular-solvent ln mole-fraction regression with direct ln-RMSE. Verified current-main build: 165,781 rows, 810 solutes, 606 families, seven inputs, nine folds; zero errors/warnings, saved reload and CSV-only checksum reproduction pass. Draft PR #96: https://github.com/TabArena/data-foundry/pull/96 . Retain Myunghwan ownership until merged; both source-row and active-polymer exclusions are settled. |
+| `bigsoldb_2` | triage | 2026-11-10 | 2026-11-19 (expired) | Myunghwan accepted molecular-solvent ln mole-fraction regression with direct ln-RMSE. Verified current-main build: 165,781 rows, 810 solutes, 606 families, seven inputs, nine folds; zero errors/warnings, saved reload and CSV-only checksum reproduction pass. Draft PR #96: https://github.com/TabArena/data-foundry/pull/96 . Retain Myunghwan ownership until merged; both source-row and active-polymer exclusions are settled. |
 | `chicago_rideshare_trip_duration` | triage | 2026-11-10 | 2026-11-17 (expired) | Myunghwan requested non-pending dependency candidates reserved; Papyrus screening review first. Label collection must finish before held-out prediction starts. |
 | `chicago_traffic_crashes` | triage | 2026-10-29 | 2026-11-05 (expired) | Selected by Myunghwan as the next large-scale candidate (about 1.1 million crashes). Reservation for screening review; no scientific inclusion or build decision. |
 | `chromophore_optical_properties_db` | triage | 2026-11-05 | 2026-11-17 (expired) | Curator accepted first absorption-peak regression with 1A/2A, fallback RMSE and gas warning. Build, reload and single-traced-CSV checksum reproduction complete; 17,510 rows, 3,335 groups, nine folds. Source/build commits 8a50be6cc and 144b0ae82. Integration into existing draft PR #59: https://github.com/TabArena/data-foundry/pull/59 . Retain Myunghwan ownership until merged. |
-| `duolingo_spaced_repetition_recall` | triage | 2026-10-31 | 2026-11-23 | Updated installed workflow at9048f36a completed add/review/build with prior curator decisions retained. Local commits 90e77a7c and 3be188a7; container 01a1ae4b-07ce-7d55-b885-f6b11cb52d72. Same accepted checksum/data/splits; reload and traced-input reproduction pass, zero errors/warnings. Native review records explicit retention with original marks preserved. Train-only, own-row prediction protocol stays required; downstream method checks remain unverified. Not pushed or submitted; retain Myunghwan ownership pending integration, existing stage preserved. |
+| `duolingo_spaced_repetition_recall` | triage | 2026-10-31 | 2026-11-23 (expired) | Updated installed workflow at9048f36a completed add/review/build with prior curator decisions retained. Local commits 90e77a7c and 3be188a7; container 01a1ae4b-07ce-7d55-b885-f6b11cb52d72. Same accepted checksum/data/splits; reload and traced-input reproduction pass, zero errors/warnings. Native review records explicit retention with original marks preserved. Train-only, own-row prediction protocol stays required; downstream method checks remain unverified. Not pushed or submitted; retain Myunghwan ownership pending integration, existing stage preserved. |
 | `economic_well_being_prediction_challenge` | triage | 2026-10-28 | 2026-11-11 (expired) | Curator ship accepted. Local build, reload and traced-input reproduction verified (2026-11-03); temporal x unseen-country, 21,454 rows, 16 evaluations. Local branch prepared separately; intentionally not added to existing PR. Retain ownership pending separately authorized publication/integration. |
-| `fugaku_hpc_job_failure` | add | 2026-11-03 | 2026-11-23 | Curator decisions reused; maintained installation 9048f36a repeat add/review/build cycle complete. Built/reloaded/minimal-input reproduction and existing backup of 43 input files freshly reverified; unchanged task with 2,500,499 rows and 388 predictors. Local commits c84f9b39 and 6b4bea76 on fugaku-skill-refresh-20261106; not pushed. Retain ownership pending upstream integration. First tuned benchmark family, baseline, probability and maturity/latency recheck remains required; known diagnostic limits retained. |
+| `fugaku_hpc_job_failure` | add | 2026-11-03 | 2026-11-23 (expired) | Curator decisions reused; maintained installation 9048f36a repeat add/review/build cycle complete. Built/reloaded/minimal-input reproduction and existing backup of 43 input files freshly reverified; unchanged task with 2,500,499 rows and 388 predictors. Local commits c84f9b39 and 6b4bea76 on fugaku-skill-refresh-20261106; not pushed. Retain ownership pending upstream integration. First tuned benchmark family, baseline, probability and maturity/latency recheck remains required; known diagnostic limits retained. |
 | `geoai_ground_level_no2_estimation_challenge` | triage | 2026-10-28 | 2026-11-06 (expired) | Curator accepted as implemented with documented label-QC, regional and observed-day coverage limits. Built and verified: 82,051 rows, 11 predictors, station-held-out 3x3 folds; reload and traced-input reproduction passed with zero warnings. Local commits 7b2837b and 8cba4df on geoai-no2-curation; not pushed or submitted. Retain Myunghwan ownership pending upstream integration; existing stage preserved by gateway. |
 | `lt_vehicle_loan_default_prediction` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `medical_facility_operational_data` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
