@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sendy_logistics_challenge
 container_format: 2
-checksum: v2:b0346b23f3e7b0419efe52440ea42afaa3105d065cb53315d00fba8eb16c0d34
+checksum: v2:200c7583887ed9bba0549100b56006665b9bccbe0048a375b3cc32014e3c8e4f
 build:
   uuid: 01a18a16-1f77-7fc2-b293-c8d8ca2eeefc
   checksum: v2:de47fa29784e3225f35fd7700d297905b233fab9369501a4d222bcca2baad69f
@@ -25,7 +25,7 @@ data:
     category: 4
     float64: 6
     int32: 4
-    int64: 6
+    int64: 7
   n_test_dataset_rows: null
 task:
   target: Time from Pickup to Arrival
@@ -33,13 +33,20 @@ task:
   metric: rmse
   metric_origin: source
   scoring_columns: null
-  split_regime: iid
+  split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
-  group_on: null
-  group_labels: null
+  group_on: month_class
+  group_labels: per_sample
   group_time_on: null
-  grouping: null
+  grouping:
+    prediction_unit: row
+    aggregation: null
+    context: none
+    n_groups: 7
+    test_groups_per_fold:
+      min: 2
+      max: 3
 splits:
   n_repeats: 3
   n_folds: 3
@@ -49,17 +56,26 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 13640
-    max: 13641
+    min: 12067
+    max: 16686
   n_test:
-    min: 6820
-    max: 6821
+    min: 3775
+    max: 8394
 bundle_checks:
   ok: true
   errors: []
   warnings: []
   infos: []
-  accepted: {}
+  accepted:
+    task_group_count_low: 'Decided (Andrej, 2026-11-23): the seven month classes are
+      the finest period the release gives (no month or year), so no more groups exist.'
+    groups_test_groups_few: 'Decided (Andrej, 2026-11-23): each test fold holds two
+      or three whole month classes, all seven classes split three ways; each fold
+      still scores 3,775 to 8,394 orders.'
+    groups_largest_share_high: 'Decided (Andrej, 2026-11-23): the largest class, 4,632
+      of the 20,461 orders (22.6%), is a real class of months that started on the
+      same weekday, not a catch-all value; with it in the test fold the model trains
+      on 59.5% to 63.2% of the orders.'
 decisions:
 - Pickup legs of 60 s or less dropped
 ---
@@ -68,9 +84,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `Time from Pickup to Arrival`, scored with `rmse` on IID splits. 20,461 rows and 19 features. Source: Zindi (2019).
+Regression of `Time from Pickup to Arrival`, scored with `rmse` on grouped splits by `month_class`. 20,461 rows and 19 features. Source: Zindi (2019).
 
-Built as `01a18a16-1f77-7fc2-b293-c8d8ca2eeefc` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:b0346b23f3e7b0419efe52440ea42afaa3105d065cb53315d00fba8eb16c0d34`, so the build is stale. See [Build](#build).
+Built as `01a18a16-1f77-7fc2-b293-c8d8ca2eeefc` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:200c7583887ed9bba0549100b56006665b9bccbe0048a375b3cc32014e3c8e4f`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -84,21 +100,20 @@ Built as `01a18a16-1f77-7fc2-b293-c8d8ca2eeefc` on 2026-10-29, but `dataset.py` 
 
 **Known at prediction time.** The customer, their platform and type, the rider, the day, weekday and time of the order's placement and of the rider's confirmation, the times of the rider's arrival at the pickup and of the pickup, the pickup and destination coordinates, the source's distance and the weather at placement.
 
-**What the test data stands for.** Three repeats of three random folds over the same release; customers and riders recur. The release has the day of the month and the weekday but no month order or year, so later periods cannot be held out.
+**What the test data stands for.** Three repeats of three folds over whole month classes, the months that started on the same weekday: the test orders come from months the model has not seen. The release has the day of the month and the weekday but no month or year, so the classes cannot be put in time order and later periods cannot be held out; customers and riders recur.
 
 **Our changes to the source.** The rider table the competition offered is left out, since its order counts, tenure and ratings were taken after these orders. The 740 legs of 60 seconds or less leave: the rider marked the pickup at the destination, so the customer already had the parcel and no one acts on that arrival time.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The source's own task at its moment. The label is the riders' marks; a few late pickup marks above 60 seconds may remain. Random folds over one release stand in for future orders. Kept: a weak leak across rows (features from the same rider's later orders that day) and the source distance, not measured between the rider's taps but possibly a GPS total recorded after delivery.
+> **Use case fit: approximate (a stand-in with a known gap).** The source's own task at its moment. The label is the riders' marks; a few late pickup marks above 60 seconds may remain. Held-out month classes of one release stand in for future months. Kept: a weak leak across rows (features from the same rider's later orders that day) and the source distance, not measured between the rider's taps but possibly a GPS total recorded after delivery.
 
 ## Files in this folder
 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
-| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/sendy_logistics_challenge.md`](../../../../curation/records/sendy_logistics_challenge.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/sendy_logistics_challenge.md`](../../../../curation/records/sendy_logistics_challenge.md)
 - The original source: <https://zindi.world/competitions/sendy-logistics-challenge/data>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -132,13 +147,15 @@ Only curators run `build`, when the dataset ships.
 | year | 2019 |
 | domain | business & marketing |
 | license | Zindi competition terms; no standalone open-data licence specified |
-| data_tags | IID, ForcedIIDFromTemporal, Anonymized, Spatial |
+| data_tags | Non-IID, Grouped, Anonymized, Spatial, ForcedGroupedFromTemporal |
 | reference | sendy2019logistics |
-| rows x columns | 20,461 x 20 |
+| rows x columns | 20,461 x 21 |
 | task.target | Time from Pickup to Arrival |
 | task.problem_type | regression |
 | task.metric | rmse |
-| task.split_regime | iid |
+| task.split_regime | grouped_non_iid |
+| task.group_on | month_class |
+| task.group_labels | per_sample |
 
 **Metric**
 
@@ -176,15 +193,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 20,461 rows of the final frame (random rows: the frame is shuffled); 12 of 20 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 20,461 rows of the final frame (random rows: the frame is shuffled); 12 of 21 columns, the target first. Cells are cut at 40 characters.
 
 | Time from Pickup to Arrival | User Id | Rider Id | Platform Type | Personal or Business | Placement - Day of Month | Placement - Weekday (Mo = 1) | Confirmation - Day of Month | Confirmation - Weekday (Mo = 1) | Distance (KM) | Temperature | Precipitation in millimeters |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 790 | User_Id_1237 | Rider_Id_228 | 1 | Personal | 14 | 5 | 14 | 5 | 2 | 18.4 | nan |
-| 1936 | User_Id_3517 | Rider_Id_871 | 3 | Business | 9 | 2 | 9 | 2 | 16 | 27.1 | nan |
-| 408 | User_Id_2267 | Rider_Id_148 | 2 | Personal | 19 | 7 | 19 | 7 | 2 | 21 | nan |
-| 1790 | User_Id_1899 | Rider_Id_548 | 3 | Business | 10 | 1 | 10 | 1 | 13 | nan | nan |
-| 2590 | User_Id_1482 | Rider_Id_863 | 3 | Business | 1 | 1 | 1 | 1 | 18 | nan | nan |
+| 523 | User_Id_633 | Rider_Id_206 | 3 | Business | 18 | 1 | 18 | 1 | 4 | 29.7 | nan |
+| 3957 | User_Id_2701 | Rider_Id_434 | 3 | Business | 27 | 2 | 27 | 2 | 9 | 18.9 | 2.1 |
+| 1074 | User_Id_909 | Rider_Id_125 | 3 | Business | 21 | 1 | 21 | 1 | 8 | 25.3 | nan |
+| 630 | User_Id_1557 | Rider_Id_189 | 3 | Business | 17 | 1 | 17 | 1 | 7 | 24.8 | nan |
+| 1054 | User_Id_3331 | Rider_Id_878 | 3 | Business | 5 | 3 | 5 | 3 | 10 | 25 | nan |
 
 ## Curation notes
 
@@ -212,7 +229,7 @@ We start with Train.csv of the Zindi Sendy Logistics Challenge (21,201 labelled 
   the 740 leave, CC below). With them, LightGBM on the first repeat put 4.6% of its squared error on the
   legs of 10 s or less, a model trained only on legs of 100 s or more lost 11.5 RMSE over the nine splits
   (744.2 to 755.7), and an explicit wait feature gained 8.5: the task partly scored spotting late marks.
-- CC (2026-11-05, Lennart): the 740 pickup legs of 60 s or less leave (issue 4, B; CLEAN-11's clause for a
+- CC (2026-11-05, Lennart): the 740 pickup legs of 60 s or less leave (CLEAN-11's clause for a
   row whose target the source names as not the task's quantity; `MAX_LATE_MARK_SECONDS`, guarded at 740).
   The winners' page says the rider "forgot to mark that he took the order and did it just before it was
   delivered" (https://zindi.world/learn/meet-the-winners-of-the-sendy-logisitics-challenge). On these legs
@@ -232,7 +249,7 @@ We start with Train.csv of the Zindi Sendy Logistics Challenge (21,201 labelled 
   is 7,883 s, and none passes 3 h.
 - Anomaly: five confirmation clocks precede placement by 1-42 s; kept as recorded.
 - `Distance (KM)`, tested: not measured between the rider's two taps; a GPS total recorded after delivery not
-  excluded (Lennart, 2026-11-05, issue 5, A as (a); it replaces the `Potential leak, kept on purpose` label of
+  excluded (Lennart, 2026-11-05; it replaces the `Potential leak, kept on purpose` label of
   2026-11-04; LEAK-38 names it among the kept fields). The dictionary reads "Distance covered (KM) - The
   distance from Pickup to Destination", which a trip records at arrival, while a distance Sendy computes
   when it prices the order is known at placement; the page does not say which. On Train.csv's 21,201 orders
@@ -245,43 +262,83 @@ We start with Train.csv of the Zindi Sendy Logistics Challenge (21,201 labelled 
 - Potential leak, kept on purpose (weak, across rows): features a participant builds from the same rider's
   later orders that day (their clocks minus this pickup, the day's order count), which do not exist at
   pickup, gain 4.2 RMSE against a noise spread of 0.2, positive on all 9 splits (3.4, 0.3 and 8 of 9 before
-  the drop above). Our inputs hold no such feature; a rider-day split cannot be built cleanly, since day and
-  weekday merge months.
+  the drop above, on random folds). Our inputs hold no such feature. The month-class folds (2026-11-19) keep
+  every calendar day, and so every rider-day, on one side.
 - Weather is matched to placement by the source, "measured every three hours"; the anonymised values vary
   within an hour. Missing values stay missing. No recorded precipitation is 0 (541 values, 0.1-99.1 mm),
   so a blank where a temperature exists most likely means no rain; every row without a temperature also
   lacks precipitation.
 - Metric: the source's RMSE in seconds, with no target transform.
 - Test.csv's 7,068 orders (per the 2026-10-29 audit) have no labels and are not used.
+- Time basis: ForcedGroupedFromTemporal (Andrej, 2026-11-19; decision B; `ForcedIIDFromTemporal` before): the use case predicts orders of later months from a model fit on earlier ones, but the release has the day of the month and the weekday and no month or year. The stationary-relation test reads not flat (v3 pooled +4.6 ± 1.1 s RMSE for LightGBM and +4.0 ± 0.8 s for Kumo-Tabular against floors of 2.2-2.5 s); whole month classes are held out; the classes are not in time order (a class mixes months from across the year). `month_class` = (placement weekday - placement day of month) mod 7, the weekday the month started on (0 = Monday), built in `_clean` as the group key only (no input): seven classes of 1,109 to 4,632 orders. The test classes are unseen months, not later ones: each fold also trains on months after its test months, and since the classes have no order, what that adds to the score cannot be measured.
 
 ## Splits
 
-Default repeated random folds over the labelled orders; customers and riders recur, as both are known at
-pickup. A temporal split is not possible: the release has the day of the month and the weekday but no month
-order or year. CC (2026-10-29, Myunghwan): a supported order sequence would permit a cutoff; otherwise accept
-random evaluation with limited value. Sorting by the number in `Order No` gives day/weekday adjacency of
-0.669% against 0.693% at random over all 28,269 Train/Test orders (the 2026-10-29 audit; 0.627% against
-0.731% on Train alone), so it holds no chronology. Weekday minus day of month (mod 7) gives the weekday each
-month started on: 7 month classes, which no run of calendar months puts in a unique order. Holding out one
-class gives RMSE 734.1 against 733.0 for random folds of the same size, and holding out calendar days 737.0
-against 734.9 on these folds (LightGBM; 750.1 against 748.8 and 755.1 against 752.5 before the 2026-11-05
-drop of the short legs), so same-period orders on both sides barely help. The split is
-forced from temporal (SPLIT-8) and does not test future periods. If a later release supplies full dates,
-build chronological windows.
+Grouped 3-fold cross-validation over the seven month classes with 3 repeats: a class is the months that
+started on the same weekday, (placement weekday - placement day of month) mod 7, as the release has the day of
+the month and the weekday but no month or year. Each test fold holds two or three whole classes, 3,775 to
+8,394 orders (18% to 41% of the 20,461), so the test orders come from calendar months the model has not seen
+(Andrej, 2026-11-19, decision B; random folds before):
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 13,640 to 13,641 rows, test 6,820 to 6,821 rows.
+| repeat | test classes (orders)                  | test orders | train share |
+|--------|----------------------------------------|-------------|-------------|
+| 1      | 1, 3, 6 (2,666; 1,785; 1,109)          | 5,560       | 72.8%       |
+| 1      | 0, 2 (3,660; 3,300)                    | 6,960       | 66.0%       |
+| 1      | 4, 5 (4,632; 3,309)                    | 7,941       | 61.2%       |
+| 2      | 3, 4, 6                                | 7,526       | 63.2%       |
+| 2      | 0, 1                                   | 6,326       | 69.1%       |
+| 2      | 2, 5                                   | 6,609       | 67.7%       |
+| 3      | 2, 3, 5                                | 8,394       | 59.0%       |
+| 3      | 0, 4                                   | 8,292       | 59.5%       |
+| 3      | 1, 6                                   | 3,775       | 81.6%       |
+
+Why grouped: the stationary-relation test reads not flat (v3 pooled +4.6 ± 1.1 s RMSE for LightGBM and
++4.0 ± 0.8 s for Kumo-Tabular from training on other periods, against noise floors of 2.2-2.5 s), so orders of
+the same months on both sides would flatter the score. The classes are not in time order (a class mixes months
+from across the year), so no window can test later months: the split is forced from temporal (SPLIT-8) to
+grouped. Customers and riders recur across classes, as both are known at pickup. CC (2026-10-29, Myunghwan):
+a supported order sequence would permit a cutoff. Sorting by the number in `Order No` gives day/weekday
+adjacency of 0.669% against 0.693% at random over all 28,269 Train/Test orders (the 2026-10-29 audit; 0.627%
+against 0.731% on Train alone), so it holds no chronology. If a later release supplies full dates, build
+chronological windows.
+
+3 repeat(s) x 3 fold(s) with seed 4267; train 12,067 to 16,686 rows, test 3,775 to 8,394 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 13640 | 6821 |
-| 0 | 1 | 13641 | 6820 |
-| 0 | 2 | 13641 | 6820 |
-| 1 | 0 | 13640 | 6821 |
-| 1 | 1 | 13641 | 6820 |
-| 1 | 2 | 13641 | 6820 |
-| 2 | 0 | 13640 | 6821 |
-| 2 | 1 | 13641 | 6820 |
-| 2 | 2 | 13641 | 6820 |
+| 0 | 0 | 14901 | 5560 |
+| 0 | 1 | 13501 | 6960 |
+| 0 | 2 | 12520 | 7941 |
+| 1 | 0 | 12935 | 7526 |
+| 1 | 1 | 14135 | 6326 |
+| 1 | 2 | 13852 | 6609 |
+| 2 | 0 | 12067 | 8394 |
+| 2 | 1 | 12169 | 8292 |
+| 2 | 2 | 16686 | 3775 |
+
+## Group structure
+
+One group is a month class: the orders placed in calendar months that started on the same weekday, (placement weekday - placement day of month) mod 7. The release has the day of the month and the weekday but no month or year, so the class is the finest period the data gives. Sendy predicts the arrival time of each order at pickup from a model trained on earlier months; whole month classes are held out so that the test orders come from months the model has not seen. Each order is one prediction, made from that order alone.
+
+| field | value |
+|---|---|
+| group column | `month_class` |
+| labels | per_sample |
+| order inside a group | none |
+| prediction unit | row |
+| known about a group when predicting | none |
+
+| statistic | value |
+|---|---|
+| groups | 7 |
+| rows per group (min / median / max) | 1,109 / 3,300.0 / 4,632 |
+| largest group | 22.6% of the rows |
+| test groups per fold | 2 to 3 |
+| groups of two or more rows with a single label | 0.0% |
+| nearest neighbour in the same group | 36.9% of the rows (chance: 16.3%) |
+| label variance explained by the group | 0.00 (shuffled groups: 0.00) |
+
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Decisions
 
@@ -298,15 +355,21 @@ The rider marked the pickup at the destination (the winners' page), so the custo
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
+
+Accepted on purpose:
+
+- `task_group_count_low`: Decided (Andrej, 2026-11-23): the seven month classes are the finest period the release gives (no month or year), so no more groups exist.
+- `groups_test_groups_few`: Decided (Andrej, 2026-11-23): each test fold holds two or three whole month classes, all seven classes split three ways; each fold still scores 3,775 to 8,394 orders.
+- `groups_largest_share_high`: Decided (Andrej, 2026-11-23): the largest class, 4,632 of the 20,461 orders (22.6%), is a real class of months that started on the same weekday, not a catch-all value; with it in the test fold the model trains on 59.5% to 63.2% of the orders.
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (20 rows)</summary>
+<summary>Show the table (21 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -314,22 +377,23 @@ The rider marked the pickup at the destination (the winners' page), so the custo
 | Rider Id | category | 0 | 0 | 922 | Rider_Id_726, Rider_Id_576, Rider_Id_523, Rider_Id_101, Rider_Id_205, Rider_Id_… |
 | Platform Type | category | 0 | 0 | 4 | 3, 1, 2, 4 |
 | Personal or Business | category | 0 | 0 | 2 | Business, Personal |
-| Precipitation in millimeters | float64 | 19920 | 97.36 | 54 | 2.0, 1.9, 1.1, 0.9, 3.1, 3.0, 2.1, 2.9, 1.0, 0.3 |
-| Temperature | float64 | 4171 | 20.39 | 188 | 22.4, 24.7, 23.8, 23.7, 24.6, 23.6, 22.5, 25.2, 24.0, 24.8 |
+| Precipitation in millimeters | float64 | 19920 | 97.36 | 54 | 2.0, 1.9, 1.1, 0.9, 3.1, 3.0, 2.1, 2.9, 1.0, 3.9 |
+| Temperature | float64 | 4171 | 20.39 | 188 | 22.4, 24.7, 23.8, 23.7, 23.6, 24.6, 22.5, 25.2, 24.0, 24.8 |
 | Pickup Lat | float64 | 0 | 0 | 3638 | -1.2552, -1.2571, -1.3009, -1.3004, -1.3167, -1.2584, -1.2726, -1.2909, -1.2794… |
 | Pickup Long | float64 | 0 | 0 | 3627 | 36.7822, 36.7951, 36.8282, 36.8297, 36.8302, 36.8048, 36.7947, 36.823, 36.8254,… |
 | Destination Lat | float64 | 0 | 0 | 5239 | -1.2552, -1.3004, -1.2657, -1.2601, -1.2628, -1.2571, -1.2638, -1.3064, -1.2584… |
 | Destination Long | float64 | 0 | 0 | 5207 | 36.7822, 36.8297, 36.8089, 36.7818, 36.8238, 36.7951, 36.793, 36.752, 36.8048, … |
-| Placement - Seconds after midnight | int32 | 0 | 0 | 15298 | 50779, 37903, 46263, 51851, 56159, 42352, 52407, 52794, 34863, 37796 |
-| Confirmation - Seconds after midnight | int32 | 0 | 0 | 15329 | 35812, 38311, 52117, 40898, 43458, 55253, 52866, 37088, 57972, 51372 |
-| Arrival at Pickup - Seconds after midnight | int32 | 0 | 0 | 15357 | 46973, 54161, 52961, 35360, 58526, 52205, 44213, 53564, 43639, 56422 |
-| Pickup - Seconds after midnight | int32 | 0 | 0 | 15289 | 43460, 40768, 52090, 47975, 46309, 47500, 56837, 37412, 47159, 39200 |
+| Placement - Seconds after midnight | int32 | 0 | 0 | 15298 | 50779, 46263, 51851, 37903, 52243, 52013, 34863, 52794, 56159, 42352 |
+| Confirmation - Seconds after midnight | int32 | 0 | 0 | 15329 | 35812, 33457, 40478, 43379, 55253, 56870, 52117, 56171, 38311, 41010 |
+| Arrival at Pickup - Seconds after midnight | int32 | 0 | 0 | 15357 | 52961, 46973, 54161, 39632, 54300, 40512, 37360, 53564, 58526, 43227 |
+| Pickup - Seconds after midnight | int32 | 0 | 0 | 15289 | 52090, 43460, 40768, 47500, 55354, 44207, 39200, 54072, 55393, 53274 |
 | Placement - Day of Month | int64 | 0 | 0 | 31 | 8, 13, 7, 14, 6, 28, 4, 18, 15, 11 |
 | Placement - Weekday (Mo = 1) | int64 | 0 | 0 | 7 | 4, 5, 2, 3, 1, 6, 7 |
 | Confirmation - Day of Month | int64 | 0 | 0 | 31 | 8, 13, 7, 14, 6, 28, 4, 18, 15, 5 |
 | Confirmation - Weekday (Mo = 1) | int64 | 0 | 0 | 7 | 4, 5, 2, 3, 1, 6, 7 |
 | Distance (KM) | int64 | 0 | 0 | 45 | 8, 5, 6, 7, 4, 9, 10, 3, 11, 14 |
-| Time from Pickup to Arrival | int64 | 0 | 0 | 4015 | 1424, 885, 1057, 1097, 1169, 917, 943, 1142, 1046, 705 |
+| Time from Pickup to Arrival | int64 | 0 | 0 | 4015 | 1424, 885, 1057, 1046, 943, 1097, 917, 705, 1169, 1142 |
+| month_class | int64 | 0 | 0 | 7 | 4, 0, 5, 2, 1, 3, 6 |
 
 </details>
 
@@ -342,7 +406,7 @@ The rider marked the pickup at the destination (the winners' page), so the custo
 ### Numeric features
 
 <details>
-<summary>Show the table (16 rows)</summary>
+<summary>Show the table (17 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -362,6 +426,7 @@ The rider marked the pickup at the destination (the winners' page), so the custo
 | Confirmation - Seconds after midnight | 20461 | 46591.9 | 9137.94 | 24497 | 82762 |
 | Arrival at Pickup - Seconds after midnight | 20461 | 47379 | 9144.12 | 25542 | 83400 |
 | Pickup - Seconds after midnight | 20461 | 48087.8 | 9129.63 | 26360 | 83621 |
+| month_class | 20461 | 2.75392 | 1.89554 | 0 | 6 |
 
 </details>
 
@@ -402,4 +467,4 @@ The rider marked the pickup at the destination (the winners' page), so the custo
 | data_foundry_version | 0.0.5 |
 | git_sha | b58e9ac9185941edb42d19f681fe534aad8ec734 |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:b0346b23f3e7b0419efe52440ea42afaa3105d065cb53315d00fba8eb16c0d34` |
+| stale | yes: the definition now gives checksum `v2:200c7583887ed9bba0549100b56006665b9bccbe0048a375b3cc32014e3c8e4f` |
