@@ -2,14 +2,28 @@
 report_format: data-foundry-report-v2
 unique_name: 2_month_survival_rate_prediction
 container_format: 2
-checksum: v2:40f407507e778cf81b63e156749952df3719be39cb5cbda2023aa62fbe6de557
-build: null
+checksum: v2:86f44716efc52a4bb248cb9857976324e449e5800496e9adf6fe75c8da806129
+build:
+  uuid: 01a207f8-cef8-7844-bd03-78434d377a51
+  checksum: v2:86f44716efc52a4bb248cb9857976324e449e5800496e9adf6fe75c8da806129
+  built_at: '2026-11-23T10:34:39+00:00'
+  path: 2_month_survival_rate_prediction/01a207f8-cef8-7844-bd03-78434d377a51
+  data_foundry_version: 0.0.5
+  git_sha: ab3a9fa4b776951236de5736e45a661755b10d58-dirty
+  libraries:
+    python: 3.11.16
+    pandas: 2.3.3
+    numpy: 2.4.6
+    pyarrow: 24.0.0
+    scikit-learn: 1.7.2
+    polars: 1.44.2
 build_stale: false
 data:
   n_rows: 8967
   n_features: 22
   dtypes:
     category: 8
+    datetime64[ns]: 1
     float64: 13
     int64: 2
   n_test_dataset_rows: null
@@ -19,33 +33,46 @@ task:
   metric: roc_auc
   metric_origin: source
   scoring_columns: null
-  split_regime: iid
+  split_regime: temporal_non_iid
   stratify_on: death_within_2_months
-  time_on: null
+  time_on: entry_date
+  time_of: label
   group_on: null
   group_labels: null
   group_time_on: null
   grouping: null
 splits:
   n_repeats: 3
-  n_folds: 3
+  n_folds: 1
   random_state: 4267
-  time_horizon: null
-  time_horizon_unit: null
-  time_gap: null
-  time_gap_unit: null
+  time_horizon: 6
+  time_horizon_unit: months
+  time_gap: 60
+  time_gap_unit: days
   n_train:
-    min: 5978
-    max: 5978
+    min: 5029
+    max: 7369
   n_test:
-    min: 2989
-    max: 2989
+    min: 1099
+    max: 1247
 bundle_checks:
   ok: true
   errors: []
   warnings: []
   infos: []
-  accepted: {}
+  accepted:
+    task_label_time_gap: 'The 60-day gap is the label''s own delay: death within 60
+      days of entry is known 60 days later, so each window trains only on patients
+      whose outcome was known when it starts (SPLIT-10). `entry_date` is declared
+      `time_of="label"` because it is our reconstruction of the entry order and no
+      field of the release, so no actor holds it at the prediction point and it must
+      stay out of the inputs; it dates the entry, not the moment the label became
+      known, and the gap is not redundant with it (Andrej, 2026-11-19).'
+    splits_below_target: Three windows against the nine an IID split of 8,967 patients
+      would get (SPLIT-33). A fourth window, the first half of 1992, would train only
+      on phase I (4,232 patients, 47%), below the floor of half the data, and the
+      study enrolled no one from mid-1991 to January 1992. The splits comment names
+      the target, the count reached and what stops more (SPLIT-15).
 decisions:
 - 'Phase II physiology restored: published in other patients'' rows'
 - Where each block of the file took its physiology from
@@ -54,15 +81,16 @@ decisions:
 - Interview fields dropped
 - Patients who died on study day 3 are dropped
 - 'Target: death within 2 months'
+- Three half-year windows on the rebuilt entry date, with a 60-day gap
 ---
 
 # 2_month_survival_rate_prediction
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `death_within_2_months`, scored with `roc_auc` on IID splits. 8,967 rows and 22 features. Source: Other (2003).
+Binary classification of `death_within_2_months`, scored with `roc_auc` on temporal splits by `entry_date`. 8,967 rows and 22 features. Source: Other (2003).
 
-Not built yet. The current definition gives checksum `v2:40f407507e778cf81b63e156749952df3719be39cb5cbda2023aa62fbe6de557`.
+Built as `01a207f8-cef8-7844-bd03-78434d377a51` on 2026-11-23. See [Build](#build).
 
 ## In brief
 
@@ -74,13 +102,13 @@ Not built yet. The current definition gives checksum `v2:40f407507e778cf81b63e15
 
 **Predicted.** Whether the patient dies within 60 days of study entry (33% do).
 
-**Known at prediction time.** Age, sex, race, diagnosis, other illnesses, days in hospital before study entry, and the day-3 vital signs and lab values.
+**Known at prediction time.** Age, sex, race, diagnosis, other illnesses, days in hospital before study entry, and the day-3 vital signs and lab values; the rebuilt entry date orders the split but is no model input.
 
-**What the test data stands for.** Random patients, so the test data stands for new patients of the same hospitals and years.
+**What the test data stands for.** Three half-year windows of study entry, from the second half of 1992 to January 1994, each trained on the patients who entered at least 60 days earlier, when their outcome was known. The file has no entry date; it is rebuilt from the file order and the survivors' follow-up.
 
 **Our changes to the source.** In the public file the day-3 measurements of most phase II patients belong to other patients; we moved them back to their own rows with the study's archive. We drop the earlier models' scores and, since the task is the objective estimate set beside the physician's, the physicians' own estimates and the DNR orders.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is recorded by day 3 and the outcome follows within two months, as when the model is used. The care is that of 1989-1994.
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is recorded by day 3 and the outcome follows within two months, as when the model is used, and each window trains only on outcomes known when it starts. The care is that of 1989-1994, and the entry date is rebuilt, not recorded.
 
 ## Files in this folder
 
@@ -89,7 +117,7 @@ Not built yet. The current definition gives checksum `v2:40f407507e778cf81b63e15
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/2_month_survival_rate_prediction.md`](../../../../curation/records/2_month_survival_rate_prediction.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/2_month_survival_rate_prediction.md`](../../../../curation/records/2_month_survival_rate_prediction.md)
 - The original source: <https://hbiostat.org/data/repo/supportdesc>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -101,11 +129,13 @@ Not built yet. The current definition gives checksum `v2:40f407507e778cf81b63e15
 Two downloads. Every value of the dataset comes from the first; the second only tells where each patient's physiology sits in it.
 
 1. support2.csv (all 9,105 SUPPORT patients, 47 variables) from the Vanderbilt Biostatistics data repository (https://hbiostat.org/data, "SUPPORT study datasets"), which released this extract of the SUPPORT study data. The file is not versioned: ours is dated 2003-06-23 inside the zip and has SHA-256 79621945edf2a5c8dc36359684ff356d3c6025e773ba4fefac26f865f7894c78. UCI dataset 880 (SUPPORT2, https://archive.ics.uci.edu/static/public/880/data.csv) serves the same table, with the same misplaced phase II physiology (see the curation notes); it differs only in the rounding of prg6m, which we drop.
-2. The full study data, ICPSR 2957 V2 (https://doi.org/10.3886/ICPSR02957.v2, Knaus and Lynn, released 2020-02-20): the public-use parts 9 ("Physiology Data, SUPPORT Phases I and II and HELP") and 10 ("Key Common Analytical Variables, SUPPORT Phases I and II and HELP"), as ASCII data with their data maps. ICPSR asks for a free login and the acceptance of its terms of use, so there is no download command: log in at https://www.icpsr.umich.edu/web/ICPSR/studies/2957, download DS9 and DS10 (each a zip with the folder ICPSR_02957) and unzip both into local-data-warehouse/2_month_survival_rate_prediction/icpsr_2957/. Ours: 02957-0009-Data.txt SHA-256 96859cd2860862d670379def714badcd314c90ea3445c6f6da38d1c32ad56b7d, 02957-0010-Data.txt SHA-256 1a9a41ba78ba13db60d9e4ce9347922f5f2fad77f386ef02ac802d9a7bb4fd86. ICPSR's terms forbid passing these files on.
+2. The full study data, ICPSR 2957 V2 (https://doi.org/10.3886/ICPSR02957.v2, Knaus and Lynn, released 2020-02-20): the public-use parts 9 ("Physiology Data, SUPPORT Phases I and II and HELP") and 10 ("Key Common Analytical Variables, SUPPORT Phases I and II and HELP"), as ASCII data with their data maps. ICPSR asks for a free login and the acceptance of its terms of use, so there is no download command: log in at https://www.icpsr.umich.edu/web/ICPSR/studies/2957, download DS9 and DS10 (each a zip with the folder ICPSR_02957) and unzip both into local-data-warehouse/2_month_survival_rate_prediction/icpsr_2957/. The study-level download gives the same parts in one zip (ICPSR_02957-V2.zip, every part under ICPSR_02957/DSxxxx), from which the two parts can be taken alone. Ours: 02957-0009-Data.txt SHA-256 96859cd2860862d670379def714badcd314c90ea3445c6f6da38d1c32ad56b7d, 02957-0010-Data.txt SHA-256 1a9a41ba78ba13db60d9e4ce9347922f5f2fad77f386ef02ac802d9a7bb4fd86. ICPSR's terms forbid passing these files on.
 
 mkdir -p local-data-warehouse/2_month_survival_rate_prediction && cd local-data-warehouse/2_month_survival_rate_prediction && wget https://hbiostat.org/data/repo/support2csv.zip && unzip support2csv.zip && rm support2csv.zip
-# after downloading DS9 and DS10 from ICPSR (login), in the same folder:
+# after downloading from ICPSR (login), in the same folder, either the two parts:
 unzip -o <DS9 zip> -d icpsr_2957 && unzip -o <DS10 zip> -d icpsr_2957
+# or the two parts out of the whole-study zip:
+unzip -o <study zip> "ICPSR_02957/DS0009/*" "ICPSR_02957/DS0010/*" -d icpsr_2957
 ```
 
 Then, from the repository root:
@@ -125,14 +155,16 @@ Only curators run `build`, when the dataset ships.
 | year | 2003 |
 | domain | medical & healthcare |
 | license | Free use with attribution: hbiostat.org/data states "Permission is granted to anyone wishing to use the data sets provided here" and asks to cite the original paper and Vanderbilt Biostatistics. Every value of the dataset comes from that file. The ICPSR 2957 public-use files, read only to find the rows of the phase II physiology, are under ICPSR's terms of use (no redistribution without ICPSR's written agreement; cite the study) and are not part of the dataset |
-| data_tags | IID |
+| data_tags | Non-IID, Temporal |
 | reference | knaus1995support,knaus2020supporticpsr |
-| rows x columns | 8,967 x 23 |
+| rows x columns | 8,967 x 24 |
 | task.target | death_within_2_months |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
-| task.split_regime | iid |
+| task.split_regime | temporal_non_iid |
 | task.stratify_on | death_within_2_months |
+| task.time_on | entry_date |
+| task.time_of | label |
 
 **Metric**
 
@@ -183,15 +215,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 8,967 rows of the final frame (random rows: the frame is shuffled); 12 of 23 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 8,967 rows of the final frame (the oldest rows: the frame is sorted by `entry_date`); 12 of 24 columns, the target first. Cells are cut at 40 characters.
 
 | death_within_2_months | age | sex | dzgroup | dzclass | num_co | scoma | race | hday | diabetes | dementia | ca |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | 74.897 | male | ARF/MOSF w/Sepsis | ARF/MOSF | 3 | 0 | white | 3 | 1 | 0 | no |
-| No | 46.393 | male | MOSF w/Malig | ARF/MOSF | 0 | 0 | white | 1 | 0 | 0 | yes |
-| Yes | 69.999 | female | CHF | COPD/CHF/Cirrhosis | 4 | 0 | black | 1 | 1 | 1 | no |
-| No | 55.628 | male | ARF/MOSF w/Sepsis | ARF/MOSF | 0 | 0 | white | 2 | 0 | 0 | no |
-| Yes | 73.185 | male | COPD | COPD/CHF/Cirrhosis | 2 | 0 | white | 1 | 0 | 0 | no |
+| No | 62.85 | male | Lung Cancer | Cancer | 0 | 0 | other | 1 | 0 | 0 | metastatic |
+| No | 65.81 | male | CHF | COPD/CHF/Cirrhosis | 1 | 0 | black | 1 | 0 | 0 | no |
+| No | 42.385 | female | Lung Cancer | Cancer | 2 | 0 | white | 1 | 0 | 0 | metastatic |
+| Yes | 59.598 | male | Lung Cancer | Cancer | 2 | 0 | white | 1 | 0 | 0 | metastatic |
+| No | 79.885 | female | ARF/MOSF w/Sepsis | ARF/MOSF | 1 | 26 | white | 3 | 0 | 0 | no |
 
 ## Curation notes
 
@@ -199,7 +231,26 @@ We start with support2.csv from the Vanderbilt Biostatistics data repository (hb
 
 - Prediction point: the end of study day 3, as in the SUPPORT model ("11 physiologic measures recorded on day 3 after study entry", Knaus et al. 1995, abstract).
 - Physiology restored. In most phase II rows the day-3 physiology block (meanbp to urine, 14 columns) belongs to another patient: crea against aps, the APACHE III score of the same values, has Spearman 0.52 in phase I and 0.05 in phase II. The study data, ICPSR 2957 V2 parts 9 and 10, show where each block is. `_link` matches each row to its ICPSR patient on ten columns both files hold on the patient's row (all 9,105 match once, and the 6,201 deaths agree to the day). `_source_rows` finds the block that holds the patient's ICPSR day-3 values, with ICPSR's normal-value fills set missing as in support2: phase I rows hold their own and 431 of the 4,804 phase II rows do; for 4,102 others the block sits 1 to 90 rows further down, for 181 further still (up to 1,094 rows) and for 90 above. `_restored` moves each block back. Every value comes from support2.csv; ICPSR only decides the row and is not shipped. Restored, phase II matches phase I (crea against aps 0.49).
-- Both phases, IID split over patients: the use case is new patients of the same hospitals and years. The phase II intervention "failed to improve care or patient outcomes" (SUPPORT Principal Investigators 1995, JAMA, abstract). The entry date can be recovered (a survivor entered on 31 Dec 1994 minus d.time, and within each of the file's ten blocks the rows are in entry order, Spearman 1.000), but it changes no score (LightGBM ROC AUC, review panel 2026-10-20): IID 0.818 (9 splits), three temporal windows over phase II 0.824, phase I to phase II 0.820. The ten blocks form five phase I / phase II pairs, probably the hospitals (the public ICPSR file blanks the site); leaving one pair out scores 0.815 (0.793-0.831), so we do not group by them.
+- Both phases, split by the rebuilt entry date (Andrej, 2026-11-19, decision B; it replaces the IID split over
+  patients and its `ForcedIIDFromTemporal` tag). The use case is new patients after those the model learned
+  from; the phase II intervention "failed to improve care or patient outcomes" (SUPPORT Principal
+  Investigators 1995, JAMA, abstract), so both phases are one population. The ten blocks of the file form five
+  phase I / phase II pairs, probably the hospitals (the public ICPSR file blanks the site); leaving one pair
+  out scored ROC AUC 0.815 (0.793-0.831) against 0.818 for random patients (LightGBM, review panel
+  2026-10-20), so we do not group by them.
+- `entry_date`, the study-entry date rebuilt by `_entry_dates` (exact for survivors, end of follow-up minus days followed; deaths placed between them; the file holds no date).
+  Rebuilt order: file position within each of the ten blocks, Spearman 1.000 with the survivors' entry dates
+  (31 Dec 1994 minus d.time: support2 follows every patient to the end of 1994); deaths placed between
+  neighbouring survivors (the two survivors either side a median 4 days apart). Eight half-years, 934 to 1,284 patients each (the first holds
+  June 1989, the last January 1994), from 1989-06-11 to 1994-01-21; patients entering in the 60 days before a
+  test period are left out of its training. It orders and splits the rows and is no model input
+  (`Temporal(..., time_of="label")`): the date is our reconstruction, not a field of the release.
+- What the windows cost, measured (stationary-relation test, 2026-11-19): Kumo-Tabular is flat on every
+  half-year; pooled over the newest three, forward training scores +0.0002 ± 0.0011 ROC AUC against training
+  on contemporaneous patients (two SD 0.87 of the noise floor), LightGBM +0.0024 ± 0.0030. The test ran on
+  the shipped features without the 11 physiology columns (the ICPSR files that restore phase II were not at
+  hand); on phase I's three half-years with physiology it is flat as well. The relation does not drift, so
+  the windows cost little against random patients while testing the use case's order.
 - Target `death_within_2_months`: `death` = 1 and `d.time` < 60, the cut-off of the source's sfdm2 level 5. Survivors were followed at least 344 days, so no label is censored. 2,993 of 8,967 (33.4%).
 - We drop the 138 patients who died on day 3: they are dead at the prediction point, and their values include values at death (heart rate 0 in 38% of them).
 - Dropped: the outputs of earlier models, sps, surv2m, surv6m and aps (supportdesc also advises against them).
@@ -218,21 +269,40 @@ We start with support2.csv from the Vanderbilt Biostatistics data repository (hb
 
 ## Splits
 
-Default splits.
+Three test windows of study entry, newest first: the second half of 1993 with January 1994 (1,216 patients),
+the first half of 1993 (1,247) and the second half of 1992 (1,099). Each trains on every patient who entered
+60 days or more before the window starts: 82%, 69% and 56% of the 8,967 patients (Andrej, 2026-11-19,
+decision B).
+The file has no entry date. Within each of its ten blocks the rows are in entry order: the survivors' entry
+dates (31 Dec 1994 minus d.time) rise with the file position, Spearman 1.000 in every block, and each death is
+dated between its neighbouring survivors (the two survivors either side a median 4 days apart). The eight half-years hold 934 to 1,284
+patients each.
+Gap: the label, death within 60 days of entry, is known 60 days after entry, so the patients who entered in
+the 60 days before a window are in neither side of it (325 to 382 per window): training holds only outcomes
+known when the window starts.
+Three windows against the nine splits that 8,967 patients would get at random (SPLIT-33): a fourth, the first
+half of 1992, would train only on phase I (4,232 patients, 47%), below the floor of half the data, and the
+study enrolled no one from mid-1991 to January 1992.
+Until 2026-11-19 the split was random patients (`ForcedIIDFromTemporal`).
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 5,978 rows, test 2,989 rows.
+3 repeat(s) x 1 fold(s) with seed 4267; train 5,029 to 7,369 rows, test 1,099 to 1,247 rows. Prediction horizon: 6 months. Gap between train and test: 60 days. The time column `entry_date` dates the label, which arrives after the prediction point: it orders and splits the rows, so every training label was known at its window's start, and is no model input (`feature_columns(container)` leaves it out).
 
-| repeat | fold | n_train | n_test |
-|---|---|---|---|
-| 0 | 0 | 5978 | 2989 |
-| 0 | 1 | 5978 | 2989 |
-| 0 | 2 | 5978 | 2989 |
-| 1 | 0 | 5978 | 2989 |
-| 1 | 1 | 5978 | 2989 |
-| 1 | 2 | 5978 | 2989 |
-| 2 | 0 | 5978 | 2989 |
-| 2 | 1 | 5978 | 2989 |
-| 2 | 2 | 5978 | 2989 |
+| repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
+|---|---|---|---|---|---|---|---|
+| 0 | 0 | 7369 | 1216 | 1989-06-11 00:00:00 | 1993-05-01 00:00:00 | 1993-07-01 00:00:00 | 1994-01-21 00:00:00 |
+| 1 | 0 | 6179 | 1247 | 1989-06-11 00:00:00 | 1992-11-01 00:00:00 | 1993-01-01 00:00:00 | 1993-06-30 00:00:00 |
+| 2 | 0 | 5029 | 1099 | 1989-06-11 00:00:00 | 1992-05-01 00:00:00 | 1992-07-01 00:00:00 | 1992-12-30 00:00:00 |
+
+
+### The test windows
+
+Each test window against its train side, by statistics of the data, never of a model: the target, and the population stability index (PSI) of each feature, its largest value and the features that drift most (below 0.1 little shift, above 0.25 a large one), and the share of test rows with a category the train side never shows. Up to 20,000 rows per side. The candidates the windows were chosen from: `.venv/bin/python -m data_foundry.curation.cli dataset windows 2_month_survival_rate_prediction`.
+
+| window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
+|---|---|---|---|---|---|---|---|---|
+| 0 | Jul 1993 - Jan 1994 | 1216 | 0.822 | Yes 33.1% (about 402) | Yes 33.5% (about 2,469) | 0.05 | hrt (0.05), bili (0.05), meanbp (0.03) | 0 |
+| 1 | Jan 1993 - Jun 1993 | 1247 | 0.689 | Yes 31.4% (about 392) | Yes 34.0% (about 2,101) | 0.045 | temp (0.04), meanbp (0.03), scoma (0.03) | 0 |
+| 2 | Jul 1992 - Dec 1992 | 1099 | 0.561 | Yes 31.7% (about 348) | Yes 34.5% (about 1,734) | 0.073 | hrt (0.07), temp (0.04), bili (0.04) | 0 |
 
 ## Decisions
 
@@ -352,17 +422,32 @@ The source names 2- and 6-month survival; the record is named after the 2-month 
 | death in hospital | hospdead = 1 | 2222 | 0.248 |
 | death by 31 Dec 1994 | death = 1 (follow-up 344-2029 days) | 6063 | 0.676 |
 
+### 8. Three half-year windows on the rebuilt entry date, with a 60-day gap
+
+The file has no entry date. Within each of its ten blocks the rows are in entry order, so a survivor's entry date (31 Dec 1994 minus d.time) dates its neighbours: a patient who died is placed between the neighbouring survivors of the block. The windows test the second half of 1992, the first half of 1993 and the second half of 1993 with January 1994; each trains on the patients who entered 60 days or more before it starts, whose 2-month outcome is known by then. Newest window first.
+
+| test window | test patients | train patients | train share | left out by the gap |
+|---|---|---|---|---|
+| 1993-07-01 to 1994-01-21 | 1216 | 7369 | 82.2% | 382 |
+| 1993-01-01 to 1993-06-30 | 1247 | 6179 | 68.9% | 325 |
+| 1992-07-01 to 1992-12-30 | 1099 | 5029 | 56.1% | 376 |
+
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
+
+Accepted on purpose:
+
+- `task_label_time_gap`: The 60-day gap is the label's own delay: death within 60 days of entry is known 60 days later, so each window trains only on patients whose outcome was known when it starts (SPLIT-10). `entry_date` is declared `time_of="label"` because it is our reconstruction of the entry order and no field of the release, so no actor holds it at the prediction point and it must stay out of the inputs; it dates the entry, not the moment the label became known, and the gap is not redundant with it (Andrej, 2026-11-19).
+- `splits_below_target`: Three windows against the nine an IID split of 8,967 patients would get (SPLIT-33). A fourth window, the first half of 1992, would train only on phase I (4,232 patients, 47%), below the floor of half the data, and the study enrolled no one from mid-1991 to January 1992. The splits comment names the target, the count reached and what stops more (SPLIT-15).
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (23 rows)</summary>
+<summary>Show the table (24 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -374,15 +459,16 @@ The source names 2- and 6-month survival; the record is named after the 2-month 
 | dementia | category | 0 | 0 | 2 | 0, 1 |
 | ca | category | 0 | 0 | 3 | no, metastatic, yes |
 | death_within_2_months | category | 0 | 0 | 2 | No, Yes |
-| alb | float64 | 3322 | 37.05 | 55 | 2.5, 2.5996, 2.7998, 2.3999, 2.8999, 2.6997, 3.2998, 3.0996, 2.2998, 3.0 |
+| entry_date | datetime64\[ns\] | 0 | 0 | 1463 | 1989-06-11 00:00:00, 1989-06-14 00:00:00, 1992-02-09 00:00:00, 1991-03-10 00:00… |
+| alb | float64 | 3322 | 37.05 | 55 | 2.5, 2.5996, 2.7998, 2.3999, 2.8999, 2.6997, 3.2998, 3.0996, 3.0, 2.2998 |
 | bili | float64 | 2552 | 28.46 | 291 | 0.4, 0.5, 0.6, 0.7, 0.3, 0.7999, 0.8999, 1.0, 1.0999, 0.2 |
-| pafi | float64 | 2329 | 25.97 | 1426 | 200.0, 240.0, 266.625, 300.0, 220.0, 260.0, 140.0, 190.0, 150.0, 233.3125 |
+| pafi | float64 | 2329 | 25.97 | 1426 | 200.0, 240.0, 266.625, 300.0, 220.0, 260.0, 140.0, 190.0, 233.3125, 150.0 |
 | ph | float64 | 2279 | 25.42 | 73 | 7.4492, 7.4297, 7.4092, 7.4395, 7.4199, 7.46, 7.3994, 7.4697, 7.3896, 7.4795 |
-| wblc | float64 | 208 | 2.32 | 488 | 6.7998, 6.5, 6.0996, 10.3984, 10.0, 9.5, 11.0996, 6.8994, 7.0996, 8.6992 |
+| wblc | float64 | 208 | 2.32 | 488 | 6.7998, 6.5, 6.0996, 9.5, 10.0, 10.3984, 11.0996, 6.8994, 7.0996, 8.6992 |
 | crea | float64 | 66 | 0.74 | 130 | 0.8999, 0.7999, 0.7, 1.0, 1.0999, 1.2, 1.2998, 0.6, 1.3999, 1.5 |
-| age | float64 | 0 | 0 | 7223 | 71.9969, 69.125, 66.056, 62.004, 55.138, 64.649, 85.0649, 54.93, 68.641, 71.1509 |
+| age | float64 | 0 | 0 | 7223 | 71.9969, 52.386, 68.641, 54.853, 85.0649, 66.146, 75.923, 66.056, 71.461, 71.15… |
 | scoma | float64 | 0 | 0 | 11 | 0.0, 9.0, 26.0, 44.0, 100.0, 37.0, 41.0, 61.0, 55.0, 94.0 |
-| meanbp | float64 | 0 | 0 | 155 | 63.0, 73.0, 67.0, 77.0, 65.0, 107.0, 70.0, 103.0, 68.0, 75.0 |
+| meanbp | float64 | 0 | 0 | 155 | 63.0, 73.0, 67.0, 77.0, 65.0, 107.0, 70.0, 103.0, 68.0, 60.0 |
 | hrt | float64 | 0 | 0 | 180 | 80.0, 70.0, 110.0, 120.0, 100.0, 60.0, 115.0, 125.0, 72.0, 105.0 |
 | resp | float64 | 0 | 0 | 66 | 20.0, 24.0, 28.0, 22.0, 10.0, 16.0, 32.0, 26.0, 12.0, 30.0 |
 | temp | float64 | 0 | 0 | 95 | 36.0938, 36.1953, 36.3984, 36.0, 36.2969, 36.5938, 36.5, 36.6953, 36.7969, 38.0 |
@@ -427,7 +513,7 @@ The source names 2- and 6-month survival; the record is named after the 2-month 
 ### Categorical features
 
 <details>
-<summary>Show the table (25 rows)</summary>
+<summary>Show the table (30 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -449,6 +535,11 @@ The source names 2- and 6-month survival; the record is named after the 2-month 
 | dzgroup | 3 | COPD | 966 | 10.77 |
 | dzgroup | 4 | Lung Cancer | 904 | 10.08 |
 | dzgroup | 5 | MOSF w/Malig | 684 | 7.63 |
+| entry_date | 1 | 1989-06-11 00:00:00 | 15 | 0.17 |
+| entry_date | 2 | 1989-06-14 00:00:00 | 15 | 0.17 |
+| entry_date | 3 | 1992-02-09 00:00:00 | 15 | 0.17 |
+| entry_date | 4 | 1991-03-10 00:00:00 | 14 | 0.16 |
+| entry_date | 5 | 1993-12-12 00:00:00 | 14 | 0.16 |
 | race | 1 | white | 7088 | 79.05 |
 | race | 2 | black | 1368 | 15.26 |
 | race | 3 | hispanic | 287 | 3.2 |
@@ -461,4 +552,12 @@ The source names 2- and 6-month survival; the record is named after the 2-month 
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a207f8-cef8-7844-bd03-78434d377a51 |
+| checksum | v2:86f44716efc52a4bb248cb9857976324e449e5800496e9adf6fe75c8da806129 |
+| built_at | 2026-11-23T10:34:39+00:00 |
+| path | 2_month_survival_rate_prediction/01a207f8-cef8-7844-bd03-78434d377a51 |
+| data_foundry_version | 0.0.5 |
+| git_sha | ab3a9fa4b776951236de5736e45a661755b10d58-dirty |
+| libraries | {'python': '3.11.16', 'pandas': '2.3.3', 'numpy': '2.4.6', 'pyarrow': '24.0.0', 'scikit-learn': '1.7.2', 'polars': '1.44.2'} |
