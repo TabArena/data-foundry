@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-25 13:00 UTC: 220 claim(s) (Andrej 189, Lennart 12, Myunghwan 19).
+As of 2026-11-25 13:07 UTC: 219 claim(s) (Andrej 188, Lennart 12, Myunghwan 19).
 
 ## Andrej
 
@@ -162,7 +162,6 @@ As of 2026-11-25 13:00 UTC: 220 claim(s) (Andrej 189, Lennart 12, Myunghwan 19).
 | `sberbank_housing_market_forecasting` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `sdss_17` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `sdss_dr17_star_galaxy_quasar` | triage | 2026-11-12 | 2026-11-19 (expired) | BeyondArena v0.2 review page (Andrej): DR17's full set, from sdss_17 issue 8 |
-| `seer_hepatocellular_carcinoma_metastasis` | triage | 2026-11-25 | 2026-12-02 | screening (Shaktah 2026 clinical benchmark) |
 | `seer_osteosarcoma_survival` | triage | 2026-11-25 | 2026-12-02 | screening (Shaktah 2026 clinical benchmark) |
 | `seer_renal_cell_carcinoma_5y_survival` | triage | 2026-11-25 | 2026-12-02 | screening (Shaktah 2026 clinical benchmark) |
 | `seismic_bumps` | add | 2026-11-19 | 2026-11-26 | add-dataset (Andrej, review page) |
