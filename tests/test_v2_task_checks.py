@@ -10,7 +10,7 @@ import pandas as pd
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.schema import DatasetMetadata, PredictiveMLSplitsMetadata, PredictiveMLTaskMetadataV2
 from data_foundry.v2.metrics import METRICS
-from data_foundry.v2.task_checks import one_class_undefined, task_findings
+from data_foundry.v2.task_checks import _classification_findings, one_class_undefined, task_findings
 
 from tests.test_bundle_checks import make_spec
 
@@ -120,3 +120,14 @@ def test_regression_constant_fold_and_dominant_value() -> None:
         "splits_test_target_constant": "error",
         "task_target_value_dominant": "warning",
     }
+
+
+def test_a_missing_class_is_an_error_under_a_multiclass_auc() -> None:
+    """A multiclass ROC AUC is NaN on a test fold without one of the classes, so the fold cannot be scored; a metric
+    that scores it (log loss) keeps the warning.
+    """
+    target = pd.Series([0] * 40 + [1] * 40 + [2] * 20)
+    folds = [("r0f0", np.arange(80))]
+    for metric, severity in [("roc_auc_ovr_macro", "error"), ("roc_auc_ovo_macro", "error"), ("log_loss", "warning")]:
+        found = _classification_findings(target, folds, binary=False, metric=metric)
+        assert [(r.slug, r.severity) for r in found] == [("splits_test_class_missing", severity)]

@@ -233,18 +233,35 @@ def grouped_splits(
     group, as :func:`iid_splits` would draw them over rows; group sizes are ignored. Otherwise
     ``(Stratified)GroupKFold`` with ``shuffle=True`` and seed ``random_state + repeat`` (shuffled groups in about equal
     numbers per fold; the folds of the current datasets are within 5% of equal rows).
+
+    Every row needs its group: a missing value in a column of ``group_on`` raises, since such a row would otherwise
+    be dropped, break the splitter, or join one group with every other row whose key is missing.
     """
     _require_range_index(df)
+    _require_group_keys(df, group_on)
     df, group_on = _sampling_columns(df, group_on, stratify_on)
     if group_labels == "per_group":
         return _per_group_splits(df, n_repeats, n_folds, group_on, stratify_on, random_state)
     return _per_sample_splits(df, n_repeats, n_folds, group_on, stratify_on, random_state)
 
 
+def _require_group_keys(df: pd.DataFrame, group_on: str | list[str]) -> None:
+    """Raise when a column of ``group_on`` has missing values: grouped splits need the group of every row."""
+    missing = {column: int(df[column].isna().sum()) for column in as_column_list(group_on)}
+    missing = {column: n for column, n in missing.items() if n}
+    if missing:
+        where = ", ".join(f"`{column}` on {n:,} row(s)" for column, n in missing.items())
+        msg = (
+            f"Grouped splits need a group key on every row, but it is missing: {where}. Fill the key from the source, "
+            "give each such row a group of its own, or drop the rows in the definition."
+        )
+        raise ValueError(msg)
+
+
 def _per_group_splits(
     df: pd.DataFrame, n_repeats: int, n_folds: int, group_on: str, stratify_on: str | None, random_state: int
 ) -> Splits:
-    codes, _ = pd.factorize(df[group_on])  # groups in order of first appearance; a missing key is in no group
+    codes, _ = pd.factorize(df[group_on])  # groups in order of first appearance (no key is missing: checked before)
     in_group = np.flatnonzero(codes >= 0)
     order = in_group[np.argsort(codes[in_group], kind="stable")]  # the rows group by group, each group in row order
     group_of = codes[order]
@@ -705,11 +722,7 @@ def window_bounds(  # noqa: C901, PLR0912 - one branch per unit and stop rule
         axis = times
 
     if window is None and cutoffs is None:
-        if unit in _CALENDAR_UNITS or n_windows is None or min_train_fraction is None:
-            raise ValueError("window=None needs unit 'unique'/'rows' with n_windows and min_train_fraction.")
-        window = int(axis_max * (1 - min_train_fraction) / n_windows)
-        if window < 1:
-            raise ValueError("Too few time values for that many windows.")
+        window = derived_window(times, unit, n_windows, min_train_fraction)
     step = window if step is None else step
 
     intervals: list[tuple] = []
@@ -722,6 +735,12 @@ def window_bounds(  # noqa: C901, PLR0912 - one branch per unit and stop rule
                 end = None if window is None else start + _calendar_offset(unit, window)
                 train_end = start - _calendar_offset(gap_unit, gap) if gap else start
             else:
+                if unit == "unique" and cutoff not in values:
+                    msg = (
+                        f"The cutoff {cutoff!r} is not a value of `{time_on}`: with unit='unique' a cutoff is one of "
+                        f"its values (from {values[0]!r} to {values[-1]!r})."
+                    )
+                    raise ValueError(msg)
                 start = int(values.get_loc(cutoff)) if unit == "unique" else int(cutoff)
                 end = None if window is None else start + window
                 train_end = start - gap
@@ -769,6 +788,19 @@ def window_bounds(  # noqa: C901, PLR0912 - one branch per unit and stop rule
     if not bounds:
         raise ValueError("No temporal window could be built; check window, unit and the data's time range.")
     return bounds
+
+
+def derived_window(times: pd.Series, unit: str, n_windows: int | None, min_train_fraction: float | None) -> int:
+    """The length ``window=None`` resolves to: the newest ``1 - min_train_fraction`` of the distinct values of
+    ``times`` (``unit="unique"``) or of its rows (``"rows"``), cut into ``n_windows`` equal windows.
+    """
+    if unit not in ("unique", "rows") or n_windows is None or min_train_fraction is None:
+        raise ValueError("window=None needs unit 'unique'/'rows' with n_windows and min_train_fraction.")
+    axis_max = times.nunique(dropna=False) if unit == "unique" else len(times)
+    window = int(axis_max * (1 - min_train_fraction) / n_windows)
+    if window < 1:
+        raise ValueError("Too few time values for that many windows.")
+    return window
 
 
 def _require_newest_window(end: Any, times: pd.Series, axis_max: int | None, unit: str) -> None:
@@ -979,24 +1011,19 @@ def _sample_positions(
 ) -> np.ndarray:
     """At most ``cap`` of ``positions``, sorted: sampled rows, or whole groups of ``group_on``.
 
-    Rows are drawn stratified on ``stratify_on`` (when every class has two rows or more). Groups are taken in a
-    random order, each one that still fits under the cap, until the cap is reached; with ``stratify_on`` that order
-    interleaves the groups of each stratum (a group's stratum is its most frequent value), so the kept groups keep
-    about the class balance.
+    Rows are the ``cap`` that come first in one random order of the frame (seed ``random_state``), each class of
+    ``stratify_on`` keeping its share of the cap (:func:`_first_in_order`, the sampler of a train side). Groups are
+    taken in a random order, each one that still fits under the cap, until the cap is reached; with ``stratify_on``
+    that order interleaves the groups of each stratum (a group's stratum is its most frequent value), so the kept
+    groups keep about the class balance. When no group fits under the cap it raises rather than return an empty side.
     """
     if len(positions) <= cap:
         return np.sort(positions)
-    side = df[list(dict.fromkeys(c for c in (group_on, stratify_on) if c is not None))].iloc[positions]
     if group_on is None:
-        model_selection = import_build_dependency("sklearn.model_selection")
-
-        labels = side[stratify_on] if stratify_on is not None else None
-        if labels is not None and labels.astype(object).value_counts().min() < 2:  # stratifying needs 2 rows per class
-            labels = None
-        kept, _ = model_selection.train_test_split(
-            positions, train_size=cap, stratify=labels, random_state=random_state
-        )
-        return np.sort(kept)
+        labels = pd.factorize(df[stratify_on].to_numpy())[0] if stratify_on is not None else None
+        rank = np.random.default_rng(random_state).permutation(len(df))
+        return _first_in_order(np.asarray(positions), cap, rank, labels)
+    side = df[list(dict.fromkeys(c for c in (group_on, stratify_on) if c is not None))].iloc[positions]
 
     rng = np.random.default_rng(random_state)
     codes, uniques = pd.factorize(side[group_on].to_numpy())
@@ -1026,6 +1053,12 @@ def _sample_positions(
             total += sizes[group]
         if total == cap:
             break
+    if not total:
+        msg = (
+            f"No whole group of `{group_on}` fits under the cap of {cap:,} rows (the smallest holds {sizes.min():,}): "
+            "sampling whole groups would leave the side empty. Raise the row budget or use smaller groups."
+        )
+        raise ValueError(msg)
     return np.sort(positions[kept[codes]])
 
 

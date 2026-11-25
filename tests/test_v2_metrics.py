@@ -19,6 +19,7 @@ from data_foundry.v2.dataset import metric_spec
 from data_foundry.v2.metrics import METRICS, Metric, row_weight_column, score, scorer, to_sklearn_scorer
 from pydantic import TypeAdapter
 from sklearn import metrics as skm
+from sklearn.dummy import DummyClassifier
 from sklearn.linear_model import LinearRegression, LogisticRegression
 
 N = 500
@@ -816,3 +817,33 @@ def test_mean_tweedie_deviance_needs_a_power_and_a_floor() -> None:
     )
     with pytest.raises(ValueError, match="NaN or infinite"):
         score(_tweedie(1.5, 1.0), y, [1.0, np.nan, 2.0])
+
+
+@pytest.mark.parametrize("name", ["f1", "precision", "recall"])
+def test_the_positive_class_of_one_class_labels_is_never_guessed(name: str) -> None:
+    """A fold whose truth and prediction are all "no" scored 1.0: "no" was taken as the positive class. Without
+    ``labels`` the classes must be two; with them the positive class is ``labels[-1]``.
+    """
+    all_no = np.array(["no"] * 10)
+    with pytest.raises(ValueError, match="pass `labels`"):
+        score(Metric.source(name).spec("binary_classification"), all_no, all_no)
+    assert score(Metric.source(name).spec("binary_classification"), all_no, all_no, labels=["no", "yes"]) == 0.0
+    model = DummyClassifier(strategy="constant", constant="no").fit(np.zeros((2, 1)), ["no", "yes"])
+    sk = to_sklearn_scorer(Metric.source(name), labels=["no", "yes"])  # forwarded to every fold it scores
+    assert sk(model, np.zeros((10, 1)), all_no) == 0.0
+
+
+@pytest.mark.parametrize("name", ["f1_macro", "f1_weighted", "f1_micro"])
+def test_an_average_over_the_classes_counts_every_class_of_labels(name: str) -> None:
+    """A class that neither truth nor prediction of a fold holds was dropped from the average; with ``labels`` it
+    counts (F1 0 for the macro mean), as in scikit-learn with ``labels``.
+    """
+    y_true = np.array(["a", "a", "b", "b", "b"])
+    y_pred = np.array(["a", "b", "b", "b", "a"])
+    average = name.removeprefix("f1_")
+    expected = skm.f1_score(y_true, y_pred, labels=["a", "b", "c"], average=average, zero_division=0.0)
+    spec = Metric.source(name).spec("multiclass_classification")
+    assert score(spec, y_true, y_pred, labels=["a", "b", "c"]) == pytest.approx(expected)
+    assert score(spec, y_true, y_pred) == pytest.approx(skm.f1_score(y_true, y_pred, average=average))
+    if name == "f1_macro":
+        assert score(spec, y_true, y_pred, labels=["a", "b", "c"]) == pytest.approx(score(spec, y_true, y_pred) * 2 / 3)

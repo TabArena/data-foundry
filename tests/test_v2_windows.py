@@ -241,3 +241,18 @@ def test_a_newest_period_cut_short_is_found() -> None:
     assert ratio_cut < NEWEST_PERIOD_RATIO
     assert newest_period_rate(pd.Series(np.arange(10))) is None  # no date
     assert newest_period_rate(pd.Series(np.repeat(days[:90], 5))) is None  # fewer than four spans
+
+
+@pytest.mark.parametrize("unit", ["rows", "unique"])
+def test_candidate_windows_of_a_derived_length(unit: str) -> None:
+    """``window=None`` with ``n_windows`` had no length for the candidates, so `dataset windows` failed; the candidates
+    take the length the definition's splits resolve to, and its windows are among them.
+    """
+    df = pd.DataFrame({"t": np.repeat(np.arange(200), 3)})
+    declared = TemporalSplits(window=None, unit=unit, n_windows=4, min_train_fraction=0.5)
+    windows = candidate_windows(df, "t", declared)
+    length = 600 // 2 // 4 if unit == "rows" else 3 * (200 // 2 // 4)
+    assert {len(w.test) for w in windows} == {length}
+    own = {(test[0], test[-1]) for folds in declared.splits(df, "t").values() for _, test in folds.values()}
+    assert own <= {(w.test[0], w.test[-1]) for w in windows}
+    assert len(windows) > len(own)  # the candidates walk back to the 30% floor, past the declared 50%

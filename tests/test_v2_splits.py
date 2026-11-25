@@ -554,7 +554,7 @@ def test_a_missing_build_dependency_names_the_extra() -> None:
 def test_several_group_columns_make_one_group_per_combination() -> None:
     rng = np.random.default_rng(0)
     df = pd.DataFrame(
-        {"a": rng.integers(0, 6, 300), "b": rng.choice(["x", "y", None], 300), "y": rng.integers(0, 2, 300)}
+        {"a": rng.integers(0, 6, 300), "b": rng.choice(["x", "y", "z"], 300), "y": rng.integers(0, 2, 300)}
     )
     splits = protocol.grouped_splits(df, n_repeats=2, group_on=["a", "b"], group_labels="per_sample", stratify_on="y")
     key = df[["a", "b"]].astype("string").fillna("nan").agg("|".join, axis=1)
@@ -589,3 +589,44 @@ def test_cutoffs_must_test_the_newest_data(unit: str, window: int, cutoffs: list
         protocol.temporal_window_splits(df, time_on="t", window=window, unit=unit, cutoffs=cutoffs)
     whole = protocol.temporal_window_splits(df, time_on="t", window=None, unit=unit, cutoffs=cutoffs)
     assert whole[0][0][1][-1] == len(df) - 1  # a window to the end of the data holds the newest row
+
+
+def test_a_stratified_test_side_samples_up_to_one_row_under_its_size() -> None:
+    """A cap one row under the side's size left one row out of three classes, which `train_test_split` refused."""
+    df = pd.DataFrame({"y": np.random.default_rng(0).choice(list("abc"), 1_000)})
+    kept = protocol._sample_positions(df, np.arange(1_000), 999, group_on=None, stratify_on="y", random_state=1)
+    assert len(kept) == 999
+    assert len(np.unique(kept)) == 999
+    shares = df["y"].iloc[kept].value_counts()
+    assert (df["y"].value_counts() - shares).sum() == 1  # every class keeps its rows but one row of one class
+
+
+@pytest.mark.parametrize("group_labels", ["per_group", "per_sample"])
+@pytest.mark.parametrize("group_on", ["g", ["g", "h"]])
+def test_grouped_splits_refuse_a_missing_group_key(group_labels: str, group_on: str | list[str]) -> None:
+    """A missing key was dropped (per_group), broke GroupKFold (per_sample) or made one group (several columns)."""
+    df = pd.DataFrame(
+        {
+            "g": [1, 1, 2, 2, np.nan, np.nan, 3, 3, 4, 4, 5, 5],
+            "h": ["x"] * 12,
+            "y": [0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1],
+        }
+    )
+    with pytest.raises(ValueError, match=r"group key on every row.*`g` on 2 row"):
+        grouped_splits(df, n_repeats=1, group_on=group_on, group_labels=group_labels)
+
+
+def test_whole_groups_that_all_exceed_the_cap_raise() -> None:
+    """No group fits under the cap: the side would be empty, so sampling raises."""
+    df = pd.DataFrame({"g": np.repeat(np.arange(5), 20)})
+    with pytest.raises(ValueError, match="No whole group of `g` fits under the cap of 10 rows"):
+        protocol._sample_positions(df, np.arange(100), 10, group_on="g", stratify_on=None, random_state=0)
+    with pytest.raises(ValueError, match="fits under the cap"):
+        protocol.sample_train_positions(df, np.arange(100), 10, group_on="g")
+
+
+def test_a_unique_cutoff_must_be_a_value_of_the_time_column() -> None:
+    """A cutoff missing from the data raised a bare KeyError under unit="unique"."""
+    df = pd.DataFrame({"y": [2019, 2019, 2020, 2020, 2022, 2022, 2023, 2023]})
+    with pytest.raises(ValueError, match="cutoff 2021 is not a value of `y`"):
+        protocol.temporal_window_splits(df, time_on="y", window=1, unit="unique", cutoffs=[2021, 2022, 2023])
