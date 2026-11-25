@@ -32,6 +32,7 @@ source_links:
 - https://huggingface.co/datasets/HTW-KI-Werkstatt/FuelRamanSpectraHandheld
 - https://doi.org/10.1016/j.fuel.2018.09.006
 - https://doi.org/10.1021/acs.energyfuels.9b02944
+v2_path: datasets/_dev/tabarena-v0pt2/raman_fuel_benchtop/dataset.py
 needs_review:
 - ai_unverified
 type_adapter_id: curation-record-v1

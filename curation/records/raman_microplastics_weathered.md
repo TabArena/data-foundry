@@ -4,10 +4,10 @@ name: Weathered Microplastics
 checked_by:
 - AI (UNVERIFIED)
 - Andrej
-suggestion: TBD -> 2nd Tier
+suggestion: 'No'
 priority: 2
 decision_markers:
-- TBD
+- No Good Target (yet)
 tags:
 - AI-Filled (Verify)
 - Tiny Data
@@ -34,6 +34,8 @@ type_adapter_id: curation-record-v1
 ---
 
 ## Comments
+
+CC (2026-11-25, Andrej): `No`, marker `No Good Target (yet)`, on the source check below: the polymer label of 140 of the 173 rows is a commercial spectral-library match of the same spectrum a model would be given, and the 14 rows with an independent method are too few for any split.
 
 CC (2026-11-25, Andrej): the source release was checked, and it settles the record against the dataset rather than for it. Recommendation: `No`, marker `No Good Target (yet)`; the verdict is not changed here.
 

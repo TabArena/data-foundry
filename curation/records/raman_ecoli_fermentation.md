@@ -34,6 +34,7 @@ source_links:
 - https://huggingface.co/datasets/chlange/RamanSpectraEcoliFermentation
 - https://arxiv.org/abs/2605.02003
 - https://git.tu-berlin.de/bvt-htbd/kiwi/tf3/raman-kiwi-experiments
+v2_path: datasets/_dev/tabarena-v0pt2/raman_ecoli_fermentation/dataset.py
 needs_review:
 - ai_unverified
 type_adapter_id: curation-record-v1

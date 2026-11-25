@@ -1,5 +1,23 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-25, three RamanBench definitions added: fuel, E. coli fermentation and the adenine interlaboratory study (no container built)
+
+- `raman_fuel_benchtop`: 179 commercial gasolines, the research octane number from two Raman spectra of the same
+  sample (benchtop 961 bands, handheld 1,900). The two releases are row-aligned on the same samples, so they ship
+  as one row with two declared spectra. Rows 42 and 96 are one fuel measured twice, held together by `sample`.
+  The eleven other laboratory properties are dropped: none is known when the spectrum is taken.
+- `raman_ecoli_fermentation`: 373 at-line spectra from 24 fed-batch cultivations, glucose from the supernatant's
+  spectrum. Built from the authors' Hugging Face release, not from the paper's repository file, which is the
+  model-training matrix: harmonised onto an eight-instrument grid and padded with 2,261 spectra of another
+  dataset. The source's three random groups of eight cultivations are the split.
+- `raman_adenine_colloidal_gold`: the whole European interlaboratory SERS study from its own Zenodo table, 3,512
+  spectra over 15 laboratories, with whole laboratories held out. The benchmark's four per-substrate files carry
+  only the concentration, so the study's own question cannot be built from them. The record's name is now
+  historical and a rename is an issue for the curator.
+- Checks: 0 errors for all three. Probes: no exact copies across any split; real signal everywhere (fuel RMSE
+  0.904 against the dummy's 2.471, ecoli MAE 0.3202 against 1.1903, both on 100% of splits). Fuel carries the
+  `no_spread` flag, ecoli no flag.
+
 ## 2026-11-25, bacteria_id_raman and raman_mlrod: the two RamanBench definitions ported (no container built)
 
 - The two Raman definitions of the large add run move onto this branch with their reviews. Each dataset's review is

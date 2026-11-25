@@ -30,6 +30,7 @@ source_links:
 - https://doi.org/10.1021/acs.analchem.9b05658
 - https://doi.org/10.5281/zenodo.3572359
 - https://arxiv.org/abs/2605.02003
+v2_path: datasets/_dev/tabarena-v0pt2/raman_adenine_colloidal_gold/dataset.py
 needs_review:
 - ai_unverified
 type_adapter_id: curation-record-v1
