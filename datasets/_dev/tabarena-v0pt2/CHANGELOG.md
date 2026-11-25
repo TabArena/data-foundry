@@ -1,5 +1,15 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-23, open_university_learning_analytics_dataset retired as `Too Small` (Andrej's decision of 2026-11-20, no container built)
+
+- The relation is measured not flat across the four start dates (2013B, 2013J, 2014B, 2014J): each date held out is
+  taught worse by the other three than by its own rows (log loss, LightGBM +0.011 to +0.040, Kumo-Tabular +0.014 to
+  +0.095, 5 seeds). A presentation runs longer than the gap between start dates, so with training limited to cohorts
+  finished before the test cohort starts, only one forward split exists (2014J on 66.5%); every other layout trains
+  on later, unfinished or concurrent cohorts.
+- The record is `No (Retired)` with `Too Small`, a CC line and the decision in its `## Review`; `v2_path` cleared.
+  The folder is removed. `DF: Yes` and the other tags stay.
+
 ## 2026-11-23, huesken_sirna_efficacy: 20 x 3 splits over the target genes (Andrej's decision, no container built)
 
 - The score averages one per-gene correlation and every fold holds out whole target genes, so the split rule counts
