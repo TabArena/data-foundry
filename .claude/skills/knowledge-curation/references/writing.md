@@ -40,9 +40,11 @@ context settles repeats the context and invites the reader to weigh it. Say how 
 
 The definition, its notes, its task summary and the README generated from them are read by people who never saw our
 tooling. They name no internal artefact: no scheduler job ids or scheduler names, no local or cluster paths, no review
-page, its versions, marks or item numbers, no pull-request numbers, no names of internal tools or scratch runs. A
-decision is cited by who made it and when ("Andrej, 2026-11-10"); a number is given with what it was measured on (the
-model, the windows, the rows), not with where the run lives.
+page, its versions or marks, no pull-request numbers, no names of internal tools or scratch runs. A decision is cited
+by who made it and when ("Andrej, 2026-11-10"); a number is given with what it was measured on (the model, the
+windows, the rows), not with where the run lives. It may name the review item it settles ("review issue 9, D"): the
+item is the record's own, it outlives the page that renders it, and a reader who wants the reasoning finds it in the
+record beside the definition.
 
 The records are the internal decision log, but the same holds there for job ids, paths and the review page: the page is
 a temporary view of the record's own `## Review` items, so a comment cites the item ("Review issue 2, B"), not the page.

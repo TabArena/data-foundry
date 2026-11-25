@@ -1,8 +1,9 @@
 """No definition or record names an internal artefact (knowledge-curation, writing.md, "No internal references").
 
 A definition's text (its notes, its task summary, its comments) is copied into the README that outside readers see, so
-it names no scheduler job, no temporary path, no review page or its item numbers and no pull request: a decision is
-cited by who made it and when. The records are the internal decision log; they may cite their own `## Review` items and
+it names no scheduler job, no temporary path, no review page and no pull request: a decision is cited by who made it
+and when, and may name the review item it settles: that item is the record's own and outlives the page rendering it.
+The records are the internal decision log; they may cite their own `## Review` items and
 pull requests, but not job ids, the scheduler or the review page, which is only a temporary view of those items. Home
 and run-folder paths are checked for every committed file by ``test_no_local_paths.py``.
 """
@@ -28,8 +29,10 @@ IN_RECORDS = re.compile(IN_BOTH + r"|\bPR #50\b|\(#50\)|\bon #50\b")  # the pull
 IN_DEFINITIONS = re.compile(
     IN_BOTH
     + r"|/tmp/"  # a temporary file
-    + r"|\b[Ii]ssues? \d+\b|\b[Rr]eview items? \d|\bcross-dataset\s+item\b"  # an item of the review
-    + r"|\b(?:PR|[Pp]ull request|[Ii]ssue) #?\d+|\(#\d{2,4}\b"  # a pull request or GitHub issue
+    + r"|\bcross-dataset\s+item\b"  # an item that belongs to no one dataset
+    # A pull request or GitHub issue is written with its `#`; a bare "review issue 9" names the record's own item
+    # and is allowed (writing.md, "No internal references").
+    + r"|\b(?:PR|[Pp]ull request) #?\d+|\b[Ii]ssue #\d+|\(#\d{2,4}\b"
 )
 
 
@@ -59,8 +62,8 @@ def test_records_name_no_job_or_review_page():
     [
         ("measured on Slurm job 1365902", True),
         ("LightGBM on jobs 1377583/4", True),
-        ("(Andrej, 2026-11-03, review issue 6: B)", True),
-        ("(Review issue 9, A)", True),
+        ("(Andrej, 2026-11-03, review issue 6: B)", False),
+        ("(Review issue 9, A)", False),
         ("the exposure study (#51; D13)", True),
         ("the proposal of PR #46", True),
         ("BeyondArena v0.2 review page, issue 5, A", True),
@@ -73,6 +76,7 @@ def test_records_name_no_job_or_review_page():
         ("750 Van Ness Ave #706", False),
         ("the study of issue #70", True),
         ("the 2,000 rows of window 3", False),
+        ("settled as review item 4", False),
     ],
 )
 def test_definition_pattern(text, flagged):
