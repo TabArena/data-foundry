@@ -3,6 +3,7 @@ unique_name: ga_merchandise_store_sessions
 name: Google Analytics sample dataset for BigQuery (Google Merchandise Store, obfuscated GA360 sessions)
 checked_by:
 - AI (UNVERIFIED)
+- Andrej
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Andrej
@@ -69,9 +70,9 @@ type_adapter_id: curation-record-v1
 
 ## Review
 
-**Outcome:** added. The AI recommends shipping: the panel said ship after changes, and those changes are made; two choices of the split are left to the curator, the one-month horizon (H) and the number of test windows (issue 1). Task: at a visit's third pageview, before any checkout step, will the visit buy (305,819 visits of 240,212 visitors, August 2016 to July 2017, 3.7% buy; Google's obfuscated GA360 sample of the Google Merchandise Store, queried in BigQuery). Validity: every feature is the visit's start, the visitor's earlier visits in the sample, or a count over the visit's hits up to the cut; the finished-visit totals, which score 0.977 against 0.873 at the cut, never ship, and the 234 visits that reached checkout before the cut are dropped. Applied after the panel: the visitor's history as three columns (earlier visits, earlier purchases, days since the last visit), the masked traffic source set to missing, `events` split by action and `/home-2` counted as home, a protocol line against reading other test rows, and two gaps named in the fit (purchase, not uplift; a masked Referral group with 44% of the buyers). Value: in the task probe on the rebuilt data, untuned LightGBM scores ROC AUC 0.876, logistic regression 0.862, a random forest 0.861 and the best single feature (country) 0.693, with 704 to 1,099 buyers per test month; the history columns add 0.004 (6 of 6 windows), and no reviewer found an exploit. `dataset check`: 0 errors, 3 warnings left for your acceptance (category values that rarely buy, all known at visit start; no licence stated; 6 windows against a target of 9, issue 1).
+**Outcome:** added. The AI recommends shipping: the panel said ship after changes, and those changes are made; two choices of the split are left to the curator, the one-month horizon (H) and the number of test windows (issue 1). Task: at a visit's third pageview, before any checkout step, will the visit buy (305,819 visits of 240,212 visitors, August 2016 to July 2017, 3.7% buy; Google's obfuscated GA360 sample of the Google Merchandise Store, queried in BigQuery). Validity: every feature is the visit's start, the visitor's earlier visits in the sample, or a count over the visit's hits up to the cut; the finished-visit totals, which score 0.977 against 0.873 at the cut, never ship, and the 234 visits that reached checkout before the cut are dropped. Applied after the panel: the visitor's history as three columns (earlier visits, earlier purchases, days since the last visit), the masked traffic source set to missing, `events` split by action and `/home-2` counted as home, a protocol line against reading other test rows, and two gaps named in the fit (purchase, not uplift; a masked Referral group with 44% of the buyers). Value: in the task probe on the rebuilt data, untuned LightGBM scores ROC AUC 0.876, logistic regression 0.862, a random forest 0.861 and the best single feature (country) 0.693, with 704 to 1,099 buyers per test month; the history columns add 0.004 (6 of 6 windows), and no reviewer found an exploit. `dataset check`: 0 errors, 3 warnings left for your acceptance (category values that rarely buy, all known at visit start; no licence stated; 6 windows against a target of 9, issue 1). Your two questions of 2026-11-25 are answered under H and issue 1, and both stay open.
 
-**Main points:** Sign off the one-month horizon (H, recommended as implemented), and choose six test windows or eight with December 2016 and January 2017 as exceptions (issue 1, recommended eight).
+**Main points:** Sign off the horizon (H: one month, now recommended with a one-day gap for the refit, as on fugaku_hpc_job_failure_1m; it costs at most 0.43 points of training share at the same ROC AUC), and choose the test windows (issue 1: the target is 9, not 3, since two thirds of 305,819 visits fall under 250,000; six as implemented, eight with December 2016 and January 2017 as exceptions, recommended, or the newest three).
 
 **Horizon:**
 
@@ -95,6 +96,43 @@ type_adapter_id: curation-record-v1
 [^g1]: **SPLIT-12** (Should): the horizon, the refit cadence, the gap and the time unit come from the use case and the source; the splits comment names each, or says the source is silent and what is assumed. The curator signs off on the horizon and the test windows of every new temporal dataset.
 [^g2]: **SPLIT-10** (Should): a gap of about the label delay; no gap where the delay is within the time column's resolution.
 [^g3]: **SPLIT-15** (Should for the windows other than the newest): the window length, the step and the gap follow the use case "and are never shortened or dropped to reach the count".
+
+**Andrej (2026-11-25, discuss):** Shouldn't we leave at least one day as a gap? The model to predict new samples still has to be trained after all
+
+**Answer (AI, 2026-11-25):** yes: a one-day gap is valid here and costs almost nothing (each training side loses at most 0.43 points, every shipped window still trains on more than half, ROC AUC moves by -0.001 to +0.002 per window), so the recommendation changes to a one-day gap.
+
+* **Problem:**
+  - Your decision on fugaku_hpc_job_failure_1m of 2026-11-24 (its review issue 7, D) set "the gap before each window: the lag between building a model and applying it", one day. The same lag holds here: a store that refits monthly cannot train on the visits of a month's last evening and score the next month's first visit at midnight.
+  - The "no gap" of the verdict above rests on the label alone (known when the visit ends, within the day). That answers the label's delay, not the time the refit takes; the gap rule counts a planning gap of the use case as a gap too[^g4].
+  - Measured on the definition's frame (table below): with the gap, the six windows train on 53.8% to 91.5% of the visits (54.1% to 91.8% without); each training side loses 521 to 867 visits (17 to 39 buyers), about one day of traffic; untuned LightGBM changes by -0.0010 to +0.0015 per window, +0.0004 on average, the size of the spread between seeds. Nothing in the data argues against the gap.
+  - The month boundary: with the gap, each window trains on the visits that start before 00:00 of the previous month's last day, so the last training day is 29 June for July, 30 May for June, 29 April for May, 30 March for April, 27 February for March and 30 January for February. The last day of each month (30 June, 31 May, ...) is in no training side and in no test window: one day of every month left out of training.
+  - For issue 1 the gap changes only the shares: January 2017 would train on 46.0% (46.2% without), December 2016 on 35.7% (36.1%).
+* **Experiments:** the six shipped months and the two candidates of issue 1 (January, December); training on every earlier visit, or on those starting at least one day before the month; untuned LightGBM (default parameters), ROC AUC, mean of 3 seeds:
+
+  | Month | Test visits | Buyers | Train share, no gap | Train share, 1-day gap | Visits left out (buyers) | Last training day | ROC AUC, no gap | ROC AUC, 1-day gap | Change |
+  |---|---|---|---|---|---|---|---|---|---|
+  | July 2017 | 25,115 | 1,022 | 91.8% | 91.5% | 867 (32) | 29 June | 0.8715 | 0.8711 | -0.0004 |
+  | June 2017 | 22,577 | 937 | 84.4% | 84.1% | 859 (37) | 30 May | 0.8654 | 0.8669 | +0.0015 |
+  | May 2017 | 24,556 | 1,099 | 76.4% | 76.2% | 521 (26) | 29 April | 0.8828 | 0.8841 | +0.0013 |
+  | April 2017 | 22,530 | 915 | 69.0% | 68.8% | 781 (17) | 30 March | 0.8813 | 0.8816 | +0.0003 |
+  | March 2017 | 23,691 | 874 | 61.3% | 61.0% | 810 (29) | 27 February | 0.8836 | 0.8840 | +0.0004 |
+  | February 2017 | 21,919 | 704 | 54.1% | 53.8% | 866 (39) | 30 January | 0.8772 | 0.8763 | -0.0010 |
+  | Mean of the six | | | | | | | 0.8770 | 0.8773 | +0.0004 |
+  | January 2017 (issue 1) | 24,276 | 694 | 46.2% | 46.0% | 424 (10) | 30 December | 0.8688 | 0.8643 | -0.0045 |
+  | December 2016 (issue 1) | 30,716 | 1,385 | 36.1% | 35.7% | 1,320 (56) | 29 November | 0.8240 | 0.8251 | +0.0010 |
+
+* **Options:**
+
+  | | Option | What it does | Pro | Con |
+  |---|---|---|---|---|
+  | a | No gap (implemented) | each month is predicted from every visit before it | the newest day of data in training; the label is known within the day | assumes the model is built and deployed at midnight in no time; departs from the fugaku decision |
+  | b | One-day gap | each month is predicted from the visits that start at least one day before it | the build lag of a refit, as decided on fugaku; at most 0.43 points of training share and no change in ROC AUC beyond the seeds' spread; every shipped window stays above half | the day is assumed (no source names the lag); each month's last day trains no model and is tested by none |
+
+* **Recommendation:** b, as on fugaku: the refit needs time, and the measurement leaves every window valid at nearly the same score. **Decision:** a or b?
+
+**Notes for the AI:** For b set `TemporalSplits(window=1, unit="months", cutoffs=(...), gap=1, gap_unit="days")` and the gap on `Temporal` (`gap=1, gap_unit="days"`, as fugaku_hpc_job_failure_1m declares it); rewrite the splits comment's "No gap" sentence (the one-day gap is the build lag of a monthly refit; the label is known within the visit) and its train shares (91.5%, 84.1%, 76.2%, 68.8%, 61.0%, 53.8%); re-run `dataset check`; add the case to the gap rule's list as an ordinary use.
+
+[^g4]: **SPLIT-10** (Should): a gap of about the label's delay between train and test; "A planning gap the use case has (a forecast made a day ahead) is a gap too." Its list of cases records fugaku_hpc_job_failure_1m's one-day gap as applied.
 
 **Issues for Andrej:**
 
@@ -134,6 +172,41 @@ type_adapter_id: curation-record-v1
 
    [^w1]: **SPLIT-15** (Must for the newest window, Should for the others): the other windows are argued from the use case, "which periods a deployed model must handle (other years, seasons, holidays, events, a change of rules or of the data collection)"; the number of windows aims at SPLIT-33's count for two thirds of the scored units (9 here).
    [^w2]: **SPLIT-14** (Must): every window trains on at least 50% of the data; a window under 50% is the curator's exception, down to 30%, raised as an issue and accepted only with the curator's CC line.
+
+   **Andrej (2026-11-25, discuss):** Why so many windows? The target for 300000 samples should be 3?
+
+   **Answer (AI, 2026-11-25):** the target is 9, not 3: it counts the training side of a 3-fold split, two thirds of the 305,819 visits (203,879), and 3 repeats apply below 250,000 training units, so 3 x 3 = 9; the 3 you expect starts at 375,000 rows.
+
+   * **Problem:**
+     - The count follows the units on the training side of a 3-fold split, not the table: 3 repeats below 250,000 training units, 1 repeat from there on[^w3]; the windows aim at that count for two thirds of the scored units[^w4]. Two thirds of 305,819 is 203,879, under 250,000: 3 repeats x 3 folds = 9. `dataset check` computes the same (6 windows against 9, a warning).
+     - The 3 you expect holds from 375,000 rows on, where two thirds reach 250,000: sdss_17's 4.6 million rows give 3.
+     - A fact about the rule: this table is 69,181 rows (23%) under that step, and the target falls from 9 to 3 at a single row, so the count here rests on where a threshold lies more than on the data.
+     - The target is an aim, not a floor: fewer windows are accepted down to 3, with the warning and the splits comment naming the count. Six is valid, and three would be too; but the rule asks for as many windows as reach the target within the floor, and the newest three alone would drop three windows that train on more than half.
+   * **Experiments:** the candidate monthly windows (as the definition builds them, no gap; the shares with a one-day gap are under H):
+
+     | Month | Test visits | Buyers | Train share | In a | In b | In c |
+     |---|---|---|---|---|---|---|
+     | July 2017 | 25,115 | 1,022 | 91.8% | yes | yes | yes |
+     | June 2017 | 22,577 | 937 | 84.4% | yes | yes | yes |
+     | May 2017 | 24,556 | 1,099 | 76.4% | yes | yes | yes |
+     | April 2017 | 22,530 | 915 | 69.0% | yes | yes | |
+     | March 2017 | 23,691 | 874 | 61.3% | yes | yes | |
+     | February 2017 | 21,919 | 704 | 54.1% | yes | yes | |
+     | January 2017 | 24,276 | 694 | 46.2% | | yes | |
+     | December 2016 | 30,716 | 1,385 | 36.1% | | yes | |
+
+   * **Options:**
+
+     | | Option | Windows | Test visits (buyers) | Train share | Pro | Con |
+     |---|---|---|---|---|---|---|
+     | a | Six monthly windows (implemented) | February to July 2017 | 21,919 to 25,115 (704 to 1,099) | 54.1% to 91.8% | no exception; every month the floor allows | 6 of 9, a warning to accept; no holiday month tested |
+     | b | Eight windows (the issue's B) | December 2016 to July 2017 | 21,919 to 30,716 (694 to 1,385) | 36.1% to 91.8% | 8 of 9; tests the holiday season; follows five precedents | two exceptions under half (January 46.2%, December 36.1%); December trains on four months |
+     | c | The newest three, as if the target were 3 | May to July 2017 | 22,577 to 25,115 (937 to 1,099) | 76.4% to 91.8% | the fewest windows; every training side over three quarters | 3 of 9 while three more valid windows exist; walking back from the newest needs its own reason, and on three datasets the newest three ranked model pairs the wrong way round[^w4] |
+
+   * **Recommendation:** b, as recommended above (the target of 9 stands, and December is the season the newest months lack); a if you want no exception. c only if the rule's target is changed to fall off more gently, which would be a decision for the rule, not this dataset. **Decision:** a, b or c?
+
+   [^w3]: **SPLIT-33** (Should): repeated 3-fold cross-validation with 20, 10, 3 or 1 repeats "as its train side holds fewer than 500, 2,500 or 250,000 units, or more"; the definition checks it on two thirds of the units.
+   [^w4]: **SPLIT-15** (Should for the windows other than the newest): "The number of windows aims at the splits an IID split of the dataset would get: SPLIT-33's count for two thirds of all its scored units (60, 30, 9 or 3)"; fewer are accepted, never fewer than 3; walking back from the newest window "needs its reason too"; on aeolus, climate_model and delivery_eta the newest three windows ranked a model pair the other way round than the whole eligible history.
 
 **Review panel:** ship after changes (mediator). Claim audit: 24 claims, the validity claims all hold; the masking claim was refuted beyond organic search and the returning-visitor ranges were stale (both fixed), the operating-system count off by one (fixed). Blind review: would include with changes; its concerns (the cut and the row filter) are answered by the query. Task gamer: no exploit. Debate: agreed on every point after the rebuttals; the visitor history (applied) and the eight windows (issue 1) were conceded. For the curator: issue 1 and H.
 
