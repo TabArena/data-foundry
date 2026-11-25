@@ -13,11 +13,15 @@ tags:
 - Tiny Data
 - Many features
 - Spectral Data
+- 'Samples: Unknown'
+- 'Entities: Recur'
+- Clinical Study
 collections:
 - RamanBench
 original_source: Other
 year: '2022'
 domain: medical & healthcare
+collection_period: Unknown
 problem_type: Binary Classification
 original_data_state: Other
 source_links:

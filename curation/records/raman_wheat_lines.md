@@ -9,8 +9,12 @@ decision_markers:
 tags:
 - AI-Filled (Verify)
 - Spectral Data
+- 'Samples: No Time Dimension'
+- 'Entities: Recur'
+- Experimental Results
 collections:
 - RamanBench
+collection_period: Unknown
 source_links:
 - https://doi.org/10.3389/fpls.2023.1116876
 - https://doi.org/10.5281/zenodo.7644521

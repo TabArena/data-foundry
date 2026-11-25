@@ -13,12 +13,17 @@ tags:
 - Many features
 - Non-IID (Grouped)
 - Spectral Data
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Entities: Recur'
+- Experimental Results
 collections:
 - RamanBench
 original_source: Other
 year: '2025'
 required_split:
 - Grouped (NON-IID)
+collection_period: Unknown
 problem_type: Regression
 original_data_state: One Table
 source_links:

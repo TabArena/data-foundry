@@ -12,11 +12,15 @@ tags:
 - Many features
 - Many class
 - Spectral Data
+- 'Samples: No Time Dimension'
+- 'Entities: Recur'
+- Experimental Results
 collections:
 - RamanBench
 original_source: Other
 year: '2025'
 domain: chemistry & material science
+collection_period: Unknown
 problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:

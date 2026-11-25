@@ -13,6 +13,9 @@ tags:
 - Tiny Data
 - Many features
 - Spectral Data
+- 'Samples: Unknown'
+- 'Entities: Recur'
+- Clinical Study
 collections:
 - RamanBench
 original_source: Other
@@ -20,6 +23,7 @@ year: '2024'
 domain: medical & healthcare
 required_split:
 - Grouped (NON-IID)
+collection_period: Unknown
 problem_type: Multiclass Classification
 source_links:
 - https://doi.org/10.1016/j.xcrm.2024.101579

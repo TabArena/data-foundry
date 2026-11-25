@@ -13,12 +13,16 @@ tags:
 - Many features
 - Many class
 - Spectral Data
+- 'Samples: No Time Dimension'
+- 'Entities: Recur'
+- Expanding Science Catalogue
 collections:
 - RamanBench
 original_source: Website
 domain: chemistry & material science
 required_split:
 - Grouped (NON-IID)
+collection_period: Unknown
 problem_type: Multiclass Classification
 source_links:
 - https://doi.org/10.1515/9783110417104-003

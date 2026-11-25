@@ -13,6 +13,9 @@ tags:
 - Many features
 - Multi-target
 - Spectral Data
+- 'Samples: No Time Dimension'
+- 'Entities: Recur'
+- Experimental Results
 collections:
 - RamanBench
 original_source: Other

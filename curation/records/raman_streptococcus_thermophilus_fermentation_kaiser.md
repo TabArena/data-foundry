@@ -9,8 +9,13 @@ decision_markers:
 tags:
 - AI-Filled (Verify)
 - Spectral Data
+- 'Samples: Over Time'
+- 'Time: Within Entity'
+- 'Entities: Recur'
+- Experimental Results
 collections:
 - RamanBench
+collection_period: Unknown
 source_links:
 - https://arxiv.org/abs/2605.02003
 - https://huggingface.co/datasets/chlange/streptococcus_thermophilus_fermentation_kaiser

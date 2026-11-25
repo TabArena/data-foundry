@@ -13,10 +13,15 @@ tags:
 - Multi-target
 - Many features
 - Spectral Data
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Entities: Recur'
+- Experimental Results
 collections:
 - RamanBench
 original_source: Other
 year: '2026'
+collection_period: Unknown
 problem_type: Regression
 original_data_state: One Table
 source_links:

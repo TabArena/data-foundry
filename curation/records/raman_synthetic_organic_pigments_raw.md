@@ -9,8 +9,12 @@ decision_markers:
 tags:
 - AI-Filled (Verify)
 - Spectral Data
+- 'Samples: No Time Dimension'
+- 'Entities: Recur'
+- Experimental Results
 collections:
 - RamanBench
+collection_period: Unknown
 source_links:
 - https://doi.org/10.1002/jrs.4054
 - https://soprano.kikirpa.be (KIK-IRPA SOP spectral library; raman-data downloads a SharePoint zip)

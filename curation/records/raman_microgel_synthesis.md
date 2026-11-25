@@ -12,11 +12,15 @@ tags:
 - Tiny Data
 - Many features
 - Spectral Data
+- 'Samples: No Time Dimension'
+- 'Entities: Recur'
+- Experimental Results
 collections:
 - RamanBench
 original_source: Other
 year: '2021'
 domain: chemistry & material science
+collection_period: Unknown
 problem_type: Regression
 source_links:
 - https://doi.org/10.18154/RWTH-2021-09666

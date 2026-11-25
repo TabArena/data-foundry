@@ -13,11 +13,15 @@ tags:
 - Tiny Data
 - Many features
 - Spectral Data
+- 'Samples: No Time Dimension'
+- 'Entities: Recur'
+- Experimental Results
 collections:
 - RamanBench
 original_source: Kaggle
 year: '2019'
 domain: medical & healthcare
+collection_period: Unknown
 problem_type: Multiclass Classification
 original_data_state: Other
 source_links:

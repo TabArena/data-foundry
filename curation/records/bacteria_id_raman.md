@@ -18,6 +18,9 @@ tags:
 - Non-IID (Grouped)
 - Spectral Data
 - Clinical Study
+- 'Samples: Over Time'
+- 'Time: Inferred'
+- 'Entities: Recur'
 collections:
 - RamanBench
 original_source: Github
@@ -25,6 +28,7 @@ year: '2019'
 domain: medical & healthcare
 required_split:
 - Grouped (NON-IID)
+collection_period: 2018-2019
 problem_type: Multiclass Classification
 original_data_state: Other
 source_links:
@@ -239,6 +243,7 @@ log loss on 2026-10-21). Priority 4 becomes 3 (the fit is approximate).
      - The record now names the collection type `Clinical Study`: patients of a study, labelled by an outcome, with no date in their rows[^c34].
      - The branch from there offers a site step and, with no date per row, an order step, and the shipped design takes neither[^c36].
      - It pools the 25 patients of 2018 with the 25 of 2019 and draws test folds across both, although those two cohorts are a site and a year at once.
+   * **What the record now says:** the collection facts added with the type are `Samples: Over Time` and `Time: Inferred` (the file a patient comes from gives its year), while the definition declares the time basis `Timeless`. Nothing in the checks catches the pair, but a reader of the record sees samples that spread over time with the time recoverable, next to a basis that says there is no time dimension.
    * **Effect on the task:** the definition's own notes measure it. Trained on the 2018 patients and tested on the 2019 ones, a logistic regression on 100 principal components scores a per-spectrum log loss of 0.368, against 0.229 pooled with each patient weighted once. One spectrum tells the year at ROC AUC 0.994, grouped by patient, so the measurement session is readable and the pooled split lets a model use a session its real deployment would not have seen.
    * **What the definition already says:** `fit_reason` names the pooling as one of the four gaps ("The two years are pooled, while a lab trains on its past"), so the shipped task states the limitation rather than splitting on it.
    * **Options:**

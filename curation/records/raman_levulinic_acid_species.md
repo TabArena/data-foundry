@@ -13,11 +13,16 @@ tags:
 - Multi-target
 - Many features
 - Spectral Data
+- 'Samples: Over Time'
+- 'Time: Within Entity'
+- 'Entities: Recur'
+- Experimental Results
 collections:
 - RamanBench
 original_source: Other
 year: '2024'
 domain: chemistry & material science
+collection_period: Unknown
 problem_type: Regression
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:

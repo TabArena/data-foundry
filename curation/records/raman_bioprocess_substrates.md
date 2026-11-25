@@ -12,10 +12,14 @@ tags:
 - Many features
 - Multi-target
 - Spectral Data
+- 'Samples: No Time Dimension'
+- 'Entities: Recur'
+- Experimental Results
 collections:
 - RamanBench
 original_source: Other
 year: '2025'
+collection_period: Unknown
 problem_type: Regression
 original_data_state: One Table
 source_links:

@@ -12,11 +12,15 @@ tags:
 - Tiny Data
 - Many features
 - Spectral Data
+- 'Samples: No Time Dimension'
+- 'Entities: Recur'
+- Experimental Results
 collections:
 - RamanBench
 original_source: Other
 year: '2020'
 domain: environmental science & climate
+collection_period: Unknown
 problem_type: Multiclass Classification
 source_links:
 - https://doi.org/10.1016/j.scitotenv.2020.139990

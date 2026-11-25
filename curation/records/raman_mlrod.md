@@ -18,6 +18,8 @@ tags:
 - Many class
 - Spectral Data
 - Experimental Results
+- 'Samples: No Time Dimension'
+- 'Entities: Recur'
 collections:
 - RamanBench
 original_source: Other
@@ -25,6 +27,7 @@ year: '2022'
 domain: chemistry & material science
 required_split:
 - Grouped (NON-IID)
+collection_period: Unknown
 problem_type: Multiclass Classification
 source_links:
 - https://doi.org/10.1029/2021EA002125

@@ -9,8 +9,12 @@ decision_markers:
 tags:
 - AI-Filled (Verify)
 - Spectral Data
+- 'Samples: No Time Dimension'
+- 'Entities: Recur'
+- Experimental Results
 collections:
 - RamanBench
+collection_period: Unknown
 source_links:
 - https://arxiv.org/abs/2011.07470
 - https://www.kaggle.com/datasets/sergioalejandrod/raman-spectroscopy

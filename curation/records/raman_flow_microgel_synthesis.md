@@ -14,6 +14,9 @@ tags:
 - Many features
 - Non-IID (Grouped)
 - Spectral Data
+- 'Samples: No Time Dimension'
+- 'Entities: Recur'
+- Experimental Results
 collections:
 - RamanBench
 original_source: Other
@@ -21,6 +24,7 @@ year: '2023'
 domain: chemistry & material science
 required_split:
 - Grouped (NON-IID)
+collection_period: Unknown
 problem_type: Regression
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:

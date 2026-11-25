@@ -13,6 +13,9 @@ tags:
 - Many features
 - Multi-target
 - Spectral Data
+- 'Samples: No Time Dimension'
+- 'Entities: Recur'
+- Experimental Results
 collections:
 - RamanBench
 original_source: Other
@@ -20,6 +23,7 @@ year: '2024'
 domain: chemistry & material science
 required_split:
 - Grouped (NON-IID)
+collection_period: Unknown
 problem_type: Regression
 source_links:
 - https://doi.org/10.1073/pnas.2407439121
