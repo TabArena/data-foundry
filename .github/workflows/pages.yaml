@@ -39,11 +39,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -70,6 +67,16 @@ jobs:
         with:
           path: _site
 
+  # The deploy runs as its own job, as in GitHub's Pages starter workflows. In one job, deploy-pages asked for the
+  # artifact a fraction of a second after the upload and often found none yet ("Found 0 artifact(s)"; most pushes to
+  # main from 2026-11-24 on). A second job starts on a fresh runner, by when the artifact is listed.
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
         id: deploy
         uses: actions/deploy-pages@v4
