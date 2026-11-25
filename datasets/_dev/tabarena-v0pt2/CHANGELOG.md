@@ -245,6 +245,16 @@ where the leaf differs from what ships or from a credible source split.
   grouped by the item, without `ForcedIIDFromGrouped` (SPLIT-35 names catalogues as outside it). definitions.md follows.
 - No definition changes; the departures are for a reviewer.
 
+## 2026-11-23, open_university_learning_analytics_dataset retired as `Too Small` (Andrej's decision of 2026-11-20, no container built)
+
+- The relation is measured not flat across the four start dates (2013B, 2013J, 2014B, 2014J): each date held out is
+  taught worse by the other three than by its own rows (log loss, LightGBM +0.011 to +0.040, Kumo-Tabular +0.014 to
+  +0.095, 5 seeds). A presentation runs longer than the gap between start dates, so with training limited to cohorts
+  finished before the test cohort starts, only one forward split exists (2014J on 66.5%); every other layout trains
+  on later, unfinished or concurrent cohorts.
+- The record is `No (Retired)` with `Too Small`, a CC line and the decision in its `## Review`; `v2_path` cleared.
+  The folder is removed. `DF: Yes` and the other tags stay.
+
 ## 2026-11-16, wine_world_cost: the use case kept as a merchant's listing decision (Lennart's decision, no container built)
 
 - Review issue 7 (whether any real use case exists), A: kept, fit approximate. The actor is a UK wine merchant's buyer
