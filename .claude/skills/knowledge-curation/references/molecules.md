@@ -221,4 +221,4 @@ The task is going from the structure to a prediction (Lennart, 2026-11-01). So:
 * **Probes:** they see the column in the recommended encoding (`dataset_io.py`); the blind reviewer's clean room keeps
   the string.
 * **What TabArena still needs** (the guard against the text embedding, the encoder, the cache, timing in the fit time):
-  `datasets/_dev/tabarena-v0pt2/BENCHMARK_CHANGES_TODO.md`, "Encodings and their caches".
+  `datasets/_dev/tabarena-v0pt2/BENCHMARK_CHANGES_TODO.md`, items 6 and 12.

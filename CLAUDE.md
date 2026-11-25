@@ -59,7 +59,7 @@ gotchas that look like blockers but aren't — lives in
   or removed dataset, a re-run that makes a new container) gets a dated entry in its
   `CHANGELOG.md`. A dataset retired to `No (Retired)` is removed from the copy. A dataset's review (the questions
   for the curator, open and settled) is the `## Review` section of its record, never a `REVIEW.md` in its folder,
-  and is never deleted; the copy's own `REVIEW.md` holds only the items across datasets.
+  and is never deleted. An item that spans datasets becomes a draft rule in the knowledge skills or a GitHub issue.
 * **v2 only for new work:** every new dataset is a v2 folder. The BeyondArena notebooks are Data Foundry v1;
   never add or re-curate a dataset with v1. [DATA_FOUNDRY_V1.md](DATA_FOUNDRY_V1.md) is the one page about v1.
 * **Writing style:** AGENTS.md ends with "AI Writing Tropes to Avoid" — it

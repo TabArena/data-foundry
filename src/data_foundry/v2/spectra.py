@@ -57,7 +57,7 @@ pipeline that wins everywhere and large effects of the settings (Cruz-Marcelo et
 "We advocate the evaluation over a range of parameter settings"). The three raw mass-spectrum encodings are the
 published candidates of the two traditions, the square root (MALDIquant, DRIAMS) and the log (Cromwell, Ciphergen);
 ``recommended_encodings()["mass_spectrum"]`` lists them, the default first. How the benchmark decides is in the working
-copy's ``BENCHMARK_CHANGES_TODO.md``, "Spectra".
+copy's ``BENCHMARK_CHANGES_TODO.md`` (decision D).
 
 The evidence on pancreatic_cancer_mouse_detection (raw SELDI-TOF serum spectra, split by mouse): PR #21's own chain
 lifted every model by 0.07 to 0.13 ROC AUC on 12 folds (2026-10-21). On the 60 shipped splits (2026-11-02),

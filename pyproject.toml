@@ -84,7 +84,7 @@ encodings = [
 tests = [
     "data-foundry[build]",
     "pytest",
-    # The review page tests parse the committed REVIEW.md files.
+    # The review page tests parse the records' review sections.
     "markdown-it-py",
 ]
 dev = [

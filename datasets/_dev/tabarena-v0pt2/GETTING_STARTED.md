@@ -85,8 +85,7 @@ More: [`datasets/README.md`](../../README.md) (the tree), [`CONTRIBUTING_DATASET
 |---|---|
 | [`README.md`](README.md) | How to rebuild the datasets. What each one is, and whether it is built, is in its own folder's `README.md`. |
 | [`CHANGELOG.md`](CHANGELOG.md) | Every change to the folder, newest first. Add an entry with each PR. |
-| [`BENCHMARK_CHANGES_TODO.md`](BENCHMARK_CHANGES_TODO.md) | What the TabArena harness has to change for these datasets. |
-| [`REVIEW.md`](REVIEW.md) | The review items that span datasets (a rule, a framework change). A dataset's own review is in its curation record. |
+| [`BENCHMARK_CHANGES_TODO.md`](BENCHMARK_CHANGES_TODO.md) | The hand-off to the TabArena harness: what it has to change to use these datasets as curated. |
 
 Each dataset folder holds `dataset.py` (the definition, the only file edited by hand) and `README.md` (generated: the
 dataset page with sample rows, checks, splits and the build record). The dataset's review (the questions for the

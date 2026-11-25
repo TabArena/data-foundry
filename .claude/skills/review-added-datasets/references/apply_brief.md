@@ -4,7 +4,7 @@ A round with decisions on many datasets (the window and horizon rounds of 2026-1
 applied by a few agents in parallel, each with three to five datasets. The main session runs the consistency check
 first (Step 4 of the skill), answers the notes that ask a question, and hands each agent this brief with its datasets,
 the marks and the curator's notes. It keeps for itself the files several agents would write at once: `CHANGELOG.md`,
-the working copy's cross-dataset `REVIEW.md`, the knowledge files and the review page. An agent edits only the
+the knowledge files and the review page. An agent edits only the
 definitions and the records of its datasets: a dataset's review is its record's `## Review`, so there is no other
 review file to touch.
 

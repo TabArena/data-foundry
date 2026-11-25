@@ -7,9 +7,10 @@ plus:
   trimmed it on 2026-10-27 (PR #32); what a dataset is and whether it is built is in its own folder's `README.md`;
 * `GETTING_STARTED.md`: the way in for a new curator;
 * `CHANGELOG.md`: the dated log of every change, newest first;
-* `BENCHMARK_CHANGES_TODO.md`: what the TabArena harness still needs (group columns, per-group scoring, metrics);
-* `REVIEW.md`: the review items that span datasets (a rule, a framework change). A dataset's own review is in its
-  record, never in its folder (below).
+* `BENCHMARK_CHANGES_TODO.md`: the hand-off to the TabArena harness: what it has to change to use these datasets as
+  curated.
+
+A dataset's own review is in its record, never in its folder (below).
 
 ## Rules
 
@@ -37,8 +38,11 @@ and a record without a folder keeps its open issues there too, with an outcome t
 per dataset, even one a scan found in several, goes into each dataset's own review as its own issue (Lennart,
 2026-11-08).
 
-The working copy's `datasets/_dev/tabarena-v0pt2/REVIEW.md` holds only what is decided once for many datasets (a
-rule, a framework change, a family stance). It is the one review file outside the records.
+An item that spans datasets (a rule, a framework change, a family stance) has no file in the working copy (Lennart,
+2026-11-25). A standing rule goes into the knowledge skills as a draft for the curator to confirm, in the same change
+as the decision that needs it; open work becomes a GitHub issue. The cross-dataset `REVIEW.md` the copy kept until
+then, its 37 items all settled, is in the git history
+(`git log --diff-filter=D -- datasets/_dev/tabarena-v0pt2/REVIEW.md`).
 
 When the curator settles an issue, its decision goes into `dataset.py` (code and `curation_comments`) and the record:
 the curator's turn and a closing `**Resolved (<date>, <who>):**` turn in its review, a `CC` line in its comments. A

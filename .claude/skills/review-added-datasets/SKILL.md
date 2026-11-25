@@ -1,6 +1,6 @@
 ---
 name: review-added-datasets
-description: "The curator's review of what /add-dataset did: builds the review page from the open review issues (the `## Review` section of each curation record, with its review-panel reports, for an added dataset or a record without a folder, and the working copy's cross-dataset REVIEW.md), with one verdict per dataset and marks per open issue, as a local HTML file or a Claude artifact; then reads the curator's decisions back, checks each against the rules and similar past decisions (asking the curator to reflect when one looks inconsistent) and applies them to the definition and the record. Use after /add-dataset, when the curator wants to review the open issues of the working copy, or asks to apply, rebuild or republish such a review page."
+description: "The curator's review of what /add-dataset did: builds the review page from the open review issues (the `## Review` section of each curation record, with its review-panel reports, for an added dataset or a record without a folder), with one verdict per dataset and marks per open issue, as a local HTML file or a Claude artifact; then reads the curator's decisions back, checks each against the rules and similar past decisions (asking the curator to reflect when one looks inconsistent) and applies them to the definition and the record. Use after /add-dataset, when the curator wants to review the open issues of the working copy, or asks to apply, rebuild or republish such a review page."
 argument-hint: "[--names a,b]"
 user-invocable: true
 ---
@@ -11,14 +11,13 @@ Stage 2, the curator's half ([pipeline.md](../knowledge-data-foundry/references/
 anything is built or shipped. `/add-dataset` leaves the questions it cannot settle for the curator in the record's
 `## Review` (`curation/records/<unique_name>.md`), ranked, with the review panel's reports below them; a record it did
 not add keeps its questions in the same section. The record is the one source of a dataset's curation (Lennart,
-2026-11-11), so no dataset folder holds a `REVIEW.md`. This skill collects all open issues into one page, the curator
+2026-11-11), so the working copy holds no `REVIEW.md`. This skill collects all open issues into one page, the curator
 decides on the page, and Claude checks the decisions and writes them back into the record (and the definition); only
 then are the accepted datasets built, when the curator asks
 ([rebuild.md](../knowledge-data-foundry/references/rebuild.md)). How decisions are ranked and when an exception is
-reasonable: [principles.md](../knowledge-curation/references/principles.md). The format of the record's review, of the
-cross-dataset file and of the report the page is built from:
-[`references/review_file_format.md`](references/review_file_format.md). Where the files of the working copy live:
-[working_copy.md](../knowledge-data-foundry/references/working_copy.md).
+reasonable: [principles.md](../knowledge-curation/references/principles.md). The format of the record's review and of
+the report the page is built from: [`references/review_file_format.md`](references/review_file_format.md). Where the
+files of the working copy live: [working_copy.md](../knowledge-data-foundry/references/working_copy.md).
 
 The page shows, per record, a tab row: Use case (the definition's `task_summary`: question, fields, use-case fit; then,
 when the round asks about them, the declared split, from the generated README and the definition: the regime and its
@@ -29,8 +28,8 @@ metric with its origin, original, reference and reason; the split and the metric
 every record opens on), Decisions (only what the curator decides: the numbered issues and the record fields that
 disagree with the definition), Panel (the review panel's reports, the mediator's open), Details (the outcome and the
 record judgment), `dataset.py`, the generated `README.md` and the curation record; below the tabs, the panel's
-recommendation and the verdict box. Other views: the issues that span datasets, and a summary of all verdicts. The page
-embeds a snapshot of every file at build time.
+recommendation and the verdict box. The other view is a summary of all verdicts. The page embeds a snapshot of every
+file at build time.
 
 Every issue has the same shape ([`references/review_file_format.md`](references/review_file_format.md), "Issues"):
 bullets for the problem, its effect, the experiments, the consistency with other datasets and the panel's sides, a
@@ -52,7 +51,7 @@ R=local-data-warehouse/_runs/<date>_review
     [--names a,b] [--metric-marks a,b|all] [--split-marks a,b|all] [--horizon-marks a,b|all] [--title <report title>] \
     [--date <YYYY-MM-DD>]
 .venv/bin/python .claude/skills/review-added-datasets/scripts/build_review_page.py $R/review_report.md \
-    --out $R/review_page [--title "New Datasets Review"] [--subtitle <text>] [--tldr <yaml>] [--extra-crosscut <yaml>]
+    --out $R/review_page [--title "New Datasets Review"] [--subtitle <text>] [--tldr <yaml>]
 ```
 
 **Only what is a choice of this round goes on the page.** The declared metric is on the page, with a mark, only for the
@@ -83,33 +82,25 @@ and `priority_factors.py` (in `knowledge-data-foundry/scripts/`, no names: every
 open) lists them with the measured factors. Give a record without one its priority as `/add-dataset` does (Step 8,
 [selection.md](../knowledge-curation/references/selection.md), "Priority"), through the store API.
 
-`collect_reviews.py` reads the `## Review` section of every record in `curation/records/` and the working copy's own
-`datasets/_dev/tabarena-v0pt2/REVIEW.md` (the items across datasets), and writes one report; `--names` limits it to
-some records (the batch of one run). It leaves out a record with nothing left to decide (every issue resolved, no field
-row, nothing deferred or to verify from triage, and, when `--metric-marks`, `--split-marks` or `--horizon-marks` names
-it, the declared metric, split or horizon checked): such a record ships by default, and its decisions stay readable in
-the record's review (Lennart, 2026-11-08); `--keep-settled` keeps it, for a page that looks back or to check one
-settled review's report.
-When every record is settled, the report and the page hold only the items across datasets. It stops with the record
-and the line when a review breaks the format, and checks the report with the builder's parser; fix the record, not the
+`collect_reviews.py` reads the `## Review` section of every record in `curation/records/` and writes one report;
+`--names` limits it to some records (the batch of one run). It leaves out a record with nothing left to decide (every
+issue resolved, no field row, nothing deferred or to verify from triage, and, when `--metric-marks`, `--split-marks` or
+`--horizon-marks` names it, the declared metric, split or horizon checked): such a record ships by default, and its
+decisions stay readable in the record's review (Lennart, 2026-11-08); `--keep-settled` keeps it, for a page that looks
+back or to check one settled review's report.
+When every record is settled, there is nothing to review: it writes no report and says so. It stops with the record and
+the line when a review breaks the format, and checks the report with the builder's parser; fix the record, not the
 scripts. The report and the page are generated: never edit or commit them. They stay in the run folder, the only files
 between the record and the board.
 
-The collector also stops on a `REVIEW.md` in a dataset folder and on an `**Open issues (AI, <date>):**` block left in a
-record's `## Comments`: both are retired (2026-11-11). A branch from before the change, rebased onto it, may still have
-folder files: `.venv/bin/python .claude/skills/review-added-datasets/scripts/move_reviews_to_records.py --check` lists
-them (and exits 1 when there is one); without `--check` it moves each into the `## Review` of the record its title
-names (the title line dropped, the folder checked against the record's `v2_path`, the relative links re-pointed from
-the folder to the records), deletes the file, and rewrites the pointers to it in the records' comments and the
-definitions ("REVIEW.md issue 3" becomes "Review issue 3"). It refuses a record that already has a review (merge the
-two by hand) and a review with a `## ` heading. An open-issues block is moved by hand into the record's `## Review`, in
-the format of a record without a folder ([`references/review_file_format.md`](references/review_file_format.md)).
+The collector also stops on a `REVIEW.md` anywhere in the working copy and on an `**Open issues (AI, <date>):**` block
+left in a record's `## Comments`: both are retired (2026-11-11). Move such a review by hand into the record's
+`## Review`, in the format of [`references/review_file_format.md`](references/review_file_format.md).
 
 `build_review_page.py` writes `data.json` and `review_page.html` into `--out`. Both scripts need `markdown-it-py`
 (the `curation` extra: `uv pip install --python .venv/bin/python -e ".[curation]"`). Records whose definition has no
-`task_summary` show "No summary" in the Use case tab (`--tldr` takes hand-written ones). `--extra-crosscut` adds
-cross-dataset items that are in no file (a YAML list with fixed ids). Keep the output under `local-data-warehouse/`:
-it is never committed.
+`task_summary` show "No summary" in the Use case tab (`--tldr` takes hand-written ones). Keep the output under
+`local-data-warehouse/`: it is never committed.
 
 ## Step 2: Hand the page to the curator
 
@@ -117,9 +108,8 @@ Either way the curator sets a verdict per record (ship / ship after changes / do
 was not added: add it / leave out; for a record that triage already decided: the update is correct / discuss), a mark
 per numbered issue (as implemented = the options row marked `(implemented)`; change = another row, named by its letter
 in the note, or a change the note describes; discuss) with optional notes, a mark on the declared split, the declared
-metric and the horizon where the round asks about them (as declared / change / discuss, with a note), a mark per
-record-field disagreement (take the definition's value / keep the record's value), and a mark per cross-dataset item
-(go ahead / leave as is / discuss).
+metric and the horizon where the round asks about them (as declared / change / discuss, with a note), and a mark per
+record-field disagreement (take the definition's value / keep the record's value).
 
 On each issue the buttons name what a mark locks in: "As implemented (A)" with the implemented row's letter, then
 "Change to:" with a button per other row of the options table and "other" (one "Change to B" button when there is
@@ -140,10 +130,9 @@ definition as it is), and the collector warns about it.
 
 ## Step 3: Read the decisions
 
-From the artifact: the `ArtifactData` tool, action `list`, collections `reviews` (one document per record, id = the
-record's `unique_name`) and `crosscut` (one per cross-dataset item, ids as in `data.json` under `crosscut`). From a
-local review: the pasted JSON, `{"page": {...}, "reviews": {<name>: <document>}, "crosscut": {<id>: <document>}}`,
-each document in the same shape. The fields:
+From the artifact: the `ArtifactData` tool, action `list`, collection `reviews` (one document per record, id = the
+record's `unique_name`). From a local review: the pasted JSON, `{"page": {...}, "reviews": {<name>: <document>}}`, each
+document in the same shape. The fields:
 
 | Document | Field | Values |
 |---|---|---|
@@ -155,7 +144,6 @@ each document in the same shape. The fields:
 | | `split.d`, `split.note` | `ok` (as declared), `change`, `discuss` for the declared split, and a note |
 | | `metric.d`, `metric.note` | `ok` (as declared), `change`, `discuss` for the declared metric, and a note |
 | | `horizon.d`, `horizon.note` | the same for the horizon and test windows of a temporal task |
-| `crosscut/<id>` | `d`, `note` | `ok`, `leave`, `discuss`, and a note |
 
 An issue whose last turn in the record's review is the AI's (an answer or a consistency check) waits on the curator:
 the page counts it as unmarked and shows the earlier mark as "before: ..." until the curator marks it or writes a note,
@@ -249,9 +237,8 @@ Apply that mark only once the curator has answered; apply the others now. Never 
   `sync-notebooks --check` clean). The record keeps its review, so the decision stays readable after the folder is
   gone.
 * **discuss:** answer on the page and wait for the curator's next mark.
-* **Cross-dataset items:** `ok` means go ahead as the item proposes, `leave` means no change. While the page is in
-  use, close a settled item in the working copy's `REVIEW.md` with a `**Resolved (<date>):**` label instead of
-  deleting it: the page stores its marks by position.
+* **A point that spans datasets:** it gets no item on the page. A standing rule goes into the knowledge skills as a
+  draft for the curator to confirm; open work becomes a GitHub issue (Lennart, 2026-11-25).
 
 Edit a record's review in place, with an exact-string edit of the current record file (the Edit tool), or through the
 store API (`record.review` after a fresh `load_record`, then `save_record`); never by saving a record loaded before
@@ -279,15 +266,16 @@ end), what Claude needs into `**Notes for the AI:**`. Copy each note you acted o
 `**Lennart (<date>, <mark>):**` in their words, then clear that note on the page (an `update` deleting `note`, with
 `if_version`; keep the mark), so the note box is empty for the next turn and the conversation keeps the note. Then
 rebuild (Step 1) and republish to the same file path or URL, so the curator sees the current records and only what is
-still open. Never rename records, renumber issues or change cross-dataset ids of a published page: the marks are stored
-under them. A new issue takes the next number after the highest its review has had.
+still open. Never rename records or renumber issues of a published page: the marks are stored under them. A new issue
+takes the next number after the highest its review has had.
 
 ## Rules
 
-* The page's store contract (collections `reviews` and `crosscut`, document ids, field names) is fixed; changing it
-  loses the curator's marks. Change the layout freely in `assets/review_page.html`.
-* A dataset's review is its record's `## Review`, and nowhere else: no `REVIEW.md` in a dataset folder, no open-issues
-  block in `## Comments`. The working copy's cross-dataset `REVIEW.md` is the only review file outside the records.
+* The page's store contract (the collection `reviews`, document ids, field names) is fixed; changing it loses the
+  curator's marks. Change the layout freely in `assets/review_page.html`.
+* A dataset's review is its record's `## Review`, and nowhere else: no `REVIEW.md` in the working copy, no open-issues
+  block in `## Comments`. A point that spans datasets is not a review: a standing rule goes into the knowledge skills as
+  a draft for the curator to confirm, open work becomes a GitHub issue (Lennart, 2026-11-25).
 * The record's review holds the issues, open and settled, written as
   [writing.md](../knowledge-curation/references/writing.md) says for issues, and no process log. A run's process log
   (what was tried, probe outputs, scraped pages, evidence scripts) stays in its local run folder

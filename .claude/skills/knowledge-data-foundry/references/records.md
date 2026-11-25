@@ -87,10 +87,9 @@ format is the review skill's [review_file_format.md](../../review-added-datasets
   comments, all in the one record.
 * A review is never deleted (Andrej, 2026-11-02): a settled issue keeps its Resolved turn, and a retired dataset's
   record keeps its review, so the record says how the dataset was decided.
-* No dataset folder holds a `REVIEW.md`, and none is created. `collect_reviews.py` stops at one and a test fails the
-  PR that adds one; `.claude/skills/review-added-datasets/scripts/move_reviews_to_records.py` moves it into its record
-  (for a branch rebased onto the change; `--check` lists what it would move). The working copy's cross-dataset
-  `REVIEW.md` is the one review file outside the records ([working_copy.md](working_copy.md)).
+* No `REVIEW.md` exists in the working copy, and none is created. `collect_reviews.py` stops at one and a test fails
+  the PR that adds one. An item that spans datasets is a draft rule in the knowledge skills or a GitHub issue
+  ([working_copy.md](working_copy.md)).
 * The dashboard and the public site show the review with the record; the flat export (CSV, the sheet) leaves it out.
 
 Edit the review on the current file, in one of two ways: an exact-string edit of the record file (the Edit tool), or

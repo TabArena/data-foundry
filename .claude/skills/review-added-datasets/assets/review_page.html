@@ -257,7 +257,6 @@ textarea.note.big { min-height: 4.2rem; }
 .statepill[data-v="ok"] { color: var(--ok); }
 .statepill[data-v="change"], .statepill[data-v="leave"] { color: var(--change); }
 .statepill[data-v="discuss"] { color: var(--discuss); }
-.clamp { max-height: 10.5rem; overflow: hidden; -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
 /* The conversation on an issue or item: the original text, then one turn per answer, note or closing label */
 .thread { list-style: none; margin: .7rem 0 0 2.4rem; padding: 0; display: grid; gap: .5rem; }
 .turn { border: 1px solid var(--rule); border-left-width: 4px; border-radius: 0 8px 8px 0; padding: .45rem .75rem .55rem; background: var(--surface); max-width: 78ch; }
@@ -283,8 +282,6 @@ textarea.note.big { min-height: 4.2rem; }
 .earlier { font-size: .7rem; font-weight: 500; margin-left: .5rem; padding: .05rem .45rem; border-radius: 4px; border: 1px dashed var(--rule); color: var(--ink-3); white-space: nowrap; }
 .yourturn { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-left: .5rem; padding: .05rem .45rem; border-radius: 4px; background: var(--approx-soft); color: var(--approx); white-space: nowrap; }
 @media (max-width: 860px) { .thread, .origlabel { margin-left: 0; } .turn.curator { margin-left: .8rem; } }
-.more { margin: .3rem 0 0 2.4rem; background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font-size: .84rem; font-weight: 500; }
-.more[hidden] { display: none; }
 
 /* Rendered markdown */
 .md { font-size: .92rem; color: var(--ink); overflow-wrap: anywhere; min-width: 0; }
@@ -434,11 +431,10 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
 .pager button.primary { background: var(--accent); color: var(--bg); border-color: var(--accent); }
 .pager button:disabled { opacity: .4; cursor: default; }
 
-/* Across datasets and summary */
+/* Summary */
 .page { max-width: 62rem; margin: 0 auto; padding-block: 1.5rem 4rem; }
 .page > h2 { font: 600 1.5rem/1.25 var(--font-display); margin: 0 0 .3rem; }
 .page > .lede { color: var(--ink-2); margin: 0 0 1rem; max-width: 70ch; }
-.page h3.sec { font: 600 1.15rem/1.3 var(--font-display); margin: 2rem 0 .3rem; overflow-wrap: anywhere; }
 .page .jump { margin: .7rem 0 0; }
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); gap: .6rem; margin: 1rem 0 1.5rem; }
 .stat { border: 1px solid var(--rule); border-radius: 8px; padding: .7rem .8rem; background: var(--surface); }
@@ -469,7 +465,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   .desk.detail-open .rail { display: none; }
   .desk:not(.detail-open) .case { display: none; }
   .back { display: inline-block; }
-  .item .seg, .item .body, .more { margin-left: 0; }
+  .item .seg, .item .body { margin-left: 0; }
   .item .note { margin-left: 0; width: 100%; }
   .status { margin-left: 0; }
 }
@@ -492,7 +488,6 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     <div class="nav-row">
       <div class="tabs" role="tablist" aria-label="Views">
         <button class="tab" role="tab" id="tab-datasets" data-tab="datasets" aria-selected="true">Datasets</button>
-        <button class="tab" role="tab" id="tab-across" data-tab="across" aria-selected="false">Across datasets</button>
         <button class="tab" role="tab" id="tab-summary" data-tab="summary" aria-selected="false">Summary</button>
       </div>
       <div class="progress" id="progress"></div>
@@ -515,7 +510,6 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       <article class="case" id="case"></article>
     </div>
   </section>
-  <section class="view" id="view-across" hidden></section>
   <section class="view" id="view-summary" hidden></section>
 </main>
 
@@ -527,8 +521,6 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   const DATA = JSON.parse(document.getElementById("data").textContent);
   const DS = DATA.datasets;
   const byName = new Map(DS.map((d) => [d.name, d]));
-  const XITEMS = new Map();
-  DATA.crosscut.forEach((s) => s.items.forEach((it) => XITEMS.set(it.id, Object.assign({ section: s.title }, it))));
 
   const VERDICTS = {
     standard: [["ship", "Ship"], ["changes", "Ship after changes"], ["dont", "Don't ship"], ["discuss", "Discuss"]],
@@ -553,13 +545,11 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   // The declared split, the same way (`splitMark`: --split-marks), with the metric's choices (stored as
   // `split: {d, note}`); the CC line that the declared split is checked resolves it.
   const hasSplitMark = (d) => !!d.splitMark && !!d.split && !!d.folder && !d.retired && d.cat !== "decided" && !d.splitChecked;
-  const X_OPTS = [["ok", "Go ahead"], ["leave", "Leave as is"], ["discuss", "Discuss"]];
   const FIELD_OPTS = [["update", "Take definition's value"], ["keep", "Keep record's value"]];
   /* A record-field row's buttons name the value each one leaves in the record. */
   const short = (v) => (String(v).length > 28 ? String(v).slice(0, 27) + "\u2026" : String(v));
   const fieldOpts = (f) => [["update", "Use definition: " + short(f.definition)], ["keep", "Keep record: " + short(f.record)]];
   const OPT_LABEL = { ok: "As implemented", change: "Change", discuss: "Discuss", leave: "Leave as is", update: "Take definition's value", keep: "Keep record's value" };
-  const X_LABEL = { ok: "Go ahead", leave: "Leave as is", discuss: "Discuss" };
   // The task summary, labelled and judged as on the TabArena Task Summaries page.
   const SUM_LABELS = [
     ["use_case", "Use case"], ["row", "One row"], ["predicted", "Predicted"], ["known", "Known at prediction time"],
@@ -576,7 +566,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   const CTABS = ["usecase", "decisions", "panel", "details", "code", "report", "record"];
   const fitOf = (d) => (d.summary && FIT[d.summary.fit] ? d.summary.fit : null);
 
-  const S = { reviews: {}, crosscut: {} };
+  const S = { reviews: {} };
   const ui = { view: "datasets", current: DS.length ? DS[0].name : null, filter: "all", q: "", hideReviewed: false, detailOpen: false };
   let mode = "connecting";
   let db = null;
@@ -661,7 +651,6 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     return r;
   }
   function peekRev(name) { return S.reviews[name] || { items: {}, fields: {} }; }
-  function xdoc(id) { return S.crosscut[id] || (S.crosscut[id] = {}); }
 
   /* A record of the review with no open issue, no open field row and no open metric ships by default (Lennart,
      2026-11-05): its verdict is "ship" unless the curator sets another. */
@@ -727,7 +716,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   }
   function touch(coll, id, slow) {
     if (mode === "readonly") return;
-    const doc = coll === "reviews" ? rev(id) : xdoc(id);
+    const doc = rev(id);
     doc.updatedAt = new Date().toISOString();
     if (userId) doc.by = userId;
     dirty.add(coll + "/" + id);
@@ -750,7 +739,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   }
   async function persist(path) {
     const [coll, id] = path.split("/");
-    const doc = cleanDoc(coll === "reviews" ? rev(id) : xdoc(id));
+    const doc = cleanDoc(rev(id));
     if (mode === "shared") {
       await db.doc(path).set(doc);
     } else if (mode === "local") {
@@ -797,16 +786,13 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       if (v) { reviewed++; tally[v] = (tally[v] || 0) + 1; }
       const c = counts(d); done += c.done; total += c.total;
     });
-    let xdone = 0;
-    XITEMS.forEach((_, id) => { if (S.crosscut[id] && S.crosscut[id].d) xdone++; });
     const pct = (n) => (DS.length ? (100 * (n || 0)) / DS.length : 0).toFixed(2) + "%";
     document.getElementById("progress").innerHTML =
       '<span><b>' + reviewed + "</b>/" + DS.length + " verdicts</span>" +
       '<span class="meter" aria-hidden="true">' +
       ["ship", "changes", "dont", "discuss"].map((k) => '<span class="m-' + k + '" style="width:' + pct(tally[k]) + '"></span>').join("") +
       "</span>" +
-      "<span><b>" + done + "</b>/" + total + " marks</span>" +
-      "<span><b>" + xdone + "</b>/" + XITEMS.size + " across</span>";
+      "<span><b>" + done + "</b>/" + total + " marks</span>";
   }
 
   /* ---------- rendering: rail ---------- */
@@ -1196,7 +1182,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       ctab("record", "Curation record") + "</div>";
 
     // Decisions: only what the curator decides on, the numbered issues and the record fields; the run's report is
-    // under Details. Resolved and deferred issues are hidden behind the same toggle as on the Across datasets view.
+    // under Details. Resolved and deferred issues are hidden behind a toggle.
     const nClosed = d.items.filter((it) => it.resolved).length;
     const shownItems = d.items.filter((it) => ui.showResolved || !it.resolved);
     let dec = d.fields.length ? '<nav class="panelnav" aria-label="In this tab"><span>In this tab:</span>' +
@@ -1353,45 +1339,8 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       t.parentNode.insertBefore(w, t); w.appendChild(t);
     });
     root.querySelectorAll(".md a").forEach((a) => { a.target = "_blank"; a.rel = "noopener"; });
-    requestAnimationFrame(() => {
-      root.querySelectorAll(".body.clamp").forEach((b) => {
-        const btn = b.nextElementSibling;
-        if (b.scrollHeight <= b.clientHeight + 12) { b.classList.remove("clamp"); if (btn && btn.classList.contains("more")) btn.hidden = true; }
-      });
-    });
   }
   function autoGrow(t) { t.style.height = "auto"; t.style.height = Math.max(t.scrollHeight + 2, 36) + "px"; }
-
-  /* ---------- rendering: across datasets ---------- */
-  function renderAcross() {
-    const el = document.getElementById("view-across");
-    const ro = mode === "readonly" ? " disabled" : "";
-    const nResolved = DATA.crosscut.reduce((n, s) => n + s.items.filter((it) => it.resolved).length, 0);
-    let h = '<div class="page"><h2>Across datasets</h2><p class="lede">Issues that span several records, from the report’s Across datasets section. "Go ahead" means do what the item proposes. Under each question, the conversation so far: your notes, Claude’s answers and the closing label, each with its date; "Your turn" marks an item Claude has answered and that waits for your mark.</p>';
-    if (nResolved) {
-      h += '<p class="jump"><button class="linkbtn" data-act="toggleResolved">' + (ui.showResolved ? "Hide the " + nResolved + " resolved items" : "Show the " + nResolved + " resolved items") + "</button></p>";
-    }
-    DATA.crosscut.forEach((s) => {
-      const shown = s.items.filter((it) => ui.showResolved || !it.resolved);
-      if (!shown.length) return;
-      h += '<h3 class="sec">' + esc(s.title).replace(/`([^`]+)`/g, "<code>$1</code>") + '</h3><ol class="items">';
-      shown.forEach((it) => {
-        const st = S.crosscut[it.id] || {};
-        h += '<li class="item' + (it.resolved ? " resolved" : "") + '"><div class="item-top"><span class="num">' + (s.items.indexOf(it) + 1) + "</span><h4>" + it.titleHtml +
-          (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(X_LABEL[st.d]) + "</span>" : "") + yourTurn(it) + "</h4></div>" +
-          '<div class="seg small">' + segHtml(X_OPTS, st.d, "x", ' data-id="' + esc(it.id) + '"' + ro) + "</div>" +
-          origLabel(it) + '<div class="body md clamp">' + it.html + "</div>" +
-          '<button class="more" data-act="more">Show all</button>' + threadHtml(it) +
-          '<label class="visually-hidden" for="note-x-' + esc(it.id) + '">Note</label>' +
-          '<textarea class="note" rows="1" id="note-x-' + esc(it.id) + '" data-note="x" data-id="' + esc(it.id) + '" placeholder="Note (optional)"' + (mode === "readonly" ? " readonly" : "") + ">" + esc(st.note || "") + "</textarea></li>";
-      });
-      h += "</ol>";
-    });
-    h += "</div>";
-    el.innerHTML = h;
-    finishMarkdown(el);
-    el.querySelectorAll("textarea.note").forEach(autoGrow);
-  }
 
   /* ---------- rendering: summary ---------- */
   function decisionsText() {
@@ -1419,30 +1368,17 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       if ((r.note || "").trim()) lines.push("Note: " + r.note.trim());
       lines.push(...marks, "");
     });
-    const xs = [];
-    XITEMS.forEach((it, id) => {
-      const st = S.crosscut[id];
-      if (st && (st.d || (st.note || "").trim())) {
-        const t = document.createElement("div"); t.innerHTML = it.titleHtml;
-        xs.push("- " + it.section + " / " + t.textContent + ": " + (st.d ? X_LABEL[st.d] : "no mark") + ((st.note || "").trim() ? ". Note: " + st.note.trim() : ""));
-      }
-    });
-    if (xs.length) lines.push("## Across datasets", ...xs, "");
     return lines.join("\n");
   }
-  // Every review and cross-dataset mark in the store's shape (collections reviews and crosscut, by document id),
+  // Every review mark in the store's shape (collection reviews, by document id),
   // for a reviewer whose marks live only in this browser.
   function decisionsJson() {
-    const out = { page: { title: DATA.title, report: DATA.report.path, snapshot: DATA.snapshot }, reviews: {}, crosscut: {} };
+    const out = { page: { title: DATA.title, report: DATA.report.path, snapshot: DATA.snapshot }, reviews: {} };
     const hasText = (v) => typeof v === "string" && v.trim() !== "";
     Object.keys(S.reviews).sort().forEach((name) => {
       if (!byName.has(name)) return;
       const doc = cleanDoc(S.reviews[name]);
       if (doc.verdict || hasText(doc.note) || doc.metric || doc.split || Object.keys(doc.items || {}).length || Object.keys(doc.fields || {}).length) out.reviews[name] = doc;
-    });
-    XITEMS.forEach((_, id) => {
-      const doc = S.crosscut[id] && cleanDoc(S.crosscut[id]);
-      if (doc && (doc.d || hasText(doc.note))) out.crosscut[id] = doc;
     });
     return JSON.stringify(out, null, 2);
   }
@@ -1499,11 +1435,10 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   /* ---------- view switching ---------- */
   function showView(v) {
     ui.view = v;
-    ["datasets", "across", "summary"].forEach((k) => {
+    ["datasets", "summary"].forEach((k) => {
       document.getElementById("view-" + k).hidden = k !== v;
       document.getElementById("tab-" + k).setAttribute("aria-selected", String(k === v));
     });
-    if (v === "across") renderAcross();
     if (v === "summary") renderSummary();
     setHash(v === "datasets" ? ui.current : v);
   }
@@ -1547,7 +1482,6 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       const box = b.closest(".md");
       const fn = box && Array.from(box.children).find((c) => c.matches("details.fnotes"));
       if (!fn) return;
-      box.classList.remove("clamp");
       fn.open = true;
       fn.querySelectorAll("li.flash").forEach((li) => li.classList.remove("flash"));
       const li = fn.querySelector('li[data-fn="' + b.dataset.fn + '"]');
@@ -1558,7 +1492,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     if (act === "toggleResolved") {
       ui.showResolved = !ui.showResolved;
       const y = window.scrollY;
-      if (ui.view === "across") renderAcross(); else renderCase();
+      renderCase();
       window.scrollTo(0, y);
       return;
     }
@@ -1570,12 +1504,6 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       try {
         navigator.clipboard.writeText(d.code).then(() => { msg.textContent = "Copied."; }, () => { msg.textContent = "Copy failed: select the code instead."; });
       } catch (e) { msg.textContent = "Copy failed: select the code instead."; }
-      return;
-    }
-    if (act === "more") {
-      const body = b.previousElementSibling;
-      const clamped = body.classList.toggle("clamp");
-      b.textContent = clamped ? "Show all" : "Show less";
       return;
     }
     if (act === "prev" || act === "next") {
@@ -1718,14 +1646,6 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       refreshAll();
       return;
     }
-    if (act === "x") {
-      const id = b.dataset.id;
-      const st = xdoc(id);
-      st.d = st.d === b.dataset.v ? null : b.dataset.v;
-      touch("crosscut", id);
-      updatePill(b, st.d, X_LABEL);
-      renderProgress();
-    }
   });
   function updatePill(btn, v, labels) {
     const item = btn.closest(".item");
@@ -1760,7 +1680,6 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     }
     else if (kind === "metric") { const r = rev(ui.current); (r.metric || (r.metric = {})).note = t.value; touch("reviews", ui.current, true); }
     else if (kind === "split") { const r = rev(ui.current); (r.split || (r.split = {})).note = t.value; touch("reviews", ui.current, true); }
-    else if (kind === "x") { xdoc(t.dataset.id).note = t.value; touch("crosscut", t.dataset.id, true); }
   });
   document.addEventListener("change", (ev) => {
     if (ev.target.id === "hideReviewed") { ui.hideReviewed = ev.target.checked; store("hideReviewed", ui.hideReviewed); renderList(); }
@@ -1773,7 +1692,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   /* ---------- remote state ---------- */
   function caseIsBusy() {
     const a = document.activeElement;
-    return a && a.closest && (a.closest("#case") || a.closest("#view-across")) && a.tagName === "TEXTAREA";
+    return a && a.closest && a.closest("#case") && a.tagName === "TEXTAREA";
   }
   function applyRemote(coll, snap) {
     const changed = new Set();
@@ -1793,7 +1712,6 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     if (coll === "reviews" && changed.has(ui.current) && !caseIsBusy()) {
       const y = window.scrollY; renderCase(); window.scrollTo(0, y);
     }
-    if (coll === "crosscut" && ui.view === "across" && !caseIsBusy()) { const y = window.scrollY; renderAcross(); window.scrollTo(0, y); }
     if (ui.view === "summary") renderSummary();
   }
   function loadLocal() {
@@ -1804,7 +1722,6 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
         const [coll, id] = k.slice(8).split("/");
         const v = JSON.parse(localStorage.getItem(k));
         if (coll === "reviews" && byName.has(id)) { v.items = v.items || {}; v.fields = v.fields || {}; S.reviews[id] = v; }
-        if (coll === "crosscut" && XITEMS.has(id)) S.crosscut[id] = v;
       }
     } catch (e) { /* ignore */ }
   }
@@ -1816,7 +1733,6 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       loadLocal();
       banner("The shared review store is not available here, so your marks are kept in this browser only. When you are done, copy them from the Summary view (Copy decisions (JSON)) and hand them to Claude.");
       modeStatus(); renderProgress(); renderList(); renderCase();
-      if (ui.view === "across") renderAcross();
       if (dirty.size) flush();
       return;
     }
@@ -1829,13 +1745,11 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     mode = canWrite === false ? "readonly" : "shared";
     if (mode === "readonly") banner("You can read this review, but your access does not allow saving marks.");
     modeStatus();
-    ["reviews", "crosscut"].forEach((coll) => {
-      db.collection(coll).onSnapshot((snap) => applyRemote(coll, snap), (err) => {
-        setStatus("error", "Lost the connection to the shared review");
-        if (err && err.code !== "revoked") banner("Live updates stopped. Reload the page to reconnect; marks made since may not be saved.");
-      });
+    db.collection("reviews").onSnapshot((snap) => applyRemote("reviews", snap), (err) => {
+      setStatus("error", "Lost the connection to the shared review");
+      if (err && err.code !== "revoked") banner("Live updates stopped. Reload the page to reconnect; marks made since may not be saved.");
     });
-    if (mode === "readonly") { renderCase(); if (ui.view === "across") renderAcross(); }
+    if (mode === "readonly") renderCase();
     if (dirty.size) flush();
   }
 
@@ -1846,9 +1760,8 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   renderList();
   renderCase();
   const h = (location.hash || "").slice(1);
-  if (h === "across" || h === "summary") showView(h);
+  if (h === "summary") showView(h);
   else if (h && byName.has(h)) { select(h, true); }
-  else if (!DS.length) showView("across");
   connect();
 })();
 </script>

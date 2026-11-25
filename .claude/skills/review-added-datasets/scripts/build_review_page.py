@@ -4,7 +4,7 @@ Usage, from the repository root::
 
     .venv/bin/python .claude/skills/review-added-datasets/scripts/build_review_page.py <report.md> --out <dir>
         [--root datasets/_dev/tabarena-v0pt2] [--title "New Datasets Review"] [--subtitle <text>]
-        [--tldr <yaml>] [--extra-crosscut <yaml>]
+        [--tldr <yaml>]
 
 Writes ``<out>/data.json`` and ``<out>/review_page.html`` (``assets/review_page.html`` with the data embedded).
 Per record the page embeds the report's section, the definition's ``dataset.py``, ``task_summary``, declared
@@ -18,9 +18,7 @@ The page lists the records in review order (``review_order``): the record's ``pr
 without one last, then the fewest open marks first, then the name.
 
 ``--tldr`` takes hand-written summaries (``unique_name: markdown``) for records whose definition has no
-``task_summary``. ``--extra-crosscut`` takes cross-dataset sections that are not in the report, as a YAML list of
-``{title, items: [{id, title, md}]}``; like every cross-dataset id, theirs must not change once the page is
-published, because the curator's marks are stored under them.
+``task_summary``.
 
 Needs markdown-it-py (the ``curation`` extra).
 """
@@ -78,7 +76,7 @@ MD = MarkdownIt("commonmark", {"html": False, "typographer": False}).enable("tab
 MD_README = MarkdownIt("commonmark", {"html": True, "typographer": False}).enable("table")
 
 # The `##` sections with a fixed role; every other `##` section holds per-record sections.
-SUMMARY, FIELDS, ACROSS = "Summary", "Record fields", "Across datasets"
+SUMMARY, FIELDS = "Summary", "Record fields"
 
 LABEL_RE = re.compile(r"^\*\*([^*]+?)\*\*(.*)$")
 VERIF_HEADING = re.compile(r"^#### Verification")
@@ -387,13 +385,13 @@ Span = tuple[int, str, int]
 
 
 def _check_something_to_review(
-    rows: list[dict[str, Any]], record_parts: list[Span], roles: dict[str, Span], fail: Callable[..., ReportFormatError]
+    rows: list[dict[str, Any]], record_parts: list[Span], fail: Callable[..., ReportFormatError]
 ) -> None:
-    """Record rows need their per-record sections; a report without record rows holds the items across datasets."""
-    if rows and not record_parts:
+    """The report has record rows, and they have their per-record sections."""
+    if not rows:
+        raise fail(0, "the report", "no record row in the summary table: nothing to review")
+    if not record_parts:
         raise fail(0, "the report", "no `## ` section with the per-record sections (`### <unique_name>`)")
-    if not rows and ACROSS not in roles:
-        raise fail(0, "the report", "no record row and no `## Across datasets` section: nothing to review")
 
 
 def _parse_summary(lines: list[str], span: Span, fail: Callable[..., ReportFormatError]) -> list[dict[str, Any]]:
@@ -455,50 +453,6 @@ def _parse_fields(
                 raise fail(i, section, f"`{name}` lists `{field}` twice; the page stores one mark per field")
             fields.setdefault(name, []).append({"key": field, "field": field, "record": rec, "definition": dfn})
     return fields
-
-
-def _crosscut_item(item_id: str, raw: list[str]) -> dict[str, Any]:
-    """One cross-dataset item: a bold title, or the first sentence as the title and the whole text as the body."""
-    first, rest = raw[0], raw[1:]
-    m = re.match(r"^\*\*(.+?)\*\*\s*(.*)$", first)
-    if m:
-        title, lead = m.group(1).strip().rstrip("."), m.group(2)
-    else:
-        cut = re.search(r"(?<=[.:])\s", first)
-        title = first[: cut.start()] if cut and cut.start() < 120 else first[:100].rsplit(" ", 1)[0] + "…"
-        lead = first
-    return {
-        "id": item_id,
-        "title_md": title.rstrip(":"),
-        "body_md": (lead + "\n" + _dedent(rest)).strip(),
-        "resolved": _is_resolved("\n".join(raw), title),
-    }
-
-
-def _parse_crosscut(lines: list[str], span: Span, fail: Callable[..., ReportFormatError]) -> list[dict[str, Any]]:
-    """Across datasets: `###` sections of top-level `- ` items, with the ids ``x<section>-<item>``."""
-    start, title, end = span
-    heads = _headings(lines, "###", start + 1, end)
-    first = heads[0][0] if heads else end
-    stray = next((i for i in range(start + 1, first) if lines[i].strip()), None)
-    if stray is not None:
-        raise fail(stray, f"## {title}", "text before the first `### ` section; the page shows only the items")
-    sections = []
-    for s_i, (h, sec_title, sec_end) in enumerate(_spans(heads, end)):
-        raw: list[list[str]] = []
-        for i in range(h + 1, sec_end):
-            line = lines[i]
-            if line.startswith("- "):
-                raw.append([line[2:]])
-            elif raw:
-                raw[-1].append(line)
-            elif line.strip():
-                raise fail(i, f"### {sec_title}", "text before the first item; each item is a top-level `- ` bullet")
-        if not raw:
-            raise fail(h, f"### {sec_title}", "no items; each item is a top-level `- ` bullet")
-        items = [_crosscut_item(f"x{s_i}-{i_i}", item) for i_i, item in enumerate(raw)]
-        sections.append({"title": sec_title, "items": items})
-    return sections
 
 
 def _shared_records(
@@ -609,7 +563,7 @@ def parse_report(path: Path) -> dict[str, Any]:
     roles: dict[str, Span] = {}
     record_parts: list[Span] = []
     for span in parts:
-        role = next((r for r in (SUMMARY, FIELDS, ACROSS) if span[1].startswith(r)), None)
+        role = next((r for r in (SUMMARY, FIELDS) if span[1].startswith(r)), None)
         if role is None:
             record_parts.append(span)
         elif role in roles:
@@ -621,10 +575,9 @@ def parse_report(path: Path) -> dict[str, Any]:
     if SUMMARY not in roles:
         raise fail(0, "the report", "no `## Summary per record` section")
     rows = _parse_summary(lines, roles[SUMMARY], fail)
-    _check_something_to_review(rows, record_parts, roles, fail)
+    _check_something_to_review(rows, record_parts, fail)
     names = {row["name"] for row in rows}
     fields = _parse_fields(lines, roles[FIELDS], names, fail) if FIELDS in roles else {}
-    crosscut = _parse_crosscut(lines, roles[ACROSS], fail) if ACROSS in roles else []
     records, shared = _parse_records(lines, record_parts, names, fail)
     for row in rows:
         if row["name"] not in records:
@@ -641,7 +594,6 @@ def parse_report(path: Path) -> dict[str, Any]:
         "split_marks": _metric_marks(lines[1 : parts[0][0]], SPLIT_MARKS_LABEL),
         "rows": rows,
         "fields": fields,
-        "crosscut": crosscut,
         "records": records,
         "shared": shared,
     }
@@ -1422,29 +1374,6 @@ def _summary_from_tldr(text: str) -> dict:
     return out
 
 
-def _extra_crosscut(path: Path) -> list[dict]:
-    sections = yaml.safe_load(path.read_text()) or []
-    out = []
-    for sec in sections if isinstance(sections, list) else [None]:
-        if not isinstance(sec, dict) or "title" not in sec or not isinstance(sec.get("items"), list):
-            raise BuildError(f"{path}: a list of sections, each {{title, items: [{{id, title, md}}]}}")
-        items = []
-        for it in sec["items"]:
-            if not isinstance(it, dict) or not all(k in it for k in ("id", "title", "md")):
-                raise BuildError(f"{path}, section {sec['title']!r}: each item has an id, a title and md")
-            text = str(it["md"])
-            items.append(
-                {
-                    "id": str(it["id"]),
-                    "titleHtml": MD.renderInline(str(it["title"])),
-                    **_thread(text),
-                    "resolved": _is_resolved(text, str(it["title"])),
-                },
-            )
-        out.append({"title": str(sec["title"]), "items": items})
-    return out
-
-
 def _date_text(day: dt.date) -> str:
     return f"{day.day} {day:%b %Y}"
 
@@ -1622,30 +1551,6 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
     }
 
 
-def _crosscut(report: dict[str, Any], extra: Path | None) -> list[dict[str, Any]]:
-    crosscut = [
-        {
-            "title": sec["title"],
-            "items": [
-                {
-                    "id": it["id"],
-                    "titleHtml": MD.renderInline(it["title_md"]),
-                    **_thread(it["body_md"]),
-                    "resolved": it["resolved"],
-                }
-                for it in sec["items"]
-            ],
-        }
-        for sec in report["crosscut"]
-    ]
-    if extra:
-        crosscut += _extra_crosscut(extra)
-    ids = [it["id"] for sec in crosscut for it in sec["items"]]
-    if len(ids) != len(set(ids)):
-        raise BuildError(f"cross-dataset ids appear twice: {sorted({i for i in ids if ids.count(i) > 1})}")
-    return crosscut
-
-
 def build_data(
     report: dict[str, Any],
     root: Path,
@@ -1653,7 +1558,6 @@ def build_data(
     title: str = "New Datasets Review",
     subtitle: str | None = None,
     tldr: Path | None = None,
-    extra_crosscut: Path | None = None,
 ) -> dict[str, Any]:
     """The data the page renders: the parsed report plus each record's files as they are now.
 
@@ -1677,7 +1581,6 @@ def build_data(
         "snapshot": _date_text(today),
         "headerHtml": render(report["header_md"]),
         "datasets": datasets,
-        "crosscut": _crosscut(report, extra_crosscut),
         "title": title,
         "subtitle": subtitle,
         "report": {"name": path.name, "path": shown, "title": report["title"], "date": report["date"]},
@@ -1718,12 +1621,8 @@ def _report(data: dict[str, Any], out: Path) -> None:
     n_items = sum(len(d["items"]) for d in datasets)
     n_open = sum(1 for d in datasets for it in d["items"] if not it["resolved"])
     n_fields = sum(len(d["fields"]) for d in datasets)
-    n_x = sum(len(s["items"]) for s in data["crosscut"])
     n_panels = sum(1 for d in datasets if d["panel"])
-    print(
-        f"records {len(datasets)}, issues {n_items} ({n_open} open), field rows {n_fields}, cross-dataset items {n_x}, "
-        f"review panels {n_panels}"
-    )
+    print(f"records {len(datasets)}, issues {n_items} ({n_open} open), field rows {n_fields}, review panels {n_panels}")
     cats: dict[str, int] = {}
     for d in datasets:
         cats[d["cat"]] = cats.get(d["cat"], 0) + 1
@@ -1753,7 +1652,6 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--title", default="New Datasets Review", help="The page title.")
     parser.add_argument("--subtitle", help="Default: the working copy, the number of records and the report date.")
     parser.add_argument("--tldr", type=Path, help="YAML of hand-written summaries for records without task_summary.")
-    parser.add_argument("--extra-crosscut", type=Path, help="YAML of cross-dataset sections not in the report.")
     args = parser.parse_args(argv)
 
     try:
@@ -1764,7 +1662,6 @@ def main(argv: list[str] | None = None) -> int:
             title=args.title,
             subtitle=args.subtitle,
             tldr=args.tldr,
-            extra_crosscut=args.extra_crosscut,
         )
         page = assemble(data, TEMPLATE.read_text())
     except ReportFormatError as error:
