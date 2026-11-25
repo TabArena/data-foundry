@@ -1,6 +1,144 @@
 # Changelog: TabArena v0.2 working copy
 
 ## 2026-11-23, every definition names its split-tree leaf; `RetrospectiveFillIn` and `Target: Fixed Delay` in use (no container built)
+## 2026-11-25 (night), better-data replacements: nine datasets added (no container built)
+
+Each is the candidate replacement for a v0.2 dataset (the old dataset's review decides), built from the record's
+screening, attacked by a full review panel, its review in the record. Open questions stay for the curator.
+
+- american_companies_bankruptcy (for polish_companies_bankruptcy): 78,682 firm-years of US listed companies
+  (Lombardo et al. 2022); the decimal points the 2024 release lost restored and asserted against the July 2022 release;
+  target the failed company's last fiscal year (609 events); eleven one-year windows 2008-2018, no gap; roc_auc; a
+  protocol line for the next-year rows. Check 0 errors, 0 warnings.
+- nhanes_dxa_body_fat (for body_density_prediction): NHANES whole-body DXA percent fat from tape-and-scale measures,
+  39,601 people of 1999-2006 and 2011-2018 (measured scans only); four two-year cycles as windows, no gap; fallback
+  RMSE. Check 0 errors, 1 warning.
+- web_page_phishing_detection (for website_phishing): 11,430 pages of Hannousse and Yahiouche's dataset B, 81 URL,
+  page and look-up features, forced split grouped by registered domain; pages and look-ups dated to late July to early
+  August 2020; roc_auc fallback. Check 0 errors, 3 warnings (proposed, not accepted).
+- ga_merchandise_store_sessions (for online_shoppers_purchasing_intention_dataset): Google's GA360 sample, one row per
+  visit cut at its third pageview before checkout (305,819 visits, 3.7% buy), the visitor's history as inputs, masked
+  traffic sources missing; six monthly windows February-July 2017; roc_auc fallback. Check 0 errors, 3 warnings.
+- gusto_i_mi_mortality (next to or for mic): the GUSTO-I trial, 40,826 patients, death by day 30, grouped by 16
+  regions; `ttr` (after treatment), `tpa` and `height` (imputed fills mark deaths) dropped; roc_auc fallback. Check 0
+  errors, 0 warnings (one accepted).
+- craigslist_used_vehicles_f150 (for fiat_500): Ford F-150 asking prices from nine Craigslist scrapes (2018 to May
+  2021, 105,134 trucks), one row per truck across sites, a seller input; five one-scrape windows March 2020-May 2021,
+  no gap; RMSLE from context. Check 0 errors, 0 warnings (four accepted).
+- sdss_dr17_star_galaxy_quasar_1m (for sdss_17): DR17's primary spectra with their photometry, 4,599,104 objects, the
+  PSF magnitudes added and the spectra from fibres with no light dropped; eight yearly windows 2012 to 2019-2020; log
+  loss. Check 0 errors, 0 warnings.
+- aquatic_toxicity_lunghini_consensus (for qsar_fish_toxicity): the fish 96-hour LC50 of Lunghini et al. 2020, 2,186
+  chemicals, the structure the only feature, scaffold groups; three two-formula substances repaired from the registry;
+  record fact `Time: Dated`; rmse. Check 0 errors, 0 warnings.
+- ready_biodegradability_huang_zhang (for qsar_biodeg): Huang and Zhang 2022's classification set, 5,719 chemicals on
+  the structure copy key, the structure the only feature, scaffold groups; the 10-day window named in the fit;
+  roc_auc fallback. Check 0 errors, 1 warning (left for the curator).
+- The better-data items of the old datasets, the review-page issues that never reached their records (mic,
+  polish_companies_bankruptcy, website_phishing) and the parked issues reopened are in those records' reviews.
+
+## 2026-11-25 (evening), fugaku_hpc_job_failure_1m: every source row prepared (no container built)
+
+- The preparation writes every source row and `_make_splits` caps the test windows at 500,000 rows, so the training
+  floor counts the full source without `SplitPlan.before_sampling`, which the framework drops. The shipped rows, split
+  roles and window counts are unchanged (compared row by row). The accepted thin-newest-period warning no longer fires
+  and is removed. Check 0 errors, 0 warnings; peak 90.9 GB.
+
+## 2026-11-25 (afternoon), economic_well_being_prediction_challenge: every country tested once (no container built)
+
+- The split is whole countries in 9 folds, one repeat (seven folds of 3 countries, two of 2, the framework's grouped
+  k-fold with its fixed seed), replacing leave one country out over the 16 countries surveyed in 2014-2016, which
+  never tested 9 of the 25 countries (Andrej). Chosen over 3 x 3 on a measurement of 20 draws per design against leave
+  one country out over all 25 (record CC line). Check 0 errors, 0 warnings; accepted warnings rewritten, the one on
+  never-tested rows removed.
+
+## 2026-11-25, PR #59 review: the curator's marks of the night (no container built)
+
+- duolingo_spaced_repetition_recall_1m (Andrej, issues 10 B, 11 B, 13 B, 9 D; 8 and H as implemented): the session's
+  exercise count is dropped (known only when the session ends); the label is the source's round(p), more than half
+  right, scored by the source's pooled ROC AUC; the learner id is an input; the published delta is replaced by the time
+  from the word's last practice to the end of the learner's previous lesson, known at the lesson's start. Check 0
+  errors, 0 warnings.
+- fugaku_hpc_job_failure_1m (Andrej, issue 7 D): a one-day gap with the label filter replaces the exception; training
+  shares 65.3 / 80.3 / 90.9%. Verdict ship.
+- economic_well_being_prediction_challenge (Andrej, issue 9 b): Zindi's Test.csv joins with labels recovered from the
+  pinned source table where the match is unambiguous (7,164 of 7,194 rows); 28,618 rows in 25 countries; leave one
+  country out over the 16 countries surveyed in 2014-2016. Verdict ship.
+- chromophore_optical_properties_db, geoai_ground_level_no2_estimation_challenge, meituan_food_delivery_time: verdict
+  ship; chromophore's score stays per row (issue 4, as implemented).
+- fugaku_hpc_job_failure_1m, text only: the maturity note no longer reads as if no gap had been chosen; it names
+  the one-day gap. Duolingo, economic, fugaku and chromophore records: the review's Outcome states the final task.
+
+## 2026-11-24 (evening), PR #59 review: the curator's marks of the afternoon (no container built)
+
+- duolingo_spaced_repetition_recall becomes `duolingo_spaced_repetition_recall_1m` (Andrej, issue 12 B): training sides
+  hold every earlier session (86.5 / 78.3 / 70.8%) and a benchmark samples 1M; test windows are capped at 500k by the
+  collection's budget, replacing the fixed 1M / 111,111 draw; standard declared windows, one-day gap kept; the test
+  pinning the old draw is removed. Check 0 errors, 0 warnings. Issue 11 answered (why binary, not regression).
+- fugaku_hpc_job_failure becomes `fugaku_hpc_job_failure_1m` (Andrej, issue 5 C): every training row after the label
+  filter, test windows capped at 500k; the preparation reads with Arrow's `self_destruct` and writes rows in time
+  order; the thin-newest-period warning, which the test-window sample makes, is accepted. Framework changes for it,
+  meant for their own PR: `order_rows` does not copy a frame already in order, the data summary counts duplicate rows
+  by row hashes, and a `_1m` version may build its own splits. Check peak memory 58.9 GB.
+- meituan_food_delivery_time (Andrej, H and issue 5 B): a 3-hour gap before each test day (training data taken at
+  21:00), windows training on 59.5 / 73.2 / 87.0%; the newest window's length accepted; `split_leaf` set. Check 0
+  errors, 0 warnings. Verdict ship.
+- geoai_ground_level_no2_estimation_challenge (Andrej, issue 2 B and issue 3 b): `TimeBasis("RetrospectiveFillIn")`
+  and `split_leaf = "L-FILL.whole"`; the use case ends "to map daily exposure between monitors". Checked on the code
+  only (no data on this machine). Verdict ship.
+- The split tree's catalogue entry-date question and SPLIT-37 step 4 accept a final date rebuilt from the data and
+  checked (cross-dataset decision, B); papyrus_bioactivity's split walk follows it.
+- economic_well_being_prediction_challenge (Andrej, issues 4/5 use case b, 10 B, 9 B): the prediction point is today, an
+  agency mapping past survey years with today's layers; the construction masks are removed, the four land-cover
+  columns restored, population density and night lights kept (16 inputs); the licence records the DHS terms and
+  non-commercial academic use. Recovering the 7 test countries' labels reached 97.43% on Train.csv, under the 99.9%
+  bar, so 18 countries still ship (issue 9 reopened with options). Random forest RMSE 0.110 over the 10 splits.
+- papyrus_bioactivity (Andrej, issue 1 C and the Horizon's windows): expanding windows on `entry_year`, the year a compound's
+  measurements end (the newest document year behind its means, taken per source connectivity so aliases share one
+  year), in place of the three scaffold folds: the curator's windows 2022 with 2023, then 2021, then 2020,
+  training 93.6 / 87.3 / 81.2% of the rows, no gap, `split_leaf = "L-CAT.entry-date"`. One `TemporalSplits` window
+  length cannot state a two-year window beside one-year ones, so the windows are built in `_make_splits` from the
+  constant `TEST_WINDOWS`, and the declared horizon is the newest window's two years. No training label is in flight at any cut,
+  which the first-document year could not give (0 against 0.7-1.7% of the training rows). The `scaffold` column
+  leaves with the grouping (it was the group key, never a model input); the 1,667 compounds with no dated document
+  take the earliest year and always train. Check 0 errors, 0 warnings, 1 info (a horizon in years cannot be
+  cross-checked against an integer year column); 692,017 rows and the same 7 inputs, test windows of 44,132 /
+  43,716 / 42,209 rows. The windows are signed off (Horizon item H, option D): no rule asks for windows of one
+  length, the rule on small windows asks for the wider window that absorbs the cut-short 2023, the horizon check
+  measures the newest window, and ten temporal definitions of the working copy build their windows in
+  `_make_splits` as this one does.
+- chromophore_optical_properties_db (Andrej, issues 3 B, H B, 5 B): six one-year windows 2015-2020 on each dye's first
+  publication year (Crossref years pinned in a small CSV), scaffold grouping removed, the betaine dye's extrapolated
+  gas row dropped (17,509 rows); `split_leaf` L-CAT.entry-date. Check 0 errors; 6 windows against a target of 9 and
+  the SMILES column accepted.
+
+## 2026-11-24, PR #59 review aligned with the latest split rules (no container built)
+
+- Text only, after the latest split rules (structured time basis, the split tree's step IDs and leaves, the
+  person-only gap questions) were merged: the splits comments and review items of chromophore_optical_properties_db,
+  duolingo_spaced_repetition_recall, economic_well_being_prediction_challenge, fugaku_hpc_job_failure and
+  meituan_food_delivery_time name the tree leaf they reach and quote the current rule text; geoai's issue 2 asks for
+  the structured time basis. duolingo's `task_summary.known` is shortened below the summary length limit. No split,
+  feature or target changed; `dataset check` gives 0 errors on all six.
+- fugaku_hpc_job_failure (Andrej): the definition names its split-tree leaf, `split_leaf = "L-ORDER.windows"`; the
+  other six PR #59 definitions set theirs with their open split decisions.
+- The seven PR #59 definitions give their walk through the split decision tree as a curation bullet ("Split walk"),
+  step by step to the leaf, and say where the shipped split departs from it (chromophore, economic, papyrus's
+  open alternative). Text only; the READMEs follow at the next `dataset check`.
+- economic_well_being_prediction_challenge (Andrej): whole countries held out with all their survey years, the
+  source's own test, in place of the temporal × unseen-country split: leave one country out on the 10 countries
+  surveyed in 2014-2016 (1 x 10); time basis `UnseenGroup`, leaf L-PLACE.groups; `ID` dropped. Accepted with the
+  split: few test countries per split, 8 countries never tested, 1 x 10 instead of 3 x 3.
+
+## 2026-11-23, huesken_sirna_efficacy: 20 x 3 splits over the target genes (Andrej's decision, no container built)
+
+- The score averages one per-gene correlation and every fold holds out whole target genes, so the split rule counts
+  the 30 genes, not the 2,431 guides: 20 genes on a train side give 20 repeats of 3 folds, 60 splits, where the
+  container was built with 10 x 3. The definition is unchanged, as the protocol derives the count; the README's split
+  block reads 20 repeats. Not rebuilt: the raw supplement is not in the local warehouse.
+- The record: issue 10 resolved (B) and a CC line.
+
+## 2026-11-23, split rules: window size, the running-id check and rebuilt orders (no container built)
 
 - `split_leaf` in all 174 definitions: the leaf of `split_tree.md` the split comes from. Where the tree names the
   definition as an example, that leaf (51); else the one leaf that the walk from the record's collection type reaches
