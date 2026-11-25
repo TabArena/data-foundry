@@ -3,6 +3,7 @@ unique_name: gusto_i_mi_mortality
 name: GUSTO-I trial patient data (30-day mortality after acute myocardial infarction) / gusto (hbiostat.org/data; R package predtools)
 checked_by:
 - AI (UNVERIFIED)
+- Andrej
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Andrej
@@ -72,9 +73,15 @@ type_adapter_id: curation-record-v1
 
 **Assessment (AI, 2026-11-25):** review panel (full): ship after changes; disputed: SPLIT-33 (3 repeats of 3 folds or 8 folds over the 16 regions), MET-8 and MET-11 (`roc_auc` or `log_loss`), PROV-4 (next to `mic` or in its place), CLEAN-11 (the ages 108 to 110); for the curator: issues 1-4. Applied: `height` dropped (LEAK-10 through LEAK-38), the five flags kept (CLEAN-22), 7 impossible pulse and pressure values set to missing, `groups_test_groups_few` accepted with its reason, wording; markers `Outdated` and `Class-dependent Recording` added for the curator to confirm. Priority 4: gap 0, use case +, source +, shape +, risk 0 (the leak is fixed and the open calls are protocol and metric choices; the small spread between methods is weighed, not a factor).
 
+CC (2026-11-25, Andrej): review issue 1, B: "Option B: 1 round of 8 folds." Whole regions in one round of 8-fold grouped cross-validation, two of the 16 regions per test fold, each region tested once (the layout of economic_well_being_prediction_challenge); `splits_dimensions_off_protocol` and `groups_test_groups_few` accepted with their reasons.
+
+CC (2026-11-25, Andrej): review issue 4, A (ok, as implemented): the ages 108, 108 and 110 stay as recorded, with the note.
+
+**Assessment (AI, 2026-11-25):** marks applied. Issue 1: `_make_splits` builds 1 x 8 region folds (2 regions each), test folds of 4,161 to 7,789 patients and 256 to 554 deaths; check 0 errors, 0 warnings (2 accepted), 3 info; group probe ROC AUC 0.824 (logistic regression), 0.814 (random forest), 0.821 (LightGBM) on held-out regions, LightGBM 0.821 grouped against 0.819 random; task probe no flag. Issue 3 (discuss) answered in the review and left open: Steyerberg and Vergouwe 2014 compare an age-only model with a four-predictor model fitted on 259 or 23,034 US patients, on the 17,796 non-US patients, by calibration-in-the-large, calibration slope, c statistic and net benefit, and say the c statistic "is insensitive to systematic errors in calibration"; on the 8 folds log loss separates splines from logistic regression on 7 of 8 folds as ROC AUC does; log loss from context recommended.
+
 ## Review
 
-**Outcome:** added. The GUSTO-I trial's 40,826 patients with an ST-elevation heart attack, death by day 30 from what is known at presentation, held out by whole region (16 regions); the review panel recommends shipping after changes, which are applied. Judgment record:
+**Outcome:** added. The GUSTO-I trial's 40,826 patients with an ST-elevation heart attack, death by day 30 from what is known at presentation, held out by whole region (16 regions, two per test fold in one round of 8 folds, Andrej 2026-11-25); the review panel recommends shipping after changes, which are applied; the three ages of 108 to 110 stay with a note (Andrej). Judgment record:
 
 ```text
 Verdict: ship after changes (applied).
@@ -83,18 +90,18 @@ Validity: open permission text; the use case is real and the fit direct (the thr
   R file's labels) is the one column the randomised arm changes (p = 3e-11, every other p >= 0.087): recorded after
   treatment, dropped. `height`: its filled-in values mark patients who died (adjusted odds ratio 2.65, 15 of 16
   regions); setting them to missing or rounding them keeps the signal: dropped. 4 exact copies dropped, the 28-row
-  fill pattern kept with a note. Split: whole regions, leaf L-PLACE.groups; the regions rebuild the source's US and
-  non-US cohorts exactly; grouped and random folds score alike.
-Value: tuned methods separate (+0.006 ROC AUC over a plain logistic regression, standard error 0.0009, 9 of 9
+  fill pattern kept with a note. Split: whole regions, leaf L-PLACE.groups, 1 x 8 folds of 2 regions; the regions
+  rebuild the source's US and non-US cohorts exactly; grouped and random folds score alike.
+Value: tuned methods separate (+0.003 to +0.004 ROC AUC over a plain logistic regression, 7 of 8 region
   folds); the untuned task probe on the shipped inputs raises no flag; not Trivial (the TIMI score, not fitted on
-  these data, 0.794 against about 0.826).
+  these data, 0.794 against about 0.827).
 Quality: the five flags of the source's simplified models kept as released (none is an exact copy); 7 impossible
   pulse and pressure values set to missing.
 Weighed: size +, source +, era -, small spread -.
-For the curator: issues 1 (fold layout), 2 (next to mic or in its place), 3 (metric), 4 (three ages).
+Decided: issue 1 (1 x 8 folds), issue 4 (ages kept). Open: issues 2 (next to mic or in its place), 3 (metric).
 ```
 
-**Main points:** Four calls, none a validity question: the fold layout over 16 regions (3 repeats of 3 folds, or 8 folds of 2 regions), whether the dataset joins next to `mic` or replaces it (one call with `mic`'s issue 5), `roc_auc` or `log_loss`, and the three ages of 108 to 110. Applied without a decision: `height` dropped (its fills leak the outcome), the five flags kept as released (the builder had dropped them), impossible pulse and pressure values set to missing, `groups_test_groups_few` accepted with its reason, and the wording of the use case, fit and split. The record now carries `Outdated` and `Class-dependent Recording` (the height fills), both for the curator to confirm.
+**Main points:** Andrej chose one round of 8 folds of 2 regions (issue 1) and kept the three ages of 108 to 110 with a note (issue 4); two calls stay open, neither a validity question: whether the dataset joins next to `mic` or replaces it (one call with `mic`'s issue 5), and the metric (issue 3, answered: the source scores calibration, slope, c statistic and net benefit side by side, and argues the c statistic misses calibration; log loss recommended). Applied without a decision: `height` dropped (its fills leak the outcome), the five flags kept as released (the builder had dropped them), impossible pulse and pressure values set to missing, `groups_test_groups_few` accepted with its reason, and the wording of the use case, fit and split. The record now carries `Outdated` and `Class-dependent Recording` (the height fills), both for the curator to confirm.
 
 **Issues for the curator:**
 
@@ -129,6 +136,10 @@ For the curator: issues 1 (fold layout), 2 (next to mic or in its place), 3 (met
 
    [^1a]: **SPLIT-33** (Should): an IID or grouped task gets repeated 3-fold cross-validation, with 20, 10, 3 or 1 repeats as its train side holds fewer than 500, 2,500 or 250,000 units, or more. The warning `groups_test_groups_few` is accepted with the group probe's reason (the house rule on check warnings).
    [^1b]: economic_well_being_prediction_challenge (Andrej, 2026-11-24 and 2026-11-25): one round of 9 folds over 25 countries, chosen over 3 by 3 because 3 by 3 "trains on a third fewer countries, so it sits about twice as far from the reference", shrank the gap between the two best models and its repeats "share most of their training countries".
+
+   **Andrej (2026-11-25, change):** "Option B: 1 round of 8 folds."
+
+   **Resolved (2026-11-25, Andrej):** B: one round of 8-fold grouped cross-validation over the 16 regions, two whole regions per test fold, each region tested once, stratified by the outcome with the framework's fixed seed; each split trains on 14 regions. `dataset.py` builds the folds in `_make_splits` (and asserts 2 regions per fold, 16 in all), accepts `splits_dimensions_off_protocol` with the table above as the reason, rewords the `groups_test_groups_few` reason and the splits comment, and updates the task summary's split, the grouping definition and the figures measured on the earlier folds. The test folds hold 4,161 to 7,789 patients and 256 to 554 deaths. Check: 0 errors, 0 warnings (2 accepted), 3 info. Group probe on the new folds: ROC AUC 0.824 (logistic regression), 0.814 (random forest), 0.821 (LightGBM) on held-out regions; LightGBM 0.821 grouped against 0.819 random. Task probe: no flag (linear 0.829, random forest 0.823, LightGBM 0.823, age alone 0.733). The same layout as economic_well_being_prediction_challenge (whole countries in 9 folds, one repeat).
 
 2. **Ship next to `mic`, or in its place?**
 
@@ -184,6 +195,55 @@ For the curator: issues 1 (fold layout), 2 (next to mic or in its place), 3 (met
    [^3b]: heart_disease (Lennart, 2026-10-21): `roc_auc`, not `log_loss`, for a source that scores calibration next to another measure; gallstone_disease (Lennart, 2026-10-21): papers that report several metrics go to the fallback.
    [^3c]: **MET-11** (Must): every metric has one origin, and the notes name the original whenever the declared metric is not exactly it. **MET-10** (Weigh): the factors on a borderline call between the source's metric and the fallback, among them the resolution on our folds.
 
+   **Andrej (2026-11-25, discuss):** "Why don't we use the same metric as the domain practitioner? Give more details on what the source compared exactly?"
+
+   **Answer (AI, 2026-11-25):** the source scores four measures side by side and names none as deciding, so the rules give the fallback (ROC AUC); the domain practitioner's log loss is a metric chosen from the decision, which needs a fact that sets this case apart from heart_disease, and one exists: the source itself argues that the c statistic misses the calibration it scores.
+
+   * **Problem:**
+     - The case study on this file (Steyerberg and Vergouwe 2014) proposes "four key measures in the assessment of the validation of prediction models" (section "An ABCD for model validation") and reports all four for each model, without ranking or selecting by one; this is the several-metrics case, which goes to the fallback[^3d].
+     - In the same paper it states why the c statistic alone is not enough: "We note that the c statistic is insensitive to systematic errors in calibration, and considers the rather artificial situation of classification in a pair of patients with and without the endpoint" (section "C, Concordance statistic: discrimination"). The heart_disease precedent rests on Detrano 1989's calibration next to the percent correctly classified over thresholds 0.2 to 0.8, as the metric rules record it, with no argument against a ranking measure on record. This is the fact that could set the case apart[^3e].
+     - The domain practitioner would choose log loss (Brier as the more readable alternative) because the thrombolytic choice acts on the absolute risk, and the absolute benefit of the stronger drug scales with the baseline risk; the regions' death rates run from 5.3% to 8.4%. The panel's mediator held ROC AUC because the rules require no context metric; that is why the definition did not follow the practitioner.
+   * **What the source compared, exactly:**
+     - Steyerberg and Vergouwe 2014, section "Case study": "We consider the development of prediction models in patients enrolled in the US (N= 23,034, 1,565 deaths, and a small subset with N=259, 20 deaths). We validate these models in patients enrolled outside of the US (N=17,796, 1,286 deaths). The first model only includes age as a continuous, linear term in a logistic regression analysis, while a slightly more complex model includes age, Killip class, systolic blood pressure and heart rate." Three logistic regressions in all: age only, and the four-predictor model fitted on 259 or on 23,034 US patients. The introduction states the aim: "We compare the performance of a simple model (including age only) to a more complex model (including age and other key predictors), which are developed either in a small or a large data set." No machine-learning model and no `tx`, `ttr` or other GUSTO-I predictor is in these models.
+     - Every score is from the external validation on the 17,796 non-US patients, except where marked:
+
+       | Model | A: calibration-in-the-large | B: calibration slope | C: c statistic | D: net benefit, threshold 2% |
+       |---|---|---|---|---|
+       | Age only | not reported | not reported | 0.75 | 0.04% |
+       | Age, Killip, blood pressure, pulse; 259 US patients | not reported | 0.70 (internal shrinkage 0.82) | 0.80 [0.79-0.82] (apparent 0.82, internal 0.78) | 0.2% |
+       | Age, Killip, blood pressure, pulse; 23,034 US patients | 0.07, p = 0.38 | 0.99, p = 0.55 | 0.812 [0.800-0.824] (internal 0.813) | 5.6% (treat all 5.3%); at 5%, 19 extra net true positives per 1,000 |
+
+       Sources: sections "A, Alpha", "B, Beta", "C, Concordance statistic" and "D: Decision curve analysis", and Figures 1 and 2. The paper reports no Brier score, no R², no log likelihood or deviance as a performance score (a likelihood ratio test appears once, to choose the coding of infarct location, section "Seven steps", step 2) and gives no rule for combining A to D: "At model validation, calibration, discrimination and clinical usefulness should be considered" (section "Concluding remarks").
+     - The net benefit is scored over a range of thresholds, not at one: "It is therefore advised to consider a range of thresholds when quantifying the clinical usefulness of a prediction model" (section "D: Decision curve analysis"); the 2% threshold is "for example". So the source fixes no single cost.
+     - Lee et al. 1995 (the trial's own 30-day model, 14 predictors, 40,830 patients): the publisher's full text could not be reached (it refuses automated access), so only the abstract was read. It reports chi-square statistics per predictor ("age ... adjusted chi 2 = 717"; "these five characteristics contained 90% of the prognostic information"), "Risk modeling was performed with logistic multiple regression and validated with bootstrapping techniques", and "a validated model that stratified patient risk and accurately estimated the likelihood of death". Steyerberg and Vergouwe's Table 1 describes that model's evaluation as "Calibration and discrimination, but no indicators of clinical usefulness", validated by "Bootstrap and 10 fold cross-validation". Neither names one deciding metric.
+   * **Experiments:** the shipped inputs on the 8 region folds; A and B as the case study defines them (the intercept with the linear predictor as offset, and the slope of the linear predictor); "better" counts the folds on which a model beats a plain logistic regression.
+
+     | Model | ROC AUC | Better on | Log loss | Better on | Brier | Better on | A (fold range) | B (fold range) | Net benefit at 5% | Better on |
+     |---|---|---|---|---|---|---|---|---|---|---|
+     | Logistic regression | 0.8234 | - | 0.2008 | - | 0.05482 | - | -0.087 to 0.080 | 0.91 to 1.20 | 4.045% | - |
+     | Logistic regression with splines | 0.8264 | 7 of 8 | 0.1997 | 7 of 8 | 0.05458 | 7 of 8 | -0.080 to 0.086 | 0.93 to 1.21 | 4.065% | 5 of 8 |
+     | LightGBM, lightly tuned | 0.8272 | 7 of 8 | 0.1996 | 5 of 8 | 0.05468 | 5 of 8 | -0.105 to 0.088 | 0.94 to 1.20 | 4.126% | 7 of 8 |
+     | LightGBM, defaults | 0.8200 | 3 of 8 | 0.2032 | 2 of 8 | 0.05560 | 1 of 8 | -0.080 to 0.111 | 0.83 to 1.03 | 4.018% | 3 of 8 |
+
+     Mean B over the folds: 1.00 (logistic regression), 1.01 (splines), 1.03 (tuned LightGBM), 0.90 (default LightGBM, risks too extreme). Paired differences against logistic regression, in standard errors: splines 4.0 (ROC AUC), 4.4 (log loss), 2.7 (Brier); tuned LightGBM 2.6, 2.2, 1.0. Treating everyone gives a net benefit of 2.07% at 5%.
+   * **Effect on the task:** all three threshold-free metrics put the same two models on top and default LightGBM last. They differ on the top pair: ROC AUC ranks tuned LightGBM first by 0.0008, log loss ties the two (0.19960 against 0.19965), and Brier ranks splines first. Log loss separates splines from logistic regression as sharply as ROC AUC does, and it penalises default LightGBM's too-extreme risks (slope 0.90) more (2 of 8 folds against 3 of 8).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | ROC AUC, the fallback (implemented) | scores ranking only; the source's C | the rule's default; follows heart_disease and gallstone_disease; comparable with the published 0.812 | blind to A and B, which the source scores and calls the c statistic blind to; with 73 of the collection's 83 binary tasks already scoring it, it adds no diversity |
+     | b | Log loss, from context | a strictly proper rule on the predicted risk; ROC AUC named as the original c statistic | scores what A, B and C score together, as the domain practitioner asks; the source's own argument against C alone is the distinguishing fact; adds diversity (2 of 83 binary tasks score it, both from a competition) | a context metric the curator must accept against the heart_disease precedent; no published log loss to compare with |
+     | c | Brier score, from context | the mean squared error of the predicted risk | the practitioner's readable alternative; also strictly proper | the framework has no `brier` metric, so a local metric is needed; it separates tuned LightGBM from logistic regression least (1.0 standard error) |
+     | d | Net benefit at one threshold | the source's D as a cost | the source's usefulness measure | the source gives a range of thresholds (2%, 5%), so no single cost is fixed; ruled out[^3f] |
+
+   * **Recommendation:** b: the source argues in its own words that the c statistic misses calibration, which the heart_disease case does not record of its source, so the absolute-risk decision the domain practitioner describes is a fact this case has and the precedent lacks; log loss resolves the methods as well as ROC AUC on the 8 folds and adds diversity. a stays defensible if the curator reads the four measures side by side as the precedent's case, since the source still names no single one. **Decision:** ROC AUC (a), log loss (b), or Brier (c)?
+
+   **Notes for the AI:** on b, declare `Metric.from_context("log_loss", ...)` with the reason (the source's sentence on the c statistic, its A and B, the absolute-risk decision, the regions' death rates of 5.3% to 8.4%), name the case study's c statistic as the original, and re-run `dataset check` and the task probe. On c, the same with a local Brier metric.
+
+   [^3d]: **MET-5** (Should): a paper that reports several metrics side by side without naming the one that decides has no unique original; declare the fallback. **MET-8** (Should): the fallback is `roc_auc` for binary tasks.
+   [^3e]: **MET-11** (Must), its context origin: the source defines no metric, but the task makes one obvious, so the default would score the wrong thing; only when the context is clear. **MET-10** (Weigh): when the call stays in doubt, the metric that adds diversity to the collection wins (Andrej, 2026-11-02).
+   [^3f]: **MET-7** (Should): a source that gives a range of costs or thresholds (a decision curve) fixes no single one, so its task is scored by a threshold-free metric.
+
 4. **Keep the ages 108, 108 and 110, or set them to missing?**
 
    * **Problem:**
@@ -202,6 +262,10 @@ For the curator: issues 1 (fold layout), 2 (next to mic or in its place), 3 (met
    **Notes for the AI:** on B, in `_clean` mask `age` where it is 108 or above and a whole number (3 rows), assert the count, and change the notes' bullet on impossible values.
 
    [^4a]: **CLEAN-11** (Should): impossible values become missing, and the row stays; values that are only unusual stay.
+
+   **Andrej (2026-11-25, ok):** As implemented (A).
+
+   **Resolved (2026-11-25, Andrej):** A: the ages 108, 108 and 110 stay as recorded, and the notes' bullet on impossible values names them. `dataset.py` is unchanged for this issue.
 
 **Review panel:** ship after changes (mediator). Claim audit: about 30 claims, none that bears on validity or value refuted; 3 small ones refuted (the 40,830 count, the "mostly Killip IV" note, the warning not accepted in the definition), all fixed. Column audit: a new leak, the filled-in heights mark patients who died (fixed by dropping `height`). Split audit: right, with notes (leaf confirmed; accept the warning; name the US to non-US transfer). Blind review: would include; main concern the small spread between methods. Task gamer: the height-fill flag worth +0.007, no other exploit. Debate: agreed on `ttr`, `height`, the five flags, the split leaf and the wording; disputed: the fold layout (issue 1), the metric (issue 3), the mic option (issue 2) and the ages (issue 4).
 

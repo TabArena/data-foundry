@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: gusto_i_mi_mortality
 container_format: 2
-checksum: v2:cc4ef289141f82cc003444cbea822a2291bb494cab931d2ecef87512ceb96827
+checksum: v2:eb33eaa600d9f4c27ca3aa19809fabd015b5345540acc67d68be67e1214bde97
 build: null
 build_stale: false
 raw_files:
@@ -33,22 +33,22 @@ task:
     context: none
     n_groups: 16
     test_groups_per_fold:
-      min: 5
-      max: 6
+      min: 2
+      max: 2
 splits:
-  n_repeats: 3
-  n_folds: 3
+  n_repeats: 1
+  n_folds: 8
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 25216
-    max: 29611
+    min: 33037
+    max: 36665
   n_test:
-    min: 11215
-    max: 15610
+    min: 4161
+    max: 7789
 bundle_checks:
   ok: true
   errors: []
@@ -58,11 +58,19 @@ bundle_checks:
   - dataset_conflicting_duplicate_rows
   - groups_not_clustered
   accepted:
-    groups_test_groups_few: 'The signal across regions is real: the group probe scores
-      ROC AUC 0.823 (logistic regression), 0.811 (random forest) and 0.817 (LightGBM)
-      on whole held-out regions, and LightGBM scores 0.817 grouped against 0.819 on
-      random folds; each test fold holds 5 or 6 regions, 11,215 to 15,610 patients
-      and 793 to 1,119 deaths.'
+    groups_test_groups_few: 'Accepted (Andrej, 2026-11-25): a test region stands for
+      the patients of a region the model has never seen, so two whole regions per
+      test fold is the task (8 folds, each of the 16 regions tested once; 4,161 to
+      7,789 patients and 256 to 554 deaths per test fold). The signal across regions
+      is real: the group probe scores ROC AUC 0.824 (logistic regression), 0.814 (random
+      forest) and 0.821 (LightGBM) on the held-out regions, and LightGBM 0.821 grouped
+      against 0.819 on random folds (2026-11-25).'
+    splits_dimensions_off_protocol: 'Accepted (Andrej, 2026-11-25): 1 x 8 region folds
+      instead of the protocol''s 3 x 3. Over 6 draws each (`height` dropped, mean
+      ROC AUC over the folds), 1 x 8 keeps the gap of lightly tuned LightGBM over
+      logistic regression that holding out each region alone shows (0.0067 against
+      0.0067), while 3 x 3, which trains on 10 or 11 of the 16 regions, shrinks it
+      to 0.0056; the splits comment says why.'
 decisions:
 - 'Time to relief of chest pain dropped: the randomised treatment changes it'
 - 'Height dropped: its filled-in values mark patients who died'
@@ -74,7 +82,7 @@ decisions:
 
 Binary classification of `death_by_day_30`, scored with `roc_auc` on grouped splits by `region`. 40,826 rows and 22 features. Source: Other (1995).
 
-Not built yet. The current definition gives checksum `v2:cc4ef289141f82cc003444cbea822a2291bb494cab931d2ecef87512ceb96827`.
+Not built yet. The current definition gives checksum `v2:eb33eaa600d9f4c27ca3aa19809fabd015b5345540acc67d68be67e1214bde97`.
 
 ## In brief
 
@@ -88,7 +96,7 @@ Not built yet. The current definition gives checksum `v2:cc4ef289141f82cc003444c
 
 **Known at prediction time.** Age, sex, weight, the heart rate, systolic blood pressure and Killip class at presentation, the infarct's location and the number of ECG leads with ST elevation, history (earlier heart attack, angina, hypertension, diabetes, stroke, bypass surgery, smoking, family history), the source's five flags that summarise some of these (shock, hypotension, tachycardia, anterior infarct, high risk) and the assigned thrombolytic regimen.
 
-**What the test data stands for.** Whole regions are held out (16 regions, 8 in the US and 8 elsewhere), so the test data stands for the patients of a region the model has never seen.
+**What the test data stands for.** Whole regions are held out (16 regions, 8 in the US and 8 elsewhere), two per test fold, so the test data stands for the patients of a region the model has never seen; every region is tested once.
 
 **Our changes to the source.** We drop the time to relief of chest pain, which the randomised treatment changes and so is measured after presentation, and the height, whose filled-in values mark patients who died. A few impossible pulse and blood pressure values become missing.
 
@@ -225,38 +233,37 @@ We start with gusto.rda, the GUSTO-I patient file of the Vanderbilt Department o
 - `ttr` (time to relief of chest pain over one hour, yes for 64.9%) is dropped: it is measured after presentation. Randomisation balances the baseline columns across the three arms (chi-square p 0.09 to 0.97; the count of ST leads by a rank test, 0.50), but not `ttr`: 66.3% under streptokinase, 64.6% under the combination and 62.3% under accelerated tPA (p = 3e-11), the order of the regimens' speed of reperfusion, so the treatment given at enrolment changes it. The 8-predictor model of the case-study literature includes it; at the prediction point it is not known (USE-3, LEAK-1). Kept, it would add 0.003 ROC AUC (logistic regression and LightGBM, 5-fold x 3 by region).
 - Five flags of the source's simplified models stay as released: `sho` (shock) is Killip class III or IV, `hig` (high risk) is an anterior infarct or a previous MI, `ant` is `miloc` Anterior, all exactly; `hyp` (hypotension) is systolic pressure below 100 and `hrt` (tachycardia) a pulse above 80, except 5 and 8 patients exactly at 100 and 80. None is an exact copy of another column, so none leaves for what it is (CLEAN-5, CLEAN-22), as `ARPU_SEGMENT` in expresso_churn_prediction and `dzclass` in 2_month_survival_rate_prediction stayed. They raise a logistic regression's ROC AUC by 0.003 (15 of 15 folds by region) and LightGBM's not at all (-0.001): they hand a linear model the source's cut points.
 - `tpa` is dropped: it is the treatment arm again (1 for tPA, 0 for streptokinase, blank for the combination arm), which `tx` holds. `tx` stays as an input: the arm was randomised and known at enrolment, Lee et al. include the thrombolytic among the predictors, and a model with it gives the risk under each regimen. `tx` merges the two streptokinase arms (subcutaneous or intravenous heparin) as published. Without it ROC AUC drops by 0.000 to 0.002.
-- Place codes: `regl` holds 16 regions (1,231 to 4,352 patients, 95 to 294 deaths each). Regions 1, 7, 9, 10, 11, 12, 14 and 15 hold 23,034 patients and 1,565 deaths, exactly the US cohort of Steyerberg and Vergouwe (2014); the other eight hold the 17,796 non-US patients and 1,286 deaths. Region 1 is the "West region" subsample. `grpl` (48 groups) and `grps` (121 groups) are nested in the regions but not in each other, and every `grps` group holds at least 20 deaths, every `grpl` group at least 47: groups of hospitals cut to a minimum number of events for validation studies, not places a model meets. The region is the group column (renamed `region`, never a feature); `grpl` and `grps` are dropped. Held-out regions score as random folds do (LightGBM ROC AUC 0.821 grouped, 0.820 random; group probe), and so do the finer groupings (0.823 to 0.825); training on the US and testing outside it, and the reverse, gives 0.815 (LightGBM) and 0.820 (logistic regression), inside the range of the region folds.
+- Place codes: `regl` holds 16 regions (1,231 to 4,352 patients, 95 to 294 deaths each). Regions 1, 7, 9, 10, 11, 12, 14 and 15 hold 23,034 patients and 1,565 deaths, exactly the US cohort of Steyerberg and Vergouwe (2014); the other eight hold the 17,796 non-US patients and 1,286 deaths. Region 1 is the "West region" subsample. `grpl` (48 groups) and `grps` (121 groups) are nested in the regions but not in each other, and every `grps` group holds at least 20 deaths, every `grpl` group at least 47: groups of hospitals cut to a minimum number of events for validation studies, not places a model meets. The region is the group column (renamed `region`, never a feature); `grpl` and `grps` are dropped. Held-out regions score as random folds do (LightGBM ROC AUC 0.821 on the 8 region folds, 0.819 on random folds; group probe), and so do the finer groupings (0.823 to 0.825); training on the US and testing outside it, and the reverse, gives 0.815 (LightGBM) and 0.820 (logistic regression), inside the range of the region folds.
 - The 191 patients of the 41,021 enrolled who are not in the file are not explained by the release (Steyerberg and Vergouwe's case study uses the same 40,830). The death rates by arm in the file (7.3% for the merged streptokinase arms, 6.3% tPA, 7.0% combination) are the trial's (7.2% and 7.4%, 6.3%, 7.0%). Were all 191 dead, the death rate would be 7.4% instead of 7.0%.
 - Imputed values: Steyerberg and Vergouwe say the missing predictor values of this cohort "were filled in with a single imputation procedure considering correlations between predictor variables", so the file holds no blank and cannot show which values were filled. One pattern looks like such fills: 28 patients share every categorical and whole-number value (male, Killip I, inferior infarct, 2 ST leads, pulse 53 or 54, systolic pressure 97 or 104, never smoked, family history and no other history, time to relief over an hour) and differ only in age (31.1 to 40.7), height and weight, which move together; they come from 7 regions and all three arms, and 7 of them died (25%, against 7.0% overall). Kept as published: 0.07% of the rows, and the file cannot show which values were filled.
 - Duplicates: 4 rows repeat another row exactly, the arm and the site group included (3 sets of 2 or 3, all survivors, all in that pattern and in region 4); one row of each set stays (LEAK-19), leaving 40,826 patients and 2,851 deaths. Whether they are one patient entered twice or patients filled alike cannot be told. After the drops, 8 more rows of the pattern repeat another row (they differed only in the dropped site groups), and 2 rows share all inputs with a row of the other outcome; kept, as above.
-- Class-dependent recording (record marker `Class-dependent Recording`): the heights the source's single imputation filled in mark patients who died. 2,132 heights (5.2% of the rows) are neither whole or half centimetres nor a converted inch value (171.8, 171.3, 170.3, ...), spread less than measured heights, and 19.9% of these patients died against about 6% of the others. The gap holds in 15 of 16 regions and given everything known at presentation (age, sex, Killip class, blood pressure, pulse, infarct location, ST leads, previous MI, region: odds ratio 2.65, p = 2e-54), so the fill follows the outcome (an early death left the height unmeasured, or the outcome entered the imputation), which a model at the door cannot know (LEAK-10 through LEAK-38's conditional test). A model that spots the fills gains 0.0045 ROC AUC (LightGBM, 9 of 9 folds by region) and a fill flag 0.007 for a regression. Milder fixes fail: the fills set to missing keep the signal (LEAK-40), and heights rounded to whole centimetres still let a model find the filled rows at ROC AUC 0.82 (LEAK-13). So `height` is dropped: it costs a logistic regression nothing (+0.0001) and tuned LightGBM 0.001 to 0.002, the leak itself; without it the filled-height rows cannot be found from the other columns (ROC AUC 0.535). The 1,026 weights of the same look carry no outcome signal (adjusted odds ratio 1.01, p = 0.91; a weight-fill flag adds 0.0000), so `weight` stays. The categorical columns may hold fills the file cannot show; the 28-row pattern above is the visible trace.
+- Class-dependent recording (record marker `Class-dependent Recording`): the heights the source's single imputation filled in mark patients who died. 2,132 heights (5.2% of the rows) are neither whole or half centimetres nor a converted inch value (171.8, 171.3, 170.3, ...), spread less than measured heights, and 19.9% of these patients died against about 6% of the others. The gap holds in 15 of 16 regions and given everything known at presentation (age, sex, Killip class, blood pressure, pulse, infarct location, ST leads, previous MI, region: odds ratio 2.65, p = 2e-54), so the fill follows the outcome (an early death left the height unmeasured, or the outcome entered the imputation), which a model at the door cannot know (LEAK-10 through LEAK-38's conditional test). A model that spots the fills gains 0.0045 ROC AUC (LightGBM, 9 of 9 folds of the earlier 3 x 3 region folds) and a fill flag 0.007 for a regression. Milder fixes fail: the fills set to missing keep the signal (LEAK-40), and heights rounded to whole centimetres still let a model find the filled rows at ROC AUC 0.82 (LEAK-13). So `height` is dropped: it costs a logistic regression nothing (+0.0001) and tuned LightGBM 0.001 to 0.002, the leak itself; without it the filled-height rows cannot be found from the other columns (ROC AUC 0.535). The 1,026 weights of the same look carry no outcome signal (adjusted odds ratio 1.01, p = 0.91; a weight-fill flag adds 0.0000), so `weight` stays. The categorical columns may hold fills the file cannot show; the 28-row pattern above is the visible trace.
 - Impossible values set to missing (CLEAN-11, 7 cells): a pulse of 1 to 9 (4 patients, 3 of them Killip I, one with systolic pressure 180), and a pulse or systolic pressure of 0 in a Killip I patient, who is not in shock (3 patients). The other zeros stay as recorded: systolic pressure 0 in 5 patients of Killip III or IV and pulse 0 in 2 of them, all dead, an unmeasurable pressure in shock. Ages over 100 in 3 patients (108, 108, 110, whole numbers while 98.8% of ages carry a fraction) and under 25 in 26 are kept as recorded.
 - Outdated (record marker `Outdated`, SEL-18): the care is that of the thrombolysis era; primary angioplasty, stents and newer antiplatelet drugs have lowered the death rate since, while thrombolysis remains the therapy where angioplasty cannot be done in time. The task is still made today, so the fit stays direct (USE-8) and the era is a note.
-- Note: the builder's untuned task probes flagged `no_spread` (logistic regression, random forest and LightGBM ROC AUC 0.819, 0.817 and 0.820 by region, with `height` in and the five flags out); on the shipped inputs they score 0.822, 0.814 and 0.816 with no flag, and age alone 0.729. A few smooth predictors carry most of the signal (Lee et al.: five carry 90% of the prognostic information). Tuned methods separate: with `height` and the five flags dropped, on the 9 folds by region, a logistic regression with splines and a lightly tuned LightGBM both reach 0.8262 against 0.8202 for a plain logistic regression (+0.006, standard error 0.0009, better on 9 of 9 folds; log loss 0.2002 and 0.2006 against 0.2023, better on 9 of 9). Not `Trivial`: the TIMI risk score for STEMI (Morrow et al. 2000), a published score not fitted on these data, reaches 0.794 on the whole file.
+- Note: the builder's untuned task probes flagged `no_spread` (logistic regression, random forest and LightGBM ROC AUC 0.819, 0.817 and 0.820 by region, with `height` in and the five flags out); on the shipped inputs and the 8 region folds they score 0.829, 0.823 and 0.823 with no flag, and age alone 0.733 (2026-11-25). A few smooth predictors carry most of the signal (Lee et al.: five carry 90% of the prognostic information). Tuned methods separate: on the shipped inputs and the 8 region folds (2026-11-25), a logistic regression with splines reaches 0.8264 and a lightly tuned LightGBM 0.8272 against 0.8234 for a plain logistic regression (splines +0.0030, standard error 0.0008, better on 7 of 8 folds; LightGBM +0.0038, standard error 0.0014, 7 of 8; log loss 0.1997 and 0.1996 against 0.2008). Not `Trivial`: the TIMI risk score for STEMI (Morrow et al. 2000), a published score not fitted on these data, reaches 0.794 on the whole file.
 - Codes get their words: the 1/2 history codes become no/yes, `dia` and the five flags 0/1 no/yes (CLEAN-12); Killip class is an ordered category (CLEAN-14); the target `day30` becomes `death_by_day_30` (Yes/No, CLEAN-25).
 - Time basis: UnseenGroup: a risk model at presentation is used at hospitals and in regions other than the ones it was built in, and the case study on this file validates the model built on the US patients on the patients of the other countries (Steyerberg and Vergouwe 2014), so whole regions are held out (16 regions). The patients were enrolled one by one in 1990-1993, but the file records no date and no enrolment order (its rows are sorted by age), so a later period at a known region is not tested, nor are later patients at all: the care of the thrombolysis era has changed since.
 
 ## Splits
 
-Grouped by region (leaf L-PLACE.groups): the default grouped protocol over the 16 regions, so each test fold holds five or six whole regions, US and non-US mixed. The file records no hospital; its finer codes (`grpl`, `grps`) are groups of hospitals cut to a minimum number of deaths for validation studies and are not used. The case study's own split (US against non-US) is two groups, too few for repeated folds; its transfer scores 0.815 to 0.820 ROC AUC (LightGBM and logistic regression, both directions), inside the range of the region folds, so the mixed folds lose nothing the source tested.
+Whole regions in 8 folds, one repeat (leaf L-PLACE.groups; Andrej, 2026-11-25): each of the 16 regions is held out once, two regions per test fold, US and non-US mixed, assigned by the framework's grouped k-fold stratified by the outcome with shuffled regions and its fixed seed; each split trains on the other 14 regions. The test folds hold 4,161 to 7,789 patients and 256 to 554 deaths. One repeat of 8 folds was chosen over the protocol's 3 repeats of 3 folds, as for economic_well_being_prediction_challenge: folds of 5 or 6 regions train on 10 or 11 regions, and the repeats share most of their training regions. Measured (2026-11-25, `height` dropped, 6 draws of each design, mean ROC AUC over the folds; reference: each region held out alone): the reference gives logistic regression 0.8189, logistic regression with splines 0.8248 and lightly tuned LightGBM 0.8256, a gap of 0.0067 between LightGBM and logistic regression; 1 x 8 keeps that gap (0.0067, SD of the design's mean over draws 0.0010), 3 x 3 shrinks it to 0.0056 (SD 0.0003) and swaps the two best models by 0.0002. The file records no hospital; its finer codes (`grpl`, `grps`) are groups of hospitals cut to a minimum number of deaths for validation studies and are not used. The case study's own split (US against non-US) is two groups, too few for repeated folds; its transfer scores 0.815 to 0.820 ROC AUC (LightGBM and logistic regression, both directions), inside the range of the region folds, so the mixed folds lose nothing the source tested.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 25,216 to 29,611 rows, test 11,215 to 15,610 rows.
+1 repeat(s) x 8 fold(s) with seed 4267; train 33,037 to 36,665 rows, test 4,161 to 7,789 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 29611 | 11215 |
-| 0 | 1 | 25781 | 15045 |
-| 0 | 2 | 26260 | 14566 |
-| 1 | 0 | 27941 | 12885 |
-| 1 | 1 | 25216 | 15610 |
-| 1 | 2 | 28495 | 12331 |
-| 2 | 0 | 26781 | 14045 |
-| 2 | 1 | 25485 | 15341 |
-| 2 | 2 | 29386 | 11440 |
+| 0 | 0 | 35844 | 4982 |
+| 0 | 1 | 36472 | 4354 |
+| 0 | 2 | 36341 | 4485 |
+| 0 | 3 | 33037 | 7789 |
+| 0 | 4 | 35419 | 5407 |
+| 0 | 5 | 36665 | 4161 |
+| 0 | 6 | 36237 | 4589 |
+| 0 | 7 | 35767 | 5059 |
 
 ## Group structure
 
-One group is one of the file's 16 regions (8 in the US, 8 in the other countries; 1,231 to 4,352 patients each). A risk model at presentation is used at hospitals other than those it was built at, and the case study on this file builds its model on the US patients and validates it on the patients outside the US: "We validate these models in patients enrolled outside of the USA (n = 17 796, 1286 deaths)" (Steyerberg and Vergouwe 2014). Holding out whole regions generalises that design. Each patient is one prediction, made from their own data alone.
+One group is one of the file's 16 regions (8 in the US, 8 in the other countries; 1,231 to 4,352 patients each). A risk model at presentation is used at hospitals other than those it was built at, and the case study on this file builds its model on the US patients and validates it on the patients outside the US: "We validate these models in patients enrolled outside of the USA (n = 17 796, 1286 deaths)" (Steyerberg and Vergouwe 2014). Holding out whole regions generalises that design. Each patient is one prediction, made from their own data alone. Every region is tested once, in 8 folds of 2 regions.
 
 | field | value |
 |---|---|
@@ -271,7 +278,7 @@ One group is one of the file's 16 regions (8 in the US, 8 in the other countries
 | groups | 16 |
 | rows per group (min / median / max) | 1,231 / 2,533.5 / 4,352 |
 | largest group | 10.7% of the rows |
-| test groups per fold | 5 to 6 |
+| test groups per fold | 2 |
 | groups of two or more rows with a single label | 0.0% |
 | nearest neighbour in the same group | 7.5% of the rows (chance: 6.8%) |
 | label variance explained by the group | 0.00 (shuffled groups: 0.00) |
@@ -313,7 +320,8 @@ The source filled missing predictor values by a single imputation. Heights that 
 
 Accepted on purpose:
 
-- `groups_test_groups_few`: The signal across regions is real: the group probe scores ROC AUC 0.823 (logistic regression), 0.811 (random forest) and 0.817 (LightGBM) on whole held-out regions, and LightGBM scores 0.817 grouped against 0.819 on random folds; each test fold holds 5 or 6 regions, 11,215 to 15,610 patients and 793 to 1,119 deaths.
+- `groups_test_groups_few`: Accepted (Andrej, 2026-11-25): a test region stands for the patients of a region the model has never seen, so two whole regions per test fold is the task (8 folds, each of the 16 regions tested once; 4,161 to 7,789 patients and 256 to 554 deaths per test fold). The signal across regions is real: the group probe scores ROC AUC 0.824 (logistic regression), 0.814 (random forest) and 0.821 (LightGBM) on the held-out regions, and LightGBM 0.821 grouped against 0.819 on random folds (2026-11-25).
+- `splits_dimensions_off_protocol`: Accepted (Andrej, 2026-11-25): 1 x 8 region folds instead of the protocol's 3 x 3. Over 6 draws each (`height` dropped, mean ROC AUC over the folds), 1 x 8 keeps the gap of lightly tuned LightGBM over logistic regression that holding out each region alone shows (0.0067 against 0.0067), while 3 x 3, which trains on 10 or 11 of the 16 regions, shrinks it to 0.0056; the splits comment says why.
 
 ## Data checks
 
