@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: credit_g
 container_format: 2
-checksum: v2:617750c4e1085c0846ce26112511a053ba751335be8cb5de9f655da96255194e
+checksum: v2:10c9ede0749ee88b6eaeb69a4fe7e0138bd99d21b16f510d32b34c9e1b377036
 build:
   uuid: 01a111fc-cf4e-7841-a626-e0358b0042c6
   checksum: v2:db7592c8a2928f6e03ba79421d5bb29644dea45e047e9e09e439f3b9857441f2
@@ -67,23 +67,25 @@ decisions: []
 
 Binary classification of `good_or_bad_customer`, scored with `cost_matrix` on IID splits. 1,000 rows and 20 features. Source: UCI (1994).
 
-Built as `01a111fc-cf4e-7841-a626-e0358b0042c6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:617750c4e1085c0846ce26112511a053ba751335be8cb5de9f655da96255194e`, so the build is stale. See [Build](#build).
+Built as `01a111fc-cf4e-7841-a626-e0358b0042c6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:10c9ede0749ee88b6eaeb69a4fe7e0138bd99d21b16f510d32b34c9e1b377036`, so the build is stale. See [Build](#build).
 
 ## In brief
 
-**Question.** Is a loan applicant a good or a bad credit risk?
+**Question.** Will a loan applicant fail to repay the loan as agreed in the contract?
 
-**Use case.** A bank, when a loan application arrives, decides whether to grant the credit; the source scores errors with a cost matrix that penalises accepting a bad customer most.
+**Use case.** A bank, when a loan application arrives, scores the applicant to decide whether to grant the credit; the source scores errors with a cost matrix that penalises accepting a bad customer most.
 
-**One row.** One applicant of a German bank, with amounts in Deutsche Mark (1,000 applicants, released in 1994; the period of the loans is not stated).
+**One row.** One loan granted in 1973 to 1975 by a large regional bank in southern Germany (1,000 loans, released in 1994). A stratified sample: bad loans are oversampled from about 5% to 30%.
 
-**Predicted.** Whether the customer was rated good or bad (30% bad); the source defines neither the rating nor when it was made.
+**Predicted.** Whether the customer did not comply with the loan contract as required (bad, 30%) or complied fully (good). The source states no horizon.
 
-**Known at prediction time.** The application: checking and savings balances, loan duration, amount, purpose and instalment rate, credit history, other loans, employment, personal status and sex, age, housing, property, job, dependants, guarantors, telephone and whether a foreign worker.
+**Known at prediction time.** The application: checking and savings balances, loan duration, amount (transformed by an unknown monotonic function), purpose and instalment rate, credit history, other loans, employment, personal status combined with sex, age, housing, property, job, dependants, guarantors, telephone and whether a foreign worker.
 
-**What the test data stands for.** Random applicants of the same bank and period.
+**What the test data stands for.** Random loans of the same bank and period.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The features are what a bank knows at the application, but the source gives no dates and no definition or horizon of a bad customer, so the random split stands in for scoring later applicants. The data are old.
+**Our changes to the source.** We read the corrected release (UCI 573, Grömping 2019) in place of Statlog's file: its code table relabels 8 of the 20 features that the Statlog table mislabels, and it corrects 57 coded values and an amount or an age in 10 loans.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The features are what a bank knows at the application, but the loans are undated and have no stated horizon, so the random split stands in for scoring later applicants. Only granted loans have an outcome, and the data are 50 years old.
 
 ## Files in this folder
 
@@ -191,7 +193,6 @@ The first 5 of 1,000 rows of the final frame (random rows: the frame is shuffled
 
 ## Curation notes
 
-- We reversed the original ordinal encoding.
 - Source (2026-10-31, the curator's marks): UCI 573 South German Credit, the corrected version of Statlog's
   german.data (Groemping 2019, "South German Credit Data: Correcting a Widely Used Data Set"; the UCI page:
   Statlog "suffers from severe errors in the coding information"). The same 1,000 applicants and the same
@@ -205,15 +206,16 @@ The first 5 of 1,000 rows of the final frame (random rows: the frame is shuffled
   2" or "3 or more".
 - Metric: the Statlog cost matrix on probabilities, each applicant predicted as the class of least expected cost (the AI's choice; the curator was unsure and noted TabArena's threshold tuning, 2026-10-21).
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 9 columns are ordered
-  categories in the order of the source's codebook (`ORDINAL_LEVELS`)9 columns are ordered categories
-  (`ORDINAL_LEVELS`): the balances, employment, instalment rate, residence, property, number of credits, job and
-  people liable. "no checking account", "unknown / no savings account" and "unknown / no property" are states
-  outside their scales: missing, by the curator's rule, as the data has no other missing value.
-- Time basis: ForcedIIDFromTemporal: consumer credits granted from 1973 to 1975, each judged good or bad over
-  its own term (4 to 72 months, no stated horizon); neither UCI 573's file (sorted by class) nor Statlog's (no
-  order) keeps a grant date, so random loans stand in for later applicants. A dated release would allow a split
-  by grant year. Not taken as stationary (Andrej, 2026-11-18): A 1973-1975 bank sample scored for later
-  applicants spans decades of changed currency, products and rules; no domain reason holds.
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`): the balances, employment, instalment
+  rate, residence, property, number of credits, job and people liable. "no checking account", "unknown / no
+  savings account" and "unknown / no property" are states outside their scales: missing, by the curator's
+  rule, as the data has no other missing value.
+- personal_status_sex: level 2 holds both non-single females and single males, so sex cannot be derived.
+- The loans are from 1973 to 1975 (Häußler 1979; Fahrmeir and Hamerle 1984); Hofmann typed the 1,000 rows from
+  the appendix of Fahrmeir and Hamerle (1984). Only granted loans are in the sample, bad loans are oversampled
+  (about 5% in the bank's portfolio), and the credit amounts are an unknown monotonic transformation of the
+  real amounts (Grömping 2019, Sec. 3).
+- Time basis: ForcedIIDFromTemporal: consumer credits granted from 1973 to 1975, each judged good or bad over its own term (4 to 72 months, no stated horizon); neither UCI 573's file (sorted by class) nor Statlog's (no order) keeps a grant date, so random loans stand in for later applicants. A dated release would allow a split by grant year. Not taken as stationary (Andrej, 2026-11-18): A 1973-1975 bank sample scored for later applicants spans decades of changed currency, products and rules; no domain reason holds.
 
 ## Splits
 
@@ -395,4 +397,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:617750c4e1085c0846ce26112511a053ba751335be8cb5de9f655da96255194e` |
+| stale | yes: the definition now gives checksum `v2:10c9ede0749ee88b6eaeb69a4fe7e0138bd99d21b16f510d32b34c9e1b377036` |

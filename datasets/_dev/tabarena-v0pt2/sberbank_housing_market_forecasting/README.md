@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sberbank_housing_market_forecasting
 container_format: 2
-checksum: v2:4ca28934fd39a898efe909b81dc58dac4cfd761e372bd585350766625f287020
+checksum: v2:b612f3d78579b10197937c1b70faf3aefca4d832313c59402736094e2f3e2553
 build:
   uuid: 01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7
   checksum: v2:53a44153b4da1976a157742f955d2dbea5f4e85c85e25e48af1746db3acc846c
@@ -78,7 +78,7 @@ decisions: []
 
 Regression of `price_doc`, scored with `rmse` on temporal splits by `timestamp`. 28,321 rows and 386 features. Source: Kaggle (2017).
 
-Built as `01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:4ca28934fd39a898efe909b81dc58dac4cfd761e372bd585350766625f287020`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:b612f3d78579b10197937c1b70faf3aefca4d832313c59402736094e2f3e2553`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -96,7 +96,7 @@ Built as `01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7` on 2026-10-14, but `dataset.py` 
 
 **Our changes to the source.** Following the TabReD benchmark, the target is the price per square metre, and we drop sales at prices up to 1 million rubles or of exactly 2 or 3 million, and flats of 5 square metres or less. The economic statistics are those of the month, quarter or year before the sale, not of the sale's own period.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The flat's and district's figures are known at the sale, and later months stand for the sales to come; the use case ties no window length, so the one-month windows are ours. The economic statistics are lagged by one period because their release dates are not given; a monthly figure may still come out a few days after a sale early in the month.
+> **Use case fit: direct (the rows, features and split mirror the use case).** The flat's and district's figures are known at the sale, and later months stand for the sales to come; the use case ties no window length, so the one-month windows are ours. The economic statistics are lagged one period, as their release dates are not given; a monthly figure may still come out days after a sale. The neighbourhood figures are one read of unknown date, kept.
 
 ## Files in this folder
 
@@ -228,6 +228,12 @@ We follow the preprocessing from TabRed (https://github.com/yandex-research/tabr
   on more than half the sales, in place of three seven-month windows (Lennart, 2026-11-11) whose oldest,
   October 2013 to April 2014, trained on 35.4%; the use case ties no length, and no source gives Sberbank's
   refit cadence (splits comment).
+- Potential leak, kept on purpose (Andrej, 2026-11-11): the district statistics and the neighbourhood features
+  (distances, counts of facilities nearby) are one read of a date the source does not give: none of 145
+  districts and none of 2,991 buildings sold in more than one year changes in them over 2011-2015, while the
+  city opened new metro stations (2014-2015) and other facilities. Older sales may carry facilities that came
+  after them. They stay: the read cannot be dated row by row and the data owner released it for its
+  competition. Revisit if dated district statistics are found.
 - Columns recorded on one side of a window only (Lennart, 2026-11-11): the macro file gives `provision_retail_space_sqm` for 2011 and 2012 only and the two education shares (`modern_education_share`, `old_education_build_share`) from 2013 on, so their one-year lags are recorded in 2012-2013 and from 2014: the newest windows test without the first, and the oldest trains without the other two. Kept: the data as published.
 
 ## Splits
@@ -525,4 +531,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:4ca28934fd39a898efe909b81dc58dac4cfd761e372bd585350766625f287020` |
+| stale | yes: the definition now gives checksum `v2:b612f3d78579b10197937c1b70faf3aefca4d832313c59402736094e2f3e2553` |

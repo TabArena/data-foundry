@@ -61,11 +61,14 @@ class StudentPortuguesePerformance(AbstractCuratedDataset):
             "One student of the Portuguese-language course at two Portuguese secondary schools (649 students), from "
             "school reports and questionnaires; the school year is not stated."
         ),
-        predicted="The final grade, from 0 to 20 (mean 11.9).",
+        predicted=(
+            "The final grade, from 0 to 20 (mean 11.9); 15 students have a 0, likely students who left before the "
+            "final assessment."
+        ),
         known=(
             "School, sex, age, home (urban or rural, family size, parents' education, jobs and cohabitation), the "
             "reason for the school, study time, past class failures, support and paid classes, activities, plans for "
-            "higher education, internet, free time, going out, alcohol, health and school absences."
+            "higher education, internet, free time, going out, alcohol and health."
         ),
         split="Random students of the same two schools.",
         changes=(
@@ -73,9 +76,9 @@ class StudentPortuguesePerformance(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "Most features are background known early, but the absences and the habits questionnaire cover the same "
-            "school year as the grade, and when they were recorded is not stated, so some may come after an early "
-            "prediction point."
+            "Most features are background known early, but the habits questionnaire covers the same school year as the "
+            "grade, and when it was answered is not stated, so some answers may come after an early prediction "
+            "point."
         ),
     )
 
@@ -116,6 +119,17 @@ class StudentPortuguesePerformance(AbstractCuratedDataset):
           words (`CODE_LABELS`), in the same order; 3 unordered codes carry their words: `school`, `address`, `Pstatus`;
           6 scores with no words per level are numbers (`SCORES`): `famrel`, `freetime`, `goout`, `Dalc`, `Walc`,
           `health`.
+        - `absences` is dropped (Andrej, 2026-11-09): the school report's count comes from after an early prediction
+          point, and its zero records the outcome: all 15 students with a final grade of 0 have zero recorded absences,
+          and none of the 405 students with any absence has a 0. Dropping it costs 0.004 R2 (TabPFN, 60 splits).
+        - 15 final grades of 0 (Andrej, 2026-11-09): all with zero recorded absences, 14 at Mousinho da Silveira, each
+          with a first-period grade above 0, so they likely mark students who left before the final assessment. Kept:
+          the source does not say so, and students who leave are part of the support decision.
+        - No class, teacher or school year is recorded (Andrej, 2026-11-11): 649 students of one school year
+          (2005-2006) at two schools (Gabriel Pereira 423, Mousinho da Silveira 226), so classmates sit on both sides
+          of the random split, and a teacher's grading can reach a test student through classmates in training. How
+          much cannot be measured without a class id. Kept random: the use case is a school supporting its own
+          students, whose classmates it knows; two schools are too few groups for a grouped split.
     """
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
@@ -148,7 +162,8 @@ class StudentPortuguesePerformance(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
-        df = df.drop(columns=["G1", "G2"])
+        # absences: the school report's count, 0 for every student without a final grade (Andrej, 2026-11-09)
+        df = df.drop(columns=["G1", "G2", "absences"])
         # the codebook's words for its codes (CLEAN-12)
         df = decode(df, CODE_LABELS)
         # scores with no words per level are numbers (CLEAN-14)

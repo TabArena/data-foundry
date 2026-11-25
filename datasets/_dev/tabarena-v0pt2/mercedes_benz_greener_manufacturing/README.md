@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: mercedes_benz_greener_manufacturing
 container_format: 2
-checksum: v2:8d755643697824675666cbd69d1c923bf0be09865b782b6a6062df290de1f91c
+checksum: v2:6975db83d99ba0d042b11c35d5773ccd320446d46b24e0fcc56f255423f3e0e2
 build:
   uuid: 01a13a7d-bd39-75dc-a072-0eebbfca32cb
   checksum: v2:e5b90fec72713909e24c47766fb5622903ee1b52743f8b773f716092aa277e58
@@ -20,9 +20,9 @@ build:
 build_stale: true
 data:
   n_rows: 4204
-  n_features: 371
+  n_features: 374
   dtypes:
-    category: 370
+    category: 373
     float64: 1
     int64: 1
   n_test_dataset_rows: null
@@ -68,9 +68,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `y`, scored with `r2` on temporal splits by `time_index`. 4,204 rows and 371 features. Source: Kaggle (2017).
+Regression of `y`, scored with `r2` on temporal splits by `time_index`. 4,204 rows and 374 features. Source: Kaggle (2017).
 
-Built as `01a13a7d-bd39-75dc-a072-0eebbfca32cb` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:8d755643697824675666cbd69d1c923bf0be09865b782b6a6062df290de1f91c`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-bd39-75dc-a072-0eebbfca32cb` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:6975db83d99ba0d042b11c35d5773ccd320446d46b24e0fcc56f255423f3e0e2`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -82,11 +82,11 @@ Built as `01a13a7d-bd39-75dc-a072-0eebbfca32cb` on 2026-10-14, but `dataset.py` 
 
 **Predicted.** The time the car took to pass testing, in seconds (72 to 170, mean about 101).
 
-**Known at prediction time.** The car's options, anonymized, as three coded categories and several hundred yes/no options (the source's examples are four-wheel drive or a head-up display).
+**Known at prediction time.** The car's options, anonymized, as six coded categories and several hundred yes/no options (the source's examples are four-wheel drive or a head-up display).
 
 **What the test data stands for.** The newest 2,097 cars form 9 test windows of 233 cars in ID order, each trained on all earlier cars: the newest on 3,971 cars (94%), the oldest on 2,107 (50%).
 
-**Our changes to the source.** We order the cars by ID and test on later ones; we drop the coded category that marks time groups, other coded categories of unknown meaning, 4 unusual rows and one outlier testing time.
+**Our changes to the source.** We order the cars by ID and test on later ones; we drop the coded category that marks time groups, a near-constant coded category with its 4 unusual rows, and one outlier testing time.
 
 > **Use case fit: approximate (a stand-in with a known gap).** The car ID stands in for the order of testing, which the source does not confirm, and without dates the time a test window spans is unknown.
 
@@ -131,7 +131,7 @@ Only curators run `build`, when the dataset ships.
 | license | Kaggle Competition Rules |
 | data_tags | Non-IID, Temporal, Anonymized |
 | reference | Novy2017MercedesBenzGreenerManufacturing |
-| rows x columns | 4,204 x 372 |
+| rows x columns | 4,204 x 375 |
 | task.target | y |
 | task.problem_type | regression |
 | task.metric | r2 |
@@ -149,9 +149,9 @@ Only curators run `build`, when the dataset ships.
 | definition | Coefficient of determination of the test time y |
 
 <details>
-<summary>Feature types: 370 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 373 categorical, 0 string, 0 datetime</summary>
 
-- categorical (370): `X0`, `X1`, `X2`, `X10`, `X12`, `X13`, `X14`, `X15`, `X16`, `X17`, `X18`, `X19`, `X20`, `X21`, `X22`, `X23`, `X24`, `X26`, `X27`, `X28`, `X29`, `X30`, `X31`, `X32`, `X33`, `X34`, `X35`, `X36`, `X37`, `X38`, `X39`, `X40`, `X41`, `X42`, `X43`, `X44`, `X45`, `X46`, `X47`, `X48`, `X49`, `X50`, `X51`, `X52`, `X53`, `X54`, `X55`, `X56`, `X57`, `X58`, `X59`, `X60`, `X61`, `X62`, `X63`, `X64`, `X65`, `X66`, `X67`, `X68`, `X69`, `X70`, `X71`, `X73`, `X74`, `X75`, `X76`, `X77`, `X78`, `X79`, `X80`, `X81`, `X82`, `X83`, `X84`, `X85`, `X86`, `X87`, `X88`, `X89`, `X90`, `X91`, `X92`, `X93`, `X94`, `X95`, `X96`, `X97`, `X98`, `X99`, `X100`, `X101`, `X102`, `X103`, `X104`, `X105`, `X106`, `X107`, `X108`, `X109`, `X110`, `X111`, `X112`, `X113`, `X114`, `X115`, `X116`, `X117`, `X118`, `X119`, `X120`, `X122`, `X123`, `X124`, `X125`, `X126`, `X127`, `X128`, `X129`, `X130`, `X131`, `X132`, `X133`, `X134`, `X135`, `X136`, `X137`, `X138`, `X139`, `X140`, `X141`, `X142`, `X143`, `X144`, `X145`, `X146`, `X147`, `X148`, `X150`, `X151`, `X152`, `X153`, `X154`, `X155`, `X156`, `X157`, `X158`, `X159`, `X160`, `X161`, `X162`, `X163`, `X164`, `X165`, `X166`, `X167`, `X168`, `X169`, `X170`, `X171`, `X172`, `X173`, `X174`, `X175`, `X176`, `X177`, `X178`, `X179`, `X180`, `X181`, `X182`, `X183`, `X184`, `X185`, `X186`, `X187`, `X189`, `X190`, `X191`, `X192`, `X194`, `X195`, `X196`, `X197`, `X198`, `X199`, `X200`, `X201`, `X202`, `X203`, `X204`, `X205`, `X206`, `X207`, `X208`, `X209`, `X210`, `X211`, `X212`, `X213`, `X214`, `X215`, `X216`, `X217`, `X218`, `X219`, `X220`, `X221`, `X222`, `X223`, `X224`, `X225`, `X226`, `X227`, `X228`, `X229`, `X230`, `X231`, `X232`, `X233`, `X234`, `X235`, `X236`, `X237`, `X238`, `X239`, `X240`, `X241`, `X242`, `X243`, `X244`, `X245`, `X246`, `X247`, `X248`, `X249`, `X250`, `X251`, `X252`, `X253`, `X254`, `X255`, `X256`, `X257`, `X258`, `X259`, `X260`, `X261`, `X262`, `X263`, `X264`, `X265`, `X266`, `X267`, `X268`, `X269`, `X270`, `X271`, `X272`, `X273`, `X274`, `X275`, `X276`, `X277`, `X278`, `X279`, `X280`, `X281`, `X282`, `X283`, `X284`, `X285`, `X286`, `X287`, `X288`, `X289`, `X290`, `X291`, `X292`, `X293`, `X294`, `X295`, `X296`, `X297`, `X298`, `X299`, `X300`, `X301`, `X302`, `X304`, `X305`, `X306`, `X307`, `X308`, `X309`, `X310`, `X311`, `X312`, `X313`, `X314`, `X315`, `X316`, `X317`, `X318`, `X319`, `X320`, `X321`, `X322`, `X323`, `X324`, `X325`, `X326`, `X327`, `X328`, `X329`, `X330`, `X331`, `X332`, `X333`, `X334`, `X335`, `X336`, `X337`, `X338`, `X339`, `X340`, `X341`, `X342`, `X343`, `X344`, `X345`, `X346`, `X347`, `X348`, `X349`, `X350`, `X351`, `X352`, `X353`, `X354`, `X355`, `X356`, `X357`, `X358`, `X359`, `X360`, `X361`, `X362`, `X363`, `X364`, `X365`, `X366`, `X367`, `X368`, `X369`, `X370`, `X371`, `X372`, `X373`, `X374`, `X375`, `X376`, `X377`, `X378`, `X379`, `X380`, `X382`, `X383`, `X384`, `X385`
+- categorical (373): `X0`, `X1`, `X2`, `X3`, `X6`, `X8`, `X10`, `X12`, `X13`, `X14`, `X15`, `X16`, `X17`, `X18`, `X19`, `X20`, `X21`, `X22`, `X23`, `X24`, `X26`, `X27`, `X28`, `X29`, `X30`, `X31`, `X32`, `X33`, `X34`, `X35`, `X36`, `X37`, `X38`, `X39`, `X40`, `X41`, `X42`, `X43`, `X44`, `X45`, `X46`, `X47`, `X48`, `X49`, `X50`, `X51`, `X52`, `X53`, `X54`, `X55`, `X56`, `X57`, `X58`, `X59`, `X60`, `X61`, `X62`, `X63`, `X64`, `X65`, `X66`, `X67`, `X68`, `X69`, `X70`, `X71`, `X73`, `X74`, `X75`, `X76`, `X77`, `X78`, `X79`, `X80`, `X81`, `X82`, `X83`, `X84`, `X85`, `X86`, `X87`, `X88`, `X89`, `X90`, `X91`, `X92`, `X93`, `X94`, `X95`, `X96`, `X97`, `X98`, `X99`, `X100`, `X101`, `X102`, `X103`, `X104`, `X105`, `X106`, `X107`, `X108`, `X109`, `X110`, `X111`, `X112`, `X113`, `X114`, `X115`, `X116`, `X117`, `X118`, `X119`, `X120`, `X122`, `X123`, `X124`, `X125`, `X126`, `X127`, `X128`, `X129`, `X130`, `X131`, `X132`, `X133`, `X134`, `X135`, `X136`, `X137`, `X138`, `X139`, `X140`, `X141`, `X142`, `X143`, `X144`, `X145`, `X146`, `X147`, `X148`, `X150`, `X151`, `X152`, `X153`, `X154`, `X155`, `X156`, `X157`, `X158`, `X159`, `X160`, `X161`, `X162`, `X163`, `X164`, `X165`, `X166`, `X167`, `X168`, `X169`, `X170`, `X171`, `X172`, `X173`, `X174`, `X175`, `X176`, `X177`, `X178`, `X179`, `X180`, `X181`, `X182`, `X183`, `X184`, `X185`, `X186`, `X187`, `X189`, `X190`, `X191`, `X192`, `X194`, `X195`, `X196`, `X197`, `X198`, `X199`, `X200`, `X201`, `X202`, `X203`, `X204`, `X205`, `X206`, `X207`, `X208`, `X209`, `X210`, `X211`, `X212`, `X213`, `X214`, `X215`, `X216`, `X217`, `X218`, `X219`, `X220`, `X221`, `X222`, `X223`, `X224`, `X225`, `X226`, `X227`, `X228`, `X229`, `X230`, `X231`, `X232`, `X233`, `X234`, `X235`, `X236`, `X237`, `X238`, `X239`, `X240`, `X241`, `X242`, `X243`, `X244`, `X245`, `X246`, `X247`, `X248`, `X249`, `X250`, `X251`, `X252`, `X253`, `X254`, `X255`, `X256`, `X257`, `X258`, `X259`, `X260`, `X261`, `X262`, `X263`, `X264`, `X265`, `X266`, `X267`, `X268`, `X269`, `X270`, `X271`, `X272`, `X273`, `X274`, `X275`, `X276`, `X277`, `X278`, `X279`, `X280`, `X281`, `X282`, `X283`, `X284`, `X285`, `X286`, `X287`, `X288`, `X289`, `X290`, `X291`, `X292`, `X293`, `X294`, `X295`, `X296`, `X297`, `X298`, `X299`, `X300`, `X301`, `X302`, `X304`, `X305`, `X306`, `X307`, `X308`, `X309`, `X310`, `X311`, `X312`, `X313`, `X314`, `X315`, `X316`, `X317`, `X318`, `X319`, `X320`, `X321`, `X322`, `X323`, `X324`, `X325`, `X326`, `X327`, `X328`, `X329`, `X330`, `X331`, `X332`, `X333`, `X334`, `X335`, `X336`, `X337`, `X338`, `X339`, `X340`, `X341`, `X342`, `X343`, `X344`, `X345`, `X346`, `X347`, `X348`, `X349`, `X350`, `X351`, `X352`, `X353`, `X354`, `X355`, `X356`, `X357`, `X358`, `X359`, `X360`, `X361`, `X362`, `X363`, `X364`, `X365`, `X366`, `X367`, `X368`, `X369`, `X370`, `X371`, `X372`, `X373`, `X374`, `X375`, `X376`, `X377`, `X378`, `X379`, `X380`, `X382`, `X383`, `X384`, `X385`
 - string (0): none
 - datetime (0): none
 
@@ -174,15 +174,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 4,204 rows of the final frame (the oldest rows: the frame is sorted by `time_index`); 12 of 372 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 4,204 rows of the final frame (the oldest rows: the frame is sorted by `time_index`); 12 of 375 columns, the target first. Cells are cut at 40 characters.
 
-| y | time_index | X0 | X1 | X2 | X10 | X12 | X13 | X14 | X15 | X16 | X17 |
+| y | time_index | X0 | X1 | X2 | X3 | X6 | X8 | X10 | X12 | X13 | X14 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 130.81 | 0 | k | v | at | 0 | 0 | 1 | 0 | 0 | 0 | 0 |
-| 88.53 | 6 | k | t | av | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 76.26 | 7 | az | w | n | 0 | 0 | 0 | 0 | 0 | 0 | 1 |
-| 80.62 | 9 | az | t | n | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 78.02 | 13 | az | v | n | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| 130.81 | 0 | k | v | at | a | j | o | 0 | 0 | 1 | 0 |
+| 88.53 | 6 | k | t | av | e | l | o | 0 | 0 | 0 | 0 |
+| 76.26 | 7 | az | w | n | c | j | x | 0 | 0 | 0 | 0 |
+| 80.62 | 9 | az | t | n | f | l | e | 0 | 0 | 0 | 0 |
+| 78.02 | 13 | az | v | n | f | d | n | 0 | 0 | 0 | 0 |
 
 ## Curation notes
 
@@ -194,13 +194,13 @@ We start with the train.csv from Kaggle.
   Why it may leave (CLEAN-11, amended 2026-10-21): it is a single extreme target in the training period only. The car took 265.3 s against a next highest of 169.9 s (mean 100.7 s, sd 12.7 s), and it is car 883 of 4,209 in ID order, among the oldest cars that every test window trains on (the oldest window trains on the first 2,107 cars of the cleaned data). The competition host does not name the row; it leaves as the field's expert default for a single extreme testing time (CLEAN-11 allows the source's words or the experts' default, case by case; Lennart, 2026-10-21).
 - We drop X5 as it leaks time group information in temporal splits (besides having a full categorical-value distribution shift with a temporal split).
 - We tread the ID as a time_index.
-- Some of the other constructed features (X0-X8) may leak across time as well. We remove all of them for which we do not have an explanation from experts on Kaggle.
 - There are exactly 4 rows that have value that is not equal to "d" in column "X4". This indicates some kind of sub-group or data different. Given the lack of semantics and anonymity, we cannot parse the meaning of "X4". Thus, to avoid this being an indicator of data leakage, we remove these rows and subsequently drop "X4" as well.
-- Of the coded categories (X0-X8) we keep X0, X1 and X2, which likely use only their own row, and drop X8, whose values seem drawn from the distribution of all rows, and X3 and X6, about which nothing is known. The 0/1 options from X10 on stay, except X11, which is constant (11 other constant options, such as X93, stay).
+- Of the coded categories (X0-X8) we keep X0, X1, X2, X3, X6 and X8 and drop only X5 (time marker) and X4 (near constant). X3, X6 and X8 were once dropped "to be safe"; a check on the competition's file (2026-11-06) found no time pattern in them: their link to the ID decile (Cramér's V, shuffled IDs in brackets) is X3 0.176 (0.047), X6 0.055 (0.050), X8 0.086 (0.076), close to the kept X0 to X2 (0.108 to 0.138 against 0.078 to 0.106), against X5 0.928 (0.080); no level of the three is confined to a part of the ID range, and each X8 level spans the IDs from the first to the last hundred. Adding them changed the R² of untuned LightGBM by +0.0015 (standard error 0.0039) over the 9 windows of 320 cars then shipped, so they stay as columns of the car's configuration (columns leave for what they are, not for being unexplained; Andrej, 2026-11-11). The 0/1 options from X10 on stay, except X11, which is constant (11 other constant options, such as X93, stay).
 
 ## Splits
 
 The car ID is the only order: the competition ships no dates, does not confirm that the IDs follow the order of testing, and held out its own test cars at random. Each test window is a run of 233 consecutive cars in ID order, trained on every earlier car (Andrej, 2026-11-19). No source gives a length (the 320 cars used until then were the arithmetic of the first curation's scikit-learn TimeSeriesSplit): half the cars come before ID 4,230, so nine windows, the count an IID task of this size gets (3 x 3), all train on half the cars or more only at 233 cars each, which fill the newest half (2,097 test cars). The windows walk back from the newest; with no dates there is no season or period to choose between. Newest first, they test the cars with IDs 7,973-8,417, 7,499-7,972, 7,005-7,498, 6,539-7,004, 6,111-6,538, 5,630-6,103, 5,163-5,627, 4,701-5,162 and 4,230-4,699, 233 each. Train is every earlier car: 3,971, 3,738, 3,505, 3,272, 3,039, 2,806, 2,573, 2,340 and 2,107 cars (94.5%, 88.9%, 83.4%, 77.8%, 72.3%, 66.8%, 61.2%, 55.7% and 50.1%). No gap is needed: a car's testing time is known when it leaves the bench, and no row carries a date to measure a longer delay.
+How the data arrives (Andrej, 2026-11-06): the bench time is known when the car leaves the bench, minutes after its configuration is fixed, so a model refit at a window's start knows every earlier car. The ID is taken as the testing order; the dropped code X5 forms 29 levels in 31 contiguous runs of IDs, about 200 cars each in this file, likely production periods. A window's first cars share their block with the newest training cars, but the block explains about 1% of the variance of the bench time (block means 96.1 to 102.6 s). A configuration tested again (15% to 27% of a window's test cars, with the six coded categories kept) is the car's known history, not a leak.
 
 9 repeat(s) x 1 fold(s) with seed 4267; train 2,107 to 3,971 rows, test 233 rows. Prediction horizon: 233 steps.
 
@@ -224,14 +224,14 @@ Each test window against its train side, by statistics of the data, never of a m
 | window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
 |---|---|---|---|---|---|---|---|---|
 | 0 | 7973 - 8417 | 233 | 0.945 | mean 98.87, median 97.99, p10 86.4, p90 112.1 | mean 100.7, median 99.16, p10 88.14, p90 115.4 | 0.573 | X2 (0.57), X38 (0.53), X0 (0.39) | 0.0086 |
-| 1 | 7499 - 7972 | 233 | 0.889 | mean 99.09, median 98.61, p10 86.98, p90 113.8 | mean 100.8, median 99.19, p10 88.21, p90 115.6 | 0.403 | X38 (0.40), X0 (0.30), X1 (0.28) | 0.0043 |
-| 2 | 7005 - 7498 | 233 | 0.834 | mean 99.52, median 98.1, p10 88.4, p90 114.1 | mean 100.9, median 99.26, p10 88.2, p90 115.7 | 0.309 | X38 (0.31), X0 (0.26), X2 (0.23) | 0 |
-| 3 | 6539 - 7004 | 233 | 0.778 | mean 99.01, median 97.63, p10 87.44, p90 112.7 | mean 101, median 99.46, p10 88.24, p90 115.9 | 0.342 | X2 (0.34), X0 (0.30), X1 (0.29) | 0.0129 |
-| 4 | 6111 - 6538 | 233 | 0.723 | mean 100.5, median 98.45, p10 88.1, p90 114.4 | mean 101.1, median 99.49, p10 88.26, p90 116 | 0.303 | X2 (0.30), X1 (0.22), X0 (0.16) | 0.0086 |
-| 5 | 5630 - 6103 | 233 | 0.667 | mean 101, median 99.01, p10 88.37, p90 116.4 | mean 101.1, median 99.53, p10 88.25, p90 116 | 0.296 | X0 (0.30), X2 (0.22), X176 (0.12) | 0 |
-| 6 | 5163 - 5627 | 233 | 0.612 | mean 101.5, median 100.2, p10 88.44, p90 117.1 | mean 101.1, median 99.51, p10 88.25, p90 115.8 | 0.298 | X2 (0.30), X0 (0.26), X301 (0.23) | 0.0043 |
+| 1 | 7499 - 7972 | 233 | 0.889 | mean 99.09, median 98.61, p10 86.98, p90 113.8 | mean 100.8, median 99.19, p10 88.21, p90 115.6 | 0.403 | X38 (0.40), X3 (0.40), X0 (0.30) | 0.0043 |
+| 2 | 7005 - 7498 | 233 | 0.834 | mean 99.52, median 98.1, p10 88.4, p90 114.1 | mean 100.9, median 99.26, p10 88.2, p90 115.7 | 0.436 | X3 (0.44), X38 (0.31), X0 (0.26) | 0 |
+| 3 | 6539 - 7004 | 233 | 0.778 | mean 99.01, median 97.63, p10 87.44, p90 112.7 | mean 101, median 99.46, p10 88.24, p90 115.9 | 0.444 | X3 (0.44), X2 (0.34), X0 (0.30) | 0.0129 |
+| 4 | 6111 - 6538 | 233 | 0.723 | mean 100.5, median 98.45, p10 88.1, p90 114.4 | mean 101.1, median 99.49, p10 88.26, p90 116 | 0.722 | X3 (0.72), X2 (0.30), X1 (0.22) | 0.0086 |
+| 5 | 5630 - 6103 | 233 | 0.667 | mean 101, median 99.01, p10 88.37, p90 116.4 | mean 101.1, median 99.53, p10 88.25, p90 116 | 0.55 | X3 (0.55), X0 (0.30), X2 (0.22) | 0 |
+| 6 | 5163 - 5627 | 233 | 0.612 | mean 101.5, median 100.2, p10 88.44, p90 117.1 | mean 101.1, median 99.51, p10 88.25, p90 115.8 | 0.527 | X3 (0.53), X2 (0.30), X0 (0.26) | 0.0043 |
 | 7 | 4701 - 5162 | 233 | 0.557 | mean 102.6, median 100.2, p10 87.98, p90 119.6 | mean 100.9, median 99.41, p10 88.29, p90 115.5 | 0.505 | X0 (0.51), X2 (0.30), X1 (0.26) | 0.0043 |
-| 8 | 4230 - 4699 | 233 | 0.501 | mean 99.86, median 98.12, p10 87.84, p90 114 | mean 101, median 99.52, p10 88.35, p90 115.7 | 0.289 | X2 (0.29), X0 (0.24), X301 (0.22) | 0.0172 |
+| 8 | 4230 - 4699 | 233 | 0.501 | mean 99.86, median 98.12, p10 87.84, p90 114 | mean 101, median 99.52, p10 88.35, p90 115.7 | 0.505 | X3 (0.51), X2 (0.29), X0 (0.24) | 0.0172 |
 
 ## Bundle checks
 
@@ -245,13 +245,16 @@ Each test window against its train side, by statistics of the data, never of a m
 ### Feature summary
 
 <details>
-<summary>Show the table (372 rows)</summary>
+<summary>Show the table (375 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | X0 | category | 0 | 0 | 47 | z, ak, y, ay, t, x, o, f, n, w |
 | X1 | category | 0 | 0 | 27 | aa, s, b, l, v, r, i, a, c, o |
 | X2 | category | 0 | 0 | 44 | as, ae, ai, m, ak, r, n, s, f, e |
+| X3 | category | 0 | 0 | 7 | c, f, a, d, g, e, b |
+| X6 | category | 0 | 0 | 12 | g, j, d, i, l, a, h, k, c, b |
+| X8 | category | 0 | 0 | 25 | j, s, f, n, i, e, r, a, w, v |
 | X10 | category | 0 | 0 | 2 | 0, 1 |
 | X12 | category | 0 | 0 | 2 | 0, 1 |
 | X13 | category | 0 | 0 | 2 | 0, 1 |
@@ -306,11 +309,8 @@ Each test window against its train side, by statistics of the data, never of a m
 | X63 | category | 0 | 0 | 2 | 0, 1 |
 | X64 | category | 0 | 0 | 2 | 0, 1 |
 | X65 | category | 0 | 0 | 2 | 0, 1 |
-| X66 | category | 0 | 0 | 2 | 0, 1 |
-| X67 | category | 0 | 0 | 2 | 0, 1 |
-| X68 | category | 0 | 0 | 2 | 0, 1 |
 
-(312 more rows not shown)
+(315 more rows not shown)
 
 </details>
 
@@ -330,7 +330,7 @@ Each test window against its train side, by statistics of the data, never of a m
 ### Categorical features
 
 <details>
-<summary>Show the table (738 rows)</summary>
+<summary>Show the table (753 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -395,7 +395,7 @@ Each test window against its train side, by statistics of the data, never of a m
 | X123 | 2 | 1 | 11 | 0.26 |
 | X124 | 1 | 0 | 4202 | 99.95 |
 
-(678 more rows not shown)
+(693 more rows not shown)
 
 </details>
 
@@ -410,4 +410,4 @@ Each test window against its train side, by statistics of the data, never of a m
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8d755643697824675666cbd69d1c923bf0be09865b782b6a6062df290de1f91c` |
+| stale | yes: the definition now gives checksum `v2:6975db83d99ba0d042b11c35d5773ccd320446d46b24e0fcc56f255423f3e0e2` |

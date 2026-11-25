@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ecoli_proteins
 container_format: 2
-checksum: v2:f0dc74762aad8fb6edfe2485db00d831124bc2f4d083c8a3f46b7c1ee0c0d713
+checksum: v2:ec838ed9b2f3112c894e7c395603669cdafd2f80bc342f7a52f7840f574a6520
 build:
   uuid: 01a111fc-d4ff-7dda-987a-8119d986e5f1
   checksum: v2:40d233040dcbf3af5eefe4763b03ce0a9aed28f9a8b2733ccf127668b2c5c642
@@ -20,10 +20,10 @@ build:
 build_stale: true
 data:
   n_rows: 327
-  n_features: 6
+  n_features: 5
   dtypes:
     category: 3
-    float64: 5
+    float64: 4
   n_test_dataset_rows: null
 task:
   target: class
@@ -63,7 +63,8 @@ bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos: []
+  infos:
+  - groups_not_clustered
   accepted:
     splits_test_class_missing: 'One of the 60 family-grouped test folds (r1f2) lacks
       one of the five locations: the outer-membrane proteins (20) sit in few families,
@@ -77,9 +78,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `class`, scored with `log_loss` on grouped splits by `protein_family`. 327 rows and 6 features. Source: UCI (1996).
+Multiclass classification of `class`, scored with `log_loss` on grouped splits by `protein_family`. 327 rows and 5 features. Source: UCI (1996).
 
-Built as `01a111fc-d4ff-7dda-987a-8119d986e5f1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f0dc74762aad8fb6edfe2485db00d831124bc2f4d083c8a3f46b7c1ee0c0d713`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d4ff-7dda-987a-8119d986e5f1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ec838ed9b2f3112c894e7c395603669cdafd2f80bc342f7a52f7840f574a6520`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -91,11 +92,11 @@ Built as `01a111fc-d4ff-7dda-987a-8119d986e5f1` on 2026-10-06, but `dataset.py` 
 
 **Predicted.** The location: cytoplasm (44%), inner membrane without a signal sequence (24%), periplasm (16%), inner membrane with an uncleavable signal sequence (11%) or outer membrane (6%).
 
-**Known at prediction time.** Six scores computed from the sequence: two signal-sequence recognition methods, a lipoprotein signal score, an amino-acid content score and two membrane-spanning region predictions.
+**Known at prediction time.** Five scores computed from the sequence: two signal-sequence recognition methods, a lipoprotein signal score and two membrane-spanning region predictions.
 
 **What the test data stands for.** Random proteins, so the test data stands for proteins of unknown location; over the SWISS-PROT entry years the relation of the scores to the location measures stable.
 
-**Our changes to the source.** We drop the three rarest locations (inner- and outer-membrane lipoproteins, and inner membrane with a cleavable signal sequence), each with fewer than 10 proteins.
+**Our changes to the source.** We drop the three rarest locations (inner- and outer-membrane lipoproteins, and inner membrane with a cleavable signal sequence), each with fewer than 10 proteins, and the amino-acid content score, a discriminant fitted to the labels.
 
 > **Use case fit: direct (the rows, features and split mirror the use case).** The scores come from the sequence alone, which is known before any experiment, and a held-out protein is one of unknown location. The data is small and from 1996.
 
@@ -139,7 +140,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | Non-IID, Grouped, UnseenGroup |
 | reference | horton1996probabilistic |
-| rows x columns | 327 x 8 |
+| rows x columns | 327 x 7 |
 | task.target | class |
 | task.problem_type | multiclass_classification |
 | task.metric | log_loss |
@@ -187,13 +188,13 @@ Only curators run `build`, when the dataset ships.
 
 The first 5 of 327 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
-| class | mcg | gvh | lip | aac | alm1 | alm2 | protein_family |
-|---|---|---|---|---|---|---|---|
-| cp | 0.23 | 0.4 | 0.48 | 0.39 | 0.28 | 0.38 | pfam:PF00072 |
-| cp | 0.38 | 0.44 | 0.48 | 0.43 | 0.2 | 0.31 | family:Class-I aminoacyl-tRNA synthetas… |
-| pp | 0.69 | 0.66 | 0.48 | 0.41 | 0.5 | 0.25 | family:'GDSL' lipolytic enzyme family |
-| om | 0.52 | 0.81 | 0.48 | 0.72 | 0.38 | 0.38 | family:TonB-dependent receptor family |
-| im | 0.59 | 0.56 | 0.48 | 0.55 | 0.8 | 0.82 | pfam:PF00358;PF00367;PF02378 |
+| class | mcg | gvh | lip | alm1 | alm2 | protein_family |
+|---|---|---|---|---|---|---|
+| cp | 0.54 | 0.47 | 0.48 | 0.33 | 0.42 | family:Adenylate kinase family |
+| pp | 0.68 | 0.78 | 0.48 | 0.44 | 0.42 | family:Leucine-binding protein family |
+| im | 0.83 | 0.37 | 0.48 | 0.71 | 0.74 | family:Peptidase A8 family |
+| cp | 0.5 | 0.49 | 0.48 | 0.46 | 0.53 | protein:PT1A_ECOLI |
+| im | 0.74 | 0.44 | 0.48 | 0.88 | 0.89 | family:Dicarboxylate/amino acid:cation … |
 
 ## Curation notes
 
@@ -202,8 +203,14 @@ We start with the dataset from UCI.
 - We drop the sequence name column, which is a unique identifier.
 - We drop three classes with less than 10 samples each: omL (5), imL (2), and imS (2).
 - We drop "chg", which becomes constant after our preprocessing steps.
+- We drop "aac", the score of a discriminant analysis of the amino-acid content of outer-membrane and
+  periplasmic proteins. It was fitted to the labels of the authors' protein database, the predecessor of this
+  dataset (Nakai & Kanehisa 1991, Proteins 11(2):95-110), and cannot be refitted per split, so it leaks the
+  labels (the reason `yeast` was rejected). Dropped and the task kept, as the amended LEAK-27 says when the
+  other columns still make a real one (Andrej, 2026-11-11). Without it, outer-membrane proteins (6% of rows)
+  are barely recognised: TabPFN recall 0.02 instead of 0.90 (stratified 3-fold x 20).
 - Split by protein family (Andrej, 2026-11-23): `protein_families.csv` next to this file maps each of the 327 shipped proteins from its SWISS-PROT entry name to a UniProt accession (289 by ID mapping, 20 by a text search of renamed entries; UniProt REST, 2026-11-23) and to its UniProt protein family (270), else to its set of Pfam domains (39), else to itself (18 unresolved). 219 families, at most 12 proteins in one; 11 families hold proteins of more than one location. UniRef50 clusters are too fine to group anything (312 of 319 hold one protein). On 20 x 3 folds without `aac`, family-held-out folds cost logistic regression +0.015 ± 0.004 and TabPFN +0.012 ± 0.005 log loss against random folds (0.472 and 0.463), the ranking unchanged; under random folds 41% of test proteins had a family member in training and carried 33% of the loss.
-- Time basis: UnseenGroup (Andrej, 2026-11-23; `StationaryRelation` before): the catalogue is split by protein family, its default key: three windows on the SWISS-PROT entry years (1986-1995) would need the 1989-90 window, trained on 37%, as an exception, so the entry date does not decide. Holding out whole families tests a protein whose family the training set lacks, as the localisation of a newly sequenced protein meets it; under random folds 41% of the test proteins had a family member in training. The entry years and the stationary-relation test (2026-11-19, flat narrowly; the location mix moves, cytoplasm 54% of entries up to 1989 against 34% from 1990) go in the notes. Not tested: a later entry year.
+- Time basis: UnseenGroup (Andrej, 2026-11-23; `StationaryRelation` before): the catalogue is split by protein family, its default key: three windows on the SWISS-PROT entry years (1986-1995) would need the 1989-90 window, trained on 37%, as an exception, so the entry date does not decide. Holding out whole families tests a protein whose family the training set lacks, as the localisation of a newly sequenced protein meets it; under random folds 41% of the test proteins had a family member in training. The entry years and the stationary-relation test (2026-11-19, flat narrowly; the location mix moves, cytoplasm 54% of entries up to 1989 against 34% from 1990) go in the notes; that test ran on the six scores, `aac` included, before `aac` was dropped. Not tested: a later entry year.
 
 ## Splits
 
@@ -298,15 +305,16 @@ One group is a protein family: the UniProt protein family of the protein's SWISS
 | largest group | 3.7% of the rows |
 | test groups per fold | 69 to 76 |
 | groups of two or more rows with a single label | 74.4% |
-| nearest neighbour in the same group | 4.0% of the rows (chance: 0.6%) |
-| label variance explained by the group | 0.92 (shuffled groups: 0.69) |
+| nearest neighbour in the same group | 1.5% of the rows (chance: 0.6%) |
+| label variance explained by the group | 0.92 (shuffled groups: 0.67) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
+- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (1.5% of nearest neighbours vs 0.6%), and the group explains no more of the label than shuffled groups (0.92 vs 0.67). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.)
 
 Accepted on purpose:
 
@@ -321,11 +329,10 @@ Accepted on purpose:
 | lip | category | 0 | 0 | 2 | 0.48, 1.0 |
 | class | category | 0 | 0 | 5 | cp, im, pp, imU, om |
 | protein_family | category | 0 | 0 | 219 | family:Major facilitator superfamily, family:Class-II aminoacyl-tRNA synthetase… |
-| mcg | float64 | 0 | 0 | 77 | 0.63, 0.34, 0.44, 0.64, 0.74, 0.4, 0.29, 0.67, 0.69, 0.36 |
-| gvh | float64 | 0 | 0 | 63 | 0.51, 0.4, 0.47, 0.37, 0.42, 0.49, 0.46, 0.44, 0.57, 0.45 |
-| aac | float64 | 0 | 0 | 59 | 0.42, 0.46, 0.48, 0.51, 0.41, 0.57, 0.49, 0.52, 0.56, 0.45 |
-| alm1 | float64 | 0 | 0 | 81 | 0.39, 0.35, 0.28, 0.33, 0.78, 0.76, 0.49, 0.45, 0.38, 0.42 |
-| alm2 | float64 | 0 | 0 | 75 | 0.39, 0.43, 0.41, 0.74, 0.35, 0.79, 0.44, 0.38, 0.33, 0.42 |
+| mcg | float64 | 0 | 0 | 77 | 0.63, 0.34, 0.44, 0.64, 0.4, 0.29, 0.74, 0.67, 0.69, 0.61 |
+| gvh | float64 | 0 | 0 | 63 | 0.51, 0.4, 0.37, 0.42, 0.47, 0.49, 0.46, 0.57, 0.44, 0.45 |
+| alm1 | float64 | 0 | 0 | 81 | 0.35, 0.39, 0.33, 0.28, 0.78, 0.76, 0.38, 0.71, 0.37, 0.42 |
+| alm2 | float64 | 0 | 0 | 75 | 0.39, 0.43, 0.74, 0.35, 0.41, 0.44, 0.33, 0.79, 0.38, 0.42 |
 
 ### Target distribution
 
@@ -343,7 +350,6 @@ Accepted on purpose:
 |---|---|---|---|---|---|
 | mcg | 327 | 0.49419 | 0.193719 | 0 | 0.89 |
 | gvh | 327 | 0.499939 | 0.149935 | 0.16 | 1 |
-| aac | 327 | 0.49945 | 0.123165 | 0 | 0.88 |
 | alm1 | 327 | 0.497462 | 0.217333 | 0.03 | 1 |
 | alm2 | 327 | 0.503119 | 0.206947 | 0 | 0.99 |
 
@@ -380,4 +386,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:f0dc74762aad8fb6edfe2485db00d831124bc2f4d083c8a3f46b7c1ee0c0d713` |
+| stale | yes: the definition now gives checksum `v2:ec838ed9b2f3112c894e7c395603669cdafd2f80bc342f7a52f7840f574a6520` |

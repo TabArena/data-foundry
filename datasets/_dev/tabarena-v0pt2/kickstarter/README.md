@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: kickstarter
 container_format: 2
-checksum: v2:732a67d91137e26355b8cf94bfff8836a66be87c21568bea5d56f8a0dc5e6c5d
+checksum: v2:46b3672b0374cbe91dc6b2a2e63e58ecd6bcdef44143cad181ebce50c6021d21
 build:
   uuid: 01a111fc-1005-78e7-8906-36e684a9081e
   checksum: v2:14ca3c730bd58606c1e3c421c4b49c63f30ea000f16bd69347e8e479c2ff3978
@@ -72,7 +72,7 @@ decisions: []
 
 Binary classification of `state`, scored with `roc_auc` on temporal splits by `launched_at`. 185,444 rows and 12 features. Source: Other (2026).
 
-Built as `01a111fc-1005-78e7-8906-36e684a9081e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:732a67d91137e26355b8cf94bfff8836a66be87c21568bea5d56f8a0dc5e6c5d`, so the build is stale. See [Build](#build).
+Built as `01a111fc-1005-78e7-8906-36e684a9081e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:46b3672b0374cbe91dc6b2a2e63e58ecd6bcdef44143cad181ebce50c6021d21`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -90,7 +90,7 @@ Built as `01a111fc-1005-78e7-8906-36e684a9081e` on 2026-10-06, but `dataset.py` 
 
 **Our changes to the source.** We drop everything recorded after launch (pledges, backers, staff pick, the creator's project profile, which only funded projects have), convert goals to US dollars at each project's own rate, remove projects repeated across scrapes (20%), and drop the projects launched in the last 60 days before the scrape, whose outcomes it holds only for the campaigns that had already ended.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is known at launch, and later half-years are tested; with the 60-day gap at most one training project per window, a campaign longer than 60 days, had not ended when the window starts. How fully the scrapes cover all projects is not stated.
+> **Use case fit: approximate (a stand-in with a known gap).** Everything the model sees is known at launch, and later half-years are tested, but the scrapes do not cover every project: 62.5% of those here are funded, 87% to 97% of the 2009-2013 launches, against the 44% Kickstarter reported in 2012, so failed projects are under-covered, the more so in the older years.
 
 ## Files in this folder
 
@@ -207,6 +207,17 @@ Similar to the Kaggle task, we aim to predict whether a Kickstarter project will
 - The data contains spatial information (city, state, country). We do not decode this but leave it to the pipelines.
 - We found 150 rows without location information. We drop these rows as it is unclear which issue caused this and how the rows' data might be affected by this.
 - We drop duplicates (20%) which seems to have occurred from multiple scrapes of the same project.
+- Coverage (Andrej, 2026-11-11; record marker `Selection Bias`): failed projects are under-covered in the older
+  years. Kickstarter reported 60,786 launched projects by June 2012, 44% funded (Engadget, 21 June 2012); here
+  the 2009-2013 launches are 87% to 97% funded, and the share breaks at 2014, when Web Robots' scrapes start
+  (older projects are likely those still listed then). Whether failures are also missing from 2014 on, the
+  test windows included, is unknown. Funded share by launch year, counted on the 185,444 rows of this
+  definition: 2009 96.5% (113), 2010 90.4% (795), 2011 89.6% (2,474), 2012 89.5% (4,731), 2013 87.3% (5,423),
+  then 2014 54.5% (15,155), 2015 47.1% (19,186), rising to 71.1% (23,096) in 2025.
+- The 2009-2013 launches stay (Andrej, 2026-11-11), 13,536 projects, 8% to 14% of each training side: on the
+  launch-year windows 2023 to 2025 of that day, with the same test rows, dropping them made logistic
+  regression worse (log loss 0.504 to 0.509, ROC AUC 0.819 to 0.817, mean of the three windows) and moved
+  LightGBM by about 0.001 ROC AUC, so the old rows are kept.
 
 ## Splits
 
@@ -371,4 +382,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:732a67d91137e26355b8cf94bfff8836a66be87c21568bea5d56f8a0dc5e6c5d` |
+| stale | yes: the definition now gives checksum `v2:46b3672b0374cbe91dc6b2a2e63e58ecd6bcdef44143cad181ebce50c6021d21` |

@@ -38,7 +38,7 @@ class Fiat500(AbstractCuratedDataset):
 
     # Dataset
     unique_name = "fiat_500"
-    domain = "technology & internet"
+    domain = "business & marketing"
     sources = (
         Source(
             role="publication",
