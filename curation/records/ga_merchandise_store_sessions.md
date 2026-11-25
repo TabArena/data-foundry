@@ -74,11 +74,15 @@ CC (2026-11-25, Andrej): the declared horizon (one calendar month, a one-day gap
 
 **Assessment (AI, 2026-11-25):** the curator's two decisions are applied: eight windows with a one-day gap. Test visits and train shares of the 305,819 visits: July 2017 25,115 (91.5%), June 22,577 (84.1%), May 24,556 (76.2%), April 22,530 (68.8%), March 23,691 (61.0%), February 21,919 (53.8%), January 24,276 (46.0%), December 2016 30,716 (35.7%), with 694 to 1,385 buyers a window; each window trains on the visits up to the day before the previous month's last day (29 June 2017 for July, 29 November 2016 for December). `dataset check`: 0 errors, 2 warnings (category values that rarely buy, all known at visit start; no licence stated), `splits_train_under_half` and `splits_below_target` accepted. Task probe on the rebuilt data (5 of the 8 windows): untuned LightGBM ROC AUC 0.877, logistic regression 0.863, a random forest 0.863, the best single feature (country) 0.693.
 
+CC (2026-11-25, Andrej): the declared metric (roc_auc, fallback: Google's sample defines no task or metric, the Kaggle competition on the same visits scored another task, the RMSE of each visitor's log revenue, and Sakar et al. 2019, whose in-visit setting the use case follows, report accuracy, TPR, TNR and F1 with no single criterion) is checked, as implemented.
+
+**Assessment (AI, 2026-11-25):** for the metric, untuned LightGBM leads logistic regression and a random forest on roc_auc in all eight windows (by 0.006 to 0.042); for review issue 2 (six or eight windows, a question, open), December 2016 and January 2017 measured against the six (one-day gap, the definition's frame): LightGBM 0.824 and 0.865 against 0.868 to 0.887; the random forest trails logistic regression by 0.027 and 0.030 there (bootstrap SE 0.004 and 0.005), against -0.005 to +0.005 in the six, and trained on as few rows the six still give -0.008 to +0.007; buy rates 4.5% and 2.9% against 3.2% to 4.5%; no dataset.py change.
+
 ## Review
 
-**Outcome:** added; the AI recommends shipping, and both of your choices of the split are applied: one-month windows with a one-day gap (H) and eight test months, December 2016 to July 2017, with January and December as your exception under half (issue 1). Task: at a visit's third pageview, before any checkout step, will the visit buy (305,819 visits of 240,212 visitors, August 2016 to July 2017, 3.7% buy; Google's obfuscated GA360 sample of the Google Merchandise Store, queried in BigQuery). Validity: every feature is the visit's start, the visitor's earlier visits in the sample, or a count over the visit's hits up to the cut; the finished-visit totals, which score 0.977 against 0.873 at the cut, never ship, and the 234 visits that reached checkout before the cut are dropped. Applied after the panel: the visitor's history as three columns (earlier visits, earlier purchases, days since the last visit), the masked traffic source set to missing, `events` split by action and `/home-2` counted as home, a protocol line against reading other test rows, and two gaps named in the fit (purchase, not uplift; a masked Referral group with 44% of the buyers). Value: in the task probe on the eight windows, untuned LightGBM scores ROC AUC 0.877, logistic regression 0.863, a random forest 0.863 and the best single feature (country) 0.693, with 694 to 1,385 buyers per test month; no reviewer found an exploit. `dataset check`: 0 errors, 2 warnings (category values that rarely buy, all known at visit start; no licence stated); the windows under half and the 8 windows against a target of 9 are accepted with your CC lines.
+**Outcome:** added; the AI recommends shipping, and both of your choices of the split are applied: one-month windows with a one-day gap (H) and eight test months, December 2016 to July 2017, with January and December as your exception under half (issue 1); issue 2 asks again whether six windows would do. Task: at a visit's third pageview, before any checkout step, will the visit buy (305,819 visits of 240,212 visitors, August 2016 to July 2017, 3.7% buy; Google's obfuscated GA360 sample of the Google Merchandise Store, queried in BigQuery). Validity: every feature is the visit's start, the visitor's earlier visits in the sample, or a count over the visit's hits up to the cut; the finished-visit totals, which score 0.977 against 0.873 at the cut, never ship, and the 234 visits that reached checkout before the cut are dropped. Applied after the panel: the visitor's history as three columns (earlier visits, earlier purchases, days since the last visit), the masked traffic source set to missing, `events` split by action and `/home-2` counted as home, a protocol line against reading other test rows, and two gaps named in the fit (purchase, not uplift; a masked Referral group with 44% of the buyers). Value: in the task probe on the eight windows, untuned LightGBM scores ROC AUC 0.877, logistic regression 0.863, a random forest 0.863 and the best single feature (country) 0.693, with 694 to 1,385 buyers per test month; no reviewer found an exploit. `dataset check`: 0 errors, 2 warnings (category values that rarely buy, all known at visit start; no licence stated); the windows under half and the 8 windows against a target of 9 are accepted with your CC lines.
 
-**Main points:** Nothing open: the horizon (one month, a one-day gap) and the eight test windows (January 46.0%, December 35.7% as your exception) are decided and applied; the two remaining check warnings (rare category values, no licence) were left for your acceptance.
+**Main points:** Open: issue 2, your question whether to go back to six windows (February to July 2017, all trained on at least half); the AI recommends keeping eight, as December and January are the only months where two model families separate beyond the training size. Decided and applied: the horizon (one month, a one-day gap), the metric (roc_auc, the fallback) and the eight test windows (January 46.0%, December 35.7% as your exception); the two remaining check warnings (rare category values, no licence) were left for your acceptance.
 
 **Horizon:**
 
@@ -221,6 +225,60 @@ CC (2026-11-25, Andrej): the declared horizon (one calendar month, a one-day gap
    **Andrej (2026-11-25, reply (b)):** Eight windows (the issue's B).
 
    **Resolved (2026-11-25, Andrej):** b, eight monthly windows from December 2016 to July 2017: `dataset.py` adds the cutoffs 2017-01-01 and 2016-12-01, `task_summary.split` and the splits comment name both windows under half as your exception with their shares (January 46.0%, December 35.7%, with the one-day gap of H) and the reason (the holiday season the newer months lack, the precedents), and `accepted_check_warnings` accepts `splits_train_under_half` and `splits_below_target` (8 against 9; November 2016 would train on 26.2%, under the 30% floor) with the CC date. The record carries the CC line. `dataset check`: 0 errors, 2 warnings left (rare category values, no licence); the task probe: LightGBM 0.877, logistic regression 0.863, the best single feature 0.693.
+
+2. **Six windows or eight: what do December 2016 and January 2017 add?** A question on the split, which reopens issue 1's decision of earlier today (b, eight windows).
+
+   * **Problem:**
+     - In December and January the random forest trails logistic regression by 0.027 and 0.030 ROC AUC (bootstrap SE 0.004 and 0.005); in the six windows the pair ties, -0.005 to +0.005 per window and 0.8638 against 0.8636 on average. Trained on the same 109,119 newest visits as December, the six still give -0.008 to +0.007, so the gap comes from the two months, not from their smaller training sides. With six windows the benchmark cannot tell the two families apart; with eight logistic regression leads by 0.007. LightGBM leads in all eight windows either way.
+     - December is the hardest test month: LightGBM scores 0.824, against 0.861 to 0.883 for the six windows trained on the same 109,119 visits. Its buy rate of 4.5% follows 3.1% in October and November, the holiday rise; May reaches the same 4.5%, so the rate itself is not new. January, after the holidays, has the lowest buy rate of the sample (2.9%), under the six's 3.2% to 4.5%.
+     - The drift is of no new kind: a model tells the test month from its training side with AUC 0.77 (December) and 0.79 (January), inside the six's 0.71 to 0.85. January's largest shift is `promotion_clicks` (no promotion click after December 2016), the same column that shifts most in the six; December shifts many columns a little (median population stability index 0.014, against 0.003 to 0.007).
+     - What is lost: both windows train on under half the visits, January on 46.0% and December on 35.7%, below the half-the-rows floor and kept only as your exception; December trains on four months (August to November 2016) with no earlier December, so it tests a model's reach into an unseen season, not a learned seasonal pattern. Each window weighs an eighth of the mean, which falls from 0.878 to 0.870 for LightGBM. Six windows stay valid: 6 against the target of 9, with the warning accepted.
+   * **Experiments:** the eight shipped windows, the one-day gap, the definition's frame, the task probe's untuned families, trained on the full training side unless stated; ROC AUC; the bootstrap SE from 200 resamples of each test month; "109,119 newest" trains each window on only its newest 109,119 visits, December's training size:
+
+     | Month | Train share | LightGBM | Logistic regression | Random forest | Forest − logistic (SE) | Forest − logistic, 109,119 newest | LightGBM, 109,119 newest |
+     |---|---|---|---|---|---|---|---|
+     | July 2017 | 91.5% | 0.8716 | 0.8584 | 0.8574 | -0.0010 (0.0038) | -0.0032 | 0.8635 |
+     | June 2017 | 84.1% | 0.8679 | 0.8512 | 0.8554 | +0.0042 (0.0036) | +0.0047 | 0.8610 |
+     | May 2017 | 76.2% | 0.8840 | 0.8662 | 0.8709 | +0.0047 (0.0035) | +0.0070 | 0.8830 |
+     | April 2017 | 68.8% | 0.8792 | 0.8672 | 0.8674 | +0.0001 (0.0039) | -0.0029 | 0.8777 |
+     | March 2017 | 61.0% | 0.8865 | 0.8734 | 0.8692 | -0.0042 (0.0041) | -0.0053 | 0.8789 |
+     | February 2017 | 53.8% | 0.8790 | 0.8664 | 0.8613 | -0.0052 (0.0043) | -0.0083 | 0.8767 |
+     | Mean of the six | | 0.8780 | 0.8638 | 0.8636 | -0.0002 | | |
+     | January 2017 | 46.0% | 0.8655 | 0.8592 | 0.8294 | -0.0298 (0.0053) | -0.0297 | 0.8637 |
+     | December 2016 | 35.7% | 0.8240 | 0.8094 | 0.7825 | -0.0269 (0.0043) | -0.0269 | 0.8240 |
+     | Mean of the eight | | 0.8697 | 0.8564 | 0.8492 | -0.0072 | | |
+
+     The test months' data; drift against each window's training side: the largest and the median population stability index over the features (deciles of the training side, the time column left out), and the AUC of a LightGBM that tells 20,000 test visits from 30,000 training visits (the time column left out):
+
+     | Month | Test visits | Buyers | Buy rate | Largest shift | Median shift | Test vs. train AUC |
+     |---|---|---|---|---|---|---|
+     | July 2017 | 25,115 | 1,022 | 4.1% | 0.59 (`promotion_clicks`) | 0.005 | 0.77 |
+     | June 2017 | 22,577 | 937 | 4.2% | 0.65 (`promotion_clicks`) | 0.004 | 0.71 |
+     | May 2017 | 24,556 | 1,099 | 4.5% | 0.75 (`promotion_clicks`) | 0.005 | 0.78 |
+     | April 2017 | 22,530 | 915 | 4.1% | 0.84 (`promotion_clicks`) | 0.007 | 0.79 |
+     | March 2017 | 23,691 | 874 | 3.7% | 0.97 (`promotion_clicks`) | 0.003 | 0.85 |
+     | February 2017 | 21,919 | 704 | 3.2% | 1.12 (`promotion_clicks`) | 0.005 | 0.76 |
+     | January 2017 | 24,276 | 694 | 2.9% | 1.34 (`promotion_clicks`) | 0.005 | 0.79 |
+     | December 2016 | 30,716 | 1,385 | 4.5% | 0.34 (`medium`) | 0.014 | 0.77 |
+
+     The training-only months: August 2016 4.1% buy, September 3.3%, October 3.1%, November 3.1%.
+   * **Options:**
+
+     | | Option | Windows | Train share | Pro | Con |
+     |---|---|---|---|---|---|
+     | a | Back to six windows (issue 1's A) | February to July 2017 | 53.8% to 91.5% | every window trains on at least half the visits; no exception; your stated preference | no holiday or post-holiday month; the random forest and logistic regression tie, so the benchmark cannot separate them; 6 of 9 |
+     | b | Keep eight, issue 1's b (implemented) | December 2016 to July 2017 | 35.7% to 91.5% | the holiday month and the lowest buy rate tested; the only months that separate two model families, beyond the training size; 8 of 9 | two exceptions under half; December trains on four months and no earlier December; the mean falls by 0.008 |
+
+   * **Recommendation:** b: the measurement shows the two months test something the six do not (a family that holds in the six falls 0.03 behind in the season and after it, at any training size), and that is what a temporal benchmark is for[^x1]. a if the half-the-rows floor should hold for every window of every dataset as your general rule; then the holiday goes untested here[^x2]. **Decision:** a or b?
+
+   **Notes for the AI:** For a set `cutoffs` to the six months 2017-07-01 to 2017-02-01; drop `splits_train_under_half` from `accepted_check_warnings` and rewrite the `splits_below_target` reason (6 against 9; January would train on 46.0%, under half); rewrite `task_summary.split` and the splits comment (six windows, 53.8% to 91.5%, no exception, the holiday untested); add the CC line naming issue 2 as reversing issue 1's b; re-run `dataset check` and the task probe.
+
+   [^x1]: **SPLIT-15** (Should for the windows other than the newest): the other windows are argued from the use case, "which periods a deployed model must handle (other years, seasons, holidays, events, a change of rules or of the data collection)".
+   [^x2]: **SPLIT-14** (Must): every window trains on at least 50% of the data; a window under 50% is the curator's exception, down to 30%, accepted only with the curator's CC line.
+
+   **Andrej (2026-11-25, discuss):** I would generally prefer 6 splits with at least half of the data in train for all splits, what do we actually gain from also having december as a test split?
+
+   **Answer (AI, 2026-11-25):** the two months add the only test months where the model families separate beyond the training size (the random forest falls 0.027 and 0.030 below logistic regression there, a tie in the six) and the holiday month, the hardest of the year; the cost is two windows trained on under half the visits (46.0% and 35.7%), so the AI still recommends eight (b).
 
 **Review panel:** ship after changes (mediator). Claim audit: 24 claims, the validity claims all hold; the masking claim was refuted beyond organic search and the returning-visitor ranges were stale (both fixed), the operating-system count off by one (fixed). Blind review: would include with changes; its concerns (the cut and the row filter) are answered by the query. Task gamer: no exploit. Debate: agreed on every point after the rebuttals; the visitor history (applied) and the eight windows (issue 1) were conceded. For the curator: issue 1 and H.
 
