@@ -142,6 +142,11 @@ class RamanEcoliFermentation(AbstractCuratedDataset):
           from the bare wavenumber to `raman_<cm-1>` so the build reads the axis from the names; no value changes.
         - The experiment group is the grouping key and never a model input. It carries no information about the
           sample beyond which eight cultivations it came from.
+        - The signal across the three groups is real, which is what the few-groups warning asks for. Holding a
+          group out costs little: LightGBM scores R2 0.696 (SE 0.040) grouped against 0.738 (SE 0.069) on a
+          random split, a gap of 0.042 over 3 repeats of 3 folds, and across held-out groups ridge reaches 0.780,
+          LightGBM 0.696 and a 5-nearest-neighbour 0.585 against a baseline of 0. A cultivation the model has not
+          seen is therefore not a different problem, which is why three groups still carry a score.
         - Half the target is a floor, and it is censored, not zero-inflated. 192 of the 373 glucose values are
           exactly 0.0 (51.5%), spread evenly over the three groups (49.1%, 50.8%, 54.0%), and the next smallest
           values are 0.0279, 0.0660 and 0.0742 g/L: a gap, not a continuum. The analyser reports a concentration
@@ -180,8 +185,8 @@ class RamanEcoliFermentation(AbstractCuratedDataset):
         frames = []
         for group in EXPERIMENT_GROUPS:
             frame = pd.read_csv(raw_dir / "hf" / f"{group}.csv")
-            frame.insert(0, "experiment_group", group)
-            frames.append(frame)
+            # Build the column in one go: inserting into a 1,872-column frame fragments it.
+            frames.append(pd.concat([pd.DataFrame({"experiment_group": [group] * len(frame)}), frame], axis=1))
         return pd.concat(frames, ignore_index=True)
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:

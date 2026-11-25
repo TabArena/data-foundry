@@ -218,7 +218,13 @@ class RamanFuelBenchtop(AbstractCuratedDataset):
             instrument: [column for column in frame.columns if column not in properties]
             for instrument, frame in frames.items()
         }
-        joined = pd.concat(
+        # The join rests on the row position, so check it here: every property column must agree value for value
+        # between the two releases (PROV-13).
+        mismatched = [column for column in properties if not benchtop[column].equals(handheld[column])]
+        if mismatched:
+            raise ValueError(f"The two releases disagree on {mismatched}: the row position is not the sample.")
+
+        return pd.concat(
             [
                 benchtop[properties],
                 benchtop[bands["benchtop"]].add_prefix(BENCHTOP_PREFIX),
@@ -226,22 +232,10 @@ class RamanFuelBenchtop(AbstractCuratedDataset):
             ],
             axis=1,
         )
-        joined.attrs["properties"] = properties
-        joined.attrs["handheld_properties"] = handheld[properties]
-        return joined
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw.copy()
-        properties = df.attrs["properties"]
-
-        # The join rests on the row position, so check it: every property column must agree value for value
-        # between the two releases (PROV-13).
-        handheld_properties = raw.attrs["handheld_properties"]
-        mismatched = [
-            column for column in properties if not df[column].equals(handheld_properties[column].reset_index(drop=True))
-        ]
-        if mismatched:
-            raise ValueError(f"The two releases disagree on {mismatched}: the row position is not the sample.")
+        properties = ["Research Octane Number", *OTHER_PROPERTIES]
 
         # The repeated sample: rows that agree on every one of the twelve properties are one gasoline measured
         # twice, and share a group (SPLIT-24, curation notes). Everything else is its own group.

@@ -56,3 +56,76 @@ type_adapter_id: curation-record-v1
 - as published: 179 spectra x 961 wavenumber features; 12 target(s) (raman-data id: fuel_benchtop); target: RON, MON, ethanol, oxygenates (MTBE, ETBE), benzene and other properties (12 targets).
 - Why: Predict octane numbers and additive contents of commercial gasoline from Raman spectra (Benchtop FT-Raman, 1064 nm) | Predict octane numbers and additive contents of commercial gasoline from Raman spectra (Handheld Raman, 785 nm)
 - Notes: Raw Raman spectral bins (961 wavenumber points, 98-3801 cm-1) as features; SEL-15 judges such signals case by case. New with RamanBench; studies Voigt et al. 2019 (https://doi.org/10.1016/j.fuel.2018.09.006) and Legner et al. 2019 (https://doi.org/10.1021/acs.energyfuels.9b02944). Same 179 samples as the other ...
+
+## Review
+
+**Outcome:** added. Voigt et al. (2019) and Legner et al. (2019) commercial gasolines: the research octane number from
+a Raman spectrum, so a sample can be rated near the pump instead of on a CFR engine. 179 samples, each with a benchtop
+and a handheld spectrum (961 and 1,900 bands), the eleven other laboratory properties dropped because none is known
+when the spectrum is taken. `dataset check` gives 0 errors and 0 warnings. The probes find no exact copy across any
+split and real signal. What is left for you is whether a dataset that barely separates model families belongs in the
+benchmark, and whether the ten properties measured on 164 of the samples are worth a companion view.
+Validity: USE-1 and USE-5 hold, fit direct: the source's own question on the source's own samples. LEAK-10 holds, the
+spectrum is the only input. SPLIT-24 triggered and fixed: rows 42 and 96 are one fuel measured twice and share a
+group[^f24].
+Value: real signal, a random forest beats the class-share dummy on 100% of the splits (RMSE 0.904 against 2.471). TP-3
+is the open question: the families sit within 0.028 of each other[^f3].
+Quality: the spectra ship as published and are declared, state `raw`; one constant handheld band dropped (CLEAN-26).
+Weighed: source + (two papers, the owners' release), use case + (near-pump octane against the engine test), gap 0,
+shape - (179 samples, TP-9), risk - (the families barely separate).
+For the curator: issue 1 (TP-3, the one that decides whether it ships), issue 2 (the other properties).
+
+**Main points:** Issue 1 is the real question: a random forest and a linear model are 0.028 apart, so the dataset may
+not tell methods apart. Issue 2 asks whether the ten properties on 164 samples ship as a companion.
+
+**Record judgment:** valid. The record's screening said 179 samples, two instruments on the same samples, and RON for
+all of them against MON for 22; the data confirms each. The screening's SPLIT-24 risk ("raman-data finds repeated
+target tuples that may be repeat measurements") is confirmed and fixed.
+
+**Issues for Andrej:**
+
+1. **Does a dataset whose model families sit within 0.028 of each other belong in the benchmark?**
+
+   * **Problem:**
+     - The task probe raises `no_spread`: the best family and the next are too close to tell apart[^f3].
+     - A random forest scores skill 0.861, LightGBM 0.853, a linear model 0.837, and the paired standard error of the gap is 0.016.
+     - The signal itself is not in doubt: every family beats the dummy on 100% of the splits.
+   * **Effect on the task:** a benchmark that cannot order methods adds rows without adding information; the dataset would measure that Raman predicts octane, which the source already showed, rather than which model reads a spectrum best.
+   * **Experiments:** 30 of 60 splits, untuned. Dummy RMSE 2.471; linear 0.991, selected linear 0.996, random forest 0.904, LightGBM 0.937, the best single band 1.449. Spread random forest minus selected linear +0.028 (paired SE 0.016). A single band alone reaches r2 0.645, so most of the octane signal sits in a few bands around 1,050 to 1,070 cm-1.
+   * **Consistency:** a `no_spread` flag is a weighing call, not a Must; the rules ask for a reason either way.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Ship as defined (implemented) | 179 samples, both spectra, RON | a real use case with real signal; spectra are thin in the benchmark; tuning may separate what untuned models do not | the untuned families are 0.028 apart, so it may not rank methods |
+     | B | Ship only if a tuned run separates the families | the decision waits for a tuned comparison on the shipped splits | decides on the evidence the flag asks for | a run to schedule; the answer may still be no |
+     | C | Don't ship, marker `Trivial` | the record returns to `2nd Tier` | the strictest reading of the flag | the task is not trivial, only narrow: no model is near perfect, RMSE 0.904 on a 15-point range |
+
+   * **Recommendation:** B, and A if the tuned run separates them. The flag is about ranking methods, and only a tuned run answers it; C misreads a narrow task as a trivial one. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, run the tuned comparison on the shipped splits and record the spread in the review before the verdict; on C, `suggestion` `No`, marker and a CC line.
+
+   [^f3]: **TP-3**: a dataset that does not separate model families adds little to a benchmark; the flag is weighed, not decisive.
+   [^f24]: **SPLIT-24**: a unit measured twice is one group. Rows 42 and 96 agree on all twelve properties and their benchtop spectra differ by at most 0.125 across 961 bands, where two random gasolines differ by 5.94.
+
+2. **Do the ten properties measured on 164 samples ship as a companion view?**
+
+   * **Problem:**
+     - The release carries ethanol, ETBE, MTBE, density, water, oxygenates, oxygen, olefins, aromatics and benzene on 164 of the 179 samples, and the motor octane number on 22.
+     - None of them is an input, because each is a laboratory measurement of the same sample; the question is whether any is a second target.
+     - The definition ships the research octane number alone, which is measured on all 179.
+   * **Effect on the task:** none on what ships today. A companion view would name a second task on the same rows for a later round, not change this one.
+   * **Experiments:** none run; the counts are from the release (179 / 164 / 22).
+   * **Consistency:** the rule on several targets ships one and names the others[^f18]; a companion view is how other records keep a second task visible.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Name none (implemented) | the notes list the dropped columns | the simplest record | a second real task stays invisible |
+     | B | Name ethanol content as a companion | one line in the notes | ethanol is the property a field instrument is most often asked for, on 164 samples | a promise nobody may pick up |
+
+   * **Recommendation:** B, as a note only. **Decision:** A or B?
+
+   [^f18]: **CLEAN-18**: a release with several targets ships one and names the rest.
+
+   **Notes for the AI:** on B, one bullet in `curation_comments` naming the companion and its row count; no change to the data.

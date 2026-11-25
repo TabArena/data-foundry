@@ -54,3 +54,101 @@ type_adapter_id: curation-record-v1
 - as published: 225 spectra x 534 wavenumber features; 1 target(s) (raman-data id: adenine_colloidal_gold); target: adenine concentration.
 - Why: Quantify adenine from SERS spectra on colloidal gold substrates measured in many European labs (interlaboratory study) | Quantify adenine from SERS spectra on colloidal silver substrates measured in many European labs (interlaboratory study) | Quantify adenine from SERS spectra on solid gold substrates measured in ...
 - Notes: Raw Raman spectral bins (534 wavenumber points, 400-1999 cm-1) as features; SEL-15 judges such signals case by case. Paper marks Adenine as newly released, but raman-data loads it from the 2019 Zenodo record of Fornasaro et al. Few concentration levels; laboratory is a natural group. HF mirror: ...
+
+## Review
+
+**Outcome:** added, on the reframing you asked for. The European interlaboratory SERS study (Fornasaro et al. 2020)
+as one dataset over its own Zenodo table: 3,512 spectra from 15 laboratories, 4 substrates and 2 lasers, predicting
+the adenine concentration of a centrally prepared solution, with whole laboratories held out. `dataset check` gives 0
+errors and 2 warnings. The probes had not finished when this was written and their numbers are not in it yet. Three
+things are for you: whether the transfer framing carries a model analyte nobody acts on, what to do with the bands
+two laboratories did not cover, and the record's name, which no longer describes the data.
+Validity: USE-1 is the open question (issue 1). SPLIT-1 holds: the split is the study's own question, whole
+laboratories held out, the tree's Place step[^a1]. LEAK-14 avoided: the solution id, which has the same concentration
+in every laboratory, is dropped, as is the blank/calibration/test label[^a14]. LEAK-19: four spectra filed twice are
+deduplicated.
+Value: not yet measured; the probes are running. The study's own result is that laboratories differ enough for the
+transfer to be a real question, which is why it was run.
+Quality: the spectrum ships as published and is declared, state `raw`; 179 rows have bands their laboratory did not
+cover (issue 2).
+Weighed: source + (paper, Zenodo with the full metadata), use case - (a method study; the transfer framing is what
+carries it), gap 0, shape + (3,512 spectra, 15 groups), risk - (a model analyte).
+For the curator: issue 1 (the use case, which decides whether it ships), issue 2 (the axis), issue 3 (the name).
+
+**Main points:** Issue 1 is the one that decides it: the screening called this a method study where "nobody acts on an
+adenine concentration", and the reframing answers that by making the transfer the task. Issue 2 is a modelling choice
+the rule leaves to you. Issue 3 is bookkeeping with a cost.
+
+**Record judgment:** the record is valid but its name is not. It was screened as the smallest of four substrate cuts
+(225 spectra) and says the other three are aliases of it; this definition is the one dataset over all four that the
+record itself proposes, built from the study's table rather than the benchmark's files, which carry only the
+concentration. Priority rises from 2 to 3: the shape factor turns plus (3,512 spectra over 15 laboratory groups).
+
+**Issues for Andrej:**
+
+1. **Does holding out laboratories make a method study into a task?**
+
+   * **Problem:**
+     - The screening's objection was that adenine in buffer is a model analyte and "nobody acts on an adenine concentration", which is a use-case objection, not a size one[^a1u].
+     - The reframing answers it by changing what is predicted about: not the concentration for its own sake, but whether a calibration reaches a bench it has never seen.
+     - That is the study's own stated aim, and the decision behind it is whether a laboratory trusts a transferred calibration or builds its own.
+   * **Effect on the task:** everything. If the framing does not carry it, the dataset is `No Good Target / Scientific Discovery` whatever its size; if it does, this is the largest Raman regression set in the collection with 15 real groups.
+   * **Experiments:** none decide a use case. What the data shows is that the study's design supports the question: 15 laboratories, 6 substrate-and-laser methods, 3 substrate batches, the same centrally prepared solutions measured in every laboratory.
+   * **Consistency:** heart_disease ships three hospitals as groups for the same reason, and `early_learning_predictors` holds out facilities; in both the transfer, not the quantity, is what the task tests.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Ship with the transfer framing (implemented) | whole laboratories held out, fit `approximate` with the gap named | the study's own question, with a decision behind it; 15 groups is a real split | the quantity itself is a model analyte, so the fit stays approximate at best |
+     | B | Don't ship, marker `No Good Target / Scientific Discovery` | the record returns to `2nd Tier` or `No` | the strictest reading of the screening's objection | discards the only interlaboratory design in the collection |
+
+   * **Recommendation:** A, which is the reframing you asked for; the fit is `approximate` and says why. **Decision:** A or B?
+
+   **Notes for the AI:** on B, `suggestion` `No`, the marker, a CC line, and the folder removed.
+
+   [^a1]: **SPLIT-1** and the split tree's Place step: the model is used at a laboratory the data does not contain, and the data holds 15 of them, so whole laboratories are held out (leaf L-PLACE.groups, beside heart_disease).
+   [^a14]: **LEAK-14**: a column that identifies the prepared solution carries its concentration across every laboratory.
+   [^a1u]: **USE-1**: a dataset no decision fits is not added; the decision here is whether to trust a transferred calibration.
+
+2. **Keep the whole axis with its gaps, or cut to the 355 bands every laboratory covered?**
+
+   * **Problem:**
+     - The laboratories' instruments cover different ranges, and the source leaves a band outside a laboratory's range empty.
+     - 179 of the 3,512 rows (5.1%) have a gap, almost all in two laboratories: P15 misses 16.8% of its bands and P07 3.7%.
+     - 355 of the 534 bands, from 517 to 1,579 cm-1, are complete for every row.
+   * **Effect on the task:** with the gaps, the processing encodings return those spectra as missing, so a method that preprocesses will drop or impute 5% of the rows, and the two laboratories are the ones it loses. Cutting to 355 bands makes every row whole and throws away a third of the axis for all 15 laboratories, including the 1,700 to 1,999 cm-1 region.
+   * **Experiments:** the counts above are from the source table; no model comparison was run.
+   * **Consistency:** the spectrum rule keeps what the source publishes and treats cutting a range as a modelling choice[^a26]; it drops a fill at an edge position and sets an inner fill missing, which is neither case here, because these bands were never measured.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | The whole axis, gaps kept (implemented) | 534 bands, 179 rows with a gap | what the source published; the two laboratories keep their full spectra where they have them | preprocessing encodings return 5% of rows as missing |
+     | B | Cut to the 355 complete bands | 517 to 1,579 cm-1, every row whole | every method can use every row | a third of the axis is dropped for all 15 laboratories because two could not reach it |
+     | C | Keep the axis and drop the 179 rows | 3,333 rows, every row whole | both the axis and whole rows | P15 loses most of its spectra, so a laboratory group all but disappears |
+
+   * **Recommendation:** A. The gaps are a property of the instruments the study set out to compare, and hiding them by cutting the axis or dropping the rows would remove the variation the task is about. **Decision:** A, B or C?
+
+   [^a26]: **CLEAN-26**: the spectrum ships as the source publishes it; cutting a range off is a modelling choice.
+
+   **Notes for the AI:** on B, trim in `_clean` to the complete bands and say so in the notes and the Spectrum description; on C, drop the rows with any missing band and re-run the group counts.
+
+3. **Rename the record, now that it is not the colloidal-gold cut?**
+
+   * **Problem:**
+     - The record is `raman_adenine_colloidal_gold`, screened as the 225-spectrum colloidal-gold file, the smallest of four.
+     - The definition is the one dataset over all four substrates and 15 laboratories, which the record itself proposes.
+     - The name now describes a quarter of the data and names a substrate that is one of four columns.
+   * **Effect on the task:** none on the data. The name is what a reader sees first, and it is wrong.
+   * **Experiments:** none.
+   * **Consistency:** records have been renamed when the task changed; the cost is the claim, the `v2_path`, the folder and any reference to the old name.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the name (implemented) | the notes say it is historical | nothing to re-point | the name misdescribes the dataset |
+     | B | Rename to `raman_adenine_interlaboratory` | record, folder, `v2_path`, claim and the sibling records' references | the name says what it is | touches the claims board and every reference |
+
+   * **Recommendation:** B, and best done before anything is built on the name. **Decision:** A or B?
+
+   **Notes for the AI:** on B, rename the record file and its `unique_name`, the folder and the class, re-run `sync-notebooks`, release and re-take the claim under the new name, and update the sibling records that name it.
