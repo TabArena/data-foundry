@@ -1,6 +1,20 @@
 # Changelog: TabArena v0.2 working copy
 
 ## 2026-11-23, every definition names its split-tree leaf; `RetrospectiveFillIn` and `Target: Fixed Delay` in use (no container built)
+## 2026-11-25 (night), phreshphish_phishing_pages: added (no container built)
+
+- New folder: PhreshPhish v1.0.1 (Dalton et al. 2025, Hugging Face, CC BY 4.0), the dated phishing task decided in
+  website_phishing's review (issue 10, B): 348,287 web pages of Aug-Oct 2024 and 1 Jun-7 Sep 2025 (21% phishing), 50
+  URL and HTML counts of ours plus the language and the canonical URL as text; fallback roc_auc (original: average
+  precision at 0.05-5% base rates). Three four-week windows, 16 Jun-7 Sep 2025, a one-day gap, training 63.3-85.5%.
+- Class-dependent recordings removed for both classes: the URL form (query, scheme, host case, default port,
+  characters stored for phishing only), one row per URL, Oct-Nov 2025 (HTML capture form) and a 10,000-character page
+  floor the release applied to benign pages only. Data end 2025-09-07, before the source's pruned test split. Fit
+  approximate; `Selection Bias` and `Class-dependent Recording` markers; a protocol line for same-day bursts.
+- Full review panel: ship after changes. Open for the curator: the horizon (H), roc_auc or partial ROC AUC at a false
+  positive rate up to 1% (issue 1), the `url` warning (2), a brand-against-host feature (3). Check 0 errors, 4 warnings
+  (proposed, not accepted).
+
 ## 2026-11-25 (late evening), better-data replacements: the curator's second and third marks (no container built)
 
 - american_companies_bankruptcy (Andrej): verdict ship, metric and split checked; the anonymised company id ships as a
