@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     Metric,
     Source,
     TaskSummary,
+    TimeBasis,
     decode,
 )
 
@@ -90,6 +91,18 @@ class AmexNonIid1m(AbstractCuratedDataset):
           event, the class that sorts second, so it is the metrics' positive class.
         - The row budget (1M train, 500k test rows): We keep the whole frame (5,531,451 statements of 458,913 customers) and use grouped 3-fold cross-validation over it (v2 split protocol). Each fold tests on at most 500k rows, whole customers drawn from its third and stratified on the target, and trains on every other row (about 5.03M). The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M rows with `subsample_train`, whose default draws whole customers at random, stratified on the target.
     """
+    time_basis = TimeBasis(
+        "UnseenGroup",
+        """
+        the use case scores
+        customers the data does not hold, so whole customers are held out, each with its statements. Every customer is
+        scored at its latest statement, and all 458,913 latest statements fall in March 2018; the label covers a fixed
+        18 months after it. Not tested: a later scoring month, which later scoring months in a release would allow.
+        """,
+        set_by="Andrej",
+        on="2026-11-18",
+        note="`ForcedGroupedFromTemporal` from 2026-11-16",
+    )
 
     # Task
     target = "target"

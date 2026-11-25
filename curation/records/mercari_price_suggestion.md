@@ -5,6 +5,7 @@ checked_by:
 - Lennart
 - Alex
 - Mustafa
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -12,6 +13,10 @@ suggestion: 'Yes'
 tags:
 - Larger IID Data
 - Free Text (Sentences)
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Varying Delay'
+- Database Snapshot
 collections:
 - TexTabBench
 - TabSTAR
@@ -19,6 +24,7 @@ collections:
 - STRABLE
 original_source: Kaggle
 year: '2017'
+collection_period: Unknown
 domain: business & marketing
 required_split:
 - Random (IID)
@@ -51,3 +57,52 @@ CC (2026-10-06, Lennart): Kept after the task-probe review: the `no_spread` flag
 **Assessment (AI, 2026-11-01):** the benchmark STRABLE (https://arxiv.org/abs/2605.12292) carries this record's data as "Mercari Price Prediction": Raw file mercari_train.tsv from TextTabBench. Subsampled by STRABLE to 75,000 rows. Tagged STRABLE on 2026-11-01.
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 2 coded columns carry their words.
+
+CC (2026-11-17, Andrej): the declared split (random, 1x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. A price target in a consumer marketplace is the plainest case against ASR.
+
+## Review
+
+**Outcome:** added. Stationarity reasoning of 2026-11-18: the forced tag stays (issue 1, A, Andrej).
+
+**Main points:** Nothing open: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation` (issue 1 resolved on 2026-11-18).
+
+**Issues for Andrej:**
+
+1. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: No listing has a date and train_id is a shuffle (every dated product flat across its tenths); product mentions only bound the extract to 2017 before September.
+     - Use: The app suggests a price for listings made after the extract (2017), years later in any use today.
+     - Mechanism: Second-hand prices are a market: product generations age (iPhone 7 vs 8 already visible), fads come and go (fidget spinners), and price levels move with inflation and supply; time directly changes the feature-to-price relation.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | california_house_prices_2020 / perth_house_prices | split by time in the collection because prices move | temporal splits shipped | a price target |
+     | sendy_logistics_challenge | stationary-relation test (v3) | not flat | a marketplace operational target |
+
+   * **For a stationary use case:**
+     - Used within the extract's months, item text and condition price similarly.
+   * **Against:**
+     - Prices and markets.
+     - Product cycles: named products in the text lose value as new generations ship.
+     - Target: Varying Delay (price known at the sale).
+     - An extract of a few months used years later.
+   * **Earlier views:**
+     - CC (2026-11-17, Andrej): blind walk reaches the shipped random split with ForcedIIDFromTemporal.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Prices and markets.; Product cycles: named products in the text lose value as new generations ship. |
+
+   * **Recommendation:** A, a price target in a consumer marketplace is the plainest case against ASR. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (A price target in a consumer marketplace is the plainest case against ASR.)

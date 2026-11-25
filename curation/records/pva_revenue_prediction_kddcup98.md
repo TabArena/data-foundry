@@ -13,11 +13,15 @@ suggestion: 'Yes'
 priority: 2
 tags:
 - Larger IID Data
+- 'Samples: One Moment'
+- 'Target: Later'
+- Database Snapshot
 collections:
 - TabArena Reject
 - TabSTAR
 original_source: Website
 year: '1998'
+collection_period: Apr 1997 - Jun 1997
 domain: business & marketing
 required_split:
 - Random (IID)
@@ -56,15 +60,23 @@ CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words w
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship the KDD Cup 98's own task, the gift amount scored by the mailing's net revenue at $0.68 a piece, since the source says response and gift size run against each other, and blank 46 gift receipts dated after the mailing. Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship the KDD Cup 98's own task, the gift amount scored by the mailing's net revenue at $0.68 a piece, since the source says response and gift size run against each other, and blank 46 gift receipts dated after the mailing. Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
 
 CC (2026-11-05, Lennart): GitHub issue #48 review: `DOMAIN_urbanicity` stays an unordered category with a note: the dictionary calls `DOMAIN` nominal and gives no density order of City and Suburban. The declared metric is checked.
 
-CC (2026-11-06, Andrej): time basis `DelayedTarget` accepted on the BeyondArena v0.2 review page (issue 4, B, through the cross-dataset item on `DelayedTarget` issues of one-moment releases): one renewal mailing in June 1997, the target the response to it, recorded for every donor by 1998. The random split is IID here, as every row shares the moment and the outcome window, so no test row is later than a training row. The `Time basis:` line is in the definition's notes; the tag enters `data_tags` once PR #50 is in the working copy.
+CC (2026-11-06, Andrej): time basis `DelayedTarget` accepted (Review issue 4, B, through the cross-dataset item on `DelayedTarget` issues of one-moment releases): one renewal mailing in June 1997, the target the response to it, recorded for every donor by 1998. The random split is IID here, as every row shares the moment and the outcome window, so no test row is later than a training row. The `Time basis:` line is in the definition's notes.
 
-CC (2026-11-11, Andrej): BeyondArena v0.2 review page. Issue 1 (B): the target is the gift amount `TARGET_D` in dollars (0 for non-donors), scored by the cup's net revenue (`net_revenue_at_cost`, cost $0.68, per test donor, a new custom metric in the shared library); `TARGET_B` dropped as a copy of gift > 0; `problem_type` Regression. Issue 2 (B): gift receipts dated June 1997 or later (`RDATE_k`, `RAMNT_k`) blanked, 61 cells of 60 donors. Issue 5 (B): `Target: Later` added to the tags (the gift arrives after the June 1997 mailing).
+CC (2026-11-11, Andrej): Review issue 1 (B): the target is the gift amount `TARGET_D` in dollars (0 for non-donors), scored by the cup's net revenue (`net_revenue_at_cost`, cost $0.68, per test donor, a new custom metric in the shared library); `TARGET_B` dropped as a copy of gift > 0; `problem_type` Regression. Issue 2 (B): gift receipts dated June 1997 or later (`RDATE_k`, `RAMNT_k`) blanked, 61 cells of 60 donors. Issue 5 (B): `Target: Later` added to the tags (the gift arrives after the June 1997 mailing).
 
-CC (2026-11-12, Andrej): split checked, the random split kept as a `DelayedTarget` of the June 1997 mailing (BeyondArena v0.2 review page, issue 6, A, after the answer on samples per promotion date and target shifts): every row is about one promotion date (191,758 of the cup's 191,779 donors mailed in June 1997); the 23 earlier promotions are history columns whose responses (0.02% to 36%) the cup's lapsed-donor selection shapes, and a split on the donor dates (recruitment, last gift) tests new kinds of donors, not a later mailing. The numbers are in the definition's `Time basis:` line, which ends with what the split cannot test (the next mailing); the tag enters `data_tags` once PR #50 is in the working copy.
+CC (2026-11-12, Andrej): split checked, the random split kept as a `DelayedTarget` of the June 1997 mailing (Review issue 6, A, after the answer on samples per promotion date and target shifts): every row is about one promotion date (191,758 of the cup's 191,779 donors mailed in June 1997); the 23 earlier promotions are history columns whose responses (0.02% to 36%) the cup's lapsed-donor selection shapes, and a split on the donor dates (recruitment, last gift) tests new kinds of donors, not a later mailing. The numbers are in the definition's `Time basis:` line, which ends with what the split cannot test (the next mailing).
+
+CC (2026-11-16, Andrej): time basis `ForcedIIDFromTemporal` instead of `DelayedTarget`, which was dropped before it shipped:
+- A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
+- The random split stays.
+
+CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 7, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. The charity's own mailings vary in response by orders of magnitude and the donor-cohort split halves net revenue; the next mailing cannot be taken as interchangeable.
 
 ## Review
 
@@ -86,7 +98,7 @@ cup's own cost and metric +, a changed target and a few late gift dates -.
 **Main points:** Nothing open. Settled 2026-11-12: the random split kept, every row being about one promotion date
 (June 1997), with the answer's numbers in the `Time basis:` line (issue 6, A). Settled 2026-11-11: the cup's gift
 amount with its net-revenue metric (issue 1), late gift receipts blanked (issue 2), `Target: Later` (issue 5); the
-random split is a `DelayedTarget` of the June 1997 mailing (issue 4).
+random split was named a `DelayedTarget` of the June 1997 mailing (issue 4), retired on 2026-11-16 for `ForcedIIDFromTemporal`. Issue 7 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
 
 **Record judgment:** valid as a response task, and the record's fields match the definition (the record's `Website`
 counts as `Other`). The cup's documentation (https://kdd.ics.uci.edu/databases/kddcup98/epsilon_mirror/cup98doc.txt)
@@ -139,7 +151,7 @@ other undated snapshots of the benchmark, the split is not tagged as forced from
    (MET-12, MET-13), `Metric.source(...)` citing cup98doc.txt; ship the amount in dollars, as the decision compares
    it with $0.68 (the scale question of the insurance family, australian_vehicle_insurance_2004_2005 issue 5, applies);
    record `problem_type: Regression`, a CC line, the sentence of selection.md that names this dataset, CHANGELOG,
-   rebuild on Andrej's ask. The metric review page lists this dataset; settle the metric there in the same call.
+   rebuild on Andrej's ask. A separate metric review lists this dataset; settle the metric there in the same call.
 
    [^1a]: **MET-7** (Should): when the source fixes a cost matrix, a single treatment threshold or a k from its
      decision, declare that metric; score the mean cost per row. **MET-4** (Should): a competition's leaderboard
@@ -247,7 +259,7 @@ other undated snapshots of the benchmark, the split is not tagged as forced from
 
    * **Recommendation:** B. **Decision:** A, B or C?
 
-   **Notes for the AI:** once PR #50 is in, on B: `data_tags = ("DelayedTarget",)` (no tag is listed now) and the
+   **Notes for the AI:** on B: `data_tags = ("DelayedTarget",)` (no tag is listed now) and the
    curation bullet "- Time basis: DelayedTarget: one renewal mailing (97NK, June 1997) to lapsed donors; every field
    is the donor before June 1997, apart from the gift receipts of earlier promotions dated after it (blanked, issue
    2); the target is the response to that mailing, recorded for every donor by the cup's release in 1998. The date
@@ -265,7 +277,7 @@ other undated snapshots of the benchmark, the split is not tagged as forced from
    one-moment releases with one mark?" The `Time basis: DelayedTarget:` bullet is in `curation_comments`; it says why
    the random split is IID here (every row shares the moment and the outcome window, so no test row is later than a
    training row) and ends with what the split cannot test (the next mailing). The split and `data_tags` are unchanged;
-   the tag `DelayedTarget` enters `data_tags` once PR #50 is in the working copy. As issue 2 is open, the line names the
+   the tag `DelayedTarget` is in `data_tags`. As issue 2 is open, the line names the
    late gift receipt dates in the cup's own words instead of calling them blanked.
 
 5. **Correct the record's collection facts: add `Target: Later`?**
@@ -292,8 +304,7 @@ other undated snapshots of the benchmark, the split is not tagged as forced from
      shared date or after a fixed window), `Target: Varying Delay` or `Target: Revised Later`; no target tag when the
      target exists with the features.
 
-   **Resolved (2026-11-11, Andrej):** B: `Target: Later` added to the record's tags (also in PR #50's copy of the
-   record), a CC line, `Andrej` in `checked_by`.
+   **Resolved (2026-11-11, Andrej):** B: `Target: Later` added to the record's tags, a CC line, `Andrej` in `checked_by`.
 
 6. **Split: make it temporal, by one of the date columns?**
 
@@ -416,9 +427,50 @@ other undated snapshots of the benchmark, the split is not tagged as forced from
    | Target response by last gift, early 1995 / 1997 | 3.6% / 9.9% |
    | Net revenue per test donor, recruits from 1995: date split / random folds / mail everyone | $0.046 / $0.083 / $0.041 |
 
-   * The tag `DelayedTarget` enters `data_tags` once PR #50 is in the working copy. Record CC line.
+   * Record CC line.
    * Rows, columns and split unchanged, so no `dataset check`; the README is not regenerated (it shows the earlier
      wording of the line until the next check or build). Not rebuilt.
+
+7. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: One renewal mailing (97NK, June 1997) per row; the 23 earlier promotions (June 1994-June 1996) are history columns of a selected (lapsed) population, not training mailings (Andrej, 2026-11-12), and the cup released no other mailing.
+     - Use: PVA decides whom to mail in the next renewal mailing, a later campaign than the one collected.
+     - Mechanism: Giving history (recency, frequency, amount) and demographics drive response and gift size; mail types, appeals, the donor pool and the economy change by mailing.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | pva_revenue_prediction_kddcup98 itself (donor dates) | train on recruits before 1995, test later recruits: $0.046 per donor vs $0.083 random vs $0.041 mail-all; response 6.1% (1986 recruits) to 3.3% (1996), gift $12.95 to $19.80 | not flat (across donor cohorts, not mailings) | same mailing, later kinds of donors |
+     | pva earlier promotions (history columns) | responses per earlier promotion 0.02% to 36%, mail types changing | not flat (selected population) | same charity's mailings over 1994-1996 |
+     | Gama et al. 2014, 'A survey on concept drift adaptation', ACM Computing Surveys 46(4) | review of drift in deployed predictors; customer profiling, marketing and telecom are named application areas with changing populations and behaviour | not flat (domain-level) | same use: scoring customers of a later period |
+
+   * **For a stationary use case:**
+     - RFM (recency-frequency-monetary) is a long-standing, stable family of predictors of giving.
+     - Learning and validation files agree (5.08% vs 5.06% gave), but they are one mailing.
+   * **Against:**
+     - Response varies widely between PVA's own mailings (0.02%-36%) with changing mail types (changed treatments).
+     - Donor cohorts shift: later recruits respond less and give more; a cohort split nearly halves net revenue ($0.046 vs $0.083).
+     - Charitable giving tracks the economy and appeal design.
+     - Use today is ~29 years after 1997.
+   * **Earlier views:**
+     - CC (2026-11-06, Andrej): DelayedTarget accepted (issue 4, B).
+     - CC (2026-11-12, Andrej): random split kept for the June 1997 mailing (issue 6, A).
+     - CC (2026-11-16, Andrej): ForcedIIDFromTemporal in place of DelayedTarget.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Response varies widely between PVA's own mailings (0.02%-36%) with changing mail types (changed treatments).; Donor cohorts shift: later recruits respond less and give more; a cohort split nearly halves net revenue ($0.046 vs $0.083). |
+
+   * **Recommendation:** A, the charity's own mailings vary in response by orders of magnitude and the donor-cohort split halves net revenue; the next mailing cannot be taken as interchangeable. Confidence: high. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (The charity's own mailings vary in response by orders of magnitude and the donor-cohort split halves net revenue; the next mailing cannot be taken as interchangeable.)
 
 ## Reference
 

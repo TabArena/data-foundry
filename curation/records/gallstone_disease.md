@@ -3,6 +3,7 @@ unique_name: gallstone_disease
 name: Gallstone
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -11,10 +12,14 @@ decision_markers:
 - Selection Bias
 tags:
 - Tiny Data
+- 'Samples: Over Time'
+- 'Time: Lost'
+- Clinical Study
 collections:
 - New (BeyondArena)
 original_source: UCI
 year: '2025'
+collection_period: Jun 2022 - Jun 2023
 domain: medical & healthcare
 required_split:
 - Random (IID)
@@ -48,6 +53,86 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 3 coded columns carry their words; the target keeps its codes.
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (0 means gallstones present (UCI)).
+
+CC (2026-11-13, Andrej): the time basis is `ForcedIIDFromTemporal` instead of `StationaryRelation`:
+- `StationaryRelation` asks for a measurement on dated data, and the file keeps no visit date (`Time: Lost`), so the stationary relation was argued, not measured.
+- The random split stays; the forced tag says what it is: random patients standing in for later ones, with the drift along the file's order and what a dated release would test in the `Time basis:` line.
+
+CC (2026-11-17, Andrej): the declared split (random, 20x3 folds, `ForcedIIDFromTemporal`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. The mechanism and one-year span would support ASR, but the measured drift along the file order is an explicit fact against; mixed, so forced.
+
+## Review
+
+**Outcome:** added. A question on `CrossSectional` (2026-11-13) was withdrawn when the prototype was dropped.
+
+**Main points:** Nothing open: issue 1 was withdrawn on 2026-11-13; `ForcedIIDFromTemporal` stays (issue 2, A, 2026-11-18).
+
+**Issues for Andrej:**
+
+1. **`CrossSectional` instead of `ForcedIIDFromTemporal`?**
+
+   * **Problem:**
+     - The definition is tagged `ForcedIIDFromTemporal`, a forward use case whose time was lost[^fo-1].
+     - The target is a present state measured with the features: the diagnosis at the visit, read from the same visit's laboratory values and body composition, and the use case reads it for new units at their own present[^cs-1].
+     - The tag alone changes: the split stays random.
+   * **Background:** you made the tag `ForcedIIDFromTemporal` on 2026-11-13, before `CrossSectional` existed, because `StationaryRelation` cannot be measured without dates. The use case is screening at the visit where the diagnosis is made, a present state, which `CrossSectional` now names without claiming a measurement.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Stay `ForcedIIDFromTemporal` (implemented) | the tag and its line stay | the decision stands | the tag claims a forecast the use case does not make |
+     | B | `CrossSectional` | the tag and a `Time basis:` line naming the present state, the untested drift for later units and what a dated release would show | names the use case; no claim of a lost forward split | a new prototype on a decided tag |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   **Notes for the AI:** on B, swap the tag, write the line, add a CC line; the split does not change.
+
+   [^cs-1]: **SPLIT-32** (Should, 2026-11-13): a target measured together with the features, which the use case reads for new units at their own present, is `CrossSectional`, whether the dates survive or not; its line says whether the drift of the relation was measured or is untested. A label that only arrives later is no present state.
+   [^fo-1]: **SPLIT-8** (Must): a forward use case without usable time ships in the closest regime, tagged forced from temporal, with a `Time basis:` line naming the reason.
+
+   **Resolved (2026-11-13, Andrej):** withdrawn: `CrossSectional` was dropped the same day (it named no split the existing prototypes do not give: a present state used later is forced or a measured `StationaryRelation`, used within the covered time `Retrospective`). The tag stays.
+
+2. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: Lost: no visit date (outpatients June 2022 to June 2023, Esen et al. 2024); the file order (rank within sorted blocks) is not shown to be time.
+     - Use: An internal-medicine clinic screens outpatients for imaging referral, right after or a few years after 2022-23.
+     - Mechanism: Bioimpedance body composition and routine labs (lipids, liver enzymes, CRP, vitamin D) vs ultrasound-confirmed gallstones: largely physiology and physical measurement, little practice dependence.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | gallstone_disease's own file order | contiguous half vs random halves | not flat along the order: 0.06-0.07 ROC AUC lower, AST/ALT of controls step up mid-file | same data |
+     | infrared_thermography_temperature | v3 test over 12 months 2016-18 | flat | only physical-measurement case: shows what a fixed-instrument mechanism looks like (contrast) |
+     | Davis SE et al., 'Calibration drift in regression and machine learning models for acute kidney injury', JAMIA 2017;24(6):1052-1061 (literature, cited from memory: check) | VA hospital models over 9 years | discrimination stable, calibration drifted | routine-lab clinical risk model used years after fitting |
+
+   * **For a stationary use case:**
+     - one year of collection, use within or right after it is plausible.
+     - body composition and labs are physical/physiological measurements.
+     - curator argued StationaryRelation on 2026-11-11.
+   * **Against:**
+     - structure in the file order: half-vs-half costs 0.06-0.07 ROC AUC.
+     - controls and cases possibly recruited in different months (vitamin D seasonal); selection unstated.
+     - lab assays/analysers vary by site and over time.
+   * **Earlier views:**
+     - CC 2026-11-13 (Andrej): ForcedIIDFromTemporal instead of the curator's StationaryRelation (2026-11-11), which was argued, not measured.
+     - Resolved 2026-11-13 (Andrej): CrossSectional withdrawn, tag stays.
+     - CC 2026-11-17 (Andrej): forced random split checked by blind walk.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | structure in the file order: half-vs-half costs 0.06-0.07 ROC AUC; controls and cases possibly recruited in different months (vitamin D seasonal); selection unstated |
+
+   * **Recommendation:** A, the mechanism and one-year span would support ASR, but the measured drift along the file order is an explicit fact against; mixed, so forced. Confidence: medium. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (The mechanism and one-year span would support ASR, but the measured drift along the file order is an explicit fact against; mixed, so forced.)
 
 ## Reference
 

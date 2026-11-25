@@ -10,10 +10,18 @@ suggestion: No (Retired)
 decision_markers:
 - Needs extensive data wrangling
 - Too Small
+tags:
+- Non-IID (Grouped)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- 'Entities: Recur'
+- Dated Event Log
 collections:
 - New (BeyondArena)
 original_source: Website
 year: '2015'
+collection_period: 2013-2014
 domain: education
 required_split:
 - Grouped (NON-IID)
