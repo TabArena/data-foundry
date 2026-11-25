@@ -338,7 +338,8 @@ hospital, region, site, laboratory or network column; the enough-groups check)_
     closest split; the step to another place stays untested, as the time basis says. No v0.2 definition reaches it
     yet.
   - no → **Random · `ForcedIIDFromGrouped` (one place, the transfer untested)** [L-PLACE.random]. Random; the transfer
-    to another place stays untested, as the group basis says. No v0.2 definition reaches it yet.
+    to another place stays untested, as the group basis says. Examples: deafness_gene_carrier_hearing_loss,
+    pheochromocytoma_paraganglioma_metastasis, wild_type_attr_cardiac_amyloidosis.
 
 ## Fill-in step
 
