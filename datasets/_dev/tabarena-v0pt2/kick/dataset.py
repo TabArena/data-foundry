@@ -29,22 +29,22 @@ class Kick(AbstractCuratedDataset):
         row="One car bought at a US auction in 2009-2010.",
         predicted="Whether the purchase turned out to be a bad buy.",
         known=(
-            "The car (age, make, model, trim, mileage, colour), its auction and retail price guides, the "
-            "purchase price, the auction, the buyer and the warranty cost."
+            "The car (age, make, model, trim, mileage, colour), its auction and retail price guides at the time of "
+            "purchase, the purchase price, the auction, the buyer and the warranty cost."
         ),
         split=(
-            "The test data is the most recent purchases, in nine windows of purchase dates, with every earlier "
-            "purchase for training."
+            "The test data is the most recent purchases, in nine windows of five weeks, each trained on the purchases "
+            "made more than two weeks before it starts, as a kick is known within about two weeks of the purchase."
         ),
         changes=(
-            "We split by purchase date instead of the competition's random split, in which both sides cover the same "
-            "two years."
+            "We split by purchase date, with a two-week gap, instead of the competition's random split, in which both "
+            "sides cover the same two years."
         ),
         fit="direct",
         fit_reason=(
             "The cars, the features known at the auction and the split by purchase date mirror the dealer's decision. "
-            "Four fields that were filled in after the outcome (WheelType, WheelTypeID, PRIMEUNIT, AUCGUART) are "
-            "dropped."
+            "Four fields that were filled in after the outcome (WheelType, WheelTypeID, PRIMEUNIT, AUCGUART) and the "
+            "four price guides looked up when the data was pulled are dropped."
         ),
     )
 
@@ -83,6 +83,12 @@ class Kick(AbstractCuratedDataset):
         - We assign the categorical features "BYRNO" and "VNZIP1" to category dtype, as they are given as numbers.
         - Leak, dropped (LEAK-10; Lennart, 2026-10-22, consistent with expresso_churn_prediction's REGION): "WheelType" and "WheelTypeID" were most likely filled in after the outcome. WheelType is missing for 24.9% of bad buys and 1.5% of good ones, in every band of vehicle age, odometer and price; a model of the missingness from the auction covariates, fit on good buys, predicts 1.2% missing for the bad buys; within auction and purchase date the missing flag alone still separates bad buys (ROC AUC 0.572), while the missing flags of the other columns stay at 0.49-0.54. Its whole value is the flag: LightGBM on the 9 temporal windows (300 trees, mean ROC AUC) 0.750 with the columns, 0.677 without.
         - Leak, dropped (LEAK-10; same decision): "PRIMEUNIT" and "AUCGUART" (filled on the same rows, about 95% missing). From October 2010 they are filled for 32.7% of good buys and 7.8% of bad ones; a model of the fill from the auction covariates, fit on good buys, predicts 42.3% filled for the bad buys; within auction and purchase date the flag gives ROC AUC 0.632. These months fall in the last test windows.
+        - Leak, dropped (LEAK-10; Andrej, 2026-11-10): the four MMR prices "as of current day"
+          (`MMRCurrentAuctionAveragePrice`, `MMRCurrentAuctionCleanPrice`, `MMRCurrentRetailAveragePrice`,
+          `MMRCurrentRetailCleanPrice`), which the data dictionary dates to the day the data was pulled, after every
+          purchase and its outcome. The current auction price equals the purchase-time price for 23.0% of the bad buys
+          against 10.4% of the good ones, so its refresh follows the outcome; LightGBM on the 9 windows scores ROC AUC
+          0.660 with and without them. The four purchase-time prices stay.
         - The host's test file carries all four fields the same way (WheelType missing for 4.5% of the Kaggle test rows against 4.3% of train; PRIMEUNIT filled for 46.0% in December 2010), so the competition's task had them. We drop them anyway because that test file is a holdout from the same snapshot, taken after the outcomes; at a real auction no car has been kicked back yet. If the recording process is ever documented as known at the auction, they can come back.
         - Partial order, left unordered (2026-11-01, CLEAN-14): `Size` runs in chains within body types (COMPACT <
           MEDIUM < LARGE cars, SMALL < MEDIUM < LARGE SUV, SMALL < LARGE TRUCK); CROSSOVER, SPECIALTY, SPORTS and VAN
@@ -101,21 +107,43 @@ class Kick(AbstractCuratedDataset):
         definition="Normalized Gini = 2 x ROC AUC - 1 for a binary target; ranks models identically to ROC AUC.",
     )
 
-    # Splits: 9 equal windows of purchase dates (the 3x3 an IID dataset of this size would get), keeping at
-    # least half of all dates for training.
+    # Splits
+    splits_comment = """
+        Nine test windows of 35 days (five weeks) of purchase dates, walking back from the newest purchase (the 3x3 an
+        IID dataset of this size would get), each trained on every purchase made more than 14 days before the window
+        starts (Andrej, 2026-11-10). The gap is the time until a kick is known: a kick is a car returned to the
+        auction (the data dictionary's `KickDate`, not released), through the auction's arbitration, which runs 10
+        calendar days after the sale (Manheim's buyer arbitration guide), plus a margin for the return to be recorded.
+        The newest purchases show no shortfall of kicks (last 2 weeks 18.7% bad buys, last 4 weeks 15.8%, overall
+        12.3%), so the release holds the outcomes. Every training side holds at least half of the cars (52.6% for
+        the oldest window, starting 2010-02-19); the test windows hold 3,028 to 4,515 cars (33,054 in all). The earlier
+        windows of 28 purchase dates without a gap trained the oldest window on 48.7% of the cars.
+    """
     temporal = Temporal(
         on="PurchDate",
-        splits=TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5),
-        horizon=28,
-        horizon_unit="days",
+        splits=TemporalSplits(window=35, unit="days", n_windows=9, gap=14, min_train_fraction=0.5),
     )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         return pd.read_csv(raw_dir / "training.csv")
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
-        # WheelType, WheelTypeID, PRIMEUNIT and AUCGUART were filled in after the outcome (LEAK-10, notes)
-        df = drop_columns(raw, ["RefId", "WheelType", "WheelTypeID", "PRIMEUNIT", "AUCGUART"])
+        # WheelType, WheelTypeID, PRIMEUNIT and AUCGUART were filled in after the outcome, and the four MMR prices
+        # "as of current day" were looked up when the data was pulled (LEAK-10, notes)
+        df = drop_columns(
+            raw,
+            [
+                "RefId",
+                "WheelType",
+                "WheelTypeID",
+                "PRIMEUNIT",
+                "AUCGUART",
+                "MMRCurrentAuctionAveragePrice",
+                "MMRCurrentAuctionCleanPrice",
+                "MMRCurrentRetailAveragePrice",
+                "MMRCurrentRetailCleanPrice",
+            ],
+        )
         # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
         df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df

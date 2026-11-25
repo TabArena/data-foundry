@@ -12,11 +12,15 @@ priority: 2
 tags:
 - Non-IID (Grouped)
 - Multi-target
+- 'Samples: No Time Dimension'
+- 'Entities: Recur'
+- Experimental Results
 collections:
 - TabArena Reject
 - TabSTAR
 original_source: ASlib
 year: '2011'
+collection_period: '2011'
 domain: technology & internet
 required_split:
 - Grouped (NON-IID)
@@ -57,21 +61,32 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `sat03_16_indu_algo_runtime` (TBD -> Yes, priority 4), `sat18_exp_algo_runtime` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: real SAT-competition runs scored by the source's PAR10 of the predicted-fastest solver; only the spread under PAR10 is unmeasured. Priority 2: gap 0, use case 1, source 1, shape 0, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: real SAT-competition runs scored by the source's PAR10 of the predicted-fastest solver; only the spread under PAR10 is unmeasured. Priority 2: gap 0, use case 1, source 1, shape 0, risk -1.
 
-CC (2026-11-06, Andrej): ship (review page issue 1); a timed-out run stays at the recorded 5,000 s in the log target (issue 3), since it is the value ASlib records and how to treat a censored run is part of what a model has to work out; counting it at the 50,000 s PAR10 charge made every model pick 17-19% better but would replace the recorded value. Metric (PAR10) and split checked and kept.
+CC (2026-11-06, Andrej): ship (Review issue 1); a timed-out run stays at the recorded 5,000 s in the log target (issue 3), since it is the value ASlib records and how to treat a censored run is part of what a model has to work out; counting it at the 50,000 s PAR10 charge made every model pick 17-19% better but would replace the recorded value. Metric (PAR10) and split checked and kept.
 
-CC (2026-11-11, Andrej): PAR10 alone picks the solver (review page issue 4, B): the grouping declares `prediction_unit="row"` and no aggregation instead of `select_min`, so a tie at an instance's lowest prediction counts as the mean of the tied solvers' costs, as PAR10 defines it, not as the solver first in the file; the same form as asp_potassco_classification. Trained models never tie on the 60 splits and score the same (LightGBM 8,970 s, random forest 8,323 s, linear 11,350 s); a constant prediction moves from 19,140 s to 18,539 s. `dataset check` 0 errors.
+CC (2026-11-11, Andrej): PAR10 alone picks the solver (Review issue 4, B): the grouping declares `prediction_unit="row"` and no aggregation instead of `select_min`, so a tie at an instance's lowest prediction counts as the mean of the tied solvers' costs, as PAR10 defines it, not as the solver first in the file; the same form as asp_potassco_classification. Trained models never tie on the 60 splits and score the same (LightGBM 8,970 s, random forest 8,323 s, linear 11,350 s); a constant prediction moves from 19,140 s to 18,539 s. `dataset check` 0 errors.
 
 CC (2026-11-12, Lennart): the split count in scored units (the review's issue 2, rule SPLIT-33) moves out of this
 PR into its own, to be decided with the other grouped datasets and reopened there; it is removed from this record
 for now. Until then the protocol counts the 1,840 rows: 10 x 3 splits.
 
+CC (2026-11-17, Andrej): the declared split (grouped on `instance_id`, 10x3 folds, `Timeless`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
+
+CC (2026-11-18, Andrej): "Do both by family" (blind split walk, cross-dataset item on the two algorithm-selection sets, b): the split holds out whole problem families instead of instances: `problem_family`, the generator an instance comes from, read off its path before the id is hashed, with the folders that split one generator by satisfiability or a parameter merged (48 folders, 32 families, 11 of one instance, the largest 21); grouped 3-fold CV, 20 x 3; `instance_id` becomes a scoring column for PAR10, never a feature; `UnseenGroup` instead of `Timeless`. Why: the instances new in 2011 (88) all came from generators no earlier competition used, while the instance folds put 91% of the test instances' families in training. Supersedes the split of the CC of 2026-10-06 and the check of 2026-11-17. Not built yet.
+
+CC (2026-11-23, Andrej): Review issue 2, B: 20 x 3 splits, counted in the instances PAR10 scores. The split count in scored units (SPLIT-33) is on main (#95), and the protocol reaches it from the data: one runtime per run, so the families do not count; PAR10 scores per instance; each instance's 10 runs sit inside one family. The 184 instances leave about 123 on the train side, below 500, so 20 x 3 (the 1,840 runs would give 10 x 3; the 32 families also 20 x 3). Supersedes the row count of the CC of 2026-11-12. Not built yet.
+
+**Assessment (AI, 2026-11-18):** the family split (32 families, 10-11 per test fold) raises `groups_test_groups_few`; `dataset check` has 0 errors otherwise (the three constant columns as before). The group probe (`group_probes.py`, 3 x 3 family folds, R^2 on the log runtime) finds signal across families with three model families: random forest 0.345, LightGBM 0.291, kNN 0.242 against a baseline of 0 (ridge -5.58, it extrapolates). It also shows what the instance split rewarded: LightGBM per fold scores 0.875 +- 0.031 on IID folds and 0.041 +- 0.269 on family folds. Accepting the warning with this evidence is the curator's call; the definition does not accept it yet.
+
+CC (2026-11-23, Andrej): `groups_test_groups_few` accepted, in `accepted_check_warnings` with the group-probe evidence above: the use case is a problem family not seen in training, so 10-11 families per test fold follow from the 32 families, and three model families find signal across them (random forest 0.345, LightGBM 0.291, kNN 0.242 against 0). Not built yet.
+
 ## Review
 
 **Outcome:** added. ASlib's SAT11-HAND scenario (Xu, Hutter, Hoos and Leyton-Brown 2012; Bischl et al. 2016): the
 runtimes of 10 SAT solvers on 184 handcrafted instances of the 2011 SAT competition, one row per run (1,840 rows),
-from instance features and features of the solver's code; whole instances are held out, and the score is ASlib's
+from instance features and features of the solver's code; whole instances are held out (whole problem families since
+2026-11-18), and the score is ASlib's
 PAR10 of the solver predicted fastest per instance. The AI recommends shipping it as defined. Reviewed without a panel,
 from the gathered evidence: the record, the curator's decisions of 2026-10-01 and 2026-10-06, and a model run
 on the shipped data. Validity: real competition runs, features known before any solver runs, the solver's name
@@ -86,12 +101,14 @@ file too) can go without a decision. Weighed: a documented algorithm-selection b
 (+), few instances per fold and an untested spread under PAR10 (-).
 
 **Main points:** Ship: timeouts at the recorded 5,000 s, PAR10 (issues 1, 3 and 4 resolved); PAR10 alone picks the
-solver, a tie counted as PAR10 defines it (issue 4). The split count (2) is open again, settled with rule
-SPLIT-33.
+solver, a tie counted as PAR10 defines it (issue 4). The split count (2): 20 x 3, counted in instances under
+SPLIT-33 (Andrej, 2026-11-23). Since 2026-11-18 whole problem families are held out (32 families, 20 x 3, `UnseenGroup`; not built);
+the few-groups warning (10-11 families per test fold) is accepted with the group-probe evidence (Andrej, 2026-11-23).
 
 **Record judgment:** valid. The task is the one the curator chose (one model for all solvers, from instance and
-solver features, as in Pulatov et al. 2022), and the split by instance rather than by instance family is his decision
-of 2026-10-06: a selector in use has other members of a new instance's family in its data. The censoring of runtimes at
+solver features, as in Pulatov et al. 2022), and the split by instance rather than by instance family was his decision
+of 2026-10-06 (a selector in use has other members of a new instance's family in its data), replaced on 2026-11-18
+by whole problem families held out. The censoring of runtimes at
 5,000 s is handled for PAR10 (timeouts kept at the limit, all-timeout instances dropped). The data-scouting run of
 2026-10-31 found better data for the same task, `sat03_16_indu_algo_runtime` (priority 4) and `sat18_exp_algo_runtime`
 (priority 3), screened in their own records and not added yet; whether SAT11-HAND stays next to them is for when they
@@ -173,6 +190,11 @@ are added. The `Multi-target` tag stays (one runtime per solver, stacked as rows
      | B | 20 x 3 under SPLIT-33 | the protocol counts the instances PAR10 scores | steadier score; same count as asp | twice the compute (1,840 rows, small) |
 
    * **Recommendation:** B, with the rule; Andrej chose it on 2026-11-06. **Decision:** A or B?
+
+   **Resolved (2026-11-23, Andrej):** B, 20 x 3, counted in instances. SPLIT-33 is on main (#95) and decides it from
+   the data: the runtime is per run, so the families do not count; PAR10 scores per instance, and each instance's runs
+   sit inside one of the 32 families, so the instances count. 184 instances leave about 123 on the train side, below
+   500. Not built yet.
 
 3. **Count a timed-out run as the recorded 5,000 s, or as the 50,000 s PAR10 charges for it?**
 

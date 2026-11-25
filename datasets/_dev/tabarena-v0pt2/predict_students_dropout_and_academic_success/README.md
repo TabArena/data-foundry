@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: predict_students_dropout_and_academic_success
 container_format: 2
-checksum: v2:039eae3aba61758fc2f7f9345e6650666d6fba8be509a6f782d0a810b6438075
+checksum: v2:d4ea60a639feb65efbeb1758e50039c58cc34eb2b0da68937046128f8e5f1471
 build:
   uuid: 01a111fc-b7bd-7c0b-a919-1a848957caf4
   checksum: v2:29ca775f9fd8e27edc7509838682f54ddfd2065cad22627f86c60139287afe39
@@ -20,11 +20,11 @@ build:
 build_stale: true
 data:
   n_rows: 4424
-  n_features: 36
+  n_features: 35
   dtypes:
-    category: 18
+    category: 16
     float64: 7
-    int64: 12
+    int64: 13
   n_test_dataset_rows: null
 task:
   target: AcademicOutcome
@@ -32,33 +32,37 @@ task:
   metric: log_loss
   metric_origin: fallback
   scoring_columns: null
-  split_regime: iid
+  split_regime: temporal_non_iid
   stratify_on: AcademicOutcome
-  time_on: null
+  time_on: enrolment_year
   group_on: null
   group_labels: null
   group_time_on: null
   grouping: null
 splits:
-  n_repeats: 3
-  n_folds: 3
+  n_repeats: 4
+  n_folds: 1
   random_state: 4267
-  time_horizon: null
-  time_horizon_unit: null
-  time_gap: null
-  time_gap_unit: null
+  time_horizon: 1
+  time_horizon_unit: years
+  time_gap: 1
+  time_gap_unit: years
   n_train:
-    min: 2949
-    max: 2950
+    min: 2379
+    max: 3560
   n_test:
-    min: 1474
-    max: 1475
+    min: 368
+    max: 445
 bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos: []
-  accepted: {}
+  infos:
+  - meta_time_horizon_unit
+  accepted:
+    splits_below_target: 'Four of the nine windows an IID split of this size would
+      get: one window is one cohort, and with the gap the label needs, the 2013 cohort
+      would train on 43.9% of the students (Andrej, 2026-11-19).'
 decisions: []
 ---
 
@@ -66,9 +70,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `AcademicOutcome`, scored with `log_loss` on IID splits. 4,424 rows and 36 features. Source: UCI (2021).
+Multiclass classification of `AcademicOutcome`, scored with `log_loss` on temporal splits by `enrolment_year`. 4,424 rows and 35 features. Source: UCI (2021).
 
-Built as `01a111fc-b7bd-7c0b-a919-1a848957caf4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:039eae3aba61758fc2f7f9345e6650666d6fba8be509a6f782d0a810b6438075`, so the build is stale. See [Build](#build).
+Built as `01a111fc-b7bd-7c0b-a919-1a848957caf4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d4ea60a639feb65efbeb1758e50039c58cc34eb2b0da68937046128f8e5f1471`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -76,15 +80,17 @@ Built as `01a111fc-b7bd-7c0b-a919-1a848957caf4` on 2026-10-06, but `dataset.py` 
 
 **Use case.** A higher-education institution identifies students at risk of dropping out or failing, early in their studies, to offer them support (the source's aim); as the data holds first-year results, the prediction point is the end of the first year.
 
-**One row.** One student of 17 undergraduate degrees at one Portuguese higher-education institution (4,424 students); enrolment years not stated.
+**One row.** One student of 17 undergraduate degrees at one Portuguese higher-education institution (4,424 students); enrolment years 2008 to 2017, recovered from the national figures each student carries.
 
 **Predicted.** The student's status at the end of the normal length of the course: graduated (49.93%), dropped out (32.12%) or still enrolled (17.95%).
 
-**Known at prediction time.** Background at enrolment (course, day or evening classes, application route and choice rank, previous schooling and grades, age, nationality, parents' education and jobs, scholarship, special needs), fee and debt status, national unemployment, inflation and GDP, and the units taken, passed and grades of the first two semesters.
+**Known at prediction time.** Background at enrolment (course, day or evening classes, application route and choice rank, previous schooling and grades, age, nationality, parents' education and jobs, scholarship, special needs), national unemployment, inflation and GDP, and the units taken, passed and grades of the first two semesters.
 
-**What the test data stands for.** Random students, so the test data stands for other students of the same cohorts.
+**What the test data stands for.** Four enrolment cohorts, 2014 to 2017, each scored at the end of its first year; training is the students whose course had reached its normal end by then (three years, four for Nursing).
 
-> **Use case fit: approximate (a stand-in with a known gap).** The file has no enrolment year, so the test students come from the same cohorts rather than later ones, and when the fee and debt status and the economic figures were recorded is not stated.
+**Our changes to the source.** We drop the fee and debt status, which the source does not date and which look read at the file's extract, years after many students left, and recover each student's enrolment year from the national figures to split by cohort.
+
+> **Use case fit: approximate (a stand-in with a known gap).** When the scholarship status was recorded is not stated, so it may be read after the first year.
 
 ## Files in this folder
 
@@ -93,7 +99,7 @@ Built as `01a111fc-b7bd-7c0b-a919-1a848957caf4` on 2026-10-06, but `dataset.py` 
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/predict_students_dropout_and_academic_success.md`](../../../../curation/records/predict_students_dropout_and_academic_success.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/predict_students_dropout_and_academic_success.md`](../../../../curation/records/predict_students_dropout_and_academic_success.md)
 - The original source: <https://doi.org/10.24432/C5MC89>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -124,14 +130,15 @@ Only curators run `build`, when the dataset ships.
 | year | 2021 |
 | domain | education |
 | license | CC BY 4.0 |
-| data_tags | IID |
+| data_tags | Non-IID, Temporal |
 | reference | martins2021early |
-| rows x columns | 4,424 x 37 |
+| rows x columns | 4,424 x 36 |
 | task.target | AcademicOutcome |
 | task.problem_type | multiclass_classification |
 | task.metric | log_loss |
-| task.split_regime | iid |
+| task.split_regime | temporal_non_iid |
 | task.stratify_on | AcademicOutcome |
+| task.time_on | enrolment_year |
 
 **Metric**
 
@@ -143,9 +150,9 @@ Only curators run `build`, when the dataset ships.
 | reason | UCI page and the data paper define no task metric; the first-publication case study compares classifiers on several scores (likely F1 given the class imbalance) without a declared task metric. Not verified in full text. |
 
 <details>
-<summary>Feature types: 18 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 16 categorical, 0 string, 0 datetime</summary>
 
-- categorical (18): `Marital_status`, `Application_mode`, `Course`, `Daytimeevening_attendance`, `Previous_qualification`, `Nationality`, `Mothers_qualification`, `Fathers_qualification`, `Mothers_occupation`, `Fathers_occupation`, `Displaced`, `Educational_special_needs`, `Debtor`, `Tuition_fees_up_to_date`, `Gender`, `Scholarship_holder`, `International`, `AcademicOutcome`
+- categorical (16): `Marital_status`, `Application_mode`, `Course`, `Daytimeevening_attendance`, `Previous_qualification`, `Nationality`, `Mothers_qualification`, `Fathers_qualification`, `Mothers_occupation`, `Fathers_occupation`, `Displaced`, `Educational_special_needs`, `Gender`, `Scholarship_holder`, `International`, `AcademicOutcome`
 - string (0): none
 - datetime (0): none
 
@@ -169,15 +176,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 4,424 rows of the final frame (random rows: the frame is shuffled); 12 of 37 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 4,424 rows of the final frame (the oldest rows: the frame is sorted by `enrolment_year`); 12 of 36 columns, the target first. Cells are cut at 40 characters.
 
 | AcademicOutcome | Marital_status | Application_mode | Application_order | Course | Daytimeevening_attendance | Previous_qualification | Previous_qualification_grade | Nationality | Mothers_qualification | Fathers_qualification | Mothers_occupation |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Graduate | single | Technological specialization diploma ho… | 1 | Agronomy | daytime | Technological specialization course | 140 | Portuguese | Basic Education 3rd Cycle | Basic Education 2nd Cycle | Farmers and Skilled Workers |
-| Enrolled | single | 2nd phase - general contingent | 2 | Veterinary Nursing | daytime | Secondary education | 138 | Portuguese | Basic education 1st cycle (4th/5th year… | Basic education 1st cycle | Unskilled Workers |
-| Graduate | single | 1st phase - general contingent | 4 | Nursing | daytime | Secondary education | 132 | Portuguese | Basic Education 3rd Cycle | Basic Education 2nd Cycle | Personal Services, Security and Safety … |
-| Dropout | single | 1st phase - general contingent | 1 | Equinculture | daytime | Secondary education | 121 | Portuguese | Higher Education - Degree | Basic Education 3rd Cycle | Specialists in Intellectual/Scientific … |
-| Dropout | single | Transfer | 1 | Informatics Engineering | daytime | Secondary education | 120 | Portuguese | Secondary Education - 12th Year of Scho… | Secondary Education - 12th Year of Scho… | Personal Services, Security and Safety … |
+| Enrolled | single | 1st phase - general contingent | 1 | Basic Education | daytime | Secondary education | 110 | Portuguese | Basic education 1st cycle (4th/5th year… | Basic education 1st cycle | Unskilled Workers |
+| Enrolled | single | 1st phase - general contingent | 1 | Social Service | daytime | Secondary education | 135 | Portuguese | Basic education 1st cycle (4th/5th year… | Basic Education 3rd Cycle | Personal Services, Security and Safety … |
+| Graduate | married | 1st phase - general contingent | 1 | Social Service | daytime | Secondary education | 134 | Portuguese | Basic education 1st cycle (4th/5th year… | Basic education 1st cycle | Personal Services, Security and Safety … |
+| Enrolled | single | 2nd phase - general contingent | 4 | Informatics Engineering | daytime | Secondary education | 139 | Portuguese | Basic education 1st cycle (4th/5th year… | Basic Education 3rd Cycle | Unskilled Workers |
+| Dropout | single | Change of course | 1 | Management (evening attendance) | evening | Secondary education | 136 | Portuguese | Higher Education - Degree | Higher Education - Master's | Specialists in Intellectual/Scientific … |
 
 ## Curation notes
 
@@ -190,36 +197,73 @@ The first 5 of 4,424 rows of the final frame (random rows: the frame is shuffled
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 1 scores with no words per level are
   numbers (`SCORES`): `Application_order`.
+- Enrolment year (2026-11-12, Andrej): the file has no year column, but unemployment, inflation and GDP take
+  ten value triples, each Portugal's published figures of one year (INE, via PORDATA, the source's macro
+  data), so `enrolment_year` (2008 to 2017) is mapped from `Unemployment_rate` and checked against the other
+  two. It is the time column of the splits; it adds no information the triple does not already give.
+- We drop `Tuition_fees_up_to_date` and `Debtor` (2026-11-12, Andrej): the source gives no
+  recording date (the data paper lists them as socioeconomic data from the student-records file), arrears
+  cannot exist at enrolment, and the pattern fits one status read at the file's extract. 86.6% of the 528
+  students behind on fees dropped out, against 24.7% of the others (debtors: 62.0% of 503, against 28.3%);
+  students still enrolled are behind on fees at 0.8% in the 2008-2011 cohorts and 15% in 2015-2017 (debtors
+  5% and 25%), while graduates are behind at about 1.2% in every era. A previous degree does not explain the
+  debt: debtors are 10% to 11% among holders of another degree and 8% among first-time students. With both,
+  log loss was 0.587 (untuned LightGBM, the random folds of 2026-11-06), without them 0.633.
+- `Scholarship_holder` (2026-11-12, Andrej): no recording date, like the fee and debt status; kept, unlike
+  them, as a scholarship can exist by the end of the first year and the data shows no sign of a later read
+  (holders drop out at 12% against 39%; without it log loss rises by 0.004, untuned LightGBM, shipped random
+  folds of 2026-11-06).
 
 ## Splits
 
-Default splits.
+Four test windows, one enrolment cohort each, newest first (2017, 2016, 2015, 2014; 368, 414, 445 and 390
+students). A window's model is fitted when its cohort ends its first year. The label is the status at the end of the
+course's normal length (three years, four for Nursing; Realinho et al. 2022, Sec. 3.1), so training holds only
+the students whose normal end came before that: for a three-year course the cohorts up to two years older
+(a gap of one cohort), for Nursing up to three years older (a gap of two). The training sides hold 54% to 80%
+of the 4,424 students. Measured 2026-11-11 (untuned LightGBM, log loss): 0.740 (2017), 0.791, 0.694, 0.706
+(2014), +0.02 to +0.14 above training on as many students drawn from all cohorts; the random split this
+replaces flattered log loss by that much. Four of the nine windows an IID split of this size would get: one
+window is one cohort, and with the gap the label needs, the 2013 cohort would train on 43.9% of the students
+(Andrej, 2026-11-19).
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 2,949 to 2,950 rows, test 1,474 to 1,475 rows.
+4 repeat(s) x 1 fold(s) with seed 4267; train 2,379 to 3,560 rows, test 368 to 445 rows. Prediction horizon: 1 years. Gap between train and test: 1 years.
 
-| repeat | fold | n_train | n_test |
-|---|---|---|---|
-| 0 | 0 | 2949 | 1475 |
-| 0 | 1 | 2949 | 1475 |
-| 0 | 2 | 2950 | 1474 |
-| 1 | 0 | 2949 | 1475 |
-| 1 | 1 | 2949 | 1475 |
-| 1 | 2 | 2950 | 1474 |
-| 2 | 0 | 2949 | 1475 |
-| 2 | 1 | 2949 | 1475 |
-| 2 | 2 | 2950 | 1474 |
+| repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
+|---|---|---|---|---|---|---|---|
+| 0 | 0 | 3560 | 368 | 2008 | 2015 | 2017 | 2017 |
+| 1 | 0 | 3113 | 414 | 2008 | 2014 | 2016 | 2016 |
+| 2 | 0 | 2739 | 445 | 2008 | 2013 | 2015 | 2015 |
+| 3 | 0 | 2379 | 390 | 2008 | 2012 | 2014 | 2014 |
+
+
+### The test windows
+
+Each test window against its train side, by statistics of the data, never of a model: the target, and the population stability index (PSI) of each feature, its largest value and the features that drift most (below 0.1 little shift, above 0.25 a large one), and the share of test rows with a category the train side never shows. Up to 20,000 rows per side. The candidates the windows were chosen from: `.venv/bin/python -m data_foundry.curation.cli dataset windows predict_students_dropout_and_academic_success`.
+
+| window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
+|---|---|---|---|---|---|---|---|---|
+| 0 | 2017 - 2017 | 368 | 0.805 | Dropout 27.7%, Enrolled 20.9%, Graduate 51.4% | Dropout 33.4%, Enrolled 17.7%, Graduate 48.9% | 8.485 | GDP (8.49), Inflation_rate (7.70), Unemployment_rate (7.49) | 0.1033 |
+| 1 | 2016 - 2016 | 414 | 0.704 | Dropout 28.3%, Enrolled 16.2%, Graduate 55.6% | Dropout 34.4%, Enrolled 17.6%, Graduate 47.9% | 8.362 | Inflation_rate (8.36), Unemployment_rate (7.51), GDP (7.51) | 0.0193 |
+| 2 | 2015 - 2015 | 445 | 0.619 | Dropout 24.0%, Enrolled 20.2%, Graduate 55.7% | Dropout 34.9%, Enrolled 17.7%, Graduate 47.4% | 8.681 | Inflation_rate (8.68), Unemployment_rate (7.32), GDP (7.32) | 0.0225 |
+| 3 | 2014 - 2014 | 390 | 0.538 | Dropout 30.3%, Enrolled 16.4%, Graduate 53.3% | Dropout 34.9%, Enrolled 18.7%, Graduate 46.4% | 7.73 | Unemployment_rate (7.73), Inflation_rate (7.05), GDP (6.83) | 0.0154 |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
+- **info** `meta_time_horizon_unit`: `time_horizon_unit='years'` implies calendar time, but `time_on='enrolment_year'` has dtype int64, so the horizon cannot be cross-checked. (hint: Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use `time_horizon_unit='steps'` for a plain numeric time index.)
+
+Accepted on purpose:
+
+- `splits_below_target`: Four of the nine windows an IID split of this size would get: one window is one cohort, and with the gap the label needs, the 2013 cohort would train on 43.9% of the students (Andrej, 2026-11-19).
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (37 rows)</summary>
+<summary>Show the table (36 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -235,15 +279,13 @@ Default splits.
 | Fathers_occupation | category | 0 | 0 | 46 | Unskilled Workers, Skilled Workers in Industry/Construction/Craftsmen, Personal… |
 | Displaced | category | 0 | 0 | 2 | yes, no |
 | Educational_special_needs | category | 0 | 0 | 2 | no, yes |
-| Debtor | category | 0 | 0 | 2 | no, yes |
-| Tuition_fees_up_to_date | category | 0 | 0 | 2 | yes, no |
 | Gender | category | 0 | 0 | 2 | female, male |
 | Scholarship_holder | category | 0 | 0 | 2 | no, yes |
 | International | category | 0 | 0 | 2 | no, yes |
 | AcademicOutcome | category | 0 | 0 | 3 | Graduate, Dropout, Enrolled |
 | Previous_qualification_grade | float64 | 0 | 0 | 101 | 133.1, 130.0, 140.0, 120.0, 150.0, 125.0, 135.0, 110.0, 131.0, 160.0 |
 | Admission_grade | float64 | 0 | 0 | 620 | 130.0, 140.0, 120.0, 100.0, 150.0, 110.0, 160.0, 128.2, 128.0, 123.0 |
-| Curricular_units_1st_sem_grade | float64 | 0 | 0 | 805 | 0.0, 12.0, 13.0, 11.0, 11.5, 14.0, 12.5, 12.6667, 10.0, 12.3333 |
+| Curricular_units_1st_sem_grade | float64 | 0 | 0 | 805 | 0.0, 12.0, 13.0, 11.0, 11.5, 14.0, 12.5, 12.6667, 12.3333, 10.0 |
 | Curricular_units_2nd_sem_grade | float64 | 0 | 0 | 786 | 0.0, 12.0, 11.0, 13.0, 11.5, 12.5, 14.0, 10.0, 13.5, 12.6667 |
 | Unemployment_rate | float64 | 0 | 0 | 10 | 7.6, 9.4, 10.8, 12.4, 12.7, 11.1, 15.5, 13.9, 8.9, 16.2 |
 | Inflation_rate | float64 | 0 | 0 | 9 | 1.4, 2.6, -0.8, 0.5, 3.7, 0.6, 2.8, -0.3, 0.3 |
@@ -254,12 +296,13 @@ Default splits.
 | Curricular_units_1st_sem_enrolled | int64 | 0 | 0 | 23 | 6, 5, 7, 8, 0, 12, 10, 11, 9, 15 |
 | Curricular_units_1st_sem_evaluations | int64 | 0 | 0 | 35 | 8, 7, 6, 9, 0, 10, 11, 12, 5, 13 |
 | Curricular_units_1st_sem_approved | int64 | 0 | 0 | 23 | 6, 5, 0, 7, 4, 3, 2, 1, 8, 11 |
-| Curricular_units_1st_sem_without_evaluations | int64 | 0 | 0 | 11 | 0, 1, 2, 3, 4, 7, 6, 5, 8, 12 |
+| Curricular_units_1st_sem_without_evaluations | int64 | 0 | 0 | 11 | 0, 1, 2, 3, 4, 6, 7, 5, 8, 12 |
 | Curricular_units_2nd_sem_credited | int64 | 0 | 0 | 19 | 0, 1, 2, 4, 5, 3, 6, 11, 7, 9 |
 | Curricular_units_2nd_sem_enrolled | int64 | 0 | 0 | 22 | 6, 5, 8, 7, 0, 11, 9, 10, 12, 13 |
 | Curricular_units_2nd_sem_evaluations | int64 | 0 | 0 | 30 | 8, 6, 7, 9, 0, 10, 5, 11, 12, 13 |
 | Curricular_units_2nd_sem_approved | int64 | 0 | 0 | 20 | 6, 0, 5, 4, 7, 8, 3, 2, 1, 11 |
 | Curricular_units_2nd_sem_without_evaluations | int64 | 0 | 0 | 10 | 0, 1, 2, 3, 4, 5, 6, 8, 7, 12 |
+| enrolment_year | int64 | 0 | 0 | 10 | 2008, 2009, 2010, 2015, 2011, 2016, 2012, 2014, 2017, 2013 |
 
 </details>
 
@@ -274,7 +317,7 @@ Default splits.
 ### Numeric features
 
 <details>
-<summary>Show the table (19 rows)</summary>
+<summary>Show the table (20 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -297,13 +340,14 @@ Default splits.
 | Unemployment_rate | 4424 | 11.5661 | 2.66385 | 7.6 | 16.2 |
 | Inflation_rate | 4424 | 1.22803 | 1.38271 | -0.8 | 3.7 |
 | GDP | 4424 | 0.00196881 | 2.26994 | -4.06 | 3.51 |
+| enrolment_year | 4424 | 2012.14 | 2.93558 | 2008 | 2017 |
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (64 rows)</summary>
+<summary>Show the table (60 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -322,8 +366,6 @@ Default splits.
 | Course | 5 | Journalism and Communication | 331 | 7.48 |
 | Daytimeevening_attendance | 1 | daytime | 3941 | 89.08 |
 | Daytimeevening_attendance | 2 | evening | 483 | 10.92 |
-| Debtor | 1 | no | 3921 | 88.63 |
-| Debtor | 2 | yes | 503 | 11.37 |
 | Displaced | 1 | yes | 2426 | 54.84 |
 | Displaced | 2 | no | 1998 | 45.16 |
 | Educational_special_needs | 1 | no | 4373 | 98.85 |
@@ -367,8 +409,8 @@ Default splits.
 | Previous_qualification | 3 | Basic education 3rd cycle (9th/10th/11th year) or equiv. | 162 | 3.66 |
 | Previous_qualification | 4 | Higher education - degree | 126 | 2.85 |
 | Previous_qualification | 5 | Other - 11th year of schooling | 45 | 1.02 |
-
-(4 more rows not shown)
+| Scholarship_holder | 1 | no | 3325 | 75.16 |
+| Scholarship_holder | 2 | yes | 1099 | 24.84 |
 
 </details>
 
@@ -383,4 +425,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:039eae3aba61758fc2f7f9345e6650666d6fba8be509a6f782d0a810b6438075` |
+| stale | yes: the definition now gives checksum `v2:d4ea60a639feb65efbeb1758e50039c58cc34eb2b0da68937046128f8e5f1471` |
