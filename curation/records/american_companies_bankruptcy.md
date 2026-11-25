@@ -84,9 +84,10 @@ type_adapter_id: curation-record-v1
 **Assessment (AI, 2026-11-25):** review panel (full): ship after changes; disputed: the protocol line for a test row's next-year row (LEAK-9, settled: added), the gap (SPLIT-10, settled by a measurement at equal training size: none), the window length (SPLIT-12, SPLIT-15, settled: one year, the three-year windows having misread SPLIT-14 and TP-9); for the curator: issues H and 1-2. Priority 2: gap 0 (finance, binary and temporal are not thin), use case 0 (named by the source, but the fit is approximate: the horizon cannot be verified), source + (a dataset paper and the authors' repository, both releases pinned), shape + (78,682 firm-years, 20 features, temporal panel), risk - (a test row's next-year row in the file gives its label away, closed only by a protocol line, issue 2).
 
 CC (2026-11-25, Andrej): review of the added dataset (Review H, 1, 2):
-- Horizon (H) signed off as implemented: one-year windows, an annual refit, no gap.
 - Nine windows (issue 1): 2008 and 2018 kept; of the years between, the two with the fewest bankruptcies leave, 2017 (21) and 2009 (23). Tested years 2018, 2016-2010 without 2009, and 2008.
 - Asked whether the next-year rows can leak inside a split (they cannot: only the whole file holds them) and whether the company id should be an input; both open (issues 2 and 3).
+
+CC (2026-11-25, Andrej): the declared horizon (one-year windows, an annual refit, no gap; Review H, as implemented) is checked.
 
 ## Review
 
