@@ -3,6 +3,7 @@ unique_name: wild_type_attr_cardiac_amyloidosis
 name: Wild-type transthyretin amyloid cardiomyopathy risk from claims and EHR features (Huda et al. 2021; Arasteh et al. 2024 copy)
 checked_by:
 - AI (UNVERIFIED)
+- Andrej
 suggestion: TBD -> Yes
 priority: 3
 decision_markers:
@@ -48,6 +49,8 @@ type_adapter_id: curation-record-v1
 
 Candidate from Shaktah et al. 2026, "Established machine learning matches tabular foundation models in clinical predictions", BMC Med Inform Decis Mak 26:364 (https://doi.org/10.1186/s12911-026-03654-3), one of its twelve binary clinical tasks.
 
+CC (2026-11-25, Andrej): screening review: issue 1 A (drop the source's two leak flags; reconsider while building and reopen on the added dataset); verdict and issue 2 under discussion.
+
 ## Review
 
 **Outcome:** not added; screened `TBD -> Yes`, priority 3. Real IQVIA claims rows from Huda et al. 2021 (2,142 heart-failure patients, 1,874 lifetime ICD-code flags, 1:1 matched wild-type ATTR-CM cases and controls); the source's own leak list is not applied in the released file.
@@ -72,6 +75,10 @@ Candidate from Shaktah et al. 2026, "Established machine learning matches tabula
 
    * **Recommendation:** B, with the score of A beside it in the review: the screening model meets patients before any work-up, so codes the work-up writes are consequences of the label. **Decision:** A, B or C?
 
+   **Andrej (2026-11-25, ok):** A. When building the dataset, consider whether this choice was right and in any case also reopen this as a discussion point on the added dataset.
+
+   **Resolved (2026-11-25, Andrej):** A: the source's two leak flags (`cardiomyopathy_in_diseases_classified_elsewhere`, `other_forms_of_heart_disease`) go, the other flags stay; /add-dataset measures the score with and without the cardiomyopathy family and reopens the question as an issue in the added dataset's review.
+
    [^leak10]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the target away; out: a column recorded after the outcome, a part, a consequence or another encoding of the target.
    [^use3]: **USE-3** (Must): name the prediction point: when the model is used and what is known then. A value that did not exist at that point is a leak.
 
@@ -88,5 +95,32 @@ Candidate from Shaktah et al. 2026, "Established machine learning matches tabula
      | B | Train on the derivation set, test on the validation file | a second label mapped to the 1,874 flags | a held-out cohort | a different target (any cardiac amyloidosis); one test split; flags rebuilt by us |
 
    * **Recommendation:** A: B changes the target, so it tests another task. **Decision:** A or B?
+
+   **Andrej (2026-11-25, discuss):** Wait, could the validation file be an own new dataset for us?
+
+   **Answer (AI, 2026-11-25):** it could replace this record's file, but as a second record it would repeat the same task.
+
+   * **Problem:**
+     - The validation file has no label column: Huda's notebook labels a patient a case when the code list holds E85.82 (wild-type ATTR) or E85.4 (organ-limited amyloidosis), so the label is read from the codes that would be the features.
+     - 597 of its patients (505 cases, 92 controls) are rows of the training file, with the same labels.
+     - It is the same task on more patients: heart-failure patients, a 1:1 matched case-control set, any cardiac amyloidosis instead of the wild-type form only[^a1].
+   * **Data:** downloaded from Huda's Source Data on 2026-11-25.
+
+     | File | Patients | Cases | Controls | Features as released |
+     |---|---|---|---|---|
+     | derivation (this record) | 2,142 | 1,071 wild-type ATTR-CM | 1,071 | 1,874 binary flags |
+     | validation | 15,394 | 7,697 any cardiac amyloid code | 7,697 | raw ICD-10 lists, median 108 codes |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+   |---|---|---|---|---|
+     | a | Keep the derivation file (implemented) | 2,142 patients, Huda's flags | the paper's own model task; the label is the curated wild-type cohort | small; the flags were chosen on all cases |
+     | b | A second record from the validation file | its own definition next to this one | 7x the patients | the same task twice; 597 patients in both |
+     | c | Build this record from the validation file instead | label from the codes, every E85 code removed, flags built with Huda's ICD map | 7x the patients; our own feature build, so the leak cut is ours | a broader label (any cardiac amyloidosis); the label is a code we must remove cleanly |
+
+   * **Recommendation:** c, with a's score beside it at /add-dataset; b repeats the task. **Decision:** a, b or c?
+
+   [^a1]: **PROV-6** (Must): different versions or cuts of one underlying dataset are duplicates too when neither adds a distinct task: a swapped target, another slice of the same cohort, added or dropped rows or columns.
 
    [^split36]: **SPLIT-36** (Should): a definition's split is decided by walking the split decision tree; a forced leaf is for the curator to look at.

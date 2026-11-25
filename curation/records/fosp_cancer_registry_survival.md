@@ -2,11 +2,10 @@
 unique_name: fosp_cancer_registry_survival
 name: Hospital-Based Cancer Registry of Sao Paulo (RHC/SP), 3-year survival after diagnosis
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Andrej
+suggestion: 'Yes'
 priority: 2
 tags:
-- AI-Filled (Verify)
 - Non-IID (Temporal)
 - Dated Event Log
 - 'Samples: Over Time'
@@ -28,14 +27,12 @@ source_links:
 - https://doi.org/10.1186/s12911-026-03654-3
 - https://doi.org/10.3390/cancers16183205
 - https://doi.org/10.1038/s41598-023-35649-9
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from the source's pages and papers (and, where the block says so, a preview of the files), NOT from building the data. A human must verify everything before relying on it.**
+**AI summary:**
 
 **Screening (AI, 2026-11-25):** `TBD -> Yes`, priority 2: deep re-check after Shaktah et al. 2026 used the same registry (colorectal only) in a clinical tabular benchmark; the public data dictionary and the openly linked 2000 file confirm the follow-up fields (`ULTINFO` 1 alive with cancer, 2 alive, 3 death from cancer, 4 death from other causes; `DTULTINFO`; a loss-to-follow-up flag `PERDASEG`) and recurrence fields (`DTRECIDIVA`, `RECNENHUM`, `RECLOCAL`, `RECREGIO`, `RECDIST`, `REC01`-`REC04`); recommend all sites, 3-year overall survival from diagnosis, alive patients followed less than 3 years dropped, temporal by diagnosis date with a 3-year gap.
 - Source: RHC/SP of the Fundação Oncocentro de São Paulo (FOSP). Its page now says "Faça um cadastro prévio para acessar os arquivos segundo ano de diagnóstico do tumor, com dados referentes ao período de Janeiro de 2000 a Junho de 2026" and "A atualização deste banco de dados é trimestral"; the files hold the "casos analíticos" (patients who arrived untreated). The data dictionary is public: "Dicionário de Dados – RHC/SP – FOSP (Geral)", revision 16/04/2026 (https://fosp.saude.sp.gov.br/wp-content/uploads/DICIONARIO_DADOS__RHC-SP_FOSP_28042026.pdf; older versions 2024-08, 2024-11 and 2026-02 in the same folder). Field 99 "ULTINFO Última informação sobre o paciente": "1 – VIVO, COM CÂNCER 2 – VIVO, SOE 3 – OBITO POR CANCER 4 – OBITO POR OUTRAS CAUSAS, SOE"; field 98 "DTULTINFO Data da última informação do paciente"; field 113 "PERDASEG Perda de seguimento" (0, 1, 8 not applicable); field 69 `NAOTRAT` (reason for no treatment) includes "5 – OBITO POR CANCER 6 – OBITO POR OUTRAS CAUSAS, SOE"; it adds race, marital status, occupation, alcohol, tobacco, family history and breast and HPV biomarkers as "Novas variáveis recém-adicionadas ... em início de registro pelos hospitais". Preview: the diagnosis-year 2000 file is linked openly (https://fosp.saude.sp.gov.br/wp-content/uploads/RHC_SP_2000.zip, a 58.6 MB DBF, uploaded 2025-01-31; HEAD requests for 2001, 2010, 2019 and 2023 return 404, so the other years need the registration): 28,284 rows x 105 columns, 68 hospitals (`INSTITU`), `ULTINFO` 1: 1,159, 2: 7,122, 3: 12,048, 4: 7,955, `PERDASEG` = 1 on 5,222 rows (all alive), `DTULTINFO` up to 2024-10-11, recurrence dates a median 2.0 years after diagnosis (10% 0.5, 90% 8.4 years). Third-party copy: the cross-prediction repository's notebooks load `pacigeral_12_23.csv` (1,178,688 x 100) from a Google Drive link, not FOSP's release.
@@ -64,6 +61,8 @@ type_adapter_id: curation-record-v1
 - Why: very large public hospital registry with a real prognostic target, temporal split by diagnosis year, many cancer sites
 - Adds: a large Latin-American oncology registry; no cancer registry in the records. Risks: drop presenca_rec (recurrence, after outcome); exclude patients followed less than the horizon (LEAK-23/24); one table per diagnosis year
 
+CC (2026-11-25, Andrej): accepted for adding in the screening review (issues 1 A (all sites, 3-year overall survival, short follow-up dropped), 2 A (after first-course treatment) and 3 A (one-year windows)).
+
 ## Review
 
 **Outcome:** not added; screened `TBD -> Yes`, priority 2. São Paulo hospital cancer registry (RHC/SP, about 1.18 million patients since 2000); the published tasks fed recurrence and follow-up columns in as inputs, and the death targets without a horizon ignore censoring.
@@ -88,6 +87,10 @@ type_adapter_id: curation-record-v1
 
    * **Recommendation:** A; B as the one definition instead if you prefer the single-cancer task (not both). **Decision:** A, B, C or D?
 
+   **Andrej (2026-11-25, ok):** As implemented (A).
+
+   **Resolved (2026-11-25, Andrej):** A: all sites, 3-year overall survival from diagnosis, alive patients followed under 3 years dropped.
+
    [^leak24]: **LEAK-24** (Must): a target right-censored in the newest periods (a duration or a final status cut by the download date) is cut where follow-up is complete, or re-sourced from an archive with settled labels.
    [^leak25]: **LEAK-25** (Must): "No event" mixed with "not recorded" is a censoring bias: retire unless the recording process can be recovered; recovered includes unrecorded rows located by a rule that does not read the label, and dropped.
    [^prov7]: **PROV-7** (Must): records that share a source but give different tasks are not duplicates; the comments say why they are distinct.
@@ -106,6 +109,10 @@ type_adapter_id: curation-record-v1
 
    * **Recommendation:** A. **Decision:** A or B?
 
+   **Andrej (2026-11-25, ok):** As implemented (A).
+
+   **Resolved (2026-11-25, Andrej):** A: the prediction point is after first-course treatment; treatment flags and pathological TNM stay, recurrence and follow-up fields go.
+
    [^use3]: **USE-3** (Must): name the prediction point: when the model is used and what is known then. A value that did not exist at that point is a leak.
    [^leak10]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the target away; out: a column recorded after the outcome, a part, a consequence or another encoding of the target.
 
@@ -122,5 +129,9 @@ type_adapter_id: curation-record-v1
      | B | Two diagnosis years | wider windows | steadier; 2020 shared with 2021 | half the windows |
 
    * **Recommendation:** A. **Decision:** A or B?
+
+   **Andrej (2026-11-25, ok):** As implemented (A).
+
+   **Resolved (2026-11-25, Andrej):** A: one-year test windows by diagnosis date, 3-year gap.
 
    [^split12]: **SPLIT-12** (Should): the horizon is a human judgment from the source: how far ahead the actor predicts, the competition's own test window, the refit cadence. Choose the test windows to match it.

@@ -2,11 +2,10 @@
 unique_name: seer_renal_cell_carcinoma_5y_survival
 name: 'SEER renal cell carcinoma: 5-year overall survival'
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Andrej
+suggestion: 'Yes'
 priority: 2
 tags:
-- AI-Filled (Verify)
 - Dated Event Log
 - 'Samples: Over Time'
 - 'Time: Dated'
@@ -24,14 +23,12 @@ source_links:
 - https://seer.cancer.gov/data-software/documentation/seerstat/nov2025/seerstat-variable-dictionary-nov2025.pdf
 - https://github.com/KatherLab/tabpfnbenchmark
 - https://doi.org/10.21037/tau-23-319
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from the source's pages and papers (and, where the block says so, a preview of the files), NOT from building the data. A human must verify everything before relying on it.**
+**AI summary:**
 
 **Screening (AI, 2026-11-25):** `TBD -> Yes`, priority 2: five-year overall survival of kidney cancer in the NCI SEER registries (192,912 RCC patients of 2004-2015 in the paper it reproduces), a large documented prognosis task with a temporal split by year of diagnosis; Shaktah's label keeps a recent patient only if they died, and the use case is named only loosely.
 - Source: National Cancer Institute, SEER Program, "Incidence - SEER Research Data, 17 Registries, Nov 2024 Sub (2000-2022)", "Site recode ICD-O-3/WHO 2008 = Kidney and Renal Pelvis" (Shaktah et al. 2026, Methods, "Datasets"; the site recode also holds renal pelvis urothelial carcinoma and Wilms tumour, and no histology filter is named). SEER Research Data is per person through SEER*Stat after acknowledging the SEER Research Data Use Agreement ("Each person who will access the data must submit a separate request", seer.cancer.gov/data/access.html). The agreement (November 2025 submission) says in clause 10 "Authorized User will not release, nor permit others to release, the Data to any other person", and its clause 19 ("Permitted Use of AI/ML Tools") allows approved users to "develop or validate analytical and generative AI models using the Data" within an approved request, but "may not share the model, including model parameters, except with collaborators who are also Approved Users" and may not use the data with any tool "that transmits data to an external provider": a release-checklist item, no criterion (EV-4), but no row of it can ship and every user must extract it themselves. As published: case listings, one row per tumour (year of diagnosis, age, sex, race, marital status, laterality, histology, grade, tumour size, T/N/M and stage, first-course surgery, radiation, chemotherapy, survival months, vital status, cause of death). The target in Shaktah's code (`SEER_RCC/TabPFN_SEER-RCC_CPU.py`): `np.where(df2["Survival months"] >= 60, 1, np.where(df2["Vital status recode (study cutoff used)"].astype(str).isin(["Dead"]), 0, np.nan))`, the same as for osteosarcoma; "Year of diagnosis" is kept as a feature.
@@ -45,6 +42,8 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (medical, binary, temporal not thin), use case 0 (auxiliary tool, no decision named), source + (NCI SEER, a paper), shape + (tens of thousands of cases, mixed types, many years), risk - (censoring shortcut through the year; cohort to define).
 
 Candidate from Shaktah et al. 2026, "Established machine learning matches tabular foundation models in clinical predictions", BMC Med Inform Decis Mak 26:364 (https://doi.org/10.1186/s12911-026-03654-3), one of its twelve binary clinical tasks.
+
+CC (2026-11-25, Andrej): accepted for adding in the screening review (issue 2 A (after first-course treatment); issue 1 (cohort) open).
 
 ## Review
 
@@ -67,6 +66,27 @@ Candidate from Shaktah et al. 2026, "Established machine learning matches tabula
 
    * **Recommendation:** A. **Decision:** A or B?
 
+   **Andrej (2026-11-25, change):** Option B: The whole site recode.
+
+   **Consistency check (AI, 2026-11-25):** B takes Shaktah's whole site recode here, while liver cancer issue 1 of this batch took the source paper's single-histology cohort; what sets kidney cancer apart?
+
+   * **Problem:**
+     - The liver option you set aside and the kidney option you chose are both Shaktah's unfiltered extract, and both put several cancers into one label[^cc1].
+     - The source paper (Jiang and colleagues) restricts to C64 with RCC histologies; Wilms tumour is a childhood cancer with another oncologist and other treatment.
+     - The São Paulo registry pools all sites (your issue 1 A there), but there the source paper pools them too.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+   |---|---|---|---|---|
+     | a | Keep B as a recorded exception | whole site recode, histology a feature; the fact written down: the liver extract was also set aside for its label that counts unknown as no | more rows; like the São Paulo call | Wilms tumour keeps another actor; the source task set aside |
+     | b | Take A, like liver cancer | C64 with RCC histologies | consistent with liver cancer and the source paper | fewer rows, still tens of thousands |
+     | c | Drop only Wilms tumour | adults' kidney and renal pelvis cancers, histology a feature | removes the clearest change of actor | our own cohort, in no source |
+     | d | Pool for every SEER record | reopen liver issue 1 to the pooled cohort with a fixed label | one rule for the SEER records | goes against the source task |
+
+   * **Recommendation:** b; a if the pooled table is what you want, with its fact written as the exception. The answer also settles osteosarcoma issue 1. **Decision:** a, b, c or d?
+
+   [^cc1]: **USE-5** (Must): predict what the actor would act on, at the resolution they act on it. Check how the source built its label before accepting it.
+
    [^use5]: **USE-5** (Must): predict what the actor would act on, at the resolution they act on it. Check how the source built its label before accepting it.
    [^source]: Source task before our own: the source's own task and split are tested first and preferred when valid.
 
@@ -82,6 +102,10 @@ Candidate from Shaktah et al. 2026, "Established machine learning matches tabula
      | B | At diagnosis | treatment columns dropped | a prediction before any treatment | not the source's use case; weaker |
 
    * **Recommendation:** A. **Decision:** A or B?
+
+   **Andrej (2026-11-25, ok):** As implemented (A).
+
+   **Resolved (2026-11-25, Andrej):** A: the prediction point is after first-course treatment; surgery, radiation and chemotherapy stay.
 
    [^use3]: **USE-3** (Must): name the prediction point: when the model is used and what is known then. A value that did not exist at that point is a leak.
    [^source]: Source task before our own: the source's own task and split are tested first and preferred when valid.

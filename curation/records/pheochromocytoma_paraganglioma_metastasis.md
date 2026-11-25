@@ -2,11 +2,10 @@
 unique_name: pheochromocytoma_paraganglioma_metastasis
 name: Metastatic pheochromocytoma and paraganglioma (Pamporaki et al. 2023, Zenodo 7749613)
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Andrej
+suggestion: 'Yes'
 priority: 3
 tags:
-- AI-Filled (Verify)
 - Clinical Study
 - 'Samples: Over Time'
 - 'Time: Lost'
@@ -22,14 +21,12 @@ source_links:
 - https://www.nature.com/articles/s41467-024-45879-8
 - https://doi.org/10.1186/s12911-026-03654-3
 - https://doi.org/10.1016/S2589-7500(23)00094-8
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from the source's pages and papers (and, where the block says so, a preview of the files), NOT from building the data. A human must verify everything before relying on it.**
+**AI summary:**
 
 **Screening (AI, 2026-11-25):** `TBD -> Yes`, priority 3: real, documented cohorts of pheochromocytoma and paraganglioma patients (Pamporaki et al. 2023, Lancet Digit Health; Zenodo, CC BY 4.0), 788 patients, nine preoperative clinical and biochemical features plus SDHB status, target metastatic disease; a small but clean clinical task with a stated preoperative use case and two cohorts.
 - Source: Pamporaki, Berends, Filippatos, Prodanov, Meuter, Prejbisz et al., "Prediction of metastatic pheochromocytoma and paraganglioma: a machine learning modelling study using data from a cross-sectional cohort", Lancet Digit Health 5:e551-e559 (2023), doi 10.1016/S2589-7500(23)00094-8 (read from PMC10565306); data: Zenodo 10.5281/zenodo.7749613, `DataZonodo.xlsx`, published 2023-03-19, CC BY 4.0 ("The data generated in this study are available in the online platform (zenodo...)", Data availability). As published (previewed): one sheet, 788 patients x 40 columns: `Patient ID`, `Internal Testing (IT)/External Validatio (EV)` (493 IT, 295 EV), sex, age at diagnosis of first tumour, `Predictions for metastatic disease` (EV only: the prospective methoxytyramine call, values NO / YES-possible / YES-moderate / YES-strong / "false negative"), plasma normetanephrine, metanephrine and methoxytyramine, previous history of PPGL, adrenal or extra-adrenal location, `Presence of SDHB` (NO 596, YES 112, "not tested" 80), tumour category (single, bilateral, multifocal), spherical tumour volume, target `Metastatic YES/NO` (IT 166 of 493, EV 57 of 295), then 24 columns of the 12 specialists' risk calls without and with SDHB. Contrary to the data scout's note, the external validation cohort (295 PMT patients) is in the file: "The best candidate ML models were then externally validated using the dataset of 295 patients with PPGL who were enrolled in the PMT-trial ... These included the 267 patients with positive test results and another 28 with negative test results" (Methods).
@@ -43,6 +40,8 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (medical, binary), use case + (named actor and decision, direct), source + (Lancet Digit Health, CC BY deposit), shape 0 (788 patients, 10 features), no risk point (the leaky columns are named and droppable).
 
 Candidate from Shaktah et al. 2026, "Established machine learning matches tabular foundation models in clinical predictions", BMC Med Inform Decis Mak 26:364 (https://doi.org/10.1186/s12911-026-03654-3), one of its twelve binary clinical tasks.
+
+CC (2026-11-25, Andrej): accepted for adding in the screening review (issues 1 A (SDHB kept, "not tested" its own value) and 2 A (repeated 3-fold CV on all 788 patients)).
 
 ## Review
 
@@ -66,6 +65,10 @@ Candidate from Shaktah et al. 2026, "Established machine learning matches tabula
 
    * **Recommendation:** A: the test is ordered at diagnosis in the source's centres, and "not tested" keeps the missing case honest. **Decision:** A or B?
 
+   **Andrej (2026-11-25, ok):** As implemented (A).
+
+   **Resolved (2026-11-25, Andrej):** A: SDHB status stays a feature, with "not tested" as its own value.
+
    [^use3]: **USE-3** (Must): name the prediction point: when the model is used and what is known then. A value that did not exist at that point is a leak.
 
 2. **Random split, or the source's internal-to-external split?**
@@ -81,6 +84,10 @@ Candidate from Shaktah et al. 2026, "Established machine learning matches tabula
      | B | The source's split as a recorded departure | train on 493, test on 295 | the source's validation; tests transfer to the prospective cohort | one training side only; 57 test positives |
 
    * **Recommendation:** A: a single fixed split gives one training side, and two cohorts are too few groups to test transfer. **Decision:** A or B?
+
+   **Andrej (2026-11-25, ok):** As implemented (A).
+
+   **Resolved (2026-11-25, Andrej):** A: repeated 3-fold cross-validation on all 788 patients; the cohort flag is no feature.
 
    [^split36]: **SPLIT-36** (Should): a definition's split is decided by walking the split decision tree; a forced leaf is for the curator to look at.
    [^source]: Source task before our own: the source's own task and split are tested first and preferred when valid.

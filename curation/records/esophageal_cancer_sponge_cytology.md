@@ -2,12 +2,10 @@
 unique_name: esophageal_cancer_sponge_cytology
 name: Oesophageal cancer screening by sponge cytology, high-risk lesion (Gao et al. 2023)
 checked_by:
-- AI (UNVERIFIED)
+- Andrej
 suggestion: 'No'
 decision_markers:
 - Image
-tags:
-- AI-Filled (Verify)
 year: '2023'
 domain: medical & healthcare
 problem_type: Binary Classification
@@ -16,14 +14,12 @@ source_links:
 - https://doi.org/10.1016/S2468-1253(23)00004-3
 - https://www.nature.com/articles/s41467-024-45879-8
 - https://doi.org/10.1186/s12911-026-03654-3
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from the source's pages and papers (and, where the block says so, a preview of the files), NOT from building the data. A human must verify everything before relying on it.**
+**AI summary:**
 
 **Screening (AI, 2026-11-25):** `No` (`Image`, SEL-13): high-risk oesophageal lesions detected from sponge-cytology slides, where 105 of the 120 model features are nuclear morphometry and grey-level descriptors from the automated slide-analysis pipeline, beside 15 epidemiological columns and a cytologist's reading of the same slide; image descriptors used to recognise what the slide shows.
 - Source: Gao, Xin, Lin, Yao, Zhang, Zhou et al., "Machine learning-based automated sponge cytology for screening of oesophageal squamous cell carcinoma and adenocarcinoma of the oesophagogastric junction: a nationwide, multicohort, prospective study", Lancet Gastroenterol Hepatol 8:432-45 (2023), https://doi.org/10.1016/S2468-1253(23)00004-3 (EAST trial, NCT04609813; abstract read, full text paywalled). Data: https://github.com/Gaooooye/Esophageal-cAncer-Screening-Trial (`train.csv` 7,899 rows, `test.csv` 6,698 rows from other hospitals, prevalence 2.5% and 1.9%, diagnoses January 2021 to June 2022; no licence, the GitHub API returns `license: null`). Arasteh et al. 2024 and Shaktah et al. 2026 used these files as published.
@@ -34,6 +30,8 @@ type_adapter_id: curation-record-v1
 - Better data: none found (data scout, 2026-11-25: the ESMO GI 2024 follow-up and the Cytosponge trials release no data, and Cytosponge targets Barrett's oesophagus).
 
 Candidate from Shaktah et al. 2026, "Established machine learning matches tabular foundation models in clinical predictions", BMC Med Inform Decis Mak 26:364 (https://doi.org/10.1186/s12911-026-03654-3), one of its twelve binary clinical tasks.
+
+CC (2026-11-25, Andrej): reject confirmed in the screening review (issue 1 A: `No` (`Image`) confirmed).
 
 ## Review
 
@@ -58,6 +56,10 @@ Candidate from Shaktah et al. 2026, "Established machine learning matches tabula
      | C | Keep as a tabular task | overturn the reject | the source's model is a gradient-boosted classifier on the table | the rule rejects by where the columns come from |
 
    * **Recommendation:** A. **Decision:** A, B or C?
+
+   **Andrej (2026-11-25, ok):** As implemented (A).
+
+   **Resolved (2026-11-25, Andrej):** A: `No` (`Image`) confirmed.
 
    [^sel13]: **SEL-13** (Must): features computed from an image or video to describe its content are a vision task even when the columns are numeric: morphological, geometric or spectral descriptors from an image-analysis pipeline; descriptors stay image-derived when mixed with a few non-visual columns.
    [^sel14]: **SEL-14** (Must): readings that real tabular models take as inputs stay in scope when the human reading is the established clinical or operational result tabular models are used on; breast_w stays out.

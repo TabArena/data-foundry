@@ -2,11 +2,10 @@
 unique_name: seer_osteosarcoma_survival
 name: 'SEER osteosarcoma (C40-C41): 5-year survival'
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> 2nd Tier
+- Andrej
+suggestion: 'Yes'
 priority: 2
 tags:
-- AI-Filled (Verify)
 - Dated Event Log
 - 'Samples: Over Time'
 - 'Time: Dated'
@@ -24,14 +23,12 @@ source_links:
 - https://seer.cancer.gov/data-software/documentation/seerstat/nov2025/seerstat-variable-dictionary-nov2025.pdf
 - https://github.com/KatherLab/tabpfnbenchmark
 - https://doi.org/10.1097/MD.0000000000039582
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from the source's pages and papers (and, where the block says so, a preview of the files), NOT from building the data. A human must verify everything before relying on it.**
+**AI summary:**
 
 **Screening (AI, 2026-11-25):** `TBD -> 2nd Tier`, priority 2: five-year overall survival of primary bone tumours in the NCI SEER registries; real and documented, but a small cohort when restricted to osteosarcoma (1,243 patients of 2000-2018 in the paper it reproduces), Shaktah's extract takes every tumour of Primary Site C40-C41 and keeps patients alive under five years out only when they lived, and it is the second SEER five-year survival task after `seer_breast_cancer_5y_survival`.
 - Source: National Cancer Institute, SEER Program, "Incidence - SEER Research Data, 17 Registries, Nov 2024 Sub (2000-2022)" (Shaktah et al. 2026, Methods, "Datasets": "OST survival; ... Primary Site C40.0-C41.9"; no histology filter is named, and the code applies none). SEER Research Data is per person through SEER*Stat after acknowledging the SEER Research Data Use Agreement ("Each person who will access the data must submit a separate request", seer.cancer.gov/data/access.html). The agreement (November 2025 submission) says in clause 10 "Authorized User will not release, nor permit others to release, the Data to any other person", and its clause 19 ("Permitted Use of AI/ML Tools") allows approved users to "develop or validate analytical and generative AI models using the Data" within an approved request, but "may not share the model, including model parameters, except with collaborators who are also Approved Users" and may not use the data with any tool "that transmits data to an external provider": a release-checklist item, no criterion (EV-4), but no row of it can ship and every user must extract it themselves. As published: case listings, one row per tumour (fields as for the other SEER records: year of diagnosis, age, sex, race, site, histology, grade, tumour size, stage, mets at DX (2010+), first-course surgery, radiation, chemotherapy, survival months, vital status, cause of death). The target in Shaktah's code (`SEER_OST/TabPFN_SEER-OST_CPU.py`): `np.where(df2["Survival months"] >= 60, 1, np.where(df2["Vital status recode (study cutoff used)"].astype(str).isin(["Dead"]), 0, np.nan))`: alive under 60 months is missing, so a recent diagnosis enters only if the patient died; "Year of diagnosis" is not dropped (Supplemental List 1 drops only cause of death, survival months and flag, vital status).
@@ -45,6 +42,8 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (medical, binary, temporal not thin), use case 0 (approximate; treatment as an input), source + (NCI SEER, two papers), shape + (about 1,000-2,500 osteosarcoma cases with follow-up, more for all bone tumours; mixed types), risk - (cohort to define; censoring shortcut through the year).
 
 Candidate from Shaktah et al. 2026, "Established machine learning matches tabular foundation models in clinical predictions", BMC Med Inform Decis Mak 26:364 (https://doi.org/10.1186/s12911-026-03654-3), one of its twelve binary clinical tasks.
+
+CC (2026-11-25, Andrej): accepted for adding in the screening review (issue 2 A (one-year windows); issue 1 (cohort) open until the use case is written at /add-dataset).
 
 ## Review
 
@@ -67,6 +66,13 @@ Candidate from Shaktah et al. 2026, "Established machine learning matches tabula
 
    * **Recommendation:** A. **Decision:** A or B?
 
+   **Andrej (2026-11-25, discuss):** Decide depending on the use case that is created and once the task is built raise this in the dataset's review.
+
+   **Answer (AI, 2026-11-25):** agreed; the issue stays open until the task is built.
+
+   * /add-dataset writes the use case first, builds osteosarcoma only and all bone tumours side by side, and brings the case and death counts per window and the two scores back to this issue in the added dataset's review.
+   * Your answer to the consistency check on kidney cancer issue 1 (one cancer or the whole site) applies here too.
+
    [^use5]: **USE-5** (Must): predict what the actor would act on, at the resolution they act on it. Check how the source built its label before accepting it.
    [^source]: Source task before our own: the source's own task and split are tested first and preferred when valid.
 
@@ -83,6 +89,10 @@ Candidate from Shaktah et al. 2026, "Established machine learning matches tabula
      | B | Two or three diagnosis years | wider windows, five-year gap | steadier scores | fewer windows |
 
    * **Recommendation:** A, unless the case counts per year at /add-dataset fall too low; then B. **Decision:** A or B?
+
+   **Andrej (2026-11-25, ok):** As implemented (A).
+
+   **Resolved (2026-11-25, Andrej):** A: one-year test windows by diagnosis year, five-year gap; /add-dataset reports the cases and deaths per window.
 
    [^leak24]: **LEAK-24** (Must): a target right-censored in the newest periods (a duration or a final status cut by the download date) is cut where follow-up is complete, or re-sourced from an archive with settled labels.
    [^split12]: **SPLIT-12** (Should): the horizon is a human judgment from the source: how far ahead the actor predicts, the competition's own test window, the refit cadence. Choose the test windows to match it.

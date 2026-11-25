@@ -2,13 +2,12 @@
 unique_name: deafness_gene_carrier_hearing_loss
 name: Hearing loss among carriers of GJB2/SLC26A4/MT-RNR1 variants (Luo et al. 2021, Mendeley 6mh8mpnbgv)
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> 2nd Tier
+- Andrej
+suggestion: 'Yes'
 priority: 1
 decision_markers:
 - Selection Bias
 tags:
-- AI-Filled (Verify)
 - Clinical Study
 - 'Samples: Over Time'
 - 'Time: Lost'
@@ -24,14 +23,12 @@ source_links:
 - https://doi.org/10.1186/s12911-026-03654-3
 - https://doi.org/10.17632/6mh8mpnbgv.1
 - https://doi.org/10.1016/j.ebiom.2021.103322
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from the source's pages and papers (and, where the block says so, a preview of the files), NOT from building the data. A human must verify everything before relying on it.**
+**AI summary:**
 
 **Screening (AI, 2026-11-25):** `TBD -> 2nd Tier`, priority 1: real genotype data of a Chinese hereditary hearing loss case-control study (Luo et al. 2021, Mendeley Data, CC BY 4.0), 1,209 + 569 people with variants at 144 sites of GJB2, SLC26A4 and MT-RNR1; the target is hearing-loss patient against variant carrier with normal hearing, not "inheritance" as Shaktah labels it; small, sparse (280 distinct genotype patterns in the 1,209 discovery rows) and with family members among the rows.
 - Source: Luo, Li, Xu, Hong, Yang, Chen, Chen, Wu, "Machine learning-based genetic diagnosis models for hereditary hearing loss by the GJB2, SLC26A4 and MT-RNR1 variants", EBioMedicine 69:103322 (2021), doi 10.1016/j.ebiom.2021.103322 (read from Europe PMC, PMC8237285); data: Mendeley Data 6mh8mpnbgv v1, "Data for: Machine learning-based genetic diagnosis models ...", published 2021-03-16, CC BY 4.0. Record description: "The two data sets were processed sequencing data, of which the Discovery Set was from the medical records and the Validation Set was from the Disabled Persons' Federation. PS: No mutations found were indicated by 0, heterozygous mutations by 1, and homozygous mutations by 2". As published (previewed): `Discovery Set.xlsx` 1,209 rows x 145 columns (`Diagnoses` 918 patients = 1 / 291 carriers = 0, 144 variant columns under a gene header row; one cell is a blank string); `Validation Set.xlsx` 569 rows (436 / 133). Every row has 1 to 6 variant alleles (all wild types excluded, Methods). The paper counts 1,898 subjects with 411 discovery carriers; the release holds 1,778, 120 discovery carriers fewer (unexplained; to ask or note).
@@ -46,6 +43,8 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (medical, binary), use case 0 (approximate, stated only as a tool), source + (paper and CC BY deposit), shape 0 (1,778 rows but one feature type, sparse, 280 patterns), risk - (unkeyed families and pattern repeats).
 
 Candidate from Shaktah et al. 2026, "Established machine learning matches tabular foundation models in clinical predictions", BMC Med Inform Decis Mak 26:364 (https://doi.org/10.1186/s12911-026-03654-3), one of its twelve binary clinical tasks.
+
+CC (2026-11-25, Andrej): accepted for adding in the screening review (issues 1 A (every person a row; reopen on the added dataset) and 2 A (repeated 3-fold CV)).
 
 ## Review
 
@@ -71,6 +70,10 @@ Candidate from Shaktah et al. 2026, "Established machine learning matches tabula
 
    * **Recommendation:** A: these are distinct people, and the copies rule is about one record entered twice. **Decision:** A, B or C?
 
+   **Andrej (2026-11-25, ok):** A, but also keep in mind to have this as a discussion item after adding the dataset for the review.
+
+   **Resolved (2026-11-25, Andrej):** A: every person stays a row. /add-dataset reopens the question as an issue in the added dataset's review, with the built data in hand.
+
    [^leak19]: **LEAK-19** (Should): exact copies with the same label: drop them rather than group on the duplicate key.
 
 2. **Random split, or the source's discovery-to-validation files?**
@@ -86,6 +89,10 @@ Candidate from Shaktah et al. 2026, "Established machine learning matches tabula
      | B | The source's split as a recorded departure | train on 1,209, test on 569 | the source's external validation | one training side only |
 
    * **Recommendation:** A, as for the other two-cohort clinical studies of this batch. **Decision:** A or B?
+
+   **Andrej (2026-11-25, ok):** As implemented (A).
+
+   **Resolved (2026-11-25, Andrej):** A: repeated 3-fold cross-validation on all 1,778 people; the source file is no feature.
 
    [^split36]: **SPLIT-36** (Should): a definition's split is decided by walking the split decision tree; a forced leaf is for the curator to look at.
    [^source]: Source task before our own: the source's own task and split are tested first and preferred when valid.

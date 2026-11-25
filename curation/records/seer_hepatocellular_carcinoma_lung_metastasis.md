@@ -2,11 +2,10 @@
 unique_name: seer_hepatocellular_carcinoma_lung_metastasis
 name: 'SEER hepatocellular carcinoma (C22): lung metastasis at diagnosis'
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> 2nd Tier
+- Andrej
+suggestion: 'Yes'
 priority: 2
 tags:
-- AI-Filled (Verify)
 - Dated Event Log
 - 'Samples: Over Time'
 - 'Time: Dated'
@@ -23,14 +22,12 @@ source_links:
 - https://seer.cancer.gov/data-software/documentation/seerstat/nov2025/seerstat-variable-dictionary-nov2025.pdf
 - https://github.com/KatherLab/tabpfnbenchmark
 - https://arxiv.org/abs/2501.11720
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from the source's pages and papers (and, where the block says so, a preview of the files), NOT from building the data. A human must verify everything before relying on it.**
+**AI summary:**
 
 **Screening (AI, 2026-11-25):** `TBD -> 2nd Tier`, priority 2: lung metastasis at diagnosis of liver cancer in the NCI SEER registries (2010+, tens of thousands of cases), a real staging task from features known at diagnosis, but the target is read off the same staging work-up whose other columns (M, stage group, summary stage) encode it, the treatment columns follow it, and the source code labels unknown and pre-2010 cases as negative. Not "distant metastasis": both papers predict lung metastasis.
 - Source: National Cancer Institute, SEER Program, "Incidence - SEER Research Data, 17 Registries, Nov 2023 Sub (2000-2021)" (Shaktah et al. 2026, Methods, "Datasets": "HCC metastasis; ... Primary Site C22"). SEER Research Data is per person through SEER*Stat after acknowledging the SEER Research Data Use Agreement ("Each person who will access the data must submit a separate request", seer.cancer.gov/data/access.html). The agreement (November 2025 submission) says in clause 10 "Authorized User will not release, nor permit others to release, the Data to any other person", and its clause 19 ("Permitted Use of AI/ML Tools") allows approved users to "develop or validate analytical and generative AI models using the Data" within an approved request, but "may not share the model, including model parameters, except with collaborators who are also Approved Users" and may not use the data with any tool "that transmits data to an external provider": a release-checklist item, no criterion (EV-4), but no row of it can ship and every user must extract it themselves. As published: case listings, one row per tumour (Patient ID, Sequence number), with year of diagnosis, age, sex, race, marital status, site and histology, grade, T/N/M and stage (AJCC 6th 2004-2015, 7th 2010-2015, EOD 2018+), "SEER Combined Mets at DX-bone/brain/liver/lung (2010+)", AFP pretreatment (2010+), first-course surgery, radiation and chemotherapy, survival months, vital status and cause of death (SEER*Stat variable dictionary, Nov 2025). Rows not counted (needs SEER*Stat). The target in Shaktah's code (github.com/KatherLab/tabpfnbenchmark, `SEER_HCC/TabPFN_SEER-HCC_CPU.py`): `LungMets = np.where(df2['SEER Combined Mets at DX-lung (2010+)'] == 'Yes', 1, 0)`, so "No", "Unknown" and the blank pre-2010 values are all 0; Supplemental List 1 drops every stage and mets column, "Histologic Type ICD-O-3", "Time from diagnosis to treatment in days recode" and "Year of diagnosis", but not survival months, vital status or cause of death (the droplist has none of them).
@@ -44,6 +41,8 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (medical, binary and temporal not thin), use case 0 (approximate; "identifying high-risk patients", no decision named), source + (NCI SEER, variable dictionary, a paper), shape + (thousands of cases per year, mixed types), risk - (staging and treatment columns encode the target; label coding).
 
 Candidate from Shaktah et al. 2026, "Established machine learning matches tabular foundation models in clinical predictions", BMC Med Inform Decis Mak 26:364 (https://doi.org/10.1186/s12911-026-03654-3), one of its twelve binary clinical tasks.
+
+CC (2026-11-25, Andrej): accepted for adding in the screening review (issues 1 A (HCC from 2010, Unknown dropped; revisit on the added dataset) and 2 A (at diagnosis)).
 
 ## Review
 
@@ -67,6 +66,10 @@ Candidate from Shaktah et al. 2026, "Established machine learning matches tabula
 
    * **Recommendation:** A. **Decision:** A or B?
 
+   **Andrej (2026-11-25, ok):** A, but when the dataset is added we can revisit this question in the dataset's review.
+
+   **Resolved (2026-11-25, Andrej):** A: HCC histology, diagnoses from 2010, "Unknown" dropped. /add-dataset reopens the question as an issue in the added dataset's review, with the built data in hand.
+
    [^leak25]: **LEAK-25** (Must): "No event" mixed with "not recorded" is a censoring bias: retire unless the recording process can be recovered; recovered includes unrecorded rows located by a rule that does not read the label, and dropped.
    [^use5]: **USE-5** (Must): predict what the actor would act on, at the resolution they act on it. Check how the source built its label before accepting it.
    [^source]: Source task before our own: the source's own task and split are tested first and preferred when valid.
@@ -85,6 +88,10 @@ Candidate from Shaktah et al. 2026, "Established machine learning matches tabula
      | C | Kim et al.'s features | treatment and follow-up kept | the source's feature set | treatment follows the label; follow-up is after it |
 
    * **Recommendation:** A, with the T and N shortcut probed when the dataset is built. **Decision:** A, B or C?
+
+   **Andrej (2026-11-25, ok):** As implemented (A).
+
+   **Resolved (2026-11-25, Andrej):** A: at diagnosis before treatment; M, stages, other metastasis sites, treatment, survival and cause of death go; T, N, size, AFP and demographics stay, with the T and N shortcut probed at /add-dataset.
 
    [^leak10]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the target away; out: a column recorded after the outcome, a part, a consequence or another encoding of the target.
    [^use3]: **USE-3** (Must): name the prediction point: when the model is used and what is known then. A value that did not exist at that point is a leak.
