@@ -1,0 +1,6 @@
+name: tcga_hnsc_tumor_vs_normal_rnaseq
+holder: Andrej
+stage: triage
+claimed_at: '2026-11-25T13:00:23Z'
+expires_at: '2026-12-02T13:00:23Z'
+note: TabBench-Bio re-screening on the current rules (Andrej)
