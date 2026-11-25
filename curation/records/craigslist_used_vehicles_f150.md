@@ -3,6 +3,7 @@ unique_name: craigslist_used_vehicles_f150
 name: Craigslist used vehicles, Ford F-150 asking prices across repeated scrapes
 checked_by:
 - AI (UNVERIFIED)
+- Andrej
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Andrej
@@ -68,7 +69,7 @@ CC (2026-11-25, Andrej): created as the replacement candidate for fiat_500 (Revi
 
 **Outcome:** added. Ford F-150 asking prices from nine nationwide Craigslist scrapes on Kaggle (2018 to May 2021, 105,134 trucks), split into five later-scrape windows; the AI recommends shipping it. Validity: every input is in the advert when it is written; the one leak, a truck relisted in a later scrape, is kept on purpose as a repost a dealer knows (no listing id appears in two periods; dropping the linked ones moves the RMSE by -1.6% to +1.9%). Value: untuned LightGBM beats a linear model in every window (RMSLE 0.312 against 0.404, dummy 0.859; RMSE in dollars 4,839 against 6,052); model year carries most of the signal (R² 0.666 without it). The panel's changes are applied: one row per truck also across Craigslist sites (issue 2), RMSLE from context as for every other asking-price task, charm prices such as 9,999 kept, impossible and placeholder values set missing, the seller type (owner or dealer) shipped, and the notes corrected. `dataset check`: 0 errors, 0 warnings, 1 info; the four warnings of the build-up are accepted with reasons. Not built.
 
-**Main points:** Ship the advert's title, carried in the url, as an input (issue 1)? Confirm the drop of one truck's copies across Craigslist sites (issue 2), and sign off the five one-scrape windows (H), whose oldest clears the 50% floor only with the inferred-date 2018 scrape in training.
+**Main points:** Ship the advert's title, carried in the url, as an input (issue 1)? Confirm the drop of one truck's copies across Craigslist sites (issue 2), and sign off the five one-scrape windows (H), whose oldest clears the 50% floor only with the inferred-date 2018 scrape in training. Keep the earlier-scrapes split for a price guide, or mirror a seller who knows the rest of the scrape (issue 3)?
 
 **Horizon:**
 
@@ -195,6 +196,74 @@ CC (2026-11-25, Andrej): created as the replacement candidate for fiat_500 (Revi
 
    [^l42]: **LEAK-42** (Must), verdict 2: copies of one record (entered twice, listed again) go down to one row per unit; a key rebuilt from the features, and every drop, is a discussion point for the curator, with the share dropped and the target's distribution before and after.
    [^l42t]: **LEAK-42** (Must), verdict 3: a temporal split fits when the use case sees the unit again at prediction time (a renewal, a repost the moderator has seen). **SPLIT-13** (Should): an entity that recurs across the cutoff is part of the task when the model predicts for known entities.
+
+3. **Can the split mirror a seller who prices one truck at a scrape, knowing the rest of that scrape?**
+
+   * **Problem:**
+     - Your seller prices one truck at scrape t knowing every other listing of t and every earlier scrape, but the declared split (a) withholds all of scrape t, so it scores a price guide refit before the scrape, not that seller.
+     - Training also on the rest of the scrape (b) lowers RMSLE by 2.5% to 3.2% in the three windows where prices held and by 6.6% (May 2021) and 12.3% (Sep 2020) where they rose, so what it adds is mostly the market's move within one scrape.
+     - (b) can be declared only as a custom `_make_splits` whose every fold fails the framework's temporal-leakage check, an error no definition has accepted so far.
+   * **Framework:** `TemporalSplits` trains strictly before each window; a custom `_make_splits` returning a `SplitPlan` of positions allows any rows. With `temporal` declared, the bundle check `splits_temporal_leakage` (an error: the newest training time must lie before the oldest test time) fires on every fold of (b). It is not among the findings no definition may accept, so `accepted_check_warnings` could take it with your CC line, but the rules define a temporal split as test strictly after train[^r3a]. No definition mixes a period with folds under a temporal split; the nearest precedent is not temporal: `home_credit_default_risk` folds a pool (each client's latest application) and adds every earlier application to each training side, under a forced random split. Excluding the held-out truck's earlier copies needs its VIN at the split, but `_clean` drops the VIN and a non-feature column is dropped before `_make_splits` unless it has a role, so the exclusion needs a framework change; without it (b) keeps the copies, as the declared split keeps relistings.
+   * **What (b) measures and what is lost:** the folds within a scrape are random, so training and test share one market: the model reads the scrape's price level from its other listings (the scrape date is an input). (b) measures pricing an unseen truck against comparables of the same period plus the history; it no longer tests whether a model fitted before the market moved holds up, which (a) tests and which sets this dataset apart from `fiat_500` (one crawl). Two smaller gaps: a scrape is the stock of open listings, posted over about five weeks (seven for May 2021), so "the rest of the scrape" holds trucks posted up to five weeks after the held-out one; and the folds of one window share all of the history and differ by a fifth of one scrape, so they count as one window towards the window target, not as five[^r3c]. Leave-one-out, your exact case, is close to 10 folds, and 10 folds score only 0.3% lower than 5.
+   * **Relisted trucks:** under (b) an earlier copy of the held-out truck sits in training whenever it was listed in an earlier scrape. That is part of your use case only if the seller knows it: a dealer reposting its own truck does (the reason the declared split keeps relistings[^r3b]); a buyer reselling a truck someone else listed before does not. Your note drops the copies; only 46.5% of the rows carry a VIN, so a drop removes the linked copies only. Keeping them lowers (b)'s RMSLE by 0.6% to 1.2% per window; the relisted trucks themselves score 0.189 to 0.223 with their copies and 0.220 to 0.270 without.
+   * **Which windows:** under (b) a window trains on the earlier scrapes plus four fifths (or nine tenths) of the test scrape. All nine periods are not reachable: Oct 2018 has no history (there (b) is (c)), Oct 2019 trains on 25.5% to 26.7%, under the 30% floor no definition may accept, and Dec 2019 on 37.8% to 39.1%, a curator's exception under 50%[^r3d]. Jan 2020 lands on the 50% line (49.9% with 5 folds, 51.1% with 10). So (b) gives the same five windows, six with Jan 2020 at 10 folds, or seven with Dec 2019 as your exception.
+   * **Experiments:** untuned LightGBM (400 trees, learning rate 0.05, 63 leaves) on the log price of the definition's frame, all shipped columns with the scrape date as a number; RMSLE on the price, out-of-fold predictions pooled over each test scrape; folds random within the scrape, seed fixed.
+
+     | Test scrape | Test trucks | Training share (a) | (b), 5 folds | (b), 10 folds |
+     |---|---|---|---|---|
+     | Oct 2018 | 16,369 | 0% | 12.5% | 14.0% |
+     | Oct 2019 | 13,044 | 15.6% | 25.5% | 26.7% |
+     | Dec 2019 | 12,959 | 28.0% | 37.8% | 39.1% |
+     | Jan 2020 | 12,616 | 40.3% | 49.9% | 51.1% |
+     | Mar 2020 | 13,087 | 52.3% | 62.3% | 63.5% |
+     | Jun 2020 | 10,015 | 64.8% | 72.4% | 73.3% |
+     | Sep 2020 | 6,405 | 74.3% | 79.2% | 79.8% |
+     | Dec 2020 | 8,631 | 80.4% | 86.9% | 87.8% |
+     | May 2021 | 12,008 | 88.6% | 97.7% | 98.9% |
+
+     | Test scrape | (a) earlier scrapes, whole scrape | (b) copies kept, 5 folds | (b) copies dropped, 5 folds | (b) copies dropped, 10 folds | (c) within the scrape only, 5 folds |
+     |---|---|---|---|---|---|
+     | Oct 2018 | no history | no history | 0.385 | 0.383 | 0.385 |
+     | Oct 2019 | 0.337 | 0.311 | 0.312 | 0.311 | 0.315 |
+     | Dec 2019 | 0.295 | 0.291 | 0.295 | 0.294 | 0.312 |
+     | Jan 2020 | 0.289 | 0.284 | 0.288 | 0.286 | 0.304 |
+     | Mar 2020 | 0.308 | 0.298 | 0.300 | 0.299 | 0.314 |
+     | Jun 2020 | 0.294 | 0.286 | 0.290 | 0.289 | 0.305 |
+     | Sep 2020 | 0.350 | 0.307 | 0.309 | 0.308 | 0.324 |
+     | Dec 2020 | 0.295 | 0.287 | 0.290 | 0.289 | 0.306 |
+     | May 2021 | 0.321 | 0.300 | 0.302 | 0.301 | 0.310 |
+     | Mean, the five declared windows | 0.314 | 0.296 | 0.298 | 0.297 | 0.312 |
+
+     The history adds 2.5% to 5.5% over the scrape alone ((c) against (b) with copies dropped, the five windows). In Dec 2019 and Jan 2020, a few weeks after the scrape before, (a) and (b) score alike.
+
+     | Test scrape | Relisted share | (b) relisted, copies kept | (b) relisted, copies dropped | (b) the other trucks |
+     |---|---|---|---|---|
+     | Mar 2020 | 12.6% | 0.199 | 0.229 | 0.309 |
+     | Jun 2020 | 18.0% | 0.189 | 0.220 | 0.303 |
+     | Sep 2020 | 2.2% | 0.222 | 0.270 | 0.310 |
+     | Dec 2020 | 5.4% | 0.223 | 0.270 | 0.291 |
+     | May 2021 | 3.2% | 0.201 | 0.237 | 0.304 |
+
+   * **Options:**
+
+     | | Option | What it does | Test windows | Pro | Con |
+     |---|---|---|---|---|---|
+     | a | Earlier scrapes only (implemented) | Each window is the whole next scrape, trained on every earlier scrape | 5 | tests a model refit per scrape meeting the next market, the drift this dataset adds over `fiat_500`; declared as it is, no check accepted | withholds your seller's same-period comparables, so it scores a price guide, not the seller; `task_summary` has to say so |
+     | b | Earlier scrapes plus the rest of the test scrape | A custom `_make_splits`: per test scrape 5 random folds, each trained on the earlier scrapes and the other folds of the scrape; earlier copies kept (dropping them needs the VIN at the split) | 5, or 6 with Jan 2020 at 10 folds | mirrors your seller; scores 2.5% to 12.3% lower than (a) | accepts `splits_temporal_leakage` as the first definition, a departure from the temporal regime that wants a rule amendment; no drift tested; the rest of a scrape includes later postings |
+     | c | Random within each scrape only | 5 folds within each scrape, no history | 9 | the plain cross-section | throws away the history your seller has (4.6% worse than (b) on average); nine one-crawl tasks, `fiat_500`'s design again |
+
+   * **Recommendation:** a, with `task_summary` naming its use case as a price guide refit once per scrape and (b)'s scores in the notes as what same-period comparables add: (a) keeps the drift test, the reason this dataset replaces `fiat_500`, and needs no departure. If your seller is the use case you want, b with copies kept on the five windows (six with Jan 2020 at 10 folds), with the leakage error accepted under your CC line and a rule amendment for a temporal split with same-period comparables. **Decision:** a, b or c?
+
+   **Notes for the AI:** on a, reword the `use_case` and `split` lines of `task_summary` to the price guide refit once per scrape and add (b)'s five-window scores to `splits_comment`. On b, write `_make_splits` returning a `SplitPlan` (per window one repeat with 5 or 10 folds, train = every earlier scrape plus the other folds of the window's scrape), accept `splits_temporal_leakage` with the CC date, recount the window target, and draft the rule amendment. Re-run `dataset check` and the task probe either way.
+
+   [^r3a]: **SPLIT-2** (Must): a temporal split puts the test rows strictly after the training rows. **SPLIT-3** (Must): a task is grouped or temporal, never both, and the use case decides which.
+   [^r3b]: **LEAK-42** (Must), verdict 3, and **SPLIT-13** (Should): a unit seen again at prediction time is part of the task when the use case sees it.
+   [^r3c]: **SPLIT-15** (Must for the newest window): splits are counted by their training sides, and test parts that share one training side are one split.
+   [^r3d]: **SPLIT-14** (Must): every window trains on at least 50% of the data; under 50% is the curator's exception down to 30%, and never below.
+
+   **Andrej (2026-11-25, discuss):** With this use case I generally agree that we need a temporal split, but I am not sure what the right test windows would be. For the use case at a given scrape, the available train samples would actually be all cars of the scrape except of the single one we want to sell in the use case as well as earlier copies of it. So how can we include such a use case properly?
+
+   **Answer (AI, 2026-11-25):** it can be built, as a custom split that trains on the earlier scrapes plus the rest of the test scrape (option b above), but only by accepting the framework's temporal-leakage error and by giving up the test of a model meeting a moved market, where it differs most from the declared split; the AI recommends keeping the declared split (a) and naming its use case, a price guide refit once per scrape.
 
 **Review panel:** ship after changes (mediator). Claims: 22, 15 hold, 6 refuted (all fixed), 1 untested (version 1's calendar date). Blind review: would benchmark with changes; its main concern, one listing in several scrapes, is refuted (no listing id appears in two periods). Task gamer: a relisted truck's earlier price gains 0.9%, near noise. Agreed: the split, the relistings kept, RMSLE, the cleaning fixes, the seller type. Disputed: the advert's title as an input (issue 1); the horizon (H). Agreed by both sides but left to the curator: the cross-site drop, a key rebuilt from the features (issue 2).
 
