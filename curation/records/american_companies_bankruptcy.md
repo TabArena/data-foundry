@@ -3,6 +3,7 @@ unique_name: american_companies_bankruptcy
 name: 'Machine Learning for Bankruptcy Prediction in the American Stock Market: Dataset and Benchmarks (American bankruptcy dataset)'
 checked_by:
 - AI (UNVERIFIED)
+- Andrej
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Andrej
@@ -82,11 +83,16 @@ type_adapter_id: curation-record-v1
 
 **Assessment (AI, 2026-11-25):** review panel (full): ship after changes; disputed: the protocol line for a test row's next-year row (LEAK-9, settled: added), the gap (SPLIT-10, settled by a measurement at equal training size: none), the window length (SPLIT-12, SPLIT-15, settled: one year, the three-year windows having misread SPLIT-14 and TP-9); for the curator: issues H and 1-2. Priority 2: gap 0 (finance, binary and temporal are not thin), use case 0 (named by the source, but the fit is approximate: the horizon cannot be verified), source + (a dataset paper and the authors' repository, both releases pinned), shape + (78,682 firm-years, 20 features, temporal panel), risk - (a test row's next-year row in the file gives its label away, closed only by a protocol line, issue 2).
 
+CC (2026-11-25, Andrej): review of the added dataset (Review H, 1, 2):
+- Horizon (H) signed off as implemented: one-year windows, an annual refit, no gap.
+- Nine windows (issue 1): 2008 and 2018 kept; of the years between, the two with the fewest bankruptcies leave, 2017 (21) and 2009 (23). Tested years 2018, 2016-2010 without 2009, and 2008.
+- Asked whether the next-year rows can leak inside a split (they cannot: only the whole file holds them) and whether the company id should be an input; both open (issues 2 and 3).
+
 ## Review
 
-**Outcome:** added. The AI recommends shipping it as now defined: the panel's recommendation was ship after changes, and every change is made. 78,682 firm-years of US listed companies (fiscal years 1999-2018) with 17 statement items, the fiscal year and the SIC division and major group; the target is Yes on a failed company's last fiscal year (609 events, 0.77%), the source's own label, which matches the paper's Table 1 one year later in all 20 years. The decimal points the 2024 release lost are restored, and `_clean` asserts every repaired cell against the source's July 2022 release. Split: eleven one-year windows, fiscal 2018 back to 2008, each trained on every earlier year with no gap (52.3% to 96.5% of the rows), metric ROC AUC (the source's). Validity: no column leaks (the best single feature, `net_income`, scores 0.83 on the builder's earlier three-year windows; recording markers alone 0.53); a test row's next-year row of the same company gives its label away, closed by a protocol line (issue 2). Value: untuned LightGBM scores ROC AUC 0.85 to 0.95 per window (mean 0.915 over 2009-2018); the task probe on 5 of the 11 splits: random forest 0.916, LightGBM 0.908, linear 0.829, `net_income` alone 0.794, no flags. No exact copies across the split; 7.8% of test rows have a near copy in training, the same company's previous year. `dataset check`: 0 errors, 0 warnings (the early-year and large-sector base rates accepted as not leaks). Not built.
+**Outcome:** added. The AI recommends shipping it as now defined: the panel's recommendation was ship after changes, and every change is made. 78,682 firm-years of US listed companies (fiscal years 1999-2018) with 17 statement items, the fiscal year and the SIC division and major group; the target is Yes on a failed company's last fiscal year (609 events, 0.77%), the source's own label, which matches the paper's Table 1 one year later in all 20 years. The decimal points the 2024 release lost are restored, and `_clean` asserts every repaired cell against the source's July 2022 release. Split: nine one-year windows, fiscal 2018 back to 2008 without 2017 and 2009, each trained on every earlier year with no gap (52.3% to 96.5% of the rows), metric ROC AUC (the source's). Validity: no column leaks (the best single feature, `net_income`, scores 0.83 on the builder's earlier three-year windows; recording markers alone 0.53); a test row's next-year row of the same company gives its label away, closed by a protocol line (issue 2). Value: untuned LightGBM scores ROC AUC 0.85 to 0.95 per window (mean 0.915 over 2009-2018); the task probe on 5 of the then 11 splits: random forest 0.916, LightGBM 0.908, linear 0.829, `net_income` alone 0.794, no flags. No exact copies across the split; 7.8% of test rows have a near copy in training, the same company's previous year. `dataset check`: 0 errors, 0 warnings (the early-year and large-sector base rates accepted as not leaks). Not built.
 
-**Main points:** Sign off the horizon (one year, annual refit, no gap), choose which of the eleven yearly windows to keep (issue 1), and confirm the protocol line for the later rows of the file (issue 2).
+**Main points:** Settled 2026-11-25: the horizon (one year, annual refit, no gap) and nine windows with 2008 and 2018 (issue 1). Open: the protocol line, answered (issue 2), and the company id as an input (issue 3).
 
 **Record judgment:** The panel reversed two calls of the builder's draft, and the definition now ships the panel's version. The three-year windows rested on a misread rule (a window was widened to hold 33 bankruptcies, while the floor counts scored rows and few positives in a window are part of the task); they also left a test row's next year inside its own test window. They are now one-year windows, as in the other yearly panels. The one-year gap was measured at equal training size and showed no shortcut (+0.007 ROC AUC on average for the newest training year), so it is dropped, as in lt_vehicle_loan_default_prediction, wisconsin_local_government_property_insurance_fund and spanish_homeowners_motor_insurance_2010_2014, and fiscal 2008, the recession filings, becomes an ordinary window. Changed without a decision, as the panel settled: `fit` is `approximate` (the horizon cannot be verified: no filing dates), the record carries `Selection Bias` (the firm set of the authors' earlier papers, small caps excluded, as polish_companies_bankruptcy), the label is noted as "bankruptcy while listed" with the measured distress exits, the SIC codes as one lookup per company, the metric note says the paper's AUCs are per company and not comparable, and four numbers in the notes are corrected. Not raised, since the panel agreed with the builder: companies seen in training stay in the test windows (seen and new companies score alike, 0.910 against 0.908), and the previous year's items stay out (−0.013 to +0.010). The screening's statement that the paper's Table 2 names the columns wrongly holds only for the 2024 file (Comments, Assessment of 2026-11-25).
 
@@ -132,6 +138,10 @@ type_adapter_id: curation-record-v1
 [^h14]: **SPLIT-14** (Must): at least 3 windows, each training on at least 50% of the data, each test window with at least 33 scored units (here rows). **TP-9** (Must): "Few positives in a window are part of the task, not a reason for `Too Small` or for another split".
 [^h10]: **SPLIT-10** (Should; amended 2026-11-04 and 2026-11-05): a gap of about the label's delay, but the measurements decide; no gap where a fixed outcome horizon leaves no training label selected by its outcome and the newest labels add nothing beyond their size, stated at equal training size (cases lt_vehicle_loan_default_prediction, wisconsin_local_government_property_insurance_fund). **SPLIT-9** (Must): no training label that tells a test row's outcome and was not known at its prediction point.
 
+**Andrej (2026-11-25, ok):** as implemented.
+
+**Resolved (2026-11-25, Andrej):** A: one-year windows, an annual refit, no gap. Which years are tested is issue 1.
+
 **Issues for Andrej:**
 
 1. **Keep all eleven yearly windows, or nine?**
@@ -170,6 +180,10 @@ type_adapter_id: curation-record-v1
    **Notes for the AI:** B: `TemporalSplits(window=1, unit="unique", n_windows=9)`. C: `TemporalSplits(window=1, unit="years", cutoffs=(2008, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018))` (check that `fyear` works with calendar cutoffs; otherwise build the windows in `_make_splits` from a `TEST_YEARS` constant). For B or C, add to the splits comment the count 9 against the target of 9 and the reason for the years left out, and re-run `dataset check`.
 
    [^acb15]: **SPLIT-15** (Must for the newest window, Should for the others): the newest window is always tested; the others are the curator's choice from the use case (other years first); the number aims at **SPLIT-33**'s count for two thirds of the scored units, here 9 (3 repeats of 3-fold for a training side of 2,500 to 250,000 rows).
+
+   **Andrej (2026-11-25, discuss):** Use 2008 and the last year and find a heuristic how to drop years to get to 9 windows.
+
+   **Resolved (2026-11-25, Andrej):** nine windows: 2018, 2016, 2015, 2014, 2013, 2012, 2011, 2010 and 2008. The first and the last eligible year stay, as asked; of the nine years between them, the two with the fewest bankruptcies leave, 2017 (21) and 2009 (23), whose scores are the noisiest. The rule reads event counts, never a model's score, and the two years stay in the training sides of the later windows. `TemporalSplits(window=1, unit="unique", cutoffs=(2008, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2018))`; `task_summary.split` and the splits comment say so (301 of the windows' 303 bankruptcies are of companies seen in training). `dataset check`: 0 errors, 0 warnings. Another rule (even spacing, or the two years nearest the target's middle) is a one-line change.
 
 2. **Keep the later rows of each test year in the shipped file, under a protocol line?**
 
@@ -216,6 +230,60 @@ type_adapter_id: curation-record-v1
    **Notes for the AI:** A is in the curation notes ("Potential leak, kept on purpose") and the splits comment ("Protocol"). For B, write a cross-dataset item in the working copy's `REVIEW.md` (the format change and the datasets it touches); nothing changes in this definition until it is decided.
 
    [^l9]: **LEAK-9** (Should; amended 2026-11-05): an evaluation leak, where a model can read other test rows, is fixed in the scoring or by a protocol line the benchmark checks, not in the data; a method that learns from the test block is called out and not benchmarked.
+
+   **Andrej (2026-11-25, discuss):** Can we reconstruct the company ids? This would be a feature to be used in the actual use case, right? I also don't see how there can be a leak. For each train/test split we would use all previous years as train and only one year as test, so whether a company is still present the year after is not known?
+
+   **Answer (AI, 2026-11-25):** you are right: inside a split nothing leaks; the line only guards a method that reads the whole shipped file.
+
+   * **Problem:**
+     - A method is given each split's training rows (every earlier year) and its one test year, so a test row's next-year row of the same company never reaches it, and its presence the year after is unknown, as you say.
+     - The channel exists only for someone who reads the whole shipped file, which holds every year: the task gamer worked from such a file, and the protocol line asks that no method do so.
+     - The ids need no reconstruction: the file carries them (`company_name`, `C_1` to `C_8971`), and the definition drops them as an identifier; whether they become an input is a choice of its own, issue 3.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Keep the protocol line (implemented) | the notes keep the line for a method that reads the whole file | costs nothing; as the two precedents | guards a case the benchmark's own harness never creates |
+     | b | Drop the line | the notes say the next-year row is outside every split, with no protocol | shorter notes | the shipped file still holds the later rows; a method outside the harness could read them |
+
+   * **Recommendation:** a: the line is free, and the file a participant downloads does hold the later rows. **Decision:** a or b?
+
+3. **Ship the company id as an input?**
+
+   - **Problem:**
+     - A lender knows which company a statement belongs to and its history, and the file carries the id (`company_name`, `C_1` to `C_8971`), so the id can be an input that is known at the prediction point[^acb13].
+     - Added as a categorical input, the id changes untuned LightGBM's ROC AUC by +0.002 on average over the nine windows (better on 5 of 9), inside the spread of single windows; the previous year's items add nothing either.
+     - Ship the id as an input, or keep it out as an identifier?
+   - **Effect on the task:** 92% to 98% of each test year's firm-years are of companies seen in training, so a method can learn a company's own level; a new company has an unseen id.
+   - **Experiments:** the nine windows as defined, no gap, untuned LightGBM, 3 seeds, ROC AUC:
+
+     | Test year | Events | As shipped | + company id | + previous year's items | + both |
+     |---|---|---|---|---|---|
+     | 2018 | 36 | 0.909 | 0.900 | 0.899 | 0.896 |
+     | 2016 | 29 | 0.893 | 0.918 | 0.891 | 0.907 |
+     | 2015 | 33 | 0.943 | 0.917 | 0.938 | 0.881 |
+     | 2014 | 33 | 0.919 | 0.902 | 0.916 | 0.909 |
+     | 2013 | 28 | 0.909 | 0.900 | 0.902 | 0.878 |
+     | 2012 | 26 | 0.915 | 0.930 | 0.875 | 0.886 |
+     | 2011 | 25 | 0.914 | 0.923 | 0.899 | 0.918 |
+     | 2010 | 35 | 0.818 | 0.829 | 0.850 | 0.832 |
+     | 2008 | 58 | 0.869 | 0.886 | 0.873 | 0.867 |
+     | Mean | | 0.899 | 0.900 | 0.894 | 0.886 |
+
+   - **Consistency:** duolingo_spaced_repetition_recall_1m keeps the learner id as an input (your decision of 2026-11-24, its review issue 13, B), and ga_merchandise_store_sessions ships the visitor's history but not the visitor id.
+   - **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | No id (implemented) | `company_name` stays dropped | no high-cardinality code; a model cannot lean on a company's own level | leaves out what a lender knows |
+     | B | The id as a categorical input | `company_name` ships as `company` (8,971 levels) | the lender's view; as duolingo's learner id | no measured gain; 8,971 levels for every method to encode |
+     | C | B plus the previous year's 17 items | a lagged copy of the items, missing in a company's first year | the history a lender holds | no gain measured, worse with the id; engineered columns |
+
+   - **Recommendation:** B, weakly: the id is known at the prediction point and your duolingo decision keeps such an id; the measurement says it neither helps nor harms an untuned model. A stays reasonable if the code's 8,971 levels weigh more. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, keep `company_name` in `_clean` (rename to `company`), declare it categorical in `_feature_types`, move the bullet "Dropped: `company_name` ..." to say it ships, and re-run `dataset check` and the task probe. On C also add the previous year's items in `_clean` by company and `fyear - 1`. The experiment: the nine windows, LightGBM with default settings, seeds 0 to 2.
+
+   [^acb13]: **SPLIT-13** (Should): an entity that recurs across the cutoff is part of the task when the model predicts for known entities, and a question when the use case is a new entity. **USE-3** (Must): an input is known at the prediction point.
 
 **Review panel:** ship after changes (mediator). Claims: 21, 12 hold, 5 refuted in part (four wording slips and the paper's metric unit, all fixed in the notes), 4 untested (no filing dates, the vendor, the 8,971 ids). Blind review: include with changes; main concern the label's unchecked timing. Debate: agreed on one-year windows, the approximate fit, `Selection Bias` and the metric note; disputed the protocol line for the next-year rows (settled: added) and the gap (settled by a measurement at equal training size: none). For the curator: the horizon and issues 1-2.
 

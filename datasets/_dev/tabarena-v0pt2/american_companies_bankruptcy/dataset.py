@@ -108,8 +108,9 @@ class AmericanCompaniesBankruptcy(AbstractCuratedDataset):
         ),
         known_at_scoring="",
         split=(
-            "Eleven later fiscal years, 2008 to 2018, each tested on its own and trained on every earlier year, "
-            "whose labels are all known by then; most test companies have earlier years in training."
+            "Nine later fiscal years from 2008 to 2018 (not 2009 and 2017), each tested on its own and trained on "
+            "every earlier year, whose labels are all known by then; most test companies have earlier years in "
+            "training."
         ),
         changes=(
             "We restored the decimal points the current release lost, named the columns by the source's split "
@@ -190,20 +191,20 @@ class AmericanCompaniesBankruptcy(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Eleven one-year test windows, newest first: the fiscal years 2018 back to 2008, each trained on every earlier fiscal year, with no gap. They hold 2,723 (2018), 3,014, 3,191, 3,354, 3,504, 3,484, 3,485, 3,513, 3,625, 3,743 and 3,857 (2008) firm-years with 36, 21, 29, 33, 33, 28, 26, 25, 35, 23 and 58 bankruptcies; the training sides hold 96.5% down to 52.3% of the 78,682 rows. The target is the 9 splits an IID split of 78,682 rows would get (SPLIT-33); every eligible year is a window, 11, since a twelfth (2007) would train on 47.3%, under the half-the-rows floor. Which of them to keep is the curator's choice (the record's review).
+        Nine one-year test windows, newest first: the fiscal years 2018, 2016, 2015, 2014, 2013, 2012, 2011, 2010 and 2008, each trained on every earlier fiscal year, with no gap. They hold 2,723 (2018), 3,191, 3,354, 3,504, 3,484, 3,485, 3,513, 3,625 and 3,857 (2008) firm-years with 36, 29, 33, 33, 28, 26, 25, 35 and 58 bankruptcies; the training sides hold 96.5% down to 52.3% of the 78,682 rows. The count is the 9 splits an IID split of 78,682 rows would get (SPLIT-33). Eleven years are eligible (2008 to 2018; 2007 would train on 47.3%, under the half-the-rows floor). The curator kept the first and the last eligible year, 2008 (the recession filings) and 2018, and two of the nine years between them leave: the two with the fewest bankruptcies, 2017 (21) and 2009 (23), whose scores are the noisiest; a rule on event counts, not on any model's score (SPLIT-15). They stay in the training sides of the later windows.
 
         Window length: one fiscal year. The source predicts one year ahead (Section 3: "predict bankruptcy at least one year before it happens") and names no refit cadence; statements are annual, so a lender refits once a year (our assumption, for the curator's sign-off), as in the other yearly panels (spanish_homeowners_motor_insurance_2010_2014, wisconsin_local_government_property_insurance_fund). Few events in a window (21 to 58) are part of the task, not a reason for wider windows (TP-9): SPLIT-14 counts the scored rows, and each window holds over 2,700. The source's own split (Sections 3 and 6: "We used data from 1999 until 2011 for training, data from 2012 until 2014 for validation and model comparison, and the remaining years from 2015 to 2018 as a test-set") is one temporal cut, not a refit cadence.
 
         No gap (SPLIT-10): the outcome horizon is fixed (a filing in the year after the statement) and every label is final at release, so the newest training year's labels are known before the statements of the test year are filed, and no training label is selected by its outcome. SPLIT-9's shortcut through a company's own label cannot arise: a training Yes is a company's last year, so that company has no test row. Measured at equal training size (untuned LightGBM, 3 seeds, the no-gap training side subsampled to the gapped size), the newest training year adds +0.007 ROC AUC on average over 2009-2018 (0.912 against 0.905; per window -0.013 to +0.044), no sign of a shortcut. The one residue: fiscal years that do not end in December, whose next-year filings may run past the next statements; the data carry no month, so it cannot be measured. Dropping the gap makes fiscal 2008, the recession filings of 2009 (58 events, 1.5%), an ordinary window at 52.3%.
 
-        Companies recur: 92% to 98% of each test year's firm-years, and 344 of the windows' 347 bankruptcies, are of companies with earlier years on the training side. The use case scores listed companies a lender has seen before as well as new ones, and no company id is a feature; seen and new companies scored alike on the earlier test period 2015-2018 (ROC AUC 0.910 against 0.908).
+        Companies recur: 92% to 98% of each test year's firm-years, and 301 of the windows' 303 bankruptcies, are of companies with earlier years on the training side. The use case scores listed companies a lender has seen before as well as new ones, and no company id is a feature; seen and new companies scored alike on the earlier test period 2015-2018 (ROC AUC 0.910 against 0.908).
 
         Protocol (LEAK-9): a test row's next fiscal year of the same company is in the file for every test year but 2018, and having one means No (ROC AUC 0.94 to 0.97 with the true ids; recovered in part from the features alone). Each test row is predicted from the training rows and its own features only; no feature or model step may use other rows of the file, and a method that reads another row of the same company is called out and not benchmarked.
     """
     split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="fyear",
-        splits=TemporalSplits(window=1, unit="unique", n_windows=11),
+        splits=TemporalSplits(window=1, unit="unique", cutoffs=(2008, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2018)),
         horizon=1,
         horizon_unit="years",
         time_unit="years",

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: american_companies_bankruptcy
 container_format: 2
-checksum: v2:cba7e64dcc9b849f63f3fbb3636678b22a012f94ae2d1e8450f1e01a41d5a9b0
+checksum: v2:ea5e86de5efa180ed5a5ee116220cf7e5884b5e72e25a06dedfcdbebcd76cee5
 build: null
 build_stale: false
 raw_files:
@@ -31,7 +31,7 @@ task:
   group_time_on: null
   grouping: null
 splits:
-  n_repeats: 11
+  n_repeats: 9
   n_folds: 1
   random_state: 4267
   time_horizon: 1
@@ -66,7 +66,7 @@ decisions:
 
 Binary classification of `bankruptcy_next_year`, scored with `roc_auc` on temporal splits by `fyear` (one step is a year). 78,682 rows and 20 features. Source: GitHub (2022).
 
-Not built yet. The current definition gives checksum `v2:cba7e64dcc9b849f63f3fbb3636678b22a012f94ae2d1e8450f1e01a41d5a9b0`.
+Not built yet. The current definition gives checksum `v2:ea5e86de5efa180ed5a5ee116220cf7e5884b5e72e25a06dedfcdbebcd76cee5`.
 
 ## In brief
 
@@ -80,7 +80,7 @@ Not built yet. The current definition gives checksum `v2:cba7e64dcc9b849f63f3fbb
 
 **Known at prediction time.** The statement's 17 items (assets, liabilities, debt, revenue, costs, earnings, retained earnings, market capitalisation), its fiscal year and the company's industry (SIC division and major group).
 
-**What the test data stands for.** Eleven later fiscal years, 2008 to 2018, each tested on its own and trained on every earlier year, whose labels are all known by then; most test companies have earlier years in training.
+**What the test data stands for.** Nine later fiscal years from 2008 to 2018 (not 2009 and 2017), each tested on its own and trained on every earlier year, whose labels are all known by then; most test companies have earlier years in training.
 
 **Our changes to the source.** We restored the decimal points the current release lost, named the columns by the source's split files, dropped net sales (a copy of revenue), and moved the bankruptcy label from every year of a failed company to its last year, as the source defines it.
 
@@ -214,7 +214,7 @@ We start with `american_bankruptcy_dataset.csv` of GitHub sowide/bankruptcy_data
 
 ## Splits
 
-Eleven one-year test windows, newest first: the fiscal years 2018 back to 2008, each trained on every earlier fiscal year, with no gap. They hold 2,723 (2018), 3,014, 3,191, 3,354, 3,504, 3,484, 3,485, 3,513, 3,625, 3,743 and 3,857 (2008) firm-years with 36, 21, 29, 33, 33, 28, 26, 25, 35, 23 and 58 bankruptcies; the training sides hold 96.5% down to 52.3% of the 78,682 rows. The target is the 9 splits an IID split of 78,682 rows would get (SPLIT-33); every eligible year is a window, 11, since a twelfth (2007) would train on 47.3%, under the half-the-rows floor. Which of them to keep is the curator's choice (the record's review).
+Nine one-year test windows, newest first: the fiscal years 2018, 2016, 2015, 2014, 2013, 2012, 2011, 2010 and 2008, each trained on every earlier fiscal year, with no gap. They hold 2,723 (2018), 3,191, 3,354, 3,504, 3,484, 3,485, 3,513, 3,625 and 3,857 (2008) firm-years with 36, 29, 33, 33, 28, 26, 25, 35 and 58 bankruptcies; the training sides hold 96.5% down to 52.3% of the 78,682 rows. The count is the 9 splits an IID split of 78,682 rows would get (SPLIT-33). Eleven years are eligible (2008 to 2018; 2007 would train on 47.3%, under the half-the-rows floor). The curator kept the first and the last eligible year, 2008 (the recession filings) and 2018, and two of the nine years between them leave: the two with the fewest bankruptcies, 2017 (21) and 2009 (23), whose scores are the noisiest; a rule on event counts, not on any model's score (SPLIT-15). They stay in the training sides of the later windows.
 
 Window length: one fiscal year. The source predicts one year ahead (Section 3: "predict bankruptcy at least one year before it happens") and names no refit cadence; statements are annual, so a lender refits once a year (our assumption, for the curator's sign-off), as in the other yearly panels (spanish_homeowners_motor_insurance_2010_2014, wisconsin_local_government_property_insurance_fund). Few events in a window (21 to 58) are part of the task, not a reason for wider windows (TP-9): SPLIT-14 counts the scored rows, and each window holds over 2,700. The source's own split (Sections 3 and 6: "We used data from 1999 until 2011 for training, data from 2012 until 2014 for validation and model comparison, and the remaining years from 2015 to 2018 as a test-set") is one temporal cut, not a refit cadence.
 
@@ -224,26 +224,19 @@ Companies recur: 92% to 98% of each test year's firm-years, and 344 of the windo
 
 Protocol (LEAK-9): a test row's next fiscal year of the same company is in the file for every test year but 2018, and having one means No (ROC AUC 0.94 to 0.97 with the true ids; recovered in part from the features alone). Each test row is predicted from the training rows and its own features only; no feature or model step may use other rows of the file, and a method that reads another row of the same company is called out and not benchmarked.
 
-11 repeat(s) x 1 fold(s) with seed 4267; train 41,189 to 75,959 rows, test 2,723 to 3,857 rows. Prediction horizon: 1 years.
-
-<details>
-<summary>Show all 11 splits</summary>
+9 repeat(s) x 1 fold(s) with seed 4267; train 41,189 to 75,959 rows, test 2,723 to 3,857 rows. Prediction horizon: 1 years.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
 | 0 | 0 | 75959 | 2723 | 1999 | 2017 | 2018 | 2018 |
-| 1 | 0 | 72945 | 3014 | 1999 | 2016 | 2017 | 2017 |
-| 2 | 0 | 69754 | 3191 | 1999 | 2015 | 2016 | 2016 |
-| 3 | 0 | 66400 | 3354 | 1999 | 2014 | 2015 | 2015 |
-| 4 | 0 | 62896 | 3504 | 1999 | 2013 | 2014 | 2014 |
-| 5 | 0 | 59412 | 3484 | 1999 | 2012 | 2013 | 2013 |
-| 6 | 0 | 55927 | 3485 | 1999 | 2011 | 2012 | 2012 |
-| 7 | 0 | 52414 | 3513 | 1999 | 2010 | 2011 | 2011 |
-| 8 | 0 | 48789 | 3625 | 1999 | 2009 | 2010 | 2010 |
-| 9 | 0 | 45046 | 3743 | 1999 | 2008 | 2009 | 2009 |
-| 10 | 0 | 41189 | 3857 | 1999 | 2007 | 2008 | 2008 |
-
-</details>
+| 1 | 0 | 69754 | 3191 | 1999 | 2015 | 2016 | 2016 |
+| 2 | 0 | 66400 | 3354 | 1999 | 2014 | 2015 | 2015 |
+| 3 | 0 | 62896 | 3504 | 1999 | 2013 | 2014 | 2014 |
+| 4 | 0 | 59412 | 3484 | 1999 | 2012 | 2013 | 2013 |
+| 5 | 0 | 55927 | 3485 | 1999 | 2011 | 2012 | 2012 |
+| 6 | 0 | 52414 | 3513 | 1999 | 2010 | 2011 | 2011 |
+| 7 | 0 | 48789 | 3625 | 1999 | 2009 | 2010 | 2010 |
+| 8 | 0 | 41189 | 3857 | 1999 | 2007 | 2008 | 2008 |
 
 
 ### The test windows
@@ -253,16 +246,14 @@ Each test window against its train side, by statistics of the data, never of a m
 | window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
 |---|---|---|---|---|---|---|---|---|
 | 0 | 2018 - 2018 (years) | 2723 | 0.965 | Yes 1.3% (about 36) | Yes 0.8% (about 596) | 0.238 | retained_earnings (0.24), ebitda (0.17), net_income (0.17) | 0 |
-| 1 | 2017 - 2017 (years) | 3014 | 0.927 | Yes 0.7% (about 21) | Yes 0.8% (about 580) | 0.193 | retained_earnings (0.19), market_value (0.16), net_income (0.13) | 0 |
-| 2 | 2016 - 2016 (years) | 3191 | 0.887 | Yes 0.9% (about 29) | Yes 0.7% (about 485) | 0.146 | retained_earnings (0.15), gross_profit (0.12), total_long_term_debt (0.11) | 0 |
-| 3 | 2015 - 2015 (years) | 3354 | 0.844 | Yes 1.0% (about 33) | Yes 0.7% (about 478) | 0.135 | retained_earnings (0.13), gross_profit (0.11), ebitda (0.11) | 0 |
-| 4 | 2014 - 2014 (years) | 3504 | 0.799 | Yes 0.9% (about 33) | Yes 0.8% (about 500) | 0.104 | retained_earnings (0.10), market_value (0.10), gross_profit (0.10) | 0 |
-| 5 | 2013 - 2013 (years) | 3484 | 0.755 | Yes 0.8% (about 28) | Yes 0.7% (about 434) | 0.107 | market_value (0.11), current_assets (0.10), depreciation_and_amortization (0.09) | 0 |
-| 6 | 2012 - 2012 (years) | 3485 | 0.711 | Yes 0.7% (about 26) | Yes 0.6% (about 352) | 0.08 | gross_profit (0.08), current_assets (0.08), retained_earnings (0.08) | 0 |
-| 7 | 2011 - 2011 (years) | 3513 | 0.666 | Yes 0.7% (about 25) | Yes 0.7% (about 390) | 0.074 | retained_earnings (0.07), net_income (0.07), current_assets (0.07) | 0 |
-| 8 | 2010 - 2010 (years) | 3625 | 0.62 | Yes 1.0% (about 35) | Yes 0.7% (about 363) | 0.064 | net_income (0.06), retained_earnings (0.06), ebit (0.05) | 0 |
-| 9 | 2009 - 2009 (years) | 3743 | 0.573 | Yes 0.6% (about 23) | Yes 0.7% (about 293) | 0.063 | retained_earnings (0.06), total_long_term_debt (0.04), depreciation_and_amortiz… | 0 |
-| 10 | 2008 - 2008 (years) | 3857 | 0.523 | Yes 1.5% (about 58) | Yes 0.6% (about 259) | 0.065 | retained_earnings (0.07), net_income (0.06), total_revenue (0.04) | 0 |
+| 1 | 2016 - 2016 (years) | 3191 | 0.887 | Yes 0.9% (about 29) | Yes 0.8% (about 537) | 0.145 | retained_earnings (0.14), total_long_term_debt (0.11), market_value (0.11) | 0 |
+| 2 | 2015 - 2015 (years) | 3354 | 0.844 | Yes 1.0% (about 33) | Yes 0.8% (about 544) | 0.138 | retained_earnings (0.14), gross_profit (0.11), ebitda (0.11) | 0 |
+| 3 | 2014 - 2014 (years) | 3504 | 0.799 | Yes 0.9% (about 33) | Yes 0.7% (about 440) | 0.103 | retained_earnings (0.10), market_value (0.10), gross_profit (0.10) | 0 |
+| 4 | 2013 - 2013 (years) | 3484 | 0.755 | Yes 0.8% (about 28) | Yes 0.7% (about 422) | 0.107 | market_value (0.11), current_assets (0.10), retained_earnings (0.09) | 0 |
+| 5 | 2012 - 2012 (years) | 3485 | 0.711 | Yes 0.7% (about 26) | Yes 0.7% (about 405) | 0.073 | current_assets (0.07), gross_profit (0.07), retained_earnings (0.07) | 0 |
+| 6 | 2011 - 2011 (years) | 3513 | 0.666 | Yes 0.7% (about 25) | Yes 0.8% (about 404) | 0.073 | retained_earnings (0.07), net_income (0.07), current_assets (0.07) | 0 |
+| 7 | 2010 - 2010 (years) | 3625 | 0.62 | Yes 1.0% (about 35) | Yes 0.7% (about 346) | 0.067 | net_income (0.07), retained_earnings (0.07), ebitda (0.06) | 0 |
+| 8 | 2008 - 2008 (years) | 3857 | 0.523 | Yes 1.5% (about 58) | Yes 0.7% (about 292) | 0.063 | retained_earnings (0.06), net_income (0.06), total_long_term_debt (0.03) | 0 |
 
 ## Decisions
 
