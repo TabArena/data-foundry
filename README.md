@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-25 14:24 UTC: 222 claim(s) (Andrej 191, Lennart 12, Myunghwan 19).
+As of 2026-11-25 14:24 UTC: 213 claim(s) (Andrej 182, Lennart 12, Myunghwan 19).
 
 ## Andrej
 
@@ -14,11 +14,9 @@ As of 2026-11-25 14:24 UTC: 222 claim(s) (Andrej 191, Lennart 12, Myunghwan 19).
 | `allstate_claim_prediction_challenge` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `allstate_claims_severity` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `amazon_employee_access` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
-| `american_companies_bankruptcy` | triage | 2026-11-25 | 2026-12-02 | screening (better-data alternatives, 2026-11-25) |
 | `anes_voting_2026` | review | 2026-11-11 | 2026-11-18 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `apistox` | review | 2026-11-11 | 2026-11-18 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `aps_failure` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
-| `aquatic_toxicity_lunghini_consensus` | triage | 2026-11-25 | 2026-12-02 | screening (better-data alternatives, 2026-11-25) |
 | `asp_potassco_classification` | review | 2026-11-11 | 2026-11-18 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `astrazeneca_chembl_logd74` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
 | `audiology_diagnosis` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -45,7 +43,6 @@ As of 2026-11-25 14:24 UTC: 222 claim(s) (Andrej 191, Lennart 12, Myunghwan 19).
 | `coil_2000` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `concrete_compressive_strength` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `covertype` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
-| `craigslist_used_vehicles_f150` | triage | 2026-11-25 | 2026-12-02 | screening (better-data alternatives, 2026-11-25) |
 | `credit_approval` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `credit_card_clients_default` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `credit_g` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -67,7 +64,6 @@ As of 2026-11-25 14:24 UTC: 222 claim(s) (Andrej 191, Lennart 12, Myunghwan 19).
 | `forest_fires` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `frempl_french_motor_personal_line` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `fusionai_gene_fusion_ntv2` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
-| `ga_merchandise_store_sessions` | triage | 2026-11-25 | 2026-12-02 | screening (better-data alternatives, 2026-11-25) |
 | `gallstone_disease` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `garments_worker_productivity` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `gcm_multiclass_cancer` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
@@ -82,7 +78,6 @@ As of 2026-11-25 14:24 UTC: 222 claim(s) (Andrej 191, Lennart 12, Myunghwan 19).
 | `gse40279_methylation_age` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
 | `gse42861_rheumatoid_arthritis_methylation` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
 | `gse50660_smoking_methylation` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
-| `gusto_i_mi_mortality` | triage | 2026-11-25 | 2026-12-02 | screening (better-data alternatives, 2026-11-25) |
 | `gut_cirrhosis_metaml` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
 | `heart_failure_followup_survival` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `heloc` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -128,7 +123,6 @@ As of 2026-11-25 14:24 UTC: 222 claim(s) (Andrej 191, Lennart 12, Myunghwan 19).
 | `musk` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `naticusdroid_android_permissions_dataset` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `nci_aids_antiviral_screen` | review | 2026-11-11 | 2026-11-18 (expired) | BeyondArena v0.2 review page (Andrej) |
-| `nhanes_dxa_body_fat` | triage | 2026-11-25 | 2026-12-02 | screening (better-data alternatives, 2026-11-25) |
 | `noaa_afsc_bottom_trawl_survey_cpue` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `noaa_storm_events_damage` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `obesity_estimation` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -154,7 +148,6 @@ As of 2026-11-25 14:24 UTC: 222 claim(s) (Andrej 191, Lennart 12, Myunghwan 19).
 | `raman_ecoli_fermentation` | add | 2026-11-25 | 2026-12-02 | add-dataset |
 | `raman_fuel_benchtop` | add | 2026-11-25 | 2026-12-02 | add-dataset |
 | `raman_mlrod` | review | 2026-11-25 | 2026-12-02 | Curator review of the two RamanBench definitions; taken over from Lennart by agreement |
-| `ready_biodegradability_huang_zhang` | triage | 2026-11-25 | 2026-12-02 | screening (better-data alternatives, 2026-11-25) |
 | `regensburg_pediatric_appendicitis` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `riboflavin` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
 | `rossmann_store_sales` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -166,7 +159,6 @@ As of 2026-11-25 14:24 UTC: 222 claim(s) (Andrej 191, Lennart 12, Myunghwan 19).
 | `sat11_hand_algo_runtime` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `sberbank_housing_market_forecasting` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `sdss_17` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
-| `sdss_dr17_star_galaxy_quasar` | triage | 2026-11-12 | 2026-12-02 | screening (better-data alternatives, 2026-11-25) |
 | `seismic_bumps` | add | 2026-11-19 | 2026-11-26 | add-dataset (Andrej, review page) |
 | `sepsis_survival_minimal_clinical_records` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `sf_permit_time` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -193,7 +185,6 @@ As of 2026-11-25 14:24 UTC: 222 claim(s) (Andrej 191, Lennart 12, Myunghwan 19).
 | `video_transcoding_time_prediction` | review | 2026-11-11 | 2026-11-18 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `wadden_sea_sibes_macoma_abundance` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `walmart_sales_in_stormy_weather` | add | 2026-10-30 | 2026-11-17 (expired) | add-dataset, zero-inflated batch |
-| `web_page_phishing_detection` | triage | 2026-11-25 | 2026-12-02 | screening (better-data alternatives, 2026-11-25) |
 | `website_phishing` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `wids_diabetes_mellitus` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `wine_quality` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
