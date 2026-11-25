@@ -58,7 +58,7 @@ control boxes, a treatment the experimenter assigned.
   vineyards without prior box history" and the boxes of the other 5 vineyards "functioned as silent controls", which
   hold 12 of the 18 zeros (https://digitalcommons.humboldt.edu/etd/2517).
 
-CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
+CC (2026-10-30, Andrej): `No`, as screened (verified in the zero-inflated screening).
 
 Nest-box prospecting by western bluebirds in 10 Napa vineyards (Jomaa et al., Cal Poly Humboldt; Zenodo data, an MSc
 thesis, no journal article found). A designed playback experiment: per the thesis abstract, "In late summer of

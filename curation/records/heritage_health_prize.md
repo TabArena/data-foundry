@@ -69,7 +69,7 @@ offers no route. So the data is obtainable only on request (HPN's contact page, 
 would make it buildable once HPN approves.
 
 CC (2026-10-30, Andrej): `TBD -> 2nd Tier`, priority 3 (the AI screening had `TBD -> Yes`, priority 3; zero-inflated
-screening review page). "Try one last time to find a copy of the data somewhere. If not possible we set it to 2nd tier
+screening). "Try one last time to find a copy of the data somewhere. If not possible we set it to 2nd tier
 because we would have to request the data first, otherwise we can rediscuss it. Would it make sense to add a decision
 marker for data upon request?" No usable copy turned up (the GitHub copies break the competition's terms; see the
 Assessment above), so the note's 2nd Tier applies; the request to HPN is the way in.

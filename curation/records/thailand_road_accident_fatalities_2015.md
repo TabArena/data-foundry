@@ -73,7 +73,7 @@ Andrej, 2026-10-30) holds it with more rows, dates, locations and a stronger sig
 2nd Tier as screened: a second table for the same task adds nothing the register lacks.
 
 CC (2026-10-30, Andrej): `TBD -> 2nd Tier`, priority 2 (the AI screening had `TBD -> 2nd Tier`, priority 2;
-zero-inflated screening review page, after the AI's answer to the curator's question). "We do second tier because we
+zero-inflated screening, after the AI's answer to the curator's question). "We do second tier because we
 have better data for the same task already )name it=" The better data: `thailand_road_accident_register_2019_2022` (Yes,
 priority 5).
 

@@ -69,14 +69,13 @@ calls and if a dataset is useful for a predictive application although the data 
 this is fine"), as SEL-2 already reads the scope rules: this record is judged on its own use case. The verdict and
 priority stay.
 
-**Consistency check (AI, 2026-10-30):** the review page sets `Yes`, priority 2, while `new_brunswick_depth_to_bedrock`,
+**Consistency check (AI, 2026-10-30):** the screening sets `Yes`, priority 2, while `new_brunswick_depth_to_bedrock`,
 the same task in another country and also without a deposit, stays 2nd Tier, priority 2. Sweden also has the `HKDepth`
 leak suspect and the censored depths. What may set it apart: the authors' code fixes the 56 features and SGU's
 observation archives are open, so the rebuild is specified. Options: `Yes` with that fact (and New Brunswick stays 2nd
 Tier), 2nd Tier for both, or raise New Brunswick too.
 
-CC (2026-10-30, Andrej): `Yes`, priority 2 (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening
-review page, after the AI's consistency check). "For bunswick the rebuild of the table is heavy"
+CC (2026-10-30, Andrej): `Yes`, priority 2 (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening, after the AI's consistency check). "For bunswick the rebuild of the table is heavy"
 
 **Assessment (AI, 2026-11-01):** /add-dataset stopped after the scaffold. The target is ready from SGU's open
 Jorddjupsmodell (CC0, 2024: 1,204,670 bedrock-reached observations, 25.7% zeros, 0.4% more than the authors' 1,199,920),

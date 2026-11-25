@@ -262,8 +262,9 @@ A metric input known at the prediction point (a weight that is a function of the
   refuses a malformed declaration, a prototype on a temporal split, a regime the tag contradicts, a human-set tag
   without a person, a date and a reason of eight words or more, and a time-basis tag or line written by hand beside
   `time_basis` (`data_foundry.time_basis` holds the rules, which `dataset check` applies to a built container too).
-  Definitions written before `TimeBasis` (a forced tag in `data_tags` and a free-text line) still load while
-  `data_foundry.time_basis.ALLOW_UNSTRUCTURED` holds; `dataset check` notes them (`meta_time_basis_unstructured`).
+  The old way, a forced tag in `data_tags` and a free-text line, is refused since every definition moved
+  (`data_foundry.time_basis.ALLOW_UNSTRUCTURED` is false); `dataset check` still notes it on an old container
+  (`meta_time_basis_unstructured`).
   `dataset check` also notes a split that is not temporal and says nothing about why, and date columns in the data of
   such a split unless the basis is `RetrospectiveFillIn` or a forced tag's line gives the reason; it prints where the
   curation record's collection type and facts contradict the definition (`data_foundry.curation.consistency`).

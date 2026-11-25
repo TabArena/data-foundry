@@ -54,7 +54,7 @@ source's temporally disjoint test period and an observed zero regime (64.0% in t
   documentation and the chapter), shape + (60,021 rows, 280 features, dated test files), risk - (aggregates of unknown
   period, duplicates).
 
-**Consistency check (AI, 2026-10-30):** the review page sets 2nd Tier ("Leaks are very likely so we rather prioritize
+**Consistency check (AI, 2026-10-30):** the screening sets 2nd Tier ("Leaks are very likely so we rather prioritize
 other datasets"). `facebook_comment_volume` has the same design (Singh et al. 2015 reused Buza's) and stands at TBD ->
 Yes, and on the same page leaks in `loan_default_prediction_imperial_college` and `nfip_redacted_flood_claims` were sent
 on to be fixed. What may set it apart: the aggregates cover an undocumented period, so the leak cannot be located and
@@ -62,7 +62,7 @@ removed (LEAK-10). Options: 2nd Tier with that fact (and `facebook_comment_volum
 facebook.
 
 CC (2026-10-30, Andrej): `TBD -> Yes`, priority 2 (the AI screening had `TBD -> Yes`, priority 2; zero-inflated
-screening review page, after the AI's consistency check). "Move to zes if zou can resolve the leak, otherwise no"
+screening, after the AI's consistency check). "Move to zes if zou can resolve the leak, otherwise no"
 
 **Assessment (AI, 2026-10-30):** the leak check the curator asked for ("Move to zes if zou can resolve the leak,
 otherwise no"), on the UCI files and attribute list (Buza's chapter not read). Located: the 50 source aggregates (avg,
@@ -102,7 +102,7 @@ CC (2026-11-02, Andrej): metric (Review issue 3, cross-dataset item zi-hits10): 
 
 **Assessment (AI, 2026-11-02):** applied. `mean_group_top_k_overlap` (per group, the share of the k highest true values among the k highest predictions, averaged over the groups; ties at a cut-off counted by their expected share, so the score does not depend on row order) is in `data_foundry.v2.metrics`, tested against Buza's definition as a loop (equal without ties, and equal to the mean over every tie-break on a small case). The definition declares it as the source's metric, `Metric.source("mean_group_top_k_overlap", params={"k": 10}, inputs={"group": "basetime_day"})`, replacing the RMSLE stand-in; the score is Hits@10 / 10. Check on the shipped windows: a sort by the last 24 hours' comments finds 5.25, 6.02 and 5.29 of each day's top 10, a constant prediction 0.8-0.9 (the issue's 5.6 counted ties at the 10th place as hits). MET-2 amended in metrics.md (Cases row, kind `amendment`). `dataset check`: 0 errors.
 
-CC (2026-11-03, Andrej): `year` 2012 and `original_source` `Other` take the definition's values (review page field rows): Buza's release of 2012 is the first publication, UCI's 2014 copy has the same bytes.
+CC (2026-11-03, Andrej): `year` 2012 and `original_source` `Other` take the definition's values: Buza's release of 2012 is the first publication, UCI's 2014 copy has the same bytes.
 
 CC (2026-11-03, Andrej): nine test windows of 6 days, as SPLIT-15 gives a task of this size, not three of 20 (issue 2 (B) in blogfeedback): "With the given sample size we would prioritize 9 folds". No exception to SPLIT-15 is recorded.
 

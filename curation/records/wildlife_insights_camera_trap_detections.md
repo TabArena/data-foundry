@@ -54,7 +54,7 @@ covariates, so a task would have to be built from one chosen project.
 - Priority: gap 0, use case 0, source + (the platform's data dictionary and download guide), shape 0 (no table yet),
   risk - (target and covariates to build, heavy joins).
 
-CC (2026-10-30, Andrej): `No` (the AI screening had `TBD -> 2nd Tier`, priority 1; zero-inflated screening review page).
+CC (2026-10-30, Andrej): `No` (the AI screening had `TBD -> 2nd Tier`, priority 1; zero-inflated screening).
 No reason was given on the page; the record's markers (`No Good Target (yet)`, `Needs extensive data wrangling`) stand
 as the reason.
 

@@ -52,14 +52,14 @@ can only ship as forced IID.
 - Priority: gap 0, use case 0 (no actor named), source + (the committee's data page defines the columns), shape + (a
   season of hourly gauge records, size not measured), risk - (forced IID on storm-correlated hours, noisy labels).
 
-**Consistency check (AI, 2026-10-30):** the review page sets `No` ("forced IID would introduce leaks for this task").
+**Consistency check (AI, 2026-10-30):** the screening sets `No` ("forced IID would introduce leaks for this task").
 That is the first screening's reason (`No`, `Data Quality Issue`, no honest split), which the reject check refuted on
 SPLIT-8: a temporal task released without dates ships as forced IID with the cost noted (`account_debt_south_africa`,
 `mobile_churn`, Lennart). If the storm-correlated hours make this case worse than those (no way to bound the leak), that
 is the fact for an exception to SPLIT-8, and the `No` needs a marker (`Data Quality Issue`, as first proposed);
 otherwise 2nd Tier.
 
-CC (2026-10-30, Andrej): `No` (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening review page,
+CC (2026-10-30, Andrej): `No` (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening,
 after the AI's consistency check). "forced IID would introduce leaks for this task. What are you blabbing, if the data
 is temporal but a temporal spliot is not possible, we cannot split the data and reject it" Marker `Time-series
 (Regression)` set by the AI for this reason (the vocabulary's marker for readings whose timestamp did not survive,
