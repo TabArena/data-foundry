@@ -159,6 +159,7 @@ class CaracasCervicalCancer(AbstractCuratedDataset):
         - Impossible answers become missing: 2 first intercourses after the patient's current age and 2 STD diagnoses longer ago than her age (the age is the clinic's record).
         - Anomaly: other answers contradict each other without being impossible and stay as recorded: 5 patients have a `dx_*` flag set while `dx` is 0, and 7 report an STD with no STD diagnosis counted (the questions may count different things).
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

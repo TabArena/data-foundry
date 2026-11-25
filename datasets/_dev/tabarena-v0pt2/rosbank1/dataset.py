@@ -337,6 +337,7 @@ class Rosbank1(AbstractCuratedDataset):
         ),
     )
 
+    split_leaf = "L-ORDER.windows"
     # Splits: monthly windows of the period end after a 3-month gap (the label window), down to half of the clients.
     temporal = Temporal(
         on="period_end",

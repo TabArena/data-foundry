@@ -14,7 +14,7 @@ tags:
 - Non-IID (Temporal)
 - 'Samples: Over Time'
 - 'Time: Dated'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - Dated Event Log
 collections:
 - New (BeyondArena)

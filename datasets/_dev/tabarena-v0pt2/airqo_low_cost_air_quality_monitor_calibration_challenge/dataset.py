@@ -289,6 +289,7 @@ class AirqoLowCostAirQualityMonitorCalibrationChallenge(AbstractCuratedDataset):
         reference="https://zindi.world/competitions/airqo-low-cost-air-quality-monitor-calibration-challenge#evaluation",
         definition="Square root of the mean squared error on original reference PM2.5, in micrograms per cubic metre",
     )
+    split_leaf = "L-ORDER.exception"
     temporal = Temporal(
         on="created_at",
         splits=TemporalSplits(

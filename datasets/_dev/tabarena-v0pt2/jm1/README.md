@@ -135,7 +135,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2004 |
 | domain | technology & internet |
 | license | Public Domain |
-| data_tags | IID, Retrospective |
+| data_tags | IID, RetrospectiveFillIn |
 | reference | menzies2004good |
 | copy: OpenML 1053, which we read (byte-identical to the PROMISE file) | OpenML (2014): https://www.openml.org/d/1053; license: Public |
 | rows x columns | 8,736 x 22 |
@@ -203,7 +203,7 @@ The first 5 of 8,736 rows of the final frame (random rows: the frame is shuffled
   Kept as shipped: tested, the zeros mark no class. The flag alone scores ROC AUC 0.52 (defect share 0.30
   against 0.21, higher among large modules and lower among small ones), and gradient boosting scores the same
   with the zeros as shipped or set to missing (0.709 against 0.710, 5 folds; review of 2026-11-04).
-- Time basis: Retrospective: one extraction of the static code measures of one version of JM1, joined with each
+- Time basis: RetrospectiveFillIn: one extraction of the static code measures of one version of JM1, joined with each
   function's defect reports (NASA Metrics Data Program; donated to PROMISE on 2 December 2004); the test
   functions are functions of the same code base at the same moment (2026-11-12, Andrej).
   When the code was measured relative to the defect reports and their fixes is not stated. The random split

@@ -17,7 +17,7 @@ tags:
 - Review Prio 1 (Atlas)
 - 'Samples: Over Time'
 - 'Time: Dated'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - 'Entities: Recur'
 - Panel Data
 collections:

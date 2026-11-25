@@ -374,6 +374,7 @@ class NoaaAfscBottomTrawlSurveyCpue(AbstractCuratedDataset):
             "52% zeros: hauls that caught none of the row's taxon (Andrej, 2026-11-03: zero-inflated targets are natural for these tasks and a core challenge)."
         ),
     }
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="date",
         splits=TemporalSplits(window=2, unit="years", cutoffs=(2009, 2011, 2013, 2015, 2017, 2019, 2021, 2023, 2025)),

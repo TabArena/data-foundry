@@ -97,11 +97,12 @@ class ChurnTelcoSouthAsia(AbstractCuratedDataset):
           subscription (data card); `Other` (374 subscribers, the same in both months, while 103 move between 2G and 3G)
           is undocumented and uses data like the 2G users, so it is not 4G. Two levels on the scale and one off it.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """
         the operator scores each subscriber after the same two
-        months of usage (August and September 2015), and churn follows it (`Target: Later`); neither paper says when
+        months of usage (August and September 2015), and churn follows it (`Target: Fixed Delay`); neither paper says when
         the churn was observed. One scoring is one period, too few for three windows (SPLIT-8). Later scorings would
         allow a temporal split. It cannot test a later scoring. Not taken as stationary (Andrej, 2026-11-18): Telecom
         churn is driven by a competitive market and the data already show a network-mix shift; the closest measured

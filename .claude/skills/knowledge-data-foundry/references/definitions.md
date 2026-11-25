@@ -232,13 +232,13 @@ A metric input known at the prediction point (a weight that is a function of the
   the container and the README carry. The tag is a use-case prototype, `"Timeless"` (the target is a fixed property of
   the item, and the data has no time dimension, or its time changes only which items are held, as in a catalogue whose
   entry date does not decide the split), `"RetrospectiveFillIn"` (the data is one snapshot of a moment or period, and
-  the use case fills in what is missing for that time, not a later one; the old name `"Retrospective"` is still read,
-  with a note, until every definition uses the new one), `"StationaryRelation"` (the use case scores later
-  units, too few periods give the windows SPLIT-14 asks for, and the stationary-relation test over the periods held,
-  dated or a rebuilt order, reads the relation flat; it replaces a forced tag) or `"UnseenGroup"` (the use case aims at
-  groups the data does not hold, a site, a well, a protein or a chemical family, not at a later period; it needs a
-  `grouping` on the group); or a forced tag, `"ForcedIIDFromTemporal"` when a forward use case has no usable time or
-  too few periods and ships IID (a definition that declares a `grouping` or `temporal` refuses it),
+  the use case fills in what is missing for that time, not a later one; a definition refuses the old name
+  `"Retrospective"`, which containers built before 2026-11-23 carry and are read with), `"StationaryRelation"` (the
+  use case scores later units, too few periods give the windows SPLIT-14 asks for, and the stationary-relation test
+  over the periods held, dated or a rebuilt order, reads the relation flat; it replaces a forced tag) or `"UnseenGroup"`
+  (the use case aims at groups the data does not hold, a site, a well, a protein or a chemical family, not at a later
+  period; it needs a `grouping` on the group); or a forced tag, `"ForcedIIDFromTemporal"` when a forward use case has no
+  usable time or too few periods and ships IID (a definition that declares a `grouping` or `temporal` refuses it),
   `"ForcedGroupedFromTemporal"` when such a task ships grouped (it needs a `grouping`; SPLIT-8).
   `"AssumedStationaryRelation"` replaces a forced tag where a person judged earlier and later samples interchangeable
   for a reason from the dataset's domain or use case and nothing can be measured (no comparison over time is possible,

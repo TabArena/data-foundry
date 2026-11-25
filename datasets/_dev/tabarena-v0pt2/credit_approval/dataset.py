@@ -71,6 +71,7 @@ class CreditApproval(AbstractCuratedDataset):
         - We encode A14 as numeric, following the description of it being a continuous feature.
         - We drop `A4`, a relabelled copy of `A5` (Andrej, 2026-11-11): u is always g (519 rows), y always p (163), l always gg (2), and the same 6 rows are missing in both. Statlog's recoding of these applications (Australian Credit) also lacks this column.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

@@ -13,7 +13,7 @@ tags:
 - Two-Regime Zeros
 - 'Samples: Over Time'
 - 'Time: Dated'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - 'Entities: Recur'
 - Panel Data
 original_source: Other

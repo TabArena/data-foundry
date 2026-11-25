@@ -165,6 +165,7 @@ class ThyroidDiscordantArchive(AbstractCuratedDataset):
         test later requests, with their changes in the tests ordered and in the share of code R, rather than remove a
         leak.
     """
+    split_leaf = "L-ORDER.exception"
     temporal = Temporal(
         on="request_date",
         splits=TemporalSplits(window=4, unit="months", cutoffs=("1986-02-01", "1986-06-01", "1986-10-01")),

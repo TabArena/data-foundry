@@ -156,6 +156,7 @@ class AustralianVehicleInsurance20042005(AbstractCuratedDataset):
         - CC (2026-11-08, Lennart): the target stays the claim cost per year insured, `exposure` its weight, scored by the weighted Gini (on the answer: "Keep the current target, the clause amended"); decision D8 of 2026-11-06 stands. MET-14's per-contract clause is amended in one change with spanish_motor_insurance_2015_2018: a per-contract target needs the data to record each contract to its end, and where an extract window cuts the policies at its edges the recorded amount is the window's, so the rate ships (the target bullet).
         - CC (2026-11-09, Andrej): `gender` ships again as a rating factor (on the information audit: "If the EU bans it today, we treat it as if it also has been banned before. For non-banned countries, we use it."). Sex leaves an insurance pricing task when the law of the country the data come from bars it today, as if the ban had always applied, and stays where that law allows it; Australian law allows it (s41 of the Sex Discrimination Act 1984 (Cth), read 2026-11-09), and the Tensions row on rating factors in principles.md is amended so. Supersedes the CC of 2026-11-08 (Lennart) that dropped `gender` under the family stance; Andrej's ship of 2026-11-02, which kept `gender`, holds again on this point.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

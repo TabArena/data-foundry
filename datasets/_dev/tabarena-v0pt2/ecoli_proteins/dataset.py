@@ -85,6 +85,7 @@ class EcoliProteins(AbstractCuratedDataset):
           are barely recognised: TabPFN recall 0.02 instead of 0.90 (stratified 3-fold x 20).
         - Split by protein family (Andrej, 2026-11-23): `protein_families.csv` next to this file maps each of the 327 shipped proteins from its SWISS-PROT entry name to a UniProt accession (289 by ID mapping, 20 by a text search of renamed entries; UniProt REST, 2026-11-23) and to its UniProt protein family (270), else to its set of Pfam domains (39), else to itself (18 unresolved). 219 families, at most 12 proteins in one; 11 families hold proteins of more than one location. UniRef50 clusters are too fine to group anything (312 of 319 hold one protein). On 20 x 3 folds without `aac`, family-held-out folds cost logistic regression +0.015 ± 0.004 and TabPFN +0.012 ± 0.005 log loss against random folds (0.472 and 0.463), the ranking unchanged; under random folds 41% of test proteins had a family member in training and carried 33% of the loss.
     """
+    split_leaf = "L-FAMILY.key"
     time_basis = TimeBasis(
         "UnseenGroup",
         """

@@ -297,6 +297,7 @@ class QsarTid11(AbstractCuratedDataset):
         definition="RMSE of MEDIAN_PXC50 (pXC50, already a -log10 scale).",
     )
 
+    split_leaf = "L-CAT.entry-date"
     # Splits: nine windows of one publication year, 2013 back to 2005 (Andrej, 2026-11-19). Every
     # year from 1992 to 2013 is in the data, so one distinct year is one calendar year.
     temporal = Temporal(

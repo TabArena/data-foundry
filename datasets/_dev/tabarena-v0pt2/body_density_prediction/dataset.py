@@ -84,6 +84,7 @@ class BodyDensityPrediction(AbstractCuratedDataset):
 
         - Note, the task is not about bodyfat prediction as this is determined by a deterministic formula. Instead, the task is to estimate the density (which can be used to get the body fat via the deterministic formula). However, density requires a test. So we aim to predict from data the density such that we can skip this test. Which can make a lot of sense, if the test is too expensive as it requires underwater weighing.
     """
+    split_leaf = "L-EXP.random"
     time_basis = TimeBasis(
         "Timeless",
         """

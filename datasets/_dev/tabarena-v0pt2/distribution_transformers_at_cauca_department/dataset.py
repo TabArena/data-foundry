@@ -186,6 +186,7 @@ class DistributionTransformersAtCaucaDepartment(AbstractCuratedDataset):
         - Partial order, left unordered (2026-11-01, CLEAN-14): `client_type`: the residential strata 1-6 are ordered,
           but commercial, industrial and official clients are a second dimension.
     """
+    split_leaf = "L-FORCED.assumed-random"
     time_basis = TimeBasis(
         "AssumedStationaryRelation",
         """

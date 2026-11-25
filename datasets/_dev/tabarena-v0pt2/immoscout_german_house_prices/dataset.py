@@ -190,8 +190,9 @@ class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
     """
+    split_leaf = "L-FILL.random"
     time_basis = TimeBasis(
-        "Retrospective",
+        "RetrospectiveFillIn",
         """
         one scrape of the houses live on ImmoScout24 on 14 July 2020; the asking prices of that
         day, set at listing and possibly lowered since, without listing dates; the use case prices a house against

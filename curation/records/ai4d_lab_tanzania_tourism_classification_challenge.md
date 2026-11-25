@@ -546,7 +546,6 @@ line of 2026-11-04. The record fields agree with the definition.
 
    **Resolved (2026-11-18, Andrej):** A, as implemented: random 3 x 3 folds, `ForcedIIDFromTemporal`. The period count is amended as the note asks (SPLIT-8; cross-dataset decision of 2026-11-18): two batches are too few for a task of 3 repeats.
 
-
 11. **Split: retire as `Too Small`, or keep random as your exception, now that the relation is measured not flat?**
 
    * **Problem:**

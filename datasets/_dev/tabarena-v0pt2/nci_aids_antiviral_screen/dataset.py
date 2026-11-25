@@ -160,6 +160,7 @@ class NciAidsAntiviralScreen(AbstractCuratedDataset):
         - Note: MoleculeNet's HIV.csv (41,127 compounds: 404 CA, 1,039 CM, 39,684 CI) is this SD file read by an older RDKit, salts and the stereo of the coordinates kept, and it carries the charge-code artefact repaired here: 413 `[NaH]`, 24 `[KH]` and 254 `[PH]` against 16 `[Na+]`, 11 `[K+]` and 56 `[P+]` (PROV-15, a problem of that copy; another collection's version is no reason to keep ours damaged, EV-4). So after the repair our structures differ from MoleculeNet's, and from OGB's `ogbg-molhiv` built on it, on the 690 compounds the repair touched: 40,385 of MoleculeNet's 41,116 InChIKey skeletons are among ours, where 41,077 were before the repair. Its conclusions agree with ours for 40,311 of the 40,343 stereo-free SMILES both hold; the other 32 are structures entered here under several NSC numbers with different conclusions, of which MoleculeNet kept one.
         - Licence: the DTP page states no terms.
     """
+    split_leaf = "L-FAMILY.key"
     time_basis = TimeBasis(
         "UnseenGroup",
         """

@@ -16,7 +16,7 @@ tags:
 - Non-IID (Temporal)
 - 'Samples: Over Time'
 - 'Time: Inferred'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - 'Entities: Recur'
 - Clinical Study
 original_source: UCI

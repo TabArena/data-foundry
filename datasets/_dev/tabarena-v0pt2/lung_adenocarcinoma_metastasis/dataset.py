@@ -141,6 +141,7 @@ class LungAdenocarcinomaMetastasis(AbstractCuratedDataset):
         - Array choice (review panel, 2026-11-11): the first title in GEO's sorted order is not always the first hybridisation. For the 10 tumours titled `-1`/`-2` (AD131, AD183, AD255, AD301, AD338, AD340, AD341, AD346, AD347, AD350; two of them metastases) it is the later preparation, and the study's own Dataset A names the other array `Sample1`; the shipped array is the study's `Sample1` for 113 of the 123 tumours. Taking `Sample1` throughout moves no score (random forest 0.879 to 0.870, logistic regression 0.844 to 0.833, within the noise).
         - CC (2026-11-11, Lennart): the second review panel's decisions: USE-1 amended on this case (the use case names the expression tissue-of-origin test as the pathologist's second opinion), kept at 15 metastases (5 per test fold), and the nine agreed fixes (age, sex and pack-years as features, the target as No / Yes, the notes on the negatives, the four positives staged as primaries, the recording mechanism, and the claim corrections); the declared metric, ROC AUC (fallback), is checked.
     """
+    split_leaf = "L-EXP.random"
     time_basis = TimeBasis(
         "Timeless",
         """

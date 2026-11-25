@@ -132,7 +132,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2016 |
 | domain | business & marketing |
 | license | Kaggle Competition Rules |
-| data_tags | IID, Anonymized, Retrospective |
+| data_tags | IID, Anonymized, RetrospectiveFillIn |
 | reference | Jimenez2016SantanderCustomerSatisfaction |
 | rows x columns | 71,080 x 308 |
 | task.target | TARGET |
@@ -261,7 +261,7 @@ We start with the train.csv from Kaggle (76,020 customers, 369 masked columns an
   - Why it stays: the bank keeps one income for all members of a household, so it sees a new customer's
     members, only not their label of the same period, and the link is small. Revisit if Santander states how
     and when the label was taken.
-- Time basis: Retrospective: one extract of Santander's customers (period not stated; competition 2016), with
+- Time basis: RetrospectiveFillIn: one extract of Santander's customers (period not stated; competition 2016), with
   windows of the last month to three months ending at it; the label is a state the host does not define or
   date, read as dissatisfaction at the extract, which the use case fills in for customers not yet known to be
   dissatisfied. No exit trace in the last month: customers whose current account emptied in the last month are

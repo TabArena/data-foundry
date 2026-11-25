@@ -16,7 +16,7 @@ tags:
 - Non-IID (Grouped)
 - 'Samples: Over Time'
 - 'Time: Dated'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - Dated Event Log
 original_source: UCI
 year: '2018'

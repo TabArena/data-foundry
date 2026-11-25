@@ -189,6 +189,7 @@ class HorseColicSurvival(AbstractCuratedDataset):
           fold trains on one visit of a horse and tests another (2026-11-12; until then the time
           order kept each later visit after its first).
     """
+    split_leaf = "L-FORCED.flat-unit"
     time_basis = TimeBasis(
         "StationaryRelation",
         """

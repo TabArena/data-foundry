@@ -153,6 +153,7 @@ class Sdss17(AbstractCuratedDataset):
         ),
     )
 
+    split_leaf = "L-ORDER.windows"
     # Splits: calendar-year windows with 2019 and 2020 merged (`_make_splits`); declared windows have one length
     temporal = Temporal(
         on="date",

@@ -234,6 +234,7 @@ class Mic(AbstractCuratedDataset):
           words (`CODE_LABELS`), in the same order; 2 unordered codes carry their words: `ZSN_A`, `SEX`; 2 scores with
           no words per level are numbers (`SCORES`): `FK_STENOK`, `GB`.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

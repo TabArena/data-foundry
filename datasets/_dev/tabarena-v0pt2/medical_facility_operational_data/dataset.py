@@ -140,6 +140,7 @@ class MedicalFacilityOperationalData(AbstractCuratedDataset):
         reference="https://medicalanalytics.group/operational-data-challenge/",
         definition="Source MAE formula in minutes on all held-out visits within each window, summarized by the standard equal mean of nine window MAEs. The source does not prescribe cross-facility or across-window weighting; no facility normalization is applied.",
     )
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(on="arrival_order", horizon=WINDOW_DAYS, horizon_unit="days")
     splits_comment = """
         Expanding windows in the common arrival order of F1-F3, newest window first. The source trains on six months

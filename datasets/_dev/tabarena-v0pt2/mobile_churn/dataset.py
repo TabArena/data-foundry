@@ -145,6 +145,7 @@ class MobileChurn(AbstractCuratedDataset):
           a month is a position in a continuous cycle (weekday 1.5 is Monday noon), and the source ships it as a number;
           named weekdays and months are ordered categories instead.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

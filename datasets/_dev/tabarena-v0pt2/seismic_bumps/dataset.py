@@ -185,6 +185,7 @@ class SeismicBumps(AbstractCuratedDataset):
         orders the split and is no input. Protocol (LEAK-9): each test shift is predicted from the training rows and its
         own features only; a method that reads other test rows (whose next row holds a row's label) is called out.
     """
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="shift_order",
         time_of="label",

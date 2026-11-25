@@ -120,6 +120,7 @@ class HeartFailureFollowupSurvival(AbstractCuratedDataset):
           the event, the class that sorts second, so it is the metrics' positive class.
         - Class-dependent recording (record marker `Class-dependent Recording`): the filled-in creatinine values followed the outcome (the survivor and death means), as described above; set back to missing.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

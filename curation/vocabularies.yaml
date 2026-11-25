@@ -72,7 +72,7 @@ tags:
 - 'Time: Inferred'
 - 'Time: Within Entity'
 - 'Time: Lost'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - 'Target: Varying Delay'
 - 'Target: Revised Later'
 - 'Target: Unknown'

@@ -208,6 +208,7 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
           ROC AUC 0.572, 0.527 after (on the label 0.552, then 0.531); the full model scores the same with or without
           them (gradient boosting 0.905 and 0.906), so no model had used the route.
     """
+    split_leaf = "L-FORCED.flat-random"
     time_basis = TimeBasis(
         "StationaryRelation",
         """

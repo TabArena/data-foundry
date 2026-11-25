@@ -16,7 +16,7 @@ decision_markers:
 - Anonymized
 tags:
 - 'Samples: One Moment'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - Database Snapshot
 original_source: Other
 year: '2009'

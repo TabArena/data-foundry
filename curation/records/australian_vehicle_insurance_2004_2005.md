@@ -12,7 +12,7 @@ tags:
 - Two-Regime Zeros
 - 'Samples: Over Time'
 - 'Time: Lost'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - Database Snapshot
 original_source: Website
 year: '2008'

@@ -99,6 +99,7 @@ class HepatitisCPrediction(AbstractCuratedDataset):
           cirrhosis (the source's own labels without their code; ordered by the course of the disease).
         - Class-dependent recording (record marker `Class-dependent Recording`): donors and patients follow different precision conventions and ALP is missing only for patients, as described above; harmonised by the rounding and the drop of ALP; ALT, recorded another way for most patients, is dropped too. Before the rounding, BIL alone gives ROC AUC 0.881, and 0.954 with its number format; CREA 0.628, and 0.790 with its format.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

@@ -253,6 +253,7 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
           wells, which the use case meets, are logged like the newest training wells. Windows on the release date cost
           little against random wells of the same size (mean penalty 0.698 against 0.674).
     """
+    split_leaf = "L-FAMILY.key"
     time_basis = TimeBasis(
         "UnseenGroup",
         """

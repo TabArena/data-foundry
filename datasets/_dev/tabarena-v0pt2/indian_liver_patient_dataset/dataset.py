@@ -87,6 +87,7 @@ class IndianLiverPatientDataset(AbstractCuratedDataset):
         - The target (2026-11-01, CLEAN-25): `Selector` ships its classes as words (1 means a liver patient (UCI)).
           Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

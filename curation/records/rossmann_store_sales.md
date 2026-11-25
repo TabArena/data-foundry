@@ -12,7 +12,7 @@ tags:
 - Non-IID (Temporal)
 - 'Samples: Over Time'
 - 'Time: Dated'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - 'Entities: Recur'
 - 'Features: Read Later'
 - Panel Data

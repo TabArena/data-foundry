@@ -169,6 +169,7 @@ class Diabetes130Us(AbstractCuratedDataset):
         would test new patients only, which is not the use case. The windows cost little against random folds over every stay (LightGBM
         0.654 against 0.662; on the first stays 0.625 against 0.643). (2026-11-11, Andrej.)
     """
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="time_index",
         splits=TemporalSplits(window=5519, unit="rows", n_windows=9, min_train_fraction=0.5),

@@ -196,7 +196,7 @@ We start with the train.csv from Kaggle.
   event, the class that sorts second, so it is the metrics' positive class.
 - Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16; `DelayedTarget` before, retired): policy holders priced
   at one moment, the target a claim within the following year (the host's framing; record: Samples: One Moment,
-  Target: Later). One pricing moment is one period, too few for three windows (SPLIT-8). The id is a random
+  Target: Fixed Delay). One pricing moment is one period, too few for three windows (SPLIT-8). The id is a random
   shuffle and no date survives, so neither the moment nor a later pricing round can be checked. Leak test across
   the split: no repeated policy holder, no order along the id, the region code in ps_reg_03 held out scores the
   same (ROC AUC 0.639). Not tested: a later pricing round. Not taken as stationary (Andrej, 2026-11-18): A

@@ -189,6 +189,7 @@ class RfPcp(AbstractCuratedDataset):
         - First release is the August 2014 source archive; the paper appeared online in December 2014 and in 2015.
           The year denotes the first release, not the paper's issue year. No source metadata is overwritten silently.
     """
+    split_leaf = "L-FAMILY.key"
     time_basis = TimeBasis(
         "UnseenGroup",
         """

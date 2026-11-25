@@ -216,6 +216,7 @@ class InfraredThermographyTemperature(AbstractCuratedDataset):
         ),
     )
 
+    split_leaf = "L-ORDER.windows"
     # Splits
     temporal = Temporal(
         on="VisitDate",

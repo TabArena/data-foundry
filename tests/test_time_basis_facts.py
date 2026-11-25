@@ -49,18 +49,18 @@ def test_pending_contradictions_still_hold(found: dict[str, list[str]]) -> None:
 @pytest.mark.parametrize(
     ("facts", "basis", "regime", "expected"),
     [
-        ({"Samples: One Moment", "Target: Later"}, {"ForcedIIDFromTemporal"}, "iid", 0),
+        ({"Samples: One Moment", "Target: Fixed Delay"}, {"ForcedIIDFromTemporal"}, "iid", 0),
         ({"Samples: One Moment"}, {"ForcedIIDFromTemporal"}, "iid", 0),
         ({"Samples: One Moment"}, set(), "temporal", 1),
         ({"Samples: No Time Dimension"}, {"ForcedIIDFromTemporal"}, "iid", 1),
-        ({"Samples: Over Time", "Time: Lost", "Target: Later"}, {"StationaryRelation"}, "iid", 1),
+        ({"Samples: Over Time", "Time: Lost", "Target: Fixed Delay"}, {"StationaryRelation"}, "iid", 1),
         ({"Samples: Over Time", "Time: Dated"}, {"StationaryRelation"}, "iid", 0),
         ({"Samples: Over Time", "Time: Lost"}, {"AssumedStationaryRelation"}, "iid", 0),
         ({"Samples: Over Time", "Time: Lost", "Time: Within Entity"}, {"AssumedStationaryRelation"}, "grouped", 0),
         ({"Samples: Over Time", "Time: Dated"}, {"AssumedStationaryRelation"}, "iid", 1),
         ({"Samples: Over Time", "Time: Inferred"}, {"AssumedStationaryRelation"}, "iid", 1),
         ({"Samples: No Time Dimension"}, {"AssumedStationaryRelation"}, "iid", 1),
-        ({"Samples: One Moment", "Target: Later"}, {"AssumedStationaryRelation"}, "iid", 0),
+        ({"Samples: One Moment", "Target: Fixed Delay"}, {"AssumedStationaryRelation"}, "iid", 0),
     ],
 )
 def test_contradictions(facts: set[str], basis: set[str], regime: str, expected: int) -> None:

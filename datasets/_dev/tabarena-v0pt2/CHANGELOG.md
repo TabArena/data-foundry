@@ -148,6 +148,24 @@ their Resolved lines and the CC lines; decisions a later one replaced are marked
 - Rule: LEAK-27 (fitted scores) amended: drop such a column and keep the task when the rest is still a real one;
   yeast's record gets a re-check question.
 
+## 2026-11-23, every definition names its split-tree leaf; `RetrospectiveFillIn` and `Target: Fixed Delay` in use (no container built)
+
+- `split_leaf` in all 174 definitions: the leaf of `split_tree.md` the split comes from. Where the tree names the
+  definition as an example, that leaf (51); else the one leaf that the walk from the record's collection type reaches
+  and whose split and tag the definition ships (55); else, of two or more, the one its own text gives (68): windows
+  with a person's exception (`L-ORDER.exception`) only where three windows need it, eleven definitions (a window
+  under half the data, a gap shorter than the label delay, or one-day windows under 33 units); whole periods
+  measured not flat (`L-FORCED.periods`) only where the time basis gives that reading, else `L-FORCED.groups`; never a
+  leaf the tree calls unreached. The tests check that every definition names one, that it lies on the walk from the
+  record's type, and that an example names its own leaf.
+- The 13 definitions that wrote `TimeBasis("Retrospective", ...)` write `RetrospectiveFillIn`; their READMEs'
+  `data_tags` row and `Time basis:` line say so (edited, not regenerated), and fiat_500's rename note is gone. A
+  definition now refuses the old name; a container built before still reads with it.
+- `Target: Later` is `Target: Fixed Delay`, beside `Target: Varying Delay`: the vocabulary, the 55 records that carry
+  it, SPLIT-35, records.md, churn_telco_south_asia and porto_seguro. Dated notes in the records keep the old name, as
+  SPLIT-35 says.
+- blood_transfusion's `dataset.py` formatted (`ruff format`), which the lint step asks.
+
 ## 2026-11-22, the split-rules review: the time basis as one declaration (no container built)
 
 Lennart's review of the split rules, applied across the definitions of the split work:

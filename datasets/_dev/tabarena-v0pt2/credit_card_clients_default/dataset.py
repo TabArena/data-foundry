@@ -108,6 +108,7 @@ class CreditCardClientsDefault(AbstractCuratedDataset):
           most 0.1% for the five earlier months, where 2 is 9-13%: the earlier months record a short delay
           differently, alike in both classes.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

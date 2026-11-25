@@ -103,8 +103,9 @@ class Covertype(AbstractCuratedDataset):
           LightGBM is as accurate on the others (0.972 against 0.969): a stand is recognised from location values
           within a few cells. The score mostly measures interpolation between mapped cells inside the four areas.
     """
+    split_leaf = "L-FILL.no-key"
     time_basis = TimeBasis(
-        "Retrospective",
+        "RetrospectiveFillIn",
         """
         one extract of the Forest Service's stand map of four wilderness areas and of terrain,
         road and fire-point layers (date not documented, before the August 1998 donation); the task fills in cells

@@ -223,6 +223,7 @@ class FremplFrenchMotorPersonalLine(AbstractCuratedDataset):
         - CC (2026-11-09, Andrej): a record gets no claim amount of the record its contract change continues and no flag that it continues one (as implemented). The claim counters and the bonus-malus carry the predecessor's claim and its type, the amount showed no signal beyond them in the raw counts, and under the folds it would put one test record's target into another's features.
         - CC (2026-11-09, Andrej): the normalized form: the metric is `normalized_weighted_gini` weighted by `Exposure`, in place of `ordered_lorenz_gini` per unit of `Exposure` (D9, Lennart, 2026-11-06; checked as declared by Lennart on 2026-11-08). Target, weight, features and folds are unchanged; the two forms rank every model the same on each fold, and the scores now read on the 0-to-1 scale of the other cost-per-year tasks (the metric bullet).
     """
+    split_leaf = "L-FORCED.groups"
     time_basis = TimeBasis(
         "ForcedGroupedFromTemporal",
         """

@@ -12,7 +12,7 @@ suggestion: 'Yes'
 tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - Database Snapshot
 original_source: Kaggle
 year: '2011'

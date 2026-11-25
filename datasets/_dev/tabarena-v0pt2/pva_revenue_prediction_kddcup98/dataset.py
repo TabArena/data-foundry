@@ -301,6 +301,7 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
           (the cup's documentation: every field reflects the donor before June 1997 "except the gift receipt dates,
           which will follow the promotion dates"); 61 cells of 60 donors in the cup's files, dated up to June 1998.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

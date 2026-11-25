@@ -68,6 +68,7 @@ class AmazonEmployeeAccess(AbstractCuratedDataset):
         - We drop `ROLE_CODE`: it maps one to one onto `ROLE_TITLE` (343 values each, every title one code and every
           code one title), an exact copy of another column under other labels (Andrej, 2026-11-10).
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

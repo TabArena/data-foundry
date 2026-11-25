@@ -410,6 +410,7 @@ class HouseSales(AbstractCuratedDataset):
         target_transform="log",
     )
 
+    split_leaf = "L-ORDER.windows"
     # Splits
     temporal = Temporal(
         on="date", splits=TemporalSplits(window=3, unit="weeks", n_windows=9, min_train_fraction=0.5, gap=1)

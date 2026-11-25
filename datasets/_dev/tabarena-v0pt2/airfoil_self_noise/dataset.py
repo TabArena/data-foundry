@@ -88,6 +88,7 @@ class AirfoilSelfNoise(AbstractCuratedDataset):
         - Not grouped by chord length alone: 6 chords leave 2 held out per fold, too few groups for a stable score (R^2 SD 0.08 to 0.10 across splits), and the use case stays inside the tested range of sizes.
         - `attack-angle` is numeric since 2026-10-20 (categorical in v1, without a reason; CLEAN-14): an angle in degrees, and under the setup split 72% of the test runs (58% to 94% per split) carry an angle value absent from training. R^2, 5 x 3 folds, untuned (review panel, 2026-10-19), random / run / setup, angle numeric: extra trees 0.943 / 0.855 / 0.774, random forest 0.922 / 0.835 / 0.734, LightGBM 0.921 / 0.832 / 0.736; LightGBM with the categorical angle 0.923 / 0.806 / 0.646. On the shipped splits (10 x 3, 11 setups per test fold), untuned: LightGBM 0.727, random forest 0.717, linear 0.445; no task-probe flags (2026-10-20).
     """
+    split_leaf = "L-EXP.kind"
     time_basis = TimeBasis(
         "UnseenGroup",
         """

@@ -361,6 +361,7 @@ class RainInAustralia(AbstractCuratedDataset):
         ),
     )
 
+    split_leaf = "L-ORDER.windows"
     # Splits
     temporal = Temporal(
         on="Date",

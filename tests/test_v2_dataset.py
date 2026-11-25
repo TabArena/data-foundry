@@ -448,21 +448,22 @@ def _define(**attrs: object) -> type[AbstractCuratedDataset]:
         ),
         ({"data_tags": ("Retrospective",)}, "declare (it|the time basis) as `time_basis = TimeBasis"),
         (
-            {"time_basis": TimeBasis("Retrospective", "x"), "data_tags": ("ForcedIIDFromTemporal",)},
+            {"time_basis": TimeBasis("RetrospectiveFillIn", "x"), "data_tags": ("ForcedIIDFromTemporal",)},
             "drop `ForcedIIDFromTemporal` from `data_tags`",
         ),
         (
-            {"time_basis": TimeBasis("Retrospective", "x"), "curation_comments": "- Time basis: x"},
+            {"time_basis": TimeBasis("RetrospectiveFillIn", "x"), "curation_comments": "- Time basis: x"},
             "drop the `Time basis:` line",
         ),
         (
             {
-                "time_basis": TimeBasis("Retrospective", "x"),
+                "time_basis": TimeBasis("RetrospectiveFillIn", "x"),
                 "temporal": Temporal(on="t", splits=TemporalSplits(window=7, unit="days", n_windows=2)),
             },
             "this split is temporal",
         ),
-        ({"time_basis": "Retrospective"}, "must be a `TimeBasis"),
+        ({"time_basis": "RetrospectiveFillIn"}, "must be a `TimeBasis"),
+        ({"time_basis": TimeBasis("Retrospective", "x")}, "is the old name of `RetrospectiveFillIn`"),
         ({"time_basis": TimeBasis("DelayedTarget", "x")}, "is no time basis"),
         ({"time_basis": TimeBasis("Timeless", "x", set_by="Lennart")}, "go together"),
         ({"time_basis": TimeBasis("Timeless", "x", set_by="Lennart", on="2026-13-01")}, "is not a date"),
@@ -2063,7 +2064,7 @@ def test_a_spectrum_with_missing_intensities_is_flagged(tmp_path: Path, warehous
     assert "1 row(s)" in warnings[0].message
 
 
-@pytest.mark.parametrize("tag", ["Timeless", "Retrospective"])
+@pytest.mark.parametrize("tag", ["Timeless", "RetrospectiveFillIn"])
 def test_a_time_basis_adds_its_tag_and_renders_its_line(tag: str) -> None:
     """`time_basis` adds the tag to `data_tags` and the `Time basis:` bullet to the curation comments (SPLIT-32)."""
     cls = _define(time_basis=TimeBasis(tag, "one census on\n    1 April 1990."), curation_comments="- Read the CSV.")

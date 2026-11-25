@@ -105,6 +105,7 @@ class OnlineShoppersPurchasingIntentionDataset(AbstractCuratedDataset):
         - The target (2026-11-01, CLEAN-25): `Revenue` ships its classes as words (True means revenue). Binary: "Yes" is
           the event, the class that sorts second, so it is the metrics' positive class.
     """
+    split_leaf = "L-FORCED.periods"
     time_basis = TimeBasis(
         "ForcedGroupedFromTemporal",
         """

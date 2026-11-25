@@ -168,6 +168,7 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
         2026-11-11). A home enters the data only once sold, so a cut on the listing date would make the newest listings
         the fast sellers.
     """
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="time_index",
         splits=TemporalSplits(window=None, unit="rows", n_windows=9, min_train_fraction=0.5),

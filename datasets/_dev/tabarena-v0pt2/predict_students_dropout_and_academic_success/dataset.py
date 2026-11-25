@@ -141,6 +141,7 @@ class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
         reason="UCI page and the data paper define no task metric; the first-publication case study compares classifiers on several scores (likely F1 given the class imbalance) without a declared task metric. Not verified in full text."
     )
 
+    split_leaf = "L-ORDER.windows"
     # Splits: one window per cohort, scored when the cohort ends its first year; training holds only the students whose
     # outcome is known by then, so the gap differs by course length (see `splits_comment`).
     temporal = Temporal(on="enrolment_year", horizon=1, horizon_unit="years", gap=1, gap_unit="years")

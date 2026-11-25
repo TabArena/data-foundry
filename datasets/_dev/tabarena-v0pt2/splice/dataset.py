@@ -139,6 +139,7 @@ class Splice(AbstractCuratedDataset):
           against 0.120 at random, logistic regression 0.160 both; 10 x 3, 2026-11-10). Orthologs and sister genes in
           other entries share no identical window and still cross; grouping them by sequence similarity is barred.
     """
+    split_leaf = "L-FAMILY.key"
     time_basis = TimeBasis(
         "UnseenGroup",
         """

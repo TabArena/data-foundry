@@ -162,6 +162,7 @@ class BiasCorrectionRBiasCorrectionR2(AbstractCuratedDataset):
         reason="Cho et al. 2020 report R^2, bias and RMSE side by side (Sec. 3.3) without naming one as the criterion; rmse is the regression fallback (and one of the reported metrics).",
     )
 
+    split_leaf = "L-ORDER.windows"
     # Splits
     temporal = Temporal(on="Date", splits=TemporalSplits(window=7, unit="days", n_windows=9, gap=1))
     splits_comment = """

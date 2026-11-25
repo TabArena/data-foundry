@@ -141,7 +141,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2023 |
 | domain | technology & internet |
 | license | MIT |
-| data_tags | Non-IID, Grouped, Retrospective |
+| data_tags | Non-IID, Grouped, RetrospectiveFillIn |
 | reference | huawei_netop_5g_energy_consumption |
 | copy: the dataset zip of a top solution's repository, which we download | GitHub (2023): https://github.com/ITU-AI-ML-in-5G-Challenge/5G-Energy-Consumption-Modelling-Solution-Team-Farzi-Data-Scientists; license: None |
 | copy: netop/5G-Network-Energy-Consumption | HuggingFace (2025): https://huggingface.co/datasets/netop/5G-Network-Energy-Consumption; license: MIT |
@@ -219,7 +219,7 @@ The first 5 of 92,629 rows of the final frame (random rows: the frame is shuffle
   a number again (a category on 2026-10-31). A weekday or a month is a position in a continuous cycle (weekday
   1.5 is Monday noon), and the source ships it as a number; named weekdays and months are ordered categories
   instead.
-- Time basis: Retrospective: one logged week of 923 stations, 2023-01-01 01:00 to 2023-01-08 00:00, hourly; the
+- Time basis: RetrospectiveFillIn: one logged week of 923 stations, 2023-01-01 01:00 to 2023-01-08 00:00, hourly; the
   energy is metered in the same hour as the load and energy-saving settings, and the use case fills in the
   hours of stations without meters in that week while the other stations of the same hours are measured (day
   and hour are features). Not tested: a later week, or a new station product before it runs, the challenge's
