@@ -48,6 +48,8 @@ CC (2026-10-26, Lennart): "Yes exclude" (issue 1): `No` + `Data Quality Issue`; 
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `pilwd_134k_phishing` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-25, Andrej): reopened on the better-data review and kept retired (Review issue 1, A): no repair removes the artefact and the file has no dates.
+
 ## Review
 
 **Outcome:** not added; retired on 2026-10-26 (`No`, `Data Quality Issue`) and reopened as a question on 2026-11-25. No repair removes the class-form artefact from the page features, and the file carries no date; only a host-name table rebuilt from the URLs scores below the ceiling.
@@ -107,6 +109,10 @@ CC (2026-10-26, Lennart): "Yes exclude" (issue 1): `No` + `Data Quality Issue`; 
    [^len]: CC (2026-10-26, Lennart): "Yes exclude" (issue 1): `No` + `Data Quality Issue`; "Yes" (issue 2): the folder leaves the working copy.
    [^l15]: LEAK-15 (Must): a recording artefact that runs through several features that would matter for prediction in practice, and that cannot be undone, retires the dataset: a feature subset does not help when it also separates same-label groups.
    [^form]: LEAK-13 to LEAK-15 (Must): classes recorded in different forms or from different sources are checked for a shortcut that separates them, and such a dataset is not shipped.
+
+   **Andrej (2026-11-25, correct):** the decision stands.
+
+   **Resolved (2026-11-25, Andrej):** A: PhiUSIIL stays retired (`No`, `Data Quality Issue`), as Lennart decided on 2026-10-26; no repair removes the class-form artefact and the file carries no dates. The dated phishing task is PhreshPhish (`phreshphish_phishing_pages`).
 
 ## Reference
 
