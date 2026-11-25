@@ -49,9 +49,14 @@ PHOTO_TYPES = {
     8: "SKY",
     9: "NOTATYPE",
 }
-# The first day of each test window, newest first: 2019 and 2020 form one window (1 January 2019 to the end of the data,
-# 24 March 2020), then the calendar years 2018 to 2012, as `sdss_17` (2026-11-12, Andrej).
-WINDOW_STARTS = tuple(pd.Timestamp(f"{year}-01-01") for year in range(2019, 2011, -1))
+# The test windows (first day, day after the last; None: the end of the data), newest first, one per targeting era
+# (2026-11-25, Andrej): 2019 with 2020 (1 January 2019 to 24 March 2020, the end of eBOSS and eFEDS; 2019 and 2020 form
+# one window as in `sdss_17`), the calendar year 2016 (eBOSS) and the calendar year 2013 (BOSS).
+WINDOWS = (
+    (pd.Timestamp("2019-01-01"), None),
+    (pd.Timestamp("2016-01-01"), pd.Timestamp("2017-01-01")),
+    (pd.Timestamp("2013-01-01"), pd.Timestamp("2014-01-01")),
+)
 
 
 class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
@@ -76,15 +81,16 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
             "orders the split but is no model input: it arrives with the class."
         ),
         split=(
-            "Later spectra: each year from 2012 to 2018, and January 2019 to March 2020 together, is predicted by a "
-            "model trained on spectra taken before it, as the survey's classifier would be refit at each data "
-            "release and used on the objects observed next. Each window is scored on at most 500,000 of its spectra."
+            "Later spectra: three periods, one in each targeting programme, are each predicted by a model trained on "
+            "every spectrum taken before it, as the survey's classifier would be refit at a data release and used "
+            "on the objects observed next: January 2019 to March 2020 (the end of eBOSS, then eFEDS), the year 2016 "
+            "(eBOSS) and the year 2013 (BOSS)."
         ),
         changes=(
             "We drop the redshift, fitted with the class, the plate and fibre, which record how the object was "
             "chosen, and the spectra the pipeline flags as unreliable. We add the PSF magnitudes, the imaging's "
-            "object type and the dust extinction. We split by the year of the spectrum, 2019 and 2020 in one "
-            "window, and score 2012 on a random 500,000 of its 546,222 spectra."
+            "object type and the dust extinction. We split by the date of the spectrum, testing on three periods, "
+            "2019 and 2020 together, 2016 and 2013."
         ),
         fit="approximate",
         fit_reason=(
@@ -146,9 +152,10 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
         all flagged by `zWarning`, and they have no features to classify with. The files are the release as published; no other file is read. The nights the ranges leave out
         (MJD 52711 to 52720, 55515 and 55516) hold no spectrum of the join: the row count of every range equals the
         join's count per night.
-        - Larger than the row budget: the training sides hold 2,223,206 to 4,197,395 spectra, so the dataset ships as
+        - Larger than the row budget: the training sides hold 2,769,428 to 4,197,395 spectra, so the dataset ships as
           the `_1m` version: every window keeps all earlier spectra on its training side, a benchmark draws 1M of
-          them before a fit, and each test window holds at most 500,000 spectra (only 2012, 546,222, is cut).
+          them before a fit, and each test window holds at most 500,000 spectra (none of the three is cut; 2013,
+          the largest, holds 447,141).
         - We renamed the columns to the Kaggle cut's names and the target to "ObjectType".
         - We drop the 368,771 spectra (7.98%) whose class the source flags as unreliable, `zWarning` not 0 (the
           spectroscopic pipeline's own quality bitmask, sdss4.org/dr17/algorithms/bitmasks; Bolton et al. 2012), as
@@ -230,10 +237,9 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
           were added and the flagged spectra dropped); alone it scores worse than the class shares. A method that
           learns to discount it under the drift does better, which is part of the task. "cam_col" changes the log
           loss by at most 0.001.
-        - Worth benchmarking, measured in one run (the task probe, 5 of the 8 windows, untuned, log loss): LightGBM
-          0.247, random forest 0.261, logistic regression 0.370, the best single feature ("photo_type" in 3 windows,
-          `psfMag_u` or `psfMag_g` in the others) 0.601, the class shares 1.247; LightGBM beats the class shares in
-          every window (before "photo_type" and the extinctions were added: 0.255, 0.265, 0.393, 0.615).
+        - Worth benchmarking, measured in one run (the task probe, the three windows, untuned, log loss): LightGBM
+          0.232, random forest 0.252, logistic regression 0.346, the best single feature ("photo_type" in 2 windows,
+          `psfMag_u` in the other) 0.520, the class shares 1.130; LightGBM beats the class shares in every window.
         - Potential leak, kept on purpose (LEAK-9, an evaluation leak): features built from the other test rows of a
           window, the unlabelled objects observed in the same year in the same patch of sky, tell a model which
           programme observed the patch and lowered the mean log loss by 0.047 in a reviewer's test (before the flagged
@@ -256,7 +262,7 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
     )
 
     split_leaf = "L-ORDER.windows"
-    # Splits: calendar-year windows with 2019 and 2020 merged, the test sides capped (`_make_splits`)
+    # Splits: three windows, one per targeting era, the test sides capped (`_make_splits`)
     temporal = Temporal(
         on="date",
         horizon=1,
@@ -264,31 +270,32 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
         time_of="label",  # the date of the spectrum arrives with the class: no model input (2026-11-12, Andrej)
     )
     splits_comment = """
-        Eight windows, newest first: 1 January 2019 to 24 March 2020, then the calendar years 2018 to 2012, the
-        windows of `sdss_17`; each trains on spectra taken before it, as a classifier refit at each yearly data
-        release (DR8, January 2011, to DR16, December 2019) would. No gap: the user is the survey team, which has
-        its reduced spectra, and so the classes, within days and plans the next plates from them. A public user
-        waits for the next release, whose newest spectra are 0.5 to 3.5 years old at a window's start; a window's
-        length is not that gap. Measured on the windows before the flagged spectra were dropped (LightGBM, mean log
-        loss): no gap 0.450, a 6-month gap 0.495, 18 months 0.590, the public release at each window's start 0.635 (release
-        cutoffs from the release papers, not checked). Any gap of 6 months or more puts 2012 under half the
-        objects (48.0% at 6 months), and 18 months 2013 too (48.0%; 2012 37.3%).
+        Three windows, newest first, one per targeting era: 1 January 2019 to 24 March 2020 (the end of eBOSS on 1
+        March 2019, then eFEDS), the calendar year 2016 (eBOSS) and the calendar year 2013 (BOSS) (2026-11-25,
+        Andrej). Each trains on every spectrum taken before it, as a classifier refit at a yearly data release (DR8,
+        January 2011, to DR16, December 2019) would. Three is the target for this size: SPLIT-15 aims the number of
+        windows at the splits an IID split would get, SPLIT-33's count for two thirds of the 4,249,921 objects, one
+        repeat of 3 folds. The eight yearly windows of `sdss_17` (2012 to 2018, 2019-2020) came from its 100,000 rows,
+        whose target is 9. The windows are spread over the eras because the targeting programme sets the class mix:
+        BOSS used all the dark time until June 2014, eBOSS half of it until 1 March 2019, and quasars are 15.6% of
+        the 2013 spectra, 42.4% of 2016's and 50.3% of 2019-2020's.
 
-        The windows hold 52,526 (2019-2020), 253,228, 200,290, 179,009, 135,619, 212,680, 447,141 and 546,222 (2012)
-        spectra; each test window keeps at most 500,000 of them, drawn at random within the classes, so 2012 is
-        scored on 500,000. Each train side holds every earlier spectrum, 4,197,395 (98.8% of the 4,249,921 objects,
-        2019-2020) down to 2,223,206 (52.3%, 2012), and a benchmark sub-samples it to 1M rows (by default rows drawn
-        at random from the newest year before each window, extended back in time until it holds that many rows,
-        `subsample_train`).
+        The windows hold 52,526 (2019-2020), 179,009 (2016) and 447,141 (2013) spectra, all scored (a test window
+        keeps at most 500,000, drawn at random within the classes). Each train side holds every earlier spectrum:
+        4,197,395 (98.8% of the 4,249,921 objects, 2019-2020), 3,564,868 (83.9%, 2016) and 2,769,428 (65.2%, 2013),
+        and a benchmark sub-samples it to 1M rows (by default rows drawn at random from the newest year before each
+        window, extended back in time until it holds that many rows, `subsample_train`).
 
-        The sizes follow the survey: BOSS used all the dark time until June 2014, eBOSS half of it until it ended on 1
-        March 2019, and 2020 holds only 8 plates (4,265 spectra kept, 5 nights) of one programme (eFEDS), observed before
-        the observatory closed for COVID-19 on 24 March 2020: an atypical newest window, so it is merged with 2019
-        (48,261 spectra kept, 72 plates), as in `sdss_17` (2026-11-12, Andrej).
+        No gap: the user is the survey team, which has its reduced spectra, and so the classes, within days and
+        plans the next plates from them. A public user waits for the next release, whose newest spectra are 0.5 to
+        3.5 years old at a window's start; a window's length is not that gap. Measured on the eight yearly windows
+        before the flagged spectra were dropped (LightGBM, mean log loss): no gap 0.450, a 6-month gap 0.495, 18
+        months 0.590, the public release at each window's start 0.635 (release cutoffs from the release papers, not
+        checked).
 
-        Eight windows, more than the 3 an IID split of this size would get (one repeat of 3 folds): the number is
-        limited by the half-the-objects floor, not by that target, since a 2011 window would train on 41.4% of the
-        objects.
+        2020 holds only 8 plates (4,265 spectra kept, 5 nights) of one programme (eFEDS), observed before the
+        observatory closed for COVID-19 on 24 March 2020: an atypical newest window, so it is merged with 2019 (48,261
+        spectra kept, 72 plates), as in `sdss_17` (2026-11-12, Andrej).
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -339,18 +346,16 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
         return df
 
     def _make_splits(self, df: pd.DataFrame) -> SplitPlan:
-        """The windows of `WINDOW_STARTS`, newest first, each training on every spectrum taken before its start; each
+        """The windows of `WINDOWS`, newest first, each training on every spectrum taken before its start, no gap; each
         test window capped at the collection's test budget, a random draw within the classes.
         """
         dates = df["date"]  # the frame arrives sorted by date with a RangeIndex
         positions = np.arange(len(df))
         splits = {}
-        end = None
-        for start in WINDOW_STARTS:
+        for start, end in WINDOWS:
             test = (dates >= start) & (dates < end) if end is not None else dates >= start
             train = dates < start
             splits[len(splits)] = {0: (positions[train.to_numpy()], positions[test.to_numpy()])}
-            end = start
         frame, splits, _ = sample_temporal_splits(
             df,
             splits,

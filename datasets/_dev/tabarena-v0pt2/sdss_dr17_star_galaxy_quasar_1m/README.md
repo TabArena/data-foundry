@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sdss_dr17_star_galaxy_quasar_1m
 container_format: 2
-checksum: v2:74e46abf92b7251938ff61359ee185f3db3bd8347b64ef76e0d1801a83ecd427
+checksum: v2:08d3d4a963e4ad8eba5be68a36c1f17f07feb5629286ff6d432ef47c33afc3d9
 build: null
 build_stale: false
 data:
@@ -28,7 +28,7 @@ task:
   group_time_on: null
   grouping: null
 splits:
-  n_repeats: 8
+  n_repeats: 3
   n_folds: 1
   random_state: 4267
   time_horizon: 1
@@ -36,11 +36,11 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 2223206
+    min: 2769428
     max: 4197395
   n_test:
     min: 52526
-    max: 500000
+    max: 447141
   row_budget:
     train: 1000000
     test: 500000
@@ -65,7 +65,7 @@ decisions: []
 
 Multiclass classification of `ObjectType`, scored with `log_loss` on temporal splits by `date`. 4,249,921 rows and 19 features. Source: Other (2021).
 
-Not built yet. The current definition gives checksum `v2:74e46abf92b7251938ff61359ee185f3db3bd8347b64ef76e0d1801a83ecd427`.
+Not built yet. The current definition gives checksum `v2:08d3d4a963e4ad8eba5be68a36c1f17f07feb5629286ff6d432ef47c33afc3d9`.
 
 ## In brief
 
@@ -79,9 +79,9 @@ Not built yet. The current definition gives checksum `v2:74e46abf92b7251938ff613
 
 **Known at prediction time.** The sky position, the brightness in five colour bands (u, g, r, i, z) from the survey's images, fitted to the object's shape and as a point source (PSF magnitudes), the imaging pipeline's call of extended or point source, the dust extinction in each band and the camera column. The date of the spectrum orders the split but is no model input: it arrives with the class.
 
-**What the test data stands for.** Later spectra: each year from 2012 to 2018, and January 2019 to March 2020 together, is predicted by a model trained on spectra taken before it, as the survey's classifier would be refit at each data release and used on the objects observed next. Each window is scored on at most 500,000 of its spectra.
+**What the test data stands for.** Later spectra: three periods, one in each targeting programme, are each predicted by a model trained on every spectrum taken before it, as the survey's classifier would be refit at a data release and used on the objects observed next: January 2019 to March 2020 (the end of eBOSS, then eFEDS), the year 2016 (eBOSS) and the year 2013 (BOSS).
 
-**Our changes to the source.** We drop the redshift, fitted with the class, the plate and fibre, which record how the object was chosen, and the spectra the pipeline flags as unreliable. We add the PSF magnitudes, the imaging's object type and the dust extinction. We split by the year of the spectrum, 2019 and 2020 in one window, and score 2012 on a random 500,000 of its 546,222 spectra.
+**Our changes to the source.** We drop the redshift, fitted with the class, the plate and fibre, which record how the object was chosen, and the spectra the pipeline flags as unreliable. We add the PSF magnitudes, the imaging's object type and the dust extinction. We split by the date of the spectrum, testing on three periods, 2019 and 2020 together, 2016 and 2013.
 
 > **Use case fit: approximate (a stand-in with a known gap).** The features exist before a spectrum, but every row is an object the survey's targeting programmes already picked by its colours for a spectrum, so the mix of classes and colours is not that of the objects one would classify without one. Each programme picked its own kind of object, so the class mix of later years differs (quasars 13-16% of the spectra in 2010-2013, 31-51% from 2014).
 
@@ -200,9 +200,10 @@ no photometric object (`bestobjid` = 0): almost all are sky fibres and spectra w
 all flagged by `zWarning`, and they have no features to classify with. The files are the release as published; no other file is read. The nights the ranges leave out
 (MJD 52711 to 52720, 55515 and 55516) hold no spectrum of the join: the row count of every range equals the
 join's count per night.
-- Larger than the row budget: the training sides hold 2,223,206 to 4,197,395 spectra, so the dataset ships as
+- Larger than the row budget: the training sides hold 2,769,428 to 4,197,395 spectra, so the dataset ships as
   the `_1m` version: every window keeps all earlier spectra on its training side, a benchmark draws 1M of
-  them before a fit, and each test window holds at most 500,000 spectra (only 2012, 546,222, is cut).
+  them before a fit, and each test window holds at most 500,000 spectra (none of the three is cut; 2013,
+  the largest, holds 447,141).
 - We renamed the columns to the Kaggle cut's names and the target to "ObjectType".
 - We drop the 368,771 spectra (7.98%) whose class the source flags as unreliable, `zWarning` not 0 (the
   spectroscopic pipeline's own quality bitmask, sdss4.org/dr17/algorithms/bitmasks; Bolton et al. 2012), as
@@ -284,10 +285,9 @@ join's count per night.
   were added and the flagged spectra dropped); alone it scores worse than the class shares. A method that
   learns to discount it under the drift does better, which is part of the task. "cam_col" changes the log
   loss by at most 0.001.
-- Worth benchmarking, measured in one run (the task probe, 5 of the 8 windows, untuned, log loss): LightGBM
-  0.247, random forest 0.261, logistic regression 0.370, the best single feature ("photo_type" in 3 windows,
-  `psfMag_u` or `psfMag_g` in the others) 0.601, the class shares 1.247; LightGBM beats the class shares in
-  every window (before "photo_type" and the extinctions were added: 0.255, 0.265, 0.393, 0.615).
+- Worth benchmarking, measured in one run (the task probe, the three windows, untuned, log loss): LightGBM
+  0.232, random forest 0.252, logistic regression 0.346, the best single feature ("photo_type" in 2 windows,
+  `psfMag_u` in the other) 0.520, the class shares 1.130; LightGBM beats the class shares in every window.
 - Potential leak, kept on purpose (LEAK-9, an evaluation leak): features built from the other test rows of a
   window, the unlabelled objects observed in the same year in the same patch of sky, tell a model which
   programme observed the patch and lowered the mean log loss by 0.047 in a reviewer's test (before the flagged
@@ -298,44 +298,40 @@ join's count per night.
 
 ## Splits
 
-Eight windows, newest first: 1 January 2019 to 24 March 2020, then the calendar years 2018 to 2012, the
-windows of `sdss_17`; each trains on spectra taken before it, as a classifier refit at each yearly data
-release (DR8, January 2011, to DR16, December 2019) would. No gap: the user is the survey team, which has
-its reduced spectra, and so the classes, within days and plans the next plates from them. A public user
-waits for the next release, whose newest spectra are 0.5 to 3.5 years old at a window's start; a window's
-length is not that gap. Measured on the windows before the flagged spectra were dropped (LightGBM, mean log
-loss): no gap 0.450, a 6-month gap 0.495, 18 months 0.590, the public release at each window's start 0.635 (release
-cutoffs from the release papers, not checked). Any gap of 6 months or more puts 2012 under half the
-objects (48.0% at 6 months), and 18 months 2013 too (48.0%; 2012 37.3%).
+Three windows, newest first, one per targeting era: 1 January 2019 to 24 March 2020 (the end of eBOSS on 1
+March 2019, then eFEDS), the calendar year 2016 (eBOSS) and the calendar year 2013 (BOSS) (2026-11-25,
+Andrej). Each trains on every spectrum taken before it, as a classifier refit at a yearly data release (DR8,
+January 2011, to DR16, December 2019) would. Three is the target for this size: SPLIT-15 aims the number of
+windows at the splits an IID split would get, SPLIT-33's count for two thirds of the 4,249,921 objects, one
+repeat of 3 folds. The eight yearly windows of `sdss_17` (2012 to 2018, 2019-2020) came from its 100,000 rows,
+whose target is 9. The windows are spread over the eras because the targeting programme sets the class mix:
+BOSS used all the dark time until June 2014, eBOSS half of it until 1 March 2019, and quasars are 15.6% of
+the 2013 spectra, 42.4% of 2016's and 50.3% of 2019-2020's.
 
-The windows hold 52,526 (2019-2020), 253,228, 200,290, 179,009, 135,619, 212,680, 447,141 and 546,222 (2012)
-spectra; each test window keeps at most 500,000 of them, drawn at random within the classes, so 2012 is
-scored on 500,000. Each train side holds every earlier spectrum, 4,197,395 (98.8% of the 4,249,921 objects,
-2019-2020) down to 2,223,206 (52.3%, 2012), and a benchmark sub-samples it to 1M rows (by default rows drawn
-at random from the newest year before each window, extended back in time until it holds that many rows,
-`subsample_train`).
+The windows hold 52,526 (2019-2020), 179,009 (2016) and 447,141 (2013) spectra, all scored (a test window
+keeps at most 500,000, drawn at random within the classes). Each train side holds every earlier spectrum:
+4,197,395 (98.8% of the 4,249,921 objects, 2019-2020), 3,564,868 (83.9%, 2016) and 2,769,428 (65.2%, 2013),
+and a benchmark sub-samples it to 1M rows (by default rows drawn at random from the newest year before each
+window, extended back in time until it holds that many rows, `subsample_train`).
 
-The sizes follow the survey: BOSS used all the dark time until June 2014, eBOSS half of it until it ended on 1
-March 2019, and 2020 holds only 8 plates (4,265 spectra kept, 5 nights) of one programme (eFEDS), observed before
-the observatory closed for COVID-19 on 24 March 2020: an atypical newest window, so it is merged with 2019
-(48,261 spectra kept, 72 plates), as in `sdss_17` (2026-11-12, Andrej).
+No gap: the user is the survey team, which has its reduced spectra, and so the classes, within days and
+plans the next plates from them. A public user waits for the next release, whose newest spectra are 0.5 to
+3.5 years old at a window's start; a window's length is not that gap. Measured on the eight yearly windows
+before the flagged spectra were dropped (LightGBM, mean log loss): no gap 0.450, a 6-month gap 0.495, 18
+months 0.590, the public release at each window's start 0.635 (release cutoffs from the release papers, not
+checked).
 
-Eight windows, more than the 3 an IID split of this size would get (one repeat of 3 folds): the number is
-limited by the half-the-objects floor, not by that target, since a 2011 window would train on 41.4% of the
-objects.
+2020 holds only 8 plates (4,265 spectra kept, 5 nights) of one programme (eFEDS), observed before the
+observatory closed for COVID-19 on 24 March 2020: an atypical newest window, so it is merged with 2019 (48,261
+spectra kept, 72 plates), as in `sdss_17` (2026-11-12, Andrej).
 
-8 repeat(s) x 1 fold(s) with seed 4267; train 2,223,206 to 4,197,395 rows, test 52,526 to 500,000 rows. Prediction horizon: 1 years. Row budget: at most 500k test rows per split; a benchmark trains on at most 1M. The train sides keep every row available to them; `subsample_train` draws the 1M rows a benchmark fits on from the newest year before each window, extended back in time until it holds that many rows, at random, as rows. The time column `date` dates the label, which arrives after the prediction point: it orders and splits the rows, so every training label was known at its window's start, and is no model input (`feature_columns(container)` leaves it out).
+3 repeat(s) x 1 fold(s) with seed 4267; train 2,769,428 to 4,197,395 rows, test 52,526 to 447,141 rows. Prediction horizon: 1 years. Row budget: at most 500k test rows per split; a benchmark trains on at most 1M. The train sides keep every row available to them; `subsample_train` draws the 1M rows a benchmark fits on from the newest year before each window, extended back in time until it holds that many rows, at random, as rows. The time column `date` dates the label, which arrives after the prediction point: it orders and splits the rows, so every training label was known at its window's start, and is no model input (`feature_columns(container)` leaves it out).
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
 | 0 | 0 | 4197395 | 52526 | 2000-02-04 00:00:00 | 2018-12-20 00:00:00 | 2019-01-01 00:00:00 | 2020-03-24 00:00:00 |
-| 1 | 0 | 3944167 | 253228 | 2000-02-04 00:00:00 | 2017-12-26 00:00:00 | 2018-01-05 00:00:00 | 2018-12-20 00:00:00 |
-| 2 | 0 | 3743877 | 200290 | 2000-02-04 00:00:00 | 2016-12-29 00:00:00 | 2017-01-05 00:00:00 | 2017-12-26 00:00:00 |
-| 3 | 0 | 3564868 | 179009 | 2000-02-04 00:00:00 | 2015-12-22 00:00:00 | 2016-01-02 00:00:00 | 2016-12-29 00:00:00 |
-| 4 | 0 | 3429249 | 135619 | 2000-02-04 00:00:00 | 2014-12-25 00:00:00 | 2015-01-08 00:00:00 | 2015-12-22 00:00:00 |
-| 5 | 0 | 3216569 | 212680 | 2000-02-04 00:00:00 | 2013-12-31 00:00:00 | 2014-01-01 00:00:00 | 2014-12-25 00:00:00 |
-| 6 | 0 | 2769428 | 447141 | 2000-02-04 00:00:00 | 2012-12-23 00:00:00 | 2013-01-03 00:00:00 | 2013-12-31 00:00:00 |
-| 7 | 0 | 2223206 | 500000 | 2000-02-04 00:00:00 | 2011-12-31 00:00:00 | 2012-01-01 00:00:00 | 2012-12-23 00:00:00 |
+| 1 | 0 | 3564868 | 179009 | 2000-02-04 00:00:00 | 2015-12-22 00:00:00 | 2016-01-02 00:00:00 | 2016-12-29 00:00:00 |
+| 2 | 0 | 2769428 | 447141 | 2000-02-04 00:00:00 | 2012-12-23 00:00:00 | 2013-01-03 00:00:00 | 2013-12-31 00:00:00 |
 
 
 ### The test windows
@@ -345,13 +341,8 @@ Each test window against its train side, by statistics of the data, never of a m
 | window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
 |---|---|---|---|---|---|---|---|---|
 | 0 | Jan 2019 - Mar 2020 | 52526 | 0.988 | GALAXY 33.9%, QSO 49.8%, STAR 16.3% | GALAXY 62.2%, QSO 17.4%, STAR 20.4% | 1.288 | i (1.29), z (1.25), delta (1.03) | 0 |
-| 1 | Jan 2018 - Dec 2018 | 253228 | 0.928 | GALAXY 40.9%, QSO 44.3%, STAR 14.8% | GALAXY 63.3%, QSO 15.7%, STAR 21.0% | 1.669 | i (1.67), z (1.65), r (1.28) | 0 |
-| 2 | Jan 2017 - Dec 2017 | 200290 | 0.881 | GALAXY 58.0%, QSO 31.3%, STAR 10.6% | GALAXY 64.0%, QSO 14.5%, STAR 21.5% | 2.221 | i (2.22), z (2.19), r (1.92) | 0 |
-| 3 | Jan 2016 - Dec 2016 | 179009 | 0.839 | GALAXY 43.3%, QSO 42.5%, STAR 14.2% | GALAXY 64.0%, QSO 13.6%, STAR 22.4% | 2.165 | i (2.17), z (2.12), r (1.71) | 0 |
-| 4 | Jan 2015 - Dec 2015 | 135619 | 0.807 | GALAXY 35.1%, QSO 45.5%, STAR 19.4% | GALAXY 65.9%, QSO 11.6%, STAR 22.5% | 1.973 | i (1.97), z (1.84), r (1.47) | 0 |
-| 5 | Jan 2014 - Dec 2014 | 212680 | 0.757 | GALAXY 43.9%, QSO 35.3%, STAR 20.8% | GALAXY 66.9%, QSO 10.7%, STAR 22.4% | 2.353 | delta (2.35), i (1.16), z (1.01) | 0 |
-| 6 | Jan 2013 - Dec 2013 | 447141 | 0.652 | GALAXY 72.5%, QSO 15.9%, STAR 11.6% | GALAXY 66.5%, QSO 9.5%, STAR 24.1% | 2.404 | delta (2.40), g (0.84), r (0.81) | 0 |
-| 7 | Jan 2012 - Dec 2012 | 500000 | 0.523 | GALAXY 73.3%, QSO 14.5%, STAR 12.2% | GALAXY 64.8%, QSO 8.4%, STAR 26.8% | 1.28 | delta (1.28), g (1.24), r (1.19) | 0 |
+| 1 | Jan 2016 - Dec 2016 | 179009 | 0.839 | GALAXY 42.6%, QSO 42.2%, STAR 15.2% | GALAXY 64.5%, QSO 13.3%, STAR 22.2% | 2.133 | i (2.13), z (2.09), r (1.66) | 0 |
+| 2 | Jan 2013 - Dec 2013 | 447141 | 0.652 | GALAXY 72.2%, QSO 15.8%, STAR 12.0% | GALAXY 66.8%, QSO 9.4%, STAR 23.8% | 2.463 | delta (2.46), g (0.78), r (0.77) | 0 |
 
 ## Bundle checks
 
