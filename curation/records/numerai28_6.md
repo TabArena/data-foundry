@@ -14,7 +14,7 @@ tags:
 - New IID
 - 'Samples: Over Time'
 - 'Time: Lost'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - Database Snapshot
 collections:
 - TabArena Reject

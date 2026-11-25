@@ -140,6 +140,7 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
         one month share their scoring (the month explains 8% of the score's variance; some months are themed tastings),
         and whole two-month windows keep each month on one side.
     """
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="review_date",
         splits=TemporalSplits(window=2, unit="months", gap=1, min_train_fraction=0.5),

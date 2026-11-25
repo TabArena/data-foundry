@@ -166,6 +166,7 @@ class AllstateClaimPredictionChallenge1m(AbstractCuratedDataset):
         - CC (2026-11-09, Andrej): the split stays by household over the 2006 book (as implemented); the splits comment gives the 2005-to-2006 score as above the household folds of that build and names the training side's year and the maturity of its amounts.
         - The row budget (1M train, 500k test rows): We keep the whole 2006 renewal book (2.75M rows) and use grouped 3-fold cross-validation over it (v2 split protocol). Each fold tests on at most 500k rows, whole households drawn from its third, and trains on every other row (about 2.25M). The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M rows with `subsample_train`, whose default draws whole households. Both draws take households at random, not stratified (a regression target), so the claim rate stays that of the book. The 2005 history is built on the full file before the filter.
     """
+    split_leaf = "L-FORCED.groups"
     time_basis = TimeBasis(
         "ForcedGroupedFromTemporal",
         """

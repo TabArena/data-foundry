@@ -960,6 +960,7 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
           `pra_class_space_2`, `pra_satisfaction_support`, `ses_cat`, `ses_proxy`, `teacher_familiarity_with_child`,
           `teacher_selfcare_total`.
     """
+    split_leaf = "L-PLACE.groups"
     time_basis = TimeBasis(
         "UnseenGroup",
         """

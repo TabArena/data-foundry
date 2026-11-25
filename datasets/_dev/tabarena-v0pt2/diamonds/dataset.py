@@ -99,8 +99,9 @@ class Diamonds(AbstractCuratedDataset):
           146 exact copies (features and price) fall into one stone each. Untuned LightGBM, 3 x 3 folds, RMSLE:
           random 0.0853, by stone 0.0860.
     """
+    split_leaf = "L-FILL.unit"
     time_basis = TimeBasis(
-        "Retrospective",
+        "RetrospectiveFillIn",
         """
         one scrape of the search site diamondse.info in February 2007 (Wickham, R-help,
         April 2023); each row a listing's grading and its asking price at that moment; the use case prices a stone

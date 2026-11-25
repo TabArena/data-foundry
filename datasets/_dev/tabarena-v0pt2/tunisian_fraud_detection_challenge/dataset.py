@@ -105,6 +105,7 @@ class TunisianFraudDetectionChallenge(AbstractCuratedDataset):
         original="Root Mean Square Error on the supplied target",
         reference="https://zindi.africa/competitions/tunisian-fraud-detection/discussions/436",
     )
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="fiscal_year",
         splits=TemporalSplits(window=1, unit="years", cutoffs=(2015, 2016, 2017)),

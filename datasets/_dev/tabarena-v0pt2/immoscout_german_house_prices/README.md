@@ -132,7 +132,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2020 |
 | domain | business & marketing |
 | license |  |
-| data_tags | IID, Retrospective |
+| data_tags | IID, RetrospectiveFillIn |
 | reference | Shritech2020GermanHousingPricePrediction, OpenML43342Dataset |
 | copy: OpenML 43342, which we download | OpenML (2022): https://www.openml.org/d/43342; license: CC BY-NC-SA 4.0 |
 | rows x columns | 10,203 x 24 |
@@ -233,7 +233,7 @@ We treat this as an IID time-independent task, because the prices is not sold pr
 - We drop all rows where the living space is less than 10 (in Germany, this would likely not be enough living space for a real house, and thus might be a data error.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
   categories in the order of the source's codebook (`ORDINAL_LEVELS`).
-- Time basis: Retrospective: one scrape of the houses live on ImmoScout24 on 14 July 2020; the asking prices of that
+- Time basis: RetrospectiveFillIn: one scrape of the houses live on ImmoScout24 on 14 July 2020; the asking prices of that
   day, set at listing and possibly lowered since, without listing dates; the use case prices a house against
   the same day's market. Not tested: prices after July 2020.
 

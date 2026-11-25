@@ -14,7 +14,7 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - 'Samples: One Moment'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - Database Snapshot
 original_source: UCI
 year: '2016'

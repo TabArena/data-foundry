@@ -64,8 +64,9 @@ class OttoGroupProductClassificationChallenge(AbstractCuratedDataset):
         - Features and data is clean. Top Kaggle experts applied no relevant preprocessing.
         - We drop the index column.
     """
+    split_leaf = "L-FILL.random"
     time_basis = TimeBasis(
-        "Retrospective",
+        "RetrospectiveFillIn",
         """
         the use case cleans up the existing
         catalogue, assigning the products of one 2015 extract to their main categories, which subsidiaries file

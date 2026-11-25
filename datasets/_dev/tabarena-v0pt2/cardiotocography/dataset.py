@@ -123,6 +123,7 @@ class Cardiotocography(AbstractCuratedDataset):
             "expert agreement, not a prediction benchmark."
         ),
     )
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="exam_date",
         splits=TemporalSplits(window=9, unit="months", cutoffs=("1996-10-01", "1997-07-01", "1998-04-01")),

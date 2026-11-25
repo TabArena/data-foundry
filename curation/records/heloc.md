@@ -14,7 +14,7 @@ decision_markers:
 tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - Database Snapshot
 original_source: Other
 year: '2018'

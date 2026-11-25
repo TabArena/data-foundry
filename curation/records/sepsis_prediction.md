@@ -13,7 +13,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Within Entity'
 - 'Time: Lost'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - 'Entities: Recur'
 - Panel Data
 collections:

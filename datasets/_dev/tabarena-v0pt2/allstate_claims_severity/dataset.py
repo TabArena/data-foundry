@@ -84,6 +84,7 @@ class AllstateClaimsSeverity(AbstractCuratedDataset):
           0.5380). The release has no policy id, and a key rebuilt from the values would tie a quarter to almost half
           of the twin groups on a coincidence, so the split does not group on it.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

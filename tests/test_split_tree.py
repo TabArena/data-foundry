@@ -12,7 +12,7 @@ from __future__ import annotations
 import re
 
 import pytest
-from data_foundry.curation._paths import resolve_curation_root
+from data_foundry.curation._paths import records_dir, resolve_curation_root
 from data_foundry.curation.consistency import COLLECTION_TYPES
 from data_foundry.curation.split_tree import (
     KINDS,
@@ -25,6 +25,7 @@ from data_foundry.curation.split_tree import (
     parse,
     placement_problems,
 )
+from data_foundry.curation.store import load_all
 from data_foundry.schema import FORCED_TIME_TAGS
 from data_foundry.time_basis import ALLOW_UNSTRUCTURED, tags_of
 from data_foundry.v2 import discover_definitions
@@ -179,6 +180,40 @@ def test_examples_ship_their_leaf(tree: SplitTree, definitions: dict) -> None:
                 continue
             split, tags = shipped(cls)
             bad += [f"{name}: {p}" for p in placement_problems(leaf, leaf.id, split, tags)]
+    assert not bad, bad
+
+
+def test_every_definition_names_its_leaf(definitions: dict) -> None:
+    """Every definition of the working copy names the leaf its split comes from in `split_leaf` (SPLIT-36)."""
+    assert definitions
+    assert not sorted(name for name, cls in definitions.items() if getattr(cls, "split_leaf", None) is None)
+
+
+def test_split_leaf_lies_on_the_walk_from_the_collection_type(tree: SplitTree, definitions: dict) -> None:
+    """A definition's leaf is one the walk from its record's collection type can end at, a leaf the tree does not call
+    unreached; a leaf's example names that leaf.
+    """
+    types = {}
+    for record in load_all(records_dir()):
+        found = [t for t in record.tags or [] if t in COLLECTION_TYPES]
+        if len(found) == 1:
+            types[record.unique_name] = found[0]
+    departs = {(row["definition"], row["leaf"]) for row in tree.departures}
+    examples = {name: leaf.id for leaf in tree.leaves() for name in leaf.examples}
+    bad = []
+    for name, cls in definitions.items():
+        leaf_id = getattr(cls, "split_leaf", None)
+        if leaf_id is None or (name, leaf_id) in departs:
+            continue
+        kind = types.get(name.removesuffix("_1m"))
+        section = tree.section_named(kind) if kind else None
+        if section is not None and leaf_id not in {leaf.id for leaf in tree.leaves_from(section.name)}:
+            bad.append(f"{name}: {leaf_id} is not on the walk from {kind}")
+        leaf = tree.leaf(leaf_id)
+        if leaf is not None and not leaf.reached:
+            bad.append(f"{name}: {leaf_id} says no v0.2 definition reaches it")
+        if name in examples and examples[name] != leaf_id:
+            bad.append(f"{name}: the example of {examples[name]} names {leaf_id}")
     assert not bad, bad
 
 

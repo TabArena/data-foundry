@@ -11,7 +11,7 @@ priority: 3
 tags:
 - New IID
 - 'Samples: One Moment'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - Clinical Study
 collections:
 - New (BeyondArena)

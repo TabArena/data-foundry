@@ -114,6 +114,7 @@ class QsarAquaticToxicity(AbstractCuratedDataset):
 
           The first three rows score the same test chemicals of the dated windows; the last is the shipped 3-fold over all rows. The split cannot test a chemical class that no tested series resembles, nor whether the 152 chemicals that came from EAT5 and OASIS rather than ECOTOX (undated on the strict join) follow the same pattern; a publication year is an upper bound on the test date.
     """
+    split_leaf = "L-FAMILY.key"
     time_basis = TimeBasis(
         "UnseenGroup",
         """

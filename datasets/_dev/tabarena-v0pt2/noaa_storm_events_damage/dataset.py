@@ -267,6 +267,7 @@ class NoaaStormEventsDamage(AbstractCuratedDataset):
         ),
     }
 
+    split_leaf = "L-ORDER.windows"
     # Splits: three calendar years, newest first, with a three-month gap for the publication delay
     temporal = Temporal(
         on="begin_time",

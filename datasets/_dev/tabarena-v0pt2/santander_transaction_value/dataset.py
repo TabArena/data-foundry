@@ -189,6 +189,7 @@ class SantanderTransactionValue(AbstractCuratedDataset):
           `none` (each row is predicted from its own values), and the splits comment states the protocol line that
           no model step may use other test rows (LEAK-9, as for medical_facility_operational_data and fremtpl2).
     """
+    split_leaf = "L-FORCED.groups"
     time_basis = TimeBasis(
         "ForcedGroupedFromTemporal",
         """

@@ -149,6 +149,7 @@ class Heloc(AbstractCuratedDataset):
           Likely FICO's assembly of the balanced sample from parts without the field; no source documents it.
           `NumInqLast6M` and `NumInqLast6Mexcl7days` stay.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

@@ -231,8 +231,9 @@ class WaddenSeaSibesMacomaAbundance(AbstractCuratedDataset):
         - CC (2026-11-10, Andrej): "Per-year normalised RMSE (C)": the score is `mean_group_normalized_rmse` over the survey years on the density, each survey's map one vote, in place of the pooled RMSE of 2026-11-02.
         - CC (2026-11-09, Andrej): as implemented, "Go ahead" on the consistency check's (a): the elevation stays the latest vaklodingen survey stamped on or before the sample's date, though the map of a past survey could also take a later one. The reason: the survey nearest in time would move the elevation by a median 0.08 m (90th percentile 0.30 m, for the 49.7% of the samples it changes), about the median 0.07 m between two successive surveys of a cell, too little to move a settled join.
     """
+    split_leaf = "L-FILL.unit"
     time_basis = TimeBasis(
-        "Retrospective",
+        "RetrospectiveFillIn",
         """
         the use case fills in the map of a survey year already run, at places between its
         stations (the prediction point); the split holds out whole stations with all their years, 2008-2022. It cannot

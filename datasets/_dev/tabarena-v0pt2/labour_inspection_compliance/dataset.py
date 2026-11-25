@@ -148,6 +148,7 @@ class LabourInspectionCompliance(AbstractCuratedDataset):
             "2026-11-20)."
         ),
     }
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="file_row",
         splits=TemporalSplits(window=10605, unit="rows", n_windows=3, min_train_fraction=0.5),

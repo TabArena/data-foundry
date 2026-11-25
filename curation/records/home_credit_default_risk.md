@@ -15,7 +15,7 @@ tags:
 - Larger IID Data
 - 'Samples: Over Time'
 - 'Time: Lost'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - 'Entities: Recur'
 - Database Snapshot
 collections:

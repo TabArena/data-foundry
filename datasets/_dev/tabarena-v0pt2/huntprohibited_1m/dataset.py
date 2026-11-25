@@ -101,6 +101,7 @@ class Huntprohibited1m(AbstractCuratedDataset):
         - Metric: AP@k as the competition, with k = 12,500 per 500,000-ad test fold, the competition's 2.5% (k = 32,500 of about 1.3M test ads, per the participants). The rules restrict the data to use within the competition, and the ads include illicit or offensive content (rules page).
         - The row budget (1M train, 500k test rows): We keep the whole frame (3,963,488 ads after dropping duplicates) and use 3-fold cross-validation over it (v2 split protocol). Each fold tests on 500k ads of its third, drawn stratified on the target, and trains on the other 3,463,488. The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M ads with `subsample_train`, whose default draws random rows stratified on the target.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

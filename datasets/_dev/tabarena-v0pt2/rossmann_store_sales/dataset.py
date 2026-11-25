@@ -282,6 +282,7 @@ class RossmannStoreSales(AbstractCuratedDataset):
             "split (Lennart, 2026-11-11)."
         ),
     }
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="Date",
         splits=TemporalSplits(window=42, unit="days", gap=1, cutoffs=("2015-06-20", "2014-11-22", "2014-04-26")),

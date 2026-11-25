@@ -12,7 +12,7 @@ tags:
 - Non-IID (Temporal)
 - 'Samples: Over Time'
 - 'Time: Dated'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - 'Features: Read Later'
 - Dated Event Log
 collections:

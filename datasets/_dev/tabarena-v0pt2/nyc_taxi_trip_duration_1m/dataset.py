@@ -198,6 +198,7 @@ class NycTaxiTripDuration1m(AbstractCuratedDataset):
         target_transform="log1p",
     )
 
+    split_leaf = "L-ORDER.windows"
     # Splits
     temporal = Temporal(
         on="pickup_datetime",

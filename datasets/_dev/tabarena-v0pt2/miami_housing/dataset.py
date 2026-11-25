@@ -114,6 +114,7 @@ class MiamiHousing(AbstractCuratedDataset):
         target_transform="log",
     )
 
+    split_leaf = "L-ORDER.windows"
     # Splits: five calendar months, August to December 2016, each trained on all earlier months.
     temporal = Temporal(
         on="sale_month",

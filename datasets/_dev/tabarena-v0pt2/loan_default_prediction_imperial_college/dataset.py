@@ -211,6 +211,7 @@ class LoanDefaultPredictionImperialCollege(AbstractCuratedDataset):
             "(CLEAN-10; a value kept as in home_credit_default_risk)."
         ),
     }
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(on="time_index", splits=TemporalSplits(window=5000, unit="rows", n_windows=9, gap=5800))
     splits_comment = """
         The loans are in time order (`time_index`, the source's id; the data page and the Kaggle admin, topic 6871), and the competition split by time too: its test file holds later loans, whose labels were never released. We hold out 9 windows of 5,000 loans, the newest first, each trained on the loans before a gap of 5,800 loans: the oldest window trains on 51.8% of the rows, the newest on 89.8% (SPLIT-11, SPLIT-14). Nine windows match the 3 x 3 splits a random split of this size gets; each holds 461 to 527 loans with a loss. The window is a count of loans because the file has no dates, so the time a window spans is unknown.

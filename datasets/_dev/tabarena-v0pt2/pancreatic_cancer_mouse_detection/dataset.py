@@ -102,6 +102,7 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
         - The spectrum ships raw, as the NCI-FDA page publishes it, and is declared as one (`special_features`, CLEAN-26, 2026-11-02): the container records its 6,771 columns in m/z order, and a benchmark encodes it row by row, by default with MALDIquant's steps (square root, Savitzky-Golay smoothing, SNIP baseline, total ion current). Processing the spectra lifts every model tested by 0.07 to 0.13 ROC AUC (Andrej, 2026-10-21); the page itself recommends "appropriate normalization, baseline correction, and alignment prior to any such analysis".
         - Selection bias (Andrej, 2026-11-11; marker `Selection Bias`): the classes were bled at different ages: mutants 5.5 ± 0.25 months, controls 6.5 ± 0.2 months (Hingorani et al. 2003, Table 2, prospective study), though the text calls the controls "aged-matched"; the pilot study, not in this download, was matched (9.4 against 9.0 months, Table 1). The release has no age per bleed, so the share of the signal that is age cannot be measured; the mouse grouping cannot remove it, since the gap runs between the classes. The measurement itself is alike for both classes: the same 6,771-bin grid and number format in every file, and both classes measured mixed on the same chips (record, 2026-10-21).
     """
+    split_leaf = "L-EXP.item"
     time_basis = TimeBasis(
         "Timeless",
         """

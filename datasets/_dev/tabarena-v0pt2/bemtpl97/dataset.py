@@ -140,6 +140,7 @@ class Bemtpl97(AbstractCuratedDataset):
         - CC (2026-11-06, Lennart): the claim count becomes the rate with a sample weight: the target is the claims per year insured, expo the weight of the metric and of training and never a feature (LEAK-41, MET-14, MET-15), the floor 1e-4 a year (MET-13). Supersedes Myunghwan's calls of 2026-10-23 ("Retain expo ... Do not annualize, bin, clip, weight") and 2026-10-26 ("expo as a predictor") and the floor of 2026-11-04 (1e-6 on the expected count): the conditional measurement came later (+0.0043, 17% of the skill; never better at quotation), the source itself scores with an offset, and with the weight, dividing does not inflate short records.
         - Note (AI, 2026-11-06), on the CCs above: their scores are on the count target shipped until 2026-11-06, with expo a free feature. The +0.0043 (17% of the skill) is the exposure study's gain of a free expo over the offset on that count deviance (+0.00425, SD 0.00063, 9 shipped folds, untuned LightGBM-Poisson with early stopping), the scale of the Exposure bullet's 0.0036 to 0.0041 from other fits. On the declared metric the honest model scores 0.5979 against the training mean's 0.6193 (3.46%, better on 9 of 9 folds), and expo as a feature would gain +0.0047 to +0.0051 (Exposure bullet).
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

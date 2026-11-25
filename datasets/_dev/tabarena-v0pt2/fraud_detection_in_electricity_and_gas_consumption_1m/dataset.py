@@ -206,8 +206,9 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
           which end is bad is unknown.
         - The row budget (1M train, 500k test rows): We keep the whole frame (1,862,650 invoices of 81,531 clients, all before 2013) and use grouped 3-fold cross-validation over it (v2 split protocol). Each fold tests on at most 500k rows, whole clients drawn from its third and stratified on the target, and trains on every other row (about 1.36M). The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M rows with `subsample_train`, whose default draws whole clients at random, stratified on the target.
     """
+    split_leaf = "L-FILL.whole"
     time_basis = TimeBasis(
-        "Retrospective",
+        "RetrospectiveFillIn",
         """
         the use case screens the clients STEG did not inspect in 2013-2019 from their
         invoices before the cut, filling in the period the findings cover rather than forecasting from 2013; the fraud

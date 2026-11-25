@@ -11,7 +11,7 @@ priority: 2
 tags:
 - New IID
 - 'Samples: One Moment'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - Database Snapshot
 collections:
 - New (BeyondArena)

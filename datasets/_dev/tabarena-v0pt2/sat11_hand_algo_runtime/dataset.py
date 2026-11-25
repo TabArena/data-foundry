@@ -149,6 +149,7 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
           instance ships as a scoring column only (`instance_id`): PAR10 picks per instance the solver with the lowest
           predicted runtime. Never a feature.
     """
+    split_leaf = "L-EXP.kind"
     time_basis = TimeBasis(
         "UnseenGroup",
         """

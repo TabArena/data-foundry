@@ -159,6 +159,7 @@ class LusakaMobility2024(AbstractCuratedDataset):
         reference="https://zindi.world/competitions/2024-lusaka-mobility-prediction-hackathon#evaluation",
         definition="Square root of mean squared error on trip duration in minutes; identity target transform.",
     )
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="trip_start",
         splits=TemporalSplits(

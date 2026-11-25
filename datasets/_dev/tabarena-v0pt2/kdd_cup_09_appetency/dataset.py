@@ -94,6 +94,7 @@ class KddCup09Appetency(AbstractCuratedDataset):
         - The target (2026-11-01, CLEAN-25): `Appetency` ships its classes as words (1 is the event). Binary: "Yes" is
           the event, the class that sorts second, so it is the metrics' positive class.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

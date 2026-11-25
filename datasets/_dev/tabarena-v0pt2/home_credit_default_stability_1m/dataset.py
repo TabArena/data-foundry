@@ -279,6 +279,7 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
         holds 1,094,102, of which a random 1M; the November 2019 window trains on all 828,906 (January to October
         2019).
     """
+    split_leaf = "L-ORDER.windows"
     # Three 4-month windows tile 1 November 2019 to the release end (the curator's pick of
     # 2026-11-11). They replace TabReD's single 4.5-month test period (May to 5 October 2020), so results
     # are not comparable with TabReD's. The windows hold 150,240 / 143,724 / 403,789 applications (3,175 / 4,714 /

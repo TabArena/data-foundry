@@ -106,6 +106,7 @@ class Diabetes3(AbstractCuratedDataset):
         - IID: one row per patient, no visit dates and no time trend in the file order. No missing values or duplicate rows.
         - Not trivial, despite the record's `Trivial` marker: on all 60 shipped splits, the best of least squares, ridge and a random forest (R^2 0.49) beats the best single feature (0.30) by at least 0.08.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

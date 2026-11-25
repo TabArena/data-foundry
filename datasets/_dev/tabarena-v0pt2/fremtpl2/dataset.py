@@ -266,6 +266,7 @@ class Fremtpl2(AbstractCuratedDataset):
         training side; here a policy's later record never trains. The 19 rows of the high-count profile (blocks 2-3)
         only train.
     """
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="idpol_block",
         splits=TemporalSplits(unit="unique", n_windows=3),

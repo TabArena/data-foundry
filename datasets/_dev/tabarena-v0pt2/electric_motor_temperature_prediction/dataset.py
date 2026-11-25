@@ -81,6 +81,7 @@ class ElectricMotorTemperaturePrediction(AbstractCuratedDataset):
         - We also add the EWMA/WEMS features with window sizes of [500, 2000, 4000, 8000]. To avoid the problem of having an incorrect EWMA/WEMS state and since not all recording are warmed up (https://www.kaggle.com/datasets/wkirgsn/electric-motor-temperature/discussion/117319), we drop the first 500 samples (first span) of each profile to simulate such a warm-up.
         - We take the full data (about 1.30M rows after the warm-up drop) with grouped 3-fold cross-validation over the 69 profiles, so every fold trains on about 860k rows. Until 2026-10 an `electric_motor_temperature_prediction_1m` version sub-sampled it to one 1M / 250k split.
     """
+    split_leaf = "L-PAN.new-units"
     time_basis = TimeBasis(
         "UnseenGroup",
         """

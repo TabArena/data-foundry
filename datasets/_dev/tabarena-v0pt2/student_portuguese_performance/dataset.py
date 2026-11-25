@@ -131,6 +131,7 @@ class StudentPortuguesePerformance(AbstractCuratedDataset):
           much cannot be measured without a class id. Kept random: the use case is a school supporting its own
           students, whose classmates it knows; two schools are too few groups for a grouped split.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

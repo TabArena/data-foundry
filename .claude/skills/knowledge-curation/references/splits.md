@@ -152,14 +152,14 @@ about time), and they do not change with the split a definition chooses. A fact 
   (a policy's terms, a patient's visits, the 2 Hz samples of one bench session) is `Time: Within Entity`, whatever the
   samples fact says (electric_motor_temperature_prediction: designed sessions, `Samples: No Time Dimension`). A time
   recoverable only through the outcome does not count (heart_failure_followup_survival can date its survivors only).
-* **Target:** `Target: Later` (after the features, at one shared date or after a fixed window), `Target: Varying
-  Delay` (after a delay that differs between samples: a settlement, a chargeback, a follow-up), `Target: Revised
-  Later` (assigned, then updated or propagated; also a label that accrues while its window stays open, so the
-  newest samples' label is not final: drug_induced_autoimmunity_prediction counts reports since approval, and 49
-  of its 52 drugs approved from 2010 on are negative) or `Target: Unknown` (the source does not say
-  when the target arrives); no tag when the target exists with the features. More than one can hold
-  (ieee_fraud_detection: a chargeback's varying delay, and labels the host then carries along the client's later
-  payments).
+* **Target:** `Target: Fixed Delay` (after the features, at one shared date or after a fixed window; named `Target:
+  Later` until 2026-11-23, as older notes call it), `Target: Varying Delay` (after a delay that differs between samples:
+  a settlement, a chargeback, a follow-up), `Target: Revised Later` (assigned, then updated or propagated; also a label
+  that accrues while its window stays open, so the newest samples' label is not final:
+  drug_induced_autoimmunity_prediction counts reports since approval, and 49 of its 52 drugs approved from 2010 on are
+  negative) or `Target: Unknown` (the source does not say when the target arrives); no tag when the target exists with
+  the features. More than one can hold (ieee_fraud_detection: a chargeback's varying delay, and labels the host then
+  carries along the client's later payments).
 * **Entities:** `Entities: Recur` when the source holds several rows of one entity (a patient, a client, a company),
   with or without an id. A forced split with nothing measured holds out the entity where the use case meets new
   entities, else whole periods, else rows; one whose relation is measured not flat holds out only whole periods
@@ -420,18 +420,18 @@ wilderness areas are too few groups).
 walking the decision tree in [split_tree.md](split_tree.md) from its record's data collection type: the use case first,
 then what the data and its documentation allow, then a measurement where one decides. The leaf reached gives the split
 and the tag that justifies it (a time basis, a forced tag or `ForcedIIDFromGrouped`), and for a temporal split the date
-the windows are cut on and the gap; the definition names it by its ID in `split_leaf`, and the tests check that it ships
-the leaf's split and tag. Answer each question from what it reads; a collection fact only points to where to look, and
-only a person answers the questions the tree marks _person decides_. A forced leaf, a leaf no definition has reached
-yet, and a question no answer fits go to a human reviewer with the split suggested and the facts behind it; only a
-reviewer adds a branch. A split the source prescribes answers a question only where the source chose it for the use
-case: matching the leaf, it fills in the leaf's periods, gap and training history (SPLIT-19); differing, the leaf
-decides (SPLIT-5). A definition that ships another split than its leaf names the leaf, what the source prescribed and
-the reason in its `splits_comment`, and the departure goes to a reviewer. The rules above still decide each step (the
-windows, the gap, the groups, the leak tests); the tree orders them. Why: the same questions asked in the same order
-make splits of similar data agree, and show where a dataset is new. Cases: the 175 v0.2 definitions placed when the tree
-was adopted and regenerated (2026-11-17); the definitions that ship another split, each departure confirmed by a
-reviewer, are listed at the end of split_tree.md.
+the windows are cut on and the gap; every definition names it by its ID in `split_leaf`, and the tests check that it
+lies on the walk from the record's type and that the definition ships the leaf's split and tag. Answer each question
+from what it reads; a collection fact only points to where to look, and only a person answers the questions the tree
+marks _person decides_. A forced leaf, a leaf no definition has reached yet, and a question no answer fits go to a human
+reviewer with the split suggested and the facts behind it; only a reviewer adds a branch. A split the source prescribes
+answers a question only where the source chose it for the use case: matching the leaf, it fills in the leaf's periods,
+gap and training history (SPLIT-19); differing, the leaf decides (SPLIT-5). A definition that ships another split than
+its leaf names the leaf, what the source prescribed and the reason in its `splits_comment`, and the departure goes to a
+reviewer. The rules above still decide each step (the windows, the gap, the groups, the leak tests); the tree orders
+them. Why: the same questions asked in the same order make splits of similar data agree, and show where a dataset is
+new. Cases: the 175 v0.2 definitions placed when the tree was adopted and regenerated (2026-11-17); the definitions that
+ship another split, each departure confirmed by a reviewer, are listed at the end of split_tree.md.
 
 **SPLIT-37 (Should; relates to SPLIT-4, SPLIT-31 and SPLIT-32).** A dataset drawn from an **expanding science
 catalogue** is a cut of a database or a testing programme that keeps growing: a bioactivity database's releases, a

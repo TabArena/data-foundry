@@ -126,6 +126,7 @@ class LtVehicleLoanDefaultPrediction(AbstractCuratedDataset):
         reference="https://www.analyticsvidhya.com/datahack/contest/ltfs-datascience-finhack-an-online-hackathon/",
         definition="ROC AUC between predicted default probabilities and the original observed first-EMI outcome.",
     )
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="DisbursalDate",
         splits=TemporalSplits(window=4, unit="days", n_windows=9, min_train_fraction=0.5),

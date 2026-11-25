@@ -15,7 +15,7 @@ priority: 2
 tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - 'Entities: Recur'
 - Database Snapshot
 original_source: UCI

@@ -71,8 +71,9 @@ class Fiat500(AbstractCuratedDataset):
         - Partial order, left unordered (2026-11-01, CLEAN-14): `model`: pop is the base trim; lounge and sport are both
           above it but not ranked against each other.
     """
+    split_leaf = "L-FILL.random"
     time_basis = TimeBasis(
-        "Retrospective",
+        "RetrospectiveFillIn",
         """
         one crawl of listings (published on Kaggle in 2020; the crawl date is not stated),
         whose prices the use case fills in for the same market. It cannot test a later market.

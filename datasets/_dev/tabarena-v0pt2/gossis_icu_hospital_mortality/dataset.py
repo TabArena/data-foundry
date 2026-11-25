@@ -155,6 +155,7 @@ class GossisIcuHospitalMortality(AbstractCuratedDataset):
           random splits) and the grouped split scores 0.901 against 0.903 random: case mix, not the site, carries
           the outcome.
     """
+    split_leaf = "L-PLACE.groups"
     time_basis = TimeBasis(
         "UnseenGroup",
         """

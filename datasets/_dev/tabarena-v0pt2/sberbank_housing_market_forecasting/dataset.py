@@ -298,6 +298,7 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         No gap: a sale's price is known when it is signed, and the economic statistics are already read one period
         back for their release delay.
     """
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="timestamp",
         splits=TemporalSplits(

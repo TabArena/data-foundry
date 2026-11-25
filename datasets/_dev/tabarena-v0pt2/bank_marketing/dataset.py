@@ -144,6 +144,7 @@ class BankMarketing(AbstractCuratedDataset):
         'time_of="label")`), it sets the test windows, and since 2026-11-21 it is no model input. It is kept in '
         "the frame because the split needs it and the file holds no date.",
     }
+    split_leaf = "L-ORDER.windows"
     # Splits: ten windows of unequal length from `WINDOW_STARTS` (`_make_splits`); declared windows have one length
     temporal = Temporal(
         on="time_index",

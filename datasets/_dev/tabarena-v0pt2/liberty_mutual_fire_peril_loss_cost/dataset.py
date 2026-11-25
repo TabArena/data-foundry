@@ -111,6 +111,7 @@ class LibertyMutualFirePerilLossCost(AbstractCuratedDataset):
         - Note: a test fold holds about 400 losses, so the weighted Gini of one model moves by a fold standard deviation of 0.042-0.045 (9 random or grouped folds; 0.035-0.072 within one repeat of 3 folds); differences between methods below that are fold noise (EV-8).
         - Anomaly: the location blocks are coarse: 2,588 distinct geodemographic vectors, 327 crime and 24,531 weather vectors.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

@@ -78,6 +78,7 @@ class GiveMeSomeCredit(AbstractCuratedDataset):
           missing (29,731 rows); the used share of credit limits exceeds 1 in 3,321 rows (up to 50,708), and the value
           0.9999999 recurs in 10,256 rows.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

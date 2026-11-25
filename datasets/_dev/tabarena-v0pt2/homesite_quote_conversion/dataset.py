@@ -111,6 +111,7 @@ class HomesiteQuoteConversion(AbstractCuratedDataset):
         definition="Area under the ROC curve between predicted probability of QuoteConversion_Flag and the observed label.",
     )
 
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="Original_Quote_Date",
         splits=TemporalSplits(window=1, unit="months", n_windows=9, min_train_fraction=0.5),

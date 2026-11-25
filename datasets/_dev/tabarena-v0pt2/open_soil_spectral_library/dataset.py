@@ -115,6 +115,7 @@ class OpenSoilSpectralLibrary(AbstractCuratedDataset):
 
         - Curator-requested few-band diagnostics (2026-10-27, on the percent target with all 1,701 bins, before the 600 cm-1 bin was dropped) on three fixed grouped samples found two-band OLS RMSE 5.98 and five-band OLS 4.01 percentage points, versus 1.96 for retained full-spectrum Ridge. Ten training-fitted PCs retained 98.6% of input variance; PCA10 Ridge RMSE was 4.55 and PCA10 LightGBM 2.77, versus full-spectrum LightGBM 2.43. These are bounded, untuned comparisons on identical 5,000-row train/test samples per fold, not full-data rankings or deployed preprocessing. All 1,700 retained bins ship as inputs.
     """
+    split_leaf = "L-FAMILY.key"
     time_basis = TimeBasis(
         "UnseenGroup",
         """

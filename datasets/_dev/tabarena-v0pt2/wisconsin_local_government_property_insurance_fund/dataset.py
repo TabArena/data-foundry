@@ -230,6 +230,7 @@ class WisconsinLocalGovernmentPropertyInsuranceFund(AbstractCuratedDataset):
             "and a 2007 window would train on 2006 alone, 20.5% of the rows, under the 30% floor (Andrej, 2026-11-19)."
         ),
     }
+    split_leaf = "L-ORDER.exception"
     temporal = Temporal(
         on="Year",
         splits=TemporalSplits(window=1, unit="unique", n_windows=3),

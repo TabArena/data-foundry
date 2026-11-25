@@ -134,7 +134,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2007 |
 | domain | business & marketing |
 | license | MIT License |
-| data_tags | Non-IID, Grouped, Retrospective |
+| data_tags | Non-IID, Grouped, RetrospectiveFillIn |
 | reference | wickham2016data |
 | rows x columns | 53,940 x 11 |
 | task.target | price |
@@ -199,7 +199,7 @@ The first 5 of 53,940 rows of the final frame (random rows: the frame is shuffle
   error matters relative to the price.
 - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are
   ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`).
-- Time basis: Retrospective: one scrape of the search site diamondse.info in February 2007 (Wickham, R-help,
+- Time basis: RetrospectiveFillIn: one scrape of the search site diamondse.info in February 2007 (Wickham, R-help,
   April 2023); each row a listing's grading and its asking price at that moment; the use case prices a stone
   against the same day's price list. Not tested: prices after 2007.
 - Split by stone (2026-11-12, Andrej): 21,493 rows (40%) share carat, colour, clarity,

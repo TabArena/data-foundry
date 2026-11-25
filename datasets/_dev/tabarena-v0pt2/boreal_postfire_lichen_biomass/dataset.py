@@ -236,8 +236,9 @@ class BorealPostfireLichenBiomass(AbstractCuratedDataset):
         - CC (2026-11-09, Andrej): B, "Burn id from the national fire polygons. Before finally adding this, ablate it and analyze the impact of this decision": the SK plots are grouped by the NFDB or NBAC burn of their fire year, implemented after the ablation; superseded on 2026-11-10 (next bullet).
         - CC (2026-11-10, Andrej): (a), "Back to A, with the note": one group per SK plot again; the grouping by the fire maps of 2026-11-09 is removed, and its measured effect is in the notes ("SK burns are not recovered").
     """
+    split_leaf = "L-FILL.unit"
     time_basis = TimeBasis(
-        "Retrospective",
+        "RetrospectiveFillIn",
         """
         the plots were surveyed once, and the use case fills in lichen biomass in burns
         nobody surveyed; the split holds out whole burn areas. It cannot test a later survey.

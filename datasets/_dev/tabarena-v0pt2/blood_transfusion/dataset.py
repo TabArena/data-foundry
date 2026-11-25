@@ -69,6 +69,7 @@ class BloodTransfusion(AbstractCuratedDataset):
           51 of the 590 repeat donors more donations than a two-month gap between donations allows; these 51 give blood
           in March 2007 at the same rate as the others (27% against 27%). The source does not say.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

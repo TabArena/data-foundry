@@ -240,6 +240,7 @@ class LendingClub(AbstractCuratedDataset):
         and 0.663 against 0.662; on the matched test loans 0.682 against 0.698, 0.660 against 0.692 and 0.676
         against 0.708 (2026-11-23).
     """
+    split_leaf = "L-ORDER.exception"
     temporal = Temporal(on="issue_d", horizon=3, horizon_unit="months")  # the windows: `SPLIT_WINDOWS`
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

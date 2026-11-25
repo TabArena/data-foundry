@@ -136,6 +136,7 @@ class AspPotasscoClassification(AbstractCuratedDataset):
         - Metric: ASlib's PAR10 of the configuration predicted fastest per instance. ASlib adds the feature costs (`feature_costs.arff`) to the selected runtime; they are the same whichever configuration is picked, so we leave them out.
         - To do: rename the dataset (it is no longer a classification task).
     """
+    split_leaf = "L-EXP.kind"
     time_basis = TimeBasis(
         "UnseenGroup",
         """
