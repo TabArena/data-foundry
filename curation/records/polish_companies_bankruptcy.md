@@ -55,7 +55,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
 
 **Outcome:** added. Stationarity reasoning of 2026-11-18: the forced tag stays (issue 1, A, Andrej).
 
-**Main points:** The v0.2 review page's issues are in this review from 2026-11-25 as 5, 6, 7; the parked ones are open again. Better-data check (2026-11-25, issue 4): Add american_companies_bankruptcy (US listed firms 1999-2018, raw statement items, one extraction for both classes, a dated temporal split) and then retire polish as replaced, which also closes its parked issues 5 and 6; v4finbench is not a replacement, since its label is a ratio rule that its own three ratios predict as well as all 131 features. Earlier: Nothing open: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation` (issue 1 resolved on 2026-11-18).
+**Main points:** The BeyondArena v0.2 review's issues are in this review from 2026-11-25 as 5, 6, 7; the parked ones are open again. Better-data check (2026-11-25, issue 4): Add american_companies_bankruptcy (US listed firms 1999-2018, raw statement items, one extraction for both classes, a dated temporal split) and then retire polish as replaced, which also closes its parked issues 5 and 6; v4finbench is not a replacement, since its label is a ratio rule that its own three ratios predict as well as all 131 features. Earlier: Nothing open: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation` (issue 1 resolved on 2026-11-18).
 
 **Issues for Andrej:**
 
@@ -117,7 +117,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
      - With the American data the benchmark gets what Andrej asked for on the record ("might reverse the feature engineering"): raw statement items from which a lender builds the ratios, one recording route for both classes, and real dates. That allows a true temporal split instead of a forced random one.
      - The American population differs from polish: listed US companies instead of Polish EMIS companies. The task (a lender or investor scores a company's latest annual statement for a filing within a year) stays the same.
      - With polish retired, corporate bankruptcy in v0.2 is Taiwanese (random, time lost) plus American (temporal). These are two populations with no overlap.
-   * **Experiments:** (2026-11-25; downloads: GitHub sowide/bankruptcy_dataset, main branch, `american_bankruptcy_dataset.csv` and `dataset_paper.zip`; Kaggle sebastiantomczak10/v4-group-corporate-bankruptcy, `company_years.parquet`, `company_years_h2.parquet` (paper horizon h=1), `column_descriptions.md`; GitHub genwro-ai/V4FinBench for the label code. Fits on Slurm, untuned LightGBM against logistic regression on quantile-normalised inputs.)
+   * **Experiments:** (2026-11-25; downloads: GitHub sowide/bankruptcy_dataset, main branch, `american_bankruptcy_dataset.csv` and `dataset_paper.zip`; Kaggle sebastiantomczak10/v4-group-corporate-bankruptcy, `company_years.parquet`, `company_years_h2.parquet` (paper horizon h=1), `column_descriptions.md`; GitHub genwro-ai/V4FinBench for the label code. Fits, untuned LightGBM against logistic regression on quantile-normalised inputs.)
      - American, the decimal repair. A token without a decimal point is the value with its point lost, so divide it by 1,000. This rule is checked against the paper's own split files, which hold correct values:
 
        | Check | Result |
@@ -186,7 +186,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
    - On B or D, American record `curation/records/american_companies_bankruptcy.md` (exists on main, `TBD -> Yes`):
      - Source: `https://github.com/sowide/bankruptcy_dataset` (main), file `american_bankruptcy_dataset.csv`, read with `dtype=str`.
      - Repair: every X1-X18 token without a `.` is divided by 1000. Then check that EBIT + D&A = EBITDA in every row.
-     - Column names (the paper's order, not Kaggle's): X1 current_assets, X2 total_assets, X3 cost_of_goods_sold, X4 total_long_term_debt, X5 depreciation_and_amortization, X6 ebit, X7 ebitda, X8 gross_profit, X9 inventory, X10 total_current_liabilities, X11 net_income, X12 retained_earnings, X13 total_receivables, X14 total_revenue, X15 market_value, X16 total_liabilities, X17 net_sales (drop: a copy of X14), X18 total_operating_expenses.
+     - Column names (the split files' header order; the Kaggle names and the paper's own Table 2 are both wrong for the CSV, since under them D&A + EBIT = EBITDA holds in 0.01% of rows): X1 current_assets, X2 total_assets, X3 cost_of_goods_sold, X4 total_long_term_debt, X5 depreciation_and_amortization, X6 ebit, X7 ebitda, X8 gross_profit, X9 inventory, X10 total_current_liabilities, X11 net_income, X12 retained_earnings, X13 total_receivables, X14 total_revenue, X15 market_value, X16 total_liabilities, X17 net_sales (drop: a copy of X14), X18 total_operating_expenses.
      - Categorical: Division, MajorGroup.
      - Target: `status_label == 'failed'` and `fyear == max fyear of company_name` → 1, else 0 (609 positives, 0.77%).
      - Split: temporal on `fyear`, the source's train 1999-2011, validation 2012-2014, test 2015-2018. Also say how 3x3 temporal folds would reach 33 scored test events.
@@ -196,7 +196,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
    - On B, once American ships: polish record `No (Retired)`, add `Class-dependent Recording`, keep `Selection Bias`, a CC line naming american_companies_bankruptcy as the replacement and citing issue 5's numbers, `Andrej` in checked_by. Remove the v0.2 folder, clear `v2_path`, add a CHANGELOG entry. Close issues 5-3 on the page with this decision.
    - On C, apply issue 5 D and issue 6 A as written on the page, and build American as above.
    - On E, v4finbench needs its own review first (label, `operational_status`, country codes).
-   - Evidence and scripts: `~/claude_jobs/better_data_1125/work/polish_companies_bankruptcy/` (`scripts/am_repair_check.py`, `am_models.py`, `am_markers2.py`, `am_check2.py`, `v4_explore.py`, `v4_models.py`; logs and JSON in `out/`). The polish numbers are from `~/claude_jobs/polish_fix/`.
+   - Evidence and scripts: the run's evidence folder (`scripts/am_repair_check.py`, `am_models.py`, `am_markers2.py`, `am_check2.py`, `v4_explore.py`, `v4_models.py`; logs and JSON in `out/`). The polish numbers are from the run's evidence folder.
 
    [^better]: Selection, pattern "Small or dated, and the task is still done today": a larger or newer public dataset with the same target and use case is its own record; the old record keeps the verdict its own data earn until the curator decides.
    [^route]: **LEAK-39** (Must): rows of one class recorded through a separate route, found by a recording fingerprint, are dropped when models recognise them and the route cannot be aligned. **LEAK-15** (Must): a recording artefact through several features that matter, which cannot be undone, retires the dataset.
@@ -392,7 +392,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
 
    **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 4 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
 
-   **Note (AI, 2026-11-25):** the v0.2 review page's issue 1, parked there on 2026-11-11 and never written into this record; it is kept here under its new number.
+   **Note (AI, 2026-11-25):** the BeyondArena v0.2 review's issue 1, parked there on 2026-11-11 and never written into this record; it is kept here under its new number.
 
 6. **Which of the source's five yearly files should the task use?**
 
@@ -502,7 +502,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
 
    **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 4 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
 
-   **Note (AI, 2026-11-25):** the v0.2 review page's issue 2, parked there on 2026-11-11 and never written into this record; it is kept here under its new number.
+   **Note (AI, 2026-11-25):** the BeyondArena v0.2 review's issue 2, parked there on 2026-11-11 and never written into this record; it is kept here under its new number.
 
 7. **Time basis: tag the random split as forced from temporal?**
 
@@ -529,7 +529,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
 
    * **Recommendation:** B, if the dataset stays (issue 5, D). **Decision:** A, B or C?
 
-   **Notes for the AI:** once PR #50 is in this working copy, on B: `data_tags = ("ForcedIIDFromTemporal",)` and in
+   **Notes for the AI:** once the time-basis tags are in this working copy, on B: `data_tags = ("ForcedIIDFromTemporal",)` and in
    `curation_comments` the bullet `- Time basis: ForcedIIDFromTemporal: one statement per company, bankruptcy within
    a year (5year file); bankrupt companies' statements from 2000-2012, operating ones' from 2007-2013, used to score
    later statements. The file keeps no year and is sorted by class (Time: Lost). Leak test across the split: each
@@ -545,7 +545,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
 
    **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 4 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
 
-   **Note (AI, 2026-11-25):** the v0.2 review page's issue 3, parked there on 2026-11-11 and never written into this record; it is kept here under its new number.
+   **Note (AI, 2026-11-25):** the BeyondArena v0.2 review's issue 3, parked there on 2026-11-11 and never written into this record; it is kept here under its new number.
 ## Reference
 
 Ensemble boosted trees with synthetic features generation in application to bankruptcy prediction

@@ -73,7 +73,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
 
 **Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below (issue 1, A, 2026-11-18).
 
-**Main points:** The v0.2 review page's issues are in this review from 2026-11-25 as 6, 7, 8, 9; the parked ones are open again. Better-data check (2026-11-25, issue 5): Add GUSTO-I (gusto_i_mi_mortality) next to mic and let issue 6 decide mic on its own data: GUSTO-I is the clean, 24-times-larger death task, but it does not separate methods (LightGBM 0.826 against logistic regression 0.826 ROC AUC, splines best on 15 of 15 folds), so it cannot stand in for mic's multiclass task. Earlier: `ForcedIIDFromTemporal` stays (issue 1, A, 2026-11-18). Nothing is left open.
+**Main points:** The BeyondArena v0.2 review's issues are in this review from 2026-11-25 as 6, 7, 8, 9; the parked ones are open again. Better-data check (2026-11-25, issue 5): Add GUSTO-I (gusto_i_mi_mortality) next to mic and let issue 6 decide mic on its own data: GUSTO-I is the clean, 24-times-larger death task, but it does not separate methods (LightGBM 0.826 against logistic regression 0.826 ROC AUC, splines best on 15 of 15 folds), so it cannot stand in for mic's multiclass task. Earlier: `ForcedIIDFromTemporal` stays (issue 1, A, 2026-11-18). Nothing is left open.
 
 **Issues for Andrej:**
 
@@ -130,7 +130,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
      | WHAS500, Vellore NSTEMI, Alkmaar, registries | 149-313,825 | - | death | - | small, unreleased or on application | - | not better or not available |
 
    * **Effect on the task:** GUSTO-I answers only the death part of mic's task, on clean and larger data; the eight classes (cause of death and complications) exist only in mic. On GUSTO-I a few strong, smooth predictors carry most of the information (Lee et al.: about 90% in five), so a well-specified regression is the reference and flexible models gain nothing; a benchmark entry there rewards calibration and smoothness, not interactions. How issue 6 bears on each option: A and B keep mic, so issue 6 must still be settled, and every variant tested so far either leaves a blank signal (drop the 60: 0.74) or removes the ECG, blood tests and blood pressures (35 columns: no blanks, death AUC 0.75-0.80); B adds a death task that has no such leak next to it. C and D retire mic, which closes issue 6 as retired (the recommendation of 2026-11-10); C then keeps a myocardial-infarction death task in the benchmark, D does not.
-   * **Experiments:** 2026-11-25, Slurm. GUSTO-I: `gusto.rda` from hbiostat.org (downloaded 2026-11-11), read with pyreadr; inputs without `day30`, `tpa` and the site-group ids; 5-fold x 3 repeats, random and grouped by site group (`grps`, 121 groups); logistic regression (one-hot categories, standardised numbers, optionally cubic splines with 4 knots), LightGBM defaults. mic: the 1,700 patients of the source file, issue 6's variants, the same folds as in issue 6 (5-fold x 3); logistic regression with missing indicators, LightGBM defaults.
+   * **Experiments:** 2026-11-25. GUSTO-I: `gusto.rda` from hbiostat.org (downloaded 2026-11-11), read with pyreadr; inputs without `day30`, `tpa` and the site-group ids; 5-fold x 3 repeats, random and grouped by site group (`grps`, 121 groups); logistic regression (one-hot categories, standardised numbers, optionally cubic splines with 4 knots), LightGBM defaults. mic: the 1,700 patients of the source file, issue 6's variants, the same folds as in issue 6 (5-fold x 3); logistic regression with missing indicators, LightGBM defaults.
 
      GUSTO-I, death by day 30:
 
@@ -164,7 +164,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
 
    * **Recommendation:** B: the 2026-11-11 recommendation holds; GUSTO-I is the clean, large death task and its lack of spread is the domain's (a few smooth predictors), not a defect, while mic keeps the multiclass outcome it alone has; whether mic stays is issue 6's decision, not this one's. C if issue 6 retires mic and one heart-attack task is enough. **Decision:** A, B, C or D?
 
-   **Notes for the AI:** on B or C: move gusto_i_mi_mortality to Yes with a CC (<date>, Andrej): line and Andrej in checked_by; add https://hbiostat.org/data/repo/gusto.rda and the hbiostat permission text (https://hbiostat.org/data) to source_links and the record; /add-dataset from that file: target `day30`; drop `tpa` (blank for the SK+tPA arm, redundant with `tx`) and keep `tx` (randomised, known at admission); `sho`, `hig`, `dia`, `hyp`, `hrt`, `ttr` are derived flags of the paper's model (check against Lee et al. before keeping them next to their sources); 4 duplicate rows; split random or grouped by `regl` (16 regions; site group `grps` gave the same scores); note 40,830 of 41,021 enrolled; tags Samples: Over Time, Time: Lost, Clinical Study; the thrombolysis-era cohort as an Outdated question for the reviewer. On C also retire mic through issue 6 (record No (Retired), Class-dependent Recording, CC line, folder removed, CHANGELOG). On D, issue 6's retirement only. On A, nothing here. Evidence: ~/claude_jobs/better_data_1125/work/mic/ (scripts/gusto_spread.py, scripts/mic_spread.py, spread_1411436.log, mic_spread.out, gusto.csv read from dl_gusto/gusto.rda); earlier: ~/claude_jobs/marks_1111/mic/alt/, ~/claude_jobs/marks_1110/mic/. Sources: Lee et al. 1995 https://doi.org/10.1161/01.cir.91.6.1659.
+   **Notes for the AI:** on B or C: move gusto_i_mi_mortality to Yes with a CC (<date>, Andrej): line and Andrej in checked_by; add https://hbiostat.org/data/repo/gusto.rda and the hbiostat permission text (https://hbiostat.org/data) to source_links and the record; /add-dataset from that file: target `day30`; drop `tpa` (blank for the SK+tPA arm, redundant with `tx`) and keep `tx` (randomised, known at admission); `sho`, `hig`, `dia`, `hyp`, `hrt`, `ttr` are derived flags of the paper's model (check against Lee et al. before keeping them next to their sources); 4 duplicate rows; split random or grouped by `regl` (16 regions; site group `grps` gave the same scores); note 40,830 of 41,021 enrolled; tags Samples: Over Time, Time: Lost, Clinical Study; the thrombolysis-era cohort as an Outdated question for the reviewer. On C also retire mic through issue 6 (record No (Retired), Class-dependent Recording, CC line, folder removed, CHANGELOG). On D, issue 6's retirement only. On A, nothing here. Evidence: the run's evidence folder (scripts/gusto_spread.py, scripts/mic_spread.py, spread_1411436.log, mic_spread.out, gusto.csv read from dl_gusto/gusto.rda); earlier: the run's evidence folder, the run's evidence folder Sources: Lee et al. 1995 https://doi.org/10.1161/01.cir.91.6.1659.
 
    [^better]: Selection pattern "Small or dated, and the task is still done today" with PROV-4 (Must): a better dataset from another source is its own record, not a duplicate, and the old one keeps the verdict its own data earn until the curator decides.
 
@@ -274,7 +274,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
      source[^a1][^a2]. If 7% invented cells is too much, F. **Decision:** keep (A), drop the 60 (B), fill the history
      (C), fill the coded fields (D), fill every blank (E) or retire (F)?
 
-   **Notes for the AI:** evidence in `~/claude_jobs/ba_marks_1104/mic/` (scripts `exp.py`, `exp2.py`, `exp4.py`,
+   **Notes for the AI:** evidence in the run's evidence folder (scripts `exp.py`, `exp2.py`, `exp4.py`,
    `fp.py`; logs `exp*.log`). On E: in `_clean` after the decoding, drop `IBS_NASL` and `KFK_BLOOD`, fill the blanks
    of every coded column with its most common level and of every measurement (`AGE`, the four blood pressures, the
    blood tests) with its median, computed without the label; curation note with the numbers above; `changes` in the
@@ -353,7 +353,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
      left are scored on values the source dates at admission. If 54 dropped deaths and 7% invented cells are too much,
      C. **Decision:** A, B or C?
 
-   **Notes for the AI:** evidence in `~/claude_jobs/marks_1110/mic/` (`explore.py`, `fixes.py`, `fixes2.py`; logs
+   **Notes for the AI:** evidence in the run's evidence folder (`explore.py`, `fixes.py`, `fixes2.py`; logs
    `fixes_*.log`, `fixes2_*.log`). On A, in `_clean` after the decoding: drop the rows where `ZSN_A` is missing or
    every `nr_*` or every `np_*` column is missing, drop `IBS_NASL` and `KFK_BLOOD`, fill the remaining blanks (coded
    columns: most common level; `AGE`, the four blood pressures and the blood tests: median, computed without the
@@ -400,7 +400,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
    * **Recommendation:** A. The leak cannot be removed without either filling or cutting the task down to age,
      history and drugs; B is the fallback if a reduced admission task is worth keeping. **Decision:** A, B or C?
 
-   **Notes for the AI:** evidence in `~/claude_jobs/marks_1110/mic/` (`nofill.py`, `nofill2.py`, logs `nofill_*.log`,
+   **Notes for the AI:** evidence in the run's evidence folder (`nofill.py`, `nofill2.py`, logs `nofill_*.log`,
    `nofill2_*.log`). On A, retire as records.md says (record `No (Retired)`, `Class-dependent Recording`, CC line,
    claim released, folder removed). On B, in `_clean` keep the 35 columns (`AGE`, `SEX`, `INF_ANAM`, `GB`,
    `SIM_GIPERT`, `endocr_*`, `zab_leg_*`, the six `*_POST`, `IM_PG_P`, `fibr_ter_*`, the ICU drugs `NITR_S` to
@@ -411,7 +411,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
 
    **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 5 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
 
-   **Note (AI, 2026-11-25):** the v0.2 review page's issue 1, parked there on 2026-11-11 and never written into this record; it is kept here under its new number.
+   **Note (AI, 2026-11-25):** the BeyondArena v0.2 review's issue 1, parked there on 2026-11-11 and never written into this record; it is kept here under its new number.
 
 7. **Keep random splits, or split by time?**
 
@@ -421,7 +421,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
      - Keep the random split as it is, or keep it and mark it as forced from a temporal task?
    * **Background:** the source says only "collected in 1992-1995" in one hospital (the Leicester description and
      Golovenkin et al. 2020). No field dates a patient: `TIME_B_S` is the hours from the attack to the hospital.
-   * **Experiments:** on the 1,700 patients of the source file (checks; models in Slurm jobs):
+   * **Experiments:** on the 1,700 patients of the source file (checks; models as batch jobs jobs):
      - Row order: patients 1-1,426 all survived, 1,427-1,700 are 271 deaths and 3 coded "0"; patients 1,021-1,426
        nearly all had a non-lethal complication (97%, against 35% in 1-1,020). A split by row order would put every
        death in the last test fold.
@@ -464,7 +464,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
    * **Recommendation:** B above, the random split marked as forced from a temporal task, with a note that admission
      dates would allow a real temporal split. **Decision:** A, B, C or D?
 
-   **Notes for the AI:** evidence in `~/claude_jobs/ba_marks_1104/mic/` (`explore_order*.py`, `within.py`,
+   **Notes for the AI:** evidence in the run's evidence folder (`explore_order*.py`, `within.py`,
    `exp3.py`, `exp3.log`). On B: tag `ForcedIIDFromTemporal` on the split, `splits_comment` and a curation note with
    the numbers above, a `CC` line in the record; `dataset check`.
 
@@ -491,7 +491,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
    default split, so no `splits_comment`); the task summary's `split` names the forced split; the drift and leak-test
    numbers above are in the `Time basis:` bullet of issue 8.
 
-   **Note (AI, 2026-11-25):** this issue is the v0.2 review page's issue 2 of 2026-11; it was decided there but never written into this record, so it is kept here under its new number.
+   **Note (AI, 2026-11-25):** this issue is the BeyondArena v0.2 review's issue 2 of 2026-11; it was decided there but never written into this record, so it is kept here under its new number.
 
 8. **Time basis: tag the random split as forced from temporal, or call it a stationary relation?**
 
@@ -519,7 +519,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
 
    * **Recommendation:** B, while issue 7 keeps a random split. **Decision:** A, B or C?
 
-   **Notes for the AI:** once PR #50 is in this working copy, on B: `data_tags = ("ForcedIIDFromTemporal",)` and in
+   **Notes for the AI:** once the time-basis tags are in this working copy, on B: `data_tags = ("ForcedIIDFromTemporal",)` and in
    `curation_comments` the bullet `- Time basis: ForcedIIDFromTemporal: patients admitted one by one in 1992-1995 to
    one hospital, the outcome known at death or discharge; a model at admission is used on later patients. No
    admission date survives and the file is sorted by outcome (survivors, survivors with a complication, deaths), so
@@ -538,7 +538,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
    ForcedIIDFromTemporal:` bullet in `curation_comments`, with the within-block drift (ROC AUC 0.82, 0.58, 0.72), the
    last-fifth test (0.77 against 0.84) and the leak test. Record facts unchanged.
 
-   **Note (AI, 2026-11-25):** this issue is the v0.2 review page's issue 3 of 2026-11; it was decided there but never written into this record, so it is kept here under its new number.
+   **Note (AI, 2026-11-25):** this issue is the BeyondArena v0.2 review's issue 3 of 2026-11; it was decided there but never written into this record, so it is kept here under its new number.
 
 9. **Is there better public data for the same task?**
 
@@ -575,7 +575,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
    * **Recommendation:** B, whatever issue 6 decides; it becomes C if issue 6 retires mic. **Decision:** nothing more
      (A), build GUSTO-I as well (B) or as mic's replacement (C)?
 
-   **Notes for the AI:** files and counts in `~/claude_jobs/marks_1111/mic/alt/` (`gusto_dl/gusto.rda`,
+   **Notes for the AI:** files and counts in the run's evidence folder (`gusto_dl/gusto.rda`,
    `whas_dl/whas500.rda`, `mend_dl/Dataset.xls`). On B or C: move `gusto_i_mi_mortality` to `Yes` with a CC line,
    add `https://hbiostat.org/data/repo/gusto.rda` and the hbiostat permission text to its record (PROV), then
    /add-dataset; the `tpa` blanks are the SK+tPA arm (10,320), 4 duplicate rows. On C also issue 6's retirement.

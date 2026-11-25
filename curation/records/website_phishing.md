@@ -64,7 +64,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
 
 **Outcome:** added. A question on `CrossSectional` (2026-11-13) was withdrawn when the prototype was dropped.
 
-**Main points:** The v0.2 review page's issues are in this review from 2026-11-25 as 6, 7, 8, 9; the parked ones are open again. Better-data check (2026-11-25, issue 5): Replace it with web_page_phishing_detection (Hannousse and Yahiouche 2021), split grouped by registered domain: the check left open on 2026-11-09 passes, since its URL-only features separate the classes far less than PhiUSIIL's (best fixed rule on the URL 0.78 ROC AUC, against 0.9998), and the task still separates methods (LightGBM 0.989 against logistic regression 0.980). Earlier: Nothing open: issue 1 was withdrawn on 2026-11-13. Issue 2 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
+**Main points:** The BeyondArena v0.2 review's issues are in this review from 2026-11-25 as 6, 7, 8, 9; the parked ones are open again. Better-data check (2026-11-25, issue 5): Replace it with web_page_phishing_detection (Hannousse and Yahiouche 2021), split grouped by registered domain: the check left open on 2026-11-09 passes, since its URL-only features separate the classes far less than PhiUSIIL's (best fixed rule on the URL 0.78 ROC AUC, against 0.9998), and the task still separates methods (LightGBM 0.989 against logistic regression 0.980). Earlier: Nothing open: issue 1 was withdrawn on 2026-11-13. Issue 2 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
 
 **Issues for Andrej:**
 
@@ -147,7 +147,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
      | CompPhish (Goenka, Mendeley 10.17632/fmbs4kp9wz.4) (new, card only) | 15,358, 70 features | collected Sep 2024 to Aug 2025, URLs and HTML | no per-row date stated | open, CC BY 4.0 | legitimate side is the DataForSEO top-1000 list, the homepage-against-phishing design behind PhiUSIIL's artefact | not checked; likely the same artefact |
 
    * **Effect on the task:** Hannousse keeps the task (is this page phishing, from URL, page and look-up signals) with features of the same kinds as the nine signals, as raw values instead of codes. The external look-ups are the strongest group (google_index alone 0.865): they were looked up once at the May 2020 crawl, which the forced-from-temporal tag already names. Grouping by registered domain costs 0.006 ROC AUC with all features, so the many pages per phishing domain did not inflate the random score much.
-   * **Experiments:** 2026-11-25, Slurm, on `dataset_B_05_2020.csv` (the file downloaded on 2026-11-09, sha256 21093e29...); registered domain from the URL with tldextract's bundled suffix list; 5-fold x 3 repeats, ROC AUC; untuned models (depth-1 and depth-2 trees as fixed rules, logistic regression on standardised features, LightGBM defaults).
+   * **Experiments:** 2026-11-25, batch, on `dataset_B_05_2020.csv` (the file downloaded on 2026-11-09, sha256 21093e29...); registered domain from the URL with tldextract's bundled suffix list; 5-fold x 3 repeats, ROC AUC; untuned models (depth-1 and depth-2 trees as fixed rules, logistic regression on standardised features, LightGBM defaults).
 
      | Features | Split | Depth-1 tree | Depth-2 tree | Logistic regression | LightGBM |
      |---|---|---|---|---|---|
@@ -174,7 +174,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
 
    * **Recommendation:** B: the 2026-11-09 recommendation holds, and the one check it left open passes: no fixed rule on the URL comes near PhiUSIIL's shortcut, and gradient boosting still beats logistic regression on every feature group. E if two collected lists are too much on their own. **Decision:** A, B, C, D or E?
 
-   **Notes for the AI:** on B: issue 6 of website_phishing closes as C (record No (Retired), Data Quality Issue, CC (<date>, Andrej): line, Andrej in checked_by, folder removed, CHANGELOG), issue 9 closes as moot; move web_page_phishing_detection to Yes with a CC line and run /add-dataset on Mendeley v3 `dataset_B_05_2020.csv` (doi 10.17632/c2gw7fy2j4.3): binary `status`, derive the registered domain from `url` (tldextract, public suffixes without private domains, so blogspot.com and appspot.com stay one group each), group the split by it, drop `url`; tags Samples: Over Time, Time: Lost; data_tags ForcedIIDFromTemporal with a Time basis: line (one crawl in May 2020, look-ups of that month); Selection Bias; consider log_loss as the metric since ROC AUC sits at 0.99. Note in curation the `www` asymmetry (0.72 alone) as a form difference of the two lists, kept since dropping `nb_www` changes LightGBM by 0.004. On C, build UCI 327's `Training Dataset.arff`. On D, request PILWD first. On E, issue 6 C only. Evidence: ~/claude_jobs/better_data_1125/work/website_phishing/ (scripts/url_check.py, scripts/domains.py, url_check_1411438.log); earlier: ~/claude_jobs/marks_1109/website_phishing/. Sources: https://data.mendeley.com/datasets/c2gw7fy2j4/3, https://arxiv.org/abs/2010.12847, https://huggingface.co/datasets/phreshphish/phreshphish, https://arxiv.org/abs/2507.10854, https://data.mendeley.com/datasets/fmbs4kp9wz/4.
+   **Notes for the AI:** on B: issue 6 of website_phishing closes as C (record No (Retired), Data Quality Issue, CC (<date>, Andrej): line, Andrej in checked_by, folder removed, CHANGELOG), issue 9 closes as moot; move web_page_phishing_detection to Yes with a CC line and run /add-dataset on Mendeley v3 `dataset_B_05_2020.csv` (doi 10.17632/c2gw7fy2j4.3): binary `status`, derive the registered domain from `url` (tldextract, public suffixes without private domains, so blogspot.com and appspot.com stay one group each), group the split by it, drop `url`; tags Samples: Over Time, Time: Lost; data_tags ForcedGroupedFromTemporal with a Time basis: line (one crawl in May 2020, look-ups of that month); Selection Bias; consider log_loss as the metric since ROC AUC sits at 0.99. Note in curation the `www` asymmetry (0.72 alone) as a form difference of the two lists, kept since dropping `nb_www` changes LightGBM by 0.004. On C, build UCI 327's `Training Dataset.arff`. On D, request PILWD first. On E, issue 6 C only. Evidence: the run's evidence folder (scripts/url_check.py, scripts/domains.py, url_check_1411438.log); earlier: the run's evidence folder Sources: https://data.mendeley.com/datasets/c2gw7fy2j4/3, https://arxiv.org/abs/2010.12847, https://huggingface.co/datasets/phreshphish/phreshphish, https://arxiv.org/abs/2507.10854, https://data.mendeley.com/datasets/fmbs4kp9wz/4.
 
    [^better]: Selection pattern "Small or dated, and the task is still done today" with PROV-4 (Must): a better dataset from another source is its own record, and the old one keeps the verdict its own data earn until the curator decides.
    [^sel]: The Selection Bias marker: rows not drawn from the population the use case predicts for; the verdict usually stays Yes (Andrej, 2026-10-20; Lennart, 2026-10-27).
@@ -278,7 +278,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
    **Notes for the AI:** on a, run `/add-dataset` on the `web_page_phishing_detection` record (Mendeley v3,
    `dataset_B_05_2020.csv`; drop `url` after deriving the registered domain for the grouped split) and retire
    website_phishing in the same change (issue 6, C). First check that URL-only features do not separate the classes
-   the way PhiUSIIL's do. Evidence: `~/claude_jobs/marks_1109/website_phishing/` (`hannousse_check.log`,
+   the way PhiUSIIL's do. Evidence: the run's evidence folder (`hannousse_check.log`,
    `vrbancic_check.log`, `uci327_check.log`; scripts in `scripts/`).
 
    [^1c]: **SPLIT-32** (Should): samples over time whose period moves the target, such as phishing pages that change
@@ -290,7 +290,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
 
    **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 5 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
 
-   **Note (AI, 2026-11-25):** the v0.2 review page's issue 1, parked there on 2026-11-11 and never written into this record; it is kept here under its new number.
+   **Note (AI, 2026-11-25):** the BeyondArena v0.2 review's issue 1, parked there on 2026-11-11 and never written into this record; it is kept here under its new number.
 
 7. **Time basis: tag the random split as forced from temporal?**
 
@@ -319,7 +319,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
 
    * **Recommendation:** B, if the dataset stays (issue 6, A or B). **Decision:** A, B or C?
 
-   **Notes for the AI:** once PR #50 is in this working copy, on B: `data_tags = ("ForcedIIDFromTemporal",)` and in
+   **Notes for the AI:** once the time-basis tags are in this working copy, on B: `data_tags = ("ForcedIIDFromTemporal",)` and in
    `curation_comments` the bullet `- Time basis: ForcedIIDFromTemporal: phishing sites reported to PhishTank and
    legitimate sites gathered from directories, at times the source does not give; a filter rates sites made later,
    and phishing pages change with the period. The file has no date or URL, and its order interleaves the classes
@@ -335,7 +335,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
    **Resolved (2026-11-09, Andrej):** B: the random split is tagged `ForcedIIDFromTemporal` in `data_tags`, with its
    `Time basis:` line and the `split` sentence naming it.
 
-   **Note (AI, 2026-11-25):** this issue is the v0.2 review page's issue 2 of 2026-11; it was decided there but never written into this record, so it is kept here under its new number.
+   **Note (AI, 2026-11-25):** this issue is the BeyondArena v0.2 review's issue 2 of 2026-11; it was decided there but never written into this record, so it is kept here under its new number.
 
 8. **Correct the record's collection facts?**
 
@@ -364,7 +364,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
 
    **Resolved (2026-11-09, Andrej):** B: the record's `tags` carry `Samples: Over Time` and `Time: Lost`.
 
-   **Note (AI, 2026-11-25):** this issue is the v0.2 review page's issue 3 of 2026-11; it was decided there but never written into this record, so it is kept here under its new number.
+   **Note (AI, 2026-11-25):** this issue is the BeyondArena v0.2 review's issue 3 of 2026-11; it was decided there but never written into this record, so it is kept here under its new number.
 
 9. **If kept: keep the repeated sites, as distinct sites with the same nine codes?**
 
@@ -407,7 +407,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
    splits 62% of test sites have an exact copy in training, worth about 0.01 ROC AUC."; no data change, no rebuild;
    the `Time basis:` line of issue 7 can refer to it. On B, `drop_duplicates()` in `_clean`, `row`, `split`, `changes`
    and the notes updated, a `CC (<date>, Andrej):` line in the record. Evidence:
-   `~/claude_jobs/entity_review/website_phishing/` (`dupcheck.log`, `structure_null.log`, `drop_effect.log`; scripts
+   the run's evidence folder (`dupcheck.log`, `structure_null.log`, `drop_effect.log`; scripts
    one level up).
 
    [^4a]: **LEAK-41** (Must, draft PR #62): repeats of a unit the data does not record get one verdict; natural when
@@ -424,7 +424,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
 
    **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 5 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
 
-   **Note (AI, 2026-11-25):** the v0.2 review page's issue 4, parked there on 2026-11-11 and never written into this record; it is kept here under its new number.
+   **Note (AI, 2026-11-25):** the BeyondArena v0.2 review's issue 4, parked there on 2026-11-11 and never written into this record; it is kept here under its new number.
 ## Reference
 
 Phishing detection based Associative Classification data mining

@@ -311,7 +311,7 @@ more data could be collected; Andrej's CC of 2026-10-15 names the replacement, a
        | Kaggle body-fat files (women's body fat, gym members, Korean body performance) | small or from a bioimpedance scale | not a reference measurement, or synthetic | | | | | not better (from their data cards) |
 
    * **Effect on the task:** none on this definition. A replacement keeps the use case and changes the target to DXA percent fat and the features to the survey's measures; it adds women and children and drops the six circumferences NHANES does not take.
-   * **Experiments:** NHANES files DXX, BMX and DEMO of 1999-2006 (DXX to DXX_D) and 2011-2018 (DXX_G to DXX_J) downloaded from wwwn.cdc.gov on 2026-11-25; one row per person (imputation 1 of 1999-2006, kept only where the total imputation flag is 0; status "complete" with a percent fat in 2011-2018); body density from the Kaggle copy the definition downloads. Run on Slurm on 2026-11-25: untuned LightGBM (400 trees, learning rate 0.05, 31 leaves) against linear regression (median-imputed, standardised); RMSE averaged over repeated 3-fold splits (10 repeats for 252 rows, 3 for NHANES).
+   * **Experiments:** NHANES files DXX, BMX and DEMO of 1999-2006 (DXX to DXX_D) and 2011-2018 (DXX_G to DXX_J) downloaded from wwwn.cdc.gov on 2026-11-25; one row per person (imputation 1 of 1999-2006, kept only where the total imputation flag is 0; status "complete" with a percent fat in 2011-2018); body density from the Kaggle copy the definition downloads. Run on 2026-11-25: untuned LightGBM (400 trees, learning rate 0.05, 31 leaves) against linear regression (median-imputed, standardised); RMSE averaged over repeated 3-fold splits (10 repeats for 252 rows, 3 for NHANES).
 
      - Counts per cycle:
 
@@ -347,7 +347,7 @@ more data could be collected; Andrej's CC of 2026-10-15 names the replacement, a
      | Linear | 4.54 | 4.21 | -0.63 |
      | LightGBM | 3.59 | 3.44 | -0.26 |
 
-     - Reading: on men like the old study's, NHANES behaves like body density (the linear model ties or wins; on 252 sampled men LightGBM trails by 0.46 points, against 0.58 on the old file). The gap between the methods comes from the mixed population (sex, children, ages), which a linear model with interactions largely closes; the era shift costs 4% to 8%. Scripts, data and log: ~/claude_jobs/better_data_1125/work/body_density_prediction/ (scripts/build_nhanes.py, scripts/baselines.py, out/nhanes.parquet, out/baselines.csv, out/bl_1411439.log).
+     - Reading: on men like the old study's, NHANES behaves like body density (the linear model ties or wins; on 252 sampled men LightGBM trails by 0.46 points, against 0.58 on the old file). The gap between the methods comes from the mixed population (sex, children, ages), which a linear model with interactions largely closes; the era shift costs 4% to 8%. Scripts, data and log: the run's evidence folder (scripts/build_nhanes.py, scripts/baselines.py, out/nhanes.parquet, out/baselines.csv, out/bl_1411439.log).
    * **Consistency:** fiat_500 takes the same decision in this batch (keep until a Craigslist F-150 record replaces it). Both follow the pattern that a better dataset is its own record and the old one keeps the verdict its own data earn[^better]; this pair is the case the pattern names.
    * **Options:**
 
