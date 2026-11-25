@@ -5,13 +5,13 @@ Usage::
     python .claude/skills/knowledge-data-foundry/scripts/generated_probes.py <unique_name> ... [--all] [--built]
         [--jobs 8] [--out DIR]
 
-Runs the checks of ``curation_probes.generated`` on each dataset's frame, with its group columns left out of the
-features; ``.claude/skills/knowledge-curation/scripts/curation_probes/generated.py`` says what each check measures
-and when it raises a flag (its ``check_frame`` runs them on any table, for data without a definition). ``--all``
-probes every definition under ``--root``; ``--built`` reads the container recorded in each ``README.md``'s build
-record instead of rebuilding the frame from the raw files; ``--jobs`` sets the datasets probed in parallel.
-``--out DIR`` writes one JSON per dataset and ``summary.md`` there. A flag is a question, not a verdict; how to read
-them: ``.claude/skills/knowledge-curation/references/task_probes.md`` (generated data).
+Runs the checks of ``curation_probes.generated`` on each dataset's model inputs (no group, scoring or unit column, no
+time column that dates the label) and target; ``.claude/skills/knowledge-curation/scripts/curation_probes/generated.py``
+says what each check measures and when it raises a flag (its ``check_frame`` runs them on any table, for data without a
+definition). ``--all`` probes every definition under ``--root``; ``--built`` reads the container recorded in each
+``README.md``'s build record instead of rebuilding the frame from the raw files; ``--jobs`` sets the datasets probed in
+parallel. ``--out DIR`` writes one JSON per dataset and ``summary.md`` there. A flag is a question, not a verdict; how
+to read them: ``.claude/skills/knowledge-curation/references/task_probes.md`` (generated data).
 """
 
 from __future__ import annotations
@@ -36,7 +36,9 @@ def probe(name: str, root: Path, *, built: bool) -> dict:
     started = time.time()
     data = dataset_io.load(name, root, built=built)
     result = {"name": name, "origin": data.origin}
-    result |= generated.check_frame(data.df, data.target, data.problem_type, data.group_cols)
+    result |= generated.check_frame(
+        data.df, data.target, data.problem_type, data.group_cols, feature_cols=data.feature_cols
+    )
     result["seconds"] = round(time.time() - started)
     return result
 

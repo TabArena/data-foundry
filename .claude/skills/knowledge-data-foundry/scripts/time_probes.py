@@ -67,6 +67,7 @@ def probe(name: str, root: Path, *, built: bool, include_temporal: bool = False)
         raw=data.raw,
         raw_rows=data.raw_rows,
         order_known=not built,
+        feature_cols=data.feature_cols,
     )
     result["raw_note"] = data.raw_note
     result["seconds"] = round(time.time() - started)

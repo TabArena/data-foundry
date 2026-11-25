@@ -59,6 +59,7 @@ def main(argv: list[str] | None = None) -> int:
         max_rows=args.max_rows,
         n_jobs=args.n_jobs,
         sample_weight=data.weights,
+        feature_cols=data.feature_cols,
     )
     return 0
 

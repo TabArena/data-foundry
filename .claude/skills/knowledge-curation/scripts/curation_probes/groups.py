@@ -8,14 +8,16 @@ grouped splits (one list of ``(train_idx, test_idx)`` folds per repeat), prints 
   other (an IID split would leak); a gap within the fold spread means the grouping changes little;
 * learnability across groups: several untuned model families (regularised linear, random forest, LightGBM, kNN) on
   the first ``n_repeats`` repeats, scored on the out-of-fold predictions per row and, for one label per group, per
-  group (the mean of a group's predictions), against the baseline of always predicting the prior;
+  group (the mean of a group's predictions), against the baseline of always predicting the prior; only the rows some
+  fold of the repeat tests are scored (a holdout or a row budget leaves rows untested);
 * for one label per group: a permutation test that shuffles the labels across groups and re-runs the grouped CV with
   the best model; its p-value says whether the per-group score could come from chance.
 
 Scores are ROC AUC or R^2; a multiclass ROC AUC is the mean of the one-vs-rest ROC AUCs over the classes present in
-the scored rows (a grouped fold can lack a class). Group, target and string columns are not features; categoricals
-enter as codes and datetimes as numbers. A frame over ``max_rows`` keeps a random set of whole groups. The numbers are
-indicative (untuned models) and meant for the curation decision.
+the scored rows (a grouped fold can lack a class). Group, target and string columns are not features, nor the columns
+``feature_cols`` leaves out; the inputs are those of the task probes (``curation_probes.text.features``: categoricals
+as codes, datetimes and durations as seconds). A frame over ``max_rows`` keeps a random set of whole groups. The
+numbers are indicative (untuned models) and meant for the curation decision.
 
 With a training weight (``sample_weight``, such as the years insured of a claims-per-year target), every model is
 fitted with it as each row's weight (kNN takes none and is fitted without it) and every score weights the rows by it,
@@ -28,38 +30,17 @@ import lightgbm as lgb
 import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
-from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import LogisticRegression, Ridge
 from sklearn.metrics import r2_score, roc_auc_score
 from sklearn.model_selection import KFold, StratifiedKFold
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.preprocessing import StandardScaler
 
 from curation_probes import weights
-
-
-def features(df: pd.DataFrame, drop: list[str]) -> pd.DataFrame:
-    """Numeric model inputs: categoricals as codes (missing as one more code), datetimes as seconds, no strings."""
-    X = df.drop(columns=drop).select_dtypes(exclude=["string", "object"])
-    for col in X.columns:
-        if isinstance(X[col].dtype, pd.CategoricalDtype):
-            X[col] = X[col].cat.codes.replace(-1, len(X[col].cat.categories))
-        elif pd.api.types.is_datetime64_any_dtype(X[col]):
-            X[col] = X[col].astype("int64") // 10**9
-    X = X.astype(float)
-    X = X.fillna(X.median()).fillna(0.0)
-    X.columns = [f"f{i}" for i in range(X.shape[1])]  # LightGBM rejects some characters in names
-    return X
-
-
-def linear_inputs(categorical: list[str]) -> ColumnTransformer:
-    """The linear models' inputs: categories one-hot (64 levels at most, the rarer ones pooled), the rest scaled."""
-    return ColumnTransformer(
-        [("categories", OneHotEncoder(handle_unknown="infrequent_if_exist", max_categories=64), categorical)],
-        remainder=StandardScaler(),
-    )
+from curation_probes.task import linear_inputs
+from curation_probes.text import features
 
 
 def models(*, regression: bool, categorical: list[str] | None = None) -> dict:
@@ -86,10 +67,13 @@ def out_of_fold(
     make, X: pd.DataFrame, y: np.ndarray, folds: list, n_classes: int, weight: np.ndarray | None = None
 ) -> np.ndarray:
     """Out-of-fold predictions of one repeat: class probabilities, or values for regression (``n_classes=0``); each
-    model fitted with the rows' ``weight`` when given.
+    model fitted with the rows' ``weight`` when given. A row no fold tests (a holdout, the rows a row budget or a time
+    window leaves out) keeps NaN: score only the rows of ``tested``.
     """
-    pred = np.zeros((len(X), max(n_classes, 1)))
+    pred = np.full((len(X), max(n_classes, 1)), np.nan)
     for train, test in folds:
+        if n_classes:
+            pred[test] = 0.0  # a class the training side lacks gets probability 0
         model = weights.fit(make(), X.iloc[train], y[train], weights.take(weight, train))
         if n_classes:
             pred[np.ix_(test, model.classes_)] = model.predict_proba(X.iloc[test])
@@ -125,14 +109,26 @@ def per_group(
     return frame.mean().drop(columns="_y").to_numpy(), frame["_y"].first().to_numpy(), summed
 
 
+def tested(folds: list, n_rows: int) -> np.ndarray:
+    """Whether some fold of one repeat tests each row."""
+    mask = np.zeros(n_rows, dtype=bool)
+    for _, test in folds:
+        mask[np.asarray(test, dtype=int)] = True
+    return mask
+
+
 def evaluate(make, X, y, groups, repeats, n_classes, *, by_group: bool, weight=None) -> tuple[float, float | None]:
-    """Mean score over the repeats, per row and (with ``by_group``) per group; weighted by ``weight`` when given."""
+    """Mean score over the repeats, per row and (with ``by_group``) per group, on the rows some fold of the repeat
+    tests; weighted by ``weight`` when given.
+    """
     rows, grouped = [], []
     for folds in repeats:
-        pred = out_of_fold(make, X, y, folds, n_classes, weight)
-        rows.append(score(y, pred, n_classes, weight))
+        seen = tested(folds, len(X))
+        pred = out_of_fold(make, X, y, folds, n_classes, weight)[seen]
+        w = weights.take(weight, seen)
+        rows.append(score(y[seen], pred, n_classes, w))
         if by_group:
-            gp, gy, gw = per_group(pred, y, groups, weight)
+            gp, gy, gw = per_group(pred, y[seen], groups[seen], w)
             grouped.append(score(gy, gp, n_classes, gw))
     return float(np.mean(rows)), (float(np.mean(grouped)) if by_group else None)
 
@@ -151,6 +147,7 @@ def run(  # noqa: PLR0913
     max_rows: int = 200_000,
     n_jobs: int = 8,
     sample_weight: np.ndarray | None = None,
+    feature_cols: list[str] | tuple[str, ...] | None = None,
 ) -> dict:
     """Print the probes of the module docstring for one grouped frame and return their numbers.
 
@@ -167,6 +164,8 @@ def run(  # noqa: PLR0913
         max_rows: Rows kept (whole groups, at random).
         n_jobs: Processes for the model families and the permutation runs.
         sample_weight: The task's training weight, one value per row of ``df`` (never a column of it), or None.
+        feature_cols: The model inputs, when not every column but the target and the groups is one (a time column
+            that dates the label, the unit of a unit weight).
     """
     groups = df.groupby(group_cols, sort=False, observed=True, dropna=False).ngroup().to_numpy()
     rng = np.random.default_rng(0)
@@ -193,7 +192,8 @@ def run(  # noqa: PLR0913
     else:
         classes = sorted(labels_of.astype(str).unique())
         y, n_classes = labels_of.astype(str).map({c: i for i, c in enumerate(classes)}).to_numpy(), len(classes)
-    X = features(df, [target, *group_cols])
+    inputs = df[list(feature_cols)] if feature_cols is not None else df.drop(columns=[target, *group_cols])
+    X, names, _ = features(inputs, [target, *group_cols])  # string columns are left out
     by_group = per_group_labels
     weighted = ", weighted by the training weight" if weight is not None else ""
     print(
@@ -220,13 +220,7 @@ def run(  # noqa: PLR0913
 
     baseline = 0.0 if regression else 0.5
     print(f"learnability across groups (baseline {baseline:.1f}), per row" + (" / per group" if by_group else ""))
-    categorical = [
-        f"f{i}"
-        for i, column in enumerate(
-            df.drop(columns=[target, *group_cols]).select_dtypes(exclude=["string", "object"]).columns
-        )
-        if isinstance(df[column].dtype, pd.CategoricalDtype)
-    ]
+    categorical = [f"f{i}" for i, column in enumerate(names) if isinstance(df[column].dtype, pd.CategoricalDtype)]
     candidates = models(regression=regression, categorical=categorical)
     results = Parallel(n_jobs=min(n_jobs, len(candidates)))(
         delayed(evaluate)(make, X, y, groups, repeats, n_classes, by_group=by_group, weight=weight)
