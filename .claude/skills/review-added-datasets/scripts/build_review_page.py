@@ -1354,6 +1354,18 @@ def _time_facts(split: dict, record_path: Path) -> None:
     )
 
 
+def _first_table(text: str) -> str:
+    """The first markdown table of ``text``: the table of splits. A temporal README follows it with a table of
+    per-window statistics; joining every table line made those rows extra "splits" (8 splits shown as 18)."""
+    block: list[str] = []
+    for line in text.splitlines():
+        if line.startswith("|"):
+            block.append(line)
+        elif block:
+            break
+    return "\n".join(block)
+
+
 def _split(readme: str | None, tags: list[str], comments: str | None) -> dict | None:
     """The declared split, as the generated README states it.
 
@@ -1372,7 +1384,7 @@ def _split(readme: str | None, tags: list[str], comments: str | None) -> dict | 
         paras = [x.strip() for x in re.split(r"\n\s*\n", m.group(1)) if x.strip()]
         at = next((i for i, x in enumerate(paras) if SPLIT_SHAPE.match(x)), len(paras))
         note = "\n\n".join(paras[:at])
-        table = "\n".join(line for line in m.group(1).splitlines() if line.startswith("|"))
+        table = _first_table(m.group(1))
     grouping = task.get("grouping") or {}
     return {
         "regime": REGIME.get(task["split_regime"], task["split_regime"]),
