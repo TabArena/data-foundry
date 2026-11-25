@@ -65,14 +65,14 @@ These are per dataset judgement calls and if a dataset is useful for a predictiv
 collected for something else, then this is fine"), as SEL-2 already reads the scope rules: this record is judged on its
 own use case. The verdict and priority stay.
 
-**Consistency check (AI, 2026-10-30):** the review page sets `No` ("Actually an image task I guess"). By the record, the
+**Consistency check (AI, 2026-10-30):** the screening sets `No` ("Actually an image task I guess"). By the record, the
 target comes from field counts and the features are NDVI, an extirpation flag and two coordinates; the drone imagery is
 another release. If NDVI per pixel counts as image-derived (SEL-13), the marker is `Image`; if the reason is that four
 features, two of them coordinates, make no real task, it is `No Good Target / Scientific Discovery`. Which one, or 2nd
 Tier?
 
 CC (2026-10-30, Andrej): `TBD -> 2nd Tier`, priority 2 (the AI screening had `TBD -> 2nd Tier`, priority 2;
-zero-inflated screening review page, after the AI's consistency check).
+zero-inflated screening, after the AI's consistency check).
 
 The workbook conflates two sources. Its DOI, 10.18710/KHQKWH, is a DataverseNO release of 2021 drone imagery of
 Sassendalen (raw JPG archives of about 73 GB, an orthomosaic, tiles "used for the manual counting", DEMs), with no

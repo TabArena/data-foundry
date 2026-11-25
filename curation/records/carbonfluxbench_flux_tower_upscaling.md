@@ -78,7 +78,7 @@ while SEL-15 and SEL-2 argue for instrument readings used as tabular inputs; ERA
 task. Recommend TBD -> Yes as screened, with the MODIS columns a call at /add-dataset.
 
 CC (2026-10-30, Andrej): `TBD -> Yes`, priority 2 (the AI screening had `TBD -> Yes`, priority 2; zero-inflated
-screening review page, after the AI's answer to the curator's question).
+screening, after the AI's answer to the curator's question).
 
 Daily eddy-covariance fluxes (GPP, RECO, NEE) of 479 towers from AmeriFlux, FLUXNET2015, ICOS and JapanFlux,
 1991-2024, with MODIS reflectance and ERA5-Land drivers (University of Minnesota). The paper builds it for "zero-shot

@@ -72,13 +72,13 @@ has the call.
   2014).
 - First the PROV-3 tests (provenance open).
 
-**Consistency check (AI, 2026-10-30):** the review page sets `Yes`, priority 1. `homeq_default_prediction`, another SAS
+**Consistency check (AI, 2026-10-30):** the screening sets `Yes`, priority 1. `homeq_default_prediction`, another SAS
 teaching table, was retired for generated-data marks (Lennart, 2026-09-24), the PROV-3 tests have not run here (the
 checks so far are mixed), and for `pricing_game_2015_french_mtpl` the curator asked for the tests first (TBD -> Yes).
 Options: `Yes` with PROV-3 at /add-dataset, or TBD -> Yes until PROV-3.
 
 CC (2026-10-30, Andrej): `TBD -> Yes`, priority 1 (the AI screening had `TBD -> 2nd Tier`, priority 1; zero-inflated
-screening review page, after the AI's consistency check). "Move to yes if the data is not generated, no otherwise"
+screening, after the AI's consistency check). "Move to yes if the data is not generated, no otherwise"
 
 **Assessment (AI, 2026-11-01):** the PROV-3 tests the curator asked for, calibrated against freMTPL2, pg17, pg16 and
 `dataCar`. Generated or synthesised: strong circumstantial evidence (no generator for the whole table, no source

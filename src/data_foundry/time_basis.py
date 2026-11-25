@@ -19,7 +19,7 @@ from typing import ClassVar
 
 from data_foundry.schema import FORCED_TIME_TAGS, GROUP_BASIS_TAGS, RENAMED_TAGS, TIME_BASIS_TAGS, current_tag
 
-ALLOW_UNSTRUCTURED = True
+ALLOW_UNSTRUCTURED = False
 """Whether a definition may still name its time basis the old way: a forced tag in ``data_tags`` and a free-text
 ``Time basis:`` line in ``curation_comments``. True while the definitions move to :class:`TimeBasis`; the change that
 completes the move sets it False, and the definition then refuses the old way. Until then an old-way definition's

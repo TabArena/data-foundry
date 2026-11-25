@@ -53,7 +53,7 @@ aquatic insect emergence and predicts nothing.
   al. 2025, Sec. 2.4 and 4.2, https://www.frontiersin.org/journals/sustainable-food-systems/articles/10.3389/fsufs.2024.1484377/full)
   give about five test units per fold in any framing.
 
-CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
+CC (2026-10-30, Andrej): `No`, as screened (verified in the zero-inflated screening).
 
 CC (2026-10-30, Andrej): the reason for the `No`: "No good target".
 

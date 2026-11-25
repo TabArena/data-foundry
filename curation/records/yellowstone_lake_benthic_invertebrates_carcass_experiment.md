@@ -51,7 +51,7 @@ field experiment at four sites, published to test a treatment effect; its inputs
   season at four sites", two treated and two controls in triplicate, analysed for a treatment effect
   (https://datadryad.org/dataset/doi:10.5061/dryad.c866t1g9m).
 
-CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
+CC (2026-10-30, Andrej): `No`, as screened (verified in the zero-inflated screening).
 
 Benthic invertebrate density and biomass around lake trout carcass deposits in Yellowstone Lake (Briggs et al. 2022).
 A before-after-control-impact experiment at 4 sites (2 carcass, 2 control), triplicate samples on 3 monthly

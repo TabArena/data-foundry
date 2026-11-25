@@ -94,7 +94,7 @@ marks sit on the columns that would ship, so no subset fixes it. Word from the o
 insurer's would reopen it.
 
 CC (2026-10-30, Andrej): `TBD -> Yes`, priority 3 (the AI screening had `TBD -> 2nd Tier`, priority 3; zero-inflated
-screening review page). "Do the tests needed to decide"
+screening). "Do the tests needed to decide"
 
 CC (2026-10-30, Andrej): `No`, after the AI's PROV-3 tests (Assessment above): "Generated. Type is independent of every
 other covariate yet predicts claims, and 27.9% of policies are in malus against 0.4%. Under PROV-3 that means No with

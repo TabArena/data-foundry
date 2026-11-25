@@ -89,7 +89,7 @@ own, this is the rating-cell record to take (27 semesters, a temporal split), wi
 above. The files still could not be opened from here.
 
 CC (2026-10-30, Andrej): `TBD -> 2nd Tier`, priority 3 (the AI screening had `TBD -> 2nd Tier`, priority 3;
-zero-inflated screening review page, after the AI's answer to the curator's question).
+zero-inflated screening, after the AI's answer to the curator's question).
 
 ## Reference
 

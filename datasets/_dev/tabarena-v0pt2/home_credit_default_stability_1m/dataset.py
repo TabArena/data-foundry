@@ -226,7 +226,7 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
 
         - We follow TabRed and use temporal splits for the task. The Kaggle experts used various strategies and most commonly StratifiedGroupKFold to align offline CV with the temporal-split data on the leaderboard. That is, the split used for training can be StratifiedGroupKFold, but not for testing.
         - Metric: ROC AUC stands in for the competition's Gini Stability, whose slope term is noise on our test windows (Lennart, 2026-10-21, then on windows of 5-10 weeks; it stays noise on the 14-19 weeks of the four-month windows of 2026-11-11, as the metric's reason gives).
-        - Test windows (Lennart, 2026-11-11): four months ("Reply (c): Four months", the horizon sign-off), the longest length whose three windows all train on at least half the applications, as a scorecard serves for months between refits; the windows of issue 1 at that length ("Agree."): July to 5 October 2020, March to June 2020 and November 2019 to February 2020, which tile the months from the oldest start that keeps half the applications for training to the release end (splits comment).
+        - Test windows (Lennart, 2026-11-11): four months ("Reply (c): Four months"), the longest length whose three windows all train on at least half the applications, as a scorecard serves for months between refits; the proposed windows at that length ("Agree."): July to 5 October 2020, March to June 2020 and November 2019 to February 2020, which tile the months from the oldest start that keeps half the applications for training to the release end (splits comment).
         - Note, the original competition was heavily influenced by metric hacking, which is not relevant for our offline benchmark tasks. Thus, results are not directly comparable ot transferable.
         - We change the preprocessing from Kaggle and TabRed in specific steps: (A) we depart from the TabRed and Kaggle solutions in that we do not drop high-cardinality string columns, (B) we do not drop month and week, as it was only dropped due to the metric leak in the competition, (C) we only drop constant columns if they are constant w.r.t. NaN and non-NaN values, (D) we do not perform ordinal encoding and drop minor categories, (E) we keep every row: the 1M train budget of this _1m version is applied by a benchmark, which sub-samples each train side before a fit (see the splits comment), (F) we keep the date column without transformations for the pipelines to handle, and (G) the code from TabRed is outdated and does not function the same anymore when it comes to down-casting string and categorical data of the data from Kaggle, we fix this by treating categorical data as categorical following the original Kaggle scripts, moreover, we had to remove getting the std() of a date column, which is not supported anymore.
         - We drop case_id as it is already collapsed and thus does not contain extra information.
@@ -236,8 +236,8 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
         - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
-        - The row budget: each test window keeps at most 500k of its rows (all of them here), and each train side holds every earlier row, so the frame keeps all 1,526,659 applications. The 1M train budget is recorded, not applied: a benchmark sub-samples each train side to 1M rows before a fit with `subsample_train`. Its default is the newest year before the window, extended back in time until it holds 1M rows, and a random 1M of those (splits comment), in place of TabReD's random sub-sampling of all earlier rows: the study of issue #70 found the newest year best for dated data.
-        - Columns recorded on one side of a window only (cross-dataset item of 2026-11-11, Lennart): 12 columns stop being recorded in September and October 2019 (`responsedate_1012D`, `birthdate_574D`, `pmtscount_423L`, `pmtssum_45A`, the four `*_pmtamount_36A`, `n_unique_employername_160M` and the three `*_processingdate_168D`), so the November 2019 window tests without them; 15 start between April and June 2020 (`contractssum_5085716L`, the four `*_contractsum_5085717L`, the four `*_amount_4917619A`, the three `*_deductiondate_4917603D`, `n_unique_name_4917606M`, `first_housetype_905L` and `responsedate_4917613D`), so the March and July 2020 windows train almost without them. Kept: the data as the bank recorded it, which a model refit then met too.
+        - The row budget: each test window keeps at most 500k of its rows (all of them here), and each train side holds every earlier row, so the frame keeps all 1,526,659 applications. The 1M train budget is recorded, not applied: a benchmark sub-samples each train side to 1M rows before a fit with `subsample_train`. Its default is the newest year before the window, extended back in time until it holds 1M rows, and a random 1M of those (splits comment), in place of TabReD's random sub-sampling of all earlier rows: a study of the sub-sampling found the newest year best for dated data.
+        - Columns recorded on one side of a window only (Lennart, 2026-11-11): 12 columns stop being recorded in September and October 2019 (`responsedate_1012D`, `birthdate_574D`, `pmtscount_423L`, `pmtssum_45A`, the four `*_pmtamount_36A`, `n_unique_employername_160M` and the three `*_processingdate_168D`), so the November 2019 window tests without them; 15 start between April and June 2020 (`contractssum_5085716L`, the four `*_contractsum_5085717L`, the four `*_amount_4917619A`, the three `*_deductiondate_4917603D`, `n_unique_name_4917606M`, `first_housetype_905L` and `responsedate_4917613D`), so the March and July 2020 windows train almost without them. Kept: the data as the bank recorded it, which a model refit then met too.
     """
 
     # Task
@@ -265,8 +265,8 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
         training, to the release end, so at four months they leave no choice; they test the months after, across and
         before the drop of late March 2020, when applications fell from 60,748 in March (4.6% defaults) to 8,289 in
         April (2.2%) and the default rate stayed at 1.8-2.8% a week afterwards. A scorecard that should stay stable
-        over time has to hold through that change, which no refit sees coming (the curator's pick of 2026-11-11,
-        review issue 1). Applications tested (defaults), then the train side and its share of the 1,526,659: July to
+        over time has to hold through that change, which no refit sees coming (the curator's pick of 2026-11-11).
+        Applications tested (defaults), then the train side and its share of the 1,526,659: July to
         5 October 2020 150,240 (3,175, 2.1%), 1,376,419 (90.2%); March to June 2020 143,724 (4,714, 3.3%), 1,232,695
         (80.7%); November 2019 to February 2020 403,789 (15,541, 3.8%), 828,906 (54.3%). No window trains on less than
         half.
@@ -279,8 +279,8 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
         holds 1,094,102, of which a random 1M; the November 2019 window trains on all 828,906 (January to October
         2019).
     """
-    # Three 4-month windows tile 1 November 2019 to the release end (the curator's pick of 2026-11-11: the horizon
-    # sign-off and issue 1). They replace TabReD's single 4.5-month test period (May to 5 October 2020), so results
+    # Three 4-month windows tile 1 November 2019 to the release end (the curator's pick of
+    # 2026-11-11). They replace TabReD's single 4.5-month test period (May to 5 October 2020), so results
     # are not comparable with TabReD's. The windows hold 150,240 / 143,724 / 403,789 applications (3,175 / 4,714 /
     # 15,541 defaults), under the 500k test budget; every train side keeps all earlier rows, and a benchmark
     # sub-samples it to 1M.
@@ -294,7 +294,7 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
         "distribution (-1 4.8%, -2 4.7%, -3 4.2%, 0 3.8%, down to -1220), missing values are NaN, and the default "
         "rate rises from 2.1% (< -1) over 3.3% (-1) and 4.5% (0) to 8.6% (late).",
         "splits_feature_missing_in_test": (
-            "Decided (Lennart, 2026-11-11, cross-dataset item): 12 columns stop in September-October 2019 and 15 start in "
+            "Decided (Lennart, 2026-11-11): 12 columns stop in September-October 2019 and 15 start in "
             "April-June 2020, as the bank recorded them (curation_comments)."
         ),
     }
