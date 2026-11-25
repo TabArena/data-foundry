@@ -47,8 +47,8 @@ given theirs:
    case's, or no gap (SPLIT-14, SPLIT-10). The agent answers no.
 2. **A test window length, refit cadence or gap the source does not give** (the windows check): the agent proposes one
    and marks it for sign-off (SPLIT-12).
-3. **Signing off a flat reading** of the stationary-relation test as `StationaryRelation` `[FORCED.reason]`. The agent
-   answers no.
+3. **Signing off a flat reading** of the stationary-relation test as `StationaryRelation` `[FORCED.reason]`, also
+   over a small table's only three windows `[ORDER.small]`, `[CAT.small]`. The agent answers no, so the windows stay.
 4. **A reason for `AssumedStationaryRelation`** where nothing can be measured `[FORCED.reason]`. The agent answers no.
 5. **Declining the risk of temporal leakage** for a forced split `[FORCED.risk]` (Andrej, 2026-11-19). The agent
    answers no, so the forced split stands.
@@ -97,7 +97,7 @@ flowchart LR
   T -->|"catalogue: items it adds next, or not"| K["Catalogue questions,<br/>family-key step"]
   T -->|"experiment: a kind, a new item, a repeat"| E["Experimental results questions"]
   F -->|"labels arrive later"| O
-  O -->|"no order, too few windows,<br/>or a small table's three windows flat"| X["Forced step"]
+  O -->|"no order, too few windows, or a small<br/>table's three windows flat and signed off"| X["Forced step"]
   P --> LP["UnseenGroup, or units held out,<br/>or ForcedIIDFromGrouped"]
   F --> LF["RetrospectiveFillIn"]
   O --> LO["Temporal"]
@@ -174,13 +174,14 @@ materials not yet reported, or no scope stated → yes)_
       **Can the entry dates hold at least three test windows of the use case's size?** [CAT.windows] _(data and
       documentation; reads the span and density of the entry dates; the windows check)_
       - yes →
-        **Is the table small, with only three windows, and does the stationary-relation test read flat over them?**
-        [CAT.small] _(measurement; as the same question of the order step: SPLIT-33's 20- or 10-repeat tier, three
-        windows, and the test over them; otherwise no)_
+        **Does a person sign off a flat reading over a small table's only three windows?** [CAT.small] _(person
+        decides; as the same question of the order step: SPLIT-33's 20- or 10-repeat tier, three windows, the test
+        over them read flat and signed off as `StationaryRelation`; an agent offers it with the reading and answers
+        no)_
         - no → **Temporal · entry date** [L-CAT.entry-date]. Each period tested on the earlier ones; an item keys on
           its first date, which orders the split and is no input; the gap by the gap rules. Examples: apistox,
           qsar_tid_11.
-        - yes, flat → **Family-key step**
+        - yes → **Family-key step**
       - no →
         **Does a person allow an exception that gives three windows: training down to 30%, wider windows than the use
         case's, or no gap?** [CAT.exception] _(person decides; SPLIT-14, SPLIT-10; an agent offers it with the numbers
@@ -271,7 +272,8 @@ it; new cases that arrive one by one)_
   with their dates lost, give no order; here: account_debt_south_africa, allstate_claim_prediction_challenge_1m,
   blood_transfusion)
 - new cases that arrive one by one → **Order and windows step** (time key: an order rebuilt from an id issued in
-  sequence or the export's row order; here: amazon_employee_access, aps_failure, fremtpl2)
+  sequence or the export's row order; here: amazon_employee_access, aps_failure, fremtpl2,
+  labour_inspection_compliance)
 
 ## Dated event log
 
@@ -283,9 +285,12 @@ period the data covers (a record not taken, a value not read); cases after the d
 booking, a tariff))_
 - a place or group the data does not contain → **Place step** (here: heart_disease)
 - the gaps of the period the data covers → **Fill-in step**
-- cases after the data → **Order and windows step** (time key: the arrival date, or the scoring date where the open
-  cases are scored at a date such as a month-end or a tariff year's start; here: acquire_valued_shoppers_challenge,
-  bad_customer_detection, hotel_booking_demand)
+- cases after the data → **Order and windows step** (time key: the arrival date; the scoring date where the open
+  cases are scored at a date such as a month-end or a tariff year's start; or the order in which the targets arrived,
+  where a cut on the arrival date would train on cases that close inside the window and that order can be rebuilt from
+  the data: it is the strictest form of training only on closed cases, so it needs no gap, and it arrives with the
+  target, so it is no model input; here: acquire_valued_shoppers_challenge, bad_customer_detection,
+  california_house_prices_2020, hotel_booking_demand)
 
 ## Panel data
 
@@ -383,14 +388,15 @@ point (a cohort scored at one baseline exam, hint: `Samples: One Moment`) → no
   **Can the order hold at least three test windows of the use case's size?** [ORDER.windows] _(data and
   documentation; reads the span and density of the time key; the windows check)_
   - yes →
-    **Is the table small, with only three windows, and does the stationary-relation test read flat over them?**
-    [ORDER.small] _(measurement; reads SPLIT-33's tier (an IID split's training side under 2,500 units: 20 or 10
-    repeats), the number of windows the windows check gives, and the test of the checks section over those windows;
-    four windows or more, a larger table, or a reading not flat or inconclusive → no)_
+    **Does a person sign off a flat reading over a small table's only three windows?** [ORDER.small] _(person
+    decides; reads SPLIT-33's tier (an IID split's training side under 2,500 units: 20 or 10 repeats), the number of
+    windows the windows check gives, and the test of the checks section over those windows. An agent runs the test
+    and, where it reads flat, offers the sign-off with the reading, and answers no; four windows or more, a larger
+    table, or a reading not flat or inconclusive → no)_
     - no → **Temporal · windows on the time key** [L-ORDER.windows]. Each window tested on the earlier ones; the gap by
       the gap rules; a rebuilt order orders the split and is no input. Examples: diabetes_130_us, hotel_booking_demand,
       infrared_thermography_temperature.
-    - yes, flat → **Forced step**
+    - yes → **Forced step**
   - no →
     **Does a person allow an exception that gives three windows: training down to 30%, wider windows than the use
     case's, or no gap?** [ORDER.exception] _(person decides; SPLIT-14, SPLIT-10; an agent offers it with the numbers
@@ -404,9 +410,9 @@ point (a cohort scored at one baseline exam, hint: `Samples: One Moment`) → no
 ## Forced step
 
 Reached when a forward use case has no usable windows: the order is lost, every case is predicted at one point, or
-the windows are too few and no exception was allowed; or when a small table's only three windows read flat
-(`[ORDER.small]`). It first asks for a reason to treat later samples as
-interchangeable with the data's (SPLIT-32), the only way such a use case keeps a split that is not temporal; without
+the windows are too few and no exception was allowed; or when a person signs off a flat reading over a small table's
+only three windows (`[ORDER.small]`). It first asks for a reason to treat later samples as interchangeable with the
+data's (SPLIT-32), the only way such a use case keeps a split that is not temporal; without
 one, the split is forced (SPLIT-8).
 
 **What does the stationary-relation test read?** [FORCED.test] _(measurement; reads the test of the checks section

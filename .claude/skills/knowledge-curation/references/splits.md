@@ -78,11 +78,15 @@ one moment and tests other rows of it, not the next moment. Where the use case l
 Whole periods held out (`ForcedGroupedFromTemporal`, grouped by period where the data has an order: scan periods,
 study phases, visit months, course presentations) train also on later periods but still test a change between periods
 rather than random rows, closer to the shift a temporal split tests (lung_cancer_epithelial_genexp's six scan
-periods). They count only with enough periods that different groupings of whole periods into three folds give the
-repeats SPLIT-33 sets for the task's size: four periods for 3 repeats, five for 10 or 20 (three periods allow one
-grouping, four six, five 25); with fewer, a period fold would give the task two or three splits where its size calls
-for more. Where entities recur across the periods and the use case meets new entities, an entity's rows stay in one
-period or the entity is held out with its period (USE-10, LEAK-17); periods count only where no entity sits on both
+periods). The definition's `Time basis:` line says so: the test periods are unseen, not later, and a test period's score
+may gain from training on periods after it. Where a period can be trained on earlier periods alone, that gain is the
+cost to measure: the period's score trained on earlier periods only against one trained on other periods, earlier and
+later, at the same training size. They count only with enough periods that different groupings of whole periods into
+three folds give the repeats SPLIT-33 sets for the task's size: four periods for 3 repeats, five for 10 or 20 (three
+periods allow one grouping, four six, five 25); with fewer, a period fold would give the task two or three splits where
+its size calls for more. Where entities recur across the periods and the use case meets new entities, an entity's rows
+stay in one period or the entity is held out with its period (USE-10, LEAK-17); periods count only where no entity sits
+on both
 sides. Which regime is closest depends on what was measured. Where the relation is measured not flat, such periods
 are the only remedy: without them the task is `Too Small` (SPLIT-16). With nothing measured (an
 inconclusive test included) and no person's reason, three outcomes: a person may be unwilling to take the risk of
@@ -258,9 +262,10 @@ later period, at a known group or at all groups at once; where the label still m
      windows can be built, the split is temporal however flat the relation (the next bullet), and the measurement goes
      in the notes as what the windows cost (amended 2026-11-17, Andrej). The exception is a small table: one in
      SPLIT-33's 20- or 10-repeat tier (a training side of an IID split under 2,500 units) whose order gives only three
-     windows gets the stationary-relation test over them as well, and where it reads flat the split goes on to the
-     forced step of SPLIT-36 (a catalogue to its family-key step, SPLIT-37), where a person may sign the reading off as
-     `StationaryRelation`; where it reads not flat or inconclusive, the windows stay (amended 2026-11-23, Andrej). Why:
+     windows gets the stationary-relation test over them as well, and where it reads flat and a person signs the
+     reading off as `StationaryRelation`, the split goes on to the forced step of SPLIT-36 (a catalogue to its
+     family-key step, SPLIT-37); where it reads not flat or inconclusive, or nobody signs it off, the windows stay
+     (amended 2026-11-23, Andrej). Why:
      three test windows of a small table score little more than noise, and a measured flat relation lets the 60 or 30
      splits of SPLIT-33 stand for them (horse_colic_survival: three windows of 57 admissions, each run inconclusive,
      flat pooled; infrared_thermography_temperature: one window not flat, so the windows stay). It holds whether

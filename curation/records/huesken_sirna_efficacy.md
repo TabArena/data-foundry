@@ -106,6 +106,8 @@ CC (2026-11-17, Andrej): time basis `UnseenGroup` in place of `Timeless` (Review
 
 CC (2026-11-17, Andrej): the declared split (grouped on `target_gene`, 10x3 folds, `UnseenGroup`) is checked in the blind split walk.
 
+CC (2026-11-23, Andrej): Review issue 10, B: 20 x 3 splits, the count the split rule gives when the split holds out the units the metric scores. The score averages one correlation per target gene and every fold holds out whole genes, so the count follows the 30 genes (20 on a train side: 20 repeats), not the 2,431 guides (10 repeats). The definition is unchanged: the protocol derives the count; the next build has 60 splits.
+
 ## Review
 
 **Outcome:** added. Huesken et al. (2005) siRNA knockdown efficacy, rebuilt from the corrected original supplement: 2,431 guides, 266 features, 30 target genes held out whole, scored by the per-gene correlation. The second-pass review panel (full tier, after your PR #33 review of 2026-11-04) recommends shipping after wording changes, applied in `dataset.py` (the README rebuild is pending your ask); no leak, no refuted claim on the data, no exploit beyond noise. Whether the unrun sequence-model test gates the shipment (SEL-12) and three small choices were settled on 2026-11-05 (issues 4, 5, 6 and 8); the split count (issue 10) is open.
@@ -319,6 +321,8 @@ Left for you: issue 10.
 
    **Notes for the AI:** on B, `dataset check` (the definition is unchanged; the protocol gives 20 x 3), a CC line in
    the record, CHANGELOG.
+
+   **Resolved (2026-11-23, Andrej):** B: 20 x 3, as the rule gives ("follow the rule and correct this"). The definition is unchanged (the protocol counts the 30 held-out genes); the README's split block reads 20 repeats; the container is not rebuilt.
 
 11. **Time basis: `UnseenGroup` instead of `Timeless`?**
 
