@@ -34,3 +34,31 @@ type_adapter_id: curation-record-v1
 - Better data: none found (data scout, 2026-11-25: the ESMO GI 2024 follow-up and the Cytosponge trials release no data, and Cytosponge targets Barrett's oesophagus).
 
 Candidate from Shaktah et al. 2026, "Established machine learning matches tabular foundation models in clinical predictions", BMC Med Inform Decis Mak 26:364 (https://doi.org/10.1186/s12911-026-03654-3), one of its twelve binary clinical tasks.
+
+## Review
+
+**Outcome:** not added; recommended `No` (`Image`). 105 of the 120 features of Gao et al. 2023 are nuclear morphometry and grey-level descriptors from the automated slide-analysis pipeline; a reject check did not refute it.
+
+**Main points:** Confirm the `Image` reject (issue 1).
+
+**Issues for Andrej:**
+
+1. **Confirm `No` (`Image`)?**
+
+   * **Problem:**
+     - The paper: "The predictive features included 105 cytological and 15 epidemiological features"; the repo's feature list names descriptors such as "Nuclear grayscale mean", "Ellipse resemblance mean" and "DNA index mean"[^sel13].
+     - The only other strong column is a cytologist's reading of the same slide (alone ROC AUC about 0.95 on train and 0.96 on test, the models' level)[^sel14].
+     - Same reasoning as `wdbc` (`No`, `Image`): nuclear features from a cytology image.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Confirm `No` (`Image`) (implemented) | record stays rejected | follows the image-feature rule and `wdbc` | a large prospective screening trial left out |
+     | B | Also screen a risk-factor task from the 15 epidemiological columns | a new record, no slide features | a real screening question without the image | endoscopy-defined labels at 2.5%; the repo has no licence noted; another task |
+     | C | Keep as a tabular task | overturn the reject | the source's model is a gradient-boosted classifier on the table | the rule rejects by where the columns come from |
+
+   * **Recommendation:** A. **Decision:** A, B or C?
+
+   [^sel13]: **SEL-13** (Must): features computed from an image or video to describe its content are a vision task even when the columns are numeric: morphological, geometric or spectral descriptors from an image-analysis pipeline; descriptors stay image-derived when mixed with a few non-visual columns.
+   [^sel14]: **SEL-14** (Must): readings that real tabular models take as inputs stay in scope when the human reading is the established clinical or operational result tabular models are used on; breast_w stays out.
+   [^prov7]: **PROV-7** (Must): records that share a source but give different tasks are not duplicates; the comments say why they are distinct.

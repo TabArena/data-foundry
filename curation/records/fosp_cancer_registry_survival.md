@@ -63,3 +63,64 @@ type_adapter_id: curation-record-v1
 - as published: cancer patients, 1,178,688 rows 2000-2023 per the paper, 79 hospitals; ~23 predictors used (age, sex, residence, stage, first-course treatments, diagnosis-to-treatment days, hospital, education); target: survival 3 years after diagnosis (binary; or other horizons), from vital status and last follow-up date; access: registration.
 - Why: very large public hospital registry with a real prognostic target, temporal split by diagnosis year, many cancer sites
 - Adds: a large Latin-American oncology registry; no cancer registry in the records. Risks: drop presenca_rec (recurrence, after outcome); exclude patients followed less than the horizon (LEAK-23/24); one table per diagnosis year
+
+## Review
+
+**Outcome:** not added; screened `TBD -> Yes`, priority 2. São Paulo hospital cancer registry (RHC/SP, about 1.18 million patients since 2000); the published tasks fed recurrence and follow-up columns in as inputs, and the death targets without a horizon ignore censoring.
+
+**Main points:** Target and cohort (issue 1); prediction point (issue 2); test window length (issue 3).
+
+**Issues for Andrej:**
+
+1. **Which target and cohort?**
+
+   * **Problem:**
+     - Cardoso et al. 2026 take all sites at 3 years; Woźniacki et al. 2024 and Shaktah et al. 2026 take colorectal cancer (C18-C20) with five targets.
+     - Two of those targets (cancer death, overall death without a horizon) are a status cut at the release date[^leak24]; Woźniacki's horizon labels count patients lost to follow-up as deaths[^leak25].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | All sites, 3-year overall survival, alive patients followed under 3 years dropped (implemented) | Cardoso et al. 2026's task | the largest table; near balanced; topography as a feature | mixed cancers in every window |
+     | B | Colorectal only, 3-year survival, same drop | Cardoso et al. 2023's cohort | one cancer; the paper's TabPFN numbers as a reference | about 72,500 rows |
+     | C | Death without a horizon | `ULTINFO` 3 or 4 | the published endpoints | censored by the release date |
+     | D | Horizon labels with the lost counted as deaths | Woźniacki's labels | published | 12-21% of the 3-year zeros in the 2000 file are alive patients lost |
+
+   * **Recommendation:** A; B as the one definition instead if you prefer the single-cancer task (not both). **Decision:** A, B, C or D?
+
+   [^leak24]: **LEAK-24** (Must): a target right-censored in the newest periods (a duration or a final status cut by the download date) is cut where follow-up is complete, or re-sourced from an archive with settled labels.
+   [^leak25]: **LEAK-25** (Must): "No event" mixed with "not recorded" is a censoring bias: retire unless the recording process can be recovered; recovered includes unrecorded rows located by a rule that does not read the label, and dropped.
+   [^prov7]: **PROV-7** (Must): records that share a source but give different tasks are not duplicates; the comments say why they are distinct.
+
+2. **Prediction point: after first-course treatment, or at diagnosis?**
+
+   * **Problem:**
+     - The registry records the first-course treatment flags, the diagnosis-to-treatment interval and pathological TNM after surgery; all three papers used them[^use3].
+     - Recurrence and follow-up fields go in either case[^leak10].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | After first-course treatment (implemented) | treatment flags and pathological TNM kept | the papers' feature sets; prognosis once treatment is under way | not a guide to choosing treatment |
+     | B | At diagnosis | treatment and pathological TNM dropped | a first-visit prognosis | weaker; not what the papers scored |
+
+   * **Recommendation:** A. **Decision:** A or B?
+
+   [^use3]: **USE-3** (Must): name the prediction point: when the model is used and what is known then. A value that did not exist at that point is a leak.
+   [^leak10]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the target away; out: a column recorded after the outcome, a part, a consequence or another encoding of the target.
+
+3. **Test window length?**
+
+   * **Problem:**
+     - Temporal by diagnosis date, with a 3-year gap so that every training label is final; the registry is updated quarterly[^split12].
+     - 2020 (COVID) falls into one test window.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | One diagnosis year (implemented) | yearly windows | many windows of tens of thousands | 2020 as its own window |
+     | B | Two diagnosis years | wider windows | steadier; 2020 shared with 2021 | half the windows |
+
+   * **Recommendation:** A. **Decision:** A or B?
+
+   [^split12]: **SPLIT-12** (Should): the horizon is a human judgment from the source: how far ahead the actor predicts, the competition's own test window, the refit cadence. Choose the test windows to match it.

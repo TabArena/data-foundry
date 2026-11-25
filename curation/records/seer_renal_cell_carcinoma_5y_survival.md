@@ -45,3 +45,43 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (medical, binary, temporal not thin), use case 0 (auxiliary tool, no decision named), source + (NCI SEER, a paper), shape + (tens of thousands of cases, mixed types, many years), risk - (censoring shortcut through the year; cohort to define).
 
 Candidate from Shaktah et al. 2026, "Established machine learning matches tabular foundation models in clinical predictions", BMC Med Inform Decis Mak 26:364 (https://doi.org/10.1186/s12911-026-03654-3), one of its twelve binary clinical tasks.
+
+## Review
+
+**Outcome:** not added; screened `TBD -> Yes`, priority 2. Five-year overall survival of renal cell carcinoma in SEER (192,912 patients of 2004-2015 in Jiang et al. 2024); the cohort is cut where five years of follow-up are complete.
+
+**Main points:** RCC only or the whole kidney site recode (issue 1); prediction point before or after treatment (issue 2).
+
+**Issues for Andrej:**
+
+1. **RCC only, or the whole kidney and renal pelvis site recode?**
+
+   * **Problem:**
+     - Shaktah's extract takes Site recode "Kidney and Renal Pelvis", which also holds renal pelvis urothelial carcinoma and paediatric Wilms tumour; the source paper (Jiang and colleagues) takes C64 with RCC histologies[^use5].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | C64 with RCC histologies (implemented) | as Jiang et al. | the source task; one disease | fewer rows |
+     | B | The whole site recode | histology as a feature | more rows | three diseases in one label |
+
+   * **Recommendation:** A. **Decision:** A or B?
+
+   [^use5]: **USE-5** (Must): predict what the actor would act on, at the resolution they act on it. Check how the source built its label before accepting it.
+   [^source]: Source task before our own: the source's own task and split are tested first and preferred when valid.
+
+2. **Prediction point: after treatment planning, or at diagnosis?**
+
+   * **Problem:**
+     - The source paper (Jiang and colleagues) frames the model for postoperative management and use surgery as a feature; radiation and chemotherapy are "yes" against "no/unknown" in SEER[^use3].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | After first-course treatment (implemented) | surgery, radiation and chemotherapy kept | the source's use case and features | prognosis given treatment, not a guide to choosing it |
+     | B | At diagnosis | treatment columns dropped | a prediction before any treatment | not the source's use case; weaker |
+
+   * **Recommendation:** A. **Decision:** A or B?
+
+   [^use3]: **USE-3** (Must): name the prediction point: when the model is used and what is known then. A value that did not exist at that point is a leak.
+   [^source]: Source task before our own: the source's own task and split are tested first and preferred when valid.

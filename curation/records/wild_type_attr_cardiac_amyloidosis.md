@@ -47,3 +47,46 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (medical, binary, not thin), use case + (named actor and decision in the paper), source + (Nat Commun with the released rows and code), shape + (2,142 patients, 1,874 features, wide sparse), risk - (lifetime flags and the unapplied leak list).
 
 Candidate from Shaktah et al. 2026, "Established machine learning matches tabular foundation models in clinical predictions", BMC Med Inform Decis Mak 26:364 (https://doi.org/10.1186/s12911-026-03654-3), one of its twelve binary clinical tasks.
+
+## Review
+
+**Outcome:** not added; screened `TBD -> Yes`, priority 3. Real IQVIA claims rows from Huda et al. 2021 (2,142 heart-failure patients, 1,874 lifetime ICD-code flags, 1:1 matched wild-type ATTR-CM cases and controls); the source's own leak list is not applied in the released file.
+
+**Main points:** Which code flags to drop (issue 1); keep the forced random split or use the released validation file (issue 2).
+
+**Issues for Andrej:**
+
+1. **Which code flags go: the source's two, or the whole cardiomyopathy family?**
+
+   * **Problem:**
+     - The released file still holds the two flags Huda's own notebook drops as target leaks; `cardiomyopathy_in_diseases_classified_elsewhere` is 1 in 70.0% of cases and 2.2% of controls[^leak10].
+     - Every flag is lifetime presence, so codes written during the amyloid work-up (`cardiomyopathy` 72.6% against 29.0%) cannot be cut at a moment before referral[^use3].
+     - The use case runs on undiagnosed heart-failure patients, whose history holds no work-up codes yet.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Drop the source's two leak flags (implemented) | as Huda's notebook | the paper's own task; one-line change | other work-up codes stay and may carry the diagnosis |
+     | B | Drop the whole cardiomyopathy family and the heart-failure subtype codes | our list, drawn by /add-dataset from the ICD map; the drop measured against A | closer to a pre-referral history | our own cut; real antecedents (cardiomyopathy coded for other reasons) go too |
+     | C | Not add | `No` | no doubt about the prediction point | the paper's real screening task lost |
+
+   * **Recommendation:** B, with the score of A beside it in the review: the screening model meets patients before any work-up, so codes the work-up writes are consequences of the label. **Decision:** A, B or C?
+
+   [^leak10]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the target away; out: a column recorded after the outcome, a part, a consequence or another encoding of the target.
+   [^use3]: **USE-3** (Must): name the prediction point: when the model is used and what is known then. A value that did not exist at that point is a leak.
+
+2. **Keep the random split within the IQVIA cohort?**
+
+   * **Problem:**
+     - The use is another health system (validated on Optum and Northwestern, neither released), but the file holds one source with no site column, so the split tree reaches a forced random leaf[^split36].
+     - The released validation file (15,394 IQVIA patients) carries a different label (any cardiac amyloidosis) as raw code lists.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Repeated 3-fold cross-validation on the 2,142 patients (implemented) | the forced random leaf | the task as released; varied training sides | transfer to another system untested |
+     | B | Train on the derivation set, test on the validation file | a second label mapped to the 1,874 flags | a held-out cohort | a different target (any cardiac amyloidosis); one test split; flags rebuilt by us |
+
+   * **Recommendation:** A: B changes the target, so it tests another task. **Decision:** A or B?
+
+   [^split36]: **SPLIT-36** (Should): a definition's split is decided by walking the split decision tree; a forced leaf is for the curator to look at.

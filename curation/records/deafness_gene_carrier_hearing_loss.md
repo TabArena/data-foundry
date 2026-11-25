@@ -46,3 +46,46 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (medical, binary), use case 0 (approximate, stated only as a tool), source + (paper and CC BY deposit), shape 0 (1,778 rows but one feature type, sparse, 280 patterns), risk - (unkeyed families and pattern repeats).
 
 Candidate from Shaktah et al. 2026, "Established machine learning matches tabular foundation models in clinical predictions", BMC Med Inform Decis Mak 26:364 (https://doi.org/10.1186/s12911-026-03654-3), one of its twelve binary clinical tasks.
+
+## Review
+
+**Outcome:** not added; screened `TBD -> 2nd Tier`, priority 1. Luo et al. 2021 (Mendeley, CC BY 4.0): 1,209 + 569 carriers of GJB2, SLC26A4 or MT-RNR1 variants, hearing loss or normal hearing; the label is the phenotype, not the mode of inheritance; 280 genotype patterns in 1,209 rows and family members without an id.
+
+**Main points:** Repeated genotypes as the task or as copies (issue 1); random split or the source's two files (issue 2).
+
+**Issues for Andrej:**
+
+1. **Keep people with the same genotype as separate rows?**
+
+   * **Problem:**
+     - The 1,209 discovery rows hold only 280 distinct genotype patterns, so most test people share their genotype with a training person.
+     - They are different people (some of them relatives, with no family id), not copies of one record[^leak19].
+     - A textbook rule on the genotype (homozygous or compound heterozygous GJB2 or SLC26A4, any MT-RNR1 variant) gives the diagnosis; /add-dataset runs it as the baseline.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep every person (implemented) | rows as released | a new carrier with a common genotype is the use case; genotype frequencies kept | relatives on both sides of a fold |
+     | B | Collapse identical genotype and label into one row | drops repeats | no repeated rows | loses how common each genotype is; not copies of one record |
+     | C | Group the folds by genotype pattern | each pattern on one side | tests unseen genotypes | not the use case: common genotypes are the ones met |
+
+   * **Recommendation:** A: these are distinct people, and the copies rule is about one record entered twice. **Decision:** A, B or C?
+
+   [^leak19]: **LEAK-19** (Should): exact copies with the same label: drop them rather than group on the duplicate key.
+
+2. **Random split, or the source's discovery-to-validation files?**
+
+   * **Problem:**
+     - The release has two files from two recruiting sources (medical records; the Disabled Persons' Federation), short of the groups the tree needs, so it reaches a forced random leaf[^split36].
+     - Both benchmark papers (Arasteh 2024, Shaktah 2026) kept the two files as train and test.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Repeated 3-fold cross-validation on all 1,778 (implemented) | the forced random leaf | varied training sides | transfer to another recruiting source untested |
+     | B | The source's split as a recorded departure | train on 1,209, test on 569 | the source's external validation | one training side only |
+
+   * **Recommendation:** A, as for the other two-cohort clinical studies of this batch. **Decision:** A or B?
+
+   [^split36]: **SPLIT-36** (Should): a definition's split is decided by walking the split decision tree; a forced leaf is for the curator to look at.
+   [^source]: Source task before our own: the source's own task and split are tested first and preferred when valid.

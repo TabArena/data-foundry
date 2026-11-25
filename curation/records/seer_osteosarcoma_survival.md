@@ -45,3 +45,44 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (medical, binary, temporal not thin), use case 0 (approximate; treatment as an input), source + (NCI SEER, two papers), shape + (about 1,000-2,500 osteosarcoma cases with follow-up, more for all bone tumours; mixed types), risk - (cohort to define; censoring shortcut through the year).
 
 Candidate from Shaktah et al. 2026, "Established machine learning matches tabular foundation models in clinical predictions", BMC Med Inform Decis Mak 26:364 (https://doi.org/10.1186/s12911-026-03654-3), one of its twelve binary clinical tasks.
+
+## Review
+
+**Outcome:** not added; screened `TBD -> 2nd Tier`, priority 2. Five-year overall survival of bone tumours in SEER; small when restricted to osteosarcoma (1,243 patients of 2000-2018 in Cao et al. 2024), and Shaktah's label keeps a recent patient only when they died (the cohort is cut where five years of follow-up are complete).
+
+**Main points:** Osteosarcoma only or all bone tumours (issue 1); window length (issue 2).
+
+**Issues for Andrej:**
+
+1. **Osteosarcoma only, or every primary bone tumour?**
+
+   * **Problem:**
+     - Cao et al., the paper Shaktah reproduces, take osteosarcoma (1,243 patients); Shaktah's extract takes all of Primary Site C40-C41 (chondrosarcoma, Ewing sarcoma, chordoma and others) with no histology filter[^use5].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Osteosarcoma histology (implemented) | ICD-O-3 9180-9187, 9192-9195, as Cao et al. | the source task; one disease and its oncologist | about 60-100 cases a year |
+     | B | All primary bone tumours | histology as a feature | several times the rows | several diseases with different treatments in one label |
+
+   * **Recommendation:** A. **Decision:** A or B?
+
+   [^use5]: **USE-5** (Must): predict what the actor would act on, at the resolution they act on it. Check how the source built its label before accepting it.
+   [^source]: Source task before our own: the source's own task and split are tested first and preferred when valid.
+
+2. **Window length for the temporal split?**
+
+   * **Problem:**
+     - Labels mature five years after diagnosis, so train only on diagnoses whose five years closed before the test window[^leak24].
+     - Yearly windows of osteosarcoma hold about 60-100 cases each, perhaps too few deaths per window[^split12].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | One diagnosis year (implemented) | yearly windows, five-year gap | follows a yearly refit | small test windows |
+     | B | Two or three diagnosis years | wider windows, five-year gap | steadier scores | fewer windows |
+
+   * **Recommendation:** A, unless the case counts per year at /add-dataset fall too low; then B. **Decision:** A or B?
+
+   [^leak24]: **LEAK-24** (Must): a target right-censored in the newest periods (a duration or a final status cut by the download date) is cut where follow-up is complete, or re-sourced from an archive with settled labels.
+   [^split12]: **SPLIT-12** (Should): the horizon is a human judgment from the source: how far ahead the actor predicts, the competition's own test window, the refit cadence. Choose the test windows to match it.

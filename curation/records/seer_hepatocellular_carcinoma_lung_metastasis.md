@@ -44,3 +44,47 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (medical, binary and temporal not thin), use case 0 (approximate; "identifying high-risk patients", no decision named), source + (NCI SEER, variable dictionary, a paper), shape + (thousands of cases per year, mixed types), risk - (staging and treatment columns encode the target; label coding).
 
 Candidate from Shaktah et al. 2026, "Established machine learning matches tabular foundation models in clinical predictions", BMC Med Inform Decis Mak 26:364 (https://doi.org/10.1186/s12911-026-03654-3), one of its twelve binary clinical tasks.
+
+## Review
+
+**Outcome:** not added; screened `TBD -> 2nd Tier`, priority 2. Lung metastasis at diagnosis of liver cancer in SEER (2010+); the target comes from the same staging work-up whose other columns encode it, and Shaktah's code labels unknown and pre-2010 cases as negative.
+
+**Main points:** Cohort and label coding (issue 1); which staging and treatment columns stay (issue 2).
+
+**Issues for Andrej:**
+
+1. **Which cohort and label coding?**
+
+   * **Problem:**
+     - Shaktah's code sets the label to 1 only for "Yes", so "Unknown" and the blank pre-2010 rows count as no lung metastasis[^leak25].
+     - Primary Site C22 also holds intrahepatic cholangiocarcinoma and hepatoblastoma; the source paper (Kim and colleagues) restricts to HCC, 2010-2021, ages 20-84, known metastasis status[^use5].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Kim et al.'s cohort (implemented) | HCC histology, diagnoses from 2010, "Unknown" dropped | the source task; a clean label | fewer rows |
+     | B | Shaktah's extract | all C22, 2000 on, "Unknown" and blank as No | the benchmark paper's task | mixes "no metastasis" with "not recorded"; mixes three cancers |
+
+   * **Recommendation:** A. **Decision:** A or B?
+
+   [^leak25]: **LEAK-25** (Must): "No event" mixed with "not recorded" is a censoring bias: retire unless the recording process can be recovered; recovered includes unrecorded rows located by a rule that does not read the label, and dropped.
+   [^use5]: **USE-5** (Must): predict what the actor would act on, at the resolution they act on it. Check how the source built its label before accepting it.
+   [^source]: Source task before our own: the source's own task and split are tested first and preferred when valid.
+
+2. **Which staging and treatment columns stay?**
+
+   * **Problem:**
+     - M, stage group, summary stages and the other metastasis-site columns encode the label; Shaktah drops them but keeps survival months, vital status and cause of death[^leak10].
+     - Surgery, radiation and chemotherapy are chosen after staging, by the metastasis; T and N come from the same imaging[^use3].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | At diagnosis before treatment (implemented) | drop M, stages, other sites, treatment, survival and cause of death; keep T, N, size, AFP, demographics | the hepatologist's moment of ordering chest imaging | T and N may still act as a staging shortcut (probed at /add-dataset) |
+     | B | Also drop T and N | demographics, AFP, histology, size only | no staging shortcut | drops information the clinician has at diagnosis |
+     | C | Kim et al.'s features | treatment and follow-up kept | the source's feature set | treatment follows the label; follow-up is after it |
+
+   * **Recommendation:** A, with the T and N shortcut probed when the dataset is built. **Decision:** A, B or C?
+
+   [^leak10]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the target away; out: a column recorded after the outcome, a part, a consequence or another encoding of the target.
+   [^use3]: **USE-3** (Must): name the prediction point: when the model is used and what is known then. A value that did not exist at that point is a leak.
