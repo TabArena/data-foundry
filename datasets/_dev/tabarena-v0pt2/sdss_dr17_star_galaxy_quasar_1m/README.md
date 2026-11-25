@@ -2,16 +2,16 @@
 report_format: data-foundry-report-v2
 unique_name: sdss_dr17_star_galaxy_quasar_1m
 container_format: 2
-checksum: v2:05873681fe2089f69dd42368a4f0dd05478fffbf6df009659b1b324964edfeef
+checksum: v2:74e46abf92b7251938ff61359ee185f3db3bd8347b64ef76e0d1801a83ecd427
 build: null
 build_stale: false
 data:
   n_rows: 4249921
-  n_features: 13
+  n_features: 19
   dtypes:
-    category: 2
+    category: 3
     datetime64[ns]: 1
-    float64: 12
+    float64: 17
   n_test_dataset_rows: null
 task:
   target: ObjectType
@@ -63,9 +63,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `ObjectType`, scored with `log_loss` on temporal splits by `date`. 4,249,921 rows and 13 features. Source: Other (2021).
+Multiclass classification of `ObjectType`, scored with `log_loss` on temporal splits by `date`. 4,249,921 rows and 19 features. Source: Other (2021).
 
-Not built yet. The current definition gives checksum `v2:05873681fe2089f69dd42368a4f0dd05478fffbf6df009659b1b324964edfeef`.
+Not built yet. The current definition gives checksum `v2:74e46abf92b7251938ff61359ee185f3db3bd8347b64ef76e0d1801a83ecd427`.
 
 ## In brief
 
@@ -77,11 +77,11 @@ Not built yet. The current definition gives checksum `v2:05873681fe2089f69dd4236
 
 **Predicted.** The class the survey's spectroscopic pipeline assigned: galaxy (61.60%), star (20.73%) or quasar (17.68%).
 
-**Known at prediction time.** The sky position, the brightness in five colour bands (u, g, r, i, z) from the survey's images, both as fitted to the object's shape and as a point source (PSF magnitudes), and the camera column that took them. The date of the spectrum orders the split but is no model input: it arrives with the class.
+**Known at prediction time.** The sky position, the brightness in five colour bands (u, g, r, i, z) from the survey's images, fitted to the object's shape and as a point source (PSF magnitudes), the imaging pipeline's call of extended or point source, the dust extinction in each band and the camera column. The date of the spectrum orders the split but is no model input: it arrives with the class.
 
 **What the test data stands for.** Later spectra: each year from 2012 to 2018, and January 2019 to March 2020 together, is predicted by a model trained on spectra taken before it, as the survey's classifier would be refit at each data release and used on the objects observed next. Each window is scored on at most 500,000 of its spectra.
 
-**Our changes to the source.** We drop the redshift, fitted with the class, the plate and fibre, which record how the object was chosen, and the spectra the survey's pipeline flags as unreliable. We add the PSF magnitudes from the same images. We split by the year of the spectrum, 2019 and 2020 in one window, and score 2012 on a random 500,000 of its 546,222 spectra.
+**Our changes to the source.** We drop the redshift, fitted with the class, the plate and fibre, which record how the object was chosen, and the spectra the pipeline flags as unreliable. We add the PSF magnitudes, the imaging's object type and the dust extinction. We split by the year of the spectrum, 2019 and 2020 in one window, and score 2012 on a random 500,000 of its 546,222 spectra.
 
 > **Use case fit: approximate (a stand-in with a known gap).** The features exist before a spectrum, but every row is an object the survey's targeting programmes already picked by its colours for a spectrum, so the mix of classes and colours is not that of the objects one would classify without one. Each programme picked its own kind of object, so the class mix of later years differs (quasars 13-16% of the spectra in 2010-2013, 31-51% from 2014).
 
@@ -106,10 +106,11 @@ We query SkyServer's public SQL search (no account) for every spectrum of `SpecO
 `sciencePrimary`) with its photometric object in `PhotoObj`: the query behind the Kaggle cut `sdss_17`,
 without its `TOP 100000`. The service returns at most 500,000 rows per query, so we fetch 11 ranges of
 nights (MJD), each under the limit; every file starts with a `#Table1` line and holds a header and its rows
-(4,618,753 in all, 975 MB). The query adds to the Kaggle cut's 18 columns the five PSF magnitudes of
-`PhotoObj` and the spectrum's quality flags `zWarning`.
+(4,618,753 in all, 1,227 MB). The query adds to the Kaggle cut's 18 columns the five PSF magnitudes of
+`PhotoObj`, its object type `type` and Galactic extinction `extinction_u` to `extinction_z`, and the spectrum's
+quality flags `zWarning`.
 
-mkdir -p local-data-warehouse/sdss_dr17_star_galaxy_quasar && cd local-data-warehouse/sdss_dr17_star_galaxy_quasar && COLS="p.objid,p.ra,p.dec,p.u,p.g,p.r,p.i,p.z,p.psfMag_u,p.psfMag_g,p.psfMag_r,p.psfMag_i,p.psfMag_z,p.run,p.rerun,p.camcol,p.field,s.specobjid,s.class,s.z AS redshift,s.zWarning,s.plate,s.mjd,s.fiberid" && for range in "51578 52710" "52721 53565" "53566 54573" "54574 55514" "55517 55854" "55855 56073" "56074 56384" "56385 56934" "56935 57712" "57713 58223" "58224 58932"; do set -- $range; sql="SELECT $COLS FROM PhotoObj AS p JOIN SpecObj AS s ON s.bestobjid = p.objid WHERE s.mjd BETWEEN $1 AND $2"; enc=$(python3 -c "import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1]))" "$sql"); curl -sS -f -m 900 -o "chunk_$1_$2.csv" "https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd=$enc&format=csv"; sleep 5; done && cd ../..
+mkdir -p local-data-warehouse/sdss_dr17_star_galaxy_quasar && cd local-data-warehouse/sdss_dr17_star_galaxy_quasar && COLS="p.objid,p.ra,p.dec,p.u,p.g,p.r,p.i,p.z,p.psfMag_u,p.psfMag_g,p.psfMag_r,p.psfMag_i,p.psfMag_z,p.type,p.extinction_u,p.extinction_g,p.extinction_r,p.extinction_i,p.extinction_z,p.run,p.rerun,p.camcol,p.field,s.specobjid,s.class,s.z AS redshift,s.zWarning,s.plate,s.mjd,s.fiberid" && for range in "51578 52710" "52721 53565" "53566 54573" "54574 55514" "55517 55854" "55855 56073" "56074 56384" "56385 56934" "56935 57712" "57713 58223" "58224 58932"; do set -- $range; sql="SELECT $COLS FROM PhotoObj AS p JOIN SpecObj AS s ON s.bestobjid = p.objid WHERE s.mjd BETWEEN $1 AND $2"; enc=$(python3 -c "import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1]))" "$sql"); curl -sS -f -m 900 -o "chunk_$1_$2.csv" "https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd=$enc&format=csv"; sleep 5; done && cd ../..
 ```
 
 Then, from the repository root:
@@ -132,7 +133,7 @@ Only curators run `build`, when the dataset ships.
 | data_tags | Non-IID, Temporal |
 | reference | accetta2022seventeenth |
 | copy: SkyServer's SQL search, which we query | Other: https://skyserver.sdss.org/dr17/SearchTools/sql; license: Public Domain |
-| rows x columns | 4,249,921 x 15 |
+| rows x columns | 4,249,921 x 21 |
 | task.target | ObjectType |
 | task.problem_type | multiclass_classification |
 | task.metric | log_loss |
@@ -151,9 +152,9 @@ Only curators run `build`, when the dataset ships.
 | reason | SDSS DR17 (Abdurro'uf et al. 2022) is a data release with no prediction task or metric; SkyServer's documentation defines none either, and the Kaggle cut `sdss_17` of the same query is a dataset page, not a competition. Our task (photometric classification, redshift, plate and fibre dropped) also differs from the SDSS pipeline's spectroscopic classification. |
 
 <details>
-<summary>Feature types: 2 categorical, 0 string, 1 datetime</summary>
+<summary>Feature types: 3 categorical, 0 string, 1 datetime</summary>
 
-- categorical (2): `cam_col`, `ObjectType`
+- categorical (3): `cam_col`, `photo_type`, `ObjectType`
 - string (0): none
 - datetime (1): `date`
 
@@ -179,22 +180,22 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 4,249,921 rows of the final frame (the oldest rows: the frame is sorted by `date`); 12 of 15 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 4,249,921 rows of the final frame (the oldest rows: the frame is sorted by `date`); 12 of 21 columns, the target first. Cells are cut at 40 characters.
 
 | ObjectType | alpha | delta | u | g | r | i | z | psfMag_u | psfMag_g | psfMag_r | psfMag_i |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | GALAXY | 199.739 | -0.19831 | 17.2794 | 15.5046 | 14.6471 | 14.1916 | 13.7936 | 20.4809 | 18.7771 | 17.8404 | 17.4179 |
-| GALAXY | 200.094 | -0.402115 | 21.0088 | 18.9055 | 17.884 | 17.4159 | 16.9852 | 21.7325 | 19.5718 | 18.5257 | 18.0041 |
 | GALAXY | 201.226 | 0.495166 | 18.0294 | 17.1543 | 16.8773 | 16.6159 | 16.5467 | 19.9895 | 19.1456 | 19.005 | 18.7564 |
-| GALAXY | 151.988 | 0.606991 | 19.2473 | 17.3075 | 16.2978 | 15.8649 | 15.5493 | 20.6478 | 18.6607 | 17.6781 | 17.2536 |
+| GALAXY | 200.094 | -0.402115 | 21.0088 | 18.9055 | 17.884 | 17.4159 | 16.9852 | 21.7325 | 19.5718 | 18.5257 | 18.0041 |
 | GALAXY | 151.152 | -0.193221 | 18.3804 | 17.0203 | 16.3829 | 16.0337 | 15.7751 | 21.2473 | 19.8719 | 19.1627 | 18.8398 |
+| GALAXY | 151.988 | 0.606991 | 19.2473 | 17.3075 | 16.2978 | 15.8649 | 15.5493 | 20.6478 | 18.6607 | 17.6781 | 17.2536 |
 
 ## Curation notes
 
 We start with the 11 CSV files of SkyServer's SQL search for DR17 (`download_description`): 4,618,753
 primary spectra of `SpecObj` joined to their photometric objects in `PhotoObj` on `bestobjid`, the 18 columns
 of the Kaggle cut `sdss_17` (which is this query cut at 100,000 rows in database order; all its 99,999 objects
-are here) and the PSF magnitudes and `zWarning`. The other 492,959 of DR17's 5,112,724 primary spectra have
+are here) and the PSF magnitudes, `type`, the extinctions and `zWarning`. The other 492,959 of DR17's 5,112,724 primary spectra have
 no photometric object (`bestobjid` = 0): almost all are sky fibres and spectra without a target type, nearly
 all flagged by `zWarning`, and they have no features to classify with. The files are the release as published; no other file is read. The nights the ranges leave out
 (MJD 52711 to 52720, 55515 and 55516) hold no spectrum of the join: the row count of every range equals the
@@ -240,6 +241,20 @@ join's count per night.
   has no PSF magnitudes only because the Kaggle file held none; our own query has them, so the feature set
   now goes beyond `sdss_17`'s, for the same task. Measured by two reviewers in four tests on the windows
   (LightGBM, before the flagged spectra were dropped), they lower the log loss by 0.09 to 0.15.
+- We add the imaging pipeline's object type, "photo_type" (`PhotoObj.type`, its codes decoded to the names
+  of SkyServer's `PhotoType`: GALAXY, an extended object, 2,635,130; STAR, a point source, 1,614,692;
+  UNKNOWN 99), and the Galactic extinction "extinction_u" to "extinction_z", from the same `PhotoObj` row as
+  the magnitudes (2026-11-25, Andrej): a practitioner classifying an object without a spectrum reads both from
+  the imaging catalogue, which holds them for every imaged object, at training and at prediction time. The
+  type is a fixed rule of the imaging pipeline, a point source when the PSF magnitude is at most 0.145
+  fainter than the cModel magnitude; no label went into it. It is GALAXY for 97.1% of the galaxies and STAR
+  for 94.4% of the quasars and 94.3% of the stars, and the other shipped columns predict it at about 98%
+  (LightGBM, the two newest windows). The extinction is the dust map's reddening at the object's position
+  times a fixed coefficient per band, so the five columns are one number (correlation 1.000; u, g, i, z at
+  1.855, 1.446, 0.743 and 0.553 times r; none missing); the position carries part of it. Measured on the two
+  newest windows before they were added (LightGBM, log loss): the type lowered it by 0.004 to 0.005, the
+  extinction by nothing; they are added because the practitioner has them, not for the score. Like the
+  magnitudes, both are DR17's imaging catalogue, not the version an astronomer had at a window's start.
 - We set the sentinel -9999 to missing: 149 objects carry it in one or more bands of either magnitude (99 to
   135 per band), 99 of them in all five.
 - "u", "g", "r", "i", "z" are the model magnitudes of DR17's imaging catalogue. DR17 adds no imaging ("Data
@@ -270,8 +285,9 @@ join's count per night.
   learns to discount it under the drift does better, which is part of the task. "cam_col" changes the log
   loss by at most 0.001.
 - Worth benchmarking, measured in one run (the task probe, 5 of the 8 windows, untuned, log loss): LightGBM
-  0.255, random forest 0.265, logistic regression 0.393, the best single feature (`psfMag_g` or `psfMag_u`)
-  0.615, the class shares 1.247; LightGBM beats the class shares in every window.
+  0.247, random forest 0.261, logistic regression 0.370, the best single feature ("photo_type" in 3 windows,
+  `psfMag_u` or `psfMag_g` in the others) 0.601, the class shares 1.247; LightGBM beats the class shares in
+  every window (before "photo_type" and the extinctions were added: 0.255, 0.265, 0.393, 0.615).
 - Potential leak, kept on purpose (LEAK-9, an evaluation leak): features built from the other test rows of a
   window, the unlabelled objects observed in the same year in the same patch of sky, tell a model which
   programme observed the patch and lowered the mean log loss by 0.047 in a reviewer's test (before the flagged
@@ -328,46 +344,52 @@ Each test window against its train side, by statistics of the data, never of a m
 
 | window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
 |---|---|---|---|---|---|---|---|---|
-| 0 | Jan 2019 - Mar 2020 | 52526 | 0.988 | GALAXY 33.8%, QSO 50.1%, STAR 16.1% | GALAXY 62.2%, QSO 17.5%, STAR 20.3% | 1.29 | i (1.29), z (1.28), delta (1.06) | 0 |
-| 1 | Jan 2018 - Dec 2018 | 253228 | 0.928 | GALAXY 40.4%, QSO 44.8%, STAR 14.9% | GALAXY 63.5%, QSO 15.2%, STAR 21.3% | 1.652 | i (1.65), z (1.64), delta (1.32) | 0 |
-| 2 | Jan 2017 - Dec 2017 | 200290 | 0.881 | GALAXY 58.2%, QSO 31.0%, STAR 10.9% | GALAXY 63.4%, QSO 14.9%, STAR 21.7% | 2.212 | i (2.21), z (2.17), r (1.94) | 0 |
-| 3 | Jan 2016 - Dec 2016 | 179009 | 0.839 | GALAXY 43.0%, QSO 42.5%, STAR 14.5% | GALAXY 64.7%, QSO 13.1%, STAR 22.2% | 2.121 | i (2.12), z (2.08), r (1.67) | 0 |
-| 4 | Jan 2015 - Dec 2015 | 135619 | 0.807 | GALAXY 35.5%, QSO 45.5%, STAR 19.0% | GALAXY 65.9%, QSO 12.0%, STAR 22.0% | 2.027 | i (2.03), z (1.89), r (1.54) | 0 |
-| 5 | Jan 2014 - Dec 2014 | 212680 | 0.757 | GALAXY 43.6%, QSO 35.2%, STAR 21.2% | GALAXY 67.2%, QSO 10.6%, STAR 22.2% | 2.379 | delta (2.38), i (1.16), z (1.04) | 0 |
-| 6 | Jan 2013 - Dec 2013 | 447141 | 0.652 | GALAXY 72.7%, QSO 15.8%, STAR 11.5% | GALAXY 66.7%, QSO 9.2%, STAR 24.1% | 2.575 | delta (2.58), g (0.85), r (0.84) | 0 |
-| 7 | Jan 2012 - Dec 2012 | 500000 | 0.523 | GALAXY 73.8%, QSO 14.1%, STAR 12.2% | GALAXY 64.3%, QSO 8.4%, STAR 27.2% | 1.346 | delta (1.35), g (1.27), r (1.19) | 0 |
+| 0 | Jan 2019 - Mar 2020 | 52526 | 0.988 | GALAXY 33.9%, QSO 49.8%, STAR 16.3% | GALAXY 62.2%, QSO 17.4%, STAR 20.4% | 1.288 | i (1.29), z (1.25), delta (1.03) | 0 |
+| 1 | Jan 2018 - Dec 2018 | 253228 | 0.928 | GALAXY 40.9%, QSO 44.3%, STAR 14.8% | GALAXY 63.3%, QSO 15.7%, STAR 21.0% | 1.669 | i (1.67), z (1.65), r (1.28) | 0 |
+| 2 | Jan 2017 - Dec 2017 | 200290 | 0.881 | GALAXY 58.0%, QSO 31.3%, STAR 10.6% | GALAXY 64.0%, QSO 14.5%, STAR 21.5% | 2.221 | i (2.22), z (2.19), r (1.92) | 0 |
+| 3 | Jan 2016 - Dec 2016 | 179009 | 0.839 | GALAXY 43.3%, QSO 42.5%, STAR 14.2% | GALAXY 64.0%, QSO 13.6%, STAR 22.4% | 2.165 | i (2.17), z (2.12), r (1.71) | 0 |
+| 4 | Jan 2015 - Dec 2015 | 135619 | 0.807 | GALAXY 35.1%, QSO 45.5%, STAR 19.4% | GALAXY 65.9%, QSO 11.6%, STAR 22.5% | 1.973 | i (1.97), z (1.84), r (1.47) | 0 |
+| 5 | Jan 2014 - Dec 2014 | 212680 | 0.757 | GALAXY 43.9%, QSO 35.3%, STAR 20.8% | GALAXY 66.9%, QSO 10.7%, STAR 22.4% | 2.353 | delta (2.35), i (1.16), z (1.01) | 0 |
+| 6 | Jan 2013 - Dec 2013 | 447141 | 0.652 | GALAXY 72.5%, QSO 15.9%, STAR 11.6% | GALAXY 66.5%, QSO 9.5%, STAR 24.1% | 2.404 | delta (2.40), g (0.84), r (0.81) | 0 |
+| 7 | Jan 2012 - Dec 2012 | 500000 | 0.523 | GALAXY 73.3%, QSO 14.5%, STAR 12.2% | GALAXY 64.8%, QSO 8.4%, STAR 26.8% | 1.28 | delta (1.28), g (1.24), r (1.19) | 0 |
 
 ## Bundle checks
 
 0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 63,748,815 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
-- **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 63,748,815 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 89,248,341 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+- **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 89,248,341 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (15 rows)</summary>
+<summary>Show the table (21 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| cam_col | category | 0 | 0 | 6 | 4, 3, 5, 2, 1, 6 |
+| photo_type | category | 0 | 0 | 3 | GALAXY, STAR, UNKNOWN |
+| cam_col | category | 0 | 0 | 6 | 4, 3, 2, 5, 1, 6 |
 | ObjectType | category | 0 | 0 | 3 | GALAXY, STAR, QSO |
 | date | datetime64\[ns\] | 0 | 0 | 2242 | 2013-10-02 00:00:00, 2012-03-17 00:00:00, 2012-03-23 00:00:00, 2012-12-08 00:00… |
-| alpha | float64 | 0 | 0 | 4.24992e+06 | 186.7736, 233.402, 175.5943, 235.2115, 152.9625, 255.4752, 135.012, 338.4039, 1… |
-| delta | float64 | 0 | 0 | 4.24992e+06 | 35.0198, 20.6232, 23.2373, 16.1899, 27.5262, 27.9431, 38.8869, 0.078, 27.8403, … |
-| u | float64 | 135 | 0 | 958126 | 24.6347, 24.6347, 24.6347, 24.6347, 24.6346, 24.6347, 24.6347, 24.6346, 22.9253… |
-| g | float64 | 129 | 0 | 860703 | 25.1144, 25.1144, 25.1144, 25.1144, 21.5735, 22.0575, 22.2922, 22.1454, 22.2763… |
-| r | float64 | 99 | 0 | 768743 | 24.802, 24.802, 24.802, 24.8021, 20.7314, 20.7446, 20.2576, 20.3777, 20.2598, 2… |
-| i | float64 | 114 | 0 | 744699 | 24.3618, 24.3618, 19.9187, 19.8072, 19.812, 19.8287, 20.1172, 24.3618, 19.9702,… |
-| z | float64 | 122 | 0 | 772426 | 22.8269, 22.8269, 22.8269, 22.8269, 22.8269, 19.2508, 19.0272, 19.2113, 19.0651… |
-| psfMag_u | float64 | 135 | 0 | 848723 | 24.6345, 24.6347, 24.6348, 24.6345, 24.6349, 24.6346, 24.6346, 24.6347, 24.6345… |
-| psfMag_g | float64 | 129 | 0 | 831519 | 25.1143, 25.1143, 25.1144, 22.6678, 25.1145, 22.8686, 22.7302, 22.2815, 25.1144… |
-| psfMag_r | float64 | 99 | 0 | 745952 | 24.8021, 24.8022, 24.8021, 21.2565, 24.802, 24.8019, 24.802, 24.802, 24.802, 21… |
-| psfMag_i | float64 | 114 | 0 | 697137 | 20.3705, 20.56, 20.3496, 20.4678, 20.9608, 20.8568, 20.6233, 20.437, 20.5435, 2… |
-| psfMag_z | float64 | 122 | 0 | 704178 | 22.8268, 22.8269, 22.827, 22.8268, 22.8269, 22.8267, 22.827, 22.8268, 22.827, 2… |
+| alpha | float64 | 0 | 0 | 4.24992e+06 | 187.7207, 233.2977, 176.2792, 231.4393, 153.6349, 255.337, 192.8755, 342.3448, … |
+| delta | float64 | 0 | 0 | 4.24992e+06 | 35.3786, 22.118, 23.974, 5.1363, 27.0603, 27.3297, 3.9677, -8.2884, 7.1342, 1.0… |
+| u | float64 | 135 | 0 | 958126 | 24.6347, 24.6347, 24.6347, 24.6347, 24.6346, 24.6347, 24.6347, 24.6346, 24.6346… |
+| g | float64 | 129 | 0 | 860703 | 25.1144, 25.1144, 25.1144, 21.4728, 22.0039, 22.0472, 21.856, 21.992, 21.04, 21… |
+| r | float64 | 99 | 0 | 768743 | 24.802, 24.802, 24.802, 20.969, 21.9405, 20.4437, 20.5416, 20.2427, 20.7347, 20… |
+| i | float64 | 114 | 0 | 744699 | 24.3618, 24.3618, 19.3677, 19.5422, 19.5103, 19.8461, 19.5935, 24.3618, 20.0554… |
+| z | float64 | 122 | 0 | 772426 | 22.8269, 22.8269, 22.8269, 22.8269, 18.9476, 16.7733, 18.6225, 18.973, 19.0208,… |
+| psfMag_u | float64 | 135 | 0 | 848723 | 24.6346, 24.6346, 24.6344, 24.6349, 24.6344, 24.6345, 24.6344, 24.6345, 24.6344… |
+| psfMag_g | float64 | 129 | 0 | 831519 | 25.1143, 22.7674, 25.1144, 22.6859, 22.7741, 25.1144, 23.048, 25.1144, 22.7286,… |
+| psfMag_r | float64 | 99 | 0 | 745952 | 24.8021, 24.8021, 24.8019, 20.7808, 21.0937, 24.8022, 21.4087, 21.5553, 21.2632… |
+| psfMag_i | float64 | 114 | 0 | 697137 | 24.3619, 20.8326, 24.3618, 20.8939, 20.5496, 20.617, 20.4582, 20.5466, 19.9195,… |
+| psfMag_z | float64 | 122 | 0 | 704178 | 22.8269, 22.8268, 22.8269, 22.8268, 22.827, 22.8268, 22.8269, 22.827, 22.8269, … |
+| extinction_u | float64 | 0 | 0 | 3.02402e+06 | 0.1662, 0.1508, 0.1062, 0.1326, 0.1064, 0.168, 0.1261, 0.1202, 0.1606, 0.1264 |
+| extinction_g | float64 | 0 | 0 | 3.13986e+06 | 0.1159, 0.1295, 0.1111, 0.1097, 0.1462, 0.1072, 0.1309, 0.1393, 0.1471, 0.112 |
+| extinction_r | float64 | 0 | 0 | 3.27853e+06 | 0.1011, 0.1017, 0.1012, 0.1432, 0.1077, 0.1184, 0.1426, 0.1097, 0.1471, 0.1052 |
+| extinction_i | float64 | 0 | 0 | 3.33758e+06 | 0.0393, 0.1103, 0.1093, 0.1015, 0.0321, 0.1031, 0.1046, 0.0384, 0.1051, 0.1239 |
+| extinction_z | float64 | 0 | 0 | 3.26351e+06 | 0.0314, 0.0278, 0.0239, 0.0146, 0.0396, 0.0489, 0.0543, 0.0331, 0.0166, 0.0236 |
 
 </details>
 
@@ -382,45 +404,53 @@ Each test window against its train side, by statistics of the data, never of a m
 ### Numeric features
 
 <details>
-<summary>Show the table (12 rows)</summary>
+<summary>Show the table (17 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| alpha | 424992 | 173.966 | 93.8937 | 0.00021481 | 359.999 |
-| delta | 424992 | 24.059 | 19.1293 | -19.3064 | 84.7232 |
-| u | 424979 | 21.9714 | 2.26936 | 10.6118 | 30.514 |
-| g | 424979 | 20.4886 | 2.03372 | 10.3794 | 31.3274 |
-| r | 424981 | 19.4823 | 1.83002 | 9.45555 | 31.6352 |
-| i | 424979 | 18.9158 | 1.71869 | 9.22853 | 30.2948 |
-| z | 424979 | 18.6012 | 1.72457 | 9.96079 | 29.4563 |
-| psfMag_u | 424979 | 22.3296 | 1.96242 | 12.1007 | 31.811 |
-| psfMag_g | 424979 | 21.1183 | 1.92229 | 10.3268 | 28.0883 |
-| psfMag_r | 424981 | 20.1757 | 1.67146 | 9.44602 | 27.3559 |
-| psfMag_i | 424979 | 19.6211 | 1.50336 | 9.21772 | 25.465 |
-| psfMag_z | 424979 | 19.2687 | 1.46651 | 9.93708 | 26.7194 |
+| alpha | 424992 | 173.836 | 93.861 | 0.000562778 | 360 |
+| delta | 424992 | 24.0982 | 19.1227 | -19.6415 | 84.7604 |
+| u | 424984 | 21.9663 | 2.2729 | 12.0552 | 31.143 |
+| g | 424985 | 20.4853 | 2.03659 | 10.683 | 30.9249 |
+| r | 424988 | 19.4803 | 1.83223 | 10.0811 | 31.4247 |
+| i | 424987 | 18.9146 | 1.72087 | 9.974 | 30.0887 |
+| z | 424986 | 18.5991 | 1.72557 | 10.6118 | 29.3837 |
+| psfMag_u | 424984 | 22.3251 | 1.96677 | 11.7392 | 31.0988 |
+| psfMag_g | 424985 | 21.1149 | 1.92555 | 10.6023 | 30.072 |
+| psfMag_r | 424988 | 20.173 | 1.67362 | 10.0226 | 26.8303 |
+| psfMag_i | 424987 | 19.6193 | 1.50647 | 9.90551 | 24.7799 |
+| psfMag_z | 424986 | 19.2665 | 1.46803 | 10.4186 | 24.4311 |
+| extinction_u | 424992 | 0.177138 | 0.252451 | 0.0111473 | 28.0208 |
+| extinction_g | 424992 | 0.138025 | 0.196708 | 0.00868591 | 21.8336 |
+| extinction_r | 424992 | 0.0954847 | 0.136082 | 0.00600887 | 15.1044 |
+| extinction_i | 424992 | 0.0709554 | 0.101123 | 0.00446523 | 11.2242 |
+| extinction_z | 424992 | 0.0527778 | 0.0752173 | 0.00332132 | 8.34874 |
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (13 rows)</summary>
+<summary>Show the table (16 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| ObjectType | 1 | GALAXY | 262521 | 61.77 |
-| ObjectType | 2 | STAR | 87324 | 20.55 |
-| ObjectType | 3 | QSO | 75147 | 17.68 |
-| cam_col | 1 | 4 | 82399 | 19.39 |
-| cam_col | 2 | 3 | 81570 | 19.19 |
-| cam_col | 3 | 5 | 74220 | 17.46 |
-| cam_col | 4 | 2 | 74199 | 17.46 |
-| cam_col | 5 | 1 | 59100 | 13.91 |
+| ObjectType | 1 | GALAXY | 262077 | 61.67 |
+| ObjectType | 2 | STAR | 87902 | 20.68 |
+| ObjectType | 3 | QSO | 75013 | 17.65 |
+| cam_col | 1 | 4 | 82274 | 19.36 |
+| cam_col | 2 | 3 | 81576 | 19.19 |
+| cam_col | 3 | 2 | 74904 | 17.62 |
+| cam_col | 4 | 5 | 74105 | 17.44 |
+| cam_col | 5 | 1 | 58857 | 13.85 |
 | date | 1 | 2013-10-02 00:00:00 | 764 | 0.18 |
 | date | 2 | 2012-03-17 00:00:00 | 740 | 0.17 |
 | date | 3 | 2012-03-23 00:00:00 | 735 | 0.17 |
 | date | 4 | 2012-12-08 00:00:00 | 728 | 0.17 |
 | date | 5 | 2012-12-13 00:00:00 | 724 | 0.17 |
+| photo_type | 1 | GALAXY | 263581 | 62.02 |
+| photo_type | 2 | STAR | 161407 | 37.98 |
+| photo_type | 3 | UNKNOWN | 4 | 0 |
 
 </details>
 

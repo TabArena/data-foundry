@@ -31,9 +31,24 @@ RENAME = {
     "mjd": "MJD",
     "fiberid": "fiber_ID",
     **{f"psfmag_{band}": f"psfMag_{band}" for band in "ugriz"},
+    "type": "photo_type",
 }
 MAGNITUDES = ["u", "g", "r", "i", "z"]
 PSF_MAGNITUDES = [f"psfMag_{band}" for band in MAGNITUDES]
+EXTINCTIONS = [f"extinction_{band}" for band in MAGNITUDES]
+# The imaging pipeline's object type (`PhotoType` of SkyServer's schema), decoded to its names: 3 extended, 6 point source.
+PHOTO_TYPES = {
+    0: "UNKNOWN",
+    1: "COSMIC_RAY",
+    2: "DEFECT",
+    3: "GALAXY",
+    4: "GHOST",
+    5: "KNOWNOBJ",
+    6: "STAR",
+    7: "TRAIL",
+    8: "SKY",
+    9: "NOTATYPE",
+}
 # The first day of each test window, newest first: 2019 and 2020 form one window (1 January 2019 to the end of the data,
 # 24 March 2020), then the calendar years 2018 to 2012, as `sdss_17` (2026-11-12, Andrej).
 WINDOW_STARTS = tuple(pd.Timestamp(f"{year}-01-01") for year in range(2019, 2011, -1))
@@ -55,10 +70,10 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
             "The class the survey's spectroscopic pipeline assigned: galaxy (61.60%), star (20.73%) or quasar (17.68%)."
         ),
         known=(
-            "The sky position, the brightness in five colour bands (u, g, r, i, z) from the survey's images, both as "
-            "fitted to the object's shape and as a point source (PSF magnitudes), and the camera column that took "
-            "them. The date of the spectrum orders the split but is no model input: it "
-            "arrives with the class."
+            "The sky position, the brightness in five colour bands (u, g, r, i, z) from the survey's images, fitted "
+            "to the object's shape and as a point source (PSF magnitudes), the imaging pipeline's call of extended "
+            "or point source, the dust extinction in each band and the camera column. The date of the spectrum "
+            "orders the split but is no model input: it arrives with the class."
         ),
         split=(
             "Later spectra: each year from 2012 to 2018, and January 2019 to March 2020 together, is predicted by a "
@@ -67,9 +82,9 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
         ),
         changes=(
             "We drop the redshift, fitted with the class, the plate and fibre, which record how the object was "
-            "chosen, and the spectra the survey's pipeline flags as unreliable. We add the PSF magnitudes from the "
-            "same images. We split by the year of the spectrum, 2019 and 2020 in one window, and score 2012 on a "
-            "random 500,000 of its 546,222 spectra."
+            "chosen, and the spectra the pipeline flags as unreliable. We add the PSF magnitudes, the imaging's "
+            "object type and the dust extinction. We split by the year of the spectrum, 2019 and 2020 in one "
+            "window, and score 2012 on a random 500,000 of its 546,222 spectra."
         ),
         fit="approximate",
         fit_reason=(
@@ -116,16 +131,17 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
         `sciencePrimary`) with its photometric object in `PhotoObj`: the query behind the Kaggle cut `sdss_17`,
         without its `TOP 100000`. The service returns at most 500,000 rows per query, so we fetch 11 ranges of
         nights (MJD), each under the limit; every file starts with a `#Table1` line and holds a header and its rows
-        (4,618,753 in all, 975 MB). The query adds to the Kaggle cut's 18 columns the five PSF magnitudes of
-        `PhotoObj` and the spectrum's quality flags `zWarning`.
+        (4,618,753 in all, 1,227 MB). The query adds to the Kaggle cut's 18 columns the five PSF magnitudes of
+        `PhotoObj`, its object type `type` and Galactic extinction `extinction_u` to `extinction_z`, and the spectrum's
+        quality flags `zWarning`.
 
-        mkdir -p local-data-warehouse/sdss_dr17_star_galaxy_quasar && cd local-data-warehouse/sdss_dr17_star_galaxy_quasar && COLS="p.objid,p.ra,p.dec,p.u,p.g,p.r,p.i,p.z,p.psfMag_u,p.psfMag_g,p.psfMag_r,p.psfMag_i,p.psfMag_z,p.run,p.rerun,p.camcol,p.field,s.specobjid,s.class,s.z AS redshift,s.zWarning,s.plate,s.mjd,s.fiberid" && for range in "51578 52710" "52721 53565" "53566 54573" "54574 55514" "55517 55854" "55855 56073" "56074 56384" "56385 56934" "56935 57712" "57713 58223" "58224 58932"; do set -- $range; sql="SELECT $COLS FROM PhotoObj AS p JOIN SpecObj AS s ON s.bestobjid = p.objid WHERE s.mjd BETWEEN $1 AND $2"; enc=$(python3 -c "import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1]))" "$sql"); curl -sS -f -m 900 -o "chunk_$1_$2.csv" "https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd=$enc&format=csv"; sleep 5; done && cd ../..
+        mkdir -p local-data-warehouse/sdss_dr17_star_galaxy_quasar && cd local-data-warehouse/sdss_dr17_star_galaxy_quasar && COLS="p.objid,p.ra,p.dec,p.u,p.g,p.r,p.i,p.z,p.psfMag_u,p.psfMag_g,p.psfMag_r,p.psfMag_i,p.psfMag_z,p.type,p.extinction_u,p.extinction_g,p.extinction_r,p.extinction_i,p.extinction_z,p.run,p.rerun,p.camcol,p.field,s.specobjid,s.class,s.z AS redshift,s.zWarning,s.plate,s.mjd,s.fiberid" && for range in "51578 52710" "52721 53565" "53566 54573" "54574 55514" "55517 55854" "55855 56073" "56074 56384" "56385 56934" "56935 57712" "57713 58223" "58224 58932"; do set -- $range; sql="SELECT $COLS FROM PhotoObj AS p JOIN SpecObj AS s ON s.bestobjid = p.objid WHERE s.mjd BETWEEN $1 AND $2"; enc=$(python3 -c "import sys, urllib.parse; print(urllib.parse.quote(sys.argv[1]))" "$sql"); curl -sS -f -m 900 -o "chunk_$1_$2.csv" "https://skyserver.sdss.org/dr17/SkyServerWS/SearchTools/SqlSearch?cmd=$enc&format=csv"; sleep 5; done && cd ../..
     """
     curation_comments = """
         We start with the 11 CSV files of SkyServer's SQL search for DR17 (`download_description`): 4,618,753
         primary spectra of `SpecObj` joined to their photometric objects in `PhotoObj` on `bestobjid`, the 18 columns
         of the Kaggle cut `sdss_17` (which is this query cut at 100,000 rows in database order; all its 99,999 objects
-        are here) and the PSF magnitudes and `zWarning`. The other 492,959 of DR17's 5,112,724 primary spectra have
+        are here) and the PSF magnitudes, `type`, the extinctions and `zWarning`. The other 492,959 of DR17's 5,112,724 primary spectra have
         no photometric object (`bestobjid` = 0): almost all are sky fibres and spectra without a target type, nearly
         all flagged by `zWarning`, and they have no features to classify with. The files are the release as published; no other file is read. The nights the ranges leave out
         (MJD 52711 to 52720, 55515 and 55516) hold no spectrum of the join: the row count of every range equals the
@@ -171,6 +187,20 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
           has no PSF magnitudes only because the Kaggle file held none; our own query has them, so the feature set
           now goes beyond `sdss_17`'s, for the same task. Measured by two reviewers in four tests on the windows
           (LightGBM, before the flagged spectra were dropped), they lower the log loss by 0.09 to 0.15.
+        - We add the imaging pipeline's object type, "photo_type" (`PhotoObj.type`, its codes decoded to the names
+          of SkyServer's `PhotoType`: GALAXY, an extended object, 2,635,130; STAR, a point source, 1,614,692;
+          UNKNOWN 99), and the Galactic extinction "extinction_u" to "extinction_z", from the same `PhotoObj` row as
+          the magnitudes (2026-11-25, Andrej): a practitioner classifying an object without a spectrum reads both from
+          the imaging catalogue, which holds them for every imaged object, at training and at prediction time. The
+          type is a fixed rule of the imaging pipeline, a point source when the PSF magnitude is at most 0.145
+          fainter than the cModel magnitude; no label went into it. It is GALAXY for 97.1% of the galaxies and STAR
+          for 94.4% of the quasars and 94.3% of the stars, and the other shipped columns predict it at about 98%
+          (LightGBM, the two newest windows). The extinction is the dust map's reddening at the object's position
+          times a fixed coefficient per band, so the five columns are one number (correlation 1.000; u, g, i, z at
+          1.855, 1.446, 0.743 and 0.553 times r; none missing); the position carries part of it. Measured on the two
+          newest windows before they were added (LightGBM, log loss): the type lowered it by 0.004 to 0.005, the
+          extinction by nothing; they are added because the practitioner has them, not for the score. Like the
+          magnitudes, both are DR17's imaging catalogue, not the version an astronomer had at a window's start.
         - We set the sentinel -9999 to missing: 149 objects carry it in one or more bands of either magnitude (99 to
           135 per band), 99 of them in all five.
         - "u", "g", "r", "i", "z" are the model magnitudes of DR17's imaging catalogue. DR17 adds no imaging ("Data
@@ -201,8 +231,9 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
           learns to discount it under the drift does better, which is part of the task. "cam_col" changes the log
           loss by at most 0.001.
         - Worth benchmarking, measured in one run (the task probe, 5 of the 8 windows, untuned, log loss): LightGBM
-          0.255, random forest 0.265, logistic regression 0.393, the best single feature (`psfMag_g` or `psfMag_u`)
-          0.615, the class shares 1.247; LightGBM beats the class shares in every window.
+          0.247, random forest 0.261, logistic regression 0.370, the best single feature ("photo_type" in 3 windows,
+          `psfMag_u` or `psfMag_g` in the others) 0.601, the class shares 1.247; LightGBM beats the class shares in
+          every window (before "photo_type" and the extinctions were added: 0.255, 0.265, 0.393, 0.615).
         - Potential leak, kept on purpose (LEAK-9, an evaluation leak): features built from the other test rows of a
           window, the unlabelled objects observed in the same year in the same patch of sky, tell a model which
           programme observed the patch and lowered the mean log loss by 0.047 in a reviewer's test (before the flagged
@@ -275,6 +306,10 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
         # that carried no light (UNPLUGGED, NODATA). Dropped before the position dedup, so an object whose flagged
         # spectrum has a clean one at the same position keeps the clean one (2026-11-25, Andrej).
         df = df[df["zwarning"].astype("int64") == 0]
+        # The imaging pipeline's star/galaxy call, decoded to the schema's names (2026-11-25, Andrej).
+        codes = df["photo_type"].astype("int64")
+        assert codes.isin(PHOTO_TYPES.keys()).all(), "A `type` code outside SkyServer's PhotoType."
+        df["photo_type"] = codes.map(PHOTO_TYPES)
         target_feature = "ObjectType"
         df = df.rename(columns={"class": target_feature})
         df[target_feature] = df[target_feature].str.strip()
@@ -326,5 +361,6 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
         return SplitPlan(splits=splits, df=frame)
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # cam_col names which of the six camera columns took the image: a code, not a quantity (as `sdss_17`)
-        return FeatureTypes(categorical=["cam_col"], datetime=["date"])
+        # cam_col names which of the six camera columns took the image: a code, not a quantity (as `sdss_17`);
+        # photo_type is the imaging pipeline's class, a code decoded to its names (the extinctions stay numeric)
+        return FeatureTypes(categorical=["cam_col", "photo_type"], datetime=["date"])
