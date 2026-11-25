@@ -24,6 +24,16 @@
 - **Adopt the exposure rules of the study of 2026-11-05 ([#51](https://github.com/TabArena/data-foundry/issues/51))?** LEAK-41 (a realized weight, and any column that encodes it, is never a model input; no training or scoring on rows selected by it), the amended LEAK-10 Cases row on time on risk and a new one on spans the outcome sets, MET-14 (ship the rate per unit at risk), MET-15 (its realized denominator is the metric's row weight and the training weight), MET-16 (survey weights), and the CLEAN-16 (no transform under a deviance) and MET-13 (a stated floor, no cap) amendments.
   Implemented: the texts in `leak_checks.md`, `metrics.md`, `cleaning_features.md`, `verification.md`, `evidence.md` and the agent briefs.
   **Resolved (2026-11-06, Lennart):** adopted as drafted (D1-D4), without the structured exposure note: the exposure is described in text. Probe 22 measures per dataset whether a feature predicts the weight.
+- **Correct covertype's row in the MET-6 Cases table (from `bacteria_id_raman`)?** The row still lists covertype
+  as "a single deliberate accuracy, hard labels per map cell: kept, proposed". covertype ships `Metric.fallback`
+  and its record carries the decision that the fallback log loss replaces the paper's accuracy, so the row names a
+  precedent that no longer holds. `bacteria_id_raman`'s precedent check cited it as the precedent for keeping a
+  paper's accuracy.
+  Implemented: nothing in the rule files; covertype's own definition and record are correct.
+  Proposal: move covertype to the "fallback proposed" list, so the row no longer reads as a precedent for keeping
+  a paper's accuracy.
+  Decision needed: go ahead or leave as is.
+
 ### Framework (`src/data_foundry/v2/`)
 
 - **Floor a coarse time column before the framework orders the rows, in every definition (from `chicago_traffic_crashes`)?** `order_rows` (`src/data_foundry/v2/preprocessing.py`) stable-sorts by the full-precision time column after `_clean`. A definition that coarsens the time only in `_make_splits` therefore ships each period's rows in the order of the finer time it meant to hide, which is chicago's issue 9 (LEAK-13, the minute back through the row order). Flooring in `_clean` leaves each period in the framework's content order (a hash of each row's values).

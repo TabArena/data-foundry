@@ -1,5 +1,18 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-25, bacteria_id_raman and raman_mlrod: the two RamanBench definitions ported (no container built)
+
+- The two Raman definitions of the large add run move onto this branch with their reviews. Each dataset's review is
+  now the `## Review` section of its record, as the house rule asks, and the `REVIEW.md` of its folder is gone.
+- Both definitions declare their provenance as `sources` (`Source(role=...)`), which replaced the `year`, `source`,
+  `source_url`, `license` and `bibtex` fields after they were written. raman_mlrod also declares the raman-data
+  mirror it reads as a `copy` source beside the ODR deposit.
+- The raw files were downloaded again: both archives match the sha256 the definitions record (mlrod.zip
+  10178a4a..., bacteria data.zip 05f0978e...), 41 map files and 11 arrays.
+- The record of each keeps the `Spectral Data` tag, which the tag run added after the definitions were written.
+- Across datasets: covertype's MET-6 Cases row still names it as a kept paper accuracy, though it ships the fallback
+  log loss; the item is in `REVIEW.md`.
+
 ## 2026-11-25 (evening), fugaku_hpc_job_failure_1m: every source row prepared (no container built)
 
 - The preparation writes every source row and `_make_splits` caps the test windows at 500,000 rows, so the training
