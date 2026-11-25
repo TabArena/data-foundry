@@ -79,6 +79,8 @@ CC (2026-11-25, Andrej): review issue 4, A (ok, as implemented): the ages 108, 1
 
 **Assessment (AI, 2026-11-25):** marks applied. Issue 1: `_make_splits` builds 1 x 8 region folds (2 regions each), test folds of 4,161 to 7,789 patients and 256 to 554 deaths; check 0 errors, 0 warnings (2 accepted), 3 info; group probe ROC AUC 0.824 (logistic regression), 0.814 (random forest), 0.821 (LightGBM) on held-out regions, LightGBM 0.821 grouped against 0.819 random; task probe no flag. Issue 3 (discuss) answered in the review and left open: Steyerberg and Vergouwe 2014 compare an age-only model with a four-predictor model fitted on 259 or 23,034 US patients, on the 17,796 non-US patients, by calibration-in-the-large, calibration slope, c statistic and net benefit, and say the c statistic "is insensitive to systematic errors in calibration"; on the 8 folds log loss separates splines from logistic regression on 7 of 8 folds as ROC AUC does; log loss from context recommended.
 
+**Assessment (AI, 2026-11-25):** Andrej's second question on issue 3 (discuss, the heart_disease precedent) answered in the review and left open. Detrano et al. 1989 scored reliability (mean predicted against observed, overall and by quintiles) and the percent correctly classified over thresholds 0.2 to 0.8, with no ROC analysis; heart_disease's `roc_auc` is the binary fallback, and its own reason says ROC AUC does not score reliability. On heart_disease's three held-out hospitals logistic regression is third of four models by ROC AUC (0.824) but last by log loss (0.711) and Brier (0.209), since it misjudges each hospital's disease rate. Recommended: log loss for GUSTO-I now; heart_disease's metric raised as a separate decision (not changed here).
+
 ## Review
 
 **Outcome:** added. The GUSTO-I trial's 40,826 patients with an ST-elevation heart attack, death by day 30 from what is known at presentation, held out by whole region (16 regions, two per test fold in one round of 8 folds, Andrej 2026-11-25); the review panel recommends shipping after changes, which are applied; the three ages of 108 to 110 stay with a note (Andrej). Judgment record:
@@ -101,7 +103,7 @@ Weighed: size +, source +, era -, small spread -.
 Decided: issue 1 (1 x 8 folds), issue 4 (ages kept). Open: issues 2 (next to mic or in its place), 3 (metric).
 ```
 
-**Main points:** Andrej chose one round of 8 folds of 2 regions (issue 1) and kept the three ages of 108 to 110 with a note (issue 4); two calls stay open, neither a validity question: whether the dataset joins next to `mic` or replaces it (one call with `mic`'s issue 5), and the metric (issue 3, answered: the source scores calibration, slope, c statistic and net benefit side by side, and argues the c statistic misses calibration; log loss recommended). Applied without a decision: `height` dropped (its fills leak the outcome), the five flags kept as released (the builder had dropped them), impossible pulse and pressure values set to missing, `groups_test_groups_few` accepted with its reason, and the wording of the use case, fit and split. The record now carries `Outdated` and `Class-dependent Recording` (the height fills), both for the curator to confirm.
+**Main points:** Andrej chose one round of 8 folds of 2 regions (issue 1) and kept the three ages of 108 to 110 with a note (issue 4); two calls stay open, neither a validity question: whether the dataset joins next to `mic` or replaces it (one call with `mic`'s issue 5), and the metric (issue 3, answered twice: the source scores calibration, slope, c statistic and net benefit side by side, and argues the c statistic misses calibration; heart_disease's own source scored calibration and accuracy, never ROC AUC, so that precedent is a fallback that does not stand against log loss; log loss recommended, heart_disease's metric a separate call). Applied without a decision: `height` dropped (its fills leak the outcome), the five flags kept as released (the builder had dropped them), impossible pulse and pressure values set to missing, `groups_test_groups_few` accepted with its reason, and the wording of the use case, fit and split. The record now carries `Outdated` and `Class-dependent Recording` (the height fills), both for the curator to confirm.
 
 **Issues for the curator:**
 
@@ -243,6 +245,48 @@ Decided: issue 1 (1 x 8 folds), issue 4 (ages kept). Open: issues 2 (next to mic
    [^3d]: **MET-5** (Should): a paper that reports several metrics side by side without naming the one that decides has no unique original; declare the fallback. **MET-8** (Should): the fallback is `roc_auc` for binary tasks.
    [^3e]: **MET-11** (Must), its context origin: the source defines no metric, but the task makes one obvious, so the default would score the wrong thing; only when the context is clear. **MET-10** (Weigh): when the call stays in doubt, the metric that adds diversity to the collection wins (Andrej, 2026-11-02).
    [^3f]: **MET-7** (Should): a source that gives a range of costs or thresholds (a decision curve) fixes no single one, so its task is scored by a threshold-free metric.
+
+   **Andrej (2026-11-25, discuss):** I am leaning towards log loss. But you name as a con: 'a context metric the curator must accept against the heart_disease precedent' - what is the actually right metric for this heart_disease dataset judging from the source?
+
+   **Answer (AI, 2026-11-25):** judged from its source, heart_disease's right metric is a probability metric (log loss), not ROC AUC: Detrano et al. 1989 scored calibration and accuracy over thresholds and no ROC at all, so the precedent is a default and does not stand against log loss here; if anything it points the same way.
+
+   * **Problem:**
+     - Detrano et al. 1989 tested a probability model for "reliability and clinical utility" and nothing else: "A new discriminant function model for estimating probabilities of angiographic coronary disease was tested for reliability and clinical utility in 3 patient test groups" (abstract). Reliability is the mean predicted probability against the disease rate, overall and by quintiles (p. 306); clinical utility is "the percentage of patients correctly classified" (abstract), over the thresholds 0.2 to 0.8 (p. 307). The paper has no ROC curve, no c statistic and no ranking claim (heart_disease's record, full text read 2026-10-27).
+     - Its main finding is a calibration finding, which ROC AUC cannot see: "Both algorithms overpredicted the probability of disease at the Hungarian and American centers. Overprediction was more pronounced with the use of CADENZA (average overestimation 16 vs 10% and 11 vs 5%, p less than 0.001). In the Swiss group, the discriminant function underestimated (by 7%) and CADENZA slightly overestimated (by 2%) disease probability" (abstract). Its conclusion is about probabilities too: "coronary disease probabilities derived from discriminant functions are reliable and clinically useful when applied to patients with chest pain syndromes and intermediate disease prevalence".
+     - heart_disease declares ROC AUC as the binary fallback, not as the source's measure, and its own metric reason says so: "ROC AUC per held-out hospital does not score reliability". The "not log_loss" part is one line on the three single-hospital records, before the merge and the split by hospital: "proposal accepted: roc_auc (fallback) for the heart_disease_* datasets, not log_loss" (Lennart, 2026-10-21), with no reason recorded; the merged record kept "Metric `roc_auc` (fallback) as declared" (Lennart, 2026-10-27). The rule on probabilities cites the same paper as a source that "asked for probabilities"[^3g].
+     - So the precedent says only that the fallback was taken when a source scores two things side by side; it records no argument for ranking over probabilities. GUSTO-I's source scores calibration too and says in its own words that the c statistic misses it, so the two cases agree on the facts, and both point to a probability metric.
+   * **Experiments:** heart_disease as shipped (796 patients, 13 inputs, the hospital held out, train on the other two), four models and the training disease rate as a constant; the means over the three hospitals:
+
+     | Model | ROC AUC | Log loss | Brier | Correctly classified, mean over 0.2 to 0.8 |
+     |---|---|---|---|---|
+     | Training disease rate | 0.500 | 0.746 | 0.276 | 0.470 |
+     | Logistic regression | 0.824 | 0.711 | 0.209 | 0.702 |
+     | Random forest | 0.835 | 0.539 | 0.180 | 0.679 |
+     | LightGBM, lightly tuned | 0.827 | 0.545 | 0.183 | 0.703 |
+     | LightGBM, defaults | 0.795 | 0.661 | 0.207 | 0.705 |
+
+     Detrano's reliability per held-out hospital (mean predicted against observed disease rate), with the two threshold-free scores:
+
+     | Held-out hospital | Observed | Logistic regression: predicted, ROC AUC, log loss | LightGBM, lightly tuned: predicted, ROC AUC, log loss |
+     |---|---|---|---|
+     | Cleveland | 0.459 | 0.259, 0.877, 0.617 | 0.497, 0.865, 0.465 |
+     | Hungary | 0.361 | 0.462, 0.901, 0.414 | 0.520, 0.896, 0.482 |
+     | VA Long Beach | 0.744 | 0.454, 0.694, 1.103 | 0.518, 0.721, 0.687 |
+
+   * **Effect on the task:** on heart_disease the metrics disagree where the source's question lies. Logistic regression is third of the four models by ROC AUC (0.824, within 0.011 of the best and ahead of default LightGBM) but last by log loss and Brier, because it misjudges the disease rate of a new hospital (0.26 predicted against 0.46 observed in Cleveland, 0.45 against 0.74 in Long Beach, where its log loss of 1.10 is worse than the constant's 0.80). That misjudgement is what Detrano measured and ROC AUC ignores. On GUSTO-I's 8 folds the metrics agree (the earlier table), so log loss there costs no resolution.
+   * **Separate fact, for a decision of its own (heart_disease is not changed here):** heart_disease's `roc_auc` looks mis-specified against its source. The source scores reliability and accuracy over thresholds, its finding is the miscalibration at new hospitals, its split holds out whole hospitals to pose exactly that question, and the definition's own reason says ROC AUC does not score it. Since the binary fallback is ROC AUC, moving it to log loss would be a context metric there too, with this reason[^3h]. The merged record's Comments also say the study "found that the model ranks patients well", which the full-text read of 2026-10-27 does not support (no ROC analysis in the paper).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Log loss for GUSTO-I now; heart_disease raised as its own item | b of the earlier answer: `Metric.from_context("log_loss", ...)`, with the c statistic named as the original; heart_disease's metric goes to its own review | both sources score calibration and GUSTO-I's argues against the c statistic alone; the heart_disease precedent is a fallback with no argument against probabilities; adds diversity | the two datasets differ until heart_disease is decided |
+     | b | Log loss for both, decided together | a, and heart_disease moves to log loss in the same round | one reading of one rule for both calibration sources | changes a shipped definition reviewed twice (2026-10-21, 2026-10-27) by Lennart, whose call it was |
+     | c | ROC AUC for both | GUSTO-I keeps the fallback, as heart_disease | consistent with the two decisions as they stand | scores neither source's calibration, which both sources measure and GUSTO-I's calls the c statistic blind to |
+
+   * **Recommendation:** a: the precedent does not stand against log loss, because heart_disease's source never scored ranking, so GUSTO-I can move now on its own facts; heart_disease's metric is a separate call for Lennart, who made it. **Decision:** a, b or c?
+
+   [^3g]: **MET-8** (Should): with no fixed threshold metric or no unique metric, score by a strictly proper rule or a ranking metric, the fallback `roc_auc` for binary tasks; "A source that scores calibration together with hard-label accuracy (Detrano 1989's reliability and percent correctly classified) asked for probabilities."
+   [^3h]: **MET-11** (Must), its context origin: the source defines no metric, but the task makes one obvious, so the default would score the wrong thing; the reason says why. **MET-5** (Should): a paper that reports several metrics side by side has no unique original.
 
 4. **Keep the ages 108, 108 and 110, or set them to missing?**
 

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: american_companies_bankruptcy
 container_format: 2
-checksum: v2:ea5e86de5efa180ed5a5ee116220cf7e5884b5e72e25a06dedfcdbebcd76cee5
+checksum: v2:a77c982c8b221b9331fba77644bc247ced7f46761da78900c01742149099af06
 build: null
 build_stale: false
 raw_files:
@@ -10,9 +10,9 @@ raw_files:
   american_bankruptcy_dataset_2022.csv: 1aff805af8d2f4368ffcd876814a4589e09905a9cbac289a7b780ed0f7a2478a
 data:
   n_rows: 78682
-  n_features: 20
+  n_features: 21
   dtypes:
-    category: 3
+    category: 4
     float64: 17
     int64: 1
   n_test_dataset_rows: null
@@ -64,9 +64,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `bankruptcy_next_year`, scored with `roc_auc` on temporal splits by `fyear` (one step is a year). 78,682 rows and 20 features. Source: GitHub (2022).
+Binary classification of `bankruptcy_next_year`, scored with `roc_auc` on temporal splits by `fyear` (one step is a year). 78,682 rows and 21 features. Source: GitHub (2022).
 
-Not built yet. The current definition gives checksum `v2:ea5e86de5efa180ed5a5ee116220cf7e5884b5e72e25a06dedfcdbebcd76cee5`.
+Not built yet. The current definition gives checksum `v2:a77c982c8b221b9331fba77644bc247ced7f46761da78900c01742149099af06`.
 
 ## In brief
 
@@ -78,7 +78,7 @@ Not built yet. The current definition gives checksum `v2:ea5e86de5efa180ed5a5ee1
 
 **Predicted.** Whether the company files for bankruptcy in the year after the statement: the last fiscal year of a company that failed is Yes (609, 0.77%), every other year No.
 
-**Known at prediction time.** The statement's 17 items (assets, liabilities, debt, revenue, costs, earnings, retained earnings, market capitalisation), its fiscal year and the company's industry (SIC division and major group).
+**Known at prediction time.** The statement's 17 items (assets, liabilities, debt, revenue, costs, earnings, retained earnings, market capitalisation), its fiscal year, the company's anonymised id and its industry (SIC division and major group).
 
 **What the test data stands for.** Nine later fiscal years from 2008 to 2018 (not 2009 and 2017), each tested on its own and trained on every earlier year, whose labels are all known by then; most test companies have earlier years in training.
 
@@ -133,7 +133,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | Non-IID, Temporal |
 | reference | lombardo2022machine |
-| rows x columns | 78,682 x 21 |
+| rows x columns | 78,682 x 22 |
 | task.target | bankruptcy_next_year |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -153,9 +153,9 @@ Only curators run `build`, when the dataset ships.
 | definition | area under the ROC curve |
 
 <details>
-<summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 4 categorical, 0 string, 0 datetime</summary>
 
-- categorical (3): `Division`, `MajorGroup`, `bankruptcy_next_year`
+- categorical (4): `company`, `Division`, `MajorGroup`, `bankruptcy_next_year`
 - string (0): none
 - datetime (0): none
 
@@ -182,15 +182,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 78,682 rows of the final frame (the oldest rows: the frame is sorted by `fyear`); 12 of 21 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 78,682 rows of the final frame (the oldest rows: the frame is sorted by `fyear`); 12 of 22 columns, the target first. Cells are cut at 40 characters.
 
-| bankruptcy_next_year | fyear | Division | MajorGroup | current_assets | total_assets | cost_of_goods_sold | total_long_term_debt | depreciation_and_amortization | ebit | ebitda | gross_profit |
+| bankruptcy_next_year | company | fyear | Division | MajorGroup | current_assets | total_assets | cost_of_goods_sold | total_long_term_debt | depreciation_and_amortization | ebit | ebitda |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | 1999 | Manufacturing | 34 | 129.432 | 397.295 | 374.625 | 120.896 | 29.632 | 36.4 | 66.032 | 128.24 |
-| No | 1999 | Manufacturing | 35 | 0.225 | 1.324 | 0.057 | 0.542 | 0.116 | -0.651 | -0.535 | 0.107 |
-| No | 1999 | Manufacturing | 33 | 546.311 | 1187.52 | 1037.34 | 304.768 | 60.866 | -68.095 | -7.229 | 54.355 |
-| No | 1999 | Manufacturing | 28 | 200.564 | 539.384 | 271.344 | 219.508 | 29.228 | 68.111 | 97.339 | 359.55 |
-| No | 1999 | Manufacturing | 36 | 94.704 | 183.319 | 218.245 | 36.919 | 10.136 | 15.114 | 25.25 | 73.136 |
+| No | C_3676 | 1999 | Manufacturing | 39 | 4.005 | 7.141 | 10.506 | 0 | 0.836 | -1.123 | -0.287 |
+| No | C_2559 | 1999 | Services | 73 | 4.44 | 6.159 | 4.221 | 0 | 0.419 | 1.276 | 1.695 |
+| No | C_5929 | 1999 | Retail Trade | 55 | 729.587 | 1035.65 | 609.412 | 613.9 | 28.768 | 117.035 | 145.803 |
+| No | C_3982 | 1999 | Services | 70 | 134.652 | 525.817 | 221.969 | 533.92 | 14.163 | 49.28 | 63.443 |
+| No | C_2242 | 1999 | Manufacturing | 36 | 13.453 | 18.119 | 16.996 | 0 | 0.505 | 4.84 | 5.345 |
 
 ## Curation notes
 
@@ -203,14 +203,14 @@ We start with `american_bankruptcy_dataset.csv` of GitHub sowide/bankruptcy_data
 - Label (USE-5): both releases mark all 5,220 rows of the 609 failed companies `failed`, while the paper (Section 3) labels "the fiscal year before the chapter filing as 'bankruptcy' (1) for the next year. Otherwise, the company is considered healthy (0)". The target is Yes on a failed company's last fiscal year only: 609 events (0.77%). Per fiscal year they equal the paper's Table 1 counts of bankrupt firms one year later (58 in fiscal 2008 against 58 in Table 1's 2009; 36 in fiscal 2018 against 36 in 2019). The split files agree: 496 of their 502 failed rows found in the main file are a failed company's last year, none an earlier year (measured 2026-11-25). With the label as published, every year of a failed company, grouped ROC AUC falls to about 0.70 (LightGBM, measured 2026-11-25).
 - Note: the label means "bankruptcy while listed". A company that leaves the panel for any other reason (acquired, delisted, gone private; 5,675 of the 8,362 never-failed companies end before 2018) stays No, also when it left in distress and filed later. Such exits look like distress: among the No rows of the test periods 2015-2018, 2012-2014 and 2009-2011, the last year of an early exit ranks above the other No rows (ROC AUC 0.60, 0.64 and 0.58, untuned LightGBM) and makes up 11%, 19% and 13% of the top 1% of scores against about 7% of all rows (measured 2026-11-25). This is label noise every model meets alike, not a leak.
 - Note: the data has no filing dates, so a failed company whose last statement came more than a year before its filing is labelled on that last statement all the same, and for a filing soon after a fiscal year end the last statement may have been published after the filing. Neither can be checked here. A statement published after a filing would move liabilities subject to compromise out of current and long-term debt; the share of liabilities in neither stays flat on the Yes rows (median 0.060, against 0.066 the year before and 0.052 for companies that left for other reasons; measured 2026-11-25), so no sign of it shows.
-- Dropped: `company_name`, an anonymised id (`C_1` to `C_8971`) numbered roughly by first year (Spearman 0.49 with it, per company): an identifier, not a feature; `status_label`, the source of the target.
+- `company` (the source's `company_name`): the anonymised company id (`C_1` to `C_8971`, numbered roughly by first year, Spearman 0.49 with it per company), shipped as a categorical input (curator, 2026-11-25): a lender knows which company a statement belongs to and has scored its earlier statements, so the id is known at the prediction point, as duolingo_spaced_repetition_recall_1m keeps its learner id. Added to untuned LightGBM it changed ROC AUC by +0.002 on average over the nine windows (better on 5 of 9; measured 2026-11-25). A company new to a test year has an unseen level. Dropped: `status_label`, the source of the target.
 - `fyear` is the fiscal year: the time column and a feature (the actor knows the year of the statement it scores). `Division` is decoded from the SIC letter into the division's name (SIC Manual 1987, `SIC_DIVISIONS`); every major group lies in its division's range. `MajorGroup`, the two-digit SIC major group (73 codes), is categorical: a code, not a quantity. Both SIC columns arrived with the 2024 release and are constant within each of the 8,971 companies: one lookup per company at extraction, not the industry of each year (LEAK-10). No mechanism ties a change of industry to bankruptcy, so they stay, with this note, as registry attributes stayed in tunisian_fraud_detection_challenge.
 - Anomaly: a few items are negative where an amount cannot be (current assets in 6 rows, cost of goods sold in 6, total revenue in 13); kept as recorded, since the source documents no correction.
 - Selection: the firm set is the one of the authors' earlier 10-K papers ("we consider the same companies used in [6,37] since this set of firms has been proved to be a fair approximation of the American stock market for each year", Section 3), and the paper says the bankruptcy rate "can be underestimated due to the exclusion of some companies in the past because of their small market capitalization". The panel shrinks from 5,308 firms in 1999 to 2,723 in 2018, and few new listings enter late (87 in 2017, 47 in 2018). Fiscal years 1999 to 2002, the dot-com bust, when bankruptcies of US listed companies peaked, hold only 3, 7, 10 and 17 events; they sit on training sides only. The README and the paper count 8,262 companies, the CSV 8,971 ids; the difference is not explained. The record carries `Selection Bias` for this (as polish_companies_bankruptcy).
 - Class-dependent recording checked and absent (LEAK-39): label-free recording markers (cells without a point, `.0` endings, zeros, whole numbers) reach grouped ROC AUC 0.538 alone and add nothing to the 17 items (0.858 against 0.857; measured 2026-11-25). Both classes come from one file of one extraction.
 - No duplicate company-years and no duplicate rows. 710 companies miss a year between their first and last.
 - Metric: ROC AUC, the paper's selection criterion (Section 8: "we compared all the models in terms of the AUC, and we identified the best model for both tasks using this metric. This metric was chosen for two reasons: first, due to the imbalance test set, but also because it is most commonly used in literature for this task"). The paper also questions it: a regulatory body "should not blindly trust the AUC value ... they should design and compare the ML models using the macro-F1 score and then the AUC" (Section 8.1), and "computing precision, recall for the single classes, and the macro-F1 score would better define the models' performance" (Section 9). It fixes no threshold, so a hard-label metric cannot be declared and ROC AUC stays (MET-5, MET-6). The paper scored about one sample per company of its test period (Table 4: 105 positives of 3,345 samples, 3.1%), we score every firm-year (2,723 to 3,857 a window, 0.6% to 1.5% positive), since the lender re-scores each statement: the paper's AUCs (best test 0.861) are not comparable with scores on this task.
-- Potential leak, kept on purpose (LEAK-9, an evaluation leak): a Yes row is a failed company's last row, so every row whose company has a row in the next fiscal year is No, and the shipped file holds the next year of every test year but 2018. With the true company ids, "no row in the next year" alone scores ROC AUC 0.94 to 0.97 in each of the windows 2008 to 2017; without ids, linking a row to its successor from the features (nearest neighbour within the major group) lifted mean ROC AUC from 0.867 to 0.938 on three-year test windows (+0.035 to +0.115 per window; measured 2026-11-25). One-year windows keep a test row's successor out of its own test window, not out of the file. Each test row is predicted from the training rows and its own features only; no feature or model step may use other rows of the file, and a method that reads another row of the same company is called out and not benchmarked (as for loan_default_prediction_imperial_college and spanish_motor_insurance_coverage_level_2022_2024).
+- Potential leak, kept on purpose (LEAK-9, an evaluation leak): a Yes row is a failed company's last row, so every row whose company has a row in the next fiscal year is No, and the shipped file holds the next year of every test year but 2018. With the company ids, which ship as `company`, "no row in the next year" alone scores ROC AUC 0.94 to 0.97 in each of the windows 2008 to 2017 for a method that reads the whole file; without ids, linking a row to its successor from the features (nearest neighbour within the major group) lifted mean ROC AUC from 0.867 to 0.938 on three-year test windows (+0.035 to +0.115 per window; measured 2026-11-25). Inside a split nothing leaks: a method gets the training rows (every earlier year) and the one test year, so a test row's successor never reaches it; the channel is open only to a method that reads the whole shipped file. Each test row is predicted from the training rows and its own features only; no feature or model step may use other rows of the file, and a method that reads another row of the same company is called out and not benchmarked (as for loan_default_prediction_imperial_college and spanish_motor_insurance_coverage_level_2022_2024).
 
 ## Splits
 
@@ -220,9 +220,9 @@ Window length: one fiscal year. The source predicts one year ahead (Section 3: "
 
 No gap (SPLIT-10): the outcome horizon is fixed (a filing in the year after the statement) and every label is final at release, so the newest training year's labels are known before the statements of the test year are filed, and no training label is selected by its outcome. SPLIT-9's shortcut through a company's own label cannot arise: a training Yes is a company's last year, so that company has no test row. Measured at equal training size (untuned LightGBM, 3 seeds, the no-gap training side subsampled to the gapped size), the newest training year adds +0.007 ROC AUC on average over 2009-2018 (0.912 against 0.905; per window -0.013 to +0.044), no sign of a shortcut. The one residue: fiscal years that do not end in December, whose next-year filings may run past the next statements; the data carry no month, so it cannot be measured. Dropping the gap makes fiscal 2008, the recession filings of 2009 (58 events, 1.5%), an ordinary window at 52.3%.
 
-Companies recur: 92% to 98% of each test year's firm-years, and 344 of the windows' 347 bankruptcies, are of companies with earlier years on the training side. The use case scores listed companies a lender has seen before as well as new ones, and no company id is a feature; seen and new companies scored alike on the earlier test period 2015-2018 (ROC AUC 0.910 against 0.908).
+Companies recur: 92% to 98% of each test year's firm-years, and 301 of the windows' 303 bankruptcies, are of companies with earlier years on the training side. The use case scores listed companies a lender has seen before as well as new ones, and the company id ships as an input (`company`), so a method can learn a company's own level from its earlier years; seen and new companies scored alike on the earlier test period 2015-2018 (ROC AUC 0.910 against 0.908).
 
-Protocol (LEAK-9): a test row's next fiscal year of the same company is in the file for every test year but 2018, and having one means No (ROC AUC 0.94 to 0.97 with the true ids; recovered in part from the features alone). Each test row is predicted from the training rows and its own features only; no feature or model step may use other rows of the file, and a method that reads another row of the same company is called out and not benchmarked.
+Protocol (LEAK-9): a test row's next fiscal year of the same company is in the file for every test year but 2018, and having one means No (ROC AUC 0.94 to 0.97 through the shipped `company` id; recovered in part from the features alone). Inside a split the next year is never present; the channel is open only to a method that reads the whole file. Each test row is predicted from the training rows and its own features only; no feature or model step may use other rows of the file, and a method that reads another row of the same company is called out and not benchmarked.
 
 9 repeat(s) x 1 fold(s) with seed 4267; train 41,189 to 75,959 rows, test 2,723 to 3,857 rows. Prediction horizon: 1 years.
 
@@ -245,15 +245,15 @@ Each test window against its train side, by statistics of the data, never of a m
 
 | window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
 |---|---|---|---|---|---|---|---|---|
-| 0 | 2018 - 2018 (years) | 2723 | 0.965 | Yes 1.3% (about 36) | Yes 0.8% (about 596) | 0.238 | retained_earnings (0.24), ebitda (0.17), net_income (0.17) | 0 |
-| 1 | 2016 - 2016 (years) | 3191 | 0.887 | Yes 0.9% (about 29) | Yes 0.8% (about 537) | 0.145 | retained_earnings (0.14), total_long_term_debt (0.11), market_value (0.11) | 0 |
-| 2 | 2015 - 2015 (years) | 3354 | 0.844 | Yes 1.0% (about 33) | Yes 0.8% (about 544) | 0.138 | retained_earnings (0.14), gross_profit (0.11), ebitda (0.11) | 0 |
-| 3 | 2014 - 2014 (years) | 3504 | 0.799 | Yes 0.9% (about 33) | Yes 0.7% (about 440) | 0.103 | retained_earnings (0.10), market_value (0.10), gross_profit (0.10) | 0 |
-| 4 | 2013 - 2013 (years) | 3484 | 0.755 | Yes 0.8% (about 28) | Yes 0.7% (about 422) | 0.107 | market_value (0.11), current_assets (0.10), retained_earnings (0.09) | 0 |
-| 5 | 2012 - 2012 (years) | 3485 | 0.711 | Yes 0.7% (about 26) | Yes 0.7% (about 405) | 0.073 | current_assets (0.07), gross_profit (0.07), retained_earnings (0.07) | 0 |
-| 6 | 2011 - 2011 (years) | 3513 | 0.666 | Yes 0.7% (about 25) | Yes 0.8% (about 404) | 0.073 | retained_earnings (0.07), net_income (0.07), current_assets (0.07) | 0 |
-| 7 | 2010 - 2010 (years) | 3625 | 0.62 | Yes 1.0% (about 35) | Yes 0.7% (about 346) | 0.067 | net_income (0.07), retained_earnings (0.07), ebitda (0.06) | 0 |
-| 8 | 2008 - 2008 (years) | 3857 | 0.523 | Yes 1.5% (about 58) | Yes 0.7% (about 292) | 0.063 | retained_earnings (0.06), net_income (0.06), total_long_term_debt (0.03) | 0 |
+| 0 | 2018 - 2018 (years) | 2723 | 0.965 | Yes 1.3% (about 36) | Yes 0.7% (about 509) | 0.238 | retained_earnings (0.24), ebitda (0.17), net_income (0.17) | 0.0173 |
+| 1 | 2016 - 2016 (years) | 3191 | 0.887 | Yes 0.9% (about 29) | Yes 0.7% (about 516) | 0.147 | retained_earnings (0.15), total_long_term_debt (0.10), ebitda (0.10) | 0.0486 |
+| 2 | 2015 - 2015 (years) | 3354 | 0.844 | Yes 1.0% (about 33) | Yes 0.7% (about 485) | 0.131 | retained_earnings (0.13), gross_profit (0.12), ebitda (0.11) | 0.0534 |
+| 3 | 2014 - 2014 (years) | 3504 | 0.799 | Yes 0.9% (about 33) | Yes 0.7% (about 453) | 0.11 | retained_earnings (0.11), market_value (0.10), gross_profit (0.10) | 0.0756 |
+| 4 | 2013 - 2013 (years) | 3484 | 0.755 | Yes 0.8% (about 28) | Yes 0.7% (about 434) | 0.107 | market_value (0.11), current_assets (0.09), retained_earnings (0.08) | 0.0741 |
+| 5 | 2012 - 2012 (years) | 3485 | 0.711 | Yes 0.7% (about 26) | Yes 0.7% (about 403) | 0.078 | current_assets (0.08), gross_profit (0.07), total_assets (0.07) | 0.0749 |
+| 6 | 2011 - 2011 (years) | 3513 | 0.666 | Yes 0.7% (about 25) | Yes 0.7% (about 367) | 0.076 | net_income (0.08), ebit (0.07), retained_earnings (0.07) | 0.0609 |
+| 7 | 2010 - 2010 (years) | 3625 | 0.62 | Yes 1.0% (about 35) | Yes 0.7% (about 327) | 0.064 | retained_earnings (0.06), net_income (0.06), ebitda (0.05) | 0.0524 |
+| 8 | 2008 - 2008 (years) | 3857 | 0.523 | Yes 1.5% (about 58) | Yes 0.6% (about 253) | 0.066 | retained_earnings (0.07), net_income (0.07), gross_profit (0.04) | 0.0394 |
 
 ## Decisions
 
@@ -324,30 +324,31 @@ Accepted on purpose:
 ### Feature summary
 
 <details>
-<summary>Show the table (21 rows)</summary>
+<summary>Show the table (22 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| company | category | 0 | 0 | 8971 | C_956, C_1012, C_999, C_969, C_10, C_966, C_1000, C_1001, C_1002, C_1003 |
 | Division | category | 0 | 0 | 10 | Manufacturing, Services, Transportation, Communications, Electric, Gas and Sani… |
 | MajorGroup | category | 0 | 0 | 73 | 73, 28, 36, 38, 35, 13, 49, 48, 37, 20 |
 | bankruptcy_next_year | category | 0 | 0 | 2 | No, Yes |
-| current_assets | float64 | 0 | 0 | 65895 | 0.002, 0.001, 0.003, 0.015, 0.024, 0.014, 0.008, 0.031, 0.036, 0.013 |
-| total_assets | float64 | 0 | 0 | 71521 | 0.001, 0.002, 0.015, 0.02, 0.09, 0.617, 0.005, 0.027, 0.025, 0.069 |
-| cost_of_goods_sold | float64 | 0 | 0 | 65690 | 0.0, 0.002, 0.005, 0.001, 0.006, 0.017, 0.023, 0.009, 0.008, 0.01 |
-| total_long_term_debt | float64 | 0 | 0 | 39741 | 0.0, 150.0, 200.0, 100.0, 0.006, 0.003, 0.013, 0.008, 10.0, 0.005 |
-| depreciation_and_amortization | float64 | 0 | 0 | 36010 | 0.0, 0.001, 0.002, 0.003, 0.005, 0.006, 0.004, 0.009, 0.008, 0.014 |
-| ebit | float64 | 0 | 0 | 56949 | -0.608, -0.719, -1.1, -0.001, 0.016, -0.098, 0.047, -0.778, -0.14, -0.097 |
-| ebitda | float64 | 0 | 0 | 59060 | -0.075, 0.4, -0.141, -0.262, -0.102, -0.266, -0.309, -0.248, 0.098, -0.079 |
-| gross_profit | float64 | 0 | 0 | 64952 | 0.002, 0.0, 0.011, 0.008, 0.001, 0.006, 0.016, 0.007, 0.004, 0.01 |
-| inventory | float64 | 0 | 0 | 38898 | 0.0, 0.002, 0.004, 0.007, 0.001, 0.003, 0.006, 0.018, 0.019, 0.011 |
-| total_current_liabilities | float64 | 0 | 0 | 58685 | 0.507, 1.228, 2.282, 2.255, 0.65, 0.694, 1.36, 1.122, 0.593, 1.821 |
-| net_income | float64 | 0 | 0 | 55550 | 0.024, 0.392, -0.257, -0.216, -0.138, 0.162, 0.038, 0.082, 1.034, -1.852 |
-| retained_earnings | float64 | 0 | 0 | 72062 | 114.0, 1557.0, -18.0, -1.246, 1.174, -4.051, -3.425, -1.175, -6.647, -1.294 |
+| current_assets | float64 | 0 | 0 | 65895 | 0.002, 0.001, 0.003, 0.015, 0.024, 0.014, 0.008, 0.031, 0.037, 0.009 |
+| total_assets | float64 | 0 | 0 | 71521 | 0.001, 0.002, 0.015, 0.02, 0.617, 0.025, 0.09, 0.027, 0.005, 0.14 |
+| cost_of_goods_sold | float64 | 0 | 0 | 65690 | 0.0, 0.002, 0.005, 0.001, 0.006, 0.008, 0.009, 0.017, 0.023, 0.02 |
+| total_long_term_debt | float64 | 0 | 0 | 39741 | 0.0, 150.0, 200.0, 100.0, 0.006, 0.013, 0.003, 10.0, 0.008, 0.005 |
+| depreciation_and_amortization | float64 | 0 | 0 | 36010 | 0.0, 0.001, 0.002, 0.003, 0.005, 0.006, 0.009, 0.004, 0.008, 0.014 |
+| ebit | float64 | 0 | 0 | 56949 | -0.608, -0.719, -1.1, -0.097, -0.04, -0.14, -0.778, -0.098, -0.001, 0.016 |
+| ebitda | float64 | 0 | 0 | 59060 | -0.075, 0.4, -0.262, -0.141, -0.102, -0.266, -0.309, -0.13, -0.093, -0.307 |
+| gross_profit | float64 | 0 | 0 | 64952 | 0.002, 0.011, 0.0, 0.001, 0.008, 0.016, 0.007, 0.006, 0.004, 0.01 |
+| inventory | float64 | 0 | 0 | 38898 | 0.0, 0.002, 0.004, 0.007, 0.003, 0.001, 0.006, 0.019, 0.018, 0.011 |
+| total_current_liabilities | float64 | 0 | 0 | 58685 | 0.507, 1.228, 1.36, 2.255, 0.694, 2.282, 0.65, 0.989, 0.774, 0.768 |
+| net_income | float64 | 0 | 0 | 55550 | 0.024, 0.392, -0.257, -0.138, 0.162, -0.216, 0.082, -0.945, 1.004, 1.034 |
+| retained_earnings | float64 | 0 | 0 | 72062 | 1.174, -1.246, -6.647, -18.0, 1557.0, -3.425, 114.0, -4.302, 204.0, -4.051 |
 | total_receivables | float64 | 0 | 0 | 49577 | 0.0, 0.001, 0.002, 0.004, 0.003, 0.006, 0.005, 0.008, 0.009, 0.007 |
-| total_revenue | float64 | 0 | 0 | 68596 | 0.002, 0.003, 0.001, 0.005, 0.019, 0.004, 0.006, 0.1, 0.015, 0.02 |
-| market_value | float64 | 0 | 0 | 77580 | 0.3058, 3.0, 10.905, 3.0938, 0.3445, 0.0007, 7.7637, 4.3401, 36.9252, 1.042 |
-| total_liabilities | float64 | 0 | 0 | 64640 | 0.621, 0.507, 0.653, 4.818, 0.593, 0.71, 5.937, 1.761, 0.665, 1.464 |
-| total_operating_expenses | float64 | 0 | 0 | 70840 | 0.982, 1.516, 4.695, 12.964, 3.939, 1.429, 0.643, 0.147, 1.565, 1.511 |
+| total_revenue | float64 | 0 | 0 | 68596 | 0.002, 0.003, 0.001, 0.005, 0.019, 0.004, 0.006, 0.1, 0.02, 0.015 |
+| market_value | float64 | 0 | 0 | 77580 | 0.3058, 10.905, 3.0938, 3.0, 0.0007, 0.3445, 10.8066, 16.32, 39.528, 9.0825 |
+| total_liabilities | float64 | 0 | 0 | 64640 | 0.621, 0.507, 0.653, 5.937, 4.818, 0.593, 0.71, 1.761, 3.018, 0.272 |
+| total_operating_expenses | float64 | 0 | 0 | 70840 | 0.982, 1.511, 1.516, 8.424, 4.695, 1.429, 1.565, 0.643, 0.147, 3.939 |
 | fyear | int64 | 0 | 0 | 20 | 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008 |
 
 </details>
@@ -390,7 +391,7 @@ Accepted on purpose:
 ### Categorical features
 
 <details>
-<summary>Show the table (12 rows)</summary>
+<summary>Show the table (17 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -406,6 +407,11 @@ Accepted on purpose:
 | MajorGroup | 5 | 35 | 4560 | 5.8 |
 | bankruptcy_next_year | 1 | No | 78073 | 99.23 |
 | bankruptcy_next_year | 2 | Yes | 609 | 0.77 |
+| company | 1 | C_956 | 20 | 0.03 |
+| company | 2 | C_1012 | 20 | 0.03 |
+| company | 3 | C_999 | 20 | 0.03 |
+| company | 4 | C_969 | 20 | 0.03 |
+| company | 5 | C_10 | 20 | 0.03 |
 
 </details>
 
