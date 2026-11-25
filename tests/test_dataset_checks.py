@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
 import pytest
 from data_foundry.dataset_checks import run_all_checks
@@ -490,3 +491,27 @@ def test_problem_type_overrides_classification_flag():
     )
     _, _, _, _, target_df = out
     assert "skew_y" in target_df.columns
+
+
+def test_duplicate_counts_match_pandas_on_rows_with_missing_values(capsys) -> None:
+    """The staged duplicate count compares row hashes; it must count what ``DataFrame.duplicated`` counts."""
+    rng = np.random.default_rng(0)
+    df = pd.DataFrame(
+        {
+            "a": rng.integers(0, 3, 2000),
+            "b": rng.integers(0, 3, 2000).astype(float),
+            "c": pd.Categorical(rng.choice(list("xy"), 2000)),
+            "y": pd.Categorical(rng.choice(["p", "q"], 2000)),
+        }
+    )
+    df.loc[::7, "b"] = np.nan
+    run_all_checks(
+        data=df,
+        target_feature="y",
+        problem_type="binary_classification",
+        print_report=True,
+        duplicate_column_check=False,
+    )
+    out = capsys.readouterr().out
+    assert f"Total duplicate rows: {int(df.duplicated().sum())} " in out
+    assert f"Duplicate rows ignoring target: {int(df.duplicated(subset=['a', 'b', 'c']).sum())} " in out

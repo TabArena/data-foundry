@@ -249,7 +249,10 @@ def order_rows(df: pd.DataFrame, *, time_on: str | None, shuffle: bool) -> pd.Da
     """
     if not shuffle and time_on is None:
         return df.reset_index(drop=True)
-    return df.iloc[order_positions(df, time_on=time_on, shuffle=shuffle)].reset_index(drop=True)
+    positions = order_positions(df, time_on=time_on, shuffle=shuffle)
+    if np.array_equal(positions, np.arange(len(df))):  # already in order: no copy (a `_1m` frame can be tens of GB)
+        return df.reset_index(drop=True)
+    return df.iloc[positions].reset_index(drop=True)
 
 
 def order_positions(df: pd.DataFrame, *, time_on: str | None, shuffle: bool) -> np.ndarray:
