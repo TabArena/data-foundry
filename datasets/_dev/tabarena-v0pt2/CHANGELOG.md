@@ -1,6 +1,28 @@
 # Changelog: TabArena v0.2 working copy
 
 ## 2026-11-23, every definition names its split-tree leaf; `RetrospectiveFillIn` and `Target: Fixed Delay` in use (no container built)
+## 2026-11-25 (late evening), better-data replacements: the curator's second and third marks (no container built)
+
+- american_companies_bankruptcy (Andrej): verdict ship, metric and split checked; the anonymised company id ships as a
+  categorical input; the protocol line for the next-year rows stays. Check 0 errors, 0 warnings.
+- ga_merchandise_store_sessions (Andrej): eight monthly windows, December 2016 and January 2017 as the curator's
+  exception (training shares 35.7% and 46.0%), a one-day gap before each window, the metric checked; six or eight
+  windows asked again and answered (issue 2, open).
+- gusto_i_mi_mortality and heart_disease (Andrej, decided together): log loss from context for both; heart_disease's
+  source (Detrano 1989) scored calibration and accuracy over thresholds, never ROC AUC.
+- nhanes_dxa_body_fat (Andrej): `Selection Bias`; year 2008; the horizon signed off; the 893 newer-scanner scans
+  with an invalid region dropped (38,708 people); the sagittal abdominal diameter an input again, its cost on the
+  newest window raised as issue 4 (open).
+- sdss_dr17_star_galaxy_quasar_1m (Andrej): the imaging pipeline's type and the extinction as inputs (log loss 0.255
+  to 0.247); three test windows, one per targeting era (2019-2020, 2016, 2013), the count an IID split of 4.2M objects
+  would get.
+- ready_biodegradability_huang_zhang (Andrej): 19 structures repaired from ECHA's dossiers, 4 rows dropped, the
+  licence warning accepted (5,714 chemicals). aquatic_toxicity_lunghini_consensus: the prediction point settled; the
+  metric's origin answered (open).
+- craigslist_used_vehicles_f150: the split and the source's use case answered (issue 3, open). phiusil_phishing:
+  reopened and kept retired. website_phishing: PhreshPhish to be added as a dated phishing task (issue 10, B).
+- Review page: a temporal README's per-window table no longer counts as splits.
+
 ## 2026-11-25 (late night), better-data replacements: the curator's first marks (no container built)
 
 - american_companies_bankruptcy (Andrej): the horizon signed off (one-year windows, annual refit, no gap); nine
