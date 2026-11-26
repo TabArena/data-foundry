@@ -58,7 +58,7 @@ from data_foundry.checks import (
     registry as check_registry,
 )
 from data_foundry.checks.bundle import verify_saved_container
-from data_foundry.checks.definition import newest_period_rate, run_definition_checks
+from data_foundry.checks.protocol import recommended_dimensions, scored_unit_column
 from data_foundry.checks.tables import run_all_checks
 from data_foundry.collections import collection_file_budget
 from data_foundry.curation_container import CuratedContainer
@@ -1042,11 +1042,11 @@ class AbstractCuratedDataset(ABC):
     def _cross_validation(self, df: pd.DataFrame) -> Splits:
         """The recommended IID or grouped 3-fold cross-validation on ``df``."""
         task = self.task_metadata
-        n_repeats, n_folds = protocol.recommended_dimensions(
+        n_repeats, n_folds = recommended_dimensions(
             df,
             group_on=task.group_on,
             group_labels=task.group_labels,
-            scored_unit_on=protocol.scored_unit_column(task),
+            scored_unit_on=scored_unit_column(task),
         )
         if task.group_on is None:
             return protocol.iid_splits(
@@ -1243,7 +1243,12 @@ class AbstractCuratedDataset(ABC):
         plan = self.make_splits(df)
         self._frame_rows = len(df)  # the floor counts every row, also those a row budget leaves out of the container
         on = self.temporal.on if self.temporal is not None else None
-        self._newest_rate = newest_period_rate(df[on]) if on is not None and on in df.columns else None
+        if on is not None and on in df.columns:
+            from data_foundry.definition.checks import newest_period_rate  # noqa: PLC0415 - checks imports this module
+
+            self._newest_rate = newest_period_rate(df[on])
+        else:
+            self._newest_rate = None
         horizon, unit = _horizon(type(self))
         gap, gap_unit = _gap(type(self))
         splits_metadata = PredictiveMLSplitsMetadata(
@@ -1328,6 +1333,8 @@ class AbstractCuratedDataset(ABC):
         verbose: bool,
         group_stats: group_checks.GroupStats | None = None,
     ) -> BundleCheckReport:
+        from data_foundry.definition.checks import run_definition_checks  # noqa: PLC0415 - checks imports this module
+
         return run_definition_checks(self, container, verbose=verbose, group_stats=group_stats)
 
     def raw_manifest(self, rows_per_file: dict[str, int] | None = None) -> list[RawFile]:

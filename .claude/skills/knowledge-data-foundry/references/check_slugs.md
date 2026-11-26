@@ -202,6 +202,8 @@ Errors a definition may accept:
 | `export_metadata_changed` | error | no | A metadata object changed in the JSON round trip. |
 | `export_path_layout` | warning | yes | The save directory is not named by the container's UUID. |
 | `export_shape_changed` | error | no | A frame's shape changed in the save/load round trip. |
+| `export_task_view_mismatch` | error | no | benchmark_task.json differs from container.task(). |
+| `export_task_view_missing` | warning | yes | A format-2 container has no benchmark_task.json. |
 | `export_uuid_mismatch` | error | no | The UUID changed in the save/load round trip. |
 | `export_values_changed` | error | no | A frame's values changed in the save/load round trip. |
 
@@ -211,4 +213,4 @@ Errors a definition may accept:
 |---|---|---|---|
 | `check_crashed` | error | no | A check raised an exception: a bug in the check or an unexpected bundle. |
 
-165 slugs; 96 can be errors, 60 warnings, 20 infos.
+167 slugs; 97 can be errors, 61 warnings, 20 infos.

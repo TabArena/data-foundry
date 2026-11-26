@@ -16,8 +16,10 @@ import pandas as pd
 import pytest
 
 import data_foundry.definition.dataset as dataset_module
-from data_foundry.checks import run_bundle_checks
-from data_foundry.checks.definition import definition_findings
+from data_foundry.checks import (
+    protocol as split_protocol,
+    run_bundle_checks,
+)
 from data_foundry.curation_container import (
     CuratedContainer,
     feature_columns,
@@ -50,6 +52,7 @@ from data_foundry.definition import (
     splits as protocol,
     workbench,
 )
+from data_foundry.definition.checks import definition_findings
 from data_foundry.definition.cli import add_dataset_parser
 from data_foundry.definition.dataset import (
     PREPARED_MARKER,
@@ -1725,7 +1728,8 @@ def test_a_metric_group_cut_across_iid_folds_leaves_the_repeats_to_the_rows(
 ) -> None:
     """An IID split cuts the metric's 6 eras across folds: the default splits and the protocol check count the rows."""
     del warehouse
-    monkeypatch.setattr(protocol, "REPEATS_BY_TRAIN_SIZE", ((5, 20), (2_500, 10), (250_000, 3)))  # 4 of 6 eras: 20
+    repeats = ((5, 20), (2_500, 10), (250_000, 3))  # 4 of 6 eras: 20
+    monkeypatch.setattr(split_protocol, "REPEATS_BY_TRAIN_SIZE", repeats)
     body = (
         _with_metric(SCORING.format(metric=era_metric))
         .replace("import AbstractCuratedDataset,", "import ScoringColumn, AbstractCuratedDataset,")

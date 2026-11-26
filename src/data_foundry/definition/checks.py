@@ -3,14 +3,14 @@
 :func:`run_definition_checks` runs the bundle checks (:mod:`data_foundry.checks.bundle`), the checks of a v2 task
 (:mod:`data_foundry.checks.task`, :mod:`data_foundry.checks.groups`) and the checks below, then drops the findings
 the definition accepts in ``accepted_check_warnings`` as the registry allows
-(:func:`data_foundry.checks.registry.may_accept`):
+(:meth:`data_foundry.checks.registry.Check.accepts`):
 
 * the definition file (:func:`definition_findings`, :func:`summary_findings`): scaffold markers (joined with the
   bundle's placeholders in the metadata into one ``meta_placeholder_left``), nondeterministic code, the task summary;
 * the raw files (:func:`raw_file_findings`): a pattern that matches nothing, files changed since the README;
 * a temporal split (:func:`floor_findings`, :func:`window_size_findings`): SPLIT-14's training floor and least test
   window (SPLIT-15's number of windows is a split-protocol check,
-  :func:`data_foundry.definition.splits.protocol_checks`);
+  :func:`data_foundry.checks.protocol.protocol_checks`);
 * the newest period of a temporal task (:func:`newest_period_findings`).
 """
 
@@ -27,8 +27,18 @@ from data_foundry.checks import (
     task as task_checks,
 )
 from data_foundry.checks.bundle import run_bundle_checks
-from data_foundry.checks.registry import may_accept
+from data_foundry.checks.protocol import scored_units_of
+from data_foundry.checks.registry import CHECKS
 from data_foundry.checks.results import SEVERITY_ORDER, BundleCheckReport, CheckResult, merge_same_slug, run_guarded
+from data_foundry.definition.dataset import (
+    DEFINITION_FILENAME,
+    REPORT_FILENAME,
+    SUMMARY_MAX_WORDS,
+    clean_text,
+    definition_file,
+    nondeterministic_calls,
+)
+from data_foundry.definition.report import read_report
 
 if TYPE_CHECKING:
     from data_foundry.curation_container import CuratedContainer
@@ -103,7 +113,7 @@ def run_definition_checks(
                 hint="Remove the entries that no longer apply, or fix a misspelled slug.",
             ),
         )
-    kept = [r for r in found if r.slug not in accepted or not may_accept(r.slug, r.severity)]
+    kept = [r for r in found if r.slug not in accepted or not CHECKS[r.slug].accepts(r.severity)]
     report.results = sorted(kept, key=lambda r: SEVERITY_ORDER[r.severity])
     report.ignored = accepted
     if verbose:
@@ -163,12 +173,10 @@ def floor_findings(ds: AbstractCuratedDataset, container: CuratedContainer) -> l
 def window_size_findings(container: CuratedContainer, windows: list) -> list[CheckResult]:
     """SPLIT-14's least test window, in scored units (SPLIT-33): ``splits_test_too_small``.
 
-    The units are those of :func:`data_foundry.definition.splits.scored_units_of`: a scored unit no window cuts, else
+    The units are those of :func:`data_foundry.checks.protocol.scored_units_of`: a scored unit no window cuts, else
     the rows.
     """
-    from data_foundry.definition import splits as protocol  # noqa: PLC0415 - the definition package imports this module
-
-    units = protocol.scored_units_of(container, windows)
+    units = scored_units_of(container, windows)
 
     def count(rows) -> int:
         return int(units.iloc[list(rows)].nunique(dropna=False)) if units is not None else len(rows)
@@ -212,11 +220,6 @@ def newest_period_findings(ds: AbstractCuratedDataset) -> list[CheckResult]:
 
 def summary_findings(ds: AbstractCuratedDataset) -> list[CheckResult]:
     """Findings about :attr:`task_summary`: missing, no use case, or too long to read at a glance."""
-    from data_foundry.definition.dataset import (  # noqa: PLC0415 - dataset.py imports this module
-        SUMMARY_MAX_WORDS,
-        clean_text,
-    )
-
     summary = ds.task_summary
     if summary is None:
         return [
@@ -256,12 +259,6 @@ def definition_findings(ds: AbstractCuratedDataset) -> list[CheckResult]:
     """Findings about the definition file: scaffold markers, nondeterministic code, and the summary. A placeholder
     license is in the container's metadata, which the bundle's ``meta_placeholder_left`` reads.
     """
-    from data_foundry.definition.dataset import (  # noqa: PLC0415 - dataset.py imports this module
-        DEFINITION_FILENAME,
-        definition_file,
-        nondeterministic_calls,
-    )
-
     findings = []
     file = definition_file(type(ds))
     if file is not None:
@@ -309,9 +306,6 @@ def definition_findings(ds: AbstractCuratedDataset) -> list[CheckResult]:
 
 def raw_file_findings(ds: AbstractCuratedDataset, manifest: list[RawFile]) -> list[CheckResult]:
     """A source's file pattern that matches nothing, and raw files changed since the README was written."""
-    from data_foundry.definition.dataset import REPORT_FILENAME  # noqa: PLC0415 - dataset.py imports this module
-    from data_foundry.definition.report import read_report  # noqa: PLC0415 - dataset.py imports this module
-
     findings = []
     unmatched = getattr(ds, "_unmatched_raw_files", [])
     if unmatched:

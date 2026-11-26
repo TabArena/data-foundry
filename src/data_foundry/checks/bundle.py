@@ -25,7 +25,7 @@ Every finding carries a stable ``slug``, listed in :mod:`data_foundry.checks.reg
 ``ignore=["slug", ...]`` to accept a finding on purpose (the notebook then documents the accepted deviation).
 
 A format-2 container (the v2 definitions) is also judged by the v2 split protocol,
-:func:`data_foundry.definition.splits.protocol_checks` (always 3 folds, and the row budget the container records, if
+:func:`data_foundry.checks.protocol.protocol_checks` (always 3 folds, and the row budget the container records, if
 any). Format 1 (the v1 notebooks, the shipped BeyondArena containers, frozen) has no split-protocol check left: its
 containers are pinned and never rebuilt. Every other check is the same for both formats.
 """
@@ -33,6 +33,7 @@ containers are pinned and never rebuilt. Every other check is the same for both 
 from __future__ import annotations
 
 import itertools
+import json
 import math
 import re
 import warnings
@@ -45,6 +46,7 @@ import pandas as pd
 
 from data_foundry import time_basis as basis_rules
 from data_foundry.checks.groups import CONSTANT_LABEL_SHARE, MIN_TEST_GROUPS
+from data_foundry.checks.protocol import protocol_checks
 from data_foundry.checks.results import SEVERITY_ORDER, BundleCheckReport, CheckResult, run_guarded
 from data_foundry.curation_container import CuratedContainer, non_feature_columns
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
@@ -1823,11 +1825,9 @@ def _check_splits_groups(ctx: _Ctx) -> Iterator[CheckResult]:
 
 @_check
 def _check_splits_protocol_v2(ctx: _Ctx) -> Iterator[CheckResult]:
-    """Format 2: the v2 split protocol (:func:`data_foundry.definition.splits.protocol_checks`)."""
+    """Format 2: the v2 split protocol (:func:`data_foundry.checks.protocol.protocol_checks`)."""
     if ctx.container.format_version < 2:
         return
-    from data_foundry.definition.splits import protocol_checks  # noqa: PLC0415 - the definition side imports this
-
     yield from protocol_checks(ctx.container)
 
 
@@ -2340,7 +2340,7 @@ def run_bundle_checks(
             checks (duplicate rows/columns) are skipped with an ``info`` finding.
         verbose: Print the report when done.
         from_definition: The container was just built from a v2 definition
-            (:func:`~data_foundry.checks.definition.run_definition_checks`): the time basis errors are skipped, since
+            (:func:`~data_foundry.definition.checks.run_definition_checks`): the time basis errors are skipped, since
             the definition refuses them at import; a container read from disk keeps them.
 
     Returns:

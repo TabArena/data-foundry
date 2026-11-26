@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 from data_foundry.checks import registry
-from data_foundry.checks.registry import ACCEPTABLE_ERRORS, CHECKS, may_accept
+from data_foundry.checks.registry import ACCEPTABLE_ERRORS, CHECKS, STAGES
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "src" / "data_foundry"
@@ -33,11 +33,13 @@ def _emitted() -> tuple[dict[str, list[set[str] | None]], set[str]]:
 
     A slug is the first argument of a ``CheckResult(...)`` call, or the first item of a ``(slug, severity, message)``
     tuple (the time basis's problems). An f-string slug (``f"task_{field_name}_dtype"``) expands to every string
-    constant of its function in the placeholder's place.
+    constant of its function in the placeholder's place. The scan reads the whole package (the checks, the
+    definition's checks in :mod:`data_foundry.definition.checks`, the time basis), and skips the registry's own
+    table, whose rows have the shape of a ``(slug, severity, ...)`` tuple.
     """
     found: dict[str, list[set[str] | None]] = defaultdict(list)
     expanded: set[str] = set()
-    for path in sorted(SOURCE.rglob("*.py")):
+    for path in sorted(p for p in SOURCE.rglob("*.py") if p != SOURCE / "checks" / "registry.py"):
         tree = ast.parse(path.read_text())
         functions = [n for n in ast.walk(tree) if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))]
         for node in ast.walk(tree):
@@ -91,13 +93,18 @@ def test_the_registered_severities_are_those_the_code_emits(slug: str) -> None:
 
 
 def test_errors_are_acceptable_only_on_purpose() -> None:
-    assert may_accept("dataset_constant_column", "warning")
-    assert may_accept("splits_rows_unused", "info")
-    assert not may_accept("splits_rows_unused", "error")
-    assert may_accept("splits_test_too_small", "error")
+    assert CHECKS["dataset_constant_column"].accepts("warning")
+    assert CHECKS["splits_rows_unused"].accepts("info")
+    assert not CHECKS["splits_rows_unused"].accepts("error")
+    assert CHECKS["splits_test_too_small"].accepts("error")
     assert not CHECKS["splits_train_under_floor"].acceptable
     assert CHECKS["splits_class_missing"].acceptable  # its warning
     assert all(CHECKS[slug].accepted_error for slug in ACCEPTABLE_ERRORS)
+
+
+def test_the_stages_are_those_of_the_literal() -> None:
+    assert STAGES == ("definition", "frame", "task", "splits", "metadata", "saved files", "any")
+    assert {c.stage for c in CHECKS.values()} <= set(STAGES)
 
 
 def test_every_accepted_slug_of_a_definition_is_acceptable() -> None:

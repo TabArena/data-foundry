@@ -14,16 +14,13 @@ import pandas as pd
 import pytest
 
 from data_foundry import sampling
-from data_foundry.checks import bundle as bundle_checks
-from data_foundry.definition import splits as protocol
-from data_foundry.definition.splits import (
-    fit_splits_to_budget,
-    grouped_splits,
-    iid_splits,
-    protocol_checks,
-    recommended_dimensions,
-    sample_temporal_splits,
+from data_foundry.checks import (
+    bundle as bundle_checks,
+    protocol as protocol_rules,
 )
+from data_foundry.checks.protocol import protocol_checks, recommended_dimensions
+from data_foundry.definition import splits as protocol
+from data_foundry.definition.splits import fit_splits_to_budget, grouped_splits, iid_splits, sample_temporal_splits
 from data_foundry.metrics import Metric
 from data_foundry.sampling import sample_train_positions, subsample_train
 from data_foundry.schema import (
@@ -160,9 +157,9 @@ def test_scored_units_that_cut_across_groups_count_rows() -> None:
     df["year"] = df["instance"] % 15  # 15 years, each across many instances and all 10 classes
     assert recommended_dimensions(df, group_on="instance", group_labels="per_sample", scored_unit_on="year") == (3, 3)
     assert recommended_dimensions(df, scored_unit_on="instance") == (3, 3)  # IID: every instance cut across folds
-    assert protocol.scored_units_within_groups(df, "cls", "instance")
-    assert not protocol.scored_units_within_groups(df, "cls", "year")
-    assert not protocol.scored_units_within_groups(df, None, "instance")
+    assert protocol_rules.scored_units_within_groups(df, "cls", "instance")
+    assert not protocol_rules.scored_units_within_groups(df, "cls", "year")
+    assert not protocol_rules.scored_units_within_groups(df, None, "instance")
 
 
 def test_one_label_per_group_counts_the_groups_before_the_scored_units() -> None:
@@ -178,8 +175,8 @@ def test_scored_unit_column_is_the_metrics_group_input() -> None:
     task = PredictiveMLTaskMetadataV2(
         target_column_name="target", problem_type="regression", objective_metric=make_spec("regression", par10)
     )
-    assert protocol.scored_unit_column(task) == "instance"
-    assert protocol.scored_unit_column(V2_TASK) is None  # a metric that scores rows
+    assert protocol_rules.scored_unit_column(task) == "instance"
+    assert protocol_rules.scored_unit_column(V2_TASK) is None  # a metric that scores rows
 
 
 # --- fitting the cross-validation to a row budget ---------------------------------------------------------------

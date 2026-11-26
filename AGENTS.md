@@ -27,11 +27,12 @@ Data Foundry is the data-layer toolkit behind
   and resolves them against a local warehouse or a Hugging Face mirror, with cache + force-download semantics
   (`collections/`). It is how every collection ships, both container formats: BeyondArena today, the TabArena v0.2
   collection next;
-* the **v2 dataset format** (`definition/`): one `dataset.py` class per dataset, its split protocol and generated
-  README;
+* the **v2 dataset format** (`definition/`): one `dataset.py` class per dataset, its split protocol, the checks
+  that need the definition class (`checks.py`) and generated README;
 * the **checks** (`checks/`): the bundle checks of a container and the round trip of a saved one (`bundle.py`), the
-  checks of a v2 task (`task.py`, `groups.py`) and of a definition (`definition.py`), the README's summary tables
-  (`tables.py`), and the registry of every check slug (`registry.py`). The consumer side (`task.py`, the task view;
+  checks of a v2 task (`task.py`, `groups.py`), the split protocol's numbers and checks (`protocol.py`), the README's
+  summary tables (`tables.py`), and the registry of every check slug (`registry.py`). `checks/` imports nothing of
+  `definition/` (a test holds it); `definition/` uses `checks/`. The consumer side (`task.py`, the task view;
   `metrics.py`, `sampling.py`, `special/`, `encodings.py`) loads none of `definition/` and `checks/`;
 * a git-native **curation backlog** (`src/data_foundry/curation/`) that replaces
   the legacy curation Google Sheet. The source of truth is **one markdown record
@@ -118,8 +119,8 @@ goes there too (a test fails otherwise), and the page
 |---|---|---|
 | creation-time | `schema.py` `__post_init__` | coherence of *one* metadata object, no DataFrame needed (e.g. `group_labels` requires `group_on`, `time_horizon` requires its unit, a `Grouping` with `prediction_unit="group"` needs an aggregation). Runs on every `CuratedContainer.load`, so a new rule here **must hold for every already-shipped container** — verify against the BeyondArena collection before making one hard. |
 | summary tables | `checks/tables.py` `run_all_checks(...)` | the tables of each dataset's README ("Data checks": feature summary, numeric and categorical statistics, the target). Statistics, no findings. |
-| post-hoc / bundle | `checks/bundle.py` | *cross-referential* checks over the assembled bundle (DataFrame + task + splits + dataset metadata) and, after export, the save/load round-trip. It also checks the shipped format-1 containers: keep its format-1 behaviour unchanged. The split protocol follows the container format: format 2 by `definition.splits.protocol_checks` (called from here). |
-| v2 definition | `checks/definition.py`, `checks/task.py`, `checks/groups.py`, `definition.splits.protocol_checks`, `_validate_definition` in `definition/dataset.py` | rules of the v2 protocol and the v2 definition format, run by `dataset check` / `dataset build` next to the bundle checks. The default home for a new v2 rule. `_validate_definition` refuses a malformed definition before anything runs. |
+| post-hoc / bundle | `checks/bundle.py` | *cross-referential* checks over the assembled bundle (DataFrame + task + splits + dataset metadata) and, after export, the save/load round-trip. It also checks the shipped format-1 containers: keep its format-1 behaviour unchanged. The split protocol follows the container format: format 2 by `checks/protocol.py` `protocol_checks` (called from here). |
+| v2 definition | `definition/checks.py`, `checks/task.py`, `checks/groups.py`, `checks/protocol.py`, `_validate_definition` in `definition/dataset.py` | rules of the v2 protocol and the v2 definition format, run by `dataset check` / `dataset build` next to the bundle checks. The default home for a new v2 rule. `_validate_definition` refuses a malformed definition before anything runs. |
 
 * `checks.run_bundle_checks(container)` returns a `BundleCheckReport`
   (errors / warnings / infos, each with a stable `slug`). `dataset build` raises on errors before saving and runs

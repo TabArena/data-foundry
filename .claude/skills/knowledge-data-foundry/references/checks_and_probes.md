@@ -17,7 +17,8 @@ POLARS_MAX_THREADS=2`) and keep `--n-jobs` small ([agent_runs.md](agent_runs.md)
 ```
 
 runs the whole pipeline, the data checks, the bundle checks (`data_foundry.checks`, judged by the v2 split
-protocol for a format-2 container) and `_decisions`, without saving (no UUID), and rewrites the folder's `README.md`.
+protocol for a format-2 container, `data_foundry.checks.protocol`), the checks that need the definition class
+(`data_foundry.definition.checks`) and `_decisions`, without saving (no UUID), and rewrites the folder's `README.md`.
 Compare the README with the committed one: an unexpected diff (checksum, split sizes, new findings) means the
 definition drifted from its evidence. Then:
 

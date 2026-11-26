@@ -10,18 +10,14 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from data_foundry.checks import definition as definition_checks
-from data_foundry.checks.definition import NEWEST_PERIOD_RATIO, newest_period_rate, window_size_findings
-from data_foundry.definition import get_dataset
-from data_foundry.definition.cli import add_dataset_parser
-from data_foundry.definition.splits import (
-    TemporalSplits,
-    _window_count_findings,
-    split_count,
-    temporal_window_splits,
-    training_sides,
-    window_bounds,
+from data_foundry.checks.protocol import _window_count_findings, split_count, training_sides
+from data_foundry.definition import (
+    checks as definition_checks,
+    get_dataset,
 )
+from data_foundry.definition.checks import NEWEST_PERIOD_RATIO, newest_period_rate, window_size_findings
+from data_foundry.definition.cli import add_dataset_parser
+from data_foundry.definition.splits import TemporalSplits, temporal_window_splits, window_bounds
 from data_foundry.definition.windows import Window, candidate_windows, window_stats
 from tests.test_v2_dataset import (  # noqa: F401 - the fixture
     TEMPORAL_BUDGET,

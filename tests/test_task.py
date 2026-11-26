@@ -10,7 +10,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from data_foundry.bundle_checks import verify_saved_container
+from data_foundry.checks.bundle import verify_saved_container
 from data_foundry.curation_container import CuratedContainer, feature_columns, split_columns
 from data_foundry.examples import load_toy_container
 from data_foundry.metrics import scorer

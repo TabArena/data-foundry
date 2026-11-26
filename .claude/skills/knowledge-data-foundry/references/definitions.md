@@ -835,8 +835,9 @@ changed, appeared or went; `raw_files_missing` (error) a pattern that matches no
 ## Bundle checks and what to do at scaffold time
 
 `dataset check` runs them (and `dataset build` refuses to save on an error). The checks live in
-`src/data_foundry/checks/`; every slug, its severities and whether a definition may accept it is in
-[check_slugs.md](check_slugs.md), generated from `checks/registry.py`. Pre-empt them:
+`src/data_foundry/checks/`, those that need the definition class in `src/data_foundry/definition/checks.py`; every
+slug, its severities and whether a definition may accept it is in [check_slugs.md](check_slugs.md), generated from
+`checks/registry.py`. Pre-empt them:
 
 | Check slug | Scaffold action |
 |---|---|
