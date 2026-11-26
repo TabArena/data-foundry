@@ -317,7 +317,6 @@ data-foundry/
 │   ├── special/, encodings.py   # special features (SMILES, spectra) and the recommended encodings
 │   ├── definition/           # the definition API (`dataset.py` classes): AbstractCuratedDataset, split protocol, README report
 │   ├── v1/                   # the format-1 metadata of the shipped BeyondArena containers
-│   ├── v2/                   # the old import path of `definition/`, kept until the open PRs that use it merge
 │   ├── dataset_checks.py     # run_all_checks(...) — sanity stats, rendered in each dataset's README
 │   ├── bundle_checks.py      # run_bundle_checks(...) / verify_saved_container(...) — bundle integrity
 │   ├── curation/             # curation log toolkit — CurationRecord, store, dashboard (serve), import/export, build-site

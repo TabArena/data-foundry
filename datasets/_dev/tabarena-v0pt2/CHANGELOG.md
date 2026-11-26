@@ -7,8 +7,8 @@
   features `data_foundry.special` and the encodings `data_foundry.encodings`. All 174 definitions and the template
   changed their import lines; the nine SMILES definitions (apistox, drug_induced_autoimmunity_prediction,
   nci_aids_antiviral_screen and the six qsar_*) also name the encoder's new module in their notes. Nothing else of the
-  metadata changed (compared on all 174). `data_foundry.v2` still resolves to the new modules, so a definition on an
-  open branch keeps working until it is rebased.
+  metadata changed (compared on all 174). `data_foundry.v2` is gone: a definition on an open branch changes its
+  imports when it is rebased.
 
 ## 2026-11-25, the cross-dataset REVIEW.md removed; the benchmark hand-off rewritten (no container built)
 
