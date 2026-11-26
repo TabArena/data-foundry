@@ -29,8 +29,8 @@ class ClimateModelWeatherForecasting1m(AbstractCuratedDataset):
             "benchmark)."
         ),
         row=(
-            "One temperature measurement at one of 1,864 weather stations, July 2022 to July 2023, as filtered and "
-            "sub-sampled by TabReD."
+            "One forecast of the temperature at one of 1,948 weather stations, July 2022 to July 2023, as filtered "
+            "and sub-sampled by TabReD; one measurement carries up to 16 forecasts issued at different times."
         ),
         predicted="The temperature measured at the station; the unit is not stated.",
         known=(
@@ -88,6 +88,7 @@ class ClimateModelWeatherForecasting1m(AbstractCuratedDataset):
         - Note: TabReD states no unit for the target ("the true temperature"). Its values, mostly whole numbers with median 27, fit degrees Celsius, the unit of Shifts.
         - We drop duplicated columns `cmc_0_1_66_0` , `cmc_0_1_67_0`, `cmc_0_1_68_0`, and `cmc_0_1_11_0`, which is like them 0.0 or missing in every row.
         - We set -9999 to missing in `gfs_soil_temperature` (31% of rows), `cmc_0_0_0_2_grad` (1.9%) and `gfs_temperature_sea_grad` (0.3%): it is a fill value, as the other values of these columns lie between about -21 and 52, and every row with -9999 in `gfs_temperature_sea_grad` also has it in `gfs_soil_temperature`.
+        - Repeated measurements: a row is one forecast, and 95.7% of the rows share their station and measurement time with another row (5,141,583 measurements behind 16,951,828 rows, up to 16 forecasts each, one target value in all but 63 of the 4,412,203 repeated groups). The windows cut on the measurement time, so no measurement spans a train side and a window; the scored windows hold 98,285, 94,935 and 90,882 measurements. A benchmark cuts its inner validation folds by the time column, which keeps a measurement together.
         - The row budget: Each test window keeps at most 500k of its rows (v2 split protocol; all of them here, 271k to 386k), and each train side holds every row up to three days before its window, so the container holds every row a split uses (the three days before the newest window lie in no split). The container records the 1M train budget, and a benchmark sub-samples each train side to 1M rows before a fit (`subsample_train`; by default a random 1M of the newest year before the window). The data start in July 2022, so the newest year leaves out only part of July 2022 and the default is close to the random sub-sampling of TabReD, which keeps data from all periods of the history.
     """
 

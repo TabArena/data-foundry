@@ -3,6 +3,7 @@ unique_name: home_credit_default_stability
 name: Homecredit Default
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -73,17 +74,22 @@ CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note 
 
 **Assessment (AI, 2026-11-11):** 12 columns recorded for 65% to 99% of the decisions until August 2019 stop by November 2019; 15 start in April to June 2020 (53% to 99% recorded from July 2020).
 
+CC (2026-11-26, Andrej): Review issue 2, B ("No gap, reason corrected and the note added."): the splits comment no longer rests on "the labels look final", which answers censoring rather than what a lender held at a refit. It now says that the release states no observation span, that the only horizon named in it is the year of the bureau score `riskassesment_302T`, which 21 months of applications cannot hold as a gap, that every label is final at release, and what the newest labels add at equal training size: 0.8251, 0.7947 and 0.7814 against 0.8214, 0.7856 and 0.7433 for a train side ending three months earlier (300,000 applications, base and static tables only). The windows and the gap are unchanged.
+
+CC (2026-11-26, Andrej): Review issue 3, B ("Add a note with the verdict and the share."): clients apply again. A key of birth date, sex, registered-address zip code, employed-from date and income matches 29,764 of the 566,701 applications that carry all five, and 3.2% to 4.5% of each window's keyed applications have an earlier application of the same client on their train side. The link carries the label (24.2% against 3.9%, with every control between 1.5x and 2.7x), so these are the same people; the temporal split is the treatment the entity rules ask for, and a `curation_comments` bullet now states the verdict and the share.
+
 ## Review
 
 **Outcome:** added as `home_credit_default_stability_1m`. On 2026-11-11 you chose four-month windows (H, c), which
 also settles the windows (issue 1): July to 5 October 2020, March to June 2020 and November 2019 to February 2020,
 each trained on at least half the applications; both are applied. A second reading of this definition against the
-source files on 2026-11-26 reproduced every number it declares and opened two issues: the reason recorded for no gap,
-and the clients who apply again.
+source files on 2026-11-26 reproduced every number it declares and opened two issues, the reason recorded for no gap
+and the clients who apply again; you chose B on both, which is applied.
 
 **Main points:** Settled on 2026-11-11: three four-month test windows after, across and before the drop of late March
-2020, as a scorecard serves for months between refits. Open: the reason for no gap (issue 2) and a note on repeat
-applicants (issue 3).
+2020, as a scorecard serves for months between refits. Settled on 2026-11-26: the split keeps its windows and its
+missing gap, with the reason corrected and the measurement the rule asks for (issue 2, B), and the repeat applicants
+are stated in the notes (issue 3, B). Nothing is left open.
 
 **Horizon:**
 
@@ -350,6 +356,17 @@ line. `dataset check`: 0 errors, 0 warnings (README not regenerated).
      arrived, so train on those with a gap of about the label's delay; no gap is needed where a fixed outcome horizon
      leaves every label final at release, and then "the notes give what they add at equal training size".
 
+   **Andrej (2026-11-26, change):** Option B: No gap, reason corrected and the note added.
+
+   **Resolved (2026-11-26, Andrej):** B. The split is unchanged: three four-month windows, no gap. The no-gap
+   sentence of `splits_comment` no longer argues from "the labels look final"; it says that the release states no
+   observation span, that the only horizon named in it is the year of the bureau score `riskassesment_302T`, which
+   21 months of applications cannot hold as a gap, that every label is final at release (the weekly rate holds at
+   1.8% to 2.8% to the last week, ending 5 October 2020), and what the newest labels add at equal training size:
+   0.8251, 0.7947 and 0.7814 against 0.8214, 0.7856 and 0.7433 for a train side ending three months earlier (300,000
+   applications, base and static tables only), a gain of 0.004 to 0.038 AUC a refit could not have earned. The record
+   has the CC line and the working copy a dated entry.
+
 3. **Note the clients who apply again?**
 
    * **Problem:**
@@ -406,6 +423,15 @@ line. `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
    [^h-leak42]: **LEAK-42** (Must): repeats of a unit the data does not record get one of four verdicts, stated in the
      notes with the evidence; a temporal fix fits where the use case sees the unit again at prediction time.
+
+   **Andrej (2026-11-26, change):** Option B: Add a note with the verdict and the share.
+
+   **Resolved (2026-11-26, Andrej):** B. `curation_comments` has the `Repeat applicants:` bullet with the key, the
+   29,764 of 566,701 keyed applications it matches, the share per window (3.2% to 4.5% of keyed applications have an
+   earlier application of the same client on their train side), the label evidence (24.2% against 3.9%, every control
+   between 1.5x and 2.7x) and the verdict: kept as it is, because a lender scoring a returning client has that
+   history and the features already summarise it, so the temporal split is the treatment the entity rules ask for.
+   No row, column or split changes; the record has the CC line and the working copy a dated entry.
 
 ## Reference
 

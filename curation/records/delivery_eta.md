@@ -3,6 +3,7 @@ unique_name: delivery_eta
 name: Delivery ETA
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -63,17 +64,19 @@ CC (2026-11-10, Lennart): the declared horizon (7 days, no gap, windows starting
 
 CC (2026-11-17, Andrej): the declared split (temporal on `timestamp`, windows of 7 days, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-26, Andrej): Review issue 3, B ("Rewrite the note with the measured fit period."): TabReD's quantile transform was fit on its own training period, the orders before 11 December 2023. For 10 of 13 informative numeric columns the distribution is closest to an exact standard normal there (mean largest gap 0.0014, against 0.0049 to 0.0152 at cutoffs two to four weeks away and 0.0082 over all rows). The 1-7 January and 18-24 December windows lie after the fit period; the 4-10 December window lies inside it, so its rows reach the mapping through their marginal distribution and no target. The note in the definition says this instead of leaving the fit set open for the TabReD authors to answer.
+
 ## Review
 
 **Outcome:** added as `delivery_eta_1m`. On 2026-11-10 you chose every other week as the test windows (issue 1, B:
 1-7 January, 18-24 December and 4-10 December) and kept the 45 features that stop on 23 November 2023, with a note
 (issue 2, A); the 7-day length stays for its reason, TabReD's own validation and test length. A second reading of the
 this definition against the source file on 2026-11-26 reproduced every number it declares and measured which rows
-TabReD's quantile transform was fit on, which issue 3 asks you to record.
+TabReD's quantile transform was fit on; you chose to record it (issue 3, B), which is applied.
 
 **Main points:** Settled on 2026-11-10: the test weeks are 1-7 January, 18-24 December and 4-10 December (issue 1, B),
-the block `num_76` to `num_121` stays with a note (issue 2, A), and the declared horizon is checked. Open: how to
-record the measured fit period of the quantile transform (issue 3).
+the block `num_76` to `num_121` stays with a note (issue 2, A), and the declared horizon is checked. Settled on
+2026-11-26: the note names the measured fit period of the quantile transform (issue 3, B). Nothing is left open.
 
 **Horizon:**
 
@@ -317,6 +320,15 @@ the splits comment gives the reason.
    December windows lie after the fit period; the 4-10 December window lies inside it, so its rows reach the mapping
    through their marginal distribution and no target. Kept (Lennart, 2026-10-19)" and then its existing reason. Then
    a CC line in the record, a dated CHANGELOG entry and `dataset check`.
+
+   **Andrej (2026-11-26, change):** Option B: Rewrite the note with the measured fit period.
+
+   **Resolved (2026-11-26, Andrej):** B. The `Potential leak, kept on purpose` bullet now names the fit set, TabReD's
+   own training period (the orders before 11 December 2023), with the evidence and what it means per window: the
+   1-7 January and 18-24 December windows lie after it, the 4-10 December window inside it, so that window's rows
+   reach the mapping through their marginal distribution and no target. The sentence that waited for the TabReD
+   authors is gone; Lennart's reason for keeping the transform stays. No data, column or split changes; the record
+   has the CC line and the working copy a dated entry.
 
 ## Reference
 

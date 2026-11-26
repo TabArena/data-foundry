@@ -3,6 +3,7 @@ unique_name: climate_model_weather_forecasting
 name: Weather
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -56,16 +57,19 @@ CC (2026-11-11, Lennart): the declared horizon (7 days, a 3-day gap, windows sta
 
 **Assessment (AI, 2026-11-11):** applied issue 1 (B) and the horizon (B): `temporal` declares 7-day windows from 2023-07-24, 2023-05-01 and 2023-02-13 with a 3-day gap; test 377,992, 385,508 and 270,717 rows, train 16,429,730, 11,733,079 and 8,739,284 (96.9%, 69.2% and 51.6% of the 16,951,828 rows); 19.7%, 21.8% and 21.3% of the windows' forecasts were issued before the window starts, and the gap covers the 99.2% issued at most 72 hours ahead. With the gap 6-12 February would train on 49.95%, which SPLIT-14 as amended on 2026-11-11 admits; 13-19 February is the curator's pick, as the splits comment says. The 144,106 rows of 21-23 July 2023 lie in no split. `dataset check`: 0 errors, 0 warnings.
 
+CC (2026-11-26, Andrej): Review issue 2, B ("State the repeats, correct the row description."): a row is one forecast, not one measurement. 95.7% of the rows share their station and measurement time with another row (5,141,583 measurements behind 16,951,828 rows, up to 16 forecasts each), and the scored windows hold 98,285, 94,935 and 90,882 measurements. No measurement spans a train side and a window, since the windows cut on the measurement time, so the split does not change; `task_summary.row` and a `curation_comments` bullet now say this, and the station count is corrected from 1,864, a number from the superseded build, to the 1,948 the data hold.
+
 ## Review
 
 **Outcome:** added as `climate_model_weather_forecasting_1m`. On 2026-11-11 you chose a 3-day gap before each one-week
 window (H, B) and the weeks of 24-30 July, 1-7 May and 13-19 February 2023 (issue 1, B); both are applied. A second
 reading of this definition against the source file on 2026-11-26 reproduced every number it declares and opened
-issue 2, on the forecasts that repeat one measurement.
+issue 2, on the forecasts that repeat one measurement; you chose to state them and correct the row description (B),
+which is applied.
 
 **Main points:** Settled on 2026-11-11: three one-week windows from February to July 2023, each trained on what was
-measured three days before it, as a forecast is issued up to three days ahead. Open: whether the notes say that a row
-is one forecast, not one measurement (issue 2).
+measured three days before it, as a forecast is issued up to three days ahead. Settled on 2026-11-26: the notes say
+that a row is one forecast, not one measurement (issue 2, B). Nothing is left open.
 
 **Horizon:**
 
@@ -273,6 +277,17 @@ the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regenerat
 
    [^c-leak17]: **LEAK-17** (Must): repeated entities in different rows leak the target across the split even when the
      rows differ; keep one row per entity when the use case is that row, or group.
+
+   **Andrej (2026-11-26, change):** Option B: State the repeats, correct the row description.
+
+   **Resolved (2026-11-26, Andrej):** B. `task_summary.row` now reads "One forecast of the temperature at one of
+   1,948 weather stations, July 2022 to July 2023, as filtered and sub-sampled by TabReD; one measurement carries up
+   to 16 forecasts issued at different times", and `curation_comments` has the `Repeated measurements:` bullet with
+   the counts (5,141,583 measurements behind 16,951,828 rows, one target value in all but 63 of the 4,412,203
+   repeated groups, 98,285 / 94,935 / 90,882 measurements in the scored windows) and the two consequences: no
+   measurement spans a train side and a window, and a benchmark cuts its inner folds by the time column, which keeps
+   a measurement together. The data, the splits and the station column are unchanged; the record has the CC line and
+   the working copy a dated entry.
 
 ## Reference
 
