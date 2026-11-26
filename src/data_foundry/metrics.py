@@ -65,14 +65,15 @@ TabArena (later, no change there now) would wrap a spec in an AutoGluon scorer::
     ag_metric = make_scorer(
         spec["name"],
         lambda y_true, y_pred: score(spec, y_true, y_pred),
-        optimum=...,  # the metric's best value, e.g. 1 for roc_auc, 0 for rmse
+        optimum=metric_optimum(spec),  # the metric's best value: 1 for roc_auc, 0 for rmse
         greater_is_better=spec["greater_is_better"],
         needs_proba=spec["prediction"] == "proba",
         needs_class=spec["prediction"] == "label",
     )
 
-A metric with ``inputs`` (a group or weight column) needs the test rows' values of those columns as well, so it is
-scored outside AutoGluon's scorer interface, through :func:`scorer`.
+A metric with ``inputs`` (a group or weight column) needs the test rows' values of those columns as well: wrap
+:func:`scorer` instead, which takes the rows from the index of a pandas ``y_true`` when it gets no ``row_index``. The
+task view (``container.task()``, :mod:`data_foundry.task`) gathers the scorer, the optimum and the error.
 """
 
 from __future__ import annotations
@@ -450,6 +451,11 @@ class MetricDef:
         one_class_undefined: Whether a test fold of one class leaves it undefined (SPLIT-16): it ranks the predictions
             against both classes (ROC AUC, average precision, a Gini), or normalises by what alarms could gain (the
             early-detection utility). Under such a metric a single-class test fold is an error, not a warning.
+        optimum: The best score any prediction can reach, a bound no score passes: 1 for the AUCs, the
+            correlations, the accuracies and the normalized Ginis, 0 for the losses and deviances. A function of the
+            params where the bound depends on them (``cost_matrix``: the smallest cost of its matrix). ``None`` for a
+            metric whose best value changes with the scored rows (``net_revenue_at_cost``, ``ordered_lorenz_gini``),
+            which has no error ``optimum - score`` (:meth:`optimum_for`).
     """
 
     name: str
@@ -471,6 +477,13 @@ class MetricDef:
     weighted_definition: str | None = None
     rank_only: bool = False
     one_class_undefined: bool = False
+    optimum: float | Callable[[Mapping[str, Any]], float] | None = field(default=None, compare=False)
+
+    def optimum_for(self, params: Mapping[str, Any] | None) -> float | None:
+        """The best score under ``params`` (:attr:`optimum`), or ``None`` when the metric has no fixed one."""
+        if callable(self.optimum):
+            return float(self.optimum(dict(params or {})))
+        return self.optimum
 
     def definition_for(self, inputs: Mapping[str, str] | None) -> str:
         """The one-line formula of a spec that maps ``inputs``: :attr:`weighted_definition` when the spec maps the
@@ -529,6 +542,7 @@ METRICS: dict[str, MetricDef] = {
             weighted_definition="area under the ROC curve, each positive-negative pair counted with w_i * w_j, w the "
             "weight input (finite, >= 0)",
             one_class_undefined=True,
+            optimum=1.0,
         ),
         _standard(
             "average_precision",
@@ -539,6 +553,7 @@ METRICS: dict[str, MetricDef] = {
             "sklearn.metrics.average_precision_score",
             "area under the precision-recall curve (step-wise)",
             one_class_undefined=True,
+            optimum=1.0,
         ),
         _standard(
             "log_loss",
@@ -551,6 +566,7 @@ METRICS: dict[str, MetricDef] = {
             optional_inputs=("weight",),
             row_weight=True,
             weighted_definition="sum(w * -log p(true class)) / sum(w), w the weight input (finite, >= 0)",
+            optimum=0.0,
         ),
         _standard(
             "accuracy",
@@ -560,6 +576,7 @@ METRICS: dict[str, MetricDef] = {
             _label_metric("accuracy_score"),
             "sklearn.metrics.accuracy_score",
             "share of rows with the right class",
+            optimum=1.0,
         ),
         _standard(
             "balanced_accuracy",
@@ -569,6 +586,7 @@ METRICS: dict[str, MetricDef] = {
             _label_metric("balanced_accuracy_score"),
             "sklearn.metrics.balanced_accuracy_score",
             "mean of the per-class recalls",
+            optimum=1.0,
         ),
         _standard(
             "f1",
@@ -578,6 +596,7 @@ METRICS: dict[str, MetricDef] = {
             _positive_label_metric("f1_score"),
             "sklearn.metrics.f1_score(pos_label=labels[1])",
             "harmonic mean of precision and recall of the positive class",
+            optimum=1.0,
         ),
         _standard(
             "mcc",
@@ -587,6 +606,7 @@ METRICS: dict[str, MetricDef] = {
             _label_metric("matthews_corrcoef"),
             "sklearn.metrics.matthews_corrcoef",
             "Matthews correlation coefficient",
+            optimum=1.0,
         ),
         _standard(
             "precision",
@@ -596,6 +616,7 @@ METRICS: dict[str, MetricDef] = {
             _positive_label_metric("precision_score"),
             "sklearn.metrics.precision_score(pos_label=labels[1])",
             "TP / (TP + FP) of the positive class",
+            optimum=1.0,
         ),
         _standard(
             "recall",
@@ -605,6 +626,7 @@ METRICS: dict[str, MetricDef] = {
             _positive_label_metric("recall_score"),
             "sklearn.metrics.recall_score(pos_label=labels[1])",
             "TP / (TP + FN) of the positive class",
+            optimum=1.0,
         ),
         # multiclass classification
         _standard(
@@ -615,6 +637,7 @@ METRICS: dict[str, MetricDef] = {
             _label_metric("f1_score", takes_labels=True, average="macro", zero_division=0.0),
             "sklearn.metrics.f1_score(average='macro')",
             "unweighted mean of the per-class F1",
+            optimum=1.0,
         ),
         _standard(
             "f1_micro",
@@ -624,6 +647,7 @@ METRICS: dict[str, MetricDef] = {
             _label_metric("f1_score", takes_labels=True, average="micro", zero_division=0.0),
             "sklearn.metrics.f1_score(average='micro')",
             "F1 of the pooled counts (equals accuracy for single-label data)",
+            optimum=1.0,
         ),
         _standard(
             "f1_weighted",
@@ -633,6 +657,7 @@ METRICS: dict[str, MetricDef] = {
             _label_metric("f1_score", takes_labels=True, average="weighted", zero_division=0.0),
             "sklearn.metrics.f1_score(average='weighted')",
             "mean of the per-class F1 weighted by class support",
+            optimum=1.0,
         ),
         _standard(
             "roc_auc_ovo_macro",
@@ -643,6 +668,7 @@ METRICS: dict[str, MetricDef] = {
             "sklearn.metrics.roc_auc_score(multi_class='ovo', average='macro')",
             "mean ROC AUC over all pairs of classes",
             one_class_undefined=True,
+            optimum=1.0,
         ),
         _standard(
             "roc_auc_ovr_macro",
@@ -653,6 +679,7 @@ METRICS: dict[str, MetricDef] = {
             "sklearn.metrics.roc_auc_score(multi_class='ovr', average='macro')",
             "mean ROC AUC of each class against the rest",
             one_class_undefined=True,
+            optimum=1.0,
         ),
         # regression
         _standard(
@@ -673,6 +700,7 @@ METRICS: dict[str, MetricDef] = {
             check_params=_check_poisson,
             optional_inputs=("weight",),
             row_weight=True,
+            optimum=0.0,
         ),
         _standard(
             "rmse",
@@ -685,6 +713,7 @@ METRICS: dict[str, MetricDef] = {
             optional_inputs=("weight",),
             row_weight=True,
             weighted_definition="sqrt(sum(w * (y - p)^2) / sum(w)), w the weight input (finite, >= 0)",
+            optimum=0.0,
         ),
         _standard(
             "mae",
@@ -694,6 +723,7 @@ METRICS: dict[str, MetricDef] = {
             _value_metric("mean_absolute_error"),
             "sklearn.metrics.mean_absolute_error",
             "mean(|y - p|)",
+            optimum=0.0,
         ),
         _standard(
             "mse",
@@ -703,9 +733,17 @@ METRICS: dict[str, MetricDef] = {
             _value_metric("mean_squared_error"),
             "sklearn.metrics.mean_squared_error",
             "mean((y - p)^2)",
+            optimum=0.0,
         ),
         _standard(
-            "r2", _REG, "value", _HIGHER, _value_metric("r2_score"), "sklearn.metrics.r2_score", "1 - SS_res / SS_tot"
+            "r2",
+            _REG,
+            "value",
+            _HIGHER,
+            _value_metric("r2_score"),
+            "sklearn.metrics.r2_score",
+            "1 - SS_res / SS_tot",
+            optimum=1.0,
         ),
         _standard(
             "rmsle",
@@ -715,6 +753,7 @@ METRICS: dict[str, MetricDef] = {
             _rmsle,
             "sklearn.metrics.root_mean_squared_log_error, the predictions floored at 0",
             "sqrt(mean((log1p(y) - log1p(max(p, 0)))^2)); y >= 0, a prediction below 0 counts as 0",
+            optimum=0.0,
         ),
         _standard(
             "mape",
@@ -724,6 +763,7 @@ METRICS: dict[str, MetricDef] = {
             _mape,
             "sklearn.metrics.mean_absolute_percentage_error",
             "mean(|y - p| / |y|); NaN when a true value is 0 (scikit-learn divides by eps there)",
+            optimum=0.0,
         ),
         _standard(
             "median_absolute_error",
@@ -733,6 +773,7 @@ METRICS: dict[str, MetricDef] = {
             _value_metric("median_absolute_error"),
             "sklearn.metrics.median_absolute_error",
             "median(|y - p|)",
+            optimum=0.0,
         ),
         _standard(
             "pearsonr",
@@ -742,6 +783,7 @@ METRICS: dict[str, MetricDef] = {
             _correlation("pearsonr"),
             "scipy.stats.pearsonr",
             "Pearson correlation of y and p",
+            optimum=1.0,
         ),
         _standard(
             "spearmanr",
@@ -751,6 +793,7 @@ METRICS: dict[str, MetricDef] = {
             _correlation("spearmanr"),
             "scipy.stats.spearmanr",
             "Spearman rank correlation of y and p",
+            optimum=1.0,
         ),
         MetricDef(
             "mean_tweedie_deviance",
@@ -771,6 +814,7 @@ METRICS: dict[str, MetricDef] = {
             prediction_domain="positive",
             optional_inputs=("weight",),
             row_weight=True,
+            optimum=0.0,
         ),
     )
 }
@@ -836,6 +880,11 @@ def _check_cost_matrix(params: Mapping[str, Any]) -> None:
         raise ValueError(f"cost_matrix matrix must be {len(labels)} x {len(labels)} (labels), got {matrix.shape}.")
     if not np.isfinite(matrix).all():
         raise ValueError("cost_matrix matrix must be finite.")
+
+
+def _cost_matrix_optimum(params: Mapping[str, Any]) -> float:
+    """The smallest cost of the matrix: the mean cost of a fold cannot fall below it."""
+    return float(np.asarray(params["matrix"], dtype=float).min())
 
 
 def _cost_matrix(y_true, y_pred, *, labels=None, params, **_):
@@ -1459,6 +1508,7 @@ _CUSTOM_METRICS = (
         },
         predictions=("proba",),
         check_params=_check_cost_matrix,
+        optimum=_cost_matrix_optimum,
     ),
     _custom(
         "precision_at_k",
@@ -1470,6 +1520,7 @@ _CUSTOM_METRICS = (
         "CoIL Challenge 2000 (https://kdd.ics.uci.edu/databases/tic/tic.task.html); Flogard & Mengshoel 2022",
         params=_TOP_K_PARAMS,
         check_params=_check_top_k,
+        optimum=1.0,
     ),
     _custom(
         "average_precision_at_k",
@@ -1483,6 +1534,7 @@ _CUSTOM_METRICS = (
         params=_TOP_K_PARAMS,
         check_params=_check_top_k,
         one_class_undefined=True,
+        optimum=1.0,
     ),
     _custom(
         "rmspe",
@@ -1492,6 +1544,7 @@ _CUSTOM_METRICS = (
         _rmspe,
         "sqrt(mean(((y - p) / y)^2)) over the rows with y != 0",
         "https://www.kaggle.com/competitions/rossmann-store-sales/overview/evaluation",
+        optimum=0.0,
     ),
     _custom(
         "net_revenue_at_cost",
@@ -1506,6 +1559,7 @@ _CUSTOM_METRICS = (
         "of the donation) is over $0.68'",
         params={"cost": "the cost of acting on one row (the KDD Cup 1998: $0.68 per mailed piece)"},
         check_params=_check_net_revenue_at_cost,
+        optimum=None,
     ),
     _custom(
         "gini_top_capture",
@@ -1522,6 +1576,7 @@ _CUSTOM_METRICS = (
         },
         check_params=_check_gini_top_capture,
         one_class_undefined=True,
+        optimum=1.0,
     ),
     _custom(
         "normalized_gini",
@@ -1535,6 +1590,7 @@ _CUSTOM_METRICS = (
         "reference code posted on Kaggle)",
         rank_only=True,
         one_class_undefined=True,
+        optimum=1.0,
     ),
     _custom(
         "normalized_weighted_gini",
@@ -1550,6 +1606,7 @@ _CUSTOM_METRICS = (
         inputs=("weight",),
         row_weight=True,
         rank_only=True,
+        optimum=1.0,
     ),
     _custom(
         "ordered_lorenz_gini",
@@ -1569,6 +1626,7 @@ _CUSTOM_METRICS = (
             "False (default): y and p are totals and the weight is the base premium they are compared against"
         },
         check_params=_check_ordered_lorenz_gini,
+        optimum=None,
     ),
     _custom(
         "rescaled_mean_tweedie_deviance",
@@ -1593,6 +1651,7 @@ _CUSTOM_METRICS = (
         check_params=_check_tweedie,
         prediction_domain="positive",
         row_weight=True,
+        optimum=0.0,
     ),
     _custom(
         "weighted_pearsonr",
@@ -1609,6 +1668,7 @@ _CUSTOM_METRICS = (
             "weight; without it the weight input holds the weights"
         },
         check_params=_check_weights,
+        optimum=1.0,
     ),
     _custom(
         "mean_group_pearsonr",
@@ -1626,6 +1686,7 @@ _CUSTOM_METRICS = (
             "signed power 1.5"
         },
         check_params=_check_group_corr,
+        optimum=1.0,
     ),
     _custom(
         "mean_group_normalized_rmse",
@@ -1637,6 +1698,7 @@ _CUSTOM_METRICS = (
         "whose true values do not vary are left out",
         "Laman et al. 2022, NOAA-TM-AFSC-459 (RMSE per species, https://repository.library.noaa.gov/view/noaa/48659)",
         inputs=("group",),
+        optimum=0.0,
     ),
     _custom(
         "hierarchical_balanced_accuracy",
@@ -1647,6 +1709,7 @@ _CUSTOM_METRICS = (
         "mean over true classes of the mean over the class's groups of the group's accuracy",
         "Vervier et al. 2015, arXiv:1506.07251",
         inputs=("group",),
+        optimum=1.0,
     ),
     _custom(
         "gini_stability",
@@ -1663,6 +1726,7 @@ _CUSTOM_METRICS = (
             "residual_std_weight": "the weight subtracted per unit of the residuals' std (default 0.5)",
         },
         one_class_undefined=True,
+        optimum=1.0,
     ),
     _custom(
         "par_k",
@@ -1680,6 +1744,7 @@ _CUSTOM_METRICS = (
             "timeout_rel_tol": "relative tolerance of the timeout test (default 1e-9)",
         },
         check_params=_check_par_k,
+        optimum=0.0,
     ),
     _custom(
         "mean_group_top_k_overlap",
@@ -1695,6 +1760,7 @@ _CUSTOM_METRICS = (
         inputs=("group",),
         params={"k": "how many rows per group are the top (Buza: the 10 posts of a day)"},
         check_params=_check_group_top_k,
+        optimum=1.0,
     ),
     _custom(
         "normalized_early_detection_utility",
@@ -1716,6 +1782,7 @@ _CUSTOM_METRICS = (
         predictions=("proba",),
         check_params=_check_utility,
         one_class_undefined=True,
+        optimum=1.0,
     ),
 )
 METRICS.update({d.name: d for d in _CUSTOM_METRICS})
@@ -1956,6 +2023,16 @@ def metric_fn(spec: Any) -> Callable[..., float]:
     return METRICS[fields["name"]].fn
 
 
+def metric_optimum(spec: Any) -> float | None:
+    """The best score of ``spec`` (:meth:`MetricDef.optimum_for` under its params), or ``None`` when the metric has
+    no fixed one (``net_revenue_at_cost``, ``ordered_lorenz_gini``: their best value changes with the scored rows).
+    """
+    fields = _as_dict(spec)
+    if fields["name"] not in METRICS:
+        raise ValueError(_unknown_name_message(fields["name"]))
+    return METRICS[fields["name"]].optimum_for(fields.get("params"))
+
+
 def row_weight_column(spec: Any) -> str | None:
     """The column ``spec`` reads as a row weight, or ``None``.
 
@@ -2047,14 +2124,19 @@ def scorer(container: Any, *, metric: Any = None) -> Callable[..., float]:
 
     ``row_index`` are the positions of the scored rows in ``container.dataset`` (the test side of a split, as in
     ``experiment_metadata.splits``); the scorer takes the values of the spec's input columns from those rows, so a
-    benchmark passes only the test indices. It is needed when the metric has inputs. ``labels``, the column order of
-    the probabilities, defaults to the sorted categories of the target column: the column order of scikit-learn's
-    ``predict_proba`` (``classes_``) for a model trained on every class, for every target. An ordered target keeps its
-    declared order (low < high) in the container as type information; the scorer does not read its columns in that
-    order. Probabilities as a DataFrame whose columns are the class names are matched by name, in any order (a
-    missing or unknown class name is an error); a plain array is read in the sorted order. Values are passed on the
-    shipped scale: a per-group aggregation works on it, and :func:`score` then inverts the spec's
-    ``target_transform``.
+    benchmark passes only the test indices. It is needed when the metric has inputs or the task predicts one value
+    per group. Without it, a pandas ``y_true`` gives the rows by its index: ``container.dataset`` has the index
+    ``0..n-1``, so ``y = container.dataset[target].iloc[test_idx]`` carries the positions, and a caller that passes
+    only ``(y_true, y_pred)``, as AutoGluon's scorer interface does, still scores a metric with inputs. Such an index
+    must be the container's: the scorer checks that ``y_true`` is the target on those rows.
+
+    ``labels``, the column order of the probabilities, defaults to the sorted categories of the target column: the
+    column order of scikit-learn's ``predict_proba`` (``classes_``) for a model trained on every class, for every
+    target. An ordered target keeps its declared order (low < high) in the container as type information; the scorer
+    does not read its columns in that order. Probabilities as a DataFrame whose columns are the class names are
+    matched by name, in any order (a missing or unknown class name is an error); a plain array is read in the sorted
+    order. Values are passed on the shipped scale: a per-group aggregation works on it, and :func:`score` then inverts
+    the spec's ``target_transform``.
 
     Args:
         container: A format-2 container (anything with ``dataset`` and ``task_metadata.objective_metric``).
@@ -2071,11 +2153,14 @@ def scorer(container: Any, *, metric: Any = None) -> Callable[..., float]:
     input_columns = dict(fields.get("inputs") or {})
     grouping = getattr(task, "grouping", None)
     per_group = grouping is not None and getattr(grouping, "prediction_unit", "row") == "group"
+    needs_rows = frame is not None and (bool(input_columns) or per_group)
 
     def score_rows(
         y_true: Any, y_pred: Any, row_index: Any = None, *, labels: Any = None, aggregate: bool = True
     ) -> float:
         labels = labels if labels is not None else default_labels
+        if row_index is None and needs_rows and isinstance(y_true, (pd.Series, pd.DataFrame)):
+            row_index = _index_positions(y_true.index, len(frame))
         y_true = np.asarray(y_true)
         if isinstance(y_pred, pd.DataFrame) and fields.get("prediction") == "proba":  # by name, before the names go
             y_pred = _named_proba(y_pred, _labels(y_true, labels))
@@ -2095,6 +2180,19 @@ def scorer(container: Any, *, metric: Any = None) -> Callable[..., float]:
         return score(spec, y_true, y_pred, labels=labels, **values)
 
     return score_rows
+
+
+def _index_positions(index: pd.Index, n_rows: int) -> np.ndarray:
+    """The row positions a pandas ``y_true`` carries in its index (the container's ``0..n-1``)."""
+    if not pd.api.types.is_integer_dtype(index):
+        raise ValueError(
+            f"y_true has a {index.dtype} index, not the container's row positions: pass row_index (the scored rows' "
+            "positions in container.dataset)."
+        )
+    positions = index.to_numpy()
+    if len(positions) and (positions.min() < 0 or positions.max() >= n_rows):
+        raise ValueError(f"y_true's index holds positions outside the container's {n_rows:,} rows: pass row_index.")
+    return positions
 
 
 def _check_true_values(y_true: np.ndarray, expected: np.ndarray, target: str) -> None:

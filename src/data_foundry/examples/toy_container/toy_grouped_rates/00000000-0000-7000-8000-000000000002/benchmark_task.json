@@ -1,0 +1,53 @@
+{
+  "task_view_version": 1,
+  "name": "toy_grouped_rates",
+  "format_version": 2,
+  "target": "claim_rate",
+  "problem_type": "regression",
+  "classes": null,
+  "features": [
+    "driver_age",
+    "vehicle_size",
+    "region"
+  ],
+  "split_columns": [
+    "customer"
+  ],
+  "special_features": [],
+  "metric": {
+    "name": "mean_poisson_deviance",
+    "kind": "standard",
+    "prediction": "value",
+    "greater_is_better": false,
+    "origin": "context",
+    "params": {
+      "min_prediction": 0.001
+    },
+    "inputs": {
+      "weight": "exposure"
+    },
+    "original": null,
+    "reference": null,
+    "definition": "2*sum(w*(y*log(y/p)-y+p))/sum(w), w the optional weight input (1 without it); finite y>=0; p below min_prediction counts as it",
+    "reason": "A claim rate is scored by the Poisson deviance weighted by the years insured (synthetic data).",
+    "target_transform": "identity"
+  },
+  "greater_is_better": false,
+  "optimum": 0.0,
+  "grouping": {
+    "on": "customer",
+    "labels": "per_sample",
+    "time_on": null,
+    "definition": "A customer and their policies; new customers are scored, so a customer is held out whole.",
+    "prediction_unit": "row",
+    "aggregation": null,
+    "context": "none",
+    "time_of": null,
+    "prediction_time": null
+  },
+  "sample_weight": "exposure",
+  "validation_weight": "exposure",
+  "unit_column": null,
+  "row_budget": null,
+  "time_unit": null
+}

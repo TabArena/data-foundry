@@ -5,16 +5,17 @@ Data Foundry side of every item is done unless the item says otherwise. The fact
 task definitions of this folder on 2026-11-25 ([how to regenerate them](#regenerating-the-lists)); the history of each
 decision is in the curation records, the knowledge skills and [`CHANGELOG.md`](CHANGELOG.md).
 
-The API names are those of Data Foundry's `main` on 2026-11-25. A restructure moves `data_foundry.definition.*` into the
-package and adds one task view per container (`container.task()`) that gathers the helpers named here; this file
-follows it.
+The API names are those of the task view, `task = container.task()` (`data_foundry.task.BenchmarkTask`, added
+2026-11-26), which gathers the helpers of `data_foundry.curation_container`, `data_foundry.sampling` and
+`data_foundry.metrics` behind one object for both container formats; the helpers stay available. The integration page
+for a harness is [`docs/benchmark_integration.md`](../../../docs/benchmark_integration.md).
 
 ## Summary
 
 Before the first v0.2 run:
 
 - [ ] [1. Pin the Data Foundry release that reads format 2](#1-pin-the-release-that-reads-format-2) (all).
-- [ ] [2. Build the model inputs from `feature_columns`](#2-model-inputs-feature_columns) (all; matters for the 48
+- [ ] [2. Build the model inputs from `task.X`](#2-model-inputs-taskx) (all; matters for the 48
   grouped tasks, the 18 with scoring columns and the 12 with a label-dated time column).
 - [ ] [3. Score by the container's metric spec](#3-the-metric-score-by-the-spec) (all; 26 metric names, 23 beyond
   `roc_auc`, `log_loss` and `rmse`).
@@ -59,9 +60,10 @@ them; TabArena requires `data-foundry>=0.0.3` today.
   back among the features. From the bug-fix PR of 2026-11-25 on, the loader refuses unknown task and split fields
   (it dropped them with a warning before).
 
-### 2. Model inputs: `feature_columns`
+### 2. Model inputs: `task.X`
 
-Build X from `data_foundry.curation_container.feature_columns(container)`, for every pipeline. It leaves out:
+Build X from `task.X(rows)` (the columns `task.features`, from `feature_columns(container)`), for every pipeline. It
+leaves out:
 
 - the target;
 - the group column(s): today only the `tabarena_default` pipeline drops them (its `GroupAggregationFeatureGenerator`),
@@ -90,8 +92,8 @@ declares the metric its source scored, or an explicit fallback (rules MET-1 to M
 - Stop replacing unknown metrics silently. Today any name other than `roc_auc`, `log_loss` and `rmse` becomes the
   problem type's default without a warning, so `mape`, `rmsle` and every custom metric below are never used. An
   unsupported name must fail.
-- Score with `data_foundry.metrics.scorer(container)(y_true, y_pred, row_index)`, `row_index` being the scored
-  rows' positions in `container.dataset`. It does what the bare metric does not:
+- Score with `task.score(y_true, y_pred, rows)` (`data_foundry.metrics.scorer(container)` underneath), `rows` being
+  the scored rows' positions in `container.dataset`. It does what the bare metric does not:
   - inverts a modelling scale (`target_transform` `log`, `log1p`, `log10`: 29 tasks) on both the true values and the
     predictions; models fit and predict on the shipped scale;
   - floors predictions at the metric's `min_prediction` (the deviances);
@@ -100,11 +102,12 @@ declares the metric its source scored, or an explicit fallback (rules MET-1 to M
   - reads probability columns in the sorted order of the classes (scikit-learn's `classes_`, also for an ordered
     target), or a DataFrame whose columns are the class names, matched by name;
   - scores a constant prediction 0 for the correlation metrics.
-- Wrap it as an AutoGluon scorer (`autogluon.core.metrics.make_scorer`: `greater_is_better` from the spec,
+- Wrap it as an AutoGluon scorer (`autogluon.core.metrics.make_scorer`: `task.greater_is_better`, `task.optimum`,
   `needs_proba` for `prediction == "proba"`, `needs_class` for `"label"`). Inner validation, early stopping and tuning
-  use the same scorer. Two pieces come with the task view on the Data Foundry side: an `optimum` per metric name
-  (not in the spec today; see [B](#b-errors-of-metrics-without-a-fixed-best-value) for the metrics without one), and
-  row positions taken from the index of a pandas `y_true`, since AutoGluon calls a scorer without them.
+  use the same scorer. The Data Foundry side is done: `task.optimum` is the metric's best value from the registry
+  (`MetricDef.optimum`, `None` for the two metrics of [B](#b-errors-of-metrics-without-a-fixed-best-value)),
+  `task.error(score)` the distance to it, and the scorer takes the row positions from the index of a pandas `y_true`
+  (`task.y(rows)` keeps it), since AutoGluon calls a scorer without them.
 - A metric is NaN where it is undefined (one class in a fold for the AUC-type metrics, a zero true value for `mape`).
   Treat NaN as an undefined fold, not as a failed model. The build checks refuse folds where the declared metric is
   undefined, so a NaN on a shipped split means the harness scored other rows than the split's.
@@ -140,8 +143,8 @@ The metrics in use:
 ### 4. Inner validation follows the outer split
 
 - Temporal tasks (68): cut the inner hold-out forward on the time column. Read it, with the group column(s), from
-  `split_columns(container)` (`time_on_to_groups_data` reads `X[time_on]` today), and only then fit on
-  `feature_columns(container)`, which may leave the time column out (item 2). Dropping it first breaks the temporal
+  `task.split_columns` (`time_on_to_groups_data` reads `X[time_on]` today), and only then fit on `task.X(rows)`,
+  which may leave the time column out (item 2). Dropping it first breaks the temporal
   validation; never dropping it feeds the model a time it does not have.
 - Grouped tasks (48): group-aware inner folds for every grouped task. The BeyondArena protocol does it
   (`task_specific_validation=True`); the TabArena v0.1 protocol mixes a group's rows across inner train and validation.
@@ -159,7 +162,8 @@ fraud_detection_in_electricity_and_gas_consumption, g_research_crypto_forecastin
 huntprohibited, maps_router_eta, numerai_v5_2, nyc_taxi_trip_duration, pkdd_15_taxi_trip_time_prediction_ii,
 sepsis_prediction (each `_1m`).
 
-- Fit on `data_foundry.sampling.subsample_train(container, repeat, fold)`: for a temporal train side the newest year,
+- Fit on `fold.train` of `task.folds()` (`data_foundry.sampling.subsample_train` underneath; `fold.train_side` is
+  the whole side): for a temporal train side the newest year,
   extended back in time until it holds 1M rows, then a random 1M of those (a year in `task_metadata.time_unit`:
   numerai's eras are weeks); whole groups of a grouped side; stratified rows of an IID side. Deterministic; the whole
   train side for a container without a budget. Without it a model trains on the whole history.
@@ -172,7 +176,7 @@ sepsis_prediction (each `_1m`).
 
 ### 6. Special features
 
-A container lists every model input that needs handling beyond its dtype in `task_metadata.special_features`
+A container lists every model input that needs handling beyond its dtype in `task.special_features`
 (`data_foundry.schema.SpecialFeature`: `name`, `kind` `smiles` / `spectrum`, `layout` `column` / `group`, `columns`,
 `encoding_required`, `recommended_encoding`, `details`). One contract for every kind (Lennart, 2026-11-02).
 
@@ -216,15 +220,15 @@ scales the sources ship as numbers (ratings, grades, bands): the curated state, 
 
 ### 8. Training weights
 
-A format-2 task may declare a training weight, `task_metadata.sample_weight`
-(`data_foundry.curation_container.sample_weight(container)`): a scoring column that the metric reads as its row weight
+A format-2 task may declare a training weight, `task.sample_weight` (its values `task.train_weight(rows)`): a
+scoring column that the metric reads as its row weight
 (MET-15), such as the years insured of a claims rate. 6 tasks: australian_vehicle_insurance_2004_2005 (`exposure`),
 bemtpl97 (`expo`), frempl_french_motor_personal_line (`Exposure`), fremtpl2 (`Exposure`),
 pricing_game_2016_french_fleet (`exposure`), spanish_motor_insurance_coverage_level_2022_2024 (`actual_exposure`).
 Every model is fitted with it as the row weight and never gets it as a feature; a fit without it targets another
 quantity (on fremtpl2 an unweighted fit scores worse than the constant rate).
 
-- The gate: no container with a `sample_weight` enters a run until the adapter builds X from `feature_columns`,
+- The gate: no container with a `sample_weight` enters a run until the adapter builds X from `task.X`,
   passes the weight to every fit and scores with Data Foundry's scorer. A contract test on a toy container guards
   it: its weight, used as a feature or ignored, moves the score past a stated tolerance.
 - Scoring columns never reach `predict` (item 2): the adapter passes them to the scorer, and the `sample_weight`
@@ -248,7 +252,7 @@ quantity (on fremtpl2 an unweighted fit scores worse than the constant rate).
 A task whose prediction unit is the group (`grouping.prediction_unit == "group"`) is scored with one value per group,
 so each group counts once; `experiment_runner.evaluate` scores every row on its own today. The metadata is
 `task_metadata.grouping` (`data_foundry.schema.Grouping`: `prediction_unit`, `aggregation`, `context`,
-`definition`), read with `CuratedContainer.grouping` (None for format 1, which is scored per row). 3 tasks: musk
+`definition`), read with `task.grouping` (format 1: its group column with one prediction per row). 3 tasks: musk
 (`any`: a molecule is a musk if any conformation is), amex_non_iid_1m (`last`: the latest statement decides, per
 customer), fraud_detection_in_electricity_and_gas_consumption_1m (`mean`).
 
@@ -259,8 +263,8 @@ customer), fraud_detection_in_electricity_and_gas_consumption_1m (`mean`).
 | `group` + `any` | positive if any row is | max of the rows' P(positive) | one value per group |
 | `group` + `last` | the latest row's label (by the group's time) | the latest row's prediction | one value per group |
 
-- `scorer(container)` applies the default aggregation when a method returns row predictions. A method may return one
-  prediction per group itself (a multiple-instance model, a learned pooling) and is scored by the same metric on the
+- `task.score` (`scorer(container)`) applies the default aggregation when a method returns row predictions. A method
+  may return one prediction per group itself (a multiple-instance model, a learned pooling) and is scored by the same metric on the
   same unit; such an override needs `context="all_rows"` (item 10).
 - Inner validation and tuning use the same resolved metric, so a model is not tuned on rows and scored on groups.
 - Until TabArena scores at the group unit, the three are scored per row; nothing is held back.
@@ -281,12 +285,12 @@ protein_model_quality_rf_pcp, sat11_hand_algo_runtime) or `past_rows` (only the 
 ### 11. Validation weights and unit weights
 
 - Weight every validation loss (early stopping, model selection, tuning, ensembling) by
-  `data_foundry.curation_container.validation_weight(container)`, the metric's row weight, so a model optimises what
+  `task.validation_weights(rows)` (the column `task.validation_weight`), the metric's row weight, so a model optimises what
   the test score counts (Lennart, 2026-11-08).
 - A task with a `unit_weight` counts each unit once in the score (MET-17; 5 tasks: boreal_postfire_lichen_biomass,
   dementia_prediction, noaa_storm_events_damage, pancreatic_cancer_mouse_detection, superconductivity): weight the
-  validation loss by its column, keep a unit's rows on one side of an inner split (`unit_weight(container).unit`,
-  also in `split_columns`), and never fit with it as a training weight. A contract test: a toy container whose units
+  validation loss by its column, keep a unit's rows on one side of an inner split (`task.unit_column`, also in
+  `task.split_columns`), and never fit with it as a training weight. A contract test: a toy container whose units
   have 1 and 5 rows; the adapter's validation score equals the scorer's on the same rows.
 
 ### 12. Encoding caches and their time
@@ -357,6 +361,9 @@ in use has a bound no score passes, except two (Lennart, 2026-11-16, review of P
 - `ordered_lorenz_gini` (wisconsin_local_government_property_insurance_fund) is not normalized: its best value is
   below 1 and varies by fold, so `1 - score` measures the distance to a value no model reaches. The same two options
   apply.
+
+Until it is decided, the registry gives both metrics no optimum (`task.optimum is None`) and `task.error(score)`
+raises for them.
 
 ### C. Threshold tuning for label metrics
 

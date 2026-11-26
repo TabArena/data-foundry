@@ -8,10 +8,10 @@ script imports nothing from ``data_foundry``. It:
    in format 1 (BeyondArena);
 2. lists the scoring columns (format 2: ``scoring_columns``), the columns the metric needs, which are never features,
    and the training weight (``sample_weight``, one of them): fit every model with it as each row's weight;
-3. takes the features as every column but the target, the group column(s), the scoring columns (the training weight
-   among them), the unit of a unit weight (``unit_weight.unit``) and a time column that dates the label
-   (``time_on`` or ``grouping.time_on`` with ``time_of: "label"``), the same set as Data Foundry's
-   ``feature_columns``;
+3. takes the features from ``benchmark_task.json``, the task view a format-2 container saves next to its metadata
+   (``features``: Data Foundry's ``feature_columns``, which leaves out the target, the group, scoring and unit columns
+   and a time column that dates the label), so the rules are not re-derived here; a format-1 container has no such
+   file, and its features are every column but the target and the group column(s);
 4. scores a dummy prediction on the test side of the first split with the scikit-learn function of a standard
    metric. A custom metric (``kind: "custom"``) is implemented from its ``definition`` and ``params``, or by copying
    ``src/data_foundry/metrics.py`` (numpy, pandas, scikit-learn and scipy only) into your code. A regression
@@ -104,33 +104,16 @@ def metric_spec(task: dict) -> dict:
     return {"name": name, "kind": "standard", "prediction": prediction, "origin": None, "params": {}, "inputs": {}}
 
 
-def group_columns(task: dict) -> list[str]:
-    """The group column(s): format 2 keeps them in ``grouping.on``, format 1 in ``group_on``."""
-    on = (task.get("grouping") or {}).get("on") or task.get("group_on")
-    if on is None:
-        return []
-    return [on] if isinstance(on, str) else list(on)
-
-
-def non_feature_columns(task: dict) -> set[str]:
-    """The columns that are never model inputs, as Data Foundry's ``curation_container.non_feature_columns`` decides.
-
-    The target, the group column(s), the scoring columns and the training weight, the unit of a unit weight, and a
-    time that dates the label (``time_on``, or the order inside a group ``grouping.time_on``, with ``time_of:
-    "label"``): the actor does not hold it at the prediction point.
+def feature_list(folder: Path, task: dict, columns: list[str]) -> list[str]:
+    """The model inputs: ``features`` of ``benchmark_task.json`` (format 2), or, in a format-1 container, every column
+    but the target and the group column(s) (``group_on``).
     """
-    excluded = {task["target_column_name"], *group_columns(task)}
-    excluded.update(c["column"] for c in task.get("scoring_columns") or ())
-    if task.get("sample_weight"):
-        excluded.add(task["sample_weight"])
-    if task.get("unit_weight"):
-        excluded.add(task["unit_weight"]["unit"])
-    if task.get("time_on") is not None and task.get("time_of") == "label":
-        excluded.add(task["time_on"])
-    grouping = task.get("grouping") or {}
-    if grouping.get("time_on") is not None and grouping.get("time_of") == "label":
-        excluded.add(grouping["time_on"])
-    return excluded
+    view = folder / "benchmark_task.json"
+    if view.is_file():
+        return json.loads(view.read_text())["features"]
+    on = task.get("group_on")
+    excluded = {task["target_column_name"], *([on] if isinstance(on, str) else on or [])}
+    return [c for c in columns if c not in excluded]
 
 
 def dummy_prediction(prediction: str, y_train: pd.Series, n: int, classes: list) -> np.ndarray:
@@ -190,8 +173,7 @@ def main(path: Path) -> float | None:
 
     print_scoring_columns(task)
     target = task["target_column_name"]
-    not_features = non_feature_columns(task)
-    features = [c for c in df.columns if c not in not_features]
+    features = feature_list(folder, task, list(df.columns))
     print(f"Features: {len(features)} of {df.shape[1]} columns")
 
     # The first split, as shipped: never re-split or shuffle.

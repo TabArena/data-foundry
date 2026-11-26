@@ -1,5 +1,14 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-26, the benchmark hand-off names the task view (no container built)
+
+- `BENCHMARK_CHANGES_TODO.md` names the task view (`container.task()`, `data_foundry.task`) where it named the helpers:
+  `task.X` / `task.features`, `task.split_columns`, `task.folds()`, `task.train_weight`, `task.validation_weights`,
+  `task.unit_column`, `task.grouping` and `task.score`. Item 3 records that the optimum per metric and the row positions
+  from a pandas `y_true` are done; decision B that `task.error` raises for its two metrics until it is decided. The
+  content is otherwise unchanged. A rebuilt container also writes `benchmark_task.json`, its task view, next to its
+  metadata (outside the checksum).
+
 ## 2026-11-25, every definition imports `data_foundry.definition` (no container built)
 
 - The package's `v2/` moved into the package proper (codebase review of 2026-11-25): the definition API is
