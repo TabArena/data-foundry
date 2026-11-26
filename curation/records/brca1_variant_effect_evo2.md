@@ -3,11 +3,11 @@ unique_name: brca1_variant_effect_evo2
 name: local-BRCA_Evo2-VEP (BRCA VEP, Evo2)
 checked_by:
 - AI (UNVERIFIED)
+- Andrej
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Andrej
-suggestion: TBD -> 2nd Tier
-priority: 2
+suggestion: 'No'
 decision_markers:
 - Wrong Domain / Source Modality
 tags:
@@ -51,3 +51,20 @@ type_adapter_id: curation-record-v1
 - as published: 3,893 x 8,192; target: y = func.class (FUNC / INT / LOF).
 - Why: BRCA1 variant function class (saturation genome editing, Findlay et al. 2018) from DNA language-model embeddings
 - Notes: Built by the authors: features are mean-pooled Evo2-7B embeddings of the reference and variant sequences (4,096 + 4,096), not measured variables. Groups by reference-sequence hash. The paper's table says C; the registry says multiclass.
+
+**Assessment (AI, 2026-11-26):** `No` (`Wrong Domain / Source Modality`, SEL-12): the screening's open question was measured, and a sequence model that never saw this data beats the best honest tabular model on it.
+- The data, which the screening had not seen: MAVEdb publishes Findlay's normalized function scores under CC0 (`urn:mavedb:00000097-0-2`), 3,893 variants, the paper's own count. Each row carries the HGVS coding change and the score; the protein consequence column is empty for every row, and no class ships, so both would have to be derived.
+- The table built from it, as the screening proposed: coding position, the reference and alternate base, transition against transversion, codon position, the intron offset, a canonical-splice flag, and the exon, whose 13 blocks of 287 to 312 variants are recovered from the HGVS offsets. The split holds out whole exons, 13 folds, as the screening's leaf says.
+- What a tabular model reaches, against what Evo 2 reaches. The classes are rebuilt as the paper describes them, a two-component mixture on the scores (LOF at or below -0.839, 1,019 of 3,893 variants, 26.2%), since MAVEdb ships no class column:
+
+  | Model | Inputs | Split | AUROC |
+  |---|---|---|---|
+  | logistic regression | all variant columns | whole exons held out | 0.738 |
+  | LightGBM | all variant columns | whole exons held out | 0.721 |
+  | logistic regression | without the splice and intron columns | whole exons held out | 0.642 |
+  | LightGBM | all variant columns | random 5-fold | 0.848 |
+  | Evo 2 7B, zero-shot | the genome sequence, no training on this data | none needed | 0.87 to 0.89 |
+
+  The Evo 2 figures are published, not measured here: 0.891 in the paper's own supplement and 0.87 in NVIDIA's independent reproduction on these same 3,893 variants. A regression on the score tells the same story, with R^2 +0.154 for ridge over held-out exons and -0.047 once the intronic and splice rows go.
+- Why that decides it. The task adds nothing a model has to learn from the table: the honest tabular ceiling is 0.74 while a model trained on other data and never shown this one reaches 0.87 to 0.89 without a training set at all. That is the exclusion the evidence and provenance rules were amended to name on 2026-11-26: a model fitted elsewhere, which never saw this dataset, scoring better on it than the models we fit. The 0.848 a tabular model reaches on a random split is the measure of what the exon split withholds, not a counter-argument.
+- What was not done: Evo 2 was not run here, so the comparison rests on two published numbers rather than one run of ours; and the protein consequence was not derived from the transcript. Neither points the other way, since a consequence column would move more of the signal into annotation categories that are rules of molecular biology, not structure a model learns.

@@ -3,10 +3,11 @@ unique_name: maize_nam_flowering_time
 name: NAM-maize-DTA (Maize Nested Association Mapping Flowering Time)
 checked_by:
 - AI (UNVERIFIED)
+- Andrej
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Andrej
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 4
 tags:
 - AI-Filled (Verify)
@@ -99,3 +100,7 @@ the lines, with the families as a group key and the raw plot data shipped beside
   use case + (the breeder and the selection decision are named by the task's own literature), source + (a Science
   paper, a public archive, and the raw plot values beside the line values), shape + (4,699 lines x 1,106 markers),
   no minus: the positional join is measured and settled here, and the unstated licence is no verdict reason.
+
+CC (2026-11-26, Andrej): accepted, go to `/add-dataset`.
+- The screening's verdict stands: 4,699 lines over 25 families, 1,106 markers, the target in days, and the raw plot values beside the line values.
+- Priority 4 kept. Nothing was built at screening.
