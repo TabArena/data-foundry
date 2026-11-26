@@ -1,5 +1,14 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-26, leave one group out is a declaration; group bases carry their attribution (no container built)
+
+- `leave_one_group_out = True` became `grouped_splits = GroupedSplits(kind="leave_one_group_out")` beside the
+  `grouping`, and the split checks accept one fold per group without an acceptance. heart_disease and
+  online_shoppers_purchasing_intention_dataset declare it and drop their `splits_dimensions_off_protocol` acceptance;
+  their repeats, folds, train and test positions, frame and splits comment are identical on the real data.
+- bioresponse and covertype moved "ForcedIIDFromGrouped (Andrej, 2026-11-16)" out of the `GroupBasis` reason into
+  `set_by` and `on`; the README's `Group basis:` line now names the tag itself, so the line reads as before.
+
 ## 2026-11-26, split declarations replace nine custom splits; the splits comment is generated first (no container built)
 
 - New declarations (`data_foundry.definition`): `TemporalSplits(window=None, cutoffs=...)` runs each window to the next

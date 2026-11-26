@@ -60,7 +60,7 @@ except ImportError:  # pragma: no cover - depends on the environment
 
 from data_foundry.curation import review as rv
 from data_foundry.curation.consistency import COLLECTION_TYPES, collection_type_problems, time_basis_problems
-from data_foundry.definition.dataset import TaskSummary, splits_reason
+from data_foundry.definition.dataset import TaskSummary, clean_text
 from data_foundry.definition.registry import load_definition
 from data_foundry.definition.report import read_report
 from data_foundry.metrics import Metric
@@ -583,7 +583,6 @@ def _metric_from_front(task: dict) -> dict | None:
 
 
 SPLITS_SECTION = re.compile(r"^## Splits\n(.*?)(?=^## |\Z)", re.S | re.M)
-SPLIT_SHAPE = re.compile(r"^\d+ repeat\(s\) x \d+ fold\(s\)")
 SPLIT_KEYS = (
     "n_repeats",
     "n_folds",
@@ -660,26 +659,28 @@ def _time_facts(split: dict, record_path: Path) -> None:
     )
 
 
-def _split(readme: str | None, tags: list[str], comments: str | None, basis_reason: str | None = None) -> dict | None:
+def _split(
+    readme: str | None,
+    tags: list[str],
+    comments: str | None,
+    basis_reason: str | None = None,
+    splits_comment: str | None = None,
+) -> dict | None:
     """The declared split, as the generated README states it.
 
     From the front matter: the regime, the stratification, time and group columns, the grouping, the repeats and
-    folds, the horizon and gap and the train and test sizes. From the Splits section: the definition's note on the
-    split, without the generated description that opens it (empty when the definition gives none), and the table of
-    splits (with the time windows of a temporal task). The ``Forced...`` data tags say that the regime was forced;
-    the definition's notes on the split say why.
+    folds, the horizon and gap, the train and test sizes and the definition's reason for the split
+    (``splits.reason``; a README written before that key falls back to the definition's ``splits_comment``). From
+    the Splits section: the table of splits (with the time windows of a temporal task). The ``Forced...`` data tags
+    say that the regime was forced; the definition's notes on the split say why.
     """
     front, body = _frontmatter(readme)
     task, sp = front.get("task") or {}, front.get("splits") or {}
     if not task.get("split_regime"):
         return None
-    note, table = "", ""
+    note = (sp["reason"] if "reason" in sp else clean_text(splits_comment)) or ""
     m = SPLITS_SECTION.search(body)
-    if m:
-        paras = [x.strip() for x in re.split(r"\n\s*\n", m.group(1)) if x.strip()]
-        at = next((i for i, x in enumerate(paras) if SPLIT_SHAPE.match(x)), len(paras))
-        note = splits_reason("\n\n".join(paras[:at]))
-        table = "\n".join(line for line in m.group(1).splitlines() if line.startswith("|"))
+    table = "\n".join(line for line in m.group(1).splitlines() if line.startswith("|")) if m else ""
     grouping = task.get("grouping") or {}
     return {
         "regime": REGIME.get(task["split_regime"], task["split_regime"]),
@@ -781,6 +782,7 @@ def _live_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
             list(cls.dataset_metadata.data_tags),
             cls.dataset_metadata.curation_comments,
             cls.time_basis.reason if cls.time_basis is not None else None,
+            cls.splits_comment,
         ),
         "temporal": _temporal_from_class(cls),
         "meta": _meta(regime, getattr(cls, "problem_type", None), front, retired=False),
@@ -815,6 +817,7 @@ def _retired_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
             readme,
             [*(_literal_from_source(code, "data_tags") or ()), *_declared_tags(code)] if code else [],
             _literal_from_source(code, "curation_comments") if code else None,
+            splits_comment=_literal_from_source(code, "splits_comment") if code else None,
         ),
         "meta": meta,
         "retiredCommit": _git(where.repo, "rev-parse", "--short", commit).stdout.strip(),

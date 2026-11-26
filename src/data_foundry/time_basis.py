@@ -15,19 +15,15 @@ import re
 from data_foundry.schema import (
     FORCED_TIME_TAGS,
     GROUP_BASIS_TAGS,
-    RENAMED_TAGS,
     TIME_BASIS_TAGS,
     GroupBasis,
     TimeBasis,
-    current_tag,
 )
 
 __all__ = ["GroupBasis", "TimeBasis"]
 
 BASIS_TAGS = (*TIME_BASIS_TAGS, *FORCED_TIME_TAGS)
-"""Every tag a :class:`TimeBasis` may carry: a use-case prototype or a forced tag; a split has one at most. A
-definition refuses an old name (:data:`~data_foundry.schema.RENAMED_TAGS`); a container built before the rename is read
-with its new one."""
+"""Every tag a :class:`TimeBasis` may carry: a use-case prototype or a forced tag; a split has one at most."""
 
 HUMAN_SET_TIME_TAGS = ("StationaryRelation", "AssumedStationaryRelation")
 """Prototypes only a person sets (SPLIT-32): an AI may offer one with the facts for and against (for
@@ -86,9 +82,7 @@ def declaration_problems(basis: TimeBasis | GroupBasis) -> list[str]:
     found = [] if " ".join((basis.reason or "").split()) else ["the reason is empty"]
     if isinstance(basis, GroupBasis):
         return found + _attribution_problems(basis.set_by, basis.on)
-    if basis.tag in RENAMED_TAGS:
-        found.insert(0, f"`{basis.tag}` is the old name of `{RENAMED_TAGS[basis.tag]}`: declare that one")
-    elif current_tag(basis.tag) not in BASIS_TAGS:
+    if basis.tag not in BASIS_TAGS:
         found.insert(0, f"`{basis.tag}` is no time basis; one of {list(BASIS_TAGS)}")
     found += _attribution_problems(basis.set_by, basis.on)
     if basis.tag in HUMAN_SET_TIME_TAGS:
@@ -101,12 +95,12 @@ def declaration_problems(basis: TimeBasis | GroupBasis) -> list[str]:
 
 def line(basis: TimeBasis | GroupBasis) -> str:
     """The sentence a README shows for a basis: ``Time basis: <tag> (<person>, <date>; <note>): <reason>``, or
-    ``Group basis: <reason>``.
+    ``Group basis: <tag> (<person>, <date>): <reason>``.
     """
     reason = " ".join(basis.reason.split())
     if isinstance(basis, GroupBasis):
         attribution = f" ({basis.set_by}, {basis.on})" if basis.set_by or basis.on else ""
-        return f"Group basis{attribution}: {reason}"
+        return f"Group basis: {basis.tag}{attribution}: {reason}"
     parts = [f"{basis.set_by}, {basis.on}"] if basis.set_by or basis.on else []
     parts += [" ".join(basis.note.split())] if basis.note else []
     attribution = f" ({'; '.join(parts)})" if parts else ""
@@ -135,14 +129,9 @@ def problems(
         temporal: Whether the split is temporal.
         grouped: Whether the split holds out groups (a ``grouping``).
     """
-    basis = [current_tag(t) for t in dict.fromkeys(tags) if current_tag(t) in BASIS_TAGS]
+    basis = [t for t in dict.fromkeys(tags) if t in BASIS_TAGS]
     group = [t for t in dict.fromkeys(tags) if t in GROUP_BASIS_TAGS]
-    found = [
-        ("meta_time_basis_renamed", "info", f"`{old}` is the old name of `{new}`: declare `TimeBasis({new!r}, ...)`.")
-        for old, new in RENAMED_TAGS.items()
-        if old in tags
-    ]
-    found += _split_problems(basis, group, temporal=temporal, grouped=grouped)
+    found = _split_problems(basis, group, temporal=temporal, grouped=grouped)
     found += _field_problems(basis, group, time_basis, group_basis)
     if not temporal and not basis and time_basis is None:
         message = "The split is not temporal and the definition does not say why."
@@ -176,7 +165,7 @@ def _field_problems(
     group basis for ``ForcedIIDFromGrouped``.
     """
     found = []
-    tag = current_tag(time_basis.tag) if time_basis is not None else None
+    tag = time_basis.tag if time_basis is not None else None
     if tag is not None and tag not in basis:
         message = f"The time basis names `{tag}`, but `data_tags` carry {basis or 'no time basis'}."
         found.append(("meta_time_basis_mismatch", "error", message))

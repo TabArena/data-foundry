@@ -456,7 +456,7 @@ def _define(**attrs: object) -> type[AbstractCuratedDataset]:
             },
             "marks an IID split",
         ),
-        ({"data_tags": ("Retrospective",)}, "declare (it|the time basis) as `time_basis = TimeBasis"),
+        ({"data_tags": ("RetrospectiveFillIn",)}, "declare (it|the time basis) as `time_basis = TimeBasis"),
         (
             {"time_basis": TimeBasis("RetrospectiveFillIn", "x"), "data_tags": ("ForcedIIDFromTemporal",)},
             "drop `ForcedIIDFromTemporal` from `data_tags`",
@@ -473,7 +473,6 @@ def _define(**attrs: object) -> type[AbstractCuratedDataset]:
             "this split is temporal",
         ),
         ({"time_basis": "RetrospectiveFillIn"}, "must be a `TimeBasis"),
-        ({"time_basis": TimeBasis("Retrospective", "x")}, "is the old name of `RetrospectiveFillIn`"),
         ({"time_basis": TimeBasis("DelayedTarget", "x")}, "is no time basis"),
         ({"time_basis": TimeBasis("Timeless", "x", set_by="Lennart")}, "go together"),
         ({"time_basis": TimeBasis("Timeless", "x", set_by="Lennart", on="2026-13-01")}, "is not a date"),
@@ -2053,7 +2052,9 @@ def test_the_readme_line_of_a_time_basis() -> None:
         "Time basis: StationaryRelation (Andrej, 2026-11-20; `ForcedIIDFromTemporal` before): the stationary"
     )
     assert basis_rules.line(TimeBasis("Timeless", "a fixed\n property.")) == "Time basis: Timeless: a fixed property."
-    assert basis_rules.line(GroupBasis("no structure.")) == "Group basis: no structure."
+    assert basis_rules.line(GroupBasis("no structure.")) == "Group basis: ForcedIIDFromGrouped: no structure."
+    attributed = GroupBasis("no structure.", set_by="Andrej", on="2026-11-16")
+    assert basis_rules.line(attributed) == "Group basis: ForcedIIDFromGrouped (Andrej, 2026-11-16): no structure."
 
 
 def test_a_group_basis_sits_beside_the_time_basis() -> None:
@@ -2297,7 +2298,8 @@ def test_the_readme_shows_the_time_basis_under_the_curation_notes() -> None:
     assert _curation_notes_section(result) == [
         "## Curation notes",
         "",
-        "- Read the CSV.\n- Time basis: Timeless: a property of the molecule.\n- Group basis: no structure.",
+        "- Read the CSV.\n- Time basis: Timeless: a property of the molecule.\n"
+        "- Group basis: ForcedIIDFromGrouped: no structure.",
         "",
     ]
     plain = SimpleNamespace(container=SimpleNamespace(dataset_metadata=_define().dataset_metadata))

@@ -44,8 +44,7 @@ the preprocessing recipe, the splits, the checks and how decisions are recorded)
   <reason>` bullet under the curation notes. The tag is a use-case prototype, `"Timeless"` (the target is a fixed
   property of the item, and the data has no time dimension, or its time changes only which items are held, as in a
   catalogue whose entry date does not decide the split), `"RetrospectiveFillIn"` (the data is one snapshot of a moment
-  or period, and the use case fills in what is missing for that time, not a later one; a definition refuses the old name
-  `"Retrospective"`, which containers built before 2026-11-23 carry and are read with), `"StationaryRelation"` (the use
+  or period, and the use case fills in what is missing for that time, not a later one), `"StationaryRelation"` (the use
   case scores later units, too few periods give the windows SPLIT-14 asks for, and the stationary-relation test over the
   periods held, dated or a rebuilt order, reads the relation flat; it replaces a forced tag) or `"UnseenGroup"` (the use
   case aims at groups the data does not hold, a site, a well, a protein or a chemical family, not at a later period; it
@@ -231,7 +230,8 @@ the preprocessing recipe, the splits, the checks and how decisions are recorded)
   `howpublished = {\url{...}}` and `note = {Kaggle dataset}`. Balance every brace and escape `&`, `%`, `#`, `_` in
   typeset fields; the bundle checks catch broken entries and a key that does not match.
 * The task attributes: IID needs nothing beyond `target` and `problem_type` (set `stratify_on = None` only with a
-  reason). Temporal: `temporal = Temporal(on=..., splits=TemporalSplits(...))`. Grouped: `grouping = Grouping(...)`.
+  reason). Temporal: `temporal = Temporal(on=..., splits=TemporalSplits(...))`. Grouped: `grouping = Grouping(...)`,
+  and for few groups that are each a deployment `grouped_splits = GroupedSplits(kind="leave_one_group_out")`.
   A task is grouped or temporal, never both; an order inside groups is `Grouping(time_on=...)`.
 * `special_features = (...)`: the model inputs that need handling beyond their dtype, declared like the target
   (`data_foundry.special`). Each entry is one special feature, in one of two layouts:

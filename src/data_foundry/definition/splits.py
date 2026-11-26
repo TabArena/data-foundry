@@ -4,7 +4,8 @@
   size of the train side in units: the groups of ``per_group`` labels, else the scored units (the metric's ``group``
   input) when all rows of each are in one group of the split, else the rows
   (:func:`~data_foundry.checks.protocol.recommended_dimensions`): 20, 10, 3 or 1, at any size of the frame, so every
-  IID or grouped task has at least 3 splits.
+  IID or grouped task has at least 3 splits. A grouped task whose few groups are each a deployment declares leave one
+  group out instead (:class:`GroupedSplits`).
 * Temporal data gets at least 3 expanding windows (:class:`TemporalSplits`).
 * Data Foundry sets no row budget: by default the splits use the full frame and no side is capped. A collection sets
   one (``row_budget = RowBudget(train=..., test=...)`` in a ``collection.py`` next to the dataset folders,
@@ -40,7 +41,7 @@ from data_foundry.sampling import (
     _sample_positions,
     _sampling_columns,
 )
-from data_foundry.schema import RowBudget, TimeOf, TimeUnit, as_column_list
+from data_foundry.schema import DatasetDefinitionError, RowBudget, TimeOf, TimeUnit, as_column_list
 from data_foundry.utils.optional import import_build_dependency
 
 if TYPE_CHECKING:
@@ -76,15 +77,21 @@ SampleBy = Literal["rows", "time"]
 """
 
 
-def leave_one_group_out_splits(df: pd.DataFrame, group_on: str) -> tuple[Splits, list[Any]]:
+def leave_one_group_out_splits(df: pd.DataFrame, group_on: str | list[str]) -> tuple[Splits, list[Any]]:
     """One repeat, one fold per group of ``group_on``: fold i tests on the i-th group and trains on all others.
 
-    The groups come in the order of the column's categories (a categorical or ordinal column: heart_disease's
-    hospitals, online_shoppers' months), else sorted. Returns the splits and the groups in fold order.
+    ``group_on`` is one column, or a list that holds one. The groups come in the order of the column's categories (a
+    categorical or ordinal column: heart_disease's hospitals, online_shoppers' months), else sorted. Returns the
+    splits and the groups in fold order.
     """
+    columns = as_column_list(group_on)
+    if len(columns) != 1:
+        msg = f"Leave one group out holds out the groups of one column, not {columns}."
+        raise ValueError(msg)
+    (column,) = columns
     _require_range_index(df)
-    _require_group_keys(df, group_on)
-    values = df[group_on]
+    _require_group_keys(df, column)
+    values = df[column]
     if isinstance(values.dtype, pd.CategoricalDtype):
         present = set(values.dropna().unique())
         groups = [c for c in values.cat.categories if c in present]
@@ -93,6 +100,49 @@ def leave_one_group_out_splits(df: pd.DataFrame, group_on: str) -> tuple[Splits,
     keys = values.to_numpy()
     folds = {i: (np.flatnonzero(keys != g).tolist(), np.flatnonzero(keys == g).tolist()) for i, g in enumerate(groups)}
     return {0: folds}, groups
+
+
+GroupedSplitKind = Literal["leave_one_group_out"]
+"""How :class:`GroupedSplits` holds out the groups.
+
+* ``"leave_one_group_out"``: one repeat, fold i tests on the i-th group of ``grouping.on`` and trains on all the
+  others (:func:`leave_one_group_out_splits`).
+"""
+
+
+@dataclass(frozen=True)
+class GroupedSplits:
+    """How a grouped task's splits hold out its groups, when the protocol's repeated 3-fold cross-validation does not
+    fit; the grouped counterpart of :class:`TemporalSplits`.
+
+    Declared as ``grouped_splits = GroupedSplits(kind="leave_one_group_out")`` beside ``grouping`` in ``dataset.py``,
+    for a task whose few groups are each a deployment (heart_disease's three hospitals, online_shoppers' seven
+    months): repeats would draw the same folds again, so the protocol's split checks accept the one repeat.
+
+    Attributes:
+        kind: ``"leave_one_group_out"`` (:data:`GroupedSplitKind`): one repeat, one fold per group, in the order of
+            the group column's categories, else sorted.
+    """
+
+    kind: GroupedSplitKind
+
+    def __post_init__(self) -> None:
+        if self.kind != "leave_one_group_out":
+            msg = f"GroupedSplits.kind={self.kind!r} is not one of ('leave_one_group_out',)."
+            raise ValueError(msg)
+
+    def splits(self, df: pd.DataFrame, group_on: str | list[str]) -> tuple[Splits, list[Any]]:
+        """The splits on ``df`` and the groups in fold order."""
+        return leave_one_group_out_splits(df, group_on)
+
+    @staticmethod
+    def describe(group_on: str | list[str], groups: list[Any]) -> str:
+        """The generated description of the splits."""
+        (column,) = as_column_list(group_on)
+        return (
+            f"Leave one group out: one repeat of {len(groups)} folds, fold i testing the i-th group of `{column}` "
+            f"({', '.join(str(g) for g in groups)}) and training on all the others."
+        )
 
 
 # --- cross-validation -----------------------------------------------------------------------------------------
@@ -519,9 +569,7 @@ class Temporal:
         ``exclude_test_entities_on``. The frame keeps its columns: the caller drops :attr:`split_columns`.
         """
         bounds = self.splits.bounds(df, self.on)
-        known = None
-        if self.label_known_on is not None:
-            known = self.label_known_on(df) if callable(self.label_known_on) else df[self.label_known_on]
+        known = self.label_known_times(df)
         entities = df[self.exclude_test_entities_on] if self.exclude_test_entities_on is not None else None
         times = df[self.on]
         splits: Splits = {}
@@ -537,6 +585,29 @@ class Temporal:
                 train = train[~entities.iloc[train].isin(tested).to_numpy()]
             splits[i] = {0: (train.tolist(), test.tolist())}
         return splits
+
+    def label_known_times(self, df: pd.DataFrame) -> pd.Series | None:
+        """When each row's label became known (``label_known_on``), None without it.
+
+        Raises:
+            DatasetDefinitionError: The times and the time column ``on`` are not both dates of one time zone (or both
+                not dates), so they cannot be compared.
+        """
+        known = self.label_known_on
+        if known is None:
+            return None
+        times = known(df) if callable(known) else df[known]
+        name = f"`{known}`" if isinstance(known, str) else f"`{getattr(known, '__name__', 'label_known_on')}`"
+        on = df[self.on]
+        dated = [pd.api.types.is_datetime64_any_dtype(s) for s in (on, times)]
+        zones = [getattr(s.dtype, "tz", None) for s in (on, times)]
+        if dated[0] != dated[1] or str(zones[0]) != str(zones[1]):
+            msg = (
+                f"Temporal: `label_known_on` {name} ({times.dtype}) and the time column `{self.on}` ({on.dtype}) "
+                "cannot be compared: give both as dates of one time zone (or both without one)."
+            )
+            raise DatasetDefinitionError(msg)
+        return times
 
     def describe_train_filters(self) -> str:
         """The generated sentence on the train filters, empty without any."""

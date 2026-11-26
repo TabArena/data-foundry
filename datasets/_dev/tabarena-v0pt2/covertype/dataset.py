@@ -124,12 +124,14 @@ class Covertype(AbstractCuratedDataset):
     )
     group_basis = GroupBasis(
         """
-        ForcedIIDFromGrouped (Andrej, 2026-11-16): the use case maps land with no inventory, which comes
+        the use case maps land with no inventory, which comes
         as whole stands of 20 to 900 cells; the data has no stand id or coordinates, and its four wilderness areas
         are too few groups (see above), so the split is random. Overlap left: a random test cell usually has cells
         of its own stand in training, so the score is optimistic for unmapped tracts. Not measured: how much of the
         score comes from recognising stands through the terrain and distance features (SPLIT-25).
         """,
+        set_by="Andrej",
+        on="2026-11-16",
     )
 
     # Task

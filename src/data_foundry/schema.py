@@ -107,8 +107,6 @@ DataTags = Literal[
     # the samples arise over time in the use case, but the data is one snapshot of a moment or period, and the use case
     #   looks back: it fills in what is missing for the time the snapshot covers, not a later time
     "RetrospectiveFillIn",
-    # the old name of RetrospectiveFillIn, which containers built before the rename carry (RENAMED_TAGS)
-    "Retrospective",
     # the use case scores later units, the stationary-relation test on dated data reads the relation flat, and a person
     #   signed off the measurement; never set by an AI on its own (data_foundry.time_basis.HUMAN_SET_TIME_TAGS)
     "StationaryRelation",
@@ -141,16 +139,6 @@ TIME_BASIS_TAGS = (
     "UnseenGroup",
 )
 """The use-case prototypes that justify a split that is not temporal (SPLIT-32)."""
-
-RENAMED_TAGS = {"Retrospective": "RetrospectiveFillIn"}
-"""Old names of time-basis tags and their new ones. A definition refuses an old name; a container built before the
-rename still carries it and is read with its new one, and `dataset check` notes it (``meta_time_basis_renamed``)."""
-
-
-def current_tag(tag: str) -> str:
-    """The tag's current name: ``tag`` itself, or the new name of a renamed tag (:data:`RENAMED_TAGS`)."""
-    return RENAMED_TAGS.get(tag, tag)
-
 
 FORCED_TIME_TAGS = ("ForcedIIDFromTemporal", "ForcedGroupedFromTemporal")
 """The forced splits of a forward use case without usable time (SPLIT-8)."""

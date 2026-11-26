@@ -34,7 +34,14 @@ from data_foundry.definition.preprocessing import (
 )
 from data_foundry.definition.registry import discover_datasets, get_dataset, load_definition
 from data_foundry.definition.report import read_report
-from data_foundry.definition.splits import SplitPlan, Splits, Temporal, TemporalSplits, window_bounds
+from data_foundry.definition.splits import (
+    GroupedSplits,
+    SplitPlan,
+    Splits,
+    Temporal,
+    TemporalSplits,
+    window_bounds,
+)
 from data_foundry.definition.windows import Window, candidate_windows, window_stats
 from data_foundry.definition.workbench import workbench
 from data_foundry.encodings import Encoding
@@ -74,6 +81,7 @@ __all__ = [
     "Encoding",
     "FeatureTypes",
     "GroupBasis",
+    "GroupedSplits",
     "Grouping",
     "Metric",
     "NonFeature",

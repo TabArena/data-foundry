@@ -3,7 +3,7 @@
 * ``TemporalSplits(window=None, cutoffs=...)``: windows of unequal length, each running to the next start;
 * ``Temporal(label_known_on=...)``: a train side keeps the rows whose label was known before its window;
 * ``Temporal(exclude_test_entities_on=...)``: a train side keeps no row of an entity its window tests;
-* ``leave_one_group_out = True``: one fold per group;
+* ``grouped_splits = GroupedSplits(kind="leave_one_group_out")``: one fold per group, which the split checks accept;
 * the splits comment: the generated description, then the definition's ``splits_comment``.
 """
 
@@ -15,14 +15,16 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from data_foundry.checks.protocol import is_leave_one_group_out
 from data_foundry.definition import (
     DatasetDefinitionError,
+    GroupedSplits,
     Temporal,
     TemporalSplits,
     get_dataset,
-    splits as protocol,
 )
-from data_foundry.definition.dataset import splits_reason
+from data_foundry.definition.report import read_report
+from data_foundry.definition.splits import leave_one_group_out_splits
 from data_foundry.schema import DATA_FOUNDRY_WAREHOUSE_ENV
 from tests.test_v2_dataset import (
     DEFINITION,
@@ -113,13 +115,27 @@ def test_exclude_test_entities_on_drops_the_tested_entities_from_training() -> N
     temporal = Temporal(
         on="t", splits=TemporalSplits(window=5, unit="days", n_windows=3), exclude_test_entities_on="key"
     )
-    for folds in temporal.window_splits(df).values():
-        train, test = folds[0]
+    for folds, all_folds in zip(
+        temporal.window_splits(df).values(), temporal.splits.splits(df, "t").values(), strict=True
+    ):
+        (train, test), (all_train, _) = folds[0], all_folds[0]
         tested = set(df["key"].iloc[test].dropna())
-        assert not tested & set(df["key"].iloc[train].dropna())
-        assert df["key"].iloc[train].isna().sum() > 0  # a missing key matches nothing and keeps training
+        assert tested  # the window tests entities, so the filter has something to drop
+        # every earlier row whose key the window does not test, a missing key included (it matches nothing)
+        assert set(train) == {i for i in all_train if df["key"].iloc[i] not in tested}
+        assert df["key"].iloc[train].isna().sum() > 0
     sentence = temporal.describe_train_filters()
     assert sentence == " Each train side keeps no row of an entity of `key` that its window tests."
+
+
+@pytest.mark.parametrize("zones", [("UTC", None), (None, "UTC"), ("UTC", "Europe/Berlin")])
+def test_label_known_on_needs_the_time_zone_of_the_time_column(zones: tuple) -> None:
+    on_zone, known_zone = zones
+    df = pd.DataFrame({"t": DAILY["t"].dt.tz_localize(on_zone)})
+    df["known"] = (DAILY["t"] + pd.Timedelta(days=1)).dt.tz_localize(known_zone)
+    temporal = Temporal(on="t", splits=TemporalSplits(window=5, unit="days", n_windows=3), label_known_on="known")
+    with pytest.raises(DatasetDefinitionError, match=r"`label_known_on` `known` .* the time column `t` .*cannot be"):
+        temporal.window_splits(df)
 
 
 @pytest.mark.parametrize(
@@ -145,7 +161,7 @@ def test_a_definition_drops_its_split_columns_after_the_split(tmp_path: Path, wa
     ).replace(
         '        return drop_columns(df, ["row_id"])',
         '        df["known"] = df["t"] + pd.to_timedelta(df["row_id"] % 9, unit="D")\n'
-        '        df["key"] = df["row_id"] % 40\n'
+        '        df["key"] = df["row_id"] % 400\n'
         '        return drop_columns(df, ["row_id"])',
     )
     write_definition(tmp_path / "datasets", body=body)
@@ -153,11 +169,14 @@ def test_a_definition_drops_its_split_columns_after_the_split(tmp_path: Path, wa
     assert {"known", "key"} <= set(ds.df.columns)
     plan = ds.make_splits()
     assert not {"known", "key"} & set(plan.df.columns)  # split inputs only, never model inputs
-    for folds in plan.splits.values():
-        train, test = folds[0]
-        start = ds.df["t"].iloc[test].min()
-        assert (ds.df["known"].iloc[train] < start).all()
-        assert not set(ds.df["key"].iloc[train]) & set(ds.df["key"].iloc[test])
+    frame = ds.df
+    for folds, all_folds in zip(plan.splits.values(), ds.temporal.splits.splits(frame, "t").values(), strict=True):
+        (train, test), (all_train, _) = folds[0], all_folds[0]
+        start = frame["t"].iloc[test].min()
+        tested = set(frame["key"].iloc[test])
+        expected = {i for i in all_train if frame["known"].iloc[i] < start and frame["key"].iloc[i] not in tested}
+        assert expected  # a train side the filters leave rows in
+        assert set(train) == expected
     assert "Each train side keeps only the rows whose label was known (by `known`) before its window starts" in (
         plan.comment
     )
@@ -168,14 +187,14 @@ GROUPED = (
     '    grouping = Grouping(on="site", labels="per_sample", definition="""\n'
     "        One group is a toy site.\n"
     '    """)\n'
-    "    leave_one_group_out = True\n"
+    '    grouped_splits = GroupedSplits(kind="leave_one_group_out")\n'
 )
 
 
 def grouped_body(extra: str = GROUPED) -> str:
     return (
         DEFINITION.format(name="toy_ds", comment="Toy data.")
-        .replace(IMPORTS, IMPORTS.replace("Metric,", "Grouping, Metric,"))
+        .replace(IMPORTS, IMPORTS.replace("Metric,", "GroupedSplits, Grouping, Metric,"))
         .replace('    target = "y"\n', f'{extra}    target = "y"\n')
         .replace(
             '        return drop_columns(df, ["row_id"])',
@@ -188,9 +207,10 @@ def grouped_body(extra: str = GROUPED) -> str:
     )
 
 
-def test_leave_one_group_out_tests_each_group_once_in_category_order(tmp_path: Path, warehouse: Path) -> None:
+@pytest.mark.parametrize("on", ['"site"', '["site"]'])
+def test_leave_one_group_out_tests_each_group_once_in_category_order(tmp_path: Path, warehouse: Path, on: str) -> None:
     del warehouse
-    write_definition(tmp_path / "datasets", body=grouped_body())
+    write_definition(tmp_path / "datasets", body=grouped_body(GROUPED.replace('on="site"', f"on={on}")))
     ds = get_dataset(tmp_path / "datasets", "toy_ds")
     plan = ds.make_splits()
     site = plan.df["site"].astype(str)
@@ -202,23 +222,54 @@ def test_leave_one_group_out_tests_each_group_once_in_category_order(tmp_path: P
     ]
     for train, test in plan.splits[0].values():
         assert len(train) + len(test) == len(plan.df)
-    assert plan.comment.startswith("Leave one group out: one repeat of 3 folds")
+    opening = "Leave one group out: one repeat of 3 folds, fold i testing the i-th group of `site` "
+    assert plan.comment.startswith(opening)
     assert "(south, north, east)" in plan.comment
 
 
-def test_leave_one_group_out_needs_a_grouping() -> None:
-    body = DEFINITION.format(name="toy_logo", comment="x").replace(
-        '    target = "y"\n', '    leave_one_group_out = True\n    target = "y"\n'
+def test_the_split_checks_accept_a_declared_leave_one_group_out(tmp_path: Path, warehouse: Path) -> None:
+    """One repeat of one fold per group is the declared pattern: no `splits_dimensions_off_protocol` to accept."""
+    del warehouse
+    write_definition(tmp_path / "datasets", body=grouped_body())
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(write_report=False, verbose=False)
+    assert "splits_dimensions_off_protocol" not in result.bundle_report.slugs
+    splits = result.container.experiment_metadata.splits
+    frame = result.container.dataset
+    assert is_leave_one_group_out(frame, splits, "site")
+    one_fold_short = {0: dict(list(splits[0].items())[:2])}
+    assert not is_leave_one_group_out(frame, one_fold_short, "site")  # a group never tested
+    halves = {0: {0: (list(range(300)), list(range(300, 600))), 1: (list(range(300, 600)), list(range(300)))}}
+    assert not is_leave_one_group_out(frame, halves, "site")  # a test side of several groups
+
+
+@pytest.mark.parametrize(
+    ("extra", "message"),
+    [
+        ('    grouped_splits = GroupedSplits(kind="leave_one_group_out")\n', "declare `grouping = Grouping"),
+        ('    grouped_splits = "leave_one_group_out"\n', "must be a `GroupedSplits"),
+    ],
+)
+def test_grouped_splits_need_a_grouping_and_their_declaration(extra: str, message: str) -> None:
+    body = (
+        DEFINITION.format(name="toy_logo", comment="x")
+        .replace(IMPORTS, IMPORTS.replace("Metric,", "GroupedSplits, Metric,"))
+        .replace('    target = "y"\n', f'{extra}    target = "y"\n')
     )
-    with pytest.raises(DatasetDefinitionError, match="leave_one_group_out"):
+    with pytest.raises(DatasetDefinitionError, match=message):
         load_definition_from_text(body, "toy_logo")
+
+
+def test_grouped_splits_know_one_kind() -> None:
+    with pytest.raises(ValueError, match="is not one of"):
+        GroupedSplits(kind="leave_two_out")
 
 
 def test_leave_one_group_out_splits_sort_plain_values() -> None:
     df = pd.DataFrame({"g": ["b", "a", "c", "a"]})
-    splits, groups = protocol.leave_one_group_out_splits(df, "g")
+    splits, groups = leave_one_group_out_splits(df, "g")
     assert groups == ["a", "b", "c"]
     assert splits[0][0] == ([0, 2], [1, 3])
+    assert leave_one_group_out_splits(df, ["g"]) == (splits, groups)  # a one-column list is the column
 
 
 # --- the splits comment -----------------------------------------------------------------------------------------------
@@ -227,13 +278,15 @@ def test_the_splits_comment_is_the_description_then_the_reason(tmp_path: Path, w
     body = temporal_version_body("toy_ds").replace(
         '    target = "y"\n', '    splits_comment = "A weekly refit, as the source does."\n    target = "y"\n'
     )
-    write_definition(tmp_path / "datasets", body=body)
-    comment = get_dataset(tmp_path / "datasets", "toy_ds").make_splits().comment
+    folder = write_definition(tmp_path / "datasets", body=body)
+    ds = get_dataset(tmp_path / "datasets", "toy_ds")
+    comment = ds.make_splits().comment
     description, reason = comment.split("\n\n")
     assert description.startswith("Expanding-window temporal splits: 3 test window(s) of 5 days")
     assert "The test windows by `t`, as listed: 2024-01-26 to 2024-01-30 (100 test, 500 train rows);" in description
     assert reason == "A weekly refit, as the source does."
-    assert splits_reason(comment) == reason
+    ds.check(verbose=False)
+    assert read_report(folder / "README.md")["splits"]["reason"] == reason  # the review page reads it from here
 
 
 def test_custom_splits_get_a_description_read_off_the_splits(tmp_path: Path, warehouse: Path) -> None:
@@ -249,16 +302,3 @@ def test_custom_splits_get_a_description_read_off_the_splits(tmp_path: Path, war
     write_definition(tmp_path / "datasets", body=body)
     comment = get_dataset(tmp_path / "datasets", "toy_ds").make_splits().comment
     assert comment == "Custom splits (`_make_splits`): 1 repeat(s) x 1 folds, 1 splits.\n\nHalf and half, on purpose."
-
-
-@pytest.mark.parametrize(
-    ("comment", "reason"),
-    [
-        ("Default splits.", ""),
-        ("Repeated 3-fold cross-validation over the rows: 3 repeat(s) x 3 folds.", ""),
-        ("Leave one group out: one repeat of 3 folds.\n\nThree hospitals.\n\nMore.", "Three hospitals.\n\nMore."),
-        ("A hand-written comment of a README built before.", "A hand-written comment of a README built before."),
-    ],
-)
-def test_splits_reason_drops_the_generated_description(comment: str, reason: str) -> None:
-    assert splits_reason(comment) == reason

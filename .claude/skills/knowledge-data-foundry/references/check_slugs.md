@@ -180,7 +180,6 @@ Errors a definition may accept:
 | `meta_time_basis_missing` | info | yes | The split is not temporal, and the definition does not say why (SPLIT-32). |
 | `meta_time_basis_on_temporal` | error | no | A time basis that says why a split is not temporal, on a temporal split. |
 | `meta_time_basis_regime` | error | no | The time basis tag contradicts the split's regime. |
-| `meta_time_basis_renamed` | info | yes | A time basis tag under its old name. |
 | `meta_time_basis_several` | error | no | `data_tags` carry more than one time basis. |
 | `meta_time_basis_unattributed` | error | no | A time basis only a person sets, without the person and date (SPLIT-32). |
 | `meta_time_gap_without_time_on` | error | no | `time_gap` is set on a task without a time column. |
@@ -211,4 +210,4 @@ Errors a definition may accept:
 |---|---|---|---|
 | `check_crashed` | error | no | A check raised an exception: a bug in the check or an unexpected bundle. |
 
-165 slugs; 96 can be errors, 61 warnings, 19 infos.
+164 slugs; 96 can be errors, 61 warnings, 18 infos.

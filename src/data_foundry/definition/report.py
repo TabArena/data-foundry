@@ -32,6 +32,7 @@ from data_foundry.definition.dataset import (
     CLI_COMMAND,
     DEFINITION_FILENAME,
     REPORT_FILENAME,
+    clean_text,
     provenance,
     raw_name,
     split_summary,
@@ -203,6 +204,8 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
             "time_horizon_unit": splits_meta.time_horizon_unit,
             "time_gap": splits_meta.time_gap,
             "time_gap_unit": splits_meta.time_gap_unit,
+            # the definition's `splits_comment`, without the generated description the splits comment opens with
+            "reason": clean_text(ds.splits_comment) or None,
             "n_train": {"min": int(sizes["n_train"].min()), "max": int(sizes["n_train"].max())},
             "n_test": {"min": int(sizes["n_test"].min()), "max": int(sizes["n_test"].max())},
             # only for a sub-sampled version, so every other README's front matter stays as it was

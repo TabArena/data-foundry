@@ -23,7 +23,6 @@ from markdown_it import MarkdownIt
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "src"))  # this checkout's reader, not an installed one
 from data_foundry.curation import split_tree as st
-from data_foundry.schema import current_tag
 
 MD = MarkdownIt("commonmark").enable("table")
 REPO = "https://github.com/TabArena/data-foundry/blob/main/.claude/skills/knowledge-curation/references/"
@@ -83,7 +82,7 @@ def checks_in(text: str) -> list[str]:
 def leaf_checks(leaf: st.Leaf) -> list[str]:
     """The checks a leaf takes: the gap rules under a temporal leaf, the same-time check under a fill-in leaf."""
     found = ["gap"] if leaf.family == "Temporal" else []
-    found += ["sametime"] if leaf.tag and current_tag(leaf.tag) == "RetrospectiveFillIn" else []
+    found += ["sametime"] if leaf.tag and leaf.tag == "RetrospectiveFillIn" else []
     return found + [k for k in checks_in(leaf.body) if k not in found]
 
 

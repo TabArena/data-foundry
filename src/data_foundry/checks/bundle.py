@@ -50,7 +50,7 @@ from data_foundry.checks.protocol import protocol_checks
 from data_foundry.checks.results import SEVERITY_ORDER, BundleCheckReport, CheckResult, run_guarded
 from data_foundry.curation_container import CuratedContainer, non_feature_columns
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
-from data_foundry.schema import TIME_BASIS_TAGS, as_column_list, current_tag, training_only_weight
+from data_foundry.schema import TIME_BASIS_TAGS, as_column_list, training_only_weight
 from data_foundry.utils.checksum import categorical_details
 from data_foundry.utils.dtypes import is_str_dtype, object_columns
 from data_foundry.v1 import DatasetMetadata, PredictiveMLTaskMetadata
@@ -2027,10 +2027,10 @@ def _check_time_basis(ctx: _Ctx) -> Iterator[CheckResult]:
         return
     meta = ctx.dataset_metadata
     tags = list(meta.data_tags)
-    time_basis, group_basis = getattr(meta, "time_basis", None), getattr(meta, "group_basis", None)
+    time_basis, group_basis = meta.time_basis, meta.group_basis
     task = ctx.container.task_metadata
     temporal = ctx.regime == "temporal_non_iid"
-    grouped = getattr(task, "grouping", None) is not None
+    grouped = task.grouping is not None
     for slug, severity, message in basis_rules.problems(
         tags, time_basis, group_basis, temporal=temporal, grouped=grouped
     ):
@@ -2038,7 +2038,7 @@ def _check_time_basis(ctx: _Ctx) -> Iterator[CheckResult]:
             yield CheckResult(slug, severity, message, hint=_TIME_BASIS_HINTS.get(slug))
     if temporal or ctx.df is None:
         return
-    prototypes = {current_tag(t) for t in tags} & set(TIME_BASIS_TAGS)
+    prototypes = set(tags) & set(TIME_BASIS_TAGS)
     explained = "RetrospectiveFillIn" in prototypes or (time_basis is not None and not prototypes)
     dated = [c for c in ctx.df.columns if c != ctx.target and pd.api.types.is_datetime64_any_dtype(ctx.df[c])]
     if dated and not explained:

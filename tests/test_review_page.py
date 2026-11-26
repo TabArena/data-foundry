@@ -548,7 +548,9 @@ def test_template_has_the_panel_tab_and_keeps_the_store():
 
 
 def test_split_from_the_readme_and_the_definition(rp):
-    """The split comes from the README's front matter and Splits section, the Forced tags and the split notes."""
+    """The split comes from the README's front matter (its reason too) and Splits section, the Forced tags and the
+    split notes; a README written before the reason key takes the definition's `splits_comment`.
+    """
     readme = """---
 task:
   split_regime: temporal_non_iid
@@ -564,11 +566,14 @@ splits:
   time_horizon_unit: days
   time_gap: 1
   time_gap_unit: days
+  reason: Six weeks ahead, as the competition asks.
   n_train: {min: 10, max: 20}
   n_test: {min: 5, max: 6}
 ---
 
 ## Splits
+
+Expanding-window temporal splits: 3 test window(s) of 42 days.
 
 Six weeks ahead, as the competition asks.
 
@@ -593,15 +598,13 @@ Six weeks ahead, as the competition asks.
     assert got["tableHtml"].count("<tr>") == 2
     assert got["notes"] == ["The split follows the competition's temporal test window."]
 
-    default = readme.replace("Six weeks ahead, as the competition asks.", "Default splits.")
-    assert rp._split(default, [], None)["noteHtml"] == ""  # a README built before the generated description
-    generated = "Expanding-window temporal splits: 1 test window(s) of 42 days, walking back from the newest data."
-    described = readme.replace("Six weeks ahead, as the competition asks.", generated)
-    assert rp._split(described, [], None)["noteHtml"] == ""  # the description alone: no reason given
-    both = readme.replace("Six weeks ahead, as the competition asks.", f"{generated}\n\nSix weeks ahead.")
-    note = rp._split(both, [], None)["noteHtml"]
+    assert "Expanding-window" not in got["noteHtml"]
+    no_reason = readme.replace("  reason: Six weeks ahead, as the competition asks.", "  reason: null")
+    assert rp._split(no_reason, [], None, splits_comment="ignored: the key says none")["noteHtml"] == ""
+    before_the_key = readme.replace("  reason: Six weeks ahead, as the competition asks.\n", "")
+    assert rp._split(before_the_key, [], None)["noteHtml"] == ""
+    note = rp._split(before_the_key, [], None, splits_comment="\n        Six weeks ahead.\n    ")["noteHtml"]
     assert "Six weeks ahead" in note
-    assert "Expanding-window" not in note
     assert rp._split("no front matter", [], None) is None
 
     code = 'class X:\n    data_tags = ("ForcedIIDFromTemporal",)\n    curation_comments = "- a split note"\n'

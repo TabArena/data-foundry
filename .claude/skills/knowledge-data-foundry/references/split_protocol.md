@@ -128,12 +128,13 @@ The protocol is the default, not a constraint on the task (SPLIT-1 in
 [splits.md](../../knowledge-curation/references/splits.md): the split mirrors the application).
 
 - **Other splits.** A definition whose task needs other folds or repeats declares them where it can
-  (`leave_one_group_out = True`; for windows, `TemporalSplits(window=None, cutoffs=...)`,
+  (`GroupedSplits(kind="leave_one_group_out")`; for windows, `TemporalSplits(window=None, cutoffs=...)`,
   `Temporal(label_known_on=...)` and `Temporal(exclude_test_entities_on=...)`, in
   [definitions.md](definitions.md#the-split-declarations)), else implements `_make_splits` (returning a `SplitPlan`);
   it says why in `splits_comment` and accepts the check `splits_dimensions_off_protocol` with that reason in
-  `accepted_check_warnings`. Precedent: heart_disease holds out one hospital at a time, 3 splits, since more repeats
-  would draw the same three folds again. Temporal windows are chosen per dataset anyway (`TemporalSplits`, SPLIT-15).
+  `accepted_check_warnings` (leave one group out needs no acceptance: the check knows the pattern). Precedent:
+  heart_disease holds out one hospital at a time, 3 splits, since more repeats would draw the same three folds
+  again. Temporal windows are chosen per dataset anyway (`TemporalSplits`, SPLIT-15).
 - **The splits comment.** The container and the README describe the splits from the code (the windows or folds, the
   repeats, the gap, the budget and the train sampling); the definition's `splits_comment` follows as the reason and
   never restates them ([definitions.md](definitions.md#the-splits-comment)).

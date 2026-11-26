@@ -308,9 +308,10 @@ set `splits_comment` only when there is a reason to give (a split that deliberat
 protocol, what a grouped test fold holds).
 
 A task whose few groups are each a deployment (heart_disease's three hospitals, online_shoppers' seven months)
-declares `leave_one_group_out = True` beside its `grouping`: one repeat, fold i tests the i-th group (in the order of
-the group column's categories, else sorted) and trains on all the others, since repeats would draw the same folds
-again. It accepts `splits_dimensions_off_protocol` with that reason.
+declares `grouped_splits = GroupedSplits(kind="leave_one_group_out")` beside its `grouping`: one repeat, fold i tests
+the i-th group (in the order of the group column's categories, else sorted) and trains on all the others, since
+repeats would draw the same folds again. The split checks know the pattern, so no `splits_dimensions_off_protocol` is
+accepted for it.
 
 ### Grouped: `Grouping`
 
@@ -450,7 +451,7 @@ comparison of positions in a review is not needed. Each replaced a custom split 
 * `Temporal(exclude_test_entities_on=...)`: each train side leaves out the rows of every entity key its window tests
   (a missing key matches nothing), an evaluation stand-in for an as-of filter on label dates the data do not have. The
   frame drops the key after the split.
-* `leave_one_group_out = True` (above, IID and grouped).
+* `GroupedSplits(kind="leave_one_group_out")` (above, IID and grouped).
 
 Still custom (2026-11-26), each for a reason none of these covers: windows computed from the data
 (african_credit_scoring_challenge, medical_facility_operational_data), a label known within the test year
@@ -470,9 +471,8 @@ task each window's times and sizes).
 So `splits_comment` holds only what the code cannot know: the use case the split simulates, why this length, these
 windows and this gap, the decisions and who made them (with the date and the quote), the measurements behind them and
 what the split does not test. Never restate the window dates or sizes, the fold or repeat counts, or the budget and
-sampling text. `None` leaves the description alone; a custom `_make_splits` needs a `splits_comment`.
-`data_foundry.definition.dataset.splits_reason(comment)` returns the reason without the description (the review page
-reads it).
+sampling text. `None` leaves the description alone; a custom `_make_splits` needs a `splits_comment`. The README's
+front matter holds the reason alone as `splits.reason` (the review page reads it).
 
 The number of windows aims at the splits an IID split of the data would get (`split_count`: 60, 30, 9 or 3 for two
 thirds of the scored units), never fewer than 3 and never a train side below half the data

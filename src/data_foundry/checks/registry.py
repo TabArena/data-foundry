@@ -532,7 +532,6 @@ _TABLE: tuple[tuple[str, tuple[Severity, ...], Stage, str], ...] = (
         "A time basis that says why a split is not temporal, on a temporal split.",
     ),
     ("meta_time_basis_regime", ("error",), "metadata", "The time basis tag contradicts the split's regime."),
-    ("meta_time_basis_renamed", ("info",), "metadata", "A time basis tag under its old name."),
     ("meta_time_basis_several", ("error",), "metadata", "`data_tags` carry more than one time basis."),
     (
         "meta_time_basis_unattributed",

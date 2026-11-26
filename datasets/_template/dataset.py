@@ -97,7 +97,8 @@ class ClassName(AbstractCuratedDataset):
     # unit, or unit="rows") is the horizon; windows of unit="unique" or window=None need `horizon=..., horizon_unit=...`.
     # Windows each running to the next start: `TemporalSplits(window=None, cutoffs=(...))`; train only on labels known
     # before a window: `Temporal(label_known_on=...)`; no training row of an entity a window tests:
-    # `Temporal(exclude_test_entities_on=...)`. A grouped task of few deployments: `leave_one_group_out = True`.
+    # `Temporal(exclude_test_entities_on=...)`. A grouped task of few deployments (import `GroupedSplits`):
+    # `grouped_splits = GroupedSplits(kind="leave_one_group_out")`.
     # temporal = Temporal(on="...", splits=TemporalSplits(window=7, unit="days", n_windows=3))
     # The code describes the splits (windows, sizes, folds, repeats, budget); `splits_comment` adds only the reason:
     # the use case, why this length and these windows, the decisions and who made them.

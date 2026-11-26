@@ -73,7 +73,14 @@ from data_foundry.definition.preprocessing import (
     order_positions,
     order_rows,
 )
-from data_foundry.definition.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, Temporal, TemporalSplits
+from data_foundry.definition.splits import (
+    SPLIT_RANDOM_STATE,
+    GroupedSplits,
+    SplitPlan,
+    Splits,
+    Temporal,
+    TemporalSplits,
+)
 from data_foundry.definition.windows import Window, candidate_windows, window_stats
 from data_foundry.metrics import Metric
 from data_foundry.schema import (
@@ -95,7 +102,6 @@ from data_foundry.schema import (
     TrainSampling,
     UnitWeight,
     as_column_list,
-    current_tag,
     resolve_warehouse_dir,
     rows_text,
 )
@@ -116,30 +122,6 @@ REPORT_FILENAME = "README.md"
 CLI_COMMAND = ".venv/bin/python -m data_foundry.curation.cli"
 """How the generated pages and messages spell the curation CLI: the repository's own environment, never an install
 that happens to be first on PATH."""
-
-GENERATED_SPLITS_OPENINGS = (
-    f"Repeated {protocol.N_FOLDS}-fold cross-validation ",
-    "Expanding-window temporal splits:",
-    "Leave one group out:",
-    "Custom splits (`_make_splits`):",
-    "Custom temporal splits (`_make_splits`):",
-)
-"""How the generated description of the splits opens: the first paragraph of every splits comment built since
-2026-11-26, followed by the definition's ``splits_comment``."""
-
-LEGACY_DEFAULT_SPLITS_COMMENT = "Default splits."
-"""The whole splits comment of the default splits before 2026-11-26, in containers and READMEs built then."""
-
-
-def splits_reason(comment: str | None) -> str:
-    """The definition's reason in a splits comment: the comment without its generated description (and without the
-    legacy ``"Default splits."``), empty when the definition gives none.
-    """
-    paragraphs = [p.strip() for p in re.split(r"\n\s*\n", (comment or "").strip()) if p.strip()]
-    if paragraphs and paragraphs[0].startswith(GENERATED_SPLITS_OPENINGS):
-        paragraphs = paragraphs[1:]
-    reason = "\n\n".join(paragraphs)
-    return "" if reason == LEGACY_DEFAULT_SPLITS_COMMENT else reason
 
 
 class _Auto:
@@ -494,12 +476,12 @@ class AbstractCuratedDataset(ABC):
     prediction point when there is one. Neither ``grouping`` nor ``temporal``: an IID task."""
 
     # --- splits -------------------------------------------------------------------------------------
-    leave_one_group_out: ClassVar[bool] = False
-    """Leave one group of ``grouping.on`` out: one repeat, fold i tests on the i-th group and trains on all others
-    (:func:`~data_foundry.definition.splits.leave_one_group_out_splits`; the groups in the order of the column's
-    categories, else sorted). For a task whose few groups are each a deployment (heart_disease's three hospitals,
-    online_shoppers' seven months), where repeats would draw the same folds again; accept
-    ``splits_dimensions_off_protocol`` with that reason."""
+    grouped_splits: ClassVar[GroupedSplits | None] = None
+    """How a grouped task holds out its groups when the protocol's repeated 3-fold cross-validation does not fit:
+    ``GroupedSplits(kind="leave_one_group_out")`` (:class:`~data_foundry.definition.splits.GroupedSplits`), one
+    repeat, fold i testing the i-th group of ``grouping.on`` (in the order of the column's categories, else sorted)
+    and training on all others. For a task whose few groups are each a deployment (heart_disease's three hospitals,
+    online_shoppers' seven months), where repeats would draw the same folds again. None: the protocol's splits."""
     splits_comment: ClassVar[str | None] = None
     """Why the splits are as they are: the use case they simulate, the choices and who made them. The container's
     splits comment is the generated description of the splits (the windows or folds, the repeats, the gap, the row
@@ -847,6 +829,8 @@ class AbstractCuratedDataset(ABC):
             if missing:
                 msg = f"{type(self).__name__}: `{attribute}` names {missing}, which `_clean` does not return."
                 raise DatasetDefinitionError(msg)
+        if self.temporal is not None and isinstance(self.temporal.label_known_on, str):
+            self.temporal.label_known_times(df)  # dates of one time zone, or the error names both columns
         for attribute in ("temporal.on", "grouping.on"):
             empty = [c for c in declared.get(attribute, []) if df[c].isna().any()]
             if empty:
@@ -999,13 +983,9 @@ class AbstractCuratedDataset(ABC):
         task = self.task_metadata
         temporal = task.time_on is not None
         budget = effective_row_budget(type(self))
-        if self.leave_one_group_out:
-            splits, groups = protocol.leave_one_group_out_splits(df, task.group_on)
-            comment = (
-                f"Leave one group out: one repeat of {len(groups)} folds, fold i testing the i-th group of "
-                f"`{task.group_on}` ({', '.join(str(g) for g in groups)}) and training on all the others."
-            )
-            return SplitPlan(splits=splits, comment=comment)
+        if self.grouped_splits is not None:
+            splits, groups = self.grouped_splits.splits(df, task.group_on)
+            return SplitPlan(splits=splits, comment=self.grouped_splits.describe(task.group_on, groups))
         if budget is None:
             if temporal:
                 splits, comment = self._window_splits(df)
@@ -1273,6 +1253,12 @@ class AbstractCuratedDataset(ABC):
         if declared is None and (window is None or unit is None):
             msg = (
                 f"{type(self).__name__}: the splits are custom (`_make_splits`); give the candidates' window and unit."
+            )
+            raise DatasetDefinitionError(msg)
+        if declared is not None and window is None and declared.window is None and declared.cutoffs is not None:
+            msg = (
+                f"{type(self).__name__}: the declared windows run from each cutoff to the next and have no single "
+                "length; give the candidates' window and unit."
             )
             raise DatasetDefinitionError(msg)
         # A declared window of None is derived from `n_windows` and the declared train fraction: the candidates take
@@ -1801,7 +1787,7 @@ def _validate_time_basis(cls: type[AbstractCuratedDataset], fail: Callable[[str]
             return
         for problem in basis_rules.declaration_problems(value) if value is not None else ():
             fail(f"`{name}`: {problem}.")
-    listed = [t for t in cls.data_tags if current_tag(t) in (*basis_rules.BASIS_TAGS, *GROUP_BASIS_TAGS)]
+    listed = [t for t in cls.data_tags if t in (*basis_rules.BASIS_TAGS, *GROUP_BASIS_TAGS)]
     handwritten = [
         kind
         for kind in ("Time", "Group")
@@ -2154,13 +2140,15 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         )
     if budget is not None and custom_splits:
         fail("the row budget is ignored when the class implements `_make_splits`; sample there instead.")
-    if cls.leave_one_group_out:
+    if cls.grouped_splits is not None:
+        if not isinstance(cls.grouped_splits, GroupedSplits):
+            fail(f"`grouped_splits` must be a `GroupedSplits(...)`, got {type(cls.grouped_splits).__name__}.")
         if cls.grouping is None or len(as_column_list(cls.grouping.on)) != 1:
-            fail("`leave_one_group_out` holds out the groups of one column: declare `grouping = Grouping(on=...)`.")
+            fail("`grouped_splits` holds out the groups of one column: declare `grouping = Grouping(on=...)`.")
         if custom_splits:
-            fail("`leave_one_group_out` is ignored when the class implements `_make_splits`; declare one of them.")
+            fail("`grouped_splits` is ignored when the class implements `_make_splits`; declare one of them.")
         if budget is not None:
-            fail("`leave_one_group_out` takes no row budget: its folds are the groups.")
+            fail("`grouped_splits` takes no row budget: its folds are the groups.")
     if cls.prepared_raw_files and cls._prepare_raw_files is AbstractCuratedDataset._prepare_raw_files:
         fail("`prepared_raw_files` is set but `_prepare_raw_files` is not implemented.")
 

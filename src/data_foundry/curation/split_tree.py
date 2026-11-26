@@ -22,7 +22,7 @@ from pathlib import Path
 
 from data_foundry.curation._paths import skills_dir
 from data_foundry.curation.consistency import COLLECTION_TYPES
-from data_foundry.schema import FORCED_TIME_TAGS, GROUP_BASIS_TAGS, TIME_BASIS_TAGS, current_tag
+from data_foundry.schema import FORCED_TIME_TAGS, GROUP_BASIS_TAGS, TIME_BASIS_TAGS
 
 TREE_FILE = "knowledge-curation/references/split_tree.md"
 """The tree, relative to the skills directory."""
@@ -325,6 +325,6 @@ def placement_problems(leaf: Leaf | None, leaf_id: str, split: str, tags: set[st
     found = []
     if split != family:
         found.append(f"{leaf_id} is a {family} split, the definition ships a {split} one")
-    if leaf.tag and leaf.tag not in {current_tag(t) for t in tags}:
+    if leaf.tag and leaf.tag not in tags:
         found.append(f"{leaf_id} carries `{leaf.tag}`, the definition {sorted(tags) or 'none'}")
     return found

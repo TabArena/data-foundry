@@ -673,7 +673,11 @@ def test_forced_iid_tag_on_an_iid_task_is_not_flagged():
 
 
 def make_basis_container(metadata: DatasetMetadata, *, df: pd.DataFrame | None = None, temporal: bool = False):
-    """A format-2 container with ``metadata``'s tags and comments: the time basis check reads format 2 only."""
+    """A format-2 container with ``metadata``'s tags and comments: the time basis check reads format 2 only, so format-1
+    metadata becomes format-2 metadata with its tags.
+    """
+    if not isinstance(metadata, DatasetMetadataV2):
+        metadata = basis_metadata(list(metadata.data_tags))
     df = make_iid_frame() if df is None else df
     task = {}
     if temporal:
@@ -698,7 +702,7 @@ def test_a_forced_tag_answers_why_the_split_is_not_temporal():
 
 
 def test_a_time_basis_on_a_temporal_split_is_flagged():
-    metadata = make_dataset_metadata(data_tags=["Non-IID", "Temporal", "Retrospective"])
+    metadata = make_dataset_metadata(data_tags=["Non-IID", "Temporal", "RetrospectiveFillIn"])
     assert "meta_time_basis_on_temporal" in slugs_of(make_basis_container(metadata, temporal=True))
 
 
@@ -791,7 +795,7 @@ def _dated_frame() -> pd.DataFrame:
     ("tags", "basis", "noted"),
     [
         (["IID", "Timeless"], TimeBasis("Timeless", "a fixed property."), True),
-        (["IID", "Retrospective"], TimeBasis("Retrospective", "one scrape, prices of that day."), False),
+        (["IID", "RetrospectiveFillIn"], TimeBasis("RetrospectiveFillIn", "one scrape, prices of that day."), False),
         (
             ["IID", "ForcedIIDFromTemporal"],
             TimeBasis("ForcedIIDFromTemporal", "one mailing, too few periods; gifts dated before it."),
@@ -809,12 +813,21 @@ def test_date_columns_are_noted_unless_the_definition_says_why(tags, basis, note
 @pytest.mark.parametrize(
     ("tags", "basis", "slug", "severity"),
     [
-        (["IID"], TimeBasis("Retrospective", "one scrape."), "meta_time_basis_mismatch", "error"),
-        (["IID", "Timeless"], TimeBasis("Retrospective", "one scrape."), "meta_time_basis_mismatch", "error"),
-        (["IID", "Timeless", "Retrospective"], TimeBasis("Timeless", "a."), "meta_time_basis_several", "error"),
+        (["IID"], TimeBasis("RetrospectiveFillIn", "one scrape."), "meta_time_basis_mismatch", "error"),
+        (
+            ["IID", "Timeless"],
+            TimeBasis("RetrospectiveFillIn", "one scrape."),
+            "meta_time_basis_mismatch",
+            "error",
+        ),
+        (
+            ["IID", "Timeless", "RetrospectiveFillIn"],
+            TimeBasis("Timeless", "a."),
+            "meta_time_basis_several",
+            "error",
+        ),
         (["IID", "UnseenGroup"], TimeBasis("UnseenGroup", "a new hospital."), "meta_time_basis_regime", "error"),
         (["IID", "Timeless", "ForcedIIDFromGrouped"], TimeBasis("Timeless", "a."), "meta_group_basis_missing", "error"),
-        (["IID", "Retrospective"], TimeBasis("Retrospective", "one scrape."), "meta_time_basis_renamed", "info"),
     ],
 )
 def test_the_stored_time_basis_agrees_with_its_tag(tags, basis, slug, severity):
