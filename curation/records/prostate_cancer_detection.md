@@ -3,6 +3,7 @@ unique_name: prostate_cancer_detection
 name: NCI prostate cancer data
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena

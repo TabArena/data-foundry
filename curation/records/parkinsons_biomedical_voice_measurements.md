@@ -3,6 +3,7 @@ unique_name: parkinsons_biomedical_voice_measurements
 name: Parkinsons
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
