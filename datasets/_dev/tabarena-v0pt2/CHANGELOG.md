@@ -8,7 +8,18 @@
   changed their import lines; the nine SMILES definitions (apistox, drug_induced_autoimmunity_prediction,
   nci_aids_antiviral_screen and the six qsar_*) also name the encoder's new module in their notes. Nothing else of the
   metadata changed (compared on all 174). `data_foundry.v2` is gone: a definition on an open branch changes its
-  imports when it is rebased.
+  imports when it is rebased, by this table:
+
+  | Before | Now |
+  |---|---|
+  | `from data_foundry.v2 import ...` (the definition API) | `from data_foundry.definition import ...` |
+  | `data_foundry.v2.dataset`, `preprocessing`, `registry`, `report`, `splits`, `windows`, `workbench`, `cli` | `data_foundry.definition.<same name>` |
+  | `data_foundry.v2.metrics` (`scorer`, `score`, `Metric`) | `data_foundry.metrics` |
+  | `data_foundry.v2.splits.subsample_train`, `sample_train_positions` | `data_foundry.sampling` |
+  | `data_foundry.v2.special`, `chemistry`, `spectra` | `data_foundry.special`, `data_foundry.special.chemistry`, `data_foundry.special.spectra` |
+  | `data_foundry.v2.encodings` | `data_foundry.encodings` |
+  | `data_foundry.v2.task_checks`, `group_checks`; `bundle_checks`, `dataset_checks` | `data_foundry.checks.task`, `checks.groups`, `checks.bundle`, `checks.tables` |
+  | `data_foundry.schema.DatasetMetadata`, `PredictiveMLTaskMetadata` (format 1) | `data_foundry.v1` |
 
 ## 2026-11-25, the cross-dataset REVIEW.md removed; the benchmark hand-off rewritten (no container built)
 

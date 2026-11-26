@@ -6,15 +6,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from data_foundry.definition import (
-    Spectrum,
-    encode_special_feature,
-    encode_spectrum,
-    encodings_for,
-    spectrum_encoding,
-)
+from data_foundry.definition import Spectrum
 from data_foundry.encodings import recommended_encodings
-from data_foundry.special import SpecialFeatureError, spectra
+from data_foundry.special import SpecialFeatureError, encode_special_feature, encodings_for, spectra
 from data_foundry.special.spectra import (
     AS_IS_ENCODING,
     CROMWELL_FILTER,
@@ -24,7 +18,9 @@ from data_foundry.special.spectra import (
     VIBRATIONAL_ALS_SNV_ENCODING,
     VIBRATIONAL_SG1_ENCODING,
     VIBRATIONAL_SNV_ENCODING,
+    encode_spectrum,
     snip_baseline,
+    spectrum_encoding,
 )
 
 pytest.importorskip("scipy")

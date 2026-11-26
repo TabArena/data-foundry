@@ -31,30 +31,13 @@ from data_foundry.definition.preprocessing import (
     read_files,
     set_missing,
 )
-from data_foundry.definition.registry import (
-    discover_datasets,
-    get_dataset,
-    load_definition,
-)
+from data_foundry.definition.registry import discover_datasets, get_dataset, load_definition
 from data_foundry.definition.report import read_report
-from data_foundry.definition.splits import (
-    SplitPlan,
-    Splits,
-    Temporal,
-    TemporalSplits,
-    window_bounds,
-)
+from data_foundry.definition.splits import SplitPlan, Splits, Temporal, TemporalSplits, window_bounds
 from data_foundry.definition.windows import Window, candidate_windows, window_stats
 from data_foundry.definition.workbench import workbench
-from data_foundry.encodings import (
-    Encoding,
-    encode_datetime,
-    encode_text_e5,
-    encode_text_tfidf,
-    recommended_encodings,
-)
-from data_foundry.metrics import Metric, score, scorer
-from data_foundry.sampling import sample_train_positions, subsample_train
+from data_foundry.encodings import Encoding
+from data_foundry.metrics import Metric
 from data_foundry.schema import (
     Grouping,
     RawFile,
@@ -66,7 +49,7 @@ from data_foundry.schema import (
     TrainSampling,
     UnitWeight,
 )
-from data_foundry.special import SpecialColumn, SpecialColumnGroup, encode_special_feature, encodings_for
+from data_foundry.special import SpecialColumn, SpecialColumnGroup
 from data_foundry.special.chemistry import (
     DEFAULT_SMILES_ENCODING,
     Smiles,
@@ -77,7 +60,7 @@ from data_foundry.special.chemistry import (
     rdkit_descriptors,
     scaffold_groups,
 )
-from data_foundry.special.spectra import Spectrum, encode_spectrum, spectrum_encoding
+from data_foundry.special.spectra import Spectrum
 from data_foundry.time_basis import GroupBasis, TimeBasis
 from data_foundry.utils.dtypes import object_columns
 
@@ -121,13 +104,7 @@ __all__ = [
     "decode",
     "discover_datasets",
     "drop_columns",
-    "encode_datetime",
     "encode_smiles",
-    "encode_special_feature",
-    "encode_spectrum",
-    "encode_text_e5",
-    "encode_text_tfidf",
-    "encodings_for",
     "get_dataset",
     "invalid_smiles",
     "load_definition",
@@ -138,14 +115,8 @@ __all__ = [
     "rdkit_descriptors",
     "read_files",
     "read_report",
-    "recommended_encodings",
-    "sample_train_positions",
     "scaffold_groups",
-    "score",
-    "scorer",
     "set_missing",
-    "spectrum_encoding",
-    "subsample_train",
     "window_bounds",
     "window_stats",
     "workbench",

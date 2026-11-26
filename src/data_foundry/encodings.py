@@ -42,6 +42,8 @@ from typing import TYPE_CHECKING, Literal
 import numpy as np
 import pandas as pd
 
+from data_foundry.utils.optional import import_build_dependency
+
 if TYPE_CHECKING:
     from collections.abc import Callable
 
@@ -152,23 +154,12 @@ def recommended_encodings() -> dict[str, tuple[Encoding, ...]]:
     }
 
 
-def _optional(module: str, extra: str = "encodings"):
-    """Import ``module``, or say which extra installs it."""
-    import importlib  # noqa: PLC0415
-
-    try:
-        return importlib.import_module(module)
-    except ImportError as exc:
-        msg = f"This encoding needs `{module}`: install the `{extra}` extra (`pip install data-foundry[{extra}]`)."
-        raise ImportError(msg) from exc
-
-
 def encode_datetime(values: pd.Series, *, prefix: str | None = None) -> pd.DataFrame:
     """A ``datetime`` column in the recommended encoding (:data:`DATETIME_ENCODING`), on the index of ``values``.
 
     The columns are skrub's, named ``<column>_<part>``; ``prefix`` replaces the column name in them.
     """
-    skrub = _optional("skrub")
+    skrub = import_build_dependency("skrub", extra="encodings")
     encoder = skrub.DatetimeEncoder(add_weekday=True, periodic_encoding="circular")
     name = values.name if values.name is not None else "datetime"
     out = encoder.fit_transform(values.rename(name))
@@ -244,7 +235,7 @@ def encode_text_e5(
     ``sentence_transformers.SentenceTransformer``; tests pass a stub).
     """
     if model_factory is None:
-        model_factory = _optional("sentence_transformers").SentenceTransformer
+        model_factory = import_build_dependency("sentence_transformers", extra="encodings").SentenceTransformer
     text = values.astype("string").fillna("")
     unique = pd.Index(pd.unique(text), dtype="object")
     model = model_factory(E5_MODEL)
