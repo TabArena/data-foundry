@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: fiat_500
 container_format: 2
-checksum: v2:c14e1c28c2fbfa64ab4845aa164a48da3b3e122536c9be9588ff8a15a65d84c3
+checksum: v2:8c9e2304d50b9028e790b6fccd8438e414af8394f2803a4e8103626896004556
 build:
-  uuid: 01a13a7d-c2b9-7b23-b0e5-6674aebfe128
-  checksum: v2:fc49148e6879f51937dde279b4bb33c5cd645dbee32afd580bccb977e6b1a6e6
-  built_at: '2026-10-14T12:58:02+00:00'
-  path: fiat_500/01a13a7d-c2b9-7b23-b0e5-6674aebfe128
+  uuid: 01a21800-fa01-7b37-bf7d-4d9eb166ecdc
+  checksum: v2:8c9e2304d50b9028e790b6fccd8438e414af8394f2803a4e8103626896004556
+  built_at: '2026-11-26T13:17:26+00:00'
+  path: fiat_500/01a21800-fa01-7b37-bf7d-4d9eb166ecdc
   data_foundry_version: 0.0.5
-  git_sha: f93df193827f5244586b178fd7199efb86d66359-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 1434
   n_features: 7
@@ -47,6 +47,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 956
     max: 956
@@ -57,8 +58,7 @@ bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos:
-  - meta_time_basis_renamed
+  infos: []
   accepted: {}
 decisions: []
 ---
@@ -69,7 +69,7 @@ decisions: []
 
 Regression of `price`, scored with `rmse` on IID splits. 1,434 rows and 7 features. Source: Kaggle (2020).
 
-Built as `01a13a7d-c2b9-7b23-b0e5-6674aebfe128` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:c14e1c28c2fbfa64ab4845aa164a48da3b3e122536c9be9588ff8a15a65d84c3`, so the build is stale. See [Build](#build).
+Built as `01a21800-fa01-7b37-bf7d-4d9eb166ecdc` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -193,7 +193,7 @@ We start with automobile_dot_it_used_fiat_500_in_Italy_dataset_filtered.csv from
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows: 10 repeat(s) x 3 folds, 30 splits, the repeats set by the 1,434 rows (SPLIT-33).
 
 10 repeat(s) x 3 fold(s) with seed 4267; train 956 rows, test 478 rows.
 
@@ -238,6 +238,7 @@ Default splits.
 ## Bundle checks
 
 0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
+
 
 ## Data checks
 
@@ -284,11 +285,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a13a7d-c2b9-7b23-b0e5-6674aebfe128 |
-| checksum | v2:fc49148e6879f51937dde279b4bb33c5cd645dbee32afd580bccb977e6b1a6e6 |
-| built_at | 2026-10-14T12:58:02+00:00 |
-| path | fiat_500/01a13a7d-c2b9-7b23-b0e5-6674aebfe128 |
+| uuid | 01a21800-fa01-7b37-bf7d-4d9eb166ecdc |
+| checksum | v2:8c9e2304d50b9028e790b6fccd8438e414af8394f2803a4e8103626896004556 |
+| built_at | 2026-11-26T13:17:26+00:00 |
+| path | fiat_500/01a21800-fa01-7b37-bf7d-4d9eb166ecdc |
 | data_foundry_version | 0.0.5 |
-| git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c14e1c28c2fbfa64ab4845aa164a48da3b3e122536c9be9588ff8a15a65d84c3` |

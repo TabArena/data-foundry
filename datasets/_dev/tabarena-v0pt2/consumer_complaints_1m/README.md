@@ -2,24 +2,24 @@
 report_format: data-foundry-report-v2
 unique_name: consumer_complaints_1m
 container_format: 2
-checksum: v2:883d5c8805fc4dd0b4ab3fff918abe0924f3d7b8b174947e8827605a7a797562
+checksum: v2:56836ef7f8abe260378a4a10fe3e2c974383d315e689f9c2b5c09341f0c704d9
 build:
-  uuid: 01a111fc-f194-75a8-92f0-489647625f28
-  checksum: v2:0c1e1969952d69bc2a754b301e0693a07c2b8ebb809fac7068f1c5cae353f45c
-  built_at: '2026-10-06T16:13:20+00:00'
-  path: consumer_complaints/versions/01a111fc-f194-75a8-92f0-489647625f28
+  uuid: 01a217f6-76b0-7b60-b916-08d61cf191cc
+  checksum: v2:56836ef7f8abe260378a4a10fe3e2c974383d315e689f9c2b5c09341f0c704d9
+  built_at: '2026-11-26T13:07:21+00:00'
+  path: consumer_complaints_1m/01a217f6-76b0-7b60-b916-08d61cf191cc
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
-  n_rows: 1811452
+  n_rows: 3361291
   n_features: 12
   dtypes:
     category: 9
@@ -45,17 +45,53 @@ splits:
   random_state: 4267
   time_horizon: 3
   time_horizon_unit: months
-  time_gap: null
-  time_gap_unit: null
+  time_gap: 1
+  time_gap_unit: months
+  reason: 'We try to create splits that simulate a model deployed to solve the task.
+
+
+    - The official data is updated daily. The CFPB publishes no model and no refit
+    cadence, so we simulate a model that is refit every three months and then deployed.
+    The quarter is our assumption: it is longer than the 15 to 60 days a closure takes
+    (a company "provides a response within 15 calendar days" and has "up to 60 calendar
+    days to provide a final response", https://www.consumerfinance.gov/compliance/consumer-complaint-program/company-process/;
+    the 180 days we wrote before are the deadline of the optional public response),
+    and a quarter holds 200k to 350k complaints.
+
+    - This introduces the unrealistic downside of data shift within a quarter that
+    a model refit more often would not meet.
+
+    - A one-month gap (Andrej, 2026-11-19): the train side ends a month before each
+    quarter, as a refit at the start of the quarter would not yet hold most of the
+    last month''s closures (at the download of 2026-01-23, 70% of December, 14% of
+    November and 7% of October 2025 were still in progress). Measured (2026-11-18,
+    equal training size, 3 seeds): leaving out the 30 days before each quarter worsens
+    log loss by 0.004 to 0.017, broadly rather than through company waves, so recent
+    closures carry a shortcut a deployed model would not have. A 60-day gap would
+    put July-September 2024 under half the complaints (49.6%).
+
+
+    The newest quarter is always tested. The other two are spread evenly over the
+    six quarters from July 2024 on, the oldest whose train side holds half the complaints,
+    so they test other seasons and another year (the curator''s choice of 2026-11-10)
+    and hold the two changes a deployed model met in that time: July-September 2024
+    falls before the closure mix moved ("Closed with explanation" was 51% to 57% of
+    each quarter of 2024 and 57% to 67% of 2025), and January-March 2025 holds the
+    wave of January 2025 (165,305 complaints that month; 12.9% of the quarter about
+    money transfers, mostly Block, Inc. (Cash App) and Early Warning Services (Zelle)).'
   n_train:
-    min: 1000000
-    max: 1000000
+    min: 1772438
+    max: 3158152
   n_test:
     min: 203139
-    max: 307396
+    max: 350790
   row_budget:
     train: 1000000
     test: 500000
+  train_sampling:
+    default: newest_year
+    unit: rows
+    stratify_on: Company response to consumer
 bundle_checks:
   ok: true
   errors: []
@@ -65,6 +101,10 @@ bundle_checks:
     dataset_pure_feature_value: 'Block, Inc. (Cash App) closes 99.8% of its complaints
       with an explanation throughout 2019-2025: a company response policy, and the
       company is known when the complaint is filed.'
+    time_newest_period_short: 'Decided (Lennart, 2026-11-11): December 2025 holds
+      54,655 complaints against 73,058 to 77,970 a month from September to November,
+      as complaints still in progress when the archive was taken are left out (curation_comments,
+      the closures in progress).'
 decisions: []
 ---
 
@@ -72,9 +112,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `Company response to consumer`, scored with `log_loss` on temporal splits by `Date received`. 1,811,452 rows and 12 features. Source: GOV Website (2026).
+Multiclass classification of `Company response to consumer`, scored with `log_loss` on temporal splits by `Date received`. 3,361,291 rows and 12 features. Source: GOV Website (2026).
 
-Built as `01a111fc-f194-75a8-92f0-489647625f28` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:883d5c8805fc4dd0b4ab3fff918abe0924f3d7b8b174947e8827605a7a797562`, so the build is stale. See [Build](#build).
+Built as `01a217f6-76b0-7b60-b916-08d61cf191cc` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -101,7 +141,7 @@ Built as `01a111fc-f194-75a8-92f0-489647625f28` on 2026-10-06, but `dataset.py` 
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/consumer_complaints.md`](../../../../curation/records/consumer_complaints.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/consumer_complaints.md`](../../../../curation/records/consumer_complaints.md)
 - The original source: <https://www.consumerfinance.gov/data-research/consumer-complaints/>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -141,8 +181,7 @@ Only curators run `build`, when the dataset ships.
 | license | U.S. Government Works |
 | data_tags | Non-IID, Temporal, Spatial |
 | reference | cfpb2025ConsumerComplaintDatabase |
-| version of | consumer_complaints |
-| rows x columns | 1,811,452 x 13 |
+| rows x columns | 3,361,291 x 13 |
 | task.target | Company response to consumer |
 | task.problem_type | multiclass_classification |
 | task.metric | log_loss |
@@ -185,15 +224,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 1,811,452 rows of the final frame (the oldest rows: the frame is sorted by `Date received`); 12 of 13 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 3,361,291 rows of the final frame (the oldest rows: the frame is sorted by `Date received`); 12 of 13 columns, the target first. Cells are cut at 40 characters.
 
 | Company response to consumer | Date received | Product | Sub-product | Issue | Sub-issue | Consumer complaint narrative | Company | State | ZIP code | Low population area | Tag: Older American |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| Closed with explanation | 2017-04-24 00:00:00 | Credit reporting, credit repair service… | Credit reporting | Improper use of your report | Report provided to employer without you… | XXXX I am NOT XXXX customer. I am not X… | Experian Information Solutions Inc. | VA | 222XX | True | nan |
+| Closed with explanation | 2017-04-24 00:00:00 | Mortgage | FHA mortgage | Problem with a credit reporting company… | Investigation took more than 30 days | Loancare took over my mortgage in XXXX … | LoanCare, LLC | NJ | 08844 | False | nan |
+| Closed with explanation | 2017-04-24 00:00:00 | Payday loan, title loan, or personal lo… | Personal line of credit | Charged fees or interest you didn't exp… | nan | I obtained a loan and was not told they… | CURO Intermediate Holdings | TN | 379XX | True | nan |
 | Closed with explanation | 2017-04-24 00:00:00 | Credit reporting, credit repair service… | Credit reporting | Incorrect information on your report | Public record information inaccurate | There is a Tax Lien that was filed with… | EQUIFAX, INC. | GA | 30157 | False | nan |
-| Closed with explanation | 2017-04-24 00:00:00 | Mortgage | FHA mortgage | Applying for a mortgage or refinancing … | nan | XXXX XXXX XXXX is my client. This is at… | U.S. BANCORP | NV | 89103 | False | nan |
-| Closed with explanation | 2017-04-24 00:00:00 | Credit card or prepaid card | General-purpose credit card or charge c… | Advertising and marketing, including pr… | Confusing or misleading advertising abo… | XXXX XXXX card : I am putting my compla… | AMERICAN EXPRESS COMPANY | MN | 55372 | False | nan |
-| Closed with monetary relief | 2017-04-24 00:00:00 | Credit card or prepaid card | General-purpose credit card or charge c… | Problem with a purchase shown on your s… | Card was charged for something you did … | Our credit card was taken while we were… | BARCLAYS BANK DELAWARE | VA | 23116 | False | nan |
-| Closed with explanation | 2017-04-24 00:00:00 | Debt collection | I do not know | Took or threatened to take negative or … | Sued you in a state where you do not li… | Northwood Asset Management Company call… | Northwood Asset Management Group | UT | 84070 | False | nan |
+| Closed with explanation | 2017-04-24 00:00:00 | Credit reporting, credit repair service… | Credit reporting | Incorrect information on your report | Public record information inaccurate | XXXX XXXX XXXX Has been reporting since… | EQUIFAX, INC. | FL | 32114 | False | False |
 
 ## Curation notes
 
@@ -221,31 +260,44 @@ The dataset on Kaggle (https://www.kaggle.com/datasets/selener/consumer-complain
 
 ## Splits
 
+Expanding-window temporal splits: 3 test window(s) of 3 months, starting at 2025-10-01, 2025-01-01, 2024-07-01, newest first; train is all earlier data up to a gap of 1 months. The test windows by `Date received`, as listed: 2025-10-01 to 2025-12-31 (203,139 test, 3,158,152 train rows); 2025-01-01 to 2025-03-31 (350,790 test, 2,198,684 train rows); 2024-07-01 to 2024-09-30 (213,655 test, 1,772,438 train rows). Each test window keeps at most 500k of its rows, drawn at random; each train side holds every earlier row, and a benchmark sub-samples it to 1M rows (by default rows drawn at random from the newest year before each window, extended back in time until it holds that many rows, `subsample_train`).
+
 We try to create splits that simulate a model deployed to solve the task.
 
 - The official data is updated daily. The CFPB publishes no model and no refit cadence, so we simulate a model that is refit every three months and then deployed. The quarter is our assumption: it is longer than the 15 to 60 days a closure takes (a company "provides a response within 15 calendar days" and has "up to 60 calendar days to provide a final response", https://www.consumerfinance.gov/compliance/consumer-complaint-program/company-process/; the 180 days we wrote before are the deadline of the optional public response), and a quarter holds 200k to 350k complaints.
 - This introduces the unrealistic downside of data shift within a quarter that a model refit more often would not meet.
 - A one-month gap (Andrej, 2026-11-19): the train side ends a month before each quarter, as a refit at the start of the quarter would not yet hold most of the last month's closures (at the download of 2026-01-23, 70% of December, 14% of November and 7% of October 2025 were still in progress). Measured (2026-11-18, equal training size, 3 seeds): leaving out the 30 days before each quarter worsens log loss by 0.004 to 0.017, broadly rather than through company waves, so recent closures carry a shortcut a deployed model would not have. A 60-day gap would put July-September 2024 under half the complaints (49.6%).
 
-We create 3 test windows of one quarter, newest first: October-December 2025 (203,139 complaints; train 91.8% of the 3,439,261 after the gap), January-March 2025 (350,790; train 63.9%) and July-September 2024 (213,655; train 51.5%). The newest quarter is always tested. The other two are spread evenly over the six quarters from July 2024 on, the oldest whose train side holds half the complaints, so they test other seasons and another year (the curator's choice of 2026-11-10) and hold the two changes a deployed model met in that time: July-September 2024 falls before the closure mix moved ("Closed with explanation" was 51% to 57% of each quarter of 2024 and 57% to 67% of 2025), and January-March 2025 holds the wave of January 2025 (165,305 complaints that month; 12.9% of the quarter about money transfers, mostly Block, Inc. (Cash App) and Early Warning Services (Zelle)).
-We use all data up to a month before each quarter as training data. Each quarter keeps at most 500k of its rows (all of them here); each train side holds every earlier row, and a benchmark sub-samples it to 1M rows, by default the newest year before the quarter, extended back in time until it holds 1M rows, and a random 1M of those (`subsample_train`).
+The newest quarter is always tested. The other two are spread evenly over the six quarters from July 2024 on, the oldest whose train side holds half the complaints, so they test other seasons and another year (the curator's choice of 2026-11-10) and hold the two changes a deployed model met in that time: July-September 2024 falls before the closure mix moved ("Closed with explanation" was 51% to 57% of each quarter of 2024 and 57% to 67% of 2025), and January-March 2025 holds the wave of January 2025 (165,305 complaints that month; 12.9% of the quarter about money transfers, mostly Block, Inc. (Cash App) and Early Warning Services (Zelle)).
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 203,139 to 307,396 rows. Prediction horizon: 3 months. Row budget: at most 1M train / 500k test rows per split.
+3 repeat(s) x 1 fold(s) with seed 4267; train 1,772,438 to 3,158,152 rows, test 203,139 to 350,790 rows. Prediction horizon: 3 months. Gap between train and test: 1 months. Row budget: at most 500k test rows per split; a benchmark trains on at most 1M. The train sides keep every row available to them; `subsample_train` draws the 1M rows a benchmark fits on from the newest year before each window, extended back in time until it holds that many rows, at random, as rows.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 1000000 | 203139 | 2017-04-24 00:00:00 | 2025-09-30 00:00:00 | 2025-10-01 00:00:00 | 2025-12-31 00:00:00 |
-| 1 | 0 | 1000000 | 300917 | 2017-04-24 00:00:00 | 2025-06-30 00:00:00 | 2025-07-01 00:00:00 | 2025-09-30 00:00:00 |
-| 2 | 0 | 1000000 | 307396 | 2017-04-24 00:00:00 | 2025-03-31 00:00:00 | 2025-04-01 00:00:00 | 2025-06-30 00:00:00 |
+| 0 | 0 | 3158152 | 203139 | 2017-04-24 00:00:00 | 2025-08-31 00:00:00 | 2025-10-01 00:00:00 | 2025-12-31 00:00:00 |
+| 1 | 0 | 2198684 | 350790 | 2017-04-24 00:00:00 | 2024-11-30 00:00:00 | 2025-01-01 00:00:00 | 2025-03-31 00:00:00 |
+| 2 | 0 | 1772438 | 213655 | 2017-04-24 00:00:00 | 2024-05-31 00:00:00 | 2024-07-01 00:00:00 | 2024-09-30 00:00:00 |
+
+
+### The test windows
+
+Each test window against its train side, by statistics of the data, never of a model: the target, and the population stability index (PSI) of each feature, its largest value and the features that drift most (below 0.1 little shift, above 0.25 a large one), and the share of test rows with a category the train side never shows. Up to 20,000 rows per side. The candidates the windows were chosen from: `.venv/bin/python -m data_foundry.curation.cli dataset windows consumer_complaints_1m`.
+
+| window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
+|---|---|---|---|---|---|---|---|---|
+| 0 | Oct 2025 - Dec 2025 | 203139 | 0.94 | Closed with explanation 66.9%, Closed with monetary relief 2.0%, Closed with no… | Closed with explanation 65.2%, Closed with monetary relief 2.5%, Closed with no… | 2.31 | Product (2.31), Issue (0.59), Sub-issue (0.12) | 0 |
+| 1 | Jan 2025 - Mar 2025 | 350790 | 0.654 | Closed with explanation 66.4%, Closed with monetary relief 1.0%, Closed with no… | Closed with explanation 67.0%, Closed with monetary relief 2.8%, Closed with no… | 3.946 | Product (3.95), Issue (1.44), Sub-product (0.49) | 0 |
+| 2 | Jul 2024 - Sep 2024 | 213655 | 0.527 | Closed with explanation 54.7%, Closed with monetary relief 1.5%, Closed with no… | Closed with explanation 70.5%, Closed with monetary relief 3.2%, Closed with no… | 5.122 | Product (5.12), Issue (1.35), Sub-issue (0.29) | 0 |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 Accepted on purpose:
 
 - `dataset_pure_feature_value`: Block, Inc. (Cash App) closes 99.8% of its complaints with an explanation throughout 2019-2025: a company response policy, and the company is known when the complaint is filed.
+- `time_newest_period_short`: Decided (Lennart, 2026-11-11): December 2025 holds 54,655 complaints against 73,058 to 77,970 a month from September to November, as complaints still in progress when the archive was taken are left out (curation_comments, the closures in progress).
 
 ## Data checks
 
@@ -256,19 +308,19 @@ Accepted on purpose:
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| Tag: Older American | category | 1.66197e+06 | 91.75 | 2 | False, True |
-| Tag: Servicemember | category | 1.66197e+06 | 91.75 | 2 | True, False |
-| Sub-issue | category | 104414 | 5.76 | 212 | Information belongs to someone else, Reporting company used your report imprope… |
-| Low population area | category | 24123 | 1.33 | 2 | False, True |
+| Tag: Older American | category | 3.04981e+06 | 90.73 | 2 | False, True |
+| Tag: Servicemember | category | 3.04981e+06 | 90.73 | 2 | True, False |
+| Sub-issue | category | 227808 | 6.78 | 212 | Information belongs to someone else, Reporting company used your report imprope… |
+| Low population area | category | 48608 | 1.45 | 2 | False, True |
 | Product | category | 0 | 0 | 14 | Credit reporting or other personal consumer reports, Credit reporting, credit r… |
-| Sub-product | category | 9 | 0 | 58 | Credit reporting, General-purpose credit card or charge card, Checking account,… |
+| Sub-product | category | 36 | 0 | 58 | Credit reporting, General-purpose credit card or charge card, Checking account,… |
 | Issue | category | 0 | 0 | 93 | Incorrect information on your report, Improper use of your report, Problem with… |
-| State | category | 0 | 0 | 50 | TX, FL, CA, GA, NY, IL, NC, PA, NJ, MD |
+| State | category | 0 | 0 | 50 | TX, FL, CA, GA, NY, IL, PA, NC, NJ, MD |
 | Company response to consumer | category | 0 | 0 | 3 | Closed with explanation, Closed with non-monetary relief, Closed with monetary … |
-| Date received | datetime64\[ns\] | 0 | 0 | 3169 | 2025-01-17 00:00:00, 2025-08-14 00:00:00, 2025-08-12 00:00:00, 2025-08-06 00:00… |
-| Consumer complaint narrative | string | 0 | 0 | 1.18183e+06 | You have reported inaccurate and unauthorized accounts on my credit report, whi… |
-| Company | string | 0 | 0 | 4628 | EQUIFAX, INC., TRANSUNION INTERMEDIATE HOLDINGS, INC., Experian Information Sol… |
-| ZIP code | string | 0 | 0 | 6845 | XXXXX, 604XX, 770XX, 30349, 752XX, 331XX, 303XX, 190XX, 751XX, 070XX |
+| Date received | datetime64\[ns\] | 0 | 0 | 3139 | 2025-01-17 00:00:00, 2025-01-18 00:00:00, 2025-01-16 00:00:00, 2025-01-15 00:00… |
+| Consumer complaint narrative | string | 0 | 0 | 2.24838e+06 | In accordance with the Fair Credit Reporting act. The List of accounts below ha… |
+| Company | string | 0 | 0 | 5628 | EQUIFAX, INC., TRANSUNION INTERMEDIATE HOLDINGS, INC., Experian Information Sol… |
+| ZIP code | string | 0 | 0 | 6845 | XXXXX, 604XX, 770XX, 331XX, 30349, 631XX, 303XX, 752XX, 070XX, 190XX |
 
 </details>
 
@@ -276,9 +328,9 @@ Accepted on purpose:
 
 | Company response to consumer | count | pct |
 |---|---|---|
-| Closed with explanation | 1175533 | 64.89 |
-| Closed with non-monetary relief | 599172 | 33.08 |
-| Closed with monetary relief | 36747 | 2.03 |
+| Closed with explanation | 2211821 | 65.8 |
+| Closed with non-monetary relief | 1072286 | 31.9 |
+| Closed with monetary relief | 77184 | 2.3 |
 
 ### Numeric features
 
@@ -291,63 +343,63 @@ No numeric features to summarize.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Company | 1 | EQUIFAX, INC. | 42229 | 23.31 |
-| Company | 2 | TRANSUNION INTERMEDIATE HOLDINGS, INC. | 40431 | 22.32 |
-| Company | 3 | Experian Information Solutions Inc. | 38561 | 21.29 |
-| Company | 4 | CAPITAL ONE FINANCIAL CORPORATION | 2851 | 1.57 |
-| Company | 5 | JPMORGAN CHASE & CO. | 2590 | 1.43 |
-| Company response to consumer | 1 | Closed with explanation | 117273 | 64.74 |
-| Company response to consumer | 2 | Closed with non-monetary relief | 60213 | 33.24 |
-| Company response to consumer | 3 | Closed with monetary relief | 3659 | 2.02 |
-| Consumer complaint narrative | 1 | You have reported inaccurate and unauthorized accounts on my cre... | 1679 | 0.93 |
-| Consumer complaint narrative | 2 | In accordance with the Fair Credit Reporting act. The List of ac... | 1367 | 0.75 |
-| Consumer complaint narrative | 3 | My credit reports are inaccurate. These inaccuracies are causing... | 1304 | 0.72 |
-| Consumer complaint narrative | 4 | The Fair Credit Reporting Act ( 15 U.S. Code 1681 ) says ( 1 ) T... | 948 | 0.52 |
-| Consumer complaint narrative | 5 | I am writing to have the following information removed from my c... | 895 | 0.49 |
-| Date received | 1 | 2025-01-17 00:00:00 | 667 | 0.37 |
-| Date received | 2 | 2025-08-14 00:00:00 | 571 | 0.32 |
-| Date received | 3 | 2025-08-12 00:00:00 | 553 | 0.31 |
-| Date received | 4 | 2025-08-06 00:00:00 | 539 | 0.3 |
-| Date received | 5 | 2025-08-15 00:00:00 | 539 | 0.3 |
-| Issue | 1 | Incorrect information on your report | 64610 | 35.67 |
-| Issue | 2 | Improper use of your report | 35650 | 19.68 |
-| Issue | 3 | Problem with a company's investigation into an existing problem | 19029 | 10.5 |
-| Issue | 4 | Problem with a credit reporting company's investigation into an ... | 9278 | 5.12 |
-| Issue | 5 | Attempts to collect debt not owed | 8377 | 4.62 |
-| Low population area | 1 | False | 141643 | 78.19 |
-| Low population area | 2 | True | 37075 | 20.47 |
-| Low population area | 3 | &lt;NA> | 2427 | 1.34 |
-| Product | 1 | Credit reporting or other personal consumer reports | 99058 | 54.68 |
-| Product | 2 | Credit reporting, credit repair services, or other personal cons... | 30063 | 16.6 |
-| Product | 3 | Debt collection | 18287 | 10.1 |
-| Product | 4 | Checking or savings account | 8240 | 4.55 |
-| Product | 5 | Credit card | 5360 | 2.96 |
-| State | 1 | TX | 24604 | 13.58 |
-| State | 2 | FL | 22014 | 12.15 |
-| State | 3 | CA | 19029 | 10.5 |
-| State | 4 | GA | 14157 | 7.82 |
-| State | 5 | NY | 10139 | 5.6 |
-| Sub-issue | 1 | Information belongs to someone else | 38329 | 21.16 |
-| Sub-issue | 2 | Reporting company used your report improperly | 28402 | 15.68 |
-| Sub-issue | 3 | Their investigation did not fix an error on your report | 18073 | 9.98 |
-| Sub-issue | 4 | &lt;NA> | 10339 | 5.71 |
-| Sub-issue | 5 | Account information incorrect | 10262 | 5.67 |
-| Sub-product | 1 | Credit reporting | 128099 | 70.72 |
-| Sub-product | 2 | General-purpose credit card or charge card | 7709 | 4.26 |
-| Sub-product | 3 | Checking account | 6799 | 3.75 |
-| Sub-product | 4 | I do not know | 6073 | 3.35 |
-| Sub-product | 5 | Credit card debt | 3727 | 2.06 |
-| Tag: Older American | 1 | &lt;NA> | 166258 | 91.78 |
-| Tag: Older American | 2 | False | 10071 | 5.56 |
-| Tag: Older American | 3 | True | 4816 | 2.66 |
-| Tag: Servicemember | 1 | &lt;NA> | 166258 | 91.78 |
-| Tag: Servicemember | 2 | True | 11215 | 6.19 |
-| Tag: Servicemember | 3 | False | 3672 | 2.03 |
-| ZIP code | 1 | XXXXX | 2427 | 1.34 |
-| ZIP code | 2 | 604XX | 642 | 0.35 |
-| ZIP code | 3 | 770XX | 573 | 0.32 |
-| ZIP code | 4 | 30349 | 381 | 0.21 |
-| ZIP code | 5 | 752XX | 358 | 0.2 |
+| Company | 1 | EQUIFAX, INC. | 74499 | 22.16 |
+| Company | 2 | TRANSUNION INTERMEDIATE HOLDINGS, INC. | 70753 | 21.05 |
+| Company | 3 | Experian Information Solutions Inc. | 68751 | 20.45 |
+| Company | 4 | CAPITAL ONE FINANCIAL CORPORATION | 6046 | 1.8 |
+| Company | 5 | JPMORGAN CHASE & CO. | 5221 | 1.55 |
+| Company response to consumer | 1 | Closed with explanation | 220904 | 65.72 |
+| Company response to consumer | 2 | Closed with non-monetary relief | 107459 | 31.97 |
+| Company response to consumer | 3 | Closed with monetary relief | 7766 | 2.31 |
+| Consumer complaint narrative | 1 | In accordance with the Fair Credit Reporting act. The List of ac... | 2424 | 0.72 |
+| Consumer complaint narrative | 2 | My credit reports are inaccurate. These inaccuracies are causing... | 2262 | 0.67 |
+| Consumer complaint narrative | 3 | You have reported inaccurate and unauthorized accounts on my cre... | 1530 | 0.46 |
+| Consumer complaint narrative | 4 | Upon reviewing my credit report, I have identified inaccurate ac... | 1282 | 0.38 |
+| Consumer complaint narrative | 5 | I am writing to have the following information removed from my c... | 1119 | 0.33 |
+| Date received | 1 | 2025-01-17 00:00:00 | 1877 | 0.56 |
+| Date received | 2 | 2025-01-18 00:00:00 | 1241 | 0.37 |
+| Date received | 3 | 2025-01-16 00:00:00 | 977 | 0.29 |
+| Date received | 4 | 2025-01-15 00:00:00 | 949 | 0.28 |
+| Date received | 5 | 2025-01-20 00:00:00 | 845 | 0.25 |
+| Issue | 1 | Incorrect information on your report | 112482 | 33.46 |
+| Issue | 2 | Improper use of your report | 61623 | 18.33 |
+| Issue | 3 | Problem with a company's investigation into an existing problem | 32332 | 9.62 |
+| Issue | 4 | Problem with a credit reporting company's investigation into an ... | 24525 | 7.3 |
+| Issue | 5 | Attempts to collect debt not owed | 16339 | 4.86 |
+| Low population area | 1 | False | 262620 | 78.13 |
+| Low population area | 2 | True | 68579 | 20.4 |
+| Low population area | 3 | &lt;NA> | 4930 | 1.47 |
+| Product | 1 | Credit reporting or other personal consumer reports | 153389 | 45.63 |
+| Product | 2 | Credit reporting, credit repair services, or other personal cons... | 78731 | 23.42 |
+| Product | 3 | Debt collection | 34547 | 10.28 |
+| Product | 4 | Checking or savings account | 16161 | 4.81 |
+| Product | 5 | Credit card or prepaid card | 10753 | 3.2 |
+| State | 1 | TX | 42820 | 12.74 |
+| State | 2 | FL | 40959 | 12.19 |
+| State | 3 | CA | 35961 | 10.7 |
+| State | 4 | GA | 25939 | 7.72 |
+| State | 5 | NY | 19581 | 5.83 |
+| Sub-issue | 1 | Information belongs to someone else | 65309 | 19.43 |
+| Sub-issue | 2 | Reporting company used your report improperly | 47069 | 14 |
+| Sub-issue | 3 | Their investigation did not fix an error on your report | 35861 | 10.67 |
+| Sub-issue | 4 | &lt;NA> | 22844 | 6.8 |
+| Sub-issue | 5 | Account status incorrect | 17468 | 5.2 |
+| Sub-product | 1 | Credit reporting | 230038 | 68.44 |
+| Sub-product | 2 | General-purpose credit card or charge card | 15534 | 4.62 |
+| Sub-product | 3 | Checking account | 13284 | 3.95 |
+| Sub-product | 4 | I do not know | 10713 | 3.19 |
+| Sub-product | 5 | Other debt | 7501 | 2.23 |
+| Tag: Older American | 1 | &lt;NA> | 305193 | 90.8 |
+| Tag: Older American | 2 | False | 20892 | 6.22 |
+| Tag: Older American | 3 | True | 10044 | 2.99 |
+| Tag: Servicemember | 1 | &lt;NA> | 305193 | 90.8 |
+| Tag: Servicemember | 2 | True | 23370 | 6.95 |
+| Tag: Servicemember | 3 | False | 7566 | 2.25 |
+| ZIP code | 1 | XXXXX | 4930 | 1.47 |
+| ZIP code | 2 | 604XX | 1073 | 0.32 |
+| ZIP code | 3 | 770XX | 995 | 0.3 |
+| ZIP code | 4 | 331XX | 694 | 0.21 |
+| ZIP code | 5 | 30349 | 685 | 0.2 |
 
 </details>
 
@@ -355,11 +407,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-f194-75a8-92f0-489647625f28 |
-| checksum | v2:0c1e1969952d69bc2a754b301e0693a07c2b8ebb809fac7068f1c5cae353f45c |
-| built_at | 2026-10-06T16:13:20+00:00 |
-| path | consumer_complaints/versions/01a111fc-f194-75a8-92f0-489647625f28 |
+| uuid | 01a217f6-76b0-7b60-b916-08d61cf191cc |
+| checksum | v2:56836ef7f8abe260378a4a10fe3e2c974383d315e689f9c2b5c09341f0c704d9 |
+| built_at | 2026-11-26T13:07:21+00:00 |
+| path | consumer_complaints_1m/01a217f6-76b0-7b60-b916-08d61cf191cc |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:883d5c8805fc4dd0b4ab3fff918abe0924f3d7b8b174947e8827605a7a797562` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

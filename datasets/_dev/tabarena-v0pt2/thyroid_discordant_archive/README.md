@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: thyroid_discordant_archive
 container_format: 2
-checksum: v2:726f257bae196be81050be71d95a27bb378ecf8916dbb955700fe7de568e6033
-build: null
+checksum: v2:40f0c01228053b156f51eb4d48c8e12b203dbaf1e25b59ed94909f14b44b5fae
+build:
+  uuid: 01a21801-03be-758b-8646-0ab68842f252
+  checksum: v2:40f0c01228053b156f51eb4d48c8e12b203dbaf1e25b59ed94909f14b44b5fae
+  built_at: '2026-11-26T13:17:30+00:00'
+  path: thyroid_discordant_archive/01a21801-03be-758b-8646-0ab68842f252
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 9162
@@ -34,6 +47,43 @@ splits:
   time_horizon_unit: months
   time_gap: null
   time_gap_unit: null
+  reason: 'The windows hold 1,215, 1,230 and 1,145 requests with 25, 54 and 24 discordant
+    results. They
+
+    follow option C of thyroid_discordant''s split decision (train on 1984-1985; test
+    on the first half of 1986, its third
+
+    quarter, and its fourth quarter with January 1987), as four-month windows, which
+    one declaration can express:
+
+    the archive holds only 2 requests in January 1986 and 1 in June 1986, none discordant,
+    so the windows differ
+
+    from option C''s by those three requests (January trains the oldest window, June
+    is tested with the summer) and
+
+    keep its positives. An IID split of this size would get 9 splits (SPLIT-15); the
+    three windows follow that
+
+    decision, and four-month windows fit five only down to 30% training, the curator''s
+    exception (SPLIT-14). The
+
+    source split by time too: the ann-thyroid files of the same UCI zip, which their
+    readme gives as the data of
+
+    Quinlan''s 1987 case study, train on 3,772 requests of 1985 and test on the 3,428
+    of 1986 (every row that matches
+
+    exactly one archive record by its values falls in those years). Training on earlier
+    requests only scores like
+
+    random training rows of the same size (untuned LightGBM, within 0.01 ROC AUC in
+    each window), so the windows
+
+    test later requests, with their changes in the tests ordered and in the share
+    of code R, rather than remove a
+
+    leak.'
   n_train:
     min: 5572
     max: 7947
@@ -44,7 +94,7 @@ bundle_checks:
   ok: true
   errors: []
   warnings:
-  - splits_below_target
+  - splits_dimensions_off_protocol
   infos: []
   accepted:
     dataset_pure_feature_value: 'on_thyroxine and TSH_measured are on the request,
@@ -59,7 +109,7 @@ decisions: []
 
 Binary classification of `discordant`, scored with `roc_auc` on temporal splits by `request_date`. 9,162 rows and 29 features. Source: UCI (1987).
 
-Not built yet. The current definition gives checksum `v2:726f257bae196be81050be71d95a27bb378ecf8916dbb955700fe7de568e6033`.
+Built as `01a21801-03be-758b-8646-0ab68842f252` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -196,9 +246,9 @@ We start with thyroid0387.data from the UCI Thyroid Disease files: "the latest v
 
 ## Splits
 
-Three test windows of four months of request dates, newest first: October 1986 to January 1987 (the end of the
-archive), June to September 1986 and February to May 1986; each trains on every earlier request (87%, 73% and
-61% of the rows). The windows hold 1,215, 1,230 and 1,145 requests with 25, 54 and 24 discordant results. They
+Expanding-window temporal splits: 3 test window(s) of 4 months, starting at 1986-10-01, 1986-06-01, 1986-02-01, newest first; train is all earlier data. The test windows by `request_date`, as listed: 1986-10-01 to 1987-01-19 (1,215 test, 7,947 train rows); 1986-06-30 to 1986-09-30 (1,230 test, 6,717 train rows); 1986-02-03 to 1986-05-06 (1,145 test, 5,572 train rows).
+
+The windows hold 1,215, 1,230 and 1,145 requests with 25, 54 and 24 discordant results. They
 follow option C of thyroid_discordant's split decision (train on 1984-1985; test on the first half of 1986, its third
 quarter, and its fourth quarter with January 1987), as four-month windows, which one declaration can express:
 the archive holds only 2 requests in January 1986 and 1 in June 1986, none discordant, so the windows differ
@@ -235,7 +285,7 @@ Each test window against its train side, by statistics of the data, never of a m
 
 0 error(s), 1 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `splits_below_target`: 3 window(s), against the 9 splits an IID split of 9,162 scored units would get (SPLIT-33). (hint: SPLIT-15 aims at that count and accepts fewer: the splits comment names the target, the count reached and what stops more windows (the use case's horizon or gap, the training floor, the least test window); then accept this warning with it.)
+- **warning** `splits_dimensions_off_protocol`: 3 test window(s) with their own training side, against the 9 splits an IID split of 9,162 scored units would get (SPLIT-33). (hint: SPLIT-15 aims at that count and accepts fewer: the splits comment names the target, the count reached and what stops more windows (the use case's horizon or gap, the training floor, the least test window); then accept this warning with it.)
 
 Accepted on purpose:
 
@@ -364,4 +414,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a21801-03be-758b-8646-0ab68842f252 |
+| checksum | v2:40f0c01228053b156f51eb4d48c8e12b203dbaf1e25b59ed94909f14b44b5fae |
+| built_at | 2026-11-26T13:17:30+00:00 |
+| path | thyroid_discordant_archive/01a21801-03be-758b-8646-0ab68842f252 |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

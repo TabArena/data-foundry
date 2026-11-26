@@ -22,6 +22,8 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 
 ## Rebuild
 
+- Last full rebuild: 2026-11-26, all 174 definitions, container format 2, from 2,658 traced raw files (107.3 GB);
+  the [`CHANGELOG.md`](CHANGELOG.md) entry of that date has the checks.
 - The raw files come from `local-data-warehouse/` (or `$DATA_FOUNDRY_WAREHOUSE`); each folder's `README.md` gives the
   download command.
 - To rebuild, ask Claude; it follows

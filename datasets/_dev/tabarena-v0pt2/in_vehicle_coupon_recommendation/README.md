@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: in_vehicle_coupon_recommendation
 container_format: 2
-checksum: v2:1d3b4ff24b76aa587295c82eebb7e85e89266ed0fd5171f193bf21ea6dd3c924
+checksum: v2:f1663102abf9d155efe9caf3844f98f5dff54b30337db8b354779d75914c73e2
 build:
-  uuid: 01a111fc-e38e-7ad4-90c9-b80013f7640e
-  checksum: v2:cdd74cb8121009f4ed1bc57984fff0bdc1db9da0b6bdb2b832dc53dd0698ee73
-  built_at: '2026-10-06T16:12:28+00:00'
-  path: in_vehicle_coupon_recommendation/01a111fc-e38e-7ad4-90c9-b80013f7640e
+  uuid: 01a21800-db47-7a72-8a32-24a5a80ec818
+  checksum: v2:f1663102abf9d155efe9caf3844f98f5dff54b30337db8b354779d75914c73e2
+  built_at: '2026-11-26T13:17:19+00:00'
+  path: in_vehicle_coupon_recommendation/01a21800-db47-7a72-8a32-24a5a80ec818
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 12684
   n_features: 23
@@ -53,6 +53,11 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Grouped splits on the survey respondent: all answers of one person stay
+    on one side, so the task is a cold-start
+
+    model that predicts a new person''s response from their profile, stated habits
+    and the driving scenario.'
   n_train:
     min: 8390
     max: 8503
@@ -76,7 +81,7 @@ decisions: []
 
 Binary classification of `AcceptCoupon`, scored with `roc_auc` on grouped splits by `respondent`. 12,684 rows and 23 features. Source: Other (2017).
 
-Built as `01a111fc-e38e-7ad4-90c9-b80013f7640e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1d3b4ff24b76aa587295c82eebb7e85e89266ed0fd5171f193bf21ea6dd3c924`, so the build is stale. See [Build](#build).
+Built as `01a21800-db47-7a72-8a32-24a5a80ec818` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -220,6 +225,8 @@ The first 5 of 12,684 rows of the final frame (random rows: the frame is shuffle
 
 ## Splits
 
+Repeated 3-fold cross-validation keeping each group of `respondent` whole (shuffled group k-fold, a new draw per repeat), stratified on `AcceptCoupon`: 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 12,684 rows (SPLIT-33).
+
 Grouped splits on the survey respondent: all answers of one person stay on one side, so the task is a cold-start
 model that predicts a new person's response from their profile, stated habits and the driving scenario.
 
@@ -259,7 +266,7 @@ One group is a survey respondent; its rows are the coupon offers in about 20 dri
 | nearest neighbour in the same group | 0.2% of the rows (chance: 0.2%) |
 | label variance explained by the group | 0.16 (shuffled groups: 0.05) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
@@ -395,11 +402,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-e38e-7ad4-90c9-b80013f7640e |
-| checksum | v2:cdd74cb8121009f4ed1bc57984fff0bdc1db9da0b6bdb2b832dc53dd0698ee73 |
-| built_at | 2026-10-06T16:12:28+00:00 |
-| path | in_vehicle_coupon_recommendation/01a111fc-e38e-7ad4-90c9-b80013f7640e |
+| uuid | 01a21800-db47-7a72-8a32-24a5a80ec818 |
+| checksum | v2:f1663102abf9d155efe9caf3844f98f5dff54b30337db8b354779d75914c73e2 |
+| built_at | 2026-11-26T13:17:19+00:00 |
+| path | in_vehicle_coupon_recommendation/01a21800-db47-7a72-8a32-24a5a80ec818 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:1d3b4ff24b76aa587295c82eebb7e85e89266ed0fd5171f193bf21ea6dd3c924` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

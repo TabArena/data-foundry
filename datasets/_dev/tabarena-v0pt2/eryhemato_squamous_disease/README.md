@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: eryhemato_squamous_disease
 container_format: 2
-checksum: v2:6e74b1a5e32e55511924154ba2d883658e46e179fedc3eb0af9d1bcdb7cfc605
+checksum: v2:9e0ef4ba2a006e50b2c0df6934f2d1bb86786b110c73f33316e4891b6ab72209
 build:
-  uuid: 01a111fc-a1c3-79c0-8d48-48221a6702fe
-  checksum: v2:aba9d540c391f2a14f0cf06bd994fff1205b5549b7de973316d943823e12ad15
-  built_at: '2026-10-06T16:12:11+00:00'
-  path: eryhemato_squamous_disease/01a111fc-a1c3-79c0-8d48-48221a6702fe
+  uuid: 01a21800-f8ad-7c71-94c0-fa7da7c376a3
+  checksum: v2:9e0ef4ba2a006e50b2c0df6934f2d1bb86786b110c73f33316e4891b6ab72209
+  built_at: '2026-11-26T13:17:26+00:00'
+  path: eryhemato_squamous_disease/01a21800-f8ad-7c71-94c0-fa7da7c376a3
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 366
   n_features: 12
@@ -47,6 +47,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 244
     max: 244
@@ -69,7 +70,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 366 rows and 12 features. Source: UCI (1998).
 
-Built as `01a111fc-a1c3-79c0-8d48-48221a6702fe` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6e74b1a5e32e55511924154ba2d883658e46e179fedc3eb0af9d1bcdb7cfc605`, so the build is stale. See [Build](#build).
+Built as `01a21800-f8ad-7c71-94c0-fa7da7c376a3` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -205,20 +206,11 @@ We start with the data from UCI.
   every column but age to a category, so they shipped unordered although the decoding above made them
   numbers. The source names only the ends of the scale ("0 indicates that the feature was not present, 3
   indicates the largest amount possible, and 1, 2 indicate the relative intermediate values").
-- Time basis: ForcedIIDFromTemporal: patients examined over a period the source does not state (published 1998);
-  the file keeps no date but has two parts, rows 1 to 169 in mixed order and rows 170 to 366 mostly in runs of
-  one diagnosis. The clinical findings tell them apart (random forest ROC AUC 0.70; 0.54 from the diagnosis
-  alone). The random split puts both parts on both sides, so each test patient has training patients of its own
-  part: on the shipped splits, logistic regression's log loss on one part's patients is 0.536 and 0.345 when it
-  trains on a random mix of both parts, against 0.688 and 0.425 when it trains on as many patients of the other
-  part alone; told the part, it improves by another 0.014, and the case mix of the parts adds nothing. Read as
-  two collection periods, too few for three windows; dates of examination would allow a split
-  by period. Not taken as stationary (Andrej, 2026-11-18): The rule lists structure in the file order as a fact
-  against, and here it is measured as a sizeable cost.
+- Time basis: ForcedIIDFromTemporal: patients examined over a period the source does not state (published 1998); the file keeps no date but has two parts, rows 1 to 169 in mixed order and rows 170 to 366 mostly in runs of one diagnosis. The clinical findings tell them apart (random forest ROC AUC 0.70; 0.54 from the diagnosis alone). The random split puts both parts on both sides, so each test patient has training patients of its own part: on the shipped splits, logistic regression's log loss on one part's patients is 0.536 and 0.345 when it trains on a random mix of both parts, against 0.688 and 0.425 when it trains on as many patients of the other part alone; told the part, it improves by another 0.014. The source does not say what the parts are: two collection periods, two examiners, or one series extended by diagnosis; between them the share of seborrheic dermatitis falls from 24.3% to 10.2%. The parts are not read as periods (Andrej, 2026-11-23), so no period can be held out, and the case mix is the measured cost of the random split; dates of examination would allow a split by period. Not taken as stationary (Andrej, 2026-11-18): The rule lists structure in the file order as a fact against, and here it is measured as a sizeable cost.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `class`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 366 rows (SPLIT-33).
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 244 rows, test 122 rows.
 
@@ -369,11 +361,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-a1c3-79c0-8d48-48221a6702fe |
-| checksum | v2:aba9d540c391f2a14f0cf06bd994fff1205b5549b7de973316d943823e12ad15 |
-| built_at | 2026-10-06T16:12:11+00:00 |
-| path | eryhemato_squamous_disease/01a111fc-a1c3-79c0-8d48-48221a6702fe |
+| uuid | 01a21800-f8ad-7c71-94c0-fa7da7c376a3 |
+| checksum | v2:9e0ef4ba2a006e50b2c0df6934f2d1bb86786b110c73f33316e4891b6ab72209 |
+| built_at | 2026-11-26T13:17:26+00:00 |
+| path | eryhemato_squamous_disease/01a21800-f8ad-7c71-94c0-fa7da7c376a3 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6e74b1a5e32e55511924154ba2d883658e46e179fedc3eb0af9d1bcdb7cfc605` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: nci_aids_antiviral_screen
 container_format: 2
-checksum: v2:a200f4c16a0679c4b8bac22af4f9a3bdf4ce1ee2746fe57c18c52e16189f3e4a
-build: null
+checksum: v2:7d1c5b23202f7d66556164cc4f62ba147a7f31d5fdf0c3e9d3241a6659380e1f
+build:
+  uuid: 01a217fe-2a9e-73e4-bab6-8de4d39f75cc
+  checksum: v2:7d1c5b23202f7d66556164cc4f62ba147a7f31d5fdf0c3e9d3241a6659380e1f
+  built_at: '2026-11-26T13:14:26+00:00'
+  path: nci_aids_antiviral_screen/01a217fe-2a9e-73e4-bab6-8de4d39f75cc
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 41140
@@ -42,6 +55,77 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Grouped splits on the Bemis-Murcko scaffold of the compound (its structure
+    without common salts and solvents): all compounds of one series stay on one side,
+    so a model predicts compounds of a series it has not seen; compounds without a
+    ring are held out one by one. The bare benzene ring (5.1% of the compounds) is
+    one group, below the tenth of the compounds above which a scaffold counts as no
+    series. Compounds with similar but not identical scaffolds can be on both sides.
+
+
+    The split still leaves the test compounds close to the training ones: 78.1% of
+    the test compounds of repeat 0 have a training compound above Tanimoto 0.4 (87.7%
+    of the actives), the median nearest is 0.517, and 15.5% have one at 0.7 or more
+    (Morgan radius 2, 2,048 bits, on the structure without its salts). Lo-Hi (Steshin
+    2023, arXiv 2310.06399, Sec. 5.2) measured the same on MoleculeNet''s cut of this
+    screen, "56% of HIV test molecules have a train neighbor with a Tanimoto similarity
+    > 0.4", and concludes it is unsuitable for hit identification. So the scores stand
+    for a compound of a series that has not been tested; finding a chemical class
+    nobody has seen is a harder task than this split measures.
+
+
+    Potential leak, kept on purpose: the NSC number counts the compounds in the order
+    they were registered, so neighbouring numbers are usually analogs submitted together.
+    For two consecutive NSC numbers P(the next compound is active | this one is active)
+    is 0.343 against a base rate of 0.034, and still 0.283 when the two sit in different
+    scaffold groups; 81.9% of the test compounds of repeat 0 have a training compound
+    within 5 NSC numbers, 7.5% one that is also a close analog (10.0% of the actives).
+    The batch stays out of the group key because the NSC number is not shipped (the
+    one feature column is the structure), so no model can recognise a submission batch;
+    the only channel is structural resemblance, which the series grouping already
+    holds out. Holding the batches out as well (the series key plus every pair of
+    consecutive NSC numbers that is also a close analog) moves ROC AUC from 0.802
+    to 0.800, inside the 0.012 to 0.025 standard deviation over the folds (untuned
+    LightGBM on the recommended encoding over the nine splits, 2026-11-02); a looser
+    batch key (NSC numbers within 2 at Tanimoto 0.5 or more) gives 0.787 with a fold
+    spread of 0.020, and makes the folds uneven (11,547 to 17,917 test compounds).
+    sarcoma discloses its tissue source site the same way instead of grouping on it.
+    Revisit if a release ships the NSC number or another submission key as a column.
+
+
+    Split by registration order, measured and not taken (Andrej, 2026-11-11): the
+    NSC number is the NCI''s registration order, so it looked like a time index for
+    a screening use case. It is not the order compounds entered the screen: the numbers
+    run from 48 to 706,805 and about a quarter of the compounds sit below 609,000,
+    registered into the repository long before the screen began, and no public table
+    maps NSC numbers to dates. Four windows from the highest numbers down, each trained
+    on every lower number (training sides 50.0%, 62.5%, 75.0% and 87.5%; 184 to 257
+    actives each), against the same test compounds drawn scaffold-disjoint and at
+    random from all other numbers; untuned LightGBM and random forest on the recommended
+    encoding, ROC AUC for confirmed active (CA or CM) against inactive, means over
+    the four windows:
+
+
+    | Scheme | ROC AUC, LightGBM / RF | Close training analog | Test scaffold in training
+    |
+
+    |---|---|---|---|
+
+    | By registration order | 0.749 / 0.774 | 8.4% | 32.5% |
+
+    | Scaffold-disjoint | 0.717 / 0.739 | 4.3% | 0 |
+
+    | Random | 0.762 / 0.770 | 9.8% | 34.9% |
+
+    | The shipped scaffold folds | 0.786 / 0.796 | 15.4% | 0 |
+
+
+    A forward split on this order leaves a third of the test compounds a training
+    compound of their own series and scores close to a random split, so it would follow
+    an order the screen never ran in while holding out less than the series grouping
+    does; the newest window cannot be compared at all, since nothing is registered
+    after it. The record''s `Time:` fact was corrected to `Inferred` at the same time,
+    since an order survives and no calendar.'
   n_train:
     min: 25892
     max: 28565
@@ -66,7 +150,7 @@ decisions:
 
 Binary classification of `active_in_screen`, scored with `roc_auc` on grouped splits by `scaffold`. 41,140 rows and 1 features. Source: GOV Website (2004).
 
-Not built yet. The current definition gives checksum `v2:a200f4c16a0679c4b8bac22af4f9a3bdf4ce1ee2746fe57c18c52e16189f3e4a`.
+Built as `01a217fe-2a9e-73e4-bab6-8de4d39f75cc` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -218,22 +302,17 @@ We start with aids_conc_may04.txt (the screen's conclusion for 43,850 compounds,
 - Reading the structures: the records lack the `M  END` line that closes an SD connection table; `_read_structures` adds it. The charge column has to be read as the file writes it: code 4, which V2000 defines as a doublet radical, sits on the motifs the file also writes code 3 (+1) on, four-bonded phosphorus (538 atoms against 81 with code 3), bare sodium (426 against 25) and bare potassium (24 against 11); and the file writes codes 8, 9 and -1 as well, which V2000 does not define, so its charge column is not the strict format. Read as V2000, those atoms come out neutral and RDKit fills the free valence with hydrogens the file does not draw (`[NaH]`, `[PH](c1ccccc1)(c1ccccc1)c1ccccc1`), so code 4 is read as +1 before the block is sanitized (`_plus_one_charge_codes`, PROV-13). It changes 723 records, 690 of the shipped compounds (50 CA, 66 CM, 554 CI), and makes 2 unreadable ones readable. RDKit still rejects the valences of 607 records (513 hold a metal, 69 more boron; a charged chlorine or oxygen bonded to it), which are dropped (1 CA, 15 CM, 591 CI). The 1,455 readable structures with a metal stay as the source draws them (coordination bonds as charged bonds, such as a copper -3 with three oxygens +1).
 - The repaired records are not charge-balanced: 631 of the 723 read net +1 and 42 net +2, because the source draws the partner anion protonated (a sodium phosphonate as the free acid beside `[Na+]`, NSC 224131) or draws no counter-ion at all (a phosphonium without its halide, NSC 4763). Deprotonating to balance them would be a fix of our own invention, not the source's drawing, so the drawing stays as published (P5 over P6).
 - Stereochemistry removed: "No stereochemical information was used in the build" of the 3D coordinates (DTP page), so the stereo RDKit reads from them (25,366 of 42,080 structures) is arbitrary; the shipped SMILES carries none, so it is also the key of rows a 2D encoding cannot tell apart.
-- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts: 1,407 columns on these compounds). The values are RDKit's canonical form (`canonical_smiles`) of the whole structure as published, every fragment kept. The NSC and the CAS RN are dropped (identifiers; 999-99-9 marks an unknown CAS RN). The draft of the same day shipped RDKit's descriptors in place of the string; on that draft's encoding (383 descriptor columns, before the charge repair) the whole structure scored as well as its largest fragment (untuned LightGBM log loss 0.1563 against 0.1578, ROC AUC 0.908 against 0.898 for confirmed active against the rest; 2 seeds x 3 scaffold-grouped folds).
+- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.special.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts: 1,407 columns on these compounds). The values are RDKit's canonical form (`canonical_smiles`) of the whole structure as published, every fragment kept. The NSC and the CAS RN are dropped (identifiers; 999-99-9 marks an unknown CAS RN). The draft of the same day shipped RDKit's descriptors in place of the string; on that draft's encoding (383 descriptor columns, before the charge repair) the whole structure scored as well as its largest fragment (untuned LightGBM log loss 0.1563 against 0.1578, ROC AUC 0.908 against 0.898 for confirmed active against the rest; 2 seeds x 3 scaffold-grouped folds).
 - Salt forms and copies (LEAK-19, LEAK-20): 3,130 of the 42,075 readable structures hold more than one fragment (counter-ions, which the file draws as bare cations such as `[Na+]`, solvents, complex partners). Salt forms of one compound are merged on the structure without RDKit's list of common salts and solvents (`FragmentRemover`: halides, metal ions, water, sulfate, ammonia, mesylate and others; organic counter-ions stay). The largest fragment is no such key here: in 57 groups (136 compounds) it would merge different compounds, such as dicyclohexylamine salts of different acids or crown-ether complexes of different tin compounds. 1,706 readable compounds share the key with another; the 39 compounds the screen concluded both active and inactive are dropped, all 104 rows (decision table), and of the others the first NSC is kept (831 rows dropped). 41,140 compounds remain: 1,404 active (390 CA, 1,014 CM) and 39,736 inactive, no two with one SMILES. 549 of them keep an organic counter-ion or a second component; the largest fragment of 49 of these is shipped as a compound of its own (a free form or another salt), 28 of them in another scaffold group, so a few near copies can sit across the split.
 - Split (SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold of the compound, its structure without common salts and solvents (`scaffold_groups`): 20,774 groups, 15,994 compounds alone (1,566 without a ring, 3.8%) and 4,780 series of 2 to 2,086. No scaffold holds a tenth of the compounds, so the bare benzene ring (2,086, 5.1%) stays one group. Under the groups 15.5% of the test compounds of repeat 0 have a training analog at Tanimoto 0.7 or more (Morgan radius 2, 2,048 bits, on the structure without its salts; median nearest 0.517), against 32.0% under a random split (0.606); for the actives 30.0% against 48.3%. MoleculeNet and OGB split this screen by scaffold too, and a scaffold split leaves this screen similar across the split either way: 78.1% of our test compounds have a training compound above Tanimoto 0.4, against the 56% Lo-Hi (Steshin 2023, Sec. 5.2) measured on MoleculeNet's cut, so the test side is a series not yet tested, not a new chemical class. The NSC number counts submission batches that the groups do not hold out; the splits comment has the numbers.
-- Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before, Andrej, 2026-11-12, review of how cuts of
-  growing catalogues split): the use case screens compounds not tested yet, which whole scaffolds held out stand
-  for. The screen's conclusion for a compound is a property of the compound, and the only order the source
-  keeps, the NSC registration number, is not when a compound entered the screen (about a quarter were registered
-  long before it began). A forward split on that order leaves 8.4% of the test compounds a close training analog
-  against 9.8% for a random draw of the same size and 4.3% scaffold-disjoint (splits comment), so it carries no
-  wave of arrivals the scaffold split misses. The split cannot test a chemical class the screen received only
-  later.
 - Note: `hiva_agnostic` was the 2007 Agnostic Learning vs. Prior Knowledge challenge's cut of these compounds: its 4,229 labelled and 38,449 test compounds make 42,678, against the 42,682 conclusions with a structure here, and both are 3.52% active (149 of 4,229; 1,503 of 42,682). A linking run on 2026-11-01 recovered the NSC number behind its rows from their bits (97% with confidence) and every one of its 4,229 labels agrees with this file, so it adds no compound and no label; what it added was one 2006 ChemTK representation nobody can recompute. It is retired as a duplicate of this release (PROV-6; Lennart, 2026-11-02), and its BeyondArena and TabArena v0.1 containers stay as shipped.
 - Note: MoleculeNet's HIV.csv (41,127 compounds: 404 CA, 1,039 CM, 39,684 CI) is this SD file read by an older RDKit, salts and the stereo of the coordinates kept, and it carries the charge-code artefact repaired here: 413 `[NaH]`, 24 `[KH]` and 254 `[PH]` against 16 `[Na+]`, 11 `[K+]` and 56 `[P+]` (PROV-15, a problem of that copy; another collection's version is no reason to keep ours damaged, EV-4). So after the repair our structures differ from MoleculeNet's, and from OGB's `ogbg-molhiv` built on it, on the 690 compounds the repair touched: 40,385 of MoleculeNet's 41,116 InChIKey skeletons are among ours, where 41,077 were before the repair. Its conclusions agree with ours for 40,311 of the 40,343 stereo-free SMILES both hold; the other 32 are structures entered here under several NSC numbers with different conclusions, of which MoleculeNet kept one.
 - Licence: the DTP page states no terms.
+- Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before, Andrej, 2026-11-12, review of how cuts of growing catalogues split): the use case screens compounds not tested yet, which whole scaffolds held out stand for. The screen's conclusion for a compound is a property of the compound, and the only order the source keeps, the NSC registration number, is not when a compound entered the screen (about a quarter were registered long before it began). A forward split on that order leaves 8.4% of the test compounds a close training analog against 9.8% for a random draw of the same size and 4.3% scaffold-disjoint (splits comment), so it carries no wave of arrivals the scaffold split misses. The split cannot test a chemical class the screen received only later.
 
 ## Splits
+
+Repeated 3-fold cross-validation keeping each group of `scaffold` whole (shuffled group k-fold, a new draw per repeat), stratified on `active_in_screen`: 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 41,140 rows (SPLIT-33).
 
 Grouped splits on the Bemis-Murcko scaffold of the compound (its structure without common salts and solvents): all compounds of one series stay on one side, so a model predicts compounds of a series it has not seen; compounds without a ring are held out one by one. The bare benzene ring (5.1% of the compounds) is one group, below the tenth of the compounds above which a scaffold counts as no series. Compounds with similar but not identical scaffolds can be on both sides.
 
@@ -287,7 +366,7 @@ One group is a chemical series: the compounds whose structure, without common sa
 | groups of two or more rows with a single label | 92.5% |
 | label variance explained by the group | 0.64 (shuffled groups: 0.52) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Decisions
 
@@ -335,7 +414,7 @@ A salt and its free form, or one compound under two NSC numbers, that the screen
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | active_in_screen | category | 0 | 0 | 2 | No, Yes |
-| SMILES | string | 0 | 0 | 41140 | Cn1c(=O)\[nH\]c2\[nH\]c3ccccc3c2c1=O, CS(=O)(=O)NOCCCCONS(C)(=O)=O, COc1cc(CNC(=S)C… |
+| SMILES | string | 0 | 0 | 41140 | O=NC1C(Cl)C2CC1C1COCC21, Cn1c(=O)\[nH\]c2\[nH\]c3ccccc3c2c1=O, CS(=O)(=O)NOCCCCONS(… |
 | scaffold | string | 0 | 0 | 20774 | c1ccccc1, c1ccncc1, O=c1ccn(C2CCCO2)c(=O)\[nH\]1, C(=Cc1ccccc1)c1ccccc1, O=C(C=Cc… |
 
 ### Target distribution
@@ -356,11 +435,11 @@ No numeric features to summarize.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| SMILES | 1 | Cn1c(=O)\[nH\]c2\[nH\]c3ccccc3c2c1=O | 1 | 0 |
-| SMILES | 2 | CS(=O)(=O)NOCCCCONS(C)(=O)=O | 1 | 0 |
-| SMILES | 3 | COc1cc(CNC(=S)CCCCCCCCCCC(C)C)ccc1O | 1 | 0 |
-| SMILES | 4 | CC12SC(C)(c3c\[se\]cc31)C1C(=O)N(c3ccccc3)C(=O)C12 | 1 | 0 |
-| SMILES | 5 | C\[P+\](C)(C)\[Ir-3\]1(\[P+\](C)(C)C)(\[P+\](C)(C)C)\[NH\]C(Cc2ccc(O)cc2)C... | 1 | 0 |
+| SMILES | 1 | O=NC1C(Cl)C2CC1C1COCC21 | 1 | 0 |
+| SMILES | 2 | Cn1c(=O)\[nH\]c2\[nH\]c3ccccc3c2c1=O | 1 | 0 |
+| SMILES | 3 | CS(=O)(=O)NOCCCCONS(C)(=O)=O | 1 | 0 |
+| SMILES | 4 | COc1cc(CNC(=S)CCCCCCCCCCC(C)C)ccc1O | 1 | 0 |
+| SMILES | 5 | CC12SC(C)(c3c\[se\]cc31)C1C(=O)N(c3ccccc3)C(=O)C12 | 1 | 0 |
 | active_in_screen | 1 | No | 39736 | 96.59 |
 | active_in_screen | 2 | Yes | 1404 | 3.41 |
 | scaffold | 1 | c1ccccc1 | 2086 | 5.07 |
@@ -373,4 +452,12 @@ No numeric features to summarize.
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a217fe-2a9e-73e4-bab6-8de4d39f75cc |
+| checksum | v2:7d1c5b23202f7d66556164cc4f62ba147a7f31d5fdf0c3e9d3241a6659380e1f |
+| built_at | 2026-11-26T13:14:26+00:00 |
+| path | nci_aids_antiviral_screen/01a217fe-2a9e-73e4-bab6-8de4d39f75cc |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

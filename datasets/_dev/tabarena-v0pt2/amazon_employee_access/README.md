@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: amazon_employee_access
 container_format: 2
-checksum: v2:9ad39dbc29cb027ac74cbafb372adbea16f335255d139dea2981e2b68b368969
+checksum: v2:51649a3f145efa38d102d0860f86c964ddad32348dabc179cc1b43c9737dcb1a
 build:
-  uuid: 01a111fc-c1ef-71ea-8931-5bb5679fad84
-  checksum: v2:1f6e14acca44e0951d49562b7d2dc4a9d1264b8ce0c60f2fb26d2b2fd244da8e
-  built_at: '2026-10-06T16:12:20+00:00'
-  path: amazon_employee_access/01a111fc-c1ef-71ea-8931-5bb5679fad84
+  uuid: 01a21800-b2b6-7828-ae07-851c6d27b8fb
+  checksum: v2:51649a3f145efa38d102d0860f86c964ddad32348dabc179cc1b43c9737dcb1a
+  built_at: '2026-11-26T13:17:08+00:00'
+  path: amazon_employee_access/01a21800-b2b6-7828-ae07-851c6d27b8fb
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 32769
   n_features: 8
@@ -45,6 +45,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 21846
     max: 21846
@@ -67,7 +68,7 @@ decisions: []
 
 Binary classification of `ResourceApproved`, scored with `roc_auc` on IID splits. 32,769 rows and 8 features. Source: Kaggle (2013).
 
-Built as `01a111fc-c1ef-71ea-8931-5bb5679fad84` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9ad39dbc29cb027ac74cbafb372adbea16f335255d139dea2981e2b68b368969`, so the build is stale. See [Build](#build).
+Built as `01a21800-b2b6-7828-ae07-851c6d27b8fb` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -188,7 +189,7 @@ The first 5 of 32,769 rows of the final frame (random rows: the frame is shuffle
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `ResourceApproved`: 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 32,769 rows (SPLIT-33).
 
 3 repeat(s) x 3 fold(s) with seed 4267; train 21,846 rows, test 10,923 rows.
 
@@ -293,11 +294,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-c1ef-71ea-8931-5bb5679fad84 |
-| checksum | v2:1f6e14acca44e0951d49562b7d2dc4a9d1264b8ce0c60f2fb26d2b2fd244da8e |
-| built_at | 2026-10-06T16:12:20+00:00 |
-| path | amazon_employee_access/01a111fc-c1ef-71ea-8931-5bb5679fad84 |
+| uuid | 01a21800-b2b6-7828-ae07-851c6d27b8fb |
+| checksum | v2:51649a3f145efa38d102d0860f86c964ddad32348dabc179cc1b43c9737dcb1a |
+| built_at | 2026-11-26T13:17:08+00:00 |
+| path | amazon_employee_access/01a21800-b2b6-7828-ae07-851c6d27b8fb |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:9ad39dbc29cb027ac74cbafb372adbea16f335255d139dea2981e2b68b368969` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

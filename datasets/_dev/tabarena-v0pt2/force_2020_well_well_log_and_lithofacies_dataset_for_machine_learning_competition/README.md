@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition
 container_format: 2
-checksum: v2:d80e08469a48779faa9e1676d00e94b6accf6d0b039e6252918b18e1b5b4ea5c
-build: null
+checksum: v2:3eb05dcd927f860e6694508cc92f23e27eb0ef52f3e5037222eb23840e0963ab
+build:
+  uuid: 01a217fd-6088-7be3-a8e7-353ab211807e
+  checksum: v2:3eb05dcd927f860e6694508cc92f23e27eb0ef52f3e5037222eb23840e0963ab
+  built_at: '2026-11-26T13:14:11+00:00'
+  path: force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition/01a217fd-6088-7be3-a8e7-353ab211807e
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 1429591
@@ -40,6 +53,23 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Grouped 3-fold cross-validation by well over all 118 wells (37 to 41 whole
+    wells per test fold, one repeat) replaces the competition''s 98 training, 10 open-test
+    and 10 blind wells: the organisers found the blind set too small to represent
+    the lithologies ("With hindsight we should have chosen a larger blind dataset",
+    blog post, p. 3). Test wells have drilled neighbours, as the competition''s held-out
+    wells had (14 of its 20 share a licence block with a training well): the median
+    distance from a test well to the nearest training well is 8 km and 55-76% share
+    a licence block, so the score stands for new wells in explored areas, not frontier
+    wells (random forest log loss 0.763 grouped by well, 0.814 by licence block, 1.015
+    by quadrant). A split by the wells'' public release date holds out no more than
+    a random draw of wells (2026-11-12; random forest on every 5th depth sample, four
+    expanding windows against training sides of the same size on the same test wells):
+    mean penalty 0.698 and log loss 0.811 forward by release date, 0.674 and 0.802
+    with random wells, 0.768 and 0.924 with wells from other quadrants; 62% of the
+    forward test wells keep a training well in their licence block (median 10 km to
+    the nearest), as random draws do (62%, 9.5 km). Halite (4 wells) and Anhydrite
+    (10) are absent from one test fold.'
   n_train:
     min: 931093
     max: 973462
@@ -52,11 +82,11 @@ bundle_checks:
   warnings: []
   infos: []
   accepted:
-    splits_test_class_missing: Halite occurs in 4 wells (14,711 rows) and Anhydrite
-      in 10 (1,807 rows). The grouped folds keep wells whole, and fold r0f2 tests
-      none of them; r0f0 and r0f1 test 1 and 3 halite wells and 6 and 4 anhydrite
-      wells, and every train side holds both classes. The mean penalty is defined
-      on the classes a fold holds.
+    splits_class_missing: Halite occurs in 4 wells (14,711 rows) and Anhydrite in
+      10 (1,807 rows). The grouped folds keep wells whole, and fold r0f2 tests none
+      of them; r0f0 and r0f1 test 1 and 3 halite wells and 6 and 4 anhydrite wells,
+      and every train side holds both classes. The mean penalty is defined on the
+      classes a fold holds.
 decisions:
 - All 118 wells in one frame, split by well
 - 'Basement dropped: one well'
@@ -69,7 +99,7 @@ decisions:
 
 Multiclass classification of `lithology`, scored with `cost_matrix` on grouped splits by `WELL`. 1,429,591 rows and 26 features. Source: GitHub (2020).
 
-Not built yet. The current definition gives checksum `v2:d80e08469a48779faa9e1676d00e94b6accf6d0b039e6252918b18e1b5b4ea5c`.
+Built as `01a217fd-6088-7be3-a8e7-353ab211807e` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -231,13 +261,11 @@ We start with the four files of the FORCE 2020 lithology competition on GitHub: 
   2000. A change in how features are recorded, kept as a note (SPLIT-37 step 4(a), Andrej, 2026-11-18): the newest
   wells, which the use case meets, are logged like the newest training wells. Windows on the release date cost
   little against random wells of the same size (mean penalty 0.698 against 0.674).
-- Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before): the use case interprets a well not yet
-  drilled, from its logs, so the split holds out whole wells. The lithology at a depth is a property of the
-  rock, and the wells reach the public one by one, not in waves: a split by release date holds out no more than
-  random wells (the splits comment). It cannot test wells logged with later tools or in parts of the North Sea
-  the 118 wells do not cover.
+- Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before): the use case interprets a well not yet drilled, from its logs, so the split holds out whole wells. The lithology at a depth is a property of the rock, and the wells reach the public one by one, not in waves: a split by release date holds out no more than random wells (the splits comment). It cannot test wells logged with later tools or in parts of the North Sea the 118 wells do not cover.
 
 ## Splits
+
+Repeated 3-fold cross-validation keeping each group of `WELL` whole (shuffled group k-fold, a new draw per repeat), stratified on `lithology`: 1 repeat(s) x 3 folds, 3 splits, the repeats set by the 1,429,591 rows (SPLIT-33).
 
 Grouped 3-fold cross-validation by well over all 118 wells (37 to 41 whole wells per test fold, one repeat) replaces the competition's 98 training, 10 open-test and 10 blind wells: the organisers found the blind set too small to represent the lithologies ("With hindsight we should have chosen a larger blind dataset", blog post, p. 3). Test wells have drilled neighbours, as the competition's held-out wells had (14 of its 20 share a licence block with a training well): the median distance from a test well to the nearest training well is 8 km and 55-76% share a licence block, so the score stands for new wells in explored areas, not frontier wells (random forest log loss 0.763 grouped by well, 0.814 by licence block, 1.015 by quadrant). A split by the wells' public release date holds out no more than a random draw of wells (2026-11-12; random forest on every 5th depth sample, four expanding windows against training sides of the same size on the same test wells): mean penalty 0.698 and log loss 0.811 forward by release date, 0.674 and 0.802 with random wells, 0.768 and 0.924 with wells from other quadrants; 62% of the forward test wells keep a training well in their licence block (median 10 km to the nearest), as random draws do (62%, 9.5 km). Halite (4 wells) and Anhydrite (10) are absent from one test fold.
 
@@ -271,7 +299,7 @@ One group is a wellbore (WELL, 118 in the Norwegian North Sea); its rows are the
 | nearest neighbour in the same group | 96.2% of the rows (chance: 1.1%) |
 | label variance explained by the group | 0.10 (shuffled groups: 0.00) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Decisions
 
@@ -327,7 +355,7 @@ Values below -900 are the LAS null values -999.0, -999.25 and -999.9 (stored as 
 
 Accepted on purpose:
 
-- `splits_test_class_missing`: Halite occurs in 4 wells (14,711 rows) and Anhydrite in 10 (1,807 rows). The grouped folds keep wells whole, and fold r0f2 tests none of them; r0f0 and r0f1 test 1 and 3 halite wells and 6 and 4 anhydrite wells, and every train side holds both classes. The mean penalty is defined on the classes a fold holds.
+- `splits_class_missing`: Halite occurs in 4 wells (14,711 rows) and Anhydrite in 10 (1,807 rows). The grouped folds keep wells whole, and fold r0f2 tests none of them; r0f0 and r0f1 test 1 and 3 halite wells and 6 and 4 anhydrite wells, and every train side holds both classes. The mean penalty is defined on the classes a fold holds.
 
 ## Data checks
 
@@ -456,4 +484,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a217fd-6088-7be3-a8e7-353ab211807e |
+| checksum | v2:3eb05dcd927f860e6694508cc92f23e27eb0ef52f3e5037222eb23840e0963ab |
+| built_at | 2026-11-26T13:14:11+00:00 |
+| path | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition/01a217fd-6088-7be3-a8e7-353ab211807e |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

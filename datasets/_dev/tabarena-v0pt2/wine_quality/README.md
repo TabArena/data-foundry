@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: wine_quality
 container_format: 2
-checksum: v2:ba1495a111beaa6076e971764923f243f682f6ace015dfa2ab647816daf8b083
+checksum: v2:920491eb2ca6de6a15d750f492019de94a8e45d662944a77bd1b4e42b2547837
 build:
-  uuid: 01a111fc-f00a-7053-95dc-e278996515ca
-  checksum: v2:948a3444c77ba54869a7f144400c14ce2cd5552822ac7963f53a932b62babd79
-  built_at: '2026-10-06T16:12:31+00:00'
-  path: wine_quality/01a111fc-f00a-7053-95dc-e278996515ca
+  uuid: 01a21800-a710-7e27-bc91-39a7e00b63c8
+  checksum: v2:920491eb2ca6de6a15d750f492019de94a8e45d662944a77bd1b4e42b2547837
+  built_at: '2026-11-26T13:17:06+00:00'
+  path: wine_quality/01a21800-a710-7e27-bc91-39a7e00b63c8
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 5271
   n_features: 12
@@ -48,6 +48,25 @@ splits:
   time_horizon_unit: steps
   time_gap: null
   time_gap_unit: null
+  reason: 'Nine test windows of 292 wines over the newest half by file position, each
+    trained on every earlier wine (2,643
+
+    to 4,979 wines, 50.1% to 94.5% of the rows; 292 rather than 295 keeps the oldest
+    window above half, Andrej,
+
+    2026-11-18); a window stands for the next wines the certification body grades.
+    The release has no
+
+    date: the file order is taken as the order of entry, inferred from the data and
+    not documented, so the split
+
+    is a judgement call (the curation notes give the readings weighed and the evidence).
+    `file_position` is a
+
+    row''s share of its colour file, no date, and assumes both files were entered
+    at a steady pace. No gap: the
+
+    grade is given at the tasting that dates the row.'
   n_train:
     min: 2643
     max: 4979
@@ -72,7 +91,7 @@ decisions: []
 
 Regression of `median_wine_quality`, scored with `mae` on temporal splits by `file_position`. 5,271 rows and 12 features. Source: UCI (2009).
 
-Built as `01a111fc-f00a-7053-95dc-e278996515ca` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ba1495a111beaa6076e971764923f243f682f6ace015dfa2ab647816daf8b083`, so the build is stale. See [Build](#build).
+Built as `01a21800-a710-7e27-bc91-39a7e00b63c8` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -228,6 +247,8 @@ The first 5 of 5,271 rows of the final frame (the oldest rows: the frame is sort
 
 ## Splits
 
+Expanding-window temporal splits: 9 test window(s) of 292 rows, walking back from the newest data, newest first; train is all earlier data. The test windows by `file_position`, as listed: 0.9452837893017558 to 0.999795835034708 (292 test, 4,979 train rows); 0.8895467537770518 to 0.9450796243364639 (292 test, 4,687 train rows); 0.8327888934258881 to 0.8893425888117599 (292 test, 4,395 train rows); 0.7719477337688853 to 0.8325847284605962 (292 test, 4,103 train rows); 0.71294405879951 to 0.7717323327079425 (292 test, 3,811 train rows); 0.6565945283789302 to 0.7127398938342181 (292 test, 3,519 train rows); 0.5998366680277665 to 0.6563903634136382 (292 test, 3,227 train rows); 0.5430788076766027 to 0.5997498436522827 (292 test, 2,935 train rows); 0.48655409631019386 to 0.5428746427113107 (292 test, 2,643 train rows).
+
 Nine test windows of 292 wines over the newest half by file position, each trained on every earlier wine (2,643
 to 4,979 wines, 50.1% to 94.5% of the rows; 292 rather than 295 keeps the oldest window above half, Andrej,
 2026-11-18); a window stands for the next wines the certification body grades. The release has no
@@ -297,7 +318,7 @@ Accepted on purpose:
 | pH | float64 | 0 | 0 | 108 | 3.16, 3.22, 3.14, 3.2, 3.15, 3.18, 3.24, 3.19, 3.12, 3.17 |
 | sulphates | float64 | 0 | 0 | 111 | 0.5, 0.46, 0.54, 0.44, 0.48, 0.38, 0.47, 0.52, 0.49, 0.45 |
 | alcohol | float64 | 0 | 0 | 107 | 9.5, 9.4, 10.0, 9.2, 10.5, 11.0, 9.8, 9.3, 10.4, 10.2 |
-| file_position | float64 | 0 | 0 | 5270 | 0.0, 0.0002, 0.0004, 0.0006, 0.0006, 0.0012, 0.0013, 0.0018, 0.0019, 0.002 |
+| file_position | float64 | 0 | 0 | 5270 | 0.0, 0.6566, 0.6564, 0.6562, 0.656, 0.656, 0.6558, 0.6556, 0.6554, 0.646 |
 | median_wine_quality | int64 | 0 | 0 | 7 | 6, 5, 7, 4, 8, 3, 9 |
 
 </details>
@@ -342,11 +363,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-f00a-7053-95dc-e278996515ca |
-| checksum | v2:948a3444c77ba54869a7f144400c14ce2cd5552822ac7963f53a932b62babd79 |
-| built_at | 2026-10-06T16:12:31+00:00 |
-| path | wine_quality/01a111fc-f00a-7053-95dc-e278996515ca |
+| uuid | 01a21800-a710-7e27-bc91-39a7e00b63c8 |
+| checksum | v2:920491eb2ca6de6a15d750f492019de94a8e45d662944a77bd1b4e42b2547837 |
+| built_at | 2026-11-26T13:17:06+00:00 |
+| path | wine_quality/01a21800-a710-7e27-bc91-39a7e00b63c8 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ba1495a111beaa6076e971764923f243f682f6ace015dfa2ab647816daf8b083` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

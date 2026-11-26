@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: bank_marketing
 container_format: 2
-checksum: v2:9030d68856418cd2260ee0c240c7f1e3f19bee944d39119cc88d0cfc63f76580
+checksum: v2:0094a67a134188dcc95cc71e82a9e94b1dc6626d7563e9ef590e581de82fcb54
 build:
-  uuid: 01a111fc-7c2d-7441-b859-646c9bfbf380
-  checksum: v2:df7e993235e244580c862ce525a593509ccdcce2503c8efd6c2ad7382a02bdeb
-  built_at: '2026-10-06T16:12:02+00:00'
-  path: bank_marketing/01a111fc-7c2d-7441-b859-646c9bfbf380
+  uuid: 01a21800-849d-76a4-821b-adf2632843b4
+  checksum: v2:0094a67a134188dcc95cc71e82a9e94b1dc6626d7563e9ef590e581de82fcb54
+  built_at: '2026-11-26T13:16:58+00:00'
+  path: bank_marketing/01a21800-849d-76a4-821b-adf2632843b4
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 45211
   n_features: 12
@@ -47,6 +47,103 @@ splits:
   time_horizon_unit: months
   time_gap: null
   time_gap_unit: null
+  reason: 'Ten expanding windows on the date of the last contact, rebuilt in `_clean`
+    (the year from where the months
+
+    wrap) and not shipped, newest first; each test window runs from its start to the
+    next one and trains on every
+
+    earlier record, no gap (Andrej, 2026-11-20):
+
+
+    | Test window | Kind | Train share | Test records | Subscribers |
+
+    |---|---|---|---|---|
+
+    | 1 Sep-17 Nov 2010 | trickle, quarter | 98.7% | 592 | 272 (45.9%) |
+
+    | 1 Jun-31 Aug 2010 | trickle, quarter | 97.0% | 781 | 407 (52.1%) |
+
+    | 1 Mar-31 May 2010 | trickle, quarter | 95.5% | 667 | 383 (57.4%) |
+
+    | 2 Dec 2009-26 Feb 2010 | trickle, quarter | 93.8% | 781 | 389 (49.8%) |
+
+    | 1 Sep-30 Nov 2009 | trickle, quarter | 91.5% | 1,017 | 454 (44.6%) |
+
+    | 1 Jun-31 Aug 2009 | trickle, quarter | 87.9% | 1,621 | 581 (35.8%) |
+
+    | 4-28 May 2009 | May campaign | 75.6% | 5,575 | 533 (9.6%) |
+
+    | 16-30 Apr 2009 | April campaign | 71.2% | 1,984 | 332 (16.7%) |
+
+    | 28 Jan-15 Apr 2009 | Jan-Feb campaign + trickle | 61.3% | 4,464 | 537 (12.0%)
+    |
+
+    | 17 Oct-27 Dec 2008 | November campaign + trickle | 53.2% | 3,691 | 270 (7.3%)
+    |
+
+
+    The windows follow the bank''s calling. The source names "17 campaigns that occurred
+    between May 2008 and
+
+    November 2010" (Moro, Laureano, Cortez 2011) without dates, and the file has no
+    campaign id, so the campaigns
+
+    are read from the dates: five bursts of mass calling (days of 150 records or more:
+    5 May-29 Aug 2008, 17-21 Nov
+
+    2008, 28 Jan-9 Feb 2009, 16-30 Apr 2009, 4-18 May 2009; 5-14% subscribed), and
+    from June 2009 a trickle of
+
+    one-by-one calls, at most 115 a day (36-57% subscribed). Each campaign window
+    starts at its burst''s first day
+
+    or in the calling gap before it (no record from 30 Aug to 16 Oct 2008, nor from
+    28 Dec 2008 to 27 Jan 2009) and
+
+    holds the burst and the trickle after it, so no cut splits a campaign; the trickle
+    has no campaign to cut at,
+
+    so it is cut by calendar quarter. The summer 2008 wave is 53.2% of the records,
+    so it trains every window and
+
+    is never tested. The subscription rate follows the day''s calling volume (5.8%
+    on days with 200 calls or more,
+
+    48.5% on days with 20 or fewer), which the input `calls_that_day` carries; the
+    burst windows test mass calling,
+
+    the trickle windows selected calls, and a mean over the windows gives the trickle
+    six of ten votes for 12% of
+
+    the records.
+
+
+    Ten windows against the nine an IID split of 45,211 records would get (SPLIT-15):
+    the target is reached, every
+
+    window trains on more than half the records (SPLIT-14), and the smallest holds
+    272 subscribers. The source
+
+    scores its model on time-ordered windows too: a random split does "not reflect
+    the temporal dimension that a
+
+    real prediction system would have to follow" (Moro et al. 2014, p. 5). The time
+    key `time_index` is the
+
+    record''s position in the file, which is in date order; it orders the windows
+    and is no model input, and every
+
+    window starts at the first record of its date.
+
+    No gap (SPLIT-10): a record is dated by its last call, which ends the client''s
+    calls in that campaign, so its
+
+    outcome is known by the date that orders it. Each test record is predicted from
+    the training records and its
+
+    own inputs only; no feature or model step may use other test records (curation
+    notes, Protocol).'
   n_train:
     min: 24038
     max: 44619
@@ -64,11 +161,6 @@ bundle_checks:
       was not previously contacted'' (UCI codebook), not a missing value: it matches
       previous == 0 row for row (36,954 rows), so it stays as a code with a meaning
       (CLEAN-10).'
-    dataset_sequential_id_column: '`time_index` is the record''s position in the file,
-      which the source orders by the date of the last contact: it is the declared
-      temporal order (`Temporal(on="time_index", time_of="label")`), it sets the test
-      windows, and since 2026-11-21 it is no model input. It is kept in the frame
-      because the split needs it and the file holds no date.'
 decisions: []
 ---
 
@@ -78,7 +170,7 @@ decisions: []
 
 Binary classification of `SubscribeTermDeposit`, scored with `roc_auc` on temporal splits by `time_index`. 45,211 rows and 12 features. Source: UCI (2012).
 
-Built as `01a111fc-7c2d-7441-b859-646c9bfbf380` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9030d68856418cd2260ee0c240c7f1e3f19bee944d39119cc88d0cfc63f76580`, so the build is stale. See [Build](#build).
+Built as `01a21800-849d-76a4-821b-adf2632843b4` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -217,6 +309,8 @@ The first 5 of 45,211 rows of the final frame (the oldest rows: the frame is sor
 
 ## Splits
 
+Expanding-window temporal splits: 10 test window(s), each from its start to the next start, the newest to the end of the data (starts: 44619, 43838, 43171, 42390, 41373, 39752, 34177, 32193, 27729, 24038), newest first; train is all earlier data. The test windows by `time_index`, as listed: 44619 to 45210 (592 test, 44,619 train rows); 43838 to 44618 (781 test, 43,838 train rows); 43171 to 43837 (667 test, 43,171 train rows); 42390 to 43170 (781 test, 42,390 train rows); 41373 to 42389 (1,017 test, 41,373 train rows); 39752 to 41372 (1,621 test, 39,752 train rows); 34177 to 39751 (5,575 test, 34,177 train rows); 32193 to 34176 (1,984 test, 32,193 train rows); 27729 to 32192 (4,464 test, 27,729 train rows); 24038 to 27728 (3,691 test, 24,038 train rows).
+
 Ten expanding windows on the date of the last contact, rebuilt in `_clean` (the year from where the months
 wrap) and not shipped, newest first; each test window runs from its start to the next one and trains on every
 earlier record, no gap (Andrej, 2026-11-20):
@@ -294,12 +388,11 @@ Each test window against its train side, by statistics of the data, never of a m
 
 0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
-- **info** `meta_time_horizon_unit`: `time_horizon_unit='months'` implies calendar time, but `time_on='time_index'` has dtype int64, so the horizon cannot be cross-checked. (hint: Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use `time_horizon_unit='steps'` for a plain numeric time index.)
+- **info** `meta_time_horizon_unit`: `time_horizon_unit='months'` implies calendar time, but `time_on='time_index'` has dtype int64, so the horizon cannot be cross-checked. (hint: Declare what one step of the time column counts, `Temporal(..., time_unit=...)`, so the horizon can be cross-checked.)
 
 Accepted on purpose:
 
 - `dataset_missing_value_sentinel`: pdays = -1 is the source's code for 'client was not previously contacted' (UCI codebook), not a missing value: it matches previous == 0 row for row (36,954 rows), so it stays as a code with a meaning (CLEAN-10).
-- `dataset_sequential_id_column`: `time_index` is the record's position in the file, which the source orders by the date of the last contact: it is the declared temporal order (`Temporal(on="time_index", time_of="label")`), it sets the test windows, and since 2026-11-21 it is no model input. It is kept in the frame because the split needs it and the file holds no date.
 
 ## Data checks
 
@@ -322,7 +415,7 @@ Accepted on purpose:
 | balance | int64 | 0 | 0 | 7168 | 0, 1, 2, 4, 3, 5, 6, 8, 23, 7 |
 | pdays | int64 | 0 | 0 | 559 | -1, 182, 92, 183, 91, 181, 370, 184, 364, 95 |
 | previous | int64 | 0 | 0 | 41 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
-| time_index | int64 | 0 | 0 | 45211 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
+| time_index | int64 | 0 | 0 | 45211 | 45210, 0, 1, 2, 3, 4, 5, 6, 7, 8 |
 | calls_that_day | int64 | 0 | 0 | 154 | 492, 328, 825, 751, 361, 709, 694, 334, 643, 629 |
 
 </details>
@@ -383,11 +476,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-7c2d-7441-b859-646c9bfbf380 |
-| checksum | v2:df7e993235e244580c862ce525a593509ccdcce2503c8efd6c2ad7382a02bdeb |
-| built_at | 2026-10-06T16:12:02+00:00 |
-| path | bank_marketing/01a111fc-7c2d-7441-b859-646c9bfbf380 |
+| uuid | 01a21800-849d-76a4-821b-adf2632843b4 |
+| checksum | v2:0094a67a134188dcc95cc71e82a9e94b1dc6626d7563e9ef590e581de82fcb54 |
+| built_at | 2026-11-26T13:16:58+00:00 |
+| path | bank_marketing/01a21800-849d-76a4-821b-adf2632843b4 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:9030d68856418cd2260ee0c240c7f1e3f19bee944d39119cc88d0cfc63f76580` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
