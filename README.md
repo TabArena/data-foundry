@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-26 11:29 UTC: 227 claim(s) (Andrej 196, Lennart 12, Myunghwan 19).
+As of 2026-11-26 12:50 UTC: 225 claim(s) (Andrej 194, Lennart 12, Myunghwan 19).
 
 ## Andrej
 
@@ -123,7 +123,6 @@ As of 2026-11-26 11:29 UTC: 227 claim(s) (Andrej 196, Lennart 12, Myunghwan 19).
 | `mgnify_t2d_gut_host_sex` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
 | `mgnify_vegetable_oil_diet_gut_host_sex` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
 | `miami_housing` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
-| `mic` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `micro_mass` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `mtp2` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
 | `musk` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -133,7 +132,6 @@ As of 2026-11-26 11:29 UTC: 227 claim(s) (Andrej 196, Lennart 12, Myunghwan 19).
 | `noaa_afsc_bottom_trawl_survey_cpue` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `noaa_storm_events_damage` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `obesity_estimation` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
-| `online_shoppers_purchasing_intention_dataset` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `open_soil_spectral_library` | review | 2026-11-12 | 2026-11-19 (expired) | Catalogue split keys (PR #81): collection facts and open split issues |
 | `otto_group_product_classification_challenge` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `pancreatic_cancer_mouse_detection` | review | 2026-11-11 | 2026-11-18 (expired) | BeyondArena v0.2 review page (Andrej) |
