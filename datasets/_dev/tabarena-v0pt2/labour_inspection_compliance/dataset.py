@@ -131,9 +131,7 @@ class LabourInspectionCompliance(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Three test windows of 10,605 inspections (a sixth of the rows) in the raw file's order, walking back from the
-        newest; each trains on all earlier rows (50%, 67% and 83%), so no window trains on less than half of the data
-        (SPLIT-14). The order is the export's and coarse: it resolves time only to about 10,000 rows (some 14 months
+        The order is the export's and coarse: it resolves time only to about 10,000 rows (some 14 months
         of the 7.5 years), so the windows are a sixth of the rows each, wider than that resolution, and a test window
         is later on average, not row by row. The windows follow the file's own order: the checklists of one visit lie
         a median 1,211 rows apart, so a window's start cuts some visits (0.3% to 1.0% of test rows have another row of

@@ -147,12 +147,10 @@ class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
     # outcome is known by then, so the gap differs by course length (see `splits_comment`).
     temporal = Temporal(on="enrolment_year", horizon=1, horizon_unit="years", gap=1, gap_unit="years")
     splits_comment = """
-        Four test windows, one enrolment cohort each, newest first (2017, 2016, 2015, 2014; 368, 414, 445 and 390
-        students). A window's model is fitted when its cohort ends its first year. The label is the status at the end of the
+        A window's model is fitted when its cohort ends its first year. The label is the status at the end of the
         course's normal length (three years, four for Nursing; Realinho et al. 2022, Sec. 3.1), so training holds only
         the students whose normal end came before that: for a three-year course the cohorts up to two years older
-        (a gap of one cohort), for Nursing up to three years older (a gap of two). The training sides hold 54% to 80%
-        of the 4,424 students. Measured 2026-11-11 (untuned LightGBM, log loss): 0.740 (2017), 0.791, 0.694, 0.706
+        (a gap of one cohort), for Nursing up to three years older (a gap of two). Measured 2026-11-11 (untuned LightGBM, log loss): 0.740 (2017), 0.791, 0.694, 0.706
         (2014), +0.02 to +0.14 above training on as many students drawn from all cohorts; the random split this
         replaces flattered log loss by that much. Four of the nine windows an IID split of this size would get: one
         window is one cohort, and with the gap the label needs, the 2013 cohort would train on 43.9% of the students

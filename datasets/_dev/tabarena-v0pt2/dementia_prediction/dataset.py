@@ -173,7 +173,7 @@ class DementiaPrediction(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        We create stratified grouped 20-repeated 3-fold split. This puts about 50 subjects (112-138 visits) in each test fold.
+        This puts about 50 subjects (112-138 visits) in each test fold.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

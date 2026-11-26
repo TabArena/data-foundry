@@ -417,7 +417,7 @@ class HouseSales(AbstractCuratedDataset):
         on="date", splits=TemporalSplits(window=3, unit="weeks", n_windows=9, min_train_fraction=0.5, gap=1)
     )
     splits_comment = """
-        9 test windows of three weeks (21 days), from 10-30 April 2015 back to 24 October-13 November 2014, newest first, each trained on the sales up to one week before the window. The gap is the delay before a sale is recorded and a refit can learn its price: from the deed date to the recording date the delay has a median of 6 days, and 91% of sales are recorded within 14 days. The window length follows the window count, not a refit cadence the source states: nine windows are the 3 x 3 splits an IID task of this size gets; they hold 649 to 1,534 sales each, and the oldest trains on 52% of the rows. Calendar months (a monthly refit) would give 6 windows of 953 to 2,189 sales. With one year of data the windows cover late October to April only, and the training history is under one year.
+        The gap is the delay before a sale is recorded and a refit can learn its price: from the deed date to the recording date the delay has a median of 6 days, and 91% of sales are recorded within 14 days. The window length follows the window count, not a refit cadence the source states: nine windows are the 3 x 3 splits an IID task of this size gets; they hold 649 to 1,534 sales each, and the oldest trains on 52% of the rows. Calendar months (a monthly refit) would give 6 windows of 953 to 2,189 sales. With one year of data the windows cover late October to April only, and the training history is under one year.
     """
 
     prepared_raw_files = (CHANGES_FILE, BATHS_FILE, WARNINGS_FILE)

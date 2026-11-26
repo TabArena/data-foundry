@@ -1,5 +1,26 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-26, split declarations replace nine custom splits; the splits comment is generated first (no container built)
+
+- New declarations (`data_foundry.definition`): `TemporalSplits(window=None, cutoffs=...)` runs each window to the next
+  start; `Temporal(label_known_on=...)` trains only on labels known before a window;
+  `Temporal(exclude_test_entities_on=...)` leaves out the training rows of the entities a window tests;
+  `leave_one_group_out = True` holds out one group per fold. Nine custom `_make_splits` became declarations, each
+  with identical repeats, folds, train and test positions
+  and frame on the real data: bank_marketing, sdss_17 and 2_month_survival_rate_prediction (windows to the next start),
+  brazilian_ecommerce and sf_permit_time (labels known), lending_club and alfa_battle_2_0_task_2 (entities of the
+  window), heart_disease and online_shoppers_purchasing_intention_dataset (one group out). Six stay custom:
+  african_credit_scoring_challenge, chicago_traffic_crashes, home_credit_default_risk, hotel_booking_demand,
+  medical_facility_operational_data and predict_students_dropout_and_academic_success.
+  The `splits_rows_unused` acceptances of brazilian_ecommerce, lending_club and alfa_battle_2_0_task_2 are not kept:
+  rows a temporal split leaves out are an info since the overlapping checks were merged.
+- The splits comment of a container and its README is now the generated description of the splits (the windows with
+  their times and sizes, the folds and repeats and the units that set them, the gap, the budget and the train
+  sampling), then the definition's `splits_comment` as the reason; the description replaces "Default splits.".
+  The `splits_comment` of 55 definitions lost the 72 sentences that only restated it (window dates and sizes, fold and
+  repeat counts, the budget and sampling text); every reason, decision and attribution stays word for word. The other
+  metadata of all 174 definitions is unchanged (compared). The generated `README.md` files change at the next rebuild.
+
 ## 2026-11-26, a weight is declared once and the time basis is data (no container built)
 
 - A weight is declared on its scoring column alone (codebase review of 2026-11-25): `ScoringColumn(..., fit=True)` is

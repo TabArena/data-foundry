@@ -13,9 +13,9 @@ from data_foundry.definition import (
     FeatureTypes,
     Metric,
     Source,
-    Splits,
     TaskSummary,
     Temporal,
+    TemporalSplits,
     drop_columns,
 )
 
@@ -213,6 +213,9 @@ LABEL_DELAY_DAYS = 60
 """The label, death within 60 days of study entry, is known 60 days after entry: each window trains on the patients
 who entered at least this many days before it starts."""
 
+SPLIT_WINDOWS = TemporalSplits(window=None, unit="days", cutoffs=TEST_HALF_YEARS, gap=LABEL_DELAY_DAYS)
+"""The windows of `TEST_HALF_YEARS` on the entry date, each running to the next start, after the label's delay."""
+
 
 def _entry_dates(support2: pd.DataFrame) -> pd.Series:
     """The rebuilt study-entry date of each support2 row (the file has no entry date).
@@ -234,20 +237,6 @@ def _entry_dates(support2: pd.DataFrame) -> pd.Series:
         dated = rows & survivor
         entry[rows] = np.interp(position[rows], position[dated], day[dated])
     return pd.Series(pd.to_datetime(np.round(entry).astype(np.int64), unit="D"), index=support2.index)
-
-
-def _half_year_windows(entry: pd.Series) -> Splits:
-    """The test windows of `TEST_HALF_YEARS` on the entry date (sorted), each training on the patients who entered
-    `LABEL_DELAY_DAYS` or more before the window starts.
-    """
-    starts = [pd.Timestamp(start) for start in TEST_HALF_YEARS]
-    ends = [None, *starts[:-1]]
-    splits = {}
-    for i, (start, end) in enumerate(zip(starts, ends, strict=True)):
-        test = entry.ge(start) & (entry.lt(end) if end is not None else True)
-        train = entry.lt(start - pd.Timedelta(days=LABEL_DELAY_DAYS))
-        splits[i] = {0: (np.flatnonzero(train).tolist(), np.flatnonzero(test).tolist())}
-    return splits
 
 
 def _alive_after_day_3(df: pd.DataFrame) -> pd.Series:
@@ -418,8 +407,7 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Three test windows of study entry, newest first: the second half of 1993 with January 1994 (1,216 patients),
-        the first half of 1993 (1,247) and the second half of 1992 (1,099). Each trains on every patient who entered
+        Each trains on every patient who entered
         60 days or more before the window starts: 82%, 69% and 56% of the 8,967 patients (Andrej, 2026-11-19,
         decision B).
         The file has no entry date. Within each of its ten blocks the rows are in entry order: the survivors' entry
@@ -437,16 +425,11 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
     split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="entry_date",
+        splits=SPLIT_WINDOWS,
         horizon=6,
         horizon_unit="months",
-        gap=LABEL_DELAY_DAYS,
-        gap_unit="days",
         time_of="label",  # a rebuilt date that orders and splits the rows: no model input (2026-11-19, Andrej)
     )
-
-    def _make_splits(self, df: pd.DataFrame) -> Splits:
-        """Three half-year windows on the rebuilt entry date with a 60-day gap (`TEST_HALF_YEARS`)."""
-        return _half_year_windows(df["entry_date"])
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         return {
@@ -626,7 +609,7 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
         starts = [pd.Timestamp(start) for start in TEST_HALF_YEARS]
         in_gap = [entry.ge(start - pd.Timedelta(days=LABEL_DELAY_DAYS)) & entry.lt(start) for start in starts]
         rows = []
-        for i, folds in _half_year_windows(entry).items():
+        for i, folds in SPLIT_WINDOWS.splits(entry.to_frame(), "entry_date").items():
             train, test = folds[0]
             rows.append(
                 {

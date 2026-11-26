@@ -242,8 +242,7 @@ class RfPcp(AbstractCuratedDataset):
         ),
     )
     splits_comment = """
-        Twenty repeats of three-fold grouped evaluation with seed 4267: the metric scores one correlation per
-        protein, so the split count counts proteins (297 on the train side). All rows of each recovered target key stay
+        All rows of each recovered target key stay
         together, including verified same-protein accession aliases. The selected GDT task and preserved target alternatives share test groups;
         membership is verified explicitly.
         All 342 CASP identities are verified; three retain source IDs. Sequence-family independence is not claimed.

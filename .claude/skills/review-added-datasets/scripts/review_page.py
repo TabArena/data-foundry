@@ -60,7 +60,7 @@ except ImportError:  # pragma: no cover - depends on the environment
 
 from data_foundry.curation import review as rv
 from data_foundry.curation.consistency import COLLECTION_TYPES, collection_type_problems, time_basis_problems
-from data_foundry.definition.dataset import DEFAULT_SPLITS_COMMENT, TaskSummary
+from data_foundry.definition.dataset import TaskSummary, splits_reason
 from data_foundry.definition.registry import load_definition
 from data_foundry.definition.report import read_report
 from data_foundry.metrics import Metric
@@ -665,8 +665,9 @@ def _split(readme: str | None, tags: list[str], comments: str | None, basis_reas
 
     From the front matter: the regime, the stratification, time and group columns, the grouping, the repeats and
     folds, the horizon and gap and the train and test sizes. From the Splits section: the definition's note on the
-    split (empty for the default splits) and the table of splits (with the time windows of a temporal task). The
-    ``Forced...`` data tags say that the regime was forced; the definition's notes on the split say why.
+    split, without the generated description that opens it (empty when the definition gives none), and the table of
+    splits (with the time windows of a temporal task). The ``Forced...`` data tags say that the regime was forced;
+    the definition's notes on the split say why.
     """
     front, body = _frontmatter(readme)
     task, sp = front.get("task") or {}, front.get("splits") or {}
@@ -677,7 +678,7 @@ def _split(readme: str | None, tags: list[str], comments: str | None, basis_reas
     if m:
         paras = [x.strip() for x in re.split(r"\n\s*\n", m.group(1)) if x.strip()]
         at = next((i for i, x in enumerate(paras) if SPLIT_SHAPE.match(x)), len(paras))
-        note = "\n\n".join(paras[:at])
+        note = splits_reason("\n\n".join(paras[:at]))
         table = "\n".join(line for line in m.group(1).splitlines() if line.startswith("|"))
     grouping = task.get("grouping") or {}
     return {
@@ -690,7 +691,7 @@ def _split(readme: str | None, tags: list[str], comments: str | None, basis_reas
         "prediction_unit": grouping.get("prediction_unit"),
         "aggregation": grouping.get("aggregation"),
         **{k: sp.get(k) for k in SPLIT_KEYS},
-        "noteHtml": render(note) if note and note != DEFAULT_SPLITS_COMMENT else "",
+        "noteHtml": render(note) if note else "",
         "tableHtml": MD.render(table) if table else "",
         "notes": _split_notes(comments),
         "time": _time_basis(tags, basis_reason, task["split_regime"]),

@@ -150,6 +150,13 @@ def warehouse(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     return root
 
 
+TOY_CV = (
+    "Repeated 3-fold cross-validation over the rows, stratified on `y`: 20 repeat(s) x 3 folds, 60 splits, the "
+    "repeats set by the 600 rows (SPLIT-33)."
+)
+"""The generated description of the toy definition's splits."""
+
+
 def write_definition(root: Path, name: str = "toy_ds", *, comment: str = "Toy data.", body: str | None = None) -> Path:
     """Write ``<root>/<name>/dataset.py`` and return the folder."""
     folder = root / name
@@ -235,7 +242,7 @@ def test_check_writes_a_deterministic_report(tmp_path: Path, warehouse: Path) ->
     assert fm["checksum"] == result.container.checksum
     assert fm["splits"]["n_repeats"] == 20  # 600 rows: 20-repeated 3-fold
     assert fm["splits"]["random_state"] == 4267
-    assert result.container.experiment_metadata.splits_comment == "Default splits."
+    assert result.container.experiment_metadata.splits_comment == TOY_CV
 
 
 def test_readme_explains_the_folder(tmp_path: Path, warehouse: Path) -> None:
@@ -962,8 +969,8 @@ def test_a_dataset_without_a_budget_keeps_the_full_cross_validation(tmp_path: Pa
     write_definition(tmp_path / "datasets")
     ds = get_dataset(tmp_path / "datasets", "toy_ds")
     plan = ds.make_splits()
-    assert plan.splits == ds._cross_validation(plan.df)  # nothing sampled, nothing capped
-    assert plan.comment == "Default splits."
+    assert plan.splits == ds._cross_validation(plan.df)[0]  # nothing sampled, nothing capped
+    assert plan.comment == TOY_CV  # the generated description alone: the definition gives no reason
     assert ds.to_container().experiment_metadata.row_budget is None
 
 
@@ -978,8 +985,9 @@ def test_a_version_tests_on_its_budget_and_trains_on_every_other_row(tmp_path: P
         for train, test in folds.values():
             assert not set(train) & set(test)
     assert plan.comment == (
-        "Default splits. Each fold tests on at most 0.05k rows of its third and trains on every other row; a benchmark "
-        "sub-samples the train side to 0.2k rows (by default rows drawn at random, `subsample_train`)."
+        f"{TOY_CV} Each fold tests on at most 0.05k rows of its third and trains on "
+        "every other row; a benchmark sub-samples the train side to 0.2k rows (by default rows drawn at random, "
+        "`subsample_train`)."
     )
 
 
@@ -988,7 +996,7 @@ def test_a_version_whose_train_sides_exceed_the_budget_keeps_its_folds(tmp_path:
     ds = make_version(tmp_path / "datasets", budget="RowBudget(train=200, test=500)")
     plan = ds.make_splits()
     assert len(plan.df) == 600
-    assert plan.splits == ds._cross_validation(plan.df)  # no test side is over 500; the train sides of 400 are N's
+    assert plan.splits == ds._cross_validation(plan.df)[0]  # no test side is over 500; the train sides of 400 are N's
 
 
 def test_a_version_keeps_whole_groups_and_trains_on_the_rest_of_its_fold(tmp_path: Path, warehouse: Path) -> None:
@@ -1020,7 +1028,8 @@ def test_a_version_with_a_frame_within_budget_still_samples_its_test_sides(tmp_p
     plan = make_version(tmp_path / "datasets", "toy_ds_0p5k", budget="RowBudget(train=500, test=100)").make_splits()
     assert len(plan.df) == 600
     assert fold_sizes(plan.splits) == {(500, 100)}  # the train sides keep to 500 by themselves
-    assert plan.comment.startswith("Default splits. Each fold tests on at most 0.1k rows of its third")
+    assert plan.comment.startswith("Repeated 3-fold cross-validation over the rows")
+    assert "Each fold tests on at most 0.1k rows of its third" in plan.comment
 
 
 def test_a_version_records_its_budget_and_is_held_to_it(tmp_path: Path, warehouse: Path) -> None:
@@ -1092,7 +1101,7 @@ def test_a_collection_dataset_within_the_budget_keeps_its_full_splits(tmp_path: 
     write_definition(root)
     ds = get_dataset(root, "toy_ds")
     plan = ds.make_splits()
-    assert plan.splits == ds._cross_validation(plan.df)
+    assert plan.splits == ds._cross_validation(plan.df)[0]
     assert ds.to_container().experiment_metadata.row_budget is None  # nothing applied, nothing recorded
 
 
@@ -1550,7 +1559,8 @@ def test_a_multi_line_splits_comment_is_dedented(tmp_path: Path, warehouse: Path
     )
     write_definition(tmp_path / "datasets", body=body)
     result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
-    assert result.container.experiment_metadata.splits_comment == "First line.\nSecond line."
+    # the generated description first, then the definition's reason, dedented
+    assert result.container.experiment_metadata.splits_comment == f"{TOY_CV}\n\nFirst line.\nSecond line."
 
 
 def test_report_lists_feature_types_read_from_dtypes(tmp_path: Path, warehouse: Path) -> None:

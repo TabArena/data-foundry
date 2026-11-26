@@ -252,8 +252,7 @@ class WisconsinLocalGovernmentPropertyInsuranceFund(AbstractCuratedDataset):
         good to remove because of the 50% floor", Lennart, 2026-11-06). The short window changes the order of the two
         simplest predictors: on the two windows above the floor coverage alone (0.368) beats a Tweedie GLM (0.312), with
         the 2008 window the GLM comes first (0.291 against 0.251). In that window the no-claim credit is unknown on
-        every training row (the file starts in 2006), so it informs only the two later windows. No test year has a row
-        on its training side, and no gap separates the sides. Exception to SPLIT-10 (2026-11-08, Lennart): every policy
+        every training row (the file starts in 2006), so it informs only the two later windows. Exception to SPLIT-10 (2026-11-08, Lennart): every policy
         year ships with its final claim amounts, so no label is selected by the release end, and a one-year gap would
         leave the 2009 window 2006-2007 and the 2008 window one year, below the floor in two of the three windows; it
         serves SPLIT-14. The training years carry final claim amounts, which the fund knew only in part when it rated

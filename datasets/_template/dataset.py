@@ -93,10 +93,17 @@ class ClassName(AbstractCuratedDataset):
     #         What one group is, why groups are held out, and the use case with its source.
     #     """,
     # )
-    # A temporal task (import `Temporal`, `TemporalSplits`) declares its windows and says why in `splits_comment`
-    # (which replaces the generated text, so restate the windows there). A window of fixed length (a calendar unit, or
-    # unit="rows") is the horizon; windows of unit="unique" or window=None need `horizon=..., horizon_unit=...`:
+    # A temporal task (import `Temporal`, `TemporalSplits`) declares its windows. A window of fixed length (a calendar
+    # unit, or unit="rows") is the horizon; windows of unit="unique" or window=None need `horizon=..., horizon_unit=...`.
+    # Windows each running to the next start: `TemporalSplits(window=None, cutoffs=(...))`; train only on labels known
+    # before a window: `Temporal(label_known_on=...)`; no training row of an entity a window tests:
+    # `Temporal(exclude_test_entities_on=...)`. A grouped task of few deployments: `leave_one_group_out = True`.
     # temporal = Temporal(on="...", splits=TemporalSplits(window=7, unit="days", n_windows=3))
+    # The code describes the splits (windows, sizes, folds, repeats, budget); `splits_comment` adds only the reason:
+    # the use case, why this length and these windows, the decisions and who made them.
+    # splits_comment = """
+    #     TODO(verify): why the split is as it is.
+    # """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         # Only read here (cached across edits of `_clean`).

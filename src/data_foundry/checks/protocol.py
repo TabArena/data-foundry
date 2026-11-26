@@ -112,16 +112,26 @@ def recommended_dimensions(
     Returns:
         ``(n_repeats, n_folds)``.
     """
-    n = len(df)
-    if group_on is not None and group_labels == "per_group":
-        df, group_on = one_group_column(df, group_on)
-        n = df[group_on].nunique()
-    elif scored_unit_on is not None and scored_units_within_groups(df, group_on, scored_unit_on):
-        n = df[scored_unit_on].nunique(dropna=False)
+    n, _ = counted_units(df, group_on=group_on, group_labels=group_labels, scored_unit_on=scored_unit_on)
     return repeats_for(n), N_FOLDS
 
 
-# --- checks -----------------------------------------------------------------------------------------------------
+def counted_units(
+    df: pd.DataFrame,
+    *,
+    group_on: str | list[str] | None = None,
+    group_labels: str | None = None,
+    scored_unit_on: str | None = None,
+) -> tuple[int, str]:
+    """The units :func:`recommended_dimensions` counts, and what they are: ``(n, "groups")``, ``(n, "scored units")``
+    or ``(n, "rows")``.
+    """
+    if group_on is not None and group_labels == "per_group":
+        df, group_on = one_group_column(df, group_on)
+        return int(df[group_on].nunique()), "groups"
+    if scored_unit_on is not None and scored_units_within_groups(df, group_on, scored_unit_on):
+        return int(df[scored_unit_on].nunique(dropna=False)), "scored units"
+    return len(df), "rows"
 
 
 def protocol_checks(container: CuratedContainer) -> list[CheckResult]:

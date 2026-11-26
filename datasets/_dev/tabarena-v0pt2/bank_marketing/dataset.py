@@ -12,9 +12,9 @@ from data_foundry.definition import (
     FeatureTypes,
     Metric,
     Source,
-    Splits,
     TaskSummary,
     Temporal,
+    TemporalSplits,
     set_missing,
 )
 
@@ -142,9 +142,10 @@ class BankMarketing(AbstractCuratedDataset):
         "code with a meaning (CLEAN-10).",
     }
     split_leaf = "L-ORDER.windows"
-    # Splits: ten windows of unequal length from `WINDOW_STARTS` (`_make_splits`); declared windows have one length
+    # Splits: ten windows of unequal length from `WINDOW_STARTS`, each running to the next start (`window=None`)
     temporal = Temporal(
         on="time_index",
+        splits=TemporalSplits(window=None, unit="unique", cutoffs=tuple(position for _, position in WINDOW_STARTS)),
         horizon=3,
         horizon_unit="months",
         # The file position dates the last call, which ends the client's calls: it orders the split and is no input
@@ -252,18 +253,6 @@ class BankMarketing(AbstractCuratedDataset):
             },
         )
         return df
-
-    def _make_splits(self, df: pd.DataFrame) -> Splits:
-        """The windows of `WINDOW_STARTS`, newest first, each up to the next start and trained on every earlier record."""
-        time_index = df["time_index"].to_numpy()  # the frame arrives sorted by `time_index` with a RangeIndex
-        positions = np.arange(len(df))
-        splits: Splits = {}
-        end = None
-        for _, start in WINDOW_STARTS:
-            test = (time_index >= start) & (time_index < end) if end is not None else time_index >= start
-            splits[len(splits)] = {0: (positions[time_index < start].tolist(), positions[test].tolist())}
-            end = start
-        return splits
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(

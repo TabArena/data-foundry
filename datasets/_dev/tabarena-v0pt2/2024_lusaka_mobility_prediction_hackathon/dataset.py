@@ -172,8 +172,7 @@ class LusakaMobility2024(AbstractCuratedDataset):
         ),
     )
     splits_comment = """
-        Three four-day windows start on the recorded calendar at 2023-01-29, 2023-01-25 and 2023-01-21,
-        newest first. Four-day refits are a benchmark design choice within the one-month extract, not an organizer
+        Four-day refits are a benchmark design choice within the one-month extract, not an organizer
         cadence. Each training side uses all earlier trips starting at least one day before its test start; every
         kept trip lasts at most 3 hours (the longest 175 minutes), so training trips finish before each
         test-start/refit time. Subsequent

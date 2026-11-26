@@ -594,7 +594,14 @@ Six weeks ahead, as the competition asks.
     assert got["notes"] == ["The split follows the competition's temporal test window."]
 
     default = readme.replace("Six weeks ahead, as the competition asks.", "Default splits.")
-    assert rp._split(default, [], None)["noteHtml"] == ""
+    assert rp._split(default, [], None)["noteHtml"] == ""  # a README built before the generated description
+    generated = "Expanding-window temporal splits: 1 test window(s) of 42 days, walking back from the newest data."
+    described = readme.replace("Six weeks ahead, as the competition asks.", generated)
+    assert rp._split(described, [], None)["noteHtml"] == ""  # the description alone: no reason given
+    both = readme.replace("Six weeks ahead, as the competition asks.", f"{generated}\n\nSix weeks ahead.")
+    note = rp._split(both, [], None)["noteHtml"]
+    assert "Six weeks ahead" in note
+    assert "Expanding-window" not in note
     assert rp._split("no front matter", [], None) is None
 
     code = 'class X:\n    data_tags = ("ForcedIIDFromTemporal",)\n    curation_comments = "- a split note"\n'

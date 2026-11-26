@@ -240,7 +240,7 @@ class ZillowPrize(AbstractCuratedDataset):
 
     # Splits: monthly windows, train ending one month before each window.
     splits_comment = """
-        Zillow asks for one prediction per home and month, made before the month starts (round 1 scored the sales of October to December 2017 with the data released on 2 October). We simulate a model refit every month that predicts the sales of the next month: 9 monthly test windows (the number of splits an IID task of this size gets), from July 2017 back to November 2016, newest first. Train is every sale before the month that precedes the window (a gap of one month): Zillow receives the sales from the county recorders with a delay, and its 2017 release lacked part of the two newest months. The oldest window trains on 53% of the rows.
+        Zillow asks for one prediction per home and month, made before the month starts (round 1 scored the sales of October to December 2017 with the data released on 2 October). We simulate a model refit every month that predicts the sales of the next month: 9 monthly test windows (the number of splits an IID task of this size gets), from July 2017 back to November 2016, newest first. Train is every sale before the month that precedes the window (a gap of one month): Zillow receives the sales from the county recorders with a delay, and its 2017 release lacked part of the two newest months.
     """
     split_leaf = "L-ORDER.windows"
     temporal = Temporal(

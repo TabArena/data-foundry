@@ -75,7 +75,7 @@ class MyDataset(AbstractCuratedDataset):
     # Splits: a temporal task; a grouped one declares `grouping = Grouping(...)` instead, an IID one neither
     temporal = Temporal(on="date", splits=TemporalSplits(window=7, unit="days", n_windows=3))
     splits_comment = """
-        A model refit weekly ...
+        A model refit weekly, as the source does: ... (the reason; the code writes the windows)
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:      # required: reading only, cached
@@ -103,7 +103,8 @@ A time column a model sees coarser than recorded (crash times to the hour) is co
 leaves each period in the order of the finer values (chicago_traffic_crashes, 2026-11-04); `dataset check` warns
 (`definition_time_changed_in_split`).
 
-Other hooks: `_make_splits(df)` for splits the declarations cannot express (return a `SplitPlan`);
+Other hooks: `_make_splits(df)` for splits the declarations below cannot express (return a `SplitPlan`; check
+[The split declarations](#the-split-declarations) first);
 `_prepare_raw_files(raw_dir)` with `prepared_raw_files = (...)` for a heavy one-off step that writes intermediate
 files into the raw directory (it runs again when a file is missing or when the method, a helper of `dataset.py` it
 calls, or a module constant it reads changed; the hash sits in `.prepared_raw_files.json` next to the files). Sibling
@@ -302,8 +303,14 @@ the train side, in the units the metric scores (the groups of `per_group` labels
 metric's `group` input, when all rows of each are in one group, else the rows; SPLIT-33, `recommended_dimensions`),
 built by `iid_splits` / `grouped_splits` with the benchmark seed, on the full frame: Data Foundry caps no split unless
 the definition is a version with a row budget (a `_1m` version, below; the whole path as a decision tree:
-[split_protocol.md](split_protocol.md)). The comment is "Default splits."; set `splits_comment` only when there is
-something to say (a split that deliberately differs from the source's protocol, what a grouped test fold holds).
+[split_protocol.md](split_protocol.md)). The code describes these splits ([The splits comment](#the-splits-comment));
+set `splits_comment` only when there is a reason to give (a split that deliberately differs from the source's
+protocol, what a grouped test fold holds).
+
+A task whose few groups are each a deployment (heart_disease's three hospitals, online_shoppers' seven months)
+declares `leave_one_group_out = True` beside its `grouping`: one repeat, fold i tests the i-th group (in the order of
+the group column's categories, else sorted) and trains on all the others, since repeats would draw the same folds
+again. It accepts `splits_dimensions_off_protocol` with that reason.
 
 ### Grouped: `Grouping`
 
@@ -366,18 +373,19 @@ It is stored in the container (`task_metadata.grouping`, read with `container.gr
 
 Declare `temporal = Temporal(on="date", splits=TemporalSplits(...))`: the time column and the test windows in one
 place. The horizon is a human judgment (SPLIT-12 in [splits.md](../../knowledge-curation/references/splits.md));
-write the reasoning in `splits_comment`, which replaces the generated text, so restate the windows (and any
-sub-sampling or trimming) in it. A window of fixed length is the horizon (`window` `unit` for a calendar unit, `window`
-steps for `unit="rows"`), and declaring it again is an error. Add `horizon=..., horizon_unit=...` only when the windows
+write the reasoning in `splits_comment`; the code's description of the windows comes before it
+([The splits comment](#the-splits-comment)), so the comment does not restate the windows. A window of fixed length
+is the horizon (`window` `unit` for a calendar unit, `window` steps for `unit="rows"`), and declaring it again is an
+error. Add `horizon=..., horizon_unit=...` only when the windows
 do not fix it: `unit="unique"` (anes counts election years, garments days), `window=None` (california, kick), or
 `_make_splits` (hotel).
 
 The gap between train and test is stored next to the horizon (`time_gap`, `time_gap_unit` in the split metadata, left
 out of the checksum while unset): the `gap` of a calendar or row window states it, while a gap of distinct time values
 (`unit="unique"`: college_scorecard's cohorts, numerai's weekly eras) or one built in `_make_splits`
-(brazilian_ecommerce, sf_permit_time) is declared as `Temporal(..., gap=..., gap_unit=...)`. A `unique` window with a
-gap and no declared unit does not import, nor does a declared gap the windows already state or do not leave
-(Lennart, 2026-10-16). A calendar window's gap counts in the window's unit unless `gap_unit` names another
+(predict_students_dropout_and_academic_success) is declared as `Temporal(..., gap=..., gap_unit=...)`. A `unique`
+window with a gap and no declared unit does not import, nor does a declared gap the windows already state or do not
+leave (Lennart, 2026-10-16). A calendar window's gap counts in the window's unit unless `gap_unit` names another
 (`"minutes"`, `"hours"` or a calendar unit): `TemporalSplits(window=91, unit="days", n_windows=3, gap=15,
 gap_unit="minutes")` leaves 15 minutes for a label known 16 minutes after its row (g_research_crypto_forecasting_1m;
 Lennart, 2026-10-22), stored as `time_gap=15, time_gap_unit="minutes"`.
@@ -422,6 +430,49 @@ repeat per time window, always fold `0` (`splits_temporal_layout`); split 0 is t
 | Only a row order (california, mercedes) | `TemporalSplits(window=320, unit="rows", n_windows=9)` (horizon: 320 steps); `window=None` needs `Temporal(horizon=..., horizon_unit="steps")` |
 | A gap in a smaller unit than the window (g_research_crypto_forecasting_1m: 3 x 91 days, 15-minute gap, whole minutes sampled) | `TemporalSplits(window=91, unit="days", n_windows=3, gap=15, gap_unit="minutes", sample_by="time")` |
 | Overlapping windows (ghana, now retired: 3 days moving by 2) | `TemporalSplits(window=3, unit="days", step=2, min_train_fraction=0.5)` |
+| Windows of unequal length, each to the next start (sdss_17: calendar years with 2019 and 2020 merged; bank_marketing: campaigns and quarters on a file order; 2_month_survival_rate_prediction: half-years after a 60-day gap) | `TemporalSplits(window=None, unit="years", cutoffs=("2019-01-01", "2018-01-01", ...))`; the horizon is declared on `Temporal` |
+| Train only on labels known before the window (brazilian_ecommerce: delivered orders; sf_permit_time: issued permits) | `Temporal(..., splits=TemporalSplits(...), label_known_on="order_delivered_customer_date")`, or a function of the frame (`label_known_on=_issued`) |
+| No training row of an entity the window tests (lending_club's borrowers, alfa_battle_2_0_task_2's clients) | `Temporal(..., splits=TemporalSplits(...), exclude_test_entities_on="borrower_key")` |
+
+### The split declarations
+
+Before writing `_make_splits`, check whether a declaration says it; the code then describes the split and the
+comparison of positions in a review is not needed. Each replaced a custom split step with identical positions
+(2026-11-26):
+
+* `TemporalSplits(window=None, cutoffs=(...))`: each window runs from its start to the next newer start, the newest to
+  the end of the data. Unequal windows fix no horizon, so `Temporal(horizon=..., horizon_unit=...)` states it; a `gap`
+  works as for other windows.
+* `Temporal(label_known_on=...)`: each train side keeps only the rows whose label became known before its window
+  starts (a calendar window's start, else the time of its first test row); a missing time is never known. A column is a
+  split input only: the frame drops it after the split. A function of the frame (sf_permit_time's issue date, rebuilt
+  from the filing date and the target) adds no column, so the row order does not change.
+* `Temporal(exclude_test_entities_on=...)`: each train side leaves out the rows of every entity key its window tests
+  (a missing key matches nothing), an evaluation stand-in for an as-of filter on label dates the data do not have. The
+  frame drops the key after the split.
+* `leave_one_group_out = True` (above, IID and grouped).
+
+Still custom (2026-11-26), each for a reason none of these covers: windows computed from the data
+(african_credit_scoring_challenge, medical_facility_operational_data), a label known within the test year
+(predict_students_dropout_and_academic_success), two filter columns and evidence recorded during the split
+(chicago_traffic_crashes), prediction points with their own test and train rules (hotel_booking_demand), and the
+latest application per derived client (home_credit_default_risk).
+
+### The splits comment
+
+The container's and the README's splits comment is the generated description of the splits, then the definition's
+`splits_comment` as a second paragraph. The description says what the code knows: the windows (count, length, starts
+or "walking back from the newest data", newest first, the gap), each window's first and last time with its test and
+train rows, the train filters, the folds and repeats and the units that set them, and for a `_1m` version the test cap
+and the train sampling. A custom `_make_splits` gets a description read off its splits (the count, and for a temporal
+task each window's times and sizes).
+
+So `splits_comment` holds only what the code cannot know: the use case the split simulates, why this length, these
+windows and this gap, the decisions and who made them (with the date and the quote), the measurements behind them and
+what the split does not test. Never restate the window dates or sizes, the fold or repeat counts, or the budget and
+sampling text. `None` leaves the description alone; a custom `_make_splits` needs a `splits_comment`.
+`data_foundry.definition.dataset.splits_reason(comment)` returns the reason without the description (the review page
+reads it).
 
 The number of windows aims at the splits an IID split of the data would get (`split_count`: 60, 30, 9 or 3 for two
 thirds of the scored units), never fewer than 3 and never a train side below half the data

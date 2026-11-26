@@ -116,8 +116,7 @@ class Kick(AbstractCuratedDataset):
         auction (the data dictionary's `KickDate`, not released), through the auction's arbitration, which runs 10
         calendar days after the sale (Manheim's buyer arbitration guide), plus a margin for the return to be recorded.
         The newest purchases show no shortfall of kicks (last 2 weeks 18.7% bad buys, last 4 weeks 15.8%, overall
-        12.3%), so the release holds the outcomes. Every training side holds at least half of the cars (52.6% for
-        the oldest window, starting 2010-02-19); the test windows hold 3,028 to 4,515 cars (33,054 in all). The earlier
+        12.3%), so the release holds the outcomes. The earlier
         windows of 28 purchase dates without a gap trained the oldest window on 48.7% of the cars.
     """
     split_leaf = "L-ORDER.windows"

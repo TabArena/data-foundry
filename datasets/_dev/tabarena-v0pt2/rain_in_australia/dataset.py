@@ -415,8 +415,7 @@ class RainInAustralia(AbstractCuratedDataset):
         dry and the wet years as well as the last one. The share of rain days in a twelve-month block (February to
         January) runs from 17.8% in 2019-20 (the Bureau's warmest and driest year on record, 2019) to 27.2% in 2022-23
         (the La Niña years 2020-2023 hold the most), against 21.5% in the last year. A step of 16 weeks moves the
-        season by about 3.7 months each time, so the windows start in every calendar month two or three times. Train
-        is every earlier day (from 2007-11-01): 137,157 to 263,940 rows, 51.8% to 99.8% of the 264,562. Each window
+        season by about 3.7 months each time, so the windows start in every calendar month two or three times. Each window
         holds 606-669 location-days with 55-202 rain days, 16,484 test rows in all. Why 26 windows and not the nine
         folds a random split of this size gets: a 14-day window (the rule on short weather windows) holds only about
         630 location-days, so 26 windows keep the test rows (16,484, as many as the 16,457 of the 26 back-to-back

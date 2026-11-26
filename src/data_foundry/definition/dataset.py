@@ -59,7 +59,7 @@ from data_foundry.checks import (
     registry as check_registry,
 )
 from data_foundry.checks.bundle import verify_saved_container
-from data_foundry.checks.protocol import recommended_dimensions, scored_unit_column
+from data_foundry.checks.protocol import counted_units, recommended_dimensions, scored_unit_column
 from data_foundry.checks.tables import run_all_checks
 from data_foundry.collections import collection_file_budget
 from data_foundry.curation_container import CuratedContainer
@@ -117,7 +117,29 @@ CLI_COMMAND = ".venv/bin/python -m data_foundry.curation.cli"
 """How the generated pages and messages spell the curation CLI: the repository's own environment, never an install
 that happens to be first on PATH."""
 
-DEFAULT_SPLITS_COMMENT = "Default splits."
+GENERATED_SPLITS_OPENINGS = (
+    f"Repeated {protocol.N_FOLDS}-fold cross-validation ",
+    "Expanding-window temporal splits:",
+    "Leave one group out:",
+    "Custom splits (`_make_splits`):",
+    "Custom temporal splits (`_make_splits`):",
+)
+"""How the generated description of the splits opens: the first paragraph of every splits comment built since
+2026-11-26, followed by the definition's ``splits_comment``."""
+
+LEGACY_DEFAULT_SPLITS_COMMENT = "Default splits."
+"""The whole splits comment of the default splits before 2026-11-26, in containers and READMEs built then."""
+
+
+def splits_reason(comment: str | None) -> str:
+    """The definition's reason in a splits comment: the comment without its generated description (and without the
+    legacy ``"Default splits."``), empty when the definition gives none.
+    """
+    paragraphs = [p.strip() for p in re.split(r"\n\s*\n", (comment or "").strip()) if p.strip()]
+    if paragraphs and paragraphs[0].startswith(GENERATED_SPLITS_OPENINGS):
+        paragraphs = paragraphs[1:]
+    reason = "\n\n".join(paragraphs)
+    return "" if reason == LEGACY_DEFAULT_SPLITS_COMMENT else reason
 
 
 class _Auto:
@@ -472,8 +494,17 @@ class AbstractCuratedDataset(ABC):
     prediction point when there is one. Neither ``grouping`` nor ``temporal``: an IID task."""
 
     # --- splits -------------------------------------------------------------------------------------
+    leave_one_group_out: ClassVar[bool] = False
+    """Leave one group of ``grouping.on`` out: one repeat, fold i tests on the i-th group and trains on all others
+    (:func:`~data_foundry.definition.splits.leave_one_group_out_splits`; the groups in the order of the column's
+    categories, else sorted). For a task whose few groups are each a deployment (heart_disease's three hospitals,
+    online_shoppers' seven months), where repeats would draw the same folds again; accept
+    ``splits_dimensions_off_protocol`` with that reason."""
     splits_comment: ClassVar[str | None] = None
-    """What the splits simulate. None: the default comment for recommended or declarative splits."""
+    """Why the splits are as they are: the use case they simulate, the choices and who made them. The container's
+    splits comment is the generated description of the splits (the windows or folds, the repeats, the gap, the row
+    budget and the train sampling) followed by this text, so it never restates what the description says. None: the
+    description alone; custom splits (``_make_splits``) need it."""
 
     # --- checks and raw files ----------------------------------------------------------------------
     accepted_check_warnings: ClassVar[dict[str, str]] = {}
@@ -791,6 +822,8 @@ class AbstractCuratedDataset(ABC):
         roles |= {task.sample_weight} - {None}
         if task.unit_weight is not None:
             roles |= {task.unit_weight.column, task.unit_weight.unit}
+        if self.temporal is not None:
+            roles |= set(self.temporal.split_columns)
         return roles
 
     def _check_declared_columns(self, df: pd.DataFrame) -> None:
@@ -799,6 +832,7 @@ class AbstractCuratedDataset(ABC):
         declared = {"target": [task.target_column_name], "stratify_on": as_column_list(task.stratify_on)}
         if self.temporal is not None:
             declared["temporal.on"] = [self.temporal.on]
+            declared["temporal split columns"] = self.temporal.split_columns
         if self.grouping is not None:
             declared["grouping.on"] = as_column_list(self.grouping.on)
             declared["grouping.time_on"] = as_column_list(self.grouping.time_on)
@@ -965,16 +999,26 @@ class AbstractCuratedDataset(ABC):
         task = self.task_metadata
         temporal = task.time_on is not None
         budget = effective_row_budget(type(self))
+        if self.leave_one_group_out:
+            splits, groups = protocol.leave_one_group_out_splits(df, task.group_on)
+            comment = (
+                f"Leave one group out: one repeat of {len(groups)} folds, fold i testing the i-th group of "
+                f"`{task.group_on}` ({', '.join(str(g) for g in groups)}) and training on all the others."
+            )
+            return SplitPlan(splits=splits, comment=comment)
         if budget is None:
             if temporal:
                 splits, comment = self._window_splits(df)
-                return SplitPlan(splits=splits, comment=comment)
-            return SplitPlan(splits=self._cross_validation(df), comment=DEFAULT_SPLITS_COMMENT)
+                comment += window_ranges_text(df, splits, task.time_on)
+                return SplitPlan(splits=splits, df=self._without_split_columns(df), comment=comment)
+            splits, comment = self._cross_validation(df)
+            return SplitPlan(splits=splits, comment=comment)
 
         train_budget, test_budget = rows_text(budget.train), rows_text(budget.test)
         sampled_by = self._train_sampling_text(df)
         if temporal:
             splits, comment = self._window_splits(df)
+            df = self._without_split_columns(df)
             by_time = self.temporal.splits.sample_by == "time"
             df, splits, trimmed = protocol.sample_temporal_splits(
                 df,
@@ -985,23 +1029,25 @@ class AbstractCuratedDataset(ABC):
                 random_state=self.SPLIT_RANDOM_STATE,
             )
             drawn = f", drawn as whole values of `{task.time_on}`" if by_time else ", drawn at random"
+            comment += window_ranges_text(df, splits, task.time_on)
             comment += (
                 f" Each test window keeps at most {test_budget} of its rows{drawn}; each train side holds every "
                 f"earlier row, and a benchmark sub-samples it to {train_budget} rows ({sampled_by})."
             )
             df = _drop_unused_categories(df)
         else:
+            splits, comment = self._cross_validation(df)
             splits, trimmed = protocol.fit_splits_to_budget(
                 df,
-                self._cross_validation(df),
+                splits,
                 budget,
                 group_on=task.group_on,
                 stratify_on=task.stratify_on,
                 random_state=self.SPLIT_RANDOM_STATE,
             )
             whole = " (whole groups)" if task.group_on is not None else ""
-            comment = (
-                f"{DEFAULT_SPLITS_COMMENT} Each fold tests on at most {test_budget} rows of its third{whole} and "
+            comment += (
+                f" Each fold tests on at most {test_budget} rows of its third{whole} and "
                 f"trains on every other row; a benchmark sub-samples the train side to {train_budget} rows "
                 f"({sampled_by})."
             )
@@ -1052,45 +1098,68 @@ class AbstractCuratedDataset(ABC):
         return f"by default {unit[sampling.unit]} drawn at random{where}, `subsample_train`"
 
     def _window_splits(self, df: pd.DataFrame) -> tuple[Splits, str]:
-        """The declarative temporal windows on ``df`` and their generated comment."""
+        """The declarative temporal windows on ``df`` (their train sides filtered as ``temporal`` declares) and their
+        generated description.
+        """
         windows = self.temporal.splits if self.temporal is not None else None
         if windows is None:
             msg = f"{type(self).__name__}: a temporal task needs `Temporal(splits=...)` or `_make_splits`."
             raise DatasetDefinitionError(msg)
         time_on = self.task_metadata.time_on
-        splits = windows.splits(df, time_on)
+        splits = self.temporal.window_splits(df)
         derived = None
         if windows.window is None and windows.cutoffs is None:
             first_test = splits[0][0][1]
             derived = len(first_test) if windows.unit == "rows" else df[time_on].iloc[first_test].nunique()
-        return splits, windows.describe(len(splits), derived_window=derived)
+        text = windows.describe(len(splits), derived_window=derived) + self.temporal.describe_train_filters()
+        return splits, text
 
-    def _cross_validation(self, df: pd.DataFrame) -> Splits:
-        """The recommended IID or grouped 3-fold cross-validation on ``df``."""
+    def _without_split_columns(self, df: pd.DataFrame) -> pd.DataFrame:
+        """``df`` without the columns only the split reads (:attr:`Temporal.split_columns`)."""
+        columns = self.temporal.split_columns if self.temporal is not None else []
+        return df.drop(columns=columns) if columns else df
+
+    def _cross_validation(self, df: pd.DataFrame) -> tuple[Splits, str]:
+        """The recommended IID or grouped 3-fold cross-validation on ``df``, and its generated description."""
         task = self.task_metadata
+        scored_unit_on = scored_unit_column(task)
         n_repeats, n_folds = recommended_dimensions(
-            df,
-            group_on=task.group_on,
-            group_labels=task.group_labels,
-            scored_unit_on=scored_unit_column(task),
+            df, group_on=task.group_on, group_labels=task.group_labels, scored_unit_on=scored_unit_on
         )
+        n_units, units = counted_units(
+            df, group_on=task.group_on, group_labels=task.group_labels, scored_unit_on=scored_unit_on
+        )
+        stratified = f", stratified on `{task.stratify_on}`" if task.stratify_on is not None else ""
         if task.group_on is None:
-            return protocol.iid_splits(
+            how = "over the rows"
+            splits = protocol.iid_splits(
                 df,
                 n_repeats=n_repeats,
                 n_folds=n_folds,
                 stratify_on=task.stratify_on,
                 random_state=self.SPLIT_RANDOM_STATE,
             )
-        return protocol.grouped_splits(
-            df,
-            n_repeats=n_repeats,
-            n_folds=n_folds,
-            group_on=task.group_on,
-            group_labels=task.group_labels,
-            stratify_on=task.stratify_on,
-            random_state=self.SPLIT_RANDOM_STATE,
+        else:
+            groups = ", ".join(f"`{c}`" for c in as_column_list(task.group_on))
+            how = (
+                f"over the groups of {groups} (one label each)"
+                if task.group_labels == "per_group"
+                else f"keeping each group of {groups} whole (shuffled group k-fold, a new draw per repeat)"
+            )
+            splits = protocol.grouped_splits(
+                df,
+                n_repeats=n_repeats,
+                n_folds=n_folds,
+                group_on=task.group_on,
+                group_labels=task.group_labels,
+                stratify_on=task.stratify_on,
+                random_state=self.SPLIT_RANDOM_STATE,
+            )
+        text = (
+            f"Repeated {n_folds}-fold cross-validation {how}{stratified}: {n_repeats} repeat(s) x {n_folds} folds, "
+            f"{n_repeats * n_folds} splits, the repeats set by the {n_units:,} {units} (SPLIT-33)."
         )
+        return splits, text
 
     def _check_collection_budget(self, splits: Splits) -> None:
         """Refuse splits over the collection's row budget (:func:`collection_row_budget`) when the definition is not
@@ -1127,17 +1196,34 @@ class AbstractCuratedDataset(ABC):
             plan = SplitPlan(splits=plan)
         self._check_collection_budget(plan.splits)
         plan.splits = _in_row_order(plan.splits)
+        custom = type(self)._make_splits is not AbstractCuratedDataset._make_splits
         if plan.df is None:
             plan.df = df
-        elif plan.df is not df and type(self)._make_splits is not AbstractCuratedDataset._make_splits:
+        elif plan.df is not df and custom:
             plan.df = _drop_unused_categories(plan.df)  # a custom split step that drops rows keeps old levels
             self._time_changed_in_split = _time_values_changed(df, plan.df, self.task_metadata.time_on)
-        if self.splits_comment is not None:
-            plan.comment = clean_text(self.splits_comment)
-        if not plan.comment:
+        reason = clean_text(self.splits_comment) if self.splits_comment is not None else None
+        if custom and not (reason or plan.comment):
             msg = f"{type(self).__name__}: custom splits need a `splits_comment` (or `SplitPlan(comment=...)`)."
             raise DatasetDefinitionError(msg)
+        # The description first (generated, or computed by a custom split step), then the definition's reason
+        described = self._custom_description(plan) if custom else None
+        plan.comment = "\n\n".join(part for part in (described, plan.comment, reason) if part)
         return plan
+
+    def _custom_description(self, plan: SplitPlan) -> str:
+        """The generated description of custom splits (``_make_splits``), read off the splits themselves."""
+        time_on = self.task_metadata.time_on
+        if time_on is not None and time_on in plan.df.columns:
+            text = (
+                f"Custom temporal splits (`_make_splits`): {len(plan.splits)} test window(s), each with its own "
+                "train side."
+            )
+            return text + window_ranges_text(plan.df, plan.splits, time_on)
+        folds = {len(f) for f in plan.splits.values()}
+        n_folds = folds.pop() if len(folds) == 1 else "unequal"
+        n_splits = sum(len(f) for f in plan.splits.values())
+        return f"Custom splits (`_make_splits`): {len(plan.splits)} repeat(s) x {n_folds} folds, {n_splits} splits."
 
     def _check_time_unit(self, times: pd.Series) -> None:
         """Check the time column's calendar against ``Temporal(time_unit=...)``.
@@ -1207,6 +1293,7 @@ class AbstractCuratedDataset(ABC):
         # weight or unit of a unit weight (noaa_storm_events_damage's `cell` would read as all-new categories).
         drop = {task.target_column_name, on, *as_column_list(task.group_on), *(c.column for c in task.scoring_columns)}
         drop.update(as_column_list(task.sample_weight))
+        drop.update(self.temporal.split_columns)
         if task.unit_weight is not None:
             drop.add(task.unit_weight.unit)
         stats = functools.partial(
@@ -1219,7 +1306,8 @@ class AbstractCuratedDataset(ABC):
             n_rows=n_rows,
             random_state=self.SPLIT_RANDOM_STATE,
         )
-        if declared is None:  # custom splits: their own positions, on the frame they return
+        filtered = self.temporal.label_known_on is not None or self.temporal.exclude_test_entities_on is not None
+        if declared is None or filtered:  # custom or filtered splits: their own positions, on the frame they return
             plan = self.make_splits(df)
             own = [(train, test) for folds in plan.splits.values() for train, test in folds.values()]
         else:  # the declared windows as position ranges: no index lists, however long the history
@@ -2066,6 +2154,13 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         )
     if budget is not None and custom_splits:
         fail("the row budget is ignored when the class implements `_make_splits`; sample there instead.")
+    if cls.leave_one_group_out:
+        if cls.grouping is None or len(as_column_list(cls.grouping.on)) != 1:
+            fail("`leave_one_group_out` holds out the groups of one column: declare `grouping = Grouping(on=...)`.")
+        if custom_splits:
+            fail("`leave_one_group_out` is ignored when the class implements `_make_splits`; declare one of them.")
+        if budget is not None:
+            fail("`leave_one_group_out` takes no row budget: its folds are the groups.")
     if cls.prepared_raw_files and cls._prepare_raw_files is AbstractCuratedDataset._prepare_raw_files:
         fail("`prepared_raw_files` is set but `_prepare_raw_files` is not implemented.")
 
@@ -2094,6 +2189,30 @@ def _validate_non_features(cls: type[AbstractCuratedDataset], fail: Any) -> None
     undescribed = [nf.column for nf in declared if nf.reason == "other" and not nf.description.strip()]
     if undescribed:
         fail(f"a `NonFeature(reason='other')` says why in its `description`: {undescribed}.")
+
+
+def window_ranges_text(df: pd.DataFrame, splits: Splits, time_on: str) -> str:
+    """The generated sentence on the test windows, as listed: the first and last test row's time (dates only, unless
+    a window lies within one day), the test rows and the train rows.
+    """
+    times = df[time_on]
+    dated = pd.api.types.is_datetime64_any_dtype(times)
+    windows = []
+    for folds in splits.values():
+        for train, test in folds.values():
+            if not len(test):
+                continue
+            tested = times.iloc[test]
+            first, last = tested.min(), tested.max()
+            if dated and first.normalize() != last.normalize():
+                first, last = first.normalize(), last.normalize()
+            span = (
+                protocol.time_text(first)
+                if first == last
+                else f"{protocol.time_text(first)} to {protocol.time_text(last)}"
+            )
+            windows.append(f"{span} ({len(test):,} test, {len(train):,} train rows)")
+    return f" The test windows by `{time_on}`, as listed: {'; '.join(windows)}." if windows else ""
 
 
 def split_summary(df: pd.DataFrame, splits: Splits, *, time_on: str | None = None) -> pd.DataFrame:

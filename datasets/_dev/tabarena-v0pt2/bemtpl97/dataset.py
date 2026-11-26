@@ -188,8 +188,6 @@ class Bemtpl97(AbstractCuratedDataset):
         ),
     }
     splits_comment = """
-        Default IID protocol: random 3-fold cross-validation repeated 3 times for this population, with the
-        benchmark split seed 4267 after the base class's content ordering and shuffle with seed 42.
         Each row is a distinct policyholder; test customers are unseen, while municipalities may recur.
         This evaluates comparable customers within the historical portfolio, not future years or insurers.
     """
