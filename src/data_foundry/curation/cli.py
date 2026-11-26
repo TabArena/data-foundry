@@ -84,6 +84,8 @@ def _cmd_sync_notebooks(args: argparse.Namespace) -> int:
 
 
 def _cmd_export(args: argparse.Namespace) -> int:
+    if args.format != "gsheet" and not args.output:
+        args.export_parser.error(f"the output path is required for --format {args.format}")
     if args.format == "csv":
         print("Wrote", exporter.export_csv(args.output, args.records_dir))
     elif args.format == "parquet":
@@ -343,11 +345,11 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_export = sub.add_parser("export", help="Compile records into a flat snapshot.")
     p_export.add_argument("--format", choices=("csv", "parquet", "xlsx", "gsheet"), default="csv")
-    p_export.add_argument("output", nargs="?", help="Output path (for csv/parquet).")
+    p_export.add_argument("output", nargs="?", help="Output path (required for csv, parquet and xlsx).")
     p_export.add_argument("--spreadsheet", help="Sheet id/URL (for gsheet).")
     p_export.add_argument("--worksheet", default="Main")
     p_export.add_argument("--service-account-file", default=None)
-    p_export.set_defaults(func=_cmd_export)
+    p_export.set_defaults(func=_cmd_export, export_parser=p_export)
 
     add_dataset_parser(sub)
     _add_claims_parser(sub)

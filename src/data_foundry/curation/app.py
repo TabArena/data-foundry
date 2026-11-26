@@ -42,7 +42,6 @@ from data_foundry.curation._paths import records_dir, resolve_curation_root, ski
 from data_foundry.curation.notebooks import resolve_notebook
 from data_foundry.curation.record import ACCEPTED_SUGGESTIONS, FIELDS, load_vocabularies, save_vocabularies
 from data_foundry.curation.store import (
-    load_all,
     load_record,
     record_from_dict,
     record_to_dict,
@@ -72,6 +71,16 @@ START_REPO_PATH: str = ".claude/skills/README.md"
 
 CLAIMS_REFRESH_S: float = 20.0
 """How often the dashboard server fetches the claims board."""
+
+GRID_READ_ONLY: frozenset[str] = frozenset({"review"})
+"""Record fields a dashboard edit may not change: the review is written by the review workflows and never deleted."""
+
+MTIME_KEY: str = "record_mtime_ns"
+"""The record file's ``mtime_ns`` when the dashboard read it (a derived key, never written back). An edit that sends
+it back is refused with 409 when the file changed since, so two tabs (or a tab and an agent) do not overwrite each
+other."""
+
+_WRITE_LOCK = threading.Lock()
 
 _FRONT_MATTER = re.compile(r"\A﻿?---[ \t]*\r?\n(?:.*?\r?\n)?(?:---|\.\.\.)[ \t]*(?:\r?\n|\Z)", re.DOTALL)
 _FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
@@ -150,13 +159,20 @@ def _records_payload(directory: Path | None) -> list[dict[str, object]]:
     ``*_url`` keys are not part of the record schema and are never written back — the
     dashboard's per-row 📓 / 📄 buttons read them (live and on the static site). With a cached
     claims board, ``claimed_by`` is the live holder and ``live_claim`` the claim (:func:`_overlay_claim`).
+    :data:`MTIME_KEY` is the file's ``mtime_ns``, taken before the file is read, which an edit sends back.
     """
     repo_root = resolve_curation_root().parent.resolve()
     records_root = (Path(directory) if directory is not None else records_dir()).resolve()
     board = claims.cached_board()
     payload: list[dict[str, object]] = []
-    for r in load_all(directory):
+    paths = sorted(records_root.glob("*.md")) if records_root.exists() else []
+    for path in paths:
+        if path.name.startswith("_"):  # as load_all: _template.md is not a record
+            continue
+        mtime = path.stat().st_mtime_ns
+        r = load_record(path)
         d = _overlay_claim(record_to_dict(r), board)
+        d[MTIME_KEY] = mtime
         rel = r.notebook_path or resolve_notebook(r)
         if rel:
             d["notebook_path"] = rel
@@ -410,19 +426,36 @@ class CurationHandler(BaseHTTPRequestHandler):
 
     # -- handlers --------------------------------------------------------
     def _update_record(self, unique_name: str) -> None:
+        """Merge a partial update into one record and rewrite its file.
+
+        A field of :data:`GRID_READ_ONLY` answers 400. With :data:`MTIME_KEY` in the body, a file that changed since
+        the client read it answers 409 and is left as it is.
+        """
         patch = self._read_json_body()
-        index = {r.unique_name: r for r in load_all(self._records_dir)}
-        if unique_name not in index:
-            self._send_json({"error": f"unknown record: {unique_name}"}, status=404)
+        base_mtime = patch.pop(MTIME_KEY, None)
+        if blocked := sorted(GRID_READ_ONLY & patch.keys()):
+            self._send_json({"error": f"read-only in the dashboard: {', '.join(blocked)}"}, status=400)
             return
-        merged = record_to_dict(index[unique_name])
-        merged.update(patch)
-        merged.pop("unique_name", None)  # renaming is out of scope for the grid
-        merged["unique_name"] = unique_name
-        record = record_from_dict(merged)
-        record.needs_review = record.review_reasons(load_vocabularies())
-        save_record(record, self._records_dir)
-        self._send_json(record_to_dict(record))
+        path = Path(self._records_dir) / f"{unique_name}.md"
+        with _WRITE_LOCK:  # the check and the write as one step against the server's other threads
+            if unique_name.startswith("_") or "/" in unique_name or not path.is_file():
+                self._send_json({"error": f"unknown record: {unique_name}"}, status=404)
+                return
+            if base_mtime is not None and path.stat().st_mtime_ns != base_mtime:
+                self._send_json(
+                    {"error": f"{unique_name} changed on disk since this page read it; reload to see the change."},
+                    status=409,
+                )
+                return
+            merged = record_to_dict(load_record(path))
+            merged.update(patch)
+            merged["unique_name"] = unique_name  # renaming is out of scope for the grid
+            record = record_from_dict(merged)
+            record.needs_review = record.review_reasons(load_vocabularies())
+            save_record(record, self._records_dir)
+            out = record_to_dict(record)
+            out[MTIME_KEY] = path.stat().st_mtime_ns
+        self._send_json(out)
 
     def _claim_action(self, unique_name: str) -> None:
         """Claim (``{"action": "claim"}``) or release a dataset on the board, mirror it into the record, return the row.
@@ -452,7 +485,9 @@ class CurationHandler(BaseHTTPRequestHandler):
             self._send_json({"error": f"{unique_name}: {outcome.skipped[unique_name]}"}, status=409)
             return
         claims.mirror_to_records(outcome.board, [unique_name], self._records_dir)
-        self._send_json(_overlay_claim(record_to_dict(load_record(path)), outcome.board))
+        mtime = path.stat().st_mtime_ns
+        row = _overlay_claim(record_to_dict(load_record(path)), outcome.board)
+        self._send_json({**row, MTIME_KEY: mtime})
 
     def _add_vocab_option(self) -> None:
         body = self._read_json_body()
