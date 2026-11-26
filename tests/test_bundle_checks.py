@@ -1052,14 +1052,6 @@ def test_metric_spec_errors(spec, slug):
     assert metric_findings(make_v2_container(spec=_spec(**({"name": "roc_auc"} | spec)))).get(slug) == "error"
 
 
-def test_local_metric_is_a_warning():
-    spec = _spec("max_error", kind="local", prediction="value", greater_is_better=False)
-    df = make_iid_frame()
-    df["target"] = df["feat_num"] * 2
-    found = metric_findings(make_v2_container(df, spec=spec, problem_type="regression"))
-    assert found == {"task_metric_local": "warning"}
-
-
 def test_metric_that_does_not_compute_on_a_split_is_an_error():
     df = make_iid_frame()
     df["target"] = pd.Categorical(np.where(np.arange(len(df)) % 3 == 0, "yes", "no"))  # fold 0's test side: all yes

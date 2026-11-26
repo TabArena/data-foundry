@@ -3,9 +3,9 @@
 :class:`~data_foundry.v2.dataset.AbstractCuratedDataset` applies ``cast_dtypes`` (from the ``FeatureTypes`` that
 ``_feature_types`` returns), ``canonical_dtypes`` and ``canonical_nans`` (so pandas 2 and 3 and every platform
 build the same container) and ``order_rows`` (the rows in the order of their content, then a stable sort by the
-time column, else a shuffle unless ``shuffle = False``) after ``_clean``. ``drop_columns`` is for ``_clean`` (it
-fails on a misspelled name), and ``anonymize_ids`` gives stable anonymous ids. The functions are public so
-``_clean`` can also call them mid-way, for example when a filter needs a parsed date.
+time column, else a shuffle) after ``_clean``. ``drop_columns`` is for ``_clean`` (it fails on a misspelled name),
+and ``anonymize_ids`` gives stable anonymous ids. The functions are public so ``_clean`` can also call them mid-way,
+for example when a filter needs a parsed date.
 """
 
 from __future__ import annotations

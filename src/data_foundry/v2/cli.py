@@ -2,12 +2,11 @@
 
 ::
 
-    data-foundry-curation dataset list  [--root DIR]                    # tasks and parents, with their state
+    data-foundry-curation dataset list  [--root DIR]                    # the datasets, with their state
     data-foundry-curation dataset check <name-or-folder> [--root DIR]   # full pipeline, no save, writes README.md
     data-foundry-curation dataset check <name-or-folder> --no-report     # the same, README.md left as it is
     data-foundry-curation dataset build <name-or-folder> [--root DIR]   # check + save + verify (mints the UUID)
     data-foundry-curation dataset new   <name> [--root DIR]             # scaffold dataset.py
-    data-foundry-curation dataset new   <parent>_<variant> --parent <parent> [--root DIR]   # scaffold a child
 
 A dataset is given either as a folder holding ``dataset.py`` or as a name under ``--root`` (default:
 ``$DATA_FOUNDRY_DATASETS_ROOT``, else the current directory). From the repository, run the commands as
@@ -30,15 +29,8 @@ from data_foundry.curation._paths import records_dir
 from data_foundry.curation.consistency import record_problems
 from data_foundry.curation.store import load_record
 from data_foundry.schema import DatasetSource, Domain
-from data_foundry.v2.dataset import (
-    CLI_COMMAND,
-    DEFINITION_FILENAME,
-    REPORT_FILENAME,
-    DatasetDefinitionError,
-    is_task,
-    parent_definition,
-)
-from data_foundry.v2.registry import discover_definitions, instance, load_definition
+from data_foundry.v2.dataset import CLI_COMMAND, DEFINITION_FILENAME, REPORT_FILENAME, DatasetDefinitionError
+from data_foundry.v2.registry import discover_datasets, load_definition
 from data_foundry.v2.report import read_report
 
 if TYPE_CHECKING:
@@ -72,8 +64,7 @@ def _folder(args: argparse.Namespace) -> Path:
 
 
 def _cmd_list(args: argparse.Namespace) -> int:
-    registry = discover_definitions(_root(args), strict=False)
-    parents = {parent_definition(cls).unique_name for cls in registry.values() if parent_definition(cls) is not None}
+    registry = discover_datasets(_root(args), strict=False)
     for name, cls in registry.items():
         folder = Path(sys.modules[cls.__module__].__file__).parent
         report = read_report(folder / REPORT_FILENAME)
@@ -81,12 +72,8 @@ def _cmd_list(args: argparse.Namespace) -> int:
         state = "not checked" if not report else ("built " + build["uuid"] if build else "checked")
         if report.get("build_stale"):
             state += " (stale)"
-        kind = cls.task_metadata.split_regime if is_task(cls) else "parent" if name in parents else "parent, no child"
-        parent = parent_definition(cls)
-        family = f"  <- {parent.unique_name}" if parent is not None else ""
-        print(f"{name:55s} {kind:18s} {state}{family}")
-    n_tasks = sum(is_task(cls) for cls in registry.values())
-    print(f"{n_tasks} dataset(s) and {len(registry) - n_tasks} parent(s) under {_root(args)}")
+        print(f"{name:55s} {cls.task_metadata.split_regime:18s} {state}")
+    print(f"{len(registry)} dataset(s) under {_root(args)}")
     broken = len(list(_root(args).glob(f"*/{DEFINITION_FILENAME}"))) - len(registry)
     if broken:
         print(f"{broken} definition(s) do not import; see the `Skipping <name>` warnings above.", file=sys.stderr)
@@ -97,9 +84,9 @@ def _cmd_list(args: argparse.Namespace) -> int:
 def _cmd_check(args: argparse.Namespace) -> int:
     try:
         cls = load_definition(_folder(args))
-        ds = instance(cls)
+        ds = cls()
         result = ds.check(write_report=not args.no_report)
-    except DatasetDefinitionError as error:  # a partial parent
+    except DatasetDefinitionError as error:
         print(error, file=sys.stderr)
         return 1
     if not args.no_report and ds.report_path is not None:
@@ -141,7 +128,7 @@ WINDOW_COLUMNS = (
 
 def _cmd_windows(args: argparse.Namespace) -> int:
     try:
-        ds = instance(load_definition(_folder(args)))
+        ds = load_definition(_folder(args))()
         table = ds.window_stats(
             window=args.window,
             unit=args.unit,
@@ -171,12 +158,9 @@ def _cmd_windows(args: argparse.Namespace) -> int:
 
 def _cmd_build(args: argparse.Namespace) -> int:
     try:
-        ds = instance(load_definition(_folder(args)))
-    except DatasetDefinitionError as error:  # a partial parent
+        ds = load_definition(_folder(args))()
+    except DatasetDefinitionError as error:
         print(error, file=sys.stderr)
-        return 1
-    if not ds.is_task:
-        print(f"{ds.unique_name} is a parent (no `target`): it is never built; build its children.", file=sys.stderr)
         return 1
     ds.build()
     print(f"Wrote {ds.report_path}")
@@ -224,82 +208,12 @@ def _prefill(text: str, record: object | None) -> str:
     return text
 
 
-CHILD_TEMPLATE = '''"""Curated dataset definition for `{name}` (data-foundry v2), a child of `{parent}`.
-
-Evidence: README.md.
-"""
-
-from __future__ import annotations
-
-from data_foundry.v2 import {imports}
-
-{parent_class} = import_definition("{parent}")
-
-
-class {class_name}({parent_class}):
-    unique_name = "{name}"
-    derivation = """
-        TODO(verify): how this dataset differs from `{parent}` (its target, split, rows or preprocessing).
-    """
-{task}'''
-
-CHILD_TASK = """    task_summary = TaskSummary(
-        question="TODO(verify): the prediction as a one-line question.",
-        use_case="TODO(verify): who uses the prediction, when, and the decision it informs.",
-        row="TODO(verify): what one row is.",
-        predicted="TODO(verify): the target in plain words, by when after the prediction point.",
-        known="TODO(verify): what the model knows then, in plain words.",
-        split="TODO(verify): what the test data stands for.",
-        fit="direct",  # TODO(verify): "direct", "approximate" or "none"
-        fit_reason="TODO(verify): why the data simulates the use case this closely.",
-    )
-
-    # The task; the parent's other outcomes stay out of the features (drop them in `_clean` with `super()._clean`)
-    target = "TODO"
-    problem_type = "TODO"
-    metric = Metric.fallback(reason="TODO(verify): where we looked for the source's metric, and found none.")
-"""
-
-CHILD_OF_TASK = """
-    # A child of a task inherits its target, metric, split and summary; override what differs (a `row_budget`
-    # adds its suffix to the name, `<parent>_<variant>_1m`), and `_clean` with `super()._clean(raw)` for rows.
-"""
-
-
-def _scaffold_child(folder: Path, name: str, parent_name: str, root: Path) -> int:
-    """Write a child definition of ``parent_name`` into ``folder``."""
-    try:
-        parent = load_definition(root / parent_name / DEFINITION_FILENAME)
-    except (FileNotFoundError, LookupError, ImportError) as error:
-        print(f"No parent definition {parent_name!r} under {root}: {error}", file=sys.stderr)
-        return 1
-    if not name.startswith(f"{parent_name}_"):
-        print(f"A child of {parent_name!r} is named `{parent_name}_<variant>`.", file=sys.stderr)
-        return 1
-    task = is_task(parent)
-    text = CHILD_TEMPLATE.format(
-        name=name,
-        parent=parent_name,
-        parent_class=parent.__name__,
-        class_name=_class_name(name),
-        imports="import_definition" if task else "Metric, TaskSummary, import_definition",
-        task=CHILD_OF_TASK if task else CHILD_TASK,
-    )
-    folder.mkdir(parents=True, exist_ok=True)
-    (folder / DEFINITION_FILENAME).write_text(text)
-    print(f"Scaffolded {folder}/{DEFINITION_FILENAME}, a child of {parent_name}. Fill in every TODO, then run:")
-    print(f"  {CLI_COMMAND} dataset check {folder}")
-    return 0
-
-
 def _cmd_new(args: argparse.Namespace) -> int:
     name = args.target
     folder = _root(args) / name
     if (folder / DEFINITION_FILENAME).exists():
         print(f"{folder / DEFINITION_FILENAME} already exists.", file=sys.stderr)
         return 1
-    if getattr(args, "parent", None):
-        return _scaffold_child(folder, name, args.parent, _root(args))
     template = Path(os.environ.get(TEMPLATE_DIR_ENV) or _REPO_TEMPLATE)
     if not (template / DEFINITION_FILENAME).is_file():
         print(f"No template at {template} (set ${TEMPLATE_DIR_ENV}).", file=sys.stderr)
@@ -340,9 +254,6 @@ def add_dataset_parser(sub: argparse._SubParsersAction) -> None:
     dsub.choices["check"].add_argument("--no-report", action="store_true", help="Check only: leave README.md as it is.")
     add("build", _cmd_build, "Check, save the container (new UUID), verify it and write README.md.")
     add("new", _cmd_new, "Scaffold a new dataset folder from the template and the curation record.")
-    dsub.choices["new"].add_argument(
-        "--parent", default=None, help="Scaffold a child of this definition (a folder under --root) instead."
-    )
     add("windows", _cmd_windows, "Print the candidate test windows of a temporal dataset with their data statistics.")
     windows = dsub.choices["windows"]
     windows.add_argument("--window", type=int, default=None, help="Window length (default: the declared one).")

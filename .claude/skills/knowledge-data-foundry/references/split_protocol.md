@@ -133,8 +133,8 @@ The protocol is the default, not a constraint on the task (SPLIT-1 in
 - **Another budget for every dataset.** The budget is the collection's: change `row_budget` in `collection.py` (and
   `TABARENA_V0PT2_ROW_BUDGET`), and every version follows on its next build; a new train budget renames the versions
   (`RowBudget.suffix`: `_1m`, `_2p5m`, `_10m`).
-- **Another budget for one dataset.** Not possible today: a definition of the working copy that declares `row_budget`
-  is refused, so all of TabArena v0.2 trains and tests on the same budget. A custom `_make_splits` keeps its sides
+- **Another budget for one dataset.** Not possible today: a definition has no budget of its own, so all of TabArena
+  v0.2 trains and tests on the same budget. A custom `_make_splits` keeps its sides
   within the budget itself (sample there), since the build refuses a plain name whose splits go over it.
 
 ## Examples
@@ -157,7 +157,6 @@ state (their containers were built before the budget moved after the split, issu
 
 | Guard | When | What it stops |
 |---|---|---|
-| Loading the definition | every load | a `row_budget` declared in a definition of the working copy |
 | The build | `dataset check`, `dataset build` | a name that does not match what the splits need |
 | Protocol checks | every container | other repeats or folds (warning), a test side over the budget (warning), a budget without its train sampling (error), fewer than 3 windows (warning) |
 | README test | `pytest` | a `README.md` over the budget, or one that does not record it |

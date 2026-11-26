@@ -21,7 +21,12 @@ from data_foundry.v2.splits import (
 )
 from data_foundry.v2.windows import Window, candidate_windows, window_stats
 
-from tests.test_v2_dataset import temporal_version_body, warehouse, write_definition  # noqa: F401 - the fixture
+from tests.test_v2_dataset import (  # noqa: F401 - the fixture
+    TEMPORAL_BUDGET,
+    temporal_version_body,
+    warehouse,
+    write_version,
+)
 
 
 def three_years(seed: int = 0) -> pd.DataFrame:
@@ -115,7 +120,7 @@ def test_a_numeric_time_column_shows_its_values() -> None:
 def test_a_definition_marks_its_own_windows(tmp_path: Path, warehouse: Path, capsys: pytest.CaptureFixture) -> None:  # noqa: F811
     """A definition lists its candidates with its own windows marked; the CLI prints them."""
     del warehouse  # 30 days of 20 rows; the definition tests the newest 3 of 5 days
-    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=temporal_version_body())
+    write_version(tmp_path / "datasets", "toy_ds_0p19k", temporal_version_body(), TEMPORAL_BUDGET)
     ds = get_dataset(tmp_path / "datasets", "toy_ds_0p19k")
     table = ds.window_stats(min_train_fraction=0.5)
     assert list(table["chosen"]) == [True, True, True]  # a 5-day window above the floor: only the three own
@@ -134,7 +139,7 @@ def test_a_definition_marks_its_own_windows(tmp_path: Path, warehouse: Path, cap
 def test_the_readme_describes_the_test_windows(tmp_path: Path, warehouse: Path) -> None:  # noqa: F811
     """The README's splits section describes the chosen windows."""
     del warehouse
-    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=temporal_version_body())
+    write_version(tmp_path / "datasets", "toy_ds_0p19k", temporal_version_body(), TEMPORAL_BUDGET)
     get_dataset(tmp_path / "datasets", "toy_ds_0p19k").check(verbose=False)
     readme = (tmp_path / "datasets" / "toy_ds_0p19k" / "README.md").read_text()
     assert "### The test windows" in readme
@@ -264,7 +269,7 @@ def test_a_definition_with_a_derived_window_lists_its_candidates(tmp_path: Path,
     # a derived window does not fix the horizon, so the definition declares it (the text closes `splits=...`)
     splits = 'TemporalSplits(window=None, unit="unique", n_windows=3, min_train_fraction=0.5)'
     windows = f'{splits}, horizon=5, horizon_unit="days"'
-    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=temporal_version_body(windows=windows))
+    write_version(tmp_path / "datasets", "toy_ds_0p19k", temporal_version_body(windows=windows), TEMPORAL_BUDGET)
     ds = get_dataset(tmp_path / "datasets", "toy_ds_0p19k")
     table = ds.window_stats(min_train_fraction=0.5)
     assert table["chosen"].sum() == 3

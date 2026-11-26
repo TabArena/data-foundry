@@ -37,7 +37,6 @@ from data_foundry.v2.dataset import (
     AbstractCuratedDataset,
     CurationResult,
     DatasetDefinitionError,
-    DataSummary,
     Decision,
     FeatureTypes,
     NonFeature,
@@ -64,9 +63,7 @@ from data_foundry.v2.preprocessing import (
 )
 from data_foundry.v2.registry import (
     discover_datasets,
-    discover_definitions,
     get_dataset,
-    import_definition,
     load_definition,
 )
 from data_foundry.v2.report import read_report
@@ -89,7 +86,6 @@ __all__ = [
     "DEFAULT_SMILES_ENCODING",
     "AbstractCuratedDataset",
     "CurationResult",
-    "DataSummary",
     "DatasetDefinitionError",
     "Decision",
     "Encoding",
@@ -124,7 +120,6 @@ __all__ = [
     "clean_text",
     "decode",
     "discover_datasets",
-    "discover_definitions",
     "drop_columns",
     "encode_datetime",
     "encode_smiles",
@@ -134,7 +129,6 @@ __all__ = [
     "encode_text_tfidf",
     "encodings_for",
     "get_dataset",
-    "import_definition",
     "invalid_smiles",
     "load_definition",
     "murcko_scaffolds",

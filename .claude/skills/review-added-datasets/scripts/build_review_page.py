@@ -59,7 +59,7 @@ except ImportError:  # pragma: no cover - depends on the environment
 from data_foundry import time_basis as basis_rules
 from data_foundry.curation.consistency import COLLECTION_TYPES, collection_type_problems, time_basis_problems
 from data_foundry.schema import FORCED_TIME_TAGS, GROUP_BASIS_TAGS, TIME_BASIS_TAGS
-from data_foundry.v2.dataset import DEFAULT_SPLITS_COMMENT, TaskSummary, definition_files
+from data_foundry.v2.dataset import DEFAULT_SPLITS_COMMENT, TaskSummary
 from data_foundry.v2.metrics import Metric
 from data_foundry.v2.registry import load_definition
 from data_foundry.v2.report import read_report
@@ -1416,10 +1416,6 @@ def _live_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
     regime = "grouped" if cls.grouping is not None else "temporal" if cls.temporal is not None else "iid"
     front = read_report(where.root / folder / "README.md")
     code = definition.read_text()
-    for parent in definition_files(cls)[1:]:  # the parents it derives from, whose code it runs too
-        code += (
-            f"\n\n# --- the parent it derives from: ../{parent.parent.name}/{parent.name} ---\n\n{parent.read_text()}"
-        )
     readme = where.root / folder / "README.md"
     return {
         "code": code,

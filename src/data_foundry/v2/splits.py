@@ -5,10 +5,10 @@
   input) when all rows of each are in one group of the split, else the rows (:func:`recommended_dimensions`): 20, 10,
   3 or 1, at any size of the frame, so every IID or grouped task has at least 3 splits.
 * Temporal data gets at least 3 expanding windows (:class:`TemporalSplits`).
-* Data Foundry sets no row budget: by default the splits use the full frame and no side is capped. A sub-sampled
-  version is named after its train budget (``<name>_1m``, ``<name>_10m``) and either declares the budget
-  (``row_budget = RowBudget(train=..., test=...)``, :class:`~data_foundry.schema.RowBudget`) or gets its collection's
-  by that name (a ``collection.py`` next to the dataset folders sets it); the container records it
+* Data Foundry sets no row budget: by default the splits use the full frame and no side is capped. A collection sets
+  one (``row_budget = RowBudget(train=..., test=...)`` in a ``collection.py`` next to the dataset folders,
+  :class:`~data_foundry.schema.RowBudget`), and a sub-sampled version named after its train budget (``<name>_1m``)
+  gets it by that name; the container records it
   (``experiment_metadata.row_budget``) and the split checks hold the container to it (:func:`protocol_checks`).
   TabArena v0.2 sub-samples its larger datasets to ``RowBudget(train=1_000_000, test=500_000)``.
 * A budget applies after the split. The folds or windows are drawn on the full frame, then each test side keeps at

@@ -11,7 +11,6 @@ import tempfile
 import time
 from pathlib import Path
 
-import data_foundry.v2.cli as cli_module
 import data_foundry.v2.dataset as dataset_module
 import numpy as np
 import pandas as pd
@@ -404,15 +403,11 @@ def _define(**attrs: object) -> type[AbstractCuratedDataset]:
         ({"sources": (dataclasses.replace(PUBLICATION, year="Unknown (survey 1988)"),)}, "is not a year"),
         ({"sources": PUBLICATION}, "tuple of `Source"),
         ({"sources": (Source(role="copy", platform="Kaggle", url="https://x", license=None),)}, "invalid metadata"),
-        ({"year": "2024"}, "`year` is gone"),
-        ({"source_url": "https://x"}, "`source_url` is gone"),
         ({"temporal": Temporal(on="t")}, "needs `Temporal\\(splits=TemporalSplits"),
         (
             {"temporal": Temporal(on="t", splits=TemporalSplits(window=None, unit="unique", n_windows=3))},
             "do not fix the prediction horizon",
         ),
-        ({"time_on": "t"}, "declare the regime as one object"),
-        ({"group_on": "g", "group_labels": "per_group"}, "declare the regime as one object"),
         ({"grouping": Grouping(on="g", labels="per_group")}, "definition=...\\)` is required"),
         ({"grouping": "g"}, "must be a `Grouping"),
         (
@@ -422,15 +417,11 @@ def _define(**attrs: object) -> type[AbstractCuratedDataset]:
             },
             "grouped or temporal, not both",
         ),
-        ({"row_budget": RowBudget(train=200, test=100)}, "is named `<name>_0p2k`"),
         (
             {"temporal": Temporal(on="t", splits=TemporalSplits(window=7, unit="days", n_windows=3, sample_by="time"))},
-            "needs a `row_budget`",
+            "needs the collection's row budget",
         ),
-        ({"version_of": "toy"}, "`version_of` is gone"),
-        ({"raw_data_from": "toy"}, "`raw_data_from` is gone"),
         ({"SPLIT_RANDOM_STATE": 1}, "fixed for the whole benchmark"),
-        ({"categorical_features": ("a",)}, "`_feature_types`"),
         ({"data_tags": "Spatial"}, "tuple of tags"),
         ({"data_tags": ("2ndTierData",)}, "retired"),
         ({"time_basis": TimeBasis("ForcedGroupedFromTemporal", "x")}, "holds out whole groups"),
@@ -898,23 +889,28 @@ def test_subsampled_frames_drop_unused_categories() -> None:
 IMPORTS = "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, drop_columns"
 
 
-def version_body(name: str = "toy_ds_0p2k", budget: str = "RowBudget(train=200, test=50)", extra: str = "") -> str:
-    """A version of the toy dataset sub-sampled to ``budget``.
+def version_body(name: str = "toy_ds_0p2k", extra: str = "") -> str:
+    """A version of the toy dataset, sub-sampled to the budget of its collection (:func:`write_version`).
 
     Named ``toy_ds_<suffix>``, it reads the raw files of ``toy_ds``.
     """
     return (
         DEFINITION.format(name=name, comment="Toy data.")
-        .replace(IMPORTS, IMPORTS.replace("Metric,", "Grouping, Metric, RowBudget,"))
-        .replace(
-            '    target = "y"\n',
-            f'    row_budget = {budget}\n{extra}    target = "y"\n',
-        )
+        .replace(IMPORTS, IMPORTS.replace("Metric,", "Grouping, Metric,"))
+        .replace('    target = "y"\n', f'{extra}    target = "y"\n')
     )
 
 
-def make_version(root: Path, name: str = "toy_ds_0p2k", **kwargs: str) -> AbstractCuratedDataset:
-    write_definition(root, name, body=version_body(name, **kwargs))
+def write_version(root: Path, name: str, body: str, budget: str = "RowBudget(train=200, test=50)") -> None:
+    """Write the definition ``body`` into a collection whose row budget is ``budget``."""
+    write_collection(root, budget)
+    write_definition(root, name, body=body)
+
+
+def make_version(
+    root: Path, name: str = "toy_ds_0p2k", budget: str = "RowBudget(train=200, test=50)"
+) -> AbstractCuratedDataset:
+    write_version(root, name, version_body(name), budget)
     return get_dataset(root, name)
 
 
@@ -926,7 +922,7 @@ def test_a_version_reads_the_raw_files_of_the_name_without_its_budget(tmp_path: 
     ds = make_version(tmp_path / "datasets")
     assert ds.raw_dir == warehouse / "toy_ds"
     meta = ds.dataset_metadata
-    assert (meta.unique_name, meta.derived_from, meta.derivation) == ("toy_ds_0p2k", None, None)
+    assert meta.unique_name == "toy_ds_0p2k"
 
 
 def test_a_copy_source_is_recorded_and_checked(tmp_path: Path, warehouse: Path) -> None:
@@ -994,7 +990,7 @@ def test_a_version_keeps_whole_groups_and_trains_on_the_rest_of_its_fold(tmp_pat
         '        return drop_columns(df, ["row_id"])',
         '        df["site"] = (df["row_id"] // 4).astype(str)\n        return drop_columns(df, ["row_id"])',
     )
-    write_definition(tmp_path / "datasets", "toy_ds_0p2k", body=body)
+    write_version(tmp_path / "datasets", "toy_ds_0p2k", body)
     plan = get_dataset(tmp_path / "datasets", "toy_ds_0p2k").make_splits()
 
     assert len(plan.df) == 600
@@ -1013,13 +1009,6 @@ def test_a_version_with_a_frame_within_budget_still_samples_its_test_sides(tmp_p
     assert len(plan.df) == 600
     assert fold_sizes(plan.splits) == {(500, 100)}  # the train sides keep to 500 by themselves
     assert plan.comment.startswith("Default splits. Each fold tests on at most 0.1k rows of its third")
-
-
-def test_a_version_whose_budget_changes_nothing_is_refused(tmp_path: Path, warehouse: Path) -> None:
-    del warehouse
-    ds = make_version(tmp_path / "datasets", "toy_ds_1m", budget="RowBudget(train=1_000_000, test=500_000)")
-    with pytest.raises(DatasetDefinitionError, match="Take the dataset fully: drop `row_budget` and the `_1m`"):
-        ds.make_splits()
 
 
 def test_a_version_records_its_budget_and_is_held_to_it(tmp_path: Path, warehouse: Path) -> None:
@@ -1104,24 +1093,17 @@ def test_a_collection_version_within_the_budget_is_refused(tmp_path: Path, wareh
         get_dataset(root, "toy_ds_1m").make_splits()
 
 
-def test_a_definition_in_a_collection_declares_no_budget(tmp_path: Path, warehouse: Path) -> None:
-    del warehouse
-    root = tmp_path / "datasets"
-    write_collection(root)
-    write_definition(root, "toy_ds_0p2k", body=version_body())  # even the collection's own budget
-    with pytest.raises(DatasetDefinitionError, match="the collection sets the row budget"):
-        get_dataset(root, "toy_ds_0p2k")
+TEMPORAL_BUDGET = "RowBudget(train=190, test=60)"
+"""The row budget of the temporal versions' collection (``toy_ds_0p19k``)."""
 
 
 def temporal_version_body(
-    name: str = "toy_ds_0p19k",
-    budget: str = "RowBudget(train=190, test=60)",
-    windows: str = 'TemporalSplits(window=5, unit="days", n_windows=3)',
+    name: str = "toy_ds_0p19k", windows: str = 'TemporalSplits(window=5, unit="days", n_windows=3)'
 ) -> str:
     """A temporal version: the 600 toy rows over 30 days (20 per day), 3 windows of 5 days."""
     return (
-        version_body(name, budget, extra=f'    temporal = Temporal(on="t", splits={windows})\n')
-        .replace("RowBudget,", "RowBudget, Temporal, TemporalSplits,")
+        version_body(name, extra=f'    temporal = Temporal(on="t", splits={windows})\n')
+        .replace("Metric,", "Metric, Temporal, TemporalSplits,", 1)
         .replace(
             '        return drop_columns(df, ["row_id"])',
             '        df["t"] = pd.Timestamp("2024-01-01") + pd.to_timedelta(df["row_id"] // 20, unit="D")\n'
@@ -1136,7 +1118,7 @@ def temporal_version_body(
 
 def test_a_temporal_version_samples_per_window_and_keeps_the_rows_it_uses(tmp_path: Path, warehouse: Path) -> None:
     del warehouse  # the windows' train sides hold 300 to 500 earlier rows, a 5-day window 100 rows
-    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=temporal_version_body())
+    write_version(tmp_path / "datasets", "toy_ds_0p19k", temporal_version_body(), TEMPORAL_BUDGET)
     plan = get_dataset(tmp_path / "datasets", "toy_ds_0p19k").make_splits()
 
     assert len(plan.splits) == 3
@@ -1156,7 +1138,7 @@ def test_a_temporal_version_samples_per_window_and_keeps_the_rows_it_uses(tmp_pa
 def test_a_temporal_version_sampled_by_time_keeps_whole_days(tmp_path: Path, warehouse: Path) -> None:
     del warehouse  # 9 whole days of 20 rows fit the train budget, the 10th would cross it; 3 of a window's 5 days
     windows = 'TemporalSplits(window=5, unit="days", n_windows=3, sample_by="time")'
-    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=temporal_version_body(windows=windows))
+    write_version(tmp_path / "datasets", "toy_ds_0p19k", temporal_version_body(windows=windows), TEMPORAL_BUDGET)
     plan = get_dataset(tmp_path / "datasets", "toy_ds_0p19k").make_splits()
 
     full_days = plan.df["t"].value_counts()
@@ -1189,10 +1171,10 @@ def ordinal_version_body(time_unit: str | None) -> str:
 
 def test_a_temporal_version_on_a_numeric_time_declares_what_a_step_counts(tmp_path: Path, warehouse: Path) -> None:
     del warehouse  # an integer day number has no calendar of its own: the newest-year rule needs `time_unit`
-    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=ordinal_version_body(None))
+    write_version(tmp_path / "datasets", "toy_ds_0p19k", ordinal_version_body(None), TEMPORAL_BUDGET)
     with pytest.raises(DatasetDefinitionError, match="declare what one step of it counts"):
         get_dataset(tmp_path / "datasets", "toy_ds_0p19k").make_splits()
-    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=ordinal_version_body("days"))
+    write_version(tmp_path / "datasets", "toy_ds_0p19k", ordinal_version_body("days"), TEMPORAL_BUDGET)
     ds = get_dataset(tmp_path / "datasets", "toy_ds_0p19k")
     container = ds.check(write_report=False, verbose=False).container
     assert container.task_metadata.time_unit == "days"
@@ -1206,34 +1188,9 @@ def test_a_temporal_version_on_a_numeric_time_declares_what_a_step_counts(tmp_pa
 def test_time_unit_needs_a_numeric_time_column(tmp_path: Path, warehouse: Path) -> None:
     del warehouse
     body = temporal_version_body().replace('Temporal(on="t", ', 'Temporal(on="t", time_unit="days", ')
-    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=body)
+    write_version(tmp_path / "datasets", "toy_ds_0p19k", body, TEMPORAL_BUDGET)
     with pytest.raises(DatasetDefinitionError, match="is a date, whose calendar is its own"):
         get_dataset(tmp_path / "datasets", "toy_ds_0p19k").make_splits()
-
-
-def test_a_temporal_version_within_the_budget_is_refused(tmp_path: Path, warehouse: Path) -> None:
-    del warehouse
-    body = temporal_version_body("toy_ds_1m", "RowBudget(train=1_000_000, test=500_000)")
-    write_definition(tmp_path / "datasets", "toy_ds_1m", body=body)
-    with pytest.raises(DatasetDefinitionError, match="no split side exceeds the row budget"):
-        get_dataset(tmp_path / "datasets", "toy_ds_1m").make_splits()
-
-
-@pytest.mark.parametrize(
-    ("name", "budget", "extra", "match"),
-    [
-        ("toy_ds_1m", "RowBudget(train=190, test=60)", "", "is named `<name>_0p19k`"),
-        ("toy_ds_0p19k", "(190, 60)", "", "must be a `RowBudget"),
-        ("toy_ds_1m", "RowBudget(train=1_000_000, test=500_000)", "    subsample_to_budget = True\n", "is replaced"),
-    ],
-)
-def test_a_row_budget_is_checked_with_its_definition(
-    tmp_path: Path, warehouse: Path, *, name: str, budget: str, extra: str, match: str
-) -> None:
-    del warehouse
-    write_definition(tmp_path / "datasets", name, body=version_body(name, budget, extra))
-    with pytest.raises(DatasetDefinitionError, match=match):
-        get_dataset(tmp_path / "datasets", name)
 
 
 def test_split_sides_come_in_row_order_and_the_container_keeps_them_in_its_row_table(
@@ -1689,28 +1646,6 @@ def test_a_source_metric_is_written_into_the_spec_and_the_readme(tmp_path: Path,
     assert read_report(folder / "README.md")["task"]["metric_origin"] == "source"
 
 
-LOCAL_LINE = """    metric = Metric.local(
-        lambda y, p, **_: float((y == p).mean()),
-        name="hit_rate",
-        prediction="label",
-        greater_is_better=True,
-        reference="https://example.org/our-own-metric",
-    )
-"""
-
-
-def test_a_local_metric_is_warned_and_refused_by_build(tmp_path: Path, warehouse: Path) -> None:
-    del warehouse
-    write_definition(tmp_path / "datasets", body=_with_metric(LOCAL_LINE))
-    ds = get_dataset(tmp_path / "datasets", "toy_ds")
-    result = ds.check(verbose=False)
-    assert "task_metric_local" in [r.slug for r in result.bundle_report.warnings]
-    assert not [r for r in result.bundle_report.results if r.slug == "task_metric_not_computable"]
-    with pytest.raises(DatasetDefinitionError, match="allow_local_metric=True"):
-        ds.build(verbose=False)
-    assert ds.build(verbose=False, allow_local_metric=True).saved
-
-
 @pytest.fixture
 def era_metric(monkeypatch: pytest.MonkeyPatch) -> str:
     from data_foundry.v2.metrics import METRICS, MetricDef
@@ -2022,12 +1957,11 @@ def test_a_spectrum_ships_as_numbers_and_is_recorded_as_a_group(tmp_path: Path, 
         ({'prefix="mz_"': 'prefix="nm_"'}, "0 column"),
         ({'df[f"mz_{position}"]': 'df[f"mz_{position}x"]'}, "no number"),
         ({SPECTRUM_DECLARATION: SPECTRUM_DECLARATION.replace("(\n", "[\n").replace("    )\n", "    ]\n")}, "tuple"),
-        ({"    special_features = (\n": "    spectra = (\n"}, "declare it in `special_features`"),
     ],
 )
 def test_a_spectrum_declared_wrong_is_refused(tmp_path: Path, warehouse: Path, changes, match) -> None:
     """A spectrum column typed in ``_feature_types``, a prefix that matches nothing, a position that is no number and a
-    list instead of a tuple are each refused with a message naming the problem; so is the retired ``spectra``.
+    list instead of a tuple are each refused with a message naming the problem.
     """
     del warehouse
     write_definition(tmp_path / "datasets", body=_spectrum_definition(**changes))
@@ -2137,19 +2071,10 @@ def test_grouped_split_takes_a_time_basis() -> None:
     assert "StationaryRelation" in cls.dataset_metadata.data_tags
 
 
-def test_the_old_way_is_read_until_the_move_completes(monkeypatch: pytest.MonkeyPatch) -> None:
-    """A forced tag in `data_tags` and a free-text line still load while `ALLOW_UNSTRUCTURED` holds, also a line that
-    names a tag the definition does not list yet; once it is False, the definition must declare `time_basis`.
-    """
-    from data_foundry import time_basis as basis_rules
-
-    monkeypatch.setattr(basis_rules, "ALLOW_UNSTRUCTURED", True)
-    old_way = {"data_tags": ("ForcedIIDFromTemporal",), "curation_comments": "- Time basis: time lost."}
-    assert "ForcedIIDFromTemporal" in _define(**old_way).dataset_metadata.data_tags
-    _define(curation_comments="- Time basis: StationaryRelation: flat over two periods.")
-    monkeypatch.setattr(basis_rules, "ALLOW_UNSTRUCTURED", False)
+def test_a_time_basis_by_hand_is_refused() -> None:
+    """A forced tag in `data_tags` and a free-text line: the definition declares `time_basis` instead."""
     with pytest.raises(Exception, match="declare the time basis as `time_basis = TimeBasis"):
-        _define(**old_way)
+        _define(data_tags=("ForcedIIDFromTemporal",), curation_comments="- Time basis: time lost.")
 
 
 def test_an_unacceptable_finding_cannot_be_accepted() -> None:
@@ -2234,7 +2159,7 @@ def test_only_a_custom_split_step_is_checked_for_a_changed_frame(
     del warehouse
     calls = []
     monkeypatch.setattr(dataset_module, "_time_values_changed", lambda *args: calls.append(args) or 0)
-    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=temporal_version_body())
+    write_version(tmp_path / "datasets", "toy_ds_0p19k", temporal_version_body(), TEMPORAL_BUDGET)
     plan = get_dataset(tmp_path / "datasets", "toy_ds_0p19k").make_splits()
     assert len(plan.df) == 560  # a frame of its own
     assert calls == []
@@ -2260,18 +2185,6 @@ def test_cli_check_without_report_leaves_readme_alone(tmp_path: Path, warehouse:
     assert not (folder / "README.md").exists()
     assert _dataset_cli(tmp_path / "datasets", "check", "toy_ds") == 0
     assert (folder / "README.md").exists()
-
-
-def test_cli_build_makes_the_instance_as_the_other_commands_do(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
-) -> None:
-    def refuse(cls: type) -> None:
-        raise DatasetDefinitionError(f"{cls.__name__} is a partial parent")
-
-    monkeypatch.setattr(cli_module, "instance", refuse)
-    write_definition(tmp_path / "datasets")
-    assert _dataset_cli(tmp_path / "datasets", "build", "toy_ds") == 1
-    assert "partial parent" in capsys.readouterr().err
 
 
 def test_the_data_checks_skip_the_duplicate_passes(

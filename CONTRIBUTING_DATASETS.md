@@ -64,8 +64,8 @@ All commands run from the repository root in the repository's environment (`.ven
 [`AbstractCuratedDataset`](src/data_foundry/v2/dataset.py) holds the conventions, so a definition does not repeat
 them: the dtype casts from `_feature_types`, the row order (the rows in the order of their content, then a
 shuffle with seed 42 or a stable sort by the time column), the split protocol (3 folds, or at least 3 temporal
-windows; no row budget unless the definition declares one: TabArena v0.2 ships larger data as a `<name>_1m`
-version with `row_budget = RowBudget(train=1_000_000, test=500_000)`, whose test sides keep at most 500k rows and
+windows; no row budget unless the collection sets one: TabArena v0.2 sets `RowBudget(train=1_000_000, test=500_000)`
+in its `collection.py` and ships larger data as a `<name>_1m` version, whose test sides keep at most 500k rows and
 whose train sides keep every row, sub-sampled to 1M by the benchmark), standard NaNs, the metadata validation, the
 bundle checks and the
 verification of the saved container. Recipes for the recurring cases (every split regime, sub-sampling, leaks,
@@ -78,12 +78,11 @@ dtypes, accepted warnings) are in [`definitions.md`](.claude/skills/knowledge-da
 * **Honest comments.** `curation_comments` records what was dropped and why, anomalies left in on purpose
   (`Anomaly:`, `Note:`), and sampling choices. Someone re-curating the data in two years reads it first.
 * **One task per container.** Two reasonable targets or two split regimes are two datasets with their own
-  `unique_name`. They share their metadata and cleaning through a parent definition (no `target`) that each task
-  subclasses (`import_definition("<parent>")`, a `derivation` saying how it differs), instead of copying it.
+  `unique_name` and definition.
 * **Sources.** `sources` lists the publication first (its year and BibTeX are the dataset's), then the copy you
   download when it is not the publication, and the parts of an assembled dataset, each with its own license.
-* **Versions.** A version with a row budget is named `<name>_1m` (after `RowBudget.suffix`), declares
-  `row_budget`, reads the raw files of `<name>` and says why in `curation_comments`.
+* **Versions.** A version with the collection's row budget is named `<name>_1m` (after `RowBudget.suffix`), reads the
+  raw files of `<name>` and says why in `curation_comments`.
 * **Same result everywhere.** Sort with `kind="stable"`, sort file listings, seed every random step; the
   definition check refuses the common nondeterministic calls.
 * **Raw data stays out of git.** Only the definition folder lands in the PR.

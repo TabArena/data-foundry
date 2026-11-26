@@ -27,8 +27,8 @@ from data_foundry.curation.split_tree import (
 )
 from data_foundry.curation.store import load_all
 from data_foundry.schema import FORCED_TIME_TAGS
-from data_foundry.time_basis import ALLOW_UNSTRUCTURED, tags_of
-from data_foundry.v2 import discover_definitions
+from data_foundry.time_basis import tags_of
+from data_foundry.v2 import discover_datasets
 
 REPO = resolve_curation_root().parent
 V02 = REPO / "datasets/_dev/tabarena-v0pt2"
@@ -47,7 +47,7 @@ def tree() -> SplitTree:
 @pytest.fixture(scope="module")
 def definitions() -> dict:
     """The working copy's definition classes by folder name."""
-    return discover_definitions(V02, strict=False) if V02.is_dir() else {}
+    return discover_datasets(V02, strict=False) if V02.is_dir() else {}
 
 
 def shipped(cls: type) -> tuple[str, set[str]]:
@@ -161,15 +161,8 @@ def test_departures_name_a_leaf(tree: SplitTree) -> None:
         assert row["definition"] not in leaf.examples, f"{row['definition']} departs from {leaf.id}"
 
 
-@pytest.mark.skipif(
-    ALLOW_UNSTRUCTURED, reason="the definitions still move to the split rules; the tree names where they land"
-)
 def test_examples_ship_their_leaf(tree: SplitTree, definitions: dict) -> None:
-    """An example ships its leaf's split and tag.
-
-    Checked once every definition has moved to the split rules, which the change that completes the move marks by
-    setting `ALLOW_UNSTRUCTURED` false: the examples name where the definitions land.
-    """
+    """An example ships its leaf's split and tag."""
     bad = []
     for leaf in tree.leaves():
         if leaf.family == "Retire":
