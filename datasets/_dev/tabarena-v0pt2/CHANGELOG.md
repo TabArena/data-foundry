@@ -1,6 +1,14 @@
 # Changelog: TabArena v0.2 working copy
 
 ## 2026-11-23, every definition names its split-tree leaf; `RetrospectiveFillIn` and `Target: Fixed Delay` in use (no container built)
+## 2026-11-26 (late), polish retired, fiat kept
+
+- polish_companies_bankruptcy retired (`No (Retired)`, `Class-dependent Recording`, `Selection Bias`; issue 4, B):
+  replaced by `american_companies_bankruptcy` (one extraction for both classes, a dated split); the 27-ratio rebuild
+  of the same day left the record formats told apart at 0.81 to 0.84 within a class. Issue 7 (B, forced from
+  temporal) recorded, moot. Folder removed, `v2_path` cleared.
+- fiat_500 kept and ships next to `craigslist_used_vehicles_f150` (issue 7, A; issue 4 closes with it); record only.
+
 ## 2026-11-26 (evening), retirements for better data, and fiat and polish decisions
 
 Retired (verdict dont), folders removed, `v2_path` cleared:

@@ -8,7 +8,7 @@ data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
 - BeyondArena
-suggestion: 'Yes'
+suggestion: No (Retired)
 decision_markers:
 - Selection Bias
 - Class-dependent Recording
@@ -26,7 +26,6 @@ problem_type: Binary Classification
 source_links:
 - https://doi.org/10.24432/C5F600
 notebook_path: datasets/beyond_iid/old_iid/polish_companies_bankruptcy/polish_companies_bankruptcy.ipynb
-v2_path: datasets/_dev/tabarena-v0pt2/polish_companies_bankruptcy/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -56,13 +55,15 @@ CC (2026-11-26, Andrej): issue 5, D ("Yes, implement D"): the task keeps all 5,7
 
 CC (2026-11-26, Andrej): issue 6, A, as implemented: the task keeps the fifth-year file (bankruptcy one year after the statement); `curation_comments` now say that the five files are one panel of the same companies (97% of 5year statements found in 4year), that the other files are longer horizons with less signal after the rebuild, and that pooling them needs a company key the source does not give.
 
+CC (2026-11-26, Andrej): verdict dont; review issue 4, B ("Option B: Add American, then retire polish as replaced."): retired as replaced by american_companies_bankruptcy (US listed firms 1999-2018, raw statement items, one extraction for both classes, a dated split), with `Class-dependent Recording` for the separate extraction runs of the two classes (10 label-free run flags alone ROC AUC 0.964; after the 27-ratio rebuild of issue 5 the task scored 0.797 / 0.811 with residue: record formats told apart at 0.81 to 0.84 within a class, 42 identical statement sets) and `Selection Bias` kept. Issue 7, B (forced from temporal) recorded, moot. Folder removed, `v2_path` cleared.
+
 **Assessment (AI, 2026-11-26):** on the rebuilt definition (5,790 rows, 406 bankrupt, 27 columns), the 9 shipped splits: ROC AUC 0.797 LightGBM and 0.811 logistic regression, against 0.955 and 0.924 for the published 64 ratios, 0.964 and 0.967 for the 10 label-free run flags and 0.729 and 0.777 for the two size columns alone. Within one class (out-of-fold, 5 folds x 3 seeds, LightGBM / logistic): operating reference format against the zero-coded format 0.53 / 0.57, bankrupt with against without history 0.53 / 0.54, reference against the larger-company format 0.84 / 0.84 (0.64 / 0.62 without the size columns; size alone 0.81); as published 0.98-1.00. Bankrupt companies without history score as the other bankrupt ones (0.54 / 0.52; as published 0.96 / 0.87). Largest difference by format or class in the rate of a two- or three-column identity: 0.084. The rebuild makes 42 sets of statements identical (84 rows, one set with both labels), source rows that differ only in dropped ratios.
 
 ## Review
 
-**Outcome:** added; on 2026-11-26 (Andrej) the task keeps the 5year file (issue 6, A) and rebuilds 27 of the 64 ratios from one set of amounts per statement, so models no longer score the extraction run (issue 5, D: ROC AUC 0.797 / 0.811 against 0.955 / 0.924 as published). Stationarity reasoning of 2026-11-18: the forced tag stays (issue 1, A, Andrej).
+**Outcome:** added, then retired on 2026-11-26 (verdict dont, issue 4, B) as replaced by `american_companies_bankruptcy`, with `Class-dependent Recording` and `Selection Bias`. on 2026-11-26 (Andrej) the task keeps the 5year file (issue 6, A) and rebuilds 27 of the 64 ratios from one set of amounts per statement, so models no longer score the extraction run (issue 5, D: ROC AUC 0.797 / 0.811 against 0.955 / 0.924 as published). Stationarity reasoning of 2026-11-18: the forced tag stays (issue 1, A, Andrej).
 
-**Main points:** Open: whether american_companies_bankruptcy replaces this dataset (issue 4, better-data check of 2026-11-25), and the time basis (issue 7, whose recommended forced tag the definition already declares since issue 1). Settled on 2026-11-26: the extraction runs are undone by the 27-ratio rebuild, with `Class-dependent Recording` added and the class periods still different (`Selection Bias`); the one-year file stays. Earlier: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation` (issue 1, 2026-11-18).
+**Main points:** Nothing open. Retired (2026-11-26, issue 4, B) as replaced by `american_companies_bankruptcy`: one extraction for both classes and a dated split, against two extraction runs whose conventions gave the label away here; issue 7 (B, forced from temporal) recorded and moot. Settled on 2026-11-26 before the retirement: the 27-ratio rebuild (issue 5, D) and the one-year file (issue 6, A). Earlier: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation` (issue 1, 2026-11-18).
 
 **Issues for Andrej:**
 
@@ -210,6 +211,10 @@ CC (2026-11-26, Andrej): issue 6, A, as implemented: the task keeps the fifth-ye
    [^outdated]: **SEL-18** (Should): a dataset leaves for being outdated only when the task is gone; a `No` that cites the replacement names its other reasons too.
    [^rule]: **SEL-5** (Must): "A label a rule assigns from columns we ship ... Drop the rule's inputs first and test what the rest predicts." Here the rule reads a later report, not the row itself, but the same ratios of the year before carry the score.
    [^version]: **PROV-6** / **PROV-7** (Must): versions of one dataset are duplicates when neither adds a distinct task; records that share a source but give different tasks are not duplicates.
+
+   **Andrej (2026-11-26, change):** Option B: Add American, then retire polish as replaced.
+
+   **Resolved (2026-11-26, Andrej):** B: american_companies_bankruptcy is added and ships (verdict ship, 2026-11-25), so this dataset is retired: `No (Retired)`, `Class-dependent Recording` (the bankrupt and operating companies came from separate extraction runs whose conventions models recognised: 10 label-free run flags alone ROC AUC 0.964; the rebuild of issue 5 left the record formats told apart at 0.81 to 0.84 within a class and 42 identical statement sets), `Selection Bias` kept; the v0.2 folder is removed and `v2_path` cleared.
 
 5. **Retire it: the bankrupt and the operating companies come from separate extraction runs?**
 
@@ -576,6 +581,10 @@ CC (2026-11-26, Andrej): issue 6, A, as implemented: the task keeps the fifth-ye
    **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 4 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
 
    **Note (AI, 2026-11-25):** the BeyondArena v0.2 review's issue 3, parked there on 2026-11-11 and never written into this record; it is kept here under its new number.
+
+   **Andrej (2026-11-26, change):** Option B: Forced from temporal.
+
+   **Resolved (2026-11-26, Andrej):** B, recorded; moot for the shipped benchmark, since the dataset is retired the same day (issue 4, B).
 
 ## Reference
 

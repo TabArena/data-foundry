@@ -67,6 +67,8 @@ CC (2026-11-26, Andrej): review issue 2, A ("I keep that since it is a valid pat
 
 CC (2026-11-26, Andrej): review issue 3 ("a random split that still makes sure that no car ends up on the same side of train and test", read as: no car on both sides): random splits grouped by car, `car_id` on equal engine power, age and mileage, which also joins the 14 cars whose trim two dealers entered differently; the time basis stays `RetrospectiveFillIn` (issue 6), the split leaf is the fill-in by unit.
 
+CC (2026-11-26, Andrej): review issue 7, A (ok, as implemented): fiat_500 is kept next to craigslist_used_vehicles_f150, which tests the later market on another model; issue 4 closes with it. Verdict ship; nothing open in the review. The build is stale until rebuilt.
+
 **Assessment (AI, 2026-11-26):** on the Kaggle file in its order, the key without the owner count keeps 1,420 of 1,538 listings (mean price 8,576 before, 8,498 after; median 9,000 and 8,900). On those rows 1,406 cars: 1,392 of one row and 14 of two, all differing only in trim (one certain copy, 39,162 km listed as pop and as sport at the same two places and prices; 3 more with an odd mileage, 10 with a round one). Under random 3-fold splits (10 repeats) 1.3% of the test rows had such a twin in training (0.39% with an odd mileage); grouped by `car_id`, none.
 
 ## Review
@@ -83,7 +85,7 @@ of the rows. Value: the benchmark methods separate (RMSE on the shipped data: Li
 real listings with a use case anyone can name +; one crawl of unstated date and filter, a small table, and better data
 for the same task under screening -.
 
-**Main points:** Issues 1 to 3 are decided (2026-11-26): the one-row-per-car key without the owner count (1, C), the
+**Main points:** Verdict ship (2026-11-26); nothing open. Kept next to `craigslist_used_vehicles_f150` (issue 7, A; issue 4 closes with it). Issues 1 to 3 are decided (2026-11-26): the one-row-per-car key without the owner count (1, C), the
 56,779 km mileage kept as recorded (2, A), and a random split grouped by car on engine power, age and mileage (3; the
 time basis stays `RetrospectiveFillIn`, issue 6, B). The domain is settled (issue 5, 2026-11-05). Open: the
 replacement by a dated used-car listing table (issue 4) and the better-data check of 2026-11-25 (issue 7): keep
@@ -657,6 +659,8 @@ dated listing table (autoscout24_car_listings_2025), screened in its own record.
 
    **Note (AI, 2026-11-25):** the question moved to issue 7 of this review, which restates it with the candidates checked on their files on 2026-11-25; this issue stays parked and that one carries the decision.
 
+   **Resolved (2026-11-26, Andrej):** closed by issue 7, A: fiat_500 is kept and ships next to the Craigslist F-150 record.
+
 5. **Domain: `technology & internet`, or `business & marketing` as the other listing prices?**
 
    * **Problem:**
@@ -797,6 +801,10 @@ dated listing table (autoscout24_car_listings_2025), screened in its own record.
    [^better]: Pattern "Small or dated, and the task is still done today": a larger or newer public dataset with the same target and use case is its own record; the old record is not rejected automatically and keeps the verdict its own data earn until the curator decides.
    [^valid]: Keep two questions apart (TP-6): is the task valid, and is it the best version? A valid task stays.
    [^entity]: SPLIT-13: an entity that recurs across the cutoff is part of the task when the model predicts for known entities, and a question when the use case is a new entity.
+
+   **Andrej (2026-11-26, ok):** As implemented (A).
+
+   **Resolved (2026-11-26, Andrej):** A: fiat_500 ships as it is, next to `craigslist_used_vehicles_f150`, judged on its own data: after issues 1 to 3 it holds one row per car and is split grouped by car, and its 1,420 Italian listings of one model test another size, market and split than the 97,291 US F-150 listings split by scrape. Issue 4 (the same question, 2026-11-05) closes with it. No definition change.
 
 ## Reference
 
