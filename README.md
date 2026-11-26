@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-25 21:35 UTC: 228 claim(s) (Andrej 197, Lennart 12, Myunghwan 19).
+As of 2026-11-26 11:29 UTC: 227 claim(s) (Andrej 196, Lennart 12, Myunghwan 19).
 
 ## Andrej
 
@@ -201,7 +201,6 @@ As of 2026-11-25 21:35 UTC: 228 claim(s) (Andrej 197, Lennart 12, Myunghwan 19).
 | `web_page_phishing_detection` | add | 2026-11-25 | 2026-12-02 | add-dataset (better-data replacements, 2026-11-25) |
 | `website_phishing` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `wids_diabetes_mellitus` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
-| `wild_type_attr_cardiac_amyloidosis` | add | 2026-11-25 | 2026-12-02 | add-dataset (Shaktah benchmark batch) |
 | `wine_quality` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `wine_world_cost` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `wisconsin_local_government_property_insurance_fund` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
