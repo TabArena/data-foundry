@@ -194,9 +194,19 @@ target's variance is 69.3%, higher than the soy dataset's 55.7%.
    **Effect on the task:** under a random split every test line has full siblings in training, and the scores rise
    steeply; the declared per-family metric would then be scoring a much easier question.
 
-   **Experiments:** on the nine grouped splits a random forest beats the dummy on 100% of them by +0.3026 on the
-   declared metric (SE 0.0087), and the family-mean predictor scores exactly 0 within a family against a pooled
-   0.814, which is what the per-family metric is for.
+   **Experiments:**
+
+   | Measured on the nine splits | Folds of random lines | Whole families held out |
+   |---|---|---|
+   | LightGBM, pooled R^2 | 0.233 (SE 0.015) | 0.047 (SE 0.047) |
+   | random forest, per-family correlation (the declared metric) | not measured | 0.303, beating the dummy on 100% of folds by +0.3026 (SE 0.0087) |
+   | a predictor given each test family's true mean | not measured | pooled r 0.814, per-family exactly 0 |
+
+   The group probe's learnability figures are negative for every family tried on unseen crosses (ridge -0.500,
+   random forest -0.028, LightGBM -0.025, 5-NN -0.222), which is the same fact read on a pooled R^2: 69.3% of the
+   variance is between families, no model predicts an unseen cross's mean from markers, and the declared metric
+   does not ask it to. The definition's split comment now says this, because a reader who scores this dataset with
+   a pooled R^2 will conclude the task is unlearnable.
 
    **Options:**
 

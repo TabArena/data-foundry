@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: maize_nam_flowering_time
 container_format: 2
-checksum: v2:f2bc7d700ec55dddd257f4aee15dbac77e7d559b6380017ec3ea93905ebfa071
+checksum: v2:e89b4441bcce5a750e1c53ffb9f7e7093bed7eeb0987f765c7ee5215f797cf60
 build: null
 build_stale: false
 raw_files:
@@ -74,7 +74,7 @@ decisions: []
 
 Regression of `days_to_anthesis`, scored with `mean_group_pearsonr` on grouped splits by `family`. 4,699 rows and 1,106 features. Source: Other (2009).
 
-Not built yet. The current definition gives checksum `v2:f2bc7d700ec55dddd257f4aee15dbac77e7d559b6380017ec3ea93905ebfa071`.
+Not built yet. The current definition gives checksum `v2:e89b4441bcce5a750e1c53ffb9f7e7093bed7eeb0987f765c7ee5215f797cf60`.
 
 ## In brief
 
@@ -269,6 +269,17 @@ random split puts the full siblings of every test line in the training data, whi
 cross does not have. A test family's own feature rows are all on the test side and may be read
 (`context="all_rows"`, the grouping definition). Leaf L-EXP.kind of the split tree. The repeats reuse the
 same 25 families, so the spread over repeats is descriptive, not 25 independent crosses.
+
+What the grouped split costs, and why a pooled R^2 reads as no signal here. Over the nine splits an untuned
+LightGBM scores R^2 0.233 on folds of random lines and 0.047 on folds of whole families, a gap of 0.186,
+and the group probe's learnability figures are negative for every family tried (ridge -0.500,
+random forest -0.028, LightGBM -0.025, 5-NN -0.222). That is not an absence of signal: 69.3% of the
+target's variance is between the families, a pooled R^2 is mostly a test of predicting the family mean,
+and no model predicts an unseen cross's mean from markers alone. The signal is inside the family, which is
+where the decision and the declared metric are: on the same splits a random forest scores a per-family
+correlation of 0.303 and beats the dummy on 100% of the folds by +0.3026 (SE 0.0087), while a predictor
+handed each test family's true mean scores exactly 0 there. A reader who scores this dataset with a pooled
+R^2 will conclude the task is unlearnable; that is the metric's choice being skipped, not the task.
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 2,970 to 3,257 rows, test 1,442 to 1,729 rows.
 

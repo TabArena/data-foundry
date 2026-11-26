@@ -29,6 +29,13 @@
   the closest tenth and -1.009 over all, the best single marker is worth 0.050 on the declared metric against a
   random forest's 0.303, a random forest beats the dummy on 100% of the splits by +0.3026 (SE 0.0087), no column
   is flagged by the dtype probe, and the generated-data probe finds identity at 5.0% against 5.0% shuffled.
+- The group probe, run after the rest: over the nine splits an untuned LightGBM scores a pooled R^2 of 0.233 on
+  folds of random lines and 0.047 on folds of whole families, a gap of 0.186, and the learnability figures across
+  unseen families are negative for every model tried (ridge -0.500, random forest -0.028, LightGBM -0.025, 5-NN
+  -0.222). That is the between-family component, not an absence of signal: 69.3% of the variance sits between the
+  families, no model predicts an unseen cross's mean from markers alone, and the declared metric does not ask it
+  to, scoring 0.303 per family on the same splits. The split comment now says so, because a reader who scores this
+  dataset with a pooled R^2 would conclude the task is unlearnable.
 - `accepted_check_warnings` carries `groups_test_groups_few` with that evidence: 25 families is few, and it is
   inherent to the split the use case asks for.
 - `dataset check`: 0 errors, 0 warnings, 1 info over 28 checks; README generated. Nothing built. The record's

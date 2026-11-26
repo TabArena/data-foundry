@@ -231,6 +231,17 @@ class MaizeNamFloweringTime(AbstractCuratedDataset):
         cross does not have. A test family's own feature rows are all on the test side and may be read
         (`context="all_rows"`, the grouping definition). Leaf L-EXP.kind of the split tree. The repeats reuse the
         same 25 families, so the spread over repeats is descriptive, not 25 independent crosses.
+
+        What the grouped split costs, and why a pooled R^2 reads as no signal here. Over the nine splits an untuned
+        LightGBM scores R^2 0.233 on folds of random lines and 0.047 on folds of whole families, a gap of 0.186,
+        and the group probe's learnability figures are negative for every family tried (ridge -0.500,
+        random forest -0.028, LightGBM -0.025, 5-NN -0.222). That is not an absence of signal: 69.3% of the
+        target's variance is between the families, a pooled R^2 is mostly a test of predicting the family mean,
+        and no model predicts an unseen cross's mean from markers alone. The signal is inside the family, which is
+        where the decision and the declared metric are: on the same splits a random forest scores a per-family
+        correlation of 0.303 and beats the dummy on 100% of the folds by +0.3026 (SE 0.0087), while a predictor
+        handed each test family's true mean scores exactly 0 there. A reader who scores this dataset with a pooled
+        R^2 will conclude the task is unlearnable; that is the metric's choice being skipped, not the task.
     """
     accepted_check_warnings = {
         "groups_test_groups_few": (
