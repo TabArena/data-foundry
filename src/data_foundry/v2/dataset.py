@@ -2115,8 +2115,49 @@ def _module_assignments(module: Any) -> dict[str, tuple[str, set[str]]]:
         source = inspect.getsource(module)
     except (OSError, TypeError):
         return {}
-    out: dict[str, tuple[str, set[str]]] = {}
+    return _module_parts(source)[0]
+
+
+def _module_definitions(module: Any) -> dict[str, tuple[str, set[str]]]:
+    """The module-level functions and classes of ``module``: name -> (the definition as written, the names it reads)."""
+    try:
+        source = inspect.getsource(module)
+    except (OSError, TypeError):
+        return {}
+    return _module_parts(source)[1]
+
+
+_SOURCE_LINE = re.compile(r"[^\r\n]*(?:\r\n|\r|\n)|[^\r\n]+\Z")
+"""A line of source with its ending, split as the parser splits it (form feeds stay inside a line)."""
+
+
+@functools.lru_cache(maxsize=512)
+def _module_parts(
+    source: str,
+) -> tuple[dict[str, tuple[str, set[str]]], dict[str, tuple[str, set[str]]]]:
+    """The module-level assignments and definitions of ``source``, parsed once per source (callers do not mutate them).
+
+    Each statement's text is what ``ast.get_source_segment`` returns, sliced from lines split once: that function
+    splits the whole source again on every call, which made loading a large definition take minutes on Python 3.10.
+    """
+    lines = _SOURCE_LINE.findall(source)
+
+    def segment(node: ast.AST) -> str:
+        start, end = node.lineno - 1, node.end_lineno - 1
+        if start == end:
+            return lines[start].encode()[node.col_offset : node.end_col_offset].decode()
+        first = lines[start].encode()[node.col_offset :].decode()
+        last = lines[end].encode()[: node.end_col_offset].decode()
+        return "".join([first, *lines[start + 1 : end], last])
+
+    assignments: dict[str, tuple[str, set[str]]] = {}
+    definitions: dict[str, tuple[str, set[str]]] = {}
     for node in ast.parse(source).body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            reads = {n.id for n in ast.walk(node) if isinstance(n, ast.Name)}
+            reads |= {n.attr for n in ast.walk(node) if isinstance(n, ast.Attribute)}
+            definitions[node.name] = (segment(node), reads)
+            continue
         if isinstance(node, ast.Assign):
             targets, value = node.targets, node.value
         elif isinstance(node, ast.AnnAssign) and node.value is not None:
@@ -2126,23 +2167,8 @@ def _module_assignments(module: Any) -> dict[str, tuple[str, set[str]]]:
         reads = {n.id for n in ast.walk(value) if isinstance(n, ast.Name)}
         for target in targets:
             if isinstance(target, ast.Name):
-                out[target.id] = (ast.get_source_segment(source, node) or "", reads)
-    return out
-
-
-def _module_definitions(module: Any) -> dict[str, tuple[str, set[str]]]:
-    """The module-level functions and classes of ``module``: name -> (the definition as written, the names it reads)."""
-    try:
-        source = inspect.getsource(module)
-    except (OSError, TypeError):
-        return {}
-    out: dict[str, tuple[str, set[str]]] = {}
-    for node in ast.parse(source).body:
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-            reads = {n.id for n in ast.walk(node) if isinstance(n, ast.Name)}
-            reads |= {n.attr for n in ast.walk(node) if isinstance(n, ast.Attribute)}
-            out[node.name] = (ast.get_source_segment(source, node) or "", reads)
-    return out
+                assignments[target.id] = (segment(node), reads)
+    return assignments, definitions
 
 
 def _add_constant(name: str, assignments: dict[str, tuple[str, set[str]]], constants: dict[str, str]) -> None:
