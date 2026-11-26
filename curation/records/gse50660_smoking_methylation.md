@@ -3,11 +3,14 @@ unique_name: gse50660_smoking_methylation
 name: GEO-GSE50660-Methylation-Smoking (Smoking Status DNA Methylation)
 checked_by:
 - AI (UNVERIFIED)
+- Andrej
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Andrej
 suggestion: TBD -> 2nd Tier
 priority: 2
+decision_markers:
+- Not Representative
 tags:
 - AI-Filled (Verify)
 - Many features
@@ -41,10 +44,16 @@ type_adapter_id: curation-record-v1
 - Better data: none found (quick look: public GEO smoking sets such as GSE53045 and GSE85210 are smaller; the large cohorts with smoking, such as Generation Scotland or KORA, are access-controlled; the 2026-10-31 run searched no further).
 - Papers and pages: Tsaprouni et al. 2014 (above), replicated in EPITWIN (not in this series).
 - Metric: none found: linear regressions and ANOVA, no classifier (read on PMC4623553), so the fallback `log_loss` for three classes (MET-1, MET-8). Inputs none.
-- Risks for /add-dataset: 22 current smokers, about 4 per test fold (TP-5, TP-8; a never-against-ever framing is the curator's alternative); SEL-7 to weigh: the label is the respondent's own answer, though the features are a blood measurement, not the interview; half the people are CAD patients, and "Recruitment site, Beadchip, and BS-treated DNA input" are named sources of variation (SPLIT-3); the processed matrix normalised over all samples with no IDATs to rebuild from (LEAK-30, weak; the signal matrix is the route, PROV-13); no probe subset chosen on the target (LEAK-31).
-- Priority: gap + (multiclass thin, 22 accepted), use case 0 (ours, not the source's), source + (paper and GEO), shape 0 (464 rows), risk - (22 current smokers).
+- Risks for /add-dataset: 22 current smokers, about 4 per test fold (TP-5, TP-8; a never-against-ever framing is the curator's alternative); SEL-7 to weigh: the label is the respondent's own answer, though the features are a blood measurement, not the interview; half the people are CAD patients, so the cohort stands in for the general population it was not drawn from (`Not Representative`), and "Recruitment site, Beadchip, and BS-treated DNA input" are named sources of variation (SPLIT-3); the processed matrix normalised over all samples with no IDATs to rebuild from (LEAK-30, weak; the signal matrix is the route, PROV-13); no probe subset chosen on the target (LEAK-31).
+- Priority: gap + (multiclass thin, 22 accepted), use case 0 (ours, not the source's), source + (paper and GEO), shape 0 (464 rows), risk - (22 current smokers; a CAD cohort standing in for the general population).
 
 **Assessment (AI, 2026-10-31):** a candidate from the data-scouting run of 2026-10-30/31, not screened yet. Found through the benchmark TabBench-Bio (https://arxiv.org/abs/2609.07441).
 - as published: 464 x 30,000; target: smoking (179 never / 263 former / 22 current).
 - Why: Smoking status (never / former / current) from peripheral-blood 450K methylation
 - Notes: Tsaprouni et al. 2014.
+
+**CC (2026-11-26, Andrej):** `Not Representative` added.
+- Half the 464 people are CAD cases of a cardiac cohort, so the sample stands in for a general population it was
+  not drawn from. The fact was already in the risks line; the marker was missing, and the risks and priority lines
+  now name it.
+- Verdict and priority unchanged.

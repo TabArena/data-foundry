@@ -3,6 +3,7 @@ unique_name: chembl2034_glucocorticoid_receptor
 name: CHEMBL2034 (Glucocorticoid Receptor Bioactivity)
 checked_by:
 - AI (UNVERIFIED)
+- Andrej
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Andrej
@@ -73,8 +74,11 @@ the entry date rather than the scaffold.
   (CHEMBL279) are the same task from ChEMBL 17. Not duplicates under PROV-4 and PROV-5 (different targets, a
   different release); `papyrus_bioactivity` (`Yes`) and `chembl36_kinase_bioactivity` cover the quantity on newer or
   wider cuts (a PROV-6 overlap for the curator). External collections: TabBench-Bio (`CHEMBL2034`).
-- Better data: `papyrus_bioactivity` (recorded, `Yes`): the same pChEMBL quantity over about 6,900 proteins and 1.27
-  million compounds. No new hit in a quick look this round.
+- Better data: `papyrus_bioactivity` (`Yes`, added as a v2 folder and built): the same pChEMBL quantity over about
+  6,900 proteins and 1.27 million compounds. As on `chembl206_estrogen_receptor` it does not settle this record: its
+  task is protein-conditioned and its own definition argues under PROV-7 that this differs from fixed-target QSAR,
+  its measured ChEMBL overlap is 1,616 ids over 2,257 rows with the sibling overlap unverified, and it sits on
+  ChEMBL 34 against this cut's ChEMBL 37. No new hit in a quick look this round.
 - Papers and pages: the ChEMBL target page https://www.ebi.ac.uk/chembl/explore/target/CHEMBL2034; TabBench-Bio
   (Kreuer et al., arXiv 2609.07441), Sec. 3.1 and Table 4 row CHEMBL2034.
 - Metric: none found at the source: ChEMBL defines no task and no metric (checked 2026-10-31 and 2026-11-25). The
@@ -87,10 +91,17 @@ the entry date rather than the scaffold.
   the two cuts; CC BY-SA 3.0, `redistributable: false` in the registry (no verdict reason, EV-4).
 - Priority: gap 0 (chemistry & material science has 15 accepted datasets and regression 85, neither thin), use case 0
   (ChEMBL names no decision), source + (a documented database with a pinned release), shape + (3,127 molecules), risk
-  - (the near-identical `chembl206_estrogen_receptor`, the shipped `qsar_tid_11`, and the accepted
-  `papyrus_bioactivity` cover the task).
+  - (the near-identical `chembl206_estrogen_receptor`; `qsar_tid_11`, shipped, is the same kind of task on another
+  target; `papyrus_bioactivity`, added and built, holds the quantity far wider but on an older release and as a
+  protein-conditioned task).
 
 **Assessment (AI, 2026-10-31):** a candidate from the data-scouting run of 2026-10-30/31, not screened yet. Found through the benchmark TabBench-Bio (https://arxiv.org/abs/2609.07441).
 - as published: 3,127 x 2,048; target: pchembl_value.
 - Why: Potency (pChEMBL) of compounds against the human glucocorticoid receptor from 2048-bit ECFP4 fingerprints (ChEMBL 37)
 - Notes: Same build as CHEMBL206.
+
+**CC (2026-11-26, Andrej):** the better-data line is corrected, as on `chembl206_estrogen_receptor`.
+- `papyrus_bioactivity` is added as a v2 folder and built, and still does not cover this cut: a protein-conditioned
+  task its own definition separates from fixed-target QSAR under PROV-7, on ChEMBL 34 against this cut's ChEMBL 37.
+- The priority line had called `qsar_tid_11` and the wider set covering "the task"; both are qualified now.
+- Verdict and priority unchanged.

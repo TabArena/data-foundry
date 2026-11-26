@@ -3,6 +3,7 @@ unique_name: chembl206_estrogen_receptor
 name: CHEMBL206 (Oestrogen receptor bioactivity)
 checked_by:
 - AI (UNVERIFIED)
+- Andrej
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Andrej
@@ -79,9 +80,14 @@ under the catalogue rule (SPLIT-37) the split now reads as the entry date rather
   kinases) hold the same quantity on newer or wider cuts, a PROV-6 overlap for the curator to settle.
   `astrazeneca_chembl_logd74` is another ChEMBL deposition but a physicochemical endpoint, a distinct task (PROV-7).
   External collections: TabBench-Bio (`CHEMBL206`).
-- Better data: `papyrus_bioactivity` (recorded, `Yes`): the same pChEMBL quantity on 1.27 million compounds and about
-  6,900 proteins, with this target's activities among them, split on the entry year since 2026-11-24. No new hit in a
-  quick look this round.
+- Better data: `papyrus_bioactivity` (`Yes`, added as a v2 folder and built): the same pChEMBL quantity on 1.27
+  million compounds and about 6,900 proteins, with this target's activities among them, split on the entry year
+  since 2026-11-24. It does not settle this record, for two reasons its own definition gives: the task it ships is
+  protein-conditioned, the protein being an input, which it argues under PROV-7 differs from fixed-target QSAR ("no
+  legacy QSAR task is changed"), and its measured ChEMBL overlap is 1,616 ids over 2,257 rows with the sibling
+  overlap left unverified. It also sits on ChEMBL 34 while this cut is ChEMBL 37, so the newest entries, the ones a
+  temporal split tests on, are here and not there. What would settle it is measurable: how many of these 4,544
+  compounds already sit in its rows, and what the three later releases add. No new hit in a quick look this round.
 - Papers and pages: the ChEMBL target page https://www.ebi.ac.uk/chembl/explore/target/CHEMBL206; TabBench-Bio
   (Kreuer et al., arXiv 2609.07441), Sec. 3.1 "For the ChEMBL tasks, we use exact, unflagged activity measurements"
   with "Bemis-Murcko scaffolds as split groups", Table 4 row CHEMBL206.
@@ -98,10 +104,20 @@ under the catalogue rule (SPLIT-37) the split now reads as the entry date rather
   table `redistributable: false` (no verdict reason, EV-4).
 - Priority: gap 0 (chemistry & material science has 15 accepted datasets and regression 85, neither thin), use case 0
   (ChEMBL names no decision), source + (a documented database, a pinned release, per-activity provenance), shape +
-  (4,544 molecules), risk - (the same task is in the benchmark as `qsar_tid_11`, and `papyrus_bioactivity` covers it
-  wider).
+  (4,544 molecules), risk - (`qsar_tid_11`, shipped, is the same kind of task on another target, thrombin, and
+  `papyrus_bioactivity`, added and built, holds the quantity far wider, though on an older release and as a
+  protein-conditioned task).
 
 **Assessment (AI, 2026-10-31):** a candidate from the data-scouting run of 2026-10-30/31, not screened yet. Found through the benchmark TabBench-Bio (https://arxiv.org/abs/2609.07441).
 - as published: 4,544 x 2,048; target: pchembl_value.
 - Why: Potency (pChEMBL) of compounds against human estrogen receptor alpha from 2048-bit ECFP4 fingerprints (ChEMBL 37, exact unflagged values, median per parent molecule)
 - Notes: Built by the authors from ChEMBL 37 (CC BY-SA 3.0); scaffold-grouped CV. Same kind of task as qsar_tid_11 / qsar_tid_10980 (MetaQSAR, ChEMBL 17, 1,024-bit FCFP); whether either is the same target was not settled.
+
+**CC (2026-11-26, Andrej):** the better-data line is corrected.
+- `papyrus_bioactivity` is added as a v2 folder and built, not only recorded, but it does not cover this cut: its
+  task is protein-conditioned and its own definition argues under PROV-7 that this differs from fixed-target QSAR,
+  its measured ChEMBL overlap is 1,616 ids over 2,257 rows, and it sits on ChEMBL 34 against this cut's ChEMBL 37.
+- The priority line had called `qsar_tid_11` "the same task"; it is the same kind of task on another target,
+  thrombin (CHEMBL204).
+- Verdict and priority unchanged. What would settle the record is one measurement: how many of these 4,544
+  compounds are already in the wider set's rows, and what the three later releases add.
