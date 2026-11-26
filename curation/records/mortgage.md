@@ -74,6 +74,11 @@ CC (2026-11-17, Andrej): the declared split (temporal on `time`, windows of 1 va
 **Outcome:** added. You shipped it on 2026-10-26; on 2026-11-11 you chose 2015 Q1, 2012 Q2 and 2009 Q3 as the test
 quarters (issue 16, B) and kept the one-quarter horizon (H, ok); both are applied and nothing is left open.
 
+Re-reviewed on 2026-11-26 (focused panel): ship after changes. The standing objection on
+the task probes no longer holds, since on the windows shipped on 2026-11-11 the probes raise no flag at all; two
+issues are open, one of them a validity question about the container rather than the task (17, the later rows of a
+test loan; 18, the origination fields).
+
 **Main points:** Settled on 2026-11-11: one test quarter in each regime the book went through, the calm years, the
 recovery and the crisis, with the one-quarter horizon checked.
 
@@ -114,7 +119,7 @@ from this block: a quarter is the book's backtest window and the label's own hor
 at every quarter's start; no source gives a refit cadence, and the backtest quote stays marked unverified. The record
 has the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
-**Issues for Lennart:**
+**Issues for Andrej and Lennart:**
 
 16. **Which quarters should the test windows be?**
 
@@ -192,6 +197,73 @@ has the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regen
    the macro table), the notes count 37 rows of joining loans and 8 of the 501 dropped last rows in the new windows
    (one row of the copied ids would fall in period 38), and the LightGBM figures are marked as measured on periods 58
    to 60. The record has the decision CC line. `dataset check`: 0 errors, 0 warnings.
+
+17. **A test row's later quarters are in the shipped frame, and they say whether it defaulted. Accept with a note, or stop each split's frame at its test quarter?**
+
+   * **Problem:**
+     - The status is terminal, so a loan stops having rows once it defaults or pays off: of the 559,032 rows that are not a loan's last one, 559,026 are `active`.
+     - The container holds one frame of all sixty quarters and names the splits as positions, so for a test quarter in the middle of the panel every test row's later quarters sit in the frame, and the mere existence of a later row says the label is `active`.
+     - It needs no label and no loan key: the dropped identifier rebuilds from the static columns, and a test row's `balance_time_lag_1` reappears as some row's `balance_time_lag_2` one quarter later.
+   * **Effect on the task:** Two of the three windows can be scored almost perfectly without a model. The newest window is immune because nothing follows it, which is also what shows the mechanism is the later rows and not something else.
+   * **Experiments:**
+
+     | Test quarter | Honest log loss | With the later rows | Change |
+     |---|---|---|---|
+     | 60, the end of the panel | 0.11855 | 0.11855 | none, the control |
+     | 49 | 0.17886 | 0.02476 | -86% |
+     | 38 | 0.27554 | 0.03225 | -88% |
+
+     | Keyless form | Purity |
+     |---|---|
+     | a test row's lagged balance reappearing one quarter later, test quarter 38 | 99.4% |
+     | the same, test quarter 49 | 99.9% |
+
+   * **Background:** How far it reaches was checked in the benchmark code. A model handed only the training rows and the test rows cannot see it, and no later row ever trains a split. But the worked example builds its features over the whole frame before slicing, which is the sanctioned pattern, so a per-loan row count or a "does this loan appear later" column reaches it without anyone intending to; a column of that kind was added by hand and the gain above came back.
+   * **Consistency:** The mechanism is not particular to this dataset. It belongs to any temporal task whose test windows sit inside the history rather than at its end, and it bites hardest where the target is survivorship-shaped, so that a later row of the same unit exists only when no event has happened. A cross-dataset item asks whether the container should ship a frame per split at all.
+   * **Panel:** The split auditor measured entity leakage through the earlier rows and found it null, which is right: a loan's earlier rows are always `active`, so no label travels forward. The task gamer attacked the other direction and found the channel runs backward from the future.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Accept with a note | a clause in the splits comment and the record giving the mechanism and the numbers above | costs nothing; the plain fit path is already clean; the chosen windows stay | a feature built over the whole frame reaches it by accident, and the rule rests on participants' discipline |
+     | B | Ship a frame per split that stops at its test quarter | removes the channel; no honest score changes | the only complete fix; it is also how a lender sees the book | the container holds one frame today, so this needs container support and changes the design for every temporal dataset |
+     | C | Put every test window at the end of the panel | shrinks the channel | needs no new machinery | only one window can be last, so quarters 59 and 58 still have successors; it gives up the crisis and recovery windows chosen on 2026-11-11 |
+     | D | Leave it as it is (implemented) | nothing changes | no work | the mechanism stays undocumented and a participant can use it in good faith |
+
+   * **Recommendation:** A now, with the cross-dataset item deciding B for the whole family, since B is infrastructure rather than a change to this dataset. If you would rather have a guarantee here and not a convention, B is the only option that gives one. **Decision:** A, B, C or D?
+
+   **Notes for the AI:** under A, the clause goes in `splits_comment` and a dated assessment line in the record, and the cross item goes into the working copy's `REVIEW.md`. Under B or C the windows are rebuilt and it is its own pull request.
+
+18. **Freeze the origination fields within each loan, or keep them as recorded?**
+
+   * **Problem:**
+     - `Interest_Rate_orig_time` is documented as fixed at origination but changes within 2,313 loans, and on 3,108 of the 3,269 changed rows the new value is the row's own-quarter rate, the very value the definition lags everywhere else.
+     - Whether the field is filled also moves with the outcome: its missing flag flips within 1,401 loans, and on those flip rows the payoff rate is 7.95% against 2.52% on the other rows of the same loans.
+     - The same revision happens to `mat_time` (959 rows), `FICO_orig_time` (382), `LTV_orig_time` (18) and the property-type flags (1,123 rows, where a property changes type mid-life, which cannot happen).
+   * **Effect on the task:** 24,190 rows carry a value different from the loan's first recorded one, 2,520 of them in the test windows, and those rows hand the model a number from inside the quarter it is predicting.
+   * **Experiments:**
+
+     | Window | Log loss, freezing the origination fields |
+     |---|---|
+     | 60 | -0.0003 |
+     | 49 | -0.0006 |
+     | 38 | -0.0003 |
+
+   * **Background:** The notes settle this today on the size of the score: "freezing them changes the log loss by -0.0001 to -0.0002, so they stay". The measurement above says freezing is slightly better, so the fix costs nothing either way.
+   * **Panel:** The column auditor reads it as a leak decided on the wrong ground, since the rule on values known at the prediction point is a Must and asks the timing to decide rather than the score. The claim auditor reads a measured-harmless suspect as needing only a clause. The mediator settles it for the column auditor: the late cells can be located row by row, which is exactly when the rule requires the fix rather than a note.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Forward-fill all of them within the loan from the first recorded value, and take the loan's first property type | removes the own-quarter values and the moving missing flag, and repairs the impossible mid-life property change | the mildest fix; scores slightly better | the shipped columns change, so the generated page and the note are rewritten |
+     | B | Freeze the interest rate only | the column where the evidence is strongest | the smallest change | the other fields are revised on the same mechanism, and a term modification is an event booked inside the quarter |
+     | C | Keep as recorded, with a clause naming the rows (implemented) | today's behaviour plus a sentence | no change to the data | decides a Must on the size of a score, when the fix is free |
+
+   * **Recommendation:** A. The rows can be named, the remedy is the mildest one available, and the measurement removes the only argument for keeping them. **Decision:** A, B or C?
+
+   **Notes for the AI:** the counts differ between the two audits (3,269 changed rows, 3,872 own-quarter rows before propagation, 2,703 in the current note, 3,540 loans). Settle one definition before writing the clause or the fix.
+
+**Review panel:** ship after changes (mediator, focused tier: claim auditor, column auditor, split auditor, task gamer). Claims: the calendar anchor, the macro lags, the market rate, the target's absorbing form, the dedup and the LEAK-20 exception all survive tests designed to refute them. Refuted: the standing objection on the probes is stale and the dataset is better than its notes claim; "a closed book that ages" describes the wrong panel. Agreed: the one-quarter windows without a gap, and that entity leakage through earlier rows is null. Disputed: the later rows (issue 17) and the origination fields (issue 18).
 
 ## Reference
 

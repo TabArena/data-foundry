@@ -111,10 +111,15 @@ CC (2026-11-17, Andrej): the declared split (temporal on `pickup_datetime`, wind
 
 **Outcome:** added as `nyc_taxi_trip_duration_1m`. Verdict ship on 2026-10-22; under the rule on test windows
 rewritten on 2026-11-10 you chose B (issue 1): the test windows are the newest June week, the Memorial Day week and a
-week in April, and the 7-day length stays with a new reason. Nothing is left open.
+week in April, and the 7-day length stays with a new reason. Re-reviewed on 2026-11-26 (focused panel): the split,
+the metric, the provenance and the absence of leakage all hold on re-measurement, and the recommendation is to ship
+after changes, all of them to the text. Three issues are open: the speed filter (2), the gap's stated reason (3) and
+the choice of copy (4).
 
 **Main points:** Settled on 2026-11-10: the test weeks are 24-30 June, 27 May-2 June and 8-14 April 2016 (issue 1,
-B), and the declared horizon is checked.
+B), and the declared horizon is checked. Open for you: whether the 46 trips above 100 km/h are filtered as the two
+sibling taxi datasets filter them (2), whether the one-day gap keeps its label-delay reason or takes an operational
+one (3), and whether the choice of copy that leaves out `ratecodeid` is stated (4).
 
 **Horizon:**
 
@@ -145,7 +150,7 @@ B), and the declared horizon is checked.
 sense and is justifiable keep it and resolve them"); the record's CC line says the declared horizon is checked, and
 `splits_comment`, `task_summary.split` and the notes' `Split:` bullet give the new reason.
 
-**Issues for Lennart:**
+**Issues for Andrej and Lennart:**
 
 1. **Test on the newest June week, the Memorial Day week and a week in April instead of the last three weeks of June?**
 
@@ -207,3 +212,82 @@ sense and is justifiable keep it and resolve them"); the record's CC line says t
    cleaned trips (the task summary's 1,447,167 predated the 100 m cut); the April train side (766,644) is under the 1M
    budget and is fitted whole. The record has the decision and the horizon CC lines. `dataset check`: 0 errors, 0
    warnings (README not regenerated).
+
+2. **Keep the 46 trips that imply more than 100 km/h, or filter them as the sibling taxi datasets do?**
+
+   * **Problem:**
+     - The notes keep these trips on the grounds that they "cannot be told from real trips with certainty", and they can: 32 exceed 120 km/h in a straight line, 11 exceed 200 and the worst covers 19.95 km in 51 seconds, 1,408 km/h.
+     - A straight line is shorter than any route and the region's legal maximum is about 105 km/h, so each of these rows has a broken clock or a broken GPS fix, which makes the target impossible rather than merely unusual.
+     - Two sibling datasets decided the same mechanism the other way, so the collection is inconsistent on it.
+   * **Effect on the task:** Five of the 46 fall in a test window, three of them above 120 km/h, and together they hold at most 0.0001 of a window's squared target spread, so no score moves; what changes is whether a shipped definition states something false and whether the three taxi datasets apply one rule.
+   * **Experiments:**
+
+     | Straight-line speed | Kept trips | Of them scored |
+     |---|---|---|
+     | above 100 km/h | 46 | 5 |
+     | above 120 km/h | 32 | 3 |
+     | above 200 km/h | 11 | 0 |
+     | above 300 km/h | 7 | 0 |
+
+     | Window | Share of squared target spread held by the rows above 120 km/h |
+     |---|---|
+     | 24-30 June | 0.00008 |
+     | 27 May-2 June | 0.00010 |
+     | 8-14 April | 0.00000 |
+
+   * **Consistency:** pkdd_15_taxi_trip_time_prediction_ii_1m ships a 120 km/h straight-line filter, and 2024_lusaka_mobility_prediction_hackathon adopted the same constant on 2026-11-05 for the same reason, that a wrong duration or a wrong endpoint makes the target impossible. This dataset keeps what both of them drop.
+   * **Panel:** The claim and column auditors read the sentence as false and the rows as broken records; the mediator holds that the cleaning rule's default is to blank an impossible value and keep the row, which cannot be done here because the broken column cannot be identified.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the 46, correct the sentence (implemented) | the bullet says each row has a broken clock or GPS fix and stays because the broken column cannot be identified | no data change; no rebuild | differs from pkdd and lusaka on the same mechanism; 1,408 km/h stays in the task |
+     | B | Add the sibling's 120 km/h filter and correct the sentence | drops 32 rows, 3 of them scored | one rule across the three taxi and mobility datasets; impossible targets leave | a task change, so a rebuild and its own pull request; the 14 rows between 100 and 120 km/h still stay |
+     | C | Blank the four coordinates of the 46 | keeps the rows, sets the suspect features missing | the cleaning rule's default remedy | the duration may be the broken column, so a wrong target can remain with no features to explain it; no sibling does this |
+
+   * **Recommendation:** B, because it follows the two precedents, costs three scored rows and ends with the same constant as the sibling. A is defensible only as a deliberate exception, and then needs the fact that sets this dataset apart from lusaka. The correction to the sentence is needed under either. **Decision:** A, B or C?
+
+   **Notes for the AI:** B is a task change: add `MAX_STRAIGHT_LINE_KMH = 120` in the shape pkdd uses, rebuild, and open it as its own pull request. Under A or C, rewrite the anomaly bullet of `curation_comments` so it no longer claims the rows cannot be told apart.
+
+3. **State the one-day gap's reason as the refit's own latency instead of the label delay?**
+
+   * **Problem:**
+     - The splits comment justifies the one-day gap by the label delay, saying a trip lasts up to three hours so the last trips before a refit have no duration yet.
+     - Measured, a three-hour gap already removes every unmatured training label, so the day is eight times the delay it cites.
+     - The day costs the 8,028 trips of 23 June, which land in no split at all, and half a point of the newest window's training share.
+   * **Effect on the task:** None on honesty, since the gap errs on the safe side and no score is inflated. What is wrong is the stated reason, and a reader checking the gap against the label delay will find the arithmetic does not support it.
+   * **Experiments:**
+
+     | Gap | Training trips still under way at the window start (27 May-2 June) | (8-14 April) |
+     |---|---|---|
+     | none | 112 | 100 |
+     | 3 hours | 0 | 0 |
+     | 1 day (implemented) | 0 | 0 |
+
+   * **Consistency:** pkdd_15_taxi_trip_time_prediction_ii_1m ships the same one-day gap on the same kind of label and states the same reason, so a change here reopens that dataset too.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the day, restate the reason (implemented) | the comment says the gap covers the latency of a refit, which is not instantaneous, rather than the three-hour label delay | no data change; one gap across this dataset and pkdd | the 8,028 trips of 23 June stay in no split |
+     | B | Shorten the gap to three hours | the gap matches the measured label delay exactly | every cleaned trip enters the frame and the clause about trips in no split disappears | a task change for 0.56% of the rows, so a rebuild and its own pull request; diverges from pkdd |
+
+   * **Recommendation:** A, because the honest fix is the sentence rather than the split: the day is already safe, and B buys 0.56% of the rows at the cost of a rebuild and a divergence from the sibling. **Decision:** A or B?
+
+4. **Say that the Kaggle sample's eleven columns define the task, with `ratecodeid` left to a rebuild?**
+
+   * **Problem:**
+     - NYC Open Data serves the same trips with `ratecodeid`, which is set when the meter is engaged and so is known at the prediction point.
+     - The Kaggle sample we ship does not carry it, and nothing in the definition says that the choice of copy, rather than the prediction point, is what leaves it out.
+     - The other fields that copy adds (trip distance, payment type, the fares) are all end-of-trip values and are correctly absent.
+   * **Effect on the task:** A legitimate pickup-time input is missing, which makes the task slightly harder than the data allows; a reader cannot tell from the definition whether that was judged or overlooked.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Say the Kaggle sample defines the task (implemented) | a half-sentence that enriching from the open-data release would be a separate rebuild | the published competition is the task as the source framed it; reproducible from one file | the benchmark lacks an input the actor has |
+     | B | Rebuild from the open-data release | adds `ratecodeid` and whatever else is known at pickup | a fuller task | a new dataset rather than a fix, with its own provenance and checks |
+
+   * **Recommendation:** A, since B is a new dataset rather than a correction and the Kaggle sample is the published task. **Decision:** A or B?
+
+**Review panel:** ship after changes (mediator, focused tier: claim auditor, column auditor, split auditor; the task gamer was still running when the mediator settled, so a participant-style shortcut is not covered, though the leak probe finds no exact feature copy across the split and no column reaching the target). Claims: 53 tested, 44 hold, 5 refuted on wording, 4 untestable. Split: right with notes, the blind tree walk reaches the leaf that ships. Agreed: the metric, the provenance, the absence of leakage. Disputed: the speed filter (issue 2).
