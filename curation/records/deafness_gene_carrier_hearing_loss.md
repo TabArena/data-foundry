@@ -10,6 +10,7 @@ suggestion: 'Yes'
 priority: 1
 decision_markers:
 - Selection Bias
+- Class-dependent Recording
 tags:
 - Clinical Study
 - 'Samples: Over Time'
@@ -52,9 +53,11 @@ CC (2026-11-25, Andrej): accepted for adding in the screening review (issues 1 A
 
 **Assessment (AI, 2026-11-25):** review panel (full): ship after changes, made (three recruiting sources, the 53-carrier block's cause unknown, the benign wording with p.T123N, use case and fit reason reworded, the rule baseline by part of the release); disputed: TP-4 step 2, keep all rows (advocate) or the 1,220 with a non-benign variant (critic), and the variant aliases (CLEAN-12; the mediator departs from the panel); for the curator: issues 3-6. Priority 1: gap 0, use case 0 (approximate, penetrance for an untested relative), source + (paper and CC BY deposit), shape 0 (1,778 people, 341 genotypes), risk - (the gain over the rule sits mostly in recruitment-shaped rows).
 
+CC (2026-11-26, Andrej): issue 3 c: `Class-dependent Recording` added and the 53-carrier block dropped (1,725 people); issues 4 A (every person a row), 5 A (all rows), 6 A (aliases listed, not merged) and 7 A (random 10x3 folds).
+
 ## Review
 
-**Outcome:** added. 1,778 carriers of GJB2, SLC26A4 or MT-RNR1 variants (Luo et al. 2021, Mendeley 6mh8mpnbgv), hearing loss (76%) from 126 allele counts, every person a row and 10 x 3-fold cross-validation on random people as decided (issues 1 and 2). Valid: no leak, and no attack moves the score beyond noise. Value: the methods beat the textbook rule on all 30 splits, but on the 1,220 people with a variant other than three benign-listed GJB2 polymorphisms gradient boosting only matches it (issue 5). The panel recommends shipping after changes; the wording changes are made, and four questions are yours: the recording marker for a block of 53 carriers (issue 3), the repeated genotypes you asked to reopen (issue 4), where the gain over the rule sits (issue 5) and the variant aliases (issue 6).
+**Outcome:** added. 1,778 carriers of GJB2, SLC26A4 or MT-RNR1 variants (Luo et al. 2021, Mendeley 6mh8mpnbgv), hearing loss (76%) from 126 allele counts, every person a row and 10 x 3-fold cross-validation on random people as decided (issues 1 and 2). Valid: no leak, and no attack moves the score beyond noise. Value: the methods beat the textbook rule on all 30 splits, but on the 1,220 people with a variant other than three benign-listed GJB2 polymorphisms gradient boosting only matches it (issue 5). The panel recommends shipping after changes; the wording changes are made, and four questions are yours: the recording marker for a block of 53 carriers (issue 3), the repeated genotypes you asked to reopen (issue 4), where the gain over the rule sits (issue 5) and the variant aliases (issue 6). Since 2026-11-26 the block is dropped (issue 3 c): 1,725 people.
 
 **Main points:** Mark the 53-carrier block `Class-dependent Recording` (issue 3); keep every person a row (issue 4, reopened); keep all rows although most of the gain over the textbook rule sits in the people with only benign-listed variants (issue 5); keep or merge the variant aliases (issue 6).
 
@@ -162,6 +165,10 @@ CC (2026-11-25, Andrej): accepted for adding in the screening review (issues 1 A
 
    * **Recommendation:** c: the block's recording cannot be aligned with the other rows, it changes the label share of the most common single-allele genotype, and models use it in the wrong direction for the other hospital people (worse on 28 of 30 runs); b if you would rather keep every carrier. **Decision:** a, b or c?
 
+   **Andrej (2026-11-26, discuss):** Reply (c): Add the marker, drop the 53 rows
+
+   **Resolved (2026-11-26, Andrej):** c: `Class-dependent Recording` added; the 53-carrier block at the start of the discovery file is dropped in cleaning (1,725 people, 78.5% patients; 238 hospital carriers left of 291). On the shipped 10 x 3 folds untuned gradient boosting scores ROC AUC 0.738, the lookup 0.762 and the rule 0.670 (before: 0.750, 0.776, 0.677).
+
    [^a1]: **LEAK-39** (Must): rows of one class recorded through a separate route, found by a recording fingerprint, are dropped when models recognise them and the route cannot be aligned with the other rows; the marker is set whether such rows are dropped, kept with a note or still open.
 
    [^leak39]: **LEAK-39** (Must): rows of one class recorded through a separate route, found by a recording fingerprint, are dropped when models recognise them and the route cannot be aligned with the other rows.
@@ -212,6 +219,10 @@ CC (2026-11-25, Andrej): accepted for adding in the screening review (issues 1 A
    * **Effect on the task:** none measurable: the label does not travel with the family (patients sit next to their carrier parents), and grouping the folds by these clusters leaves the score unchanged. Families that share only common variants (such as c.235delC) cannot be recovered at all.
    * **Recommendation:** nothing changes for issue 4: keep every person a row (A); the relatives note in the definition says the same. **Decision:** agree, or say what to change.
 
+   **Andrej (2026-11-26, ok):** As implemented (A).
+
+   **Resolved (2026-11-26, Andrej):** A: every person stays a row (1,341 repeat rows after the block drop; 84% of test people share their genotype with training).
+
    [^leak18]: **LEAK-18** (Should): few features and plausible repeats are natural: keep them and say so.
 
 5. **Keep all rows although the gain over the textbook rule sits mostly in the people with only benign variants?**
@@ -238,6 +249,10 @@ CC (2026-11-25, Andrej): accepted for adding in the screening review (issues 1 A
 
    * **Recommendation:** A: in the hospital's own records, where the benign-only people are patients at about the base rate, the methods still beat the rule on 28 to 30 of 30 splits, and B would pick the test set by a feature value to suit the rule. The critic recommends B; a population sample with wild types (newborn screening) would settle it. **Decision:** A, B or C?
 
+   **Andrej (2026-11-26, ok):** As implemented (A).
+
+   **Resolved (2026-11-26, Andrej):** A: all rows kept, the gain by group stated in the notes. After the block drop, on the 1,167 people outside the benign-only group, boosting scores 0.783 against the rule's 0.770 (ahead on 21 of 30 splits), the lookup 0.810 (29 of 30).
+
    [^tp4]: **TP-4** (Must): `Trivial` needs proof; read what the dominant feature means first, then judge it in two steps, of which only the first is a test.
 
 6. **Merge the variant names that are the same allele?**
@@ -255,6 +270,10 @@ CC (2026-11-25, Andrej): accepted for adding in the screening review (issues 1 A
    * **Recommendation:** A: the aliases touch about 40 people at rare sites and do not separate the classes, so by your line on minimal preprocessing they stay as released, with a note; the advocate, the critic, the column auditor and the blind reviewer favour B, and the mediator departs from them on this ground. **Decision:** A or B?
 
    **Notes for the AI:** On A: add a note to `curation_comments` listing the certain alias sets (GJB2 `c.507insAACG`, `c.507_508insAACG`, `c.512insAACG`; SLC26A4 `c.915insG`, `c.915_916insG`) and the probable ones from the mediator's report. On B: merge the certain sets in `_clean` by the maximum allele count per person, one column per allele, update the site counts in the notes, re-run `dataset check`.
+
+   **Andrej (2026-11-26, ok):** As implemented (A).
+
+   **Resolved (2026-11-26, Andrej):** A: the files' columns kept; the certain and probable alias sets listed in `curation_comments`.
 
    [^clean12]: **CLEAN-12** (Should): reconstruction that restores what the file split (codes into categories, dates split across columns) is always welcome.
    [^minimal]: The curator's line on minimal preprocessing (Andrej): fix what separates the classes for non-target reasons, nothing more.
@@ -286,6 +305,10 @@ CC (2026-11-25, Andrej): accepted for adding in the screening review (issues 1 A
      | D | Grouped by exact genotype | each genotype on one side | tests unseen genotypes | not the use case; models fall below chance and below the rule |
 
    * **Recommendation:** A, with the block dropped as recommended under issue 3: no grouping removes the selection, which sits in the labels of both files, and grouping by family leaves the score unchanged (0.749 against 0.750); if the block stays, B. **Decision:** A, B, C or D?
+
+   **Andrej (2026-11-26, ok):** As implemented (A).
+
+   **Resolved (2026-11-26, Andrej):** A: random 10 x 3 folds over all people; with the block dropped, option B's reason is gone.
 
    [^b1]: **SPLIT-24** (Must): group on a true group id, or on one constructed from the data exactly or by a calibrated link whose match rule comes from how the data were recorded, never from the score.
    [^b2]: Folds that share one training side are one split; the training side must vary across folds.

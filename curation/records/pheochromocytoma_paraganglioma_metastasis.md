@@ -53,6 +53,12 @@ CC (2026-11-25, Andrej): accepted for adding in the screening review (issues 1 A
 
 **Assessment (AI, 2026-11-25):** review panel (full): ship after changes, made (fit approximate, ROC AUC declared as the paper's metric, cohort a provenance column, three notes reworded, paired risk-count comparison: models ahead on 30 of 30 splits by +0.033 to +0.044); disputed: none; for the curator: issue 3 (USE-3, USE-11: the 221 patients with an earlier tumour). Priority 3: gap 0, use case + (named actor and decision, approximate fit), source + (paper and CC BY deposit), shape 0 (788 patients, 10 features), risk 0 (no leak; the open recurrent-patient question).
 
+CC (2026-11-26, Andrej): issue 3 A: every patient kept, the use case reworded to presentation with a first or a recurrent tumour; the probable double entry (IDs 468 and 475) kept with a note. Verdict: ship.
+
+CC (2026-11-26, Andrej): the declared metric (ROC AUC, the source's: Pamporaki et al. select models by AUC) is checked and stays as declared.
+
+CC (2026-11-26, Andrej): the declared split (random, 10x3 folds, `ForcedIIDFromTemporal` and `ForcedIIDFromGrouped`) is checked and stays as declared.
+
 ## Review
 
 **Outcome:** added. 788 patients of Pamporaki et al. 2023 (Zenodo 7749613), metastatic disease (223, 28%) from ten preoperative features, repeated 3-fold cross-validation on random patients as decided (issues 1 and 2). Valid: no leak found, and no exploit beats adding a column of random numbers (+0.002 ROC AUC). Value: trained models beat an untrained count of five risk factors on all 30 splits (ROC AUC 0.945 for a random forest against 0.904). The panel recommends shipping after changes, made except for one question: 221 patients (28%, 156 of the 223 positives) came in with an earlier tumour, not at the first diagnosis the use case still names (issue 3).
@@ -154,6 +160,10 @@ CC (2026-11-25, Andrej): accepted for adding in the screening review (issues 1 A
      | b | Drop row 475 | one row fewer | no repeated patient; drops the row with the likely entry error | an inference from six matching fields, not a patient key |
 
    * **Recommendation:** a: one pair of 788 with the same label cannot move a score, and the release cannot confirm it is one person; this does not change issue 3's A or B. **Decision:** a or b?
+
+   **Andrej (2026-11-26, discuss):** I choose keep all rows and reword the use case + a note naming the pair.
+
+   **Resolved (2026-11-26, Andrej):** A, with answer a: all 788 patients kept; `use_case`, `row` and `known` reworded from "at first diagnosis" to "at presentation with a first or a recurrent tumour", the first-tumour score kept in a note; the probable double entry (raw patient IDs 468 and 475) kept, with a note naming it.
 
    [^use3]: **USE-3** (Must): name the prediction point: when the model is used and what is known then. A value that did not exist at that point is a leak.
    [^use11]: **USE-11** (Must): when the use case is the first event of each entity, one row per entity; take one row per entity only when the use case is that row.

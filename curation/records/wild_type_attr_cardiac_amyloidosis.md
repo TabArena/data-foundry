@@ -3,13 +3,10 @@ unique_name: wild_type_attr_cardiac_amyloidosis
 name: Cardiac amyloidosis in heart-failure patients from claims codes (Huda et al. 2021, IQVIA validation cohort)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
-suggestion: 'Yes'
-priority: 3
+suggestion: 'No'
 decision_markers:
 - Selection Bias
+- No Good Target / Scientific Discovery
 tags:
 - Clinical Study
 - 'Samples: Over Time'
@@ -28,7 +25,6 @@ source_links:
 - https://www.nature.com/articles/s41467-024-45879-8
 - https://doi.org/10.1186/s12911-026-03654-3
 - https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-021-22876-9/MediaObjects/41467_2021_22876_MOESM4_ESM.zip
-v2_path: datasets/_dev/tabarena-v0pt2/wild_type_attr_cardiac_amyloidosis/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -60,6 +56,8 @@ CC (2026-11-25, Andrej): accepted for adding (asked in chat to build it); issue 
 **Assessment (AI, 2026-11-25):** what sets this case apart from stroke_prediction and the other SEL-7 retirements: the label is a clinician's amyloidosis code set after a biopsy or scintigraphy, not a self-reported past diagnosis; Huda et al. name the screening decision; the model was validated at another health system (ROC AUC 0.80 at Northwestern); the paper shows antecedent codes years before the diagnosis; and the signal survives removing the diagnosis-era codes (0.816 after the narrow cut). Review issue 3 asks the curator to confirm.
 
 **Assessment (AI, 2026-11-25):** review panel (full): ship after changes, made (code-first manifestation flags and heart-transplant status dropped; the source's case exclusions, intracranial haemorrhage included, applied to both classes: 13,454 patients, LightGBM 0.827; flags categorical; ROC AUC declared as the paper's metric); disputed: none left open; for the curator: issues 3-8 (SEL-7 facts, LEAK-10 work-up codes, USE-5 label, rename, LEAK-31 label-free selection, the transplant group flag). Priority 3: gap 0, use case + (named screening decision, external validation), source + (Nat Commun with released rows), shape + (13,454 patients, 1,695 flags), risk - (undated lifetime codes, a noisy label).
+
+CC (2026-11-26, Andrej): retired as an undated past diagnosis (review issue 3 d), as stroke_prediction: each patient's codes are an unordered set over the whole history, so no history can be cut before the diagnosis; without the work-up flags 0.79 remains with no proven timing, and the named antecedents alone score 0.58. Folder removed from the working copy.
 
 ## Review
 
@@ -231,6 +229,10 @@ CC (2026-11-25, Andrej): accepted for adding (asked in chat to build it); issue 
 
    * **Recommendation:** d: the release cannot place a single code before the diagnosis, so the guarantee asked for is not available under any cut, and the same fact retired stroke_prediction; if the dataset stays, b is the most defensible cut, with a note that the remaining 0.79 has no proven timing. **Decision:** a, b, c or d?
 
+   **Andrej (2026-11-26, discuss):** Reply (d): Retire as an undated past diagnosis.
+
+   **Resolved (2026-11-26, Andrej):** d: retired as an undated past diagnosis, as stroke_prediction: the release keeps no date and no order of the codes, so no feature set can be shown to precede the diagnosis; record `No` with `No Good Target / Scientific Discovery`, the folder removed from the working copy.
+
    [^q1]: **USE-3** (Must): name the prediction point: when the model is used and what is known then. A value that did not exist at that point is a leak.
    [^q2]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the target away; out: a column recorded after the outcome, a part, a consequence or another encoding of the target.
 
@@ -265,6 +267,8 @@ CC (2026-11-25, Andrej): accepted for adding (asked in chat to build it); issue 
 
    **Notes for the AI:** On B, C or D: drop the flags in `_clean` after the 2% rule, name them in a note with the score, re-run `dataset check` on the cluster.
 
+   **Resolved (2026-11-26, Andrej):** no longer applies: the dataset is retired (issue 3 d).
+
    [^leak10w]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the target away; out: a column recorded after the outcome, a part, a consequence or another encoding of the target.
    [^leak11]: **LEAK-11** (Should): a value measured after the outcome that weakens the signal stays, with a note.
 
@@ -291,6 +295,8 @@ CC (2026-11-25, Andrej): accepted for adding (asked in chat to build it); issue 
 
    * **Recommendation:** A: the source's label, and the definition already notes the code shares; B's gain comes from keeping only the fully coded cases. **Decision:** A, B or C?
 
+   **Resolved (2026-11-26, Andrej):** no longer applies: the dataset is retired (issue 3 d).
+
    [^use5]: **USE-5** (Must): predict what the actor would act on, at the resolution they act on it; check how the source built its label before accepting it.
 
 6. **Rename the dataset?**
@@ -308,6 +314,8 @@ CC (2026-11-25, Andrej): accepted for adding (asked in chat to build it); issue 
    * **Recommendation:** B (or a name you prefer). **Decision:** A or B?
 
    **Notes for the AI:** On B: rename the record file and `unique_name`, the folder and the class, `v2_path`, the CHANGELOG line and the split-tree example; re-run `sync-notebooks --check` and the record tests.
+
+   **Resolved (2026-11-26, Andrej):** no longer applies: the dataset is retired (issue 3 d).
 
 7. **Choose the flags without labels?**
 
@@ -331,6 +339,8 @@ CC (2026-11-25, Andrej): accepted for adding (asked in chat to build it); issue 
 
    * **Recommendation:** B: the same score without using a label, as in the precedents. **Decision:** A or B?
 
+   **Resolved (2026-11-26, Andrej):** no longer applies: the dataset is retired (issue 3 d).
+
    [^leak31]: **LEAK-31** (Should): supervised feature selection on the full labelled set: measure it; keep with a note when small, remove it when we can.
    [^prec7]: home_credit_default_risk (Lennart, 2026-10-19): the notebook's importance-based selection is not applied. qsar_bioconcentration (Lennart, 2026-10-26): the authors' 9 selected Dragon descriptors are dropped.
 
@@ -346,6 +356,8 @@ CC (2026-11-25, Andrej): accepted for adding (asked in chat to build it); issue 
      | B | Drop it | one flag fewer | the dropped code cannot come back through its parent; ROC AUC 0.8258 against 0.8256 (LightGBM, 9 splits), within noise | other transplants go with it |
 
    * **Recommendation:** B: it closes the route back to a dropped leak code at no cost in score. **Decision:** A or B?
+
+   **Resolved (2026-11-26, Andrej):** no longer applies: the dataset is retired (issue 3 d).
 
    [^leak10b]: **LEAK-10** (Must): a feature never gives the target away, also not through another encoding of a dropped value.
 

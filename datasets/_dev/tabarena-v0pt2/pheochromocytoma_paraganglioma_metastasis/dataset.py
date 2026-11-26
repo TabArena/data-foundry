@@ -55,22 +55,22 @@ class PheochromocytomaParagangliomaMetastasis(AbstractCuratedDataset):
             "Does a patient with a pheochromocytoma or paraganglioma have, or go on to develop, distant metastases?"
         ),
         use_case=(
-            "At first diagnosis, before surgery, an endocrinologist estimates the chance of metastatic disease to "
-            "decide on functional imaging before the operation and how intensive and long the follow-up should be "
-            "(the source's stated use)."
+            "At presentation with a first or a recurrent tumour, before surgery, an endocrinologist estimates the "
+            "chance of metastatic disease to decide on functional imaging before the operation and how intensive and "
+            "long the follow-up should be (the source's stated use)."
         ),
         row=(
-            "One patient of seven tertiary centres in the USA and Europe (788): 493 from earlier cohorts, 295 from "
-            "the prospective PMT trial."
+            "One patient of seven tertiary centres in the USA and Europe at presentation with a first or a recurrent "
+            "tumour (788; 221 with an earlier tumour): 493 from earlier cohorts, 295 from the prospective PMT trial."
         ),
         predicted=(
             "Whether metastases in tissues where chromaffin tissue is normally absent were found, at diagnosis or "
             "during follow-up of varying length (223 patients, 28%)."
         ),
         known=(
-            "Sex, age at the first tumour, the plasma levels of normetanephrine, metanephrine and methoxytyramine, "
-            "whether the patient had an earlier tumour, the primary tumour's location, size and focality, and the "
-            "germline SDHB test result, or that no test was done."
+            "At presentation with a first or a recurrent tumour: sex, age at the first tumour, the plasma levels of "
+            "normetanephrine, metanephrine and methoxytyramine, whether the patient had an earlier tumour, the primary "
+            "tumour's location, size and focality, and the germline SDHB test result, or that no test was done."
         ),
         split="Random patients, so the test data stands for new patients of the same centres.",
         changes=(
@@ -79,11 +79,11 @@ class PheochromocytomaParagangliomaMetastasis(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "The features are the preoperative findings the source names for this decision, but the label has no "
-            "fixed horizon: metastases count at diagnosis or during follow-up of varying length, shorter for the "
-            "negatives (PMT trial 49 against 100 months), so some 'No' are not final. After an earlier tumour, age, "
-            "location and volume describe that tumour, the plasma values the later one. Transfer to a new centre "
-            "is untested."
+            "The features are the preoperative findings the source names, but the label has no fixed horizon: "
+            "metastases count at diagnosis or during follow-up, shorter for the negatives (PMT trial 49 against 100 "
+            "months), so some 'No' are not final. Rows are first or recurrent presentations; "
+            "for a recurrence, age, location and volume describe the first tumour, the plasma values the later one. "
+            "Transfer to a new centre is untested."
         ),
     )
 
@@ -129,7 +129,7 @@ class PheochromocytomaParagangliomaMetastasis(AbstractCuratedDataset):
     curation_comments = """
         We start with `DataZonodo.xlsx` from Zenodo 7749613, the data of Pamporaki et al. (2023, Lancet Digit Health): one sheet, 788 patients, 14 named columns, 2 empty ones and 24 columns of specialists' risk ratings. The release has this one file.
 
-        - Prediction point: the first diagnosis of the tumour, before surgery ("these models allow for predictions at first diagnosis of PPGL by utilizing clinical features routinely and preoperatively available", Discussion). The ten features are the paper's nine plus SDHB status.
+        - Prediction point: the presentation with a first or a recurrent tumour, before surgery. The source says "at first diagnosis" ("these models allow for predictions at first diagnosis of PPGL by utilizing clinical features routinely and preoperatively available", Discussion), but some patients enter at a recurrent presentation, with plasma values taken then. The ten features are the paper's nine plus SDHB status.
         - We drop the 24 specialist columns (`1M` to `12M`, without and with SDHB status) and `Predictions for metastatic disease`: they are the paper's comparators, risk calls made by people on the same features (Methods, objectives 1 and 3), not inputs a model has at diagnosis. The prediction column exists only for the 295 PMT patients, and its value "false negative" marks the 28 PMT patients whose biochemical tests were negative (Methods; 9 metastatic).
         - We drop `Patient ID`: the file is sorted by cohort and, within each cohort, by the outcome (IDs 1-295 the PMT cohort, its 57 metastatic patients last; IDs 623-788 are the earlier cohorts' 166 metastatic patients), so the ID encodes the label.
         - The cohort flag (`Internal Testing (IT)/External Validatio (EV)`, kept as `cohort`) is no feature (curator's decision, 2026-11-25, Andrej): 493 patients of the earlier cohorts (34% metastatic) and 295 of the prospective PMT trial (19%). It says which study enrolled the patient, not anything known about the patient, and a new patient belongs to neither. We declare it a provenance non-feature, so no task uses it as an input and a later task can hold the PMT trial out.
@@ -140,6 +140,7 @@ class PheochromocytomaParagangliomaMetastasis(AbstractCuratedDataset):
         - Note: `previous_ppgl` (221 patients, "local recurrence and/or new tumor", Table 1) marks patients who are not at their first tumour; their metastases may have shown before this presentation. It is one of the paper's nine features and stays. 156 of the 221 are metastatic (54% in the PMT trial, 79% in the earlier cohorts); without the column the random forest falls from 0.945 to 0.899, and on the 567 first-tumour patients alone (67 metastatic) the models score 0.87 to 0.92.
         - Note: follow-up differs by outcome (geometric means 82.8 against 95.6 months in the earlier cohorts, 49.3 against 99.7 in the PMT trial, Table 1), so some patients labelled non-metastatic may develop metastases later (the paper's stated limitation).
         - No duplicate rows, and no test row has an exact copy of its features in training.
+        - Note: one patient is probably entered twice (curator's decision, 2026-11-26, Andrej: both rows kept): raw `Patient ID` 468 and 475, both of the earlier cohorts, match on all six fields that stay fixed across enrolments: men, age 54.9 at the first tumour, adrenal, no SDHB variant, bilateral tumours of volume 159.5 (no other row has it), and both have no earlier tumour and are not metastatic. Their plasma values differ, and row 475's metanephrine equals its normetanephrine (537), a likely entry error. A six-field match is expected 0.13 times by chance (age and volume shuffled within sex and location, 200 draws); no pair across the two cohorts matches on all six (the 47 that match on the other five all differ in volume). Without a patient key we cannot tell which row is right, and one pair with the same label cannot move a score.
         - Note: the cohort is not hidden in the features: they tell the PMT patients from the others with ROC AUC 0.71-0.72. Adding the cohort flag gains at most 0.002 (random forest 0.9463 against 0.9445), and a model trained on the earlier cohorts alone scores 0.93-0.95 on the PMT trial (95% CI about ±0.03 on 295 patients), as random folds score on its patients (0.943-0.947), so the random split does not flatter a transfer the source tested.
         - Note: an untrained count of five risk factors (extra-adrenal location, an earlier tumour, an SDHB variant, methoxytyramine over 33 pg/mL, volume over 33.5 cm³) scores ROC AUC 0.904 against 0.94-0.95 for trained models (TP-4). The methoxytyramine cutoff is 0.2 nmol/L, the level above which Eisenhofer et al. (2012, Eur J Cancer 48:1739) report a higher likelihood of metastases; the volume cutoff, a sphere 4 cm across, is chosen by us (that paper uses 5 cm). Paired on the 30 shipped splits, LightGBM gains 0.033 (SE 0.002) over the count and is ahead on all 30 splits (random forest +0.040, logistic regression on logged plasma values +0.044, each ahead on 30 of 30).
     """

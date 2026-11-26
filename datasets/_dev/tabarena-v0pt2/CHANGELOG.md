@@ -1,5 +1,23 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-26, deafness and pheochromocytoma review decisions (no container built)
+
+- deafness_gene_carrier_hearing_loss (Andrej, review issue 3 c): the 53 carriers that open the discovery file, none
+  with p.V27I, p.E114G or p.I203T recorded, are dropped in `_clean` (asserted as the whole carrier run at the file's
+  start); marker `Class-dependent Recording`. 1,725 people, 78.5% patients. Issue 6 A: the variant alias sets are
+  listed in curation_comments, not merged. Counts, notes and README updated.
+- pheochromocytoma_paraganglioma_metastasis (issue 3 A): every patient kept; use case, row, known and the
+  prediction-point note reworded to presentation with a first or a recurrent tumour; the probable double entry (raw
+  IDs 468 and 475) named in a note. selection.md gains SEL-7 cases rows for this keep and the amyloidosis retirement.
+
+## 2026-11-26, wild_type_attr_cardiac_amyloidosis retired (no container built)
+
+- Removed from the working copy (Andrej, review issue 3 d): an undated past diagnosis, as stroke_prediction. Each
+  patient's ICD-10 codes are an unordered set over the whole claims history, so no history can be cut before the
+  amyloidosis code; without the work-up and disease-course flags 0.79 ROC AUC remains with no proven timing. The
+  record keeps its review; marker `No Good Target / Scientific Discovery`. split_tree.md drops it from the examples of
+  L-PLACE.random.
+
 ## 2026-11-25 (night), three datasets of the Shaktah et al. 2026 clinical benchmark added (no container built)
 
 - pheochromocytoma_paraganglioma_metastasis (new): Zenodo 7749613 (Pamporaki et al. 2023, Lancet Digit Health; CC BY
