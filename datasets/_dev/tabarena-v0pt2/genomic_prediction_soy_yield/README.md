@@ -2,13 +2,15 @@
 report_format: data-foundry-report-v2
 unique_name: genomic_prediction_soy_yield
 container_format: 2
-checksum: v2:2d8da4478f1cbd0ed4dcaebe2d6b53c49c01a7a6e1a46ec67e46af22ce30500f
+checksum: v2:f39b3809511e5eb336382c515761fe9063298f319f46791e2fddd8a2bb8c4ea1
 build: null
 build_stale: false
 raw_files:
   data.line.qa.csv: ade35f885d05cbf7d4be05149c4ff274117e8463209e5a87c146cea06311b111
   data.check.qa.csv: 7d0f20376083cb709d8235851e3c0e35084c36b13502b48f3980ab498e51f43c
   gen.qa.csv: ef2ba68429e04ca439d220bb0bd3afd5e85811ff023e87685c94369b85b5eb18
+  data.line.in.csv: b73908f5d0d2464d67d1c5829bd01184f7bcace1679948d76183559b58fb16cd
+  data.check.in.csv: f270b44eb85a087a61074508a00519b0b3ad566cf2122f247486ac8e16119548
 data:
   n_rows: 5143
   n_features: 4312
@@ -61,13 +63,13 @@ bundle_checks:
     groups_test_groups_few: '39 families, 13 per test fold and about 1,714 lines scored
       per fold. The signal across groups is measured, not assumed: GBLUP, ridge, random
       forest and LightGBM all beat the dummy on the declared metric on 100% of the
-      folds; per-family r has SD 0.09 to 0.10, so the standard error of the metric
-      over 39 families is 0.015 to 0.017 against a mean of 0.18 to 0.23, 12 to 16
-      standard errors from zero; a null that shuffles the labels inside each test
-      family (500 runs, each scored over the 60 folds as the models are) gives mean
-      +0.0001, SD 0.0031, max 0.0089, so the measured score sits 68 null SDs above
-      it at the p = 0.002 floor of 500 runs; and 38 of the 39 families score positive
-      under ridge, all 39 under the other three.'
+      folds (the dummy scores exactly 0 under it); per-family r has SD 0.10 to 0.11,
+      so the standard error of the metric over 39 families is 0.010 to 0.015 against
+      a mean of 0.12 to 0.23, 12 to 21 standard errors from zero; a null that shuffles
+      the labels inside each test family (500 runs, each scored over the 60 folds
+      as the models are) gives mean +0.00003, SD 0.0029, max 0.0082, so the measured
+      scores sit 41 to 78 null SDs above it at the p = 0.002 floor of 500 runs; and
+      38 or 39 of the 39 families score positive under each of the four.'
 decisions:
 - The line value corrects each plot for its environment and its field block, on the
   check plots alone
@@ -80,7 +82,7 @@ decisions:
 
 Regression of `yield_kg_ha`, scored with `mean_group_pearsonr` on grouped splits by `family`. 5,143 rows and 4,312 features. Source: Other (2015).
 
-Not built yet. The current definition gives checksum `v2:2d8da4478f1cbd0ed4dcaebe2d6b53c49c01a7a6e1a46ec67e46af22ce30500f`.
+Not built yet. The current definition gives checksum `v2:f39b3809511e5eb336382c515761fe9063298f319f46791e2fddd8a2bb8c4ea1`.
 
 ## In brief
 
@@ -88,7 +90,7 @@ Not built yet. The current definition gives checksum `v2:2d8da4478f1cbd0ed4dcaeb
 
 **Use case.** A soybean breeder ranks the inbred progeny of a cross before the field season and picks which lines to put into yield trials, from the genotype alone (genomic selection), without having grown any of them.
 
-**One row.** One recombinant inbred line of the SoyNAM population (5,143 lines of 39 biparental families, all sharing the parent IA3023), with its quality-assured SNP calls and its yield over the 2011-2013 trials.
+**One row.** One recombinant inbred line of the SoyNAM population (5,143 lines of 39 biparental families, all sharing the parent IA3023), with its quality-assured SNP calls and its yield over the 2011-2014 trials.
 
 **Predicted.** The line's grain yield in kilograms per hectare, as the trials measured it: the mean of its plots after each is corrected for its environment and its field block, both measured on the check plots.
 
@@ -117,14 +119,15 @@ Not built yet. The current definition gives checksum `v2:2d8da4478f1cbd0ed4dcaeb
 
 ```text
 The SoyNAM project's data, as the CRAN package publishes it. The three `soybase` R objects (the
-quality-assured release) are converted to CSV once; the definition reads the CSVs.
+quality-assured release) and the two phenotype objects of `soyin` (the Purdue trial) are converted to CSV
+once; the definition reads the CSVs.
 
 mkdir -p local-data-warehouse/genomic_prediction_soy_yield && cd local-data-warehouse/genomic_prediction_soy_yield
 curl -L --fail https://cran.r-project.org/src/contrib/SoyNAM_1.6.2.tar.gz -o SoyNAM_1.6.2.tar.gz
 # once a newer version is on CRAN, 1.6.2 moves to
 # https://cran.r-project.org/src/contrib/Archive/SoyNAM/SoyNAM_1.6.2.tar.gz
 # sha256 0bd87f7b101456006a42a11679809349f7545b95dee0b43d954aa5b642995aaa
-tar xzf SoyNAM_1.6.2.tar.gz SoyNAM/data/soybase.RData
+tar xzf SoyNAM_1.6.2.tar.gz SoyNAM/data/soybase.RData SoyNAM/data/soyin.RData
 uvx --from rdata==1.1.0 --with pandas==2.3.3 --with numpy python -I -c "
 import numpy as np, pandas as pd, rdata
 d = rdata.read_rda('SoyNAM/data/soybase.RData')
@@ -133,11 +136,16 @@ for name in ('data.line.qa', 'data.check.qa'):
 g = d['gen.qa']
 pd.DataFrame(np.asarray(g), index=np.asarray(g.coords['dim_0'].values),
              columns=np.asarray(g.coords['dim_1'].values)).rename_axis('strain').astype('Int8').to_csv('gen.qa.csv')
+d = rdata.read_rda('SoyNAM/data/soyin.RData')
+for name in ('data.line.in', 'data.check.in'):
+    d[name].reset_index(drop=True).to_csv(name + '.csv', index=False)
 "
 rm -r SoyNAM SoyNAM_1.6.2.tar.gz
 Expected SHA-256: data.line.qa.csv ade35f885d05cbf7d4be05149c4ff274117e8463209e5a87c146cea06311b111,
 data.check.qa.csv 7d0f20376083cb709d8235851e3c0e35084c36b13502b48f3980ab498e51f43c,
-gen.qa.csv ef2ba68429e04ca439d220bb0bd3afd5e85811ff023e87685c94369b85b5eb18.
+gen.qa.csv ef2ba68429e04ca439d220bb0bd3afd5e85811ff023e87685c94369b85b5eb18,
+data.line.in.csv b73908f5d0d2464d67d1c5829bd01184f7bcace1679948d76183559b58fb16cd,
+data.check.in.csv f270b44eb85a087a61074508a00519b0b3ad566cf2122f247486ac8e16119548.
 ```
 
 | file | source | bytes | rows | sha256 (start) |
@@ -145,6 +153,8 @@ gen.qa.csv ef2ba68429e04ca439d220bb0bd3afd5e85811ff023e87685c94369b85b5eb18.
 | `data.line.qa.csv` | Other publication | 3,589,716 |  | `ade35f885d05cbf7` |
 | `data.check.qa.csv` | Other publication | 600,002 |  | `7d0f20376083cb70` |
 | `gen.qa.csv` | Other publication | 39,077,782 |  | `ef2ba68429e04ca4` |
+| `data.line.in.csv` | Other publication | 1,297,826 |  | `b73908f5d0d2464d` |
+| `data.check.in.csv` | Other publication | 159,987 |  | `f270b44eb85a087a` |
 
 Then, from the repository root:
 
@@ -180,7 +190,7 @@ Only curators run `build`, when the dataset ships.
 | name | `mean_group_pearsonr` (custom; takes value; higher is better) |
 | origin | context: obvious from the task: the source defines no metric |
 | definition | mean over groups of the Pearson correlation within the group; method='numerai_corr' transforms first as Numerai's CORR |
-| reason | The decision is which lines of one new cross to advance, a ranking inside the cross, and the split holds out whole crosses. The field's own criterion, which the papers on this population report (Xavier et al. 2016, 'predictive ability'; Azodi et al. 2019 rank by Pearson's r 'as it is the standard metric for GP performance'), is the correlation pooled over the held-out lines; it is the original here. 55.3% of the variance of the line values lies between the 39 families (Diers et al. 2018 publish 0.57 from their own trials), and a pooled correlation scores that ranking of the crosses, which a breeder reads off the parents, more than the ranking inside a cross that genomic selection is bought for: on the first 6 shipped splits, giving every test line the true mean of its own cross and nothing else scores a pooled r of 0.68 (RMSE 238 kg/ha) against 0.24 (359 kg/ha) for ridge on the markers, while the same blind predictor scores 0 within the family. The breeder reads that ranking for free: the non-recurrent parent's own yield in the same trials predicts its family's mean at r = 0.937 over the 38 families. Pooled, the markers themselves are worth almost nothing (R^2 +0.0016 over 3 grouped folds, -0.0245 over 5) while the mask of unscored calls alone is worth +0.1629, so a pooled score would rank models by their handling of missing values; within a family the mask is worth r -0.028 against the calls' +0.213. Ridge itself scores 0.236 pooled and 0.239 per family, so the declared metric does not flatter it. |
+| reason | The decision is which lines of one new cross to advance, a ranking inside the cross, and the split holds out whole crosses. The field's own criterion, which the papers on this population report (Xavier et al. 2016, 'predictive ability'; Azodi et al. 2019 rank by Pearson's r 'as it is the standard metric for GP performance'), is the correlation pooled over the held-out lines; it is the original here. 55.7% of the variance of the line values lies between the 39 families (Diers et al. 2018 publish 0.57 from their own trials), and a pooled correlation scores that ranking of the crosses, which a breeder reads off the parents, more than the ranking inside a cross that genomic selection is bought for: on the first 6 shipped splits, giving every test line the true mean of its own cross and nothing else scores a pooled r of 0.69 (RMSE 234 kg/ha) against 0.23 (360 kg/ha) for ridge on the markers, while the same blind predictor scores 0 within the family. The breeder reads that ranking for free: the non-recurrent parent's own yield in the same trials predicts its family's mean at r = 0.94 over the 38 families. Pooled, the markers themselves are worth almost nothing (R^2 +0.0016 over 3 grouped folds, -0.0245 over 5) while the mask of unscored calls alone is worth +0.1629, so a pooled score would rank models by their handling of missing values; within a family the mask is worth r -0.028 against the calls' +0.213. Ridge itself scores 0.236 pooled and 0.239 per family, so the declared metric does not flatter it. The mask and ridge figures of the last two sentences were measured before IN_2014 joined the correction, on line values the shipped ones follow at a within-family r of 0.970; the variance share, the oracle and the parent fact are measured on what ships. |
 | inputs | group: `family` |
 
 <details>
@@ -217,16 +227,19 @@ The first 5 of 5,143 rows of the final frame (random rows: the frame is shuffled
 
 | yield_kg_ha | family | Gm01_3321482_T_C | Gm01_4755976_C_T | Gm01_8340015_T_C | Gm01_9714061_A_G | Gm01_10510009_G_T | Gm01_28793495_C_T | Gm01_34588039_T_C | Gm01_38475026_A_C | Gm01_38891638_T_C | Gm01_38919120_C_T |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 3344.52 | 32 | 0 | nan | 2 | 2 | 2 | nan | nan | nan | nan | nan |
-| 3792.85 | 30 | nan | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 |
-| 3749.57 | 29 | nan | 2 | 2 | 2 | 2 | nan | 2 | nan | nan | nan |
-| 3425.42 | 10 | 2 | nan | 2 | 2 | 2 | nan | nan | nan | nan | nan |
-| 3754.01 | 13 | 0 | nan | nan | nan | nan | 0 | 0 | 0 | 0 | 0 |
+| 2779.69 | 42 | nan | 2 | 2 | 2 | 2 | nan | 2 | 2 | 2 | 2 |
+| 3566.65 | 4 | 0 | 0 | nan | nan | nan | 0 | 0 | 0 | 0 | 0 |
+| 3495.25 | 9 | nan | nan | nan | 2 | 2 | 2 | 2 | 2 | 2 | 2 |
+| 3723.41 | 30 | nan | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 |
+| 4102.91 | 29 | nan | 0 | 0 | 0 | 0 | nan | 0 | nan | nan | nan |
 
 ## Curation notes
 
 We start with the quality-assured `soybase` release of the SoyNAM R package: `data.line.qa` (62,572 plots of
-the lines), `data.check.qa` (10,721 plots of the checks and parents) and `gen.qa` (5,180 x 4,312 SNP calls).
+the lines), `data.check.qa` (10,721 plots of the checks and parents) and `gen.qa` (5,180 x 4,312 SNP calls),
+and take the one environment of the package's third release object, `soyin` (the Purdue trial at West
+Lafayette), that the quality-assured tables do not already hold: `data.line.in` (12,790 line plots over
+IN_2013, IN_2014 and IN_2015) and `data.check.in` (1,650 check plots) contribute IN_2014.
 
 - Where the data first appeared (PROV-8, PROV-9): the SoyNAM project released it on SoyBase, whose page the
   package cites ("downloaded on November 16th 2015 from soybase.org/SoyNAM") and which now answers 404. The
@@ -241,19 +254,21 @@ the lines), `data.check.qa` (10,721 plots of the checks and parents) and `gen.qa
   the largest thing the definition keeps out, so the size is worth stating: line values of the six traits,
   built as the target was before 2026-11-26, score +0.391 on the declared metric (R^2 0.191) against the
   markers' +0.213 (R^2 0.057), R8 alone +0.168, and markers with the six traits stacked +0.332, which is
-  +0.12 (+56%) over the markers alone (honest five-fold cross-validation inside each family).
+  +0.12 (+56%) over the markers alone (honest five-fold cross-validation inside each family; measured
+  against the line values of that day, before IN_2014 joined the correction).
 - Maturity is the first thing a breeder asks of a soybean yield model. Within a family the line value
   correlates 0.266 with an R8 line value built the same way, and ridge's within-family ability falls only
   from 0.198 to 0.182 when that maturity component is taken out of the yield inside the family, while a
-  genomic prediction of R8 alone correlates 0.110 with the yield (3 grouped folds). A maturity component is
-  there; the task is yield, not maturity.
+  genomic prediction of R8 alone correlates 0.110 with the yield (3 grouped folds; all four measured on the
+  line values before IN_2014 joined the correction, which the shipped ones follow at a within-family r of
+  0.970). A maturity component is there; the task is yield, not maturity.
 - The release ships plot yields, not line values, so the line value is ours to compute (one row per line is
-  what the breeder decides on, SPLIT-23). Each of the 56,929 plots that carry a yield is corrected for its
+  what the breeder decides on, SPLIT-23). Each of the 62,478 plots that carry a yield is corrected for its
   environment and for its field block, both measured on the check plots alone, and a line's corrected plots
   are averaged, so the value keeps the kg/ha scale and is not shrunk toward the mean (MET-3). That is model
   1 of Diers et al. 2018, which takes the block effects from the checks and shrinks them toward 0 as BLUPs;
-  here the shrinkage is the variance ratio `vb / (vb + ve / n)`, 0.43 to 0.92 over the 1,707 blocks (median
-  0.75 at 4 check plots). The package's own `BLUP()` builds its `CHECK()` index from check rows only in the
+  here the shrinkage is the variance ratio `vb / (vb + ve / n)`, 0.42 to 0.92 over the 1,867 blocks (median
+  0.74 at 4 check plots). The package's own `BLUP()` builds its `CHECK()` index from check rows only in the
   same spirit. Two departures from the paper remain true: its second stage has the entry random and no
   environment term at all, while ours averages the line's own corrected plots and carries a centred
   environment effect, the largest term; and its block effects come from 10 check varieties with a
@@ -261,31 +276,57 @@ the lines), `data.check.qa` (10,721 plots of the checks and parents) and `gen.qa
   is not in the quality-assured release at all (in the original it takes 0 to 3 values per environment, 1.02
   per environment x set block, so the environment term absorbs it). Neither release supports the paper's
   exact model, since the block set is only in the quality-assured objects and the planting date only in the
-  original ones. Measured on the shipped data: the environment effects run from -1,436 (MI 2012) to +1,536
-  (NE 2011) kg/ha, the block effects have an SD of 318 kg/ha (425 before the shrinkage), and a plot departs
-  from its line's value by 539 kg/ha SD. The line values run from 2,029 to 4,584 kg/ha (mean 3,578, SD 354;
-  within a family 237); with 11 plots a line on average, the entry-mean heritability is 0.789, against the
-  0.822 Diers et al. publish in their Table 2. (The 125,468 variance between the line values already carries
-  the plot error's 290,930/11.)
+  original ones. Measured on the shipped data: the environment effects run from -1,460 (MI 2012) to +1,519
+  (NE 2011) kg/ha, the block effects have an SD of 317 kg/ha (427 before the shrinkage), and a plot departs
+  from its line's value by 551 kg/ha SD. The line values run from 2,101 to 4,603 kg/ha (mean 3,582, SD 352;
+  within a family 235); with 12 plots a line on average, the entry-mean heritability is 0.797, against the
+  0.822 Diers et al. publish in their Table 2. (The 124,218 variance between the line values already carries
+  the plot error's 303,391/12.)
+- **Exception to SPLIT-26 (2026-11-26, Andrej):** we do not ship the source's rows. The source publishes
+  62,478 plot yields and no line value; we ship one row per line, holding a value we compute: each plot is
+  corrected for its environment and for its field block, both estimated on the plots of the six checks grown
+  across the trial (model 1 of Diers et al. 2018, the block effects shrunk by `vb / (vb + ve / n)` over 1,867
+  blocks, the 40 family founders left out of the check set), and a line's value is the mean of its own
+  corrected plots, so no line's yield enters another line's value. The fact that sets the case apart: a plot
+  yield carries an environment effect spanning 2,979 kg/ha and a shrunken block effect of SD 317 kg/ha
+  against a line SD of 352, and a family misses up to 3 of the 19 environments, so no weighting of
+  plot-level scores removes the confound, while the line is what the breeder acts on and is the source's own
+  task unit. The model form is the source's, the data paper's model 1; the choice of which checks stand in it
+  and the shrinkage are ours. The shipped values run 2,101 to 4,603 kg/ha (mean 3,582, SD 352, 235 within a
+  family), reach an entry-mean heritability of 0.797 against the 0.822 the data paper publishes, and agree
+  with a plain mean of a line's raw plots at r 0.945 pooled and 0.904 within a family. Serves P3 (the breeder
+  acts per line) and P4 (a trial bookkeeping artefact is not what the metric should score).
+- The line value is ours to compute, the source publishing none, and it is the data paper's model 1 run on
+  the checks alone, not an object the package returns.
 - Both corrections come from the check plots alone, so no line's yield enters another line's value
   (LEAK-10) and no statistic over the lines enters the target (LEAK-29, LEAK-30): a line's value is the mean
-  of its own plots, and all the line table contributes to the correction is which 18 environments have a
-  line yield at all. The check table's 45 strains, which fill the 1,707 blocks with 9,755 plots, are not 45
-  checks: 39 are the families' own founder parents, 38 of them standing only in their own family's blocks
-  (40 to 45 blocks each) and LD02-4485 serving as a general check in 18 families while 66 of its 416 plots
-  sit in the blocks of family 12, the family it fathered. The correction uses the other six, grown across
-  the trial: IA3023, the common parent of every line, in the blocks of all 39 families (1,367), with
-  U06-100052 (1,702), LD04-11056 (1,327) and LD04-13265 (1,323), and IA2094 and U09-215057 in 18 families
-  each (371 and 370). Those six fill every one of the 1,707 blocks with 7,294 plots (1 to 16 a block, median
+  of its own plots, and all the line table contributes to the correction is which 19 environments have a
+  line yield at all. The check tables' 46 strains, which fill the 1,867 blocks with 10,577 plots, are not 46
+  checks: 40 are the families' own founder parents, 39 of them standing only in their own family's blocks
+  (43 to 49 blocks each, and PI507681B in the four Purdue 2014 blocks of family 46, the family the
+  quality-assured release drops) and LD02-4485 serving as a general check in 19 families while 71 of its 457
+  plots sit in the blocks of family 12, the family it fathered. The correction uses the other six, grown
+  across the trial: IA3023, the common parent of every line, in the blocks of all 40 families (1,489), with
+  U06-100052 (1,862), LD04-11056 (1,448) and LD04-13265 (1,444), and IA2094 and U09-215057 in 19 families
+  each (409 and 408). Those six fill every one of the 1,867 blocks with 7,923 plots (1 to 16 a block, median
   4), so every line plot has both corrections and the same strains measure the field in every family's
-  blocks. Taking the 39 founders in as well, each carrying its own family's genetics, moves the line values
-  by 27.8 kg/ha SD (r 0.9969, within-family r 0.9942; family means by at most 38 kg/ha) and lifts the
-  declared metric by 0.005 for ridge while lowering it by 0.001 for LightGBM over 3 grouped folds, inside a
-  fold-to-fold spread of 0.05 and 0.03.
-  Removing the block at all is what matters: each family was planted in its own four blocks (sets A to D),
-  so without the correction a family's value carries the patch of field it was grown on. Against a value
-  corrected for the environment only, the line values correlate 0.9585 (Spearman 0.9476) and differ by 103
-  kg/ha SD, against a line SD of 354.
+  blocks. Taking the 40 founders in as well, each carrying its own family's genetics, moves the line values
+  by 25.8 kg/ha SD (r 0.9973, within-family r 0.9949; family means by at most 36 kg/ha) and lifts the
+  declared metric by 0.007 for ridge and 0.012 for an untuned LightGBM over 3 grouped folds, inside a
+  fold-to-fold spread of 0.03 and 0.05.
+  Removing the block at all is what matters: each family was planted in its own four blocks of an
+  environment, so without the correction a family's value carries the patch of field it was grown on.
+  Against a value corrected for the environment only, the line values correlate 0.9626 (Spearman 0.9533) and
+  differ by 97 kg/ha SD, against a line SD of 352.
+- IN_2014 joined the correction on 2026-11-26, after the rebuild below, so every target value is measured
+  again on more of the source's own plots: 5,549 plots more, a line's 11 on average becoming 12. The values
+  agree with the 18-environment ones at pooled r 0.9862 (Spearman 0.9828), within a family 0.9696 (lowest
+  family 0.938), sit 3.5 kg/ha higher on average and differ by 59 kg/ha SD, 56 within a family, against a
+  line SD of 352. The score moves less than a fold: over the 60 shipped splits ridge by eigendecomposition
+  scores 0.2167 on the 18-environment values and 0.2180 on the shipped ones (at a ten times larger penalty,
+  0.2271 against 0.2255), an untuned LightGBM 0.2045 against 0.1996, and ridge on markers centred inside
+  the row's own family 0.2971 against 0.2961, while a model's score moves 0.02 to 0.03 between folds. The
+  entry-mean heritability rises from 0.789 to 0.797, a line's value resting on more plots.
 - The construction was brought into line with Lennart's build of this dataset on 2026-11-26. Before that the
   environment effects were fitted over all 56,929 line plots, which tied a test line's yield to the value of
   the training lines grown beside it, and the block correction was one slope on an index of all 45 check
@@ -296,9 +337,9 @@ the lines), `data.check.qa` (10,721 plots of the checks and parents) and `gen.qa
   fold runs -0.002 to -0.017) and an untuned LightGBM 0.223 against 0.229 (-0.011 to +0.036 for the new
   values), while either model's score moves 0.03 to 0.06 between folds. The entry-mean heritability falls
   from 0.809 to 0.789, since the check-based corrections carry their own error into a plot.
-- Note: the plain mean of a line's plots, the simplest alternative, correlates 0.937 (Spearman 0.920) with
-  the shipped value and differs by 129 kg/ha SD. It is biased by which environments a family was grown in: a
-  family misses up to 3 of the 18 environments, whose effects span 2,972 kg/ha.
+- Note: the plain mean of a line's plots, the simplest alternative, correlates 0.945 (Spearman 0.932) with
+  the shipped value and differs by 119 kg/ha SD. It is biased by which environments a family was grown in: a
+  family misses up to 3 of the 19 environments, whose effects span 2,979 kg/ha.
 - The quality-assured release is the one we read, not the original `soynam` objects of the same package
   (`data.line`, `data.check`, `gen.raw`) and not the Azodi et al. 2019 cut (below). The reason is the field
   block: `data.line`'s `spot` column has one value per environment (all 60,744 rows are set `2A`), so the
@@ -306,26 +347,51 @@ the lines), `data.check.qa` (10,721 plots of the checks and parents) and `gen.qa
   blocks = 39 families x 4). The cost is 401 lines, one family (46) and 299 markers; family 46 is the
   source's own QA decision, dropped by Diers et al. because its lines were genotypically identical with the
   female founder. The two phenotype tables agree on 53,397 of the 55,945 plot yields they share.
+- The third release object, `soyin`, is the Purdue trial at West Lafayette, and one of its three
+  environments is new data for this task, so it is used. IN_2014 is a 19th environment: 5,549 line yields,
+  none of them a line the quality-assured table already holds there, and check plots that carry all six
+  common checks in every one of its 160 blocks (629 plots, 3 to 16 a block), so the environment effect and
+  the field-block effect are built there exactly as for the other 18. Its yields are in bu/ac and are
+  converted at 67.25 kg/ha, the bushel-per-acre constant and the ratio the two releases' shared IN_2013
+  plots show (5,199 matched plot yields, median ratio 67.250, least-squares slope through the origin
+  67.249, r 0.9916). The other two environments stay out, and for reasons of data quality rather than
+  scope. IN_2013 is the same 5,199 plots the quality-assured table already carries, so taking it would
+  count them twice; after the change no (environment, line) pair of the line table repeats that was not
+  already repeated in the quality-assured release (572 pairs, every one of them inside it). IN_2015 has
+  1,680 yields over 840 lines and no check plots at all, so neither correction can be built there and its
+  plots are not comparable with the rest. The object's genotype matrix `gen.in` stays unread, MaCH-imputed
+  and worth no line: of IN_2014's 5,549 strains, the 416 the shipped frame does not already hold have no
+  `gen.qa` row either (405 of them are new to the line table), so the frame keeps its 5,143 rows.
 - Missing marker calls stay missing (CLEAN-7): 25.65% of the calls are not scored. They are not noise but the
   design, and the structure is a block structure: of the 168,168 family-by-marker blocks (39 x 4,312), 41,304
   (24.56%) carry no call at all, 126,584 (75.27%) are scored on 90% or more of the family's lines, 280
   (0.17%) sit between 10% and 90% and none between 0.1% and 10%, and every one of the 126,864 blocks with
-  any call is polymorphic within its family. So a marker is scored in the families whose cross segregates
-  for it, and a breeder meets the same pattern in a new cross. What the pattern is worth depends on the
-  score, which an IID re-user of this frame should know: pooled, the mask of unscored calls alone is worth
-  R^2 +0.1629 while the genotype values are worth +0.0016, and the mask names the family exactly (k-means on
-  the mask recovers the 39 families at adjusted Rand 1.0000), so an IID split or a pooled metric here would
-  measure the handling of missing values. Within a family, where the declared metric scores, the mask is
-  worth r -0.028 against the calls' +0.213, and filling the blocks with the family mean moves the declared
-  metric by +0.0009. No imputation, over all rows or within a family.
-- Leak probes (3 splits, untuned LightGBM): no test line has an exact feature copy in training on any of the
+  any call is polymorphic within its family. So a marker is blank exactly where the cross does not
+  segregate for it: the donor parent carries the common parent's allele there, and the design determines
+  the line's genotype rather than failing to read it, so these are not values the breeder lacks. They stay
+  blank because the shared allele cannot be read from what the source ships: the common parent IA3023 has
+  no genotype row in `gen.qa`, and of the 500 markers that segregate in two or more families all 500 carry
+  both homozygotes in every such family, so the matrix does not say which allele is the shared one. A fill
+  would be our inference, not the source's call, and it buys nothing on the score. That a breeder meets the
+  same pattern in a new cross is inference too, sound but not measured here: a new cross of the same common
+  parent, genotyped on the same chip, is scored where it segregates. What the pattern is worth depends on
+  the score, which an IID re-user of this frame should know: pooled, the mask of unscored calls alone is
+  worth R^2 +0.1629 while the genotype values are worth +0.0016, and the mask names the family exactly
+  (k-means on the mask recovers the 39 families at adjusted Rand 1.0000), so an IID split or a pooled
+  metric here would measure the handling of missing values. Within a family, where the declared metric
+  scores, the mask is worth r -0.028 against the calls' +0.213, and filling the blocks with the family mean
+  moves the declared metric by +0.0009. No imputation, over all rows or within a family.
+- Leak probes (3 splits, untuned LightGBM; every score below was measured on the line values before IN_2014
+  joined the correction, which the shipped ones follow at a within-family r of 0.970, and the findings rest
+  on the genotype matrix, which the change does not touch): no test line has an exact feature copy in
+  training on any of the
   60 splits, the nearest-neighbour R^2 is negative (-0.42 on the closest tenth), and a depth-2 or depth-3
   tree on the label scores below the mean. Single features score high (`Gm19_40068456_A_G` alone R^2 0.145,
   two markers on chromosome 17 0.118 and 0.115; the all-feature fit falls from 0.072 to 0.047 without the
   first), and what they read is the missingness, not the allele: `Gm19_40068456_A_G` is scored in 1,928 of
   the 5,143 lines and segregates in 15 of the 39 families, its missing indicator alone scores 0.144 against
   the call's 0.145, and among the lines that carry a call the dose explains R^2 0.0078 pooled and 0.0022
-  within a family (the three genotype classes differ by 70 kg/ha against a line SD of 354). The column is a
+  within a family (the three genotype classes differ by 70 kg/ha against a line SD of 352). The column is a
   label of the cross, which is also why a single feature beats the all-feature fit (0.072). It is not a
   shortcut: per family, the best single feature scores 0.016 against 0.244 for LightGBM on all markers, and
   under the family split a test family's own mean is unreachable. Which markers are unscored is information
@@ -354,34 +420,49 @@ the lines), `data.check.qa` (10,721 plots of the checks and parents) and `gen.qa
   sorghum, spruce, switchgrass) are other panels and other tasks. The soy HT and R8 columns would be cuts of
   this table without a distinct task (PROV-6). Licences, since two are in play: what ships comes from the
   GPL-3 package, and the CC0 Dryad/Zenodo record is this derived cut, which we deliberately do not read.
+- A public companion file holds a second, independently derived yield for these lines, and it bounds what a
+  score here means. The CC0 deposit above is a different derivation of the same trait for the same panel:
+  4,230 of our 4,312 markers are shared, so a participant matches a published line by genotype alone for
+  91.9% of the test rows, with no identifier needed. Its values correlate 0.63 row-wise with ours and 0.30
+  within a family; blended with the best honest model they lift the declared metric from 0.30848 to 0.399,
+  and a join on the published line ids reaches about 0.9 within a family against the honest 0.308 (measured
+  before IN_2014 joined the correction, on line values that agree with the shipped ones at a within-family
+  r of 0.970). No remedy removes it: the markers are the features and the line identifiers are in the
+  public file too, so dropping or perturbing columns would destroy the task without closing the join. It is
+  recorded here so that a reader knows the bound: the honest ranking of honest models is unaffected, while
+  a leaderboard open to the web can be topped by a lookup.
 - The 37 rows of `gen.qa` that are parents or check cultivars, not lines, have no line yield and are left
-  out, as are the 31 lines that have a yield but no genotype row and the 5,643 line plots whose yield is
-  missing. `data.line.qa`'s 19th environment, NE 2013, carries no yield at all (5,230 of those 5,643 rows),
-  which is why the correction runs over 18.
+  out, as are the 436 lines that have a yield but no genotype row (31 of the quality-assured table, 405 more
+  grown only at Purdue) and the 5,643 line plots whose yield is missing. `data.line.qa` holds a 19th
+  environment of its own, NE 2013, which carries no yield at all (5,230 of those 5,643 rows), so the
+  correction runs over the 18 quality-assured environments that have one and the Purdue IN_2014.
 - The family is the group column and no feature: a breeder predicting for a new cross has no family of their
   own in the training data. It is kept in the frame because the metric scores within it.
 - Considered and rejected as a feature: `set`, the plot column that looks like a field position. It is a
-  per-line maturity group (5,149 of the 5,174 lines keep one letter across all their environments), it
+  per-line maturity group in the main trial (5,149 of the 5,174 lines keep one letter across the 18
+  quality-assured environments, while the Purdue 2014 blocks letter their sets E to H on another
+  assignment, which leaves only 10 of the 5,143 shipped lines with one letter across all 19), it
   carries within-family R^2 0.1157 on the target in sample, more than the markers earn, and 0.6044 on
   adjusted R8, and it is half of the target's own block correction. It is a plot attribute, recorded with
   the trial and not held before the season, so it is out under LEAK-10. It is also the channel behind the
   row order: a predictor that is nothing but a line's position in the unshuffled frame scores 0.134 on the
   declared metric, because the line order tracks the maturity set. The framework's seed-42 shuffle is left
   on and is load-bearing here: after it, row position scores -0.0011.
-- Scope (USE-8): one population of 39 crosses that all share the parent IA3023, one 2011-2013 Midwest trial
-  network of 18 environments, one SNP chip (Song et al. 2017, the SoyNAM 6K BreadChip). The germplasm is
+- Scope (USE-8): one population of 39 crosses that all share the parent IA3023, one 2011-2014 Midwest trial
+  network of 19 environments, one SNP chip (Song et al. 2017, the SoyNAM 6K BreadChip). The germplasm is
   broader than a breeding programme's, and that is the gap the fit statement names: the panel was designed
-  unselected, and 7 of the 38 non-recurrent parents are exotic PI accessions whose families average 3,159
-  against 3,671 kg/ha for the 32 elite-parent families, so an elite programme crosses a narrower set than
+  unselected, and 7 of the 38 non-recurrent parents are exotic PI accessions whose families average 3,168
+  against 3,673 kg/ha for the 32 elite-parent families, so an elite programme crosses a narrower set than
   this and the level reached here is not a breeder's at-home accuracy. The direction is measured and it is
   not the flattering one: dropping the 7 exotic families lifts the declared metric from 0.236 to 0.276,
-  while dropping 7 elite families instead lowers it to 0.219 (20 draws, SD 0.008), so the breadth costs
-  about 0.06 of within-family ability, a heterogeneous training panel predicting the elite families worse.
-  What the breadth does inflate is a pooled score: 55.3% of the line-value variance lies between families
-  here against 35.0% among the elite families alone, one more reason the metric is within the family.
+  while dropping 7 elite families instead lowers it to 0.219 (20 draws, SD 0.008; measured before IN_2014
+  joined the correction), so the breadth costs about 0.06 of within-family ability, a heterogeneous training
+  panel predicting the elite families worse.
+  What the breadth does inflate is a pooled score: 55.7% of the line-value variance lies between families
+  here against 36.1% among the elite families alone, one more reason the metric is within the family.
   Within-family selection in this panel is a different task (a random split of the lines), as is yield in
   another network.
-- Time basis: UnseenGroup: the breeder ranks the progeny of a cross the data does not hold, so whole crosses are held out and the trial years are not weighed: the target is the yield of a fixed genotype, measured once by one 2011-2013 protocol, and the field blocks the years differ by are removed from it. The split cannot test a later season, another trial network, or germplasm outside this panel's 40 parents. One limit follows from the panel's own design and is accepted with it: all 39 families share the parent IA3023, so every test line has half-sibs in training and no held-out cross is unrelated to the training ones (a held-out family is still ranked at a pooled r of 0.433 by LightGBM).
+- Time basis: UnseenGroup: the breeder ranks the progeny of a cross the data does not hold, so whole crosses are held out and the trial years are not weighed: the target is the yield of a fixed genotype, measured once by one 2011-2014 protocol, and the field blocks the years differ by are removed from it. The split cannot test a later season, another trial network, or germplasm outside this panel's 40 parents. One limit follows from the panel's own design and is accepted with it: all 39 families share the parent IA3023, so every test line has half-sibs in training and no held-out cross is unrelated to the training ones (a held-out family is still ranked at a pooled r of 0.433 by LightGBM).
 
 ## Splits
 
@@ -393,9 +474,11 @@ that is already phenotyped, and is a habit rather than a choice for ours (SPLIT-
 siblings of every test line in the training data, which a breeder ranking a new cross does not have. On a
 pooled R^2 that buys a lot (LightGBM 0.579 +- 0.010 over random lines against 0.270 +- 0.055 over held-out
 families, 3 x 3 folds), but nearly all of it is the family mean, which the declared metric does not score:
-on that metric the departure costs 0.036 (ridge) to 0.117 (LightGBM). A test family's own feature rows are
+on that metric the departure costs 0.036 (ridge) to 0.117 (LightGBM); those three figures were measured
+before IN_2014 joined the correction, and ridge's departure measures 0.030 on the values that ship. A test
+family's own feature rows are
 all on the test side and may be read (`context="all_rows"`, the grouping definition): centring the markers
-within the row's own family is worth +0.0795 on the declared metric, so a model that ignores the grouping
+within the row's own family is worth +0.078 on the declared metric, so a model that ignores the grouping
 spends its fit on variance the metric discards. Leaf L-EXP.kind of the split tree. The repeats reuse the
 same 39 families, so the spread over repeats is descriptive, not 39 independent crosses.
 
@@ -480,7 +563,9 @@ so whole families are held out: a test family's yields are unknown, as they are 
 grown. Each line is scored on its own. The breeder genotypes the whole progeny of the cross at once and
 ranks them together, so a model may use all rows of a test family (`all_rows`), and that is worth
 having: centring each marker within the row's own family lifts ridge on the declared metric from 0.229
-to 0.308 (+0.0795 over the 60 splits), as much as an oracle handed the test family's true mean (0.309).
+to 0.308 (+0.0795 over the 60 splits, measured before IN_2014 joined the correction; +0.078 with both
+sides measured again on the values that ship), as much as an oracle handed the test family's true mean
+(0.309).
 The grouping is recoverable from the missing-call pattern alone (k-means on the mask recovers the 39
 families at adjusted Rand 1.0000), so the gain is open to every participant, with or without the column.
 
@@ -500,7 +585,7 @@ families at adjusted Rand 1.0000), so the gain is open to every participant, wit
 | test groups per fold | 13 |
 | groups of two or more rows with a single label | 0.0% |
 | nearest neighbour in the same group | 21.8% of the rows (chance: 2.6%) |
-| label variance explained by the group | 0.55 (shuffled groups: 0.01) |
+| label variance explained by the group | 0.56 (shuffled groups: 0.01) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
@@ -508,18 +593,18 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ### 1. The line value corrects each plot for its environment and its field block, on the check plots alone
 
-Each family was planted in its own four blocks, so an effect of the field becomes a difference between families, and a family misses up to 3 of the 18 environments. Both corrections come from the 6 checks grown across the trial: 7,294 plots that fill all 1,707 blocks (1 to 16 a block, median 4), so no line's yield enters another line's value. The environment effects span 2,972 kg/ha and the shrunken block effects have an SD of 318 kg/ha, against a line SD of 354.
+Each family was planted in its own four blocks of an environment, so an effect of the field becomes a difference between families, and a family misses up to 3 of the 19 environments. Both corrections come from the 6 checks grown across the trial: 7,923 plots that fill all 1,867 blocks (1 to 16 a block, median 4), so no line's yield enters another line's value. The environment effects span 2,979 kg/ha and the shrunken block effects have an SD of 317 kg/ha, against a line SD of 352.
 
 | line value from | r with the shipped value | within-family r | difference SD (kg/ha) | SD (kg/ha) | between-family share |
 |---|---|---|---|---|---|
-| the six common checks (shipped) | 1 | 1 | 0 | 354.2 | 0.553 |
-| the common checks and the 39 founders | 0.9969 | 0.9942 | 27.8 | 354.1 | 0.549 |
-| the environment only, no field block | 0.9585 | 0.9408 | 103 | 360 | 0.524 |
-| the plain mean of a line's plots | 0.937 | 0.8932 | 129.4 | 369.6 | 0.502 |
+| the six common checks (shipped) | 1 | 1 | 0 | 352.4 | 0.557 |
+| the common checks and the 40 founders | 0.9973 | 0.9949 | 25.8 | 352.4 | 0.555 |
+| the environment only, no field block | 0.9626 | 0.9454 | 97 | 356.7 | 0.536 |
+| the plain mean of a line's plots | 0.9454 | 0.9036 | 119 | 364.4 | 0.517 |
 
 ### 2. Missing marker calls stay missing
 
-A marker is scored in the families whose cross segregates for it, so the missing calls are the design of a nested association panel, not lost data; a new cross shows the same pattern.
+A marker is blank exactly where the family's cross does not segregate for it, so the design determines the call rather than failing to read it. It stays blank because the shared allele cannot be read from the shipped matrix: the common parent has no genotype row, and all 500 markers segregating in two or more families carry both homozygotes in every such family, so any fill would be our inference, not the source's call.
 
 | index | share of a family's marker calls not scored |
 |---|---|
@@ -540,7 +625,7 @@ A marker is scored in the families whose cross segregates for it, so the missing
 
 Accepted on purpose:
 
-- `groups_test_groups_few`: 39 families, 13 per test fold and about 1,714 lines scored per fold. The signal across groups is measured, not assumed: GBLUP, ridge, random forest and LightGBM all beat the dummy on the declared metric on 100% of the folds; per-family r has SD 0.09 to 0.10, so the standard error of the metric over 39 families is 0.015 to 0.017 against a mean of 0.18 to 0.23, 12 to 16 standard errors from zero; a null that shuffles the labels inside each test family (500 runs, each scored over the 60 folds as the models are) gives mean +0.0001, SD 0.0031, max 0.0089, so the measured score sits 68 null SDs above it at the p = 0.002 floor of 500 runs; and 38 of the 39 families score positive under ridge, all 39 under the other three.
+- `groups_test_groups_few`: 39 families, 13 per test fold and about 1,714 lines scored per fold. The signal across groups is measured, not assumed: GBLUP, ridge, random forest and LightGBM all beat the dummy on the declared metric on 100% of the folds (the dummy scores exactly 0 under it); per-family r has SD 0.10 to 0.11, so the standard error of the metric over 39 families is 0.010 to 0.015 against a mean of 0.12 to 0.23, 12 to 21 standard errors from zero; a null that shuffles the labels inside each test family (500 runs, each scored over the 60 folds as the models are) gives mean +0.00003, SD 0.0029, max 0.0082, so the measured scores sit 41 to 78 null SDs above it at the p = 0.002 floor of 500 runs; and 38 or 39 of the 39 families score positive under each of the four.
 
 ## Data checks
 
@@ -620,7 +705,7 @@ Accepted on purpose:
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | -0.64 | -0.973 | 125468 | 0.011 | log | 99319.2 | 3.86656e+15 | exponential |
+| 0 | 0 | 0 | -0.592 | -0.909 | 124218 | 0.011 | log | 99974.3 | 6.80603e+15 | exponential |
 
 ### Numeric features
 
@@ -630,7 +715,7 @@ Accepted on purpose:
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | family | 5143 | 25.5347 | 15.1658 | 2 | 64 |
-| yield_kg_ha | 5143 | 3578.31 | 354.214 | 2029.47 | 4584.44 |
+| yield_kg_ha | 5143 | 3581.85 | 352.446 | 2101.11 | 4603.34 |
 | Gm01_3321482_T_C | 2464 | 0.980114 | 0.967189 | 0 | 2 |
 | Gm01_4755976_C_T | 2516 | 0.999603 | 0.958586 | 0 | 2 |
 | Gm01_8340015_T_C | 3409 | 1.00763 | 0.965028 | 0 | 2 |

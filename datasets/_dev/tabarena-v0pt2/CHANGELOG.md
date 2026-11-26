@@ -1,5 +1,36 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-26, genomic_prediction_soy_yield: the metric overrule recorded, the metric and the split signed off, verdict ship (text only, nothing built)
+
+- `genomic_prediction_soy_yield`, the metric overrule (issue 6, change to C: record the exception and amend the rule
+  in the same change). The rule was amended earlier the same day, under the cross-dataset decision covering the
+  three datasets of this shape, so the record carries the application of the new per-group rule rather than a
+  standing exception: a standing exception would file a departure from a rule we now follow, and the rule already
+  lists this dataset among its cases as applied. The overrule itself is recorded in the open, because the source
+  does name a metric: Azodi et al. 2019's Pearson's r pooled over the held-out lines, "the standard metric for GP
+  performance", is the overruled original, and the measurements that carry it are the ones the rule asks to be
+  reported — on the values that ship, 55.7% of the line-value variance lies between the 39 families, a family-mean
+  oracle scores a pooled r of 0.69 (RMSE 234 kg/ha) against ridge's 0.23 (360) and exactly 0 within a family, and
+  the non-recurrent parent's own trial yield predicts its family's mean at r 0.94 over the 38 families, so the
+  family ranking costs the breeder nothing. The rule's cases row is brought to those figures, where it had the ones
+  measured before the 19th environment went in (54.3%, 0.683, 0.236 and 0.937). `dataset.py` is untouched: the
+  declared metric stays `mean_group_pearsonr` on the family, from context, and its reason already names the original
+  and reports both measurements.
+- `genomic_prediction_soy_yield`, the sign-off. The declared metric and the declared split are checked as they
+  stand and the verdict is ship: every issue is resolved, no record field disagrees with the definition and nothing
+  is parked. The record carries the two sign-off lines (the metric; the split, grouped on `family` over the 39
+  biparental crosses, 20x3 folds, `UnseenGroup`, leaf L-EXP.kind) and the verdict. Nothing built, and no
+  `dataset check` was run, since no definition changed.
+- `genomic_prediction_soy_yield`, corrected wording in the review (no decision). The dependency passage shared by
+  issues 5 and 6 had made the metric what keeps the blank marker cells harmless and called a restored pooled metric
+  a question about what was recorded. It now separates the three: the blanks are no leak, since the pattern names
+  the cross and a breeder facing a new cross knows its parents (inference, for a cross not yet genotyped); the
+  split is what keeps a genuine leak out, because under a random split the missingness points a test line at its
+  own siblings in training; and the metric keeps out a score paid for a family ranking the breeder already holds,
+  so restoring a pooled metric would reopen a question of task validity, the footing the blind reviewer's exclusion
+  vote was measured on. The measurement tables, the options, the recommendations and the issue numbers are
+  unchanged.
+
 ## 2026-11-26, astrazeneca_chembl_logd74: the five "twice-measured" compounds are merged pairs and are dropped (4,195 -> 4,190; nothing built)
 
 - `astrazeneca_chembl_logd74`, the rows. The five ChEMBL ids that carry two activities each are not one compound
@@ -30,6 +61,62 @@
   and every fold figure, which re-measures in the same range but not on the same values (RMSE 0.698 -> 0.710, MAE
   0.528 -> 0.542). None is read outside the notes and none changes a decision.
 - `dataset check`: 0 errors, 0 warnings, 28 checks; README regenerated. Not built.
+
+## 2026-11-26, genomic_prediction_soy_yield: the Purdue trial's IN_2014 joins the correction, with three more review decisions (every target value changes; nothing built)
+
+- `genomic_prediction_soy_yield`, the data (issue 4). The definition now reads the package's third release object,
+  the Purdue trial `soyin`, and takes its IN_2014 as a 19th environment: 5,549 line yields converted from bu/ac at
+  67.25 kg/ha, the bushel-per-acre constant, which the plots the two releases share confirm (5,199 matched IN_2013
+  yields, median ratio 67.250, least-squares slope through the origin 67.249, r 0.9916). It goes in because all six
+  of the common checks stand in every one of its 160 blocks (629 check plots, 3 to 16 a block), so the environment
+  effect and the field-block effect are built there exactly as for the other 18 and no line plot sits where the
+  checks of the adjustment were not grown. IN_2015 stays out on data quality: 1,680 yields over 840 lines and not
+  one check plot, so neither correction can be built there. IN_2013 stays out as the plots the quality-assured table
+  already holds, and after the change the line table repeats no (environment, line) pair it did not repeat before
+  (572, every one inside the quality-assured release). `gen.in` stays unread, MaCH-imputed and recovering no line:
+  of IN_2014's 5,549 strains the 416 the shipped frame does not already hold have no `gen.qa` row either, so the
+  frame keeps its 5,143 rows and 4,312 markers.
+  `RAW_FILES`, `_load_raw` and the download instructions gain the two Purdue phenotype tables with their checksums.
+- `genomic_prediction_soy_yield`, what the change moves. Every target value is measured again on more of the
+  source's own plots: 62,478 line plots over 19 environments, 1,867 blocks and 7,923 common-check plots, against
+  56,929 over 18, 1,707 and 7,294; 12 plots a line against 11; 46 check strains with 40 family founders among them
+  against 45 and 39. The line values run 2,101 to 4,603 kg/ha (mean 3,582, SD 352, 235 within a family) against
+  2,029 to 4,584 (3,578, 354, 237) and agree with them at pooled r 0.9862 (Spearman 0.9828), within-family 0.9696
+  (lowest family 0.938), difference SD 59 kg/ha and 56 within a family. The environment effects span 2,979 kg/ha
+  against 2,972, the shrunken block effects have SD 317 against 318, the entry-mean heritability rises to 0.797
+  from 0.789 (0.822 published), and the between-family share of the variance to 55.7% from 55.3%. On the 60 shipped
+  splits the declared metric moves by at most 0.007 — ridge 0.2167 to 0.2180, GBLUP 0.2253 to 0.2259, untuned
+  LightGBM 0.2045 to 0.1996, ridge on family-centred markers 0.2971 to 0.2961 — where a fold moves it by 0.02 to
+  0.03, so the change settles no decision and overturns none. The record's `collection_period` becomes 2011-2014,
+  and the scope, row and time-basis sentences 19 environments; both decision tables, the notes and the accepted
+  few-groups text carry the re-measured figures, and the model scores that were not re-run are labelled as
+  predating the change. `dataset check`: 0 errors, 0 warnings, 1 info over 28 checks. Nothing built.
+- `genomic_prediction_soy_yield`, the blank marker cells (issue 5, change to B). The cells stay blank and the
+  justification is replaced in the `_clean` comment, the missing-calls note and the missing-share decision. A
+  marker is blank exactly where the cross does not segregate, so the donor parent carries the common parent's
+  allele and the design determines the value — the breeder does know it — and it is kept blank because the shared
+  allele cannot be read from the shipped matrix: the common parent has no genotype row, and all 500 markers that
+  segregate in two or more families carry both homozygotes in every such family. A fill would be our inference
+  rather than the source's call, and it buys nothing: within a family the indicators score -0.028 against the
+  calls' +0.213, and a family-mean fill moves the declared metric by +0.0009. The refuted sentence ("imputing would
+  invent the call a breeder does not have either") is gone, and the note now says that a breeder meeting the same
+  pattern in a new cross is inference rather than measurement. No data changes.
+- `genomic_prediction_soy_yield`, the public companion file (issue 7, change to B). A new note under the version
+  bullet records the exposure with its measured size: the linked CC0 deposit carries a second, independently
+  derived yield for these lines, 4,230 of our 4,312 markers are shared so a participant matches a published line by
+  genotype alone for 91.9% of test rows, its values correlate 0.63 row-wise and 0.30 within a family with ours, a
+  blend with the best honest model lifts the declared metric from 0.30848 to 0.399, and a join on the published
+  line ids reaches about 0.9 within a family against the honest 0.308. The note says plainly that no remedy removes
+  it — the markers are the features and the line identifiers are in the public file too — and that it is recorded
+  so a reader knows the bound: honest models still rank honestly, while a leaderboard open to the web can be topped
+  by a lookup.
+- `genomic_prediction_soy_yield`, the computed line value (issue 8, as implemented). The target stays and the
+  departure from keeping the source's rows is written down as an exception in the record's comments and the
+  definition's notes, updated for IN_2014: 62,478 plot yields over 19 environments, 1,867 blocks, the 40 family
+  founders left out of the check set, an environment span of 2,979 kg/ha and a block SD of 317 against a line SD of
+  352, values 2,101 to 4,603 kg/ha at an entry-mean heritability of 0.797, agreeing with a plain mean of a line's
+  raw plots at r 0.945 pooled and 0.904 within a family. The rule's own Cases table is untouched by this change and
+  still needs the row.
 
 ## 2026-11-26, genomic_prediction_soy_yield and the cross-dataset items: the metric carries the blank marker cells, and the marker scope (text only, nothing built)
 

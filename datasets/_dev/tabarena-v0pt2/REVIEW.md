@@ -714,6 +714,22 @@
   costs and what it changes; the recommendation is b now, with c and g as the efficiency work and d where a model
   allows it. Nothing is implemented and the item stays open for your choice.
 
+  **Andrej (2026-11-26, discuss):** I want to have g with a limit of 10000 features.
+
+  **Resolved (2026-11-26, Andrej):** g, with a cap of 10,000 features. A probe that loads a frame fits on a sample of
+  the columns once the table is wider than that, the measured columns kept, and names the sample it fitted on in its
+  report; the cap is the curator's number, not one this run measured. The option's Con stands as written and is what
+  the report line is for: a finding is then on the sample, and a leak in a column outside it can be missed. The
+  choice is what is settled here; the change itself is a framework change to the probes that load a frame, carried
+  out separately, and this resolution implements nothing.
+
+  What remains before a wide dataset can be built: the read. The item's line above still holds — a container of that
+  width cannot be loaded by the call the collection documents, and the clean room's generated `score.py` is unusable
+  for the same reason — and g does not touch it, since it only keeps the probe run inside a shared node's memory.
+  That piece is b (raise the thrift limits at the read sites), or e in its place; it is not decided here, and until
+  it lands no folder of that width can be built. c and d are likewise undecided and stay as the rest of the
+  efficiency work.
+
 - **Record a Cases row that a deterministic function of the group key is treated as the key?** (from
   `gse40279_methylation_age`; it belongs with the rules, under the rule that keeps a group id out of the features.)
   That dataset's `ethnicity` column is constant within every one of its nine plates, so it is an exact two-level
@@ -791,3 +807,24 @@
   name. On C, the new name goes into `curation/vocabularies.yaml` and both rule files. Either way, whether
   `genomic_prediction_soy_yield` itself then carries the marker is a decision for its own review, raised there if B
   or C is taken.
+
+  **Andrej (2026-11-26, B):** go ahead.
+
+  **Resolved (2026-11-26, Andrej):** B, the wording widened and the test written down. The marker row in
+  `selection.md` and the marker paragraph under the rules on artefacts that differ by class in `leak_checks.md` now
+  say that a class, or a grouping that carries the target, was measured, formatted or filled differently, so the
+  recording can give the target away; a class is one such grouping, and a group that holds much of a continuous
+  target is the other shape. Beside it stand the two questions that decide it: does the recording vary within the
+  group, and is the group scored across or within. A recording that varies within the group is no mark of the group,
+  and a score taken within the group reads nothing from a mark that only separates groups. The sentence that keeps
+  the sampling marker apart is untouched: `Selection Bias` is about which rows were sampled, with the measurements
+  alike. The rule on gaps a source filled carries the measured case as a Cases row — blanks that follow a grouping
+  which carries a continuous target, answered by the two questions with measurements — and the row names them: the
+  mask of unscored marker calls reaches R^2 +0.163 pooled against the genotype values' +0.002 and predicts a
+  held-out family's mean at r = 0.665, while within a family it scores -0.028 against the calls' +0.213 and filling
+  the blanks moves the declared metric by +0.0009, so the per-group score leaves it harmless. The vocabulary entry
+  keeps its name. All 13 records that carry the marker today are classification tasks, checked by parsing the
+  records' front matter (eleven say `Binary Classification` or `Multiclass Classification`; the two with an empty
+  `problem_type`, `cic_malmem_2022` and `fusionai_gene_fusion_ntv2`, carry the marker for a binary framing, benign
+  against malware and fusion-positive against pseudo-negative), so none of them changes meaning. Whether
+  `genomic_prediction_soy_yield` itself now carries the marker is open for its own review.

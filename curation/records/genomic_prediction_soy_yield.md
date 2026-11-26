@@ -13,12 +13,15 @@ tags:
 - 'Samples: No Time Dimension'
 - 'Entities: Recur'
 - Experimental Results
+- Non-IID (Grouped)
 collections:
 - TabBench-Bio
 original_source: Other
 year: '2015'
-collection_period: 2011-2013
+collection_period: 2011-2014
 domain: biology & life sciences
+required_split:
+- Grouped (NON-IID)
 problem_type: Regression
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
@@ -81,11 +84,83 @@ type_adapter_id: curation-record-v1
 - Every figure in that reason depends on the target, so all were measured again on the shipped values over the 60 splits: four model families beat the dummy on 60 of 60 folds; per-family r has SD 0.09 to 0.10, a standard error of 0.015 to 0.017 against a mean of 0.18 to 0.23, 12 to 16 standard errors from zero; 38 of 39 families score positive under ridge and all 39 under the other three; a within-family label permutation (500 runs) gives mean +0.0001, SD 0.0031, max 0.0089, with the measured score 68 null SDs above it at the p = 0.002 floor of 500 runs.
 - Not changed: the data, the target, the split, the metric and every record field. Not built: no container exists for this folder.
 
+**CC (2026-11-26, Andrej):** the review decisions on issues 4, 5, 7 and 8, applied the same day as issues 1 to 3.
+- Issue 4, change: "Whenever more data for the task is available we should use it, unless data quality issues
+  prevent that." The package's third release object, the Purdue trial `soyin`, is now read and its IN_2014 is a
+  19th environment: 5,549 line yields converted from bu/ac at 67.25 kg/ha, the bushel-per-acre constant, which the
+  5,199 IN_2013 plots the two releases share confirm (median ratio 67.250, slope through the origin 67.249, r
+  0.9916). It qualifies because all six common checks stand in every one of its 160 blocks (629 plots, 3 to 16 a
+  block), so both corrections are built there as for the other 18. IN_2015 stays out on data quality, having no
+  check plots at all behind its 1,680 yields over 840 lines; IN_2013 stays out as the plots the quality-assured
+  table already holds, and after the change the line table repeats no (environment, line) pair it did not repeat
+  before; `gen.in` stays unread, MaCH-imputed and recovering no line.
+- What moved with it: 62,478 line plots over 19 environments and 1,867 blocks against 56,929 over 18 and 1,707;
+  12 plots a line against 11; line values 2,101 to 4,603 kg/ha (mean 3,582, SD 352, 235 within a family) against
+  2,029 to 4,584 (3,578, 354, 237), the two agreeing at pooled r 0.9862 and within-family 0.9696 with a difference
+  SD of 59 kg/ha; the environment span 2,979 against 2,972 and the block SD 317 against 318; the entry-mean
+  heritability 0.797 against 0.789, against the 0.822 Diers et al. publish; the between-family share 55.7% against
+  55.3%. On the 60 shipped splits the declared metric moves by at most 0.007 (ridge 0.2167 to 0.2180, GBLUP 0.2253
+  to 0.2259, untuned LightGBM 0.2045 to 0.1996, family-centred ridge 0.2971 to 0.2961) where a fold moves it by
+  0.02 to 0.03, so no decision turns on it. `collection_period` becomes 2011-2014 and the scope, row and
+  time-basis sentences 19 environments; the accepted few-groups text was measured again on the new values. Model
+  scores elsewhere in the notes that were not re-run are labelled there as predating the change.
+- Issue 5, change to B: the blank marker cells stay and the false reason goes. A marker is blank exactly where the
+  cross does not segregate, so the donor parent carries the common parent's allele and the design determines the
+  value, which the breeder knows; it is kept blank because the shared allele cannot be read from the shipped
+  matrix (the common parent has no genotype row, and all 500 markers segregating in two or more families carry
+  both homozygotes in every such family), so a fill would be our inference. The measured harmlessness stands
+  beside it: within a family the indicators score -0.028 against the calls' +0.213, and a family-mean fill moves
+  the declared metric by +0.0009.
+- Issue 7, change to B: the public companion file is recorded in the notes and here, with its size. The linked CC0
+  deposit carries a second, independently derived yield for these lines; matching on the shared markers recovers a
+  published id for 91.9% of test rows; its values correlate 0.63 row-wise and 0.30 within a family with ours;
+  blended with the best honest model it lifts the declared metric from 0.30848 to 0.399, and a join on the
+  published line ids reaches about 0.9 within a family against the honest 0.308. No remedy removes it, the markers
+  being the features and the line identifiers being in the public file too; it is recorded so a reader knows the
+  bound.
+- Issue 8, as implemented: the computed line value stays and the departure is written down, the exception text
+  updated for IN_2014.
+- **Exception to SPLIT-26 (2026-11-26, Andrej):** we do not ship the source's rows. The source publishes 62,478
+  plot yields and no line value; we ship one row per line, holding a value we compute: each plot is corrected for
+  its environment and for its field block, both estimated on the plots of the six checks grown across the trial
+  (model 1 of Diers et al. 2018, the block effects shrunk by `vb / (vb + ve / n)` over 1,867 blocks, the 40 family
+  founders left out of the check set), and a line's value is the mean of its own corrected plots, so no line's
+  yield enters another line's value. The fact that sets the case apart: a plot yield carries an environment effect
+  spanning 2,979 kg/ha and a shrunken block effect of SD 317 kg/ha against a line SD of 352, and a family misses
+  up to 3 of the 19 environments, so no weighting of plot-level scores removes the confound, while the line is
+  what the breeder acts on and is the source's own task unit. The model form is the source's, the data paper's
+  model 1; the choice of which checks stand in it and the shrinkage are ours. The shipped values run 2,101 to
+  4,603 kg/ha (mean 3,582, SD 352, 235 within a family), reach an entry-mean heritability of 0.797 against the
+  0.822 the data paper publishes, and agree with a plain mean of a line's raw plots at r 0.945 pooled and 0.904
+  within a family. Serves P3 (the breeder acts per line) and P4 (a trial bookkeeping artefact is not what the
+  metric should score). The rule's own Cases table is not touched by this change and still needs the row.
+- Not changed: the split, the metric, the 5,143 shipped rows, the 4,312 markers and every other record field. Not
+  built: no container exists for this folder.
+
+**CC (2026-11-26, Andrej):** the review decision on issue 6, the last open one: the metric overrule is recorded as the application of the amended per-group rule, not as a standing exception.
+- Issue 6, change to C, the exception and the rule change in one pass. The rule was amended earlier the same day, under the cross-dataset decision covering the three datasets of this shape, so what is left for this record is the case itself, written as an application of the new rule: the scored rows fall into families the breeder does not choose between, a predictor that knows nothing but each family's mean beats the models under the pooled score, so the metric is declared within the family and the pooled score is named as the original. A standing exception would file a departure from a rule we now follow, and the next dataset of this shape would meet two entries that contradict each other.
+- The overrule is recorded in the open, which this case needs because the source names a metric: Azodi et al. 2019's Pearson's r pooled over the held-out lines, "the standard metric for GP performance", is the overruled original. On the values that ship, 55.7% of the line-value variance lies between the 39 families; a family-mean oracle, giving every test line the true mean of its own cross and nothing else, scores a pooled r of 0.69 (RMSE 234 kg/ha) against ridge's 0.23 (360) and exactly 0 within a family; and the non-recurrent parent's own trial yield predicts its family's mean at r 0.94 over the 38 families, so the family ranking is free to the breeder.
+- The rule's own cases row now carries those figures, where it had the ones measured before the 19th environment went in (54.3%, 0.683, 0.236 and 0.937), so the record and the register say one thing.
+- Corrected wording, no decision: the dependency passage shared by issues 5 and 6 had made the metric what keeps the blank marker cells harmless and called a restored pooled metric a question about what was recorded. It now says that the blanks are no leak (the pattern names the cross, and a breeder facing a new cross knows its parents, with the caveat that for a cross not yet genotyped this is inference), that the split is what keeps a genuine leak out (under a random split the missingness points a test line at its own siblings in training), that the metric keeps out something else, a score paid for a family ranking the breeder already holds, and that restoring a pooled metric would therefore reopen a question of task validity, which is the footing the blind reviewer's exclusion vote was measured on. No option, recommendation or decision moves with it.
+- Not changed: the data, the target, the split, the declared metric and every record field. Not built: no container exists for this folder.
+
+**CC (2026-11-26, Andrej):** the declared metric and the declared split are signed off and the verdict is ship.
+- Verdict: ship. Every issue of the review is resolved, no record field disagrees with the definition, and nothing is parked; the record's `Yes` stands and the dataset joins the accepted set, to be built later.
+- The declared metric is checked as it stands: `mean_group_pearsonr` on the family, from context, with the source's pooled Pearson's r as the overruled original (the sign-off line below).
+- The declared split is checked as it stands: whole biparental families held out, 20 repeats of 3 folds (the sign-off line below).
+- Neither decision touches `dataset.py`, so nothing was rebuilt and no `dataset check` was run.
+
+CC (2026-11-26, Andrej): the declared metric (`mean_group_pearsonr` on the family, from context, with Azodi et al. 2019's pooled Pearson's r, "the standard metric for GP performance", as the overruled original) is checked and stays as declared.
+
+CC (2026-11-26, Andrej): the declared split (grouped on `family`, the 39 biparental crosses, 20x3 folds, `UnseenGroup`, leaf L-EXP.kind) is checked and stays as declared: the breeder ranks the lines of a new cross, so no test line keeps a phenotyped sibling in training.
+
+**Assessment (AI, 2026-11-26):** metadata drift fixed: the record carried no `required_split` and no `Non-IID (Grouped)` tag while the definition groups on `family` (leaf `L-EXP.kind`, `UnseenGroup`, 20x3 folds). Both are now set to match the definition, as the two sibling records of this run already did. No decision, definition or measured number changes with it.
+
 ## Review
 
 **Outcome:** added. The SoyNAM project's own release, read from the CRAN package the project's members maintain:
 5,143 recombinant inbred lines of 39 biparental families, 4,312 quality-assured SNP calls, and a yield in kg/ha that
-we compute ourselves from the 56,929 plot yields, each plot corrected for its environment and its field block on the
+we compute ourselves from the 62,478 plot yields, each plot corrected for its environment and its field block on the
 check plots alone, with whole families held out and the score taken inside the family. A
 full review panel ran (seven evidence agents, an advocate and a critic with a rebuttal each, a mediator and the
 review editor) and recommends shipping it after changes; everything it settled without a decision is applied. The task
@@ -99,20 +174,25 @@ environment effects as well as the field-block effects are now measured on the c
 checks grown across the trial are used, the 39 family founders left out. That closes issue 2 and the founder-parent
 documentation point with it, and it moves no decision: the line values correlate 0.9925 with the old ones (0.987
 within a family) and the declared metric by less than a fold. On the same day the few-groups warning was accepted in
-writing (issue 3) and issue 1 was closed and asked again, for the construction that now ships, as issue 8. What is
-left to decide is the wording of the exception for the line value we compute,
-two source objects that need a written reason, the blank cells, the metric exception, and a public file that holds
-another derivation of the same target.
+writing (issue 3) and issue 1 was closed and asked again, for the construction that now ships, as issue 8. Later the
+same day the Purdue release's IN_2014 joined the trial network as a 19th environment (issue 4), so every target value
+is measured again on more of the source's own plots, and the blank marker cells (issue 5), the public companion file
+(issue 7) and the exception for the computed line value (issue 8) were decided with it. The last decision, the metric
+overrule (issue 6), was taken the same day: the rule itself was amended for this shape, so the record carries the
+application of the new per-group rule, with Azodi's pooled Pearson's r named as the overruled original and the
+measurements that carry it. The declared metric and the declared split are signed off and the verdict is ship.
 
-**Main points:** Five decisions, after the rebuild of 2026-11-26 brought the construction into line with Lennart's
-build (issue 2), the few-groups warning was accepted with its measured reason (issue 3), and issue 1 was closed and
-rewritten for the new target as issue 8. Issue 8 sets the precedent the next computed target inherits, and issue 7
-has the largest measured effect anyone found in the panel.
+**Main points:** Nothing is left to decide. All eight issues are settled: the construction was brought into line with
+Lennart's build and then rebuilt again on 19 environments, the few-groups warning is accepted in writing, the blank
+cells keep their true reason, the public copy of the target is recorded with its size, the computed line value has
+its exception, and the metric overrule is recorded as the application of the amended per-group rule. On the same day
+the declared metric and the declared split were signed off and the verdict set to ship; nothing is built yet.
 
 **Record judgment:** valid. The screening read the source correctly and its verdict stands. The build note of
 2026-11-25 counted 402 lines lost and a between-family share of 54.2%, which the panel corrects to 401 and 54.3% (on
-the values of 2026-11-26 the share is 55.3%); the record's own comments already carry those two, the entry-mean
-heritability (0.789 on those values, 0.808 before them, against the 0.822 Diers et al. publish, not the 0.84 first
+the values of 2026-11-26 the share is 55.3%, and 55.7% with IN_2014 in); the record's own comments already carry
+those two, the entry-mean heritability (0.797 on the values that ship, 0.789 before IN_2014 and 0.808 before the
+rebuild of that day, against the 0.822 Diers et al. publish, not the 0.84 first
 written) and the single marker whose 0.145 is the missingness pattern that labels the
 cross rather than a QTL. The same corrections, and the naive call disagreement of 43.2% between the two genotype
 matrices, are in the definition. The record's fields agree with the definition and none needs a mark.
@@ -370,6 +450,18 @@ matrices, are in the definition. The record's fields agree with the definition a
    SDs larger. The models are untuned, as in the draft, so the levels are indicative and only the comparison with
    zero and with the null carries the argument.
 
+   **Answer (AI, 2026-11-26):** the acceptance is unchanged, and its text was measured a third time when IN_2014
+   joined the correction later that day (issue 4), every figure in it depending on the target. The shape of the
+   evidence holds and the numbers move a little again.
+
+   | in the accepted text | on the values of the rebuild | on the values that ship, with IN_2014 |
+   |---|---|---|
+   | model families beating the dummy | GBLUP, ridge, random forest, LightGBM, 60 of 60 | unchanged, 60 of 60 for each |
+   | per-family r, SD | 0.09 to 0.10 | 0.10 to 0.11 |
+   | standard error over 39 families, against the mean | 0.015-0.017 against 0.18-0.23, 12 to 16 SE from zero | 0.010-0.015 against 0.12-0.23, 12 to 21 SE from zero |
+   | families scoring positive | 38 of 39 under ridge, 39 under the other three | 38 or 39 of 39 under each |
+   | within-family permutation, 500 runs | mean +0.0001, SD 0.0031, max 0.0089, the score 68 null SDs above | mean +0.00003, SD 0.0029, max 0.0082, the scores 41 to 78 null SDs above |
+
 4. **Write the reason for leaving the third release object unread, or take its 19th environment?**
 
    * **Problem:**
@@ -421,6 +513,57 @@ matrices, are in the definition. The record's fields agree with the definition a
      Neither forces reading every object a release ships, but a choice between the source's own measurements is
      written down (`boreal_postfire_lichen_biomass`).
 
+   **Andrej (2026-11-26, change):** Whenever more data for the task is available we should use it, unless data
+   quality issues prevent that. Act accordingly.
+
+   **Resolved (2026-11-26, Andrej):** C for IN_2014, B for the rest, which is what his instruction gives once each
+   part of `soyin` is judged on its own data quality. The object is read, IN_2014 becomes a 19th environment, and
+   the reason the other two stay out is written into the notes.
+
+   * **IN_2014 goes in.** It carries all six of the common checks in every one of its 160 blocks (629 check plots
+     with a yield, 3 to 16 a block), so the environment effect and the field-block effect are built there exactly
+     as for the other 18 and `line_values` raises nothing: no line plot sits where the checks of the adjustment
+     were not grown. Its 5,549 line yields are converted at 67.25 kg/ha the bu/ac, the bushel-per-acre constant,
+     which the plots the two releases share confirm: 5,199 matched IN_2013 yields give a median ratio of 67.250
+     and a least-squares slope through the origin of 67.249, at r 0.9916.
+   * **IN_2015 stays out**, on the data quality his instruction excepts: 1,680 yields over 840 lines and not one
+     check plot, so neither correction can be built there and its plots are not comparable with the rest.
+   * **IN_2013 is not counted twice.** It is the same plots the quality-assured table already carries. After the
+     change the line table repeats no (environment, line) pair that it did not repeat before (572 pairs, every one
+     of them inside the quality-assured release), and no IN_2014 plot collides with a quality-assured one.
+   * **`gen.in` stays unread**, MaCH-imputed and worth no line: none of the 416 IN_2014 strains the shipped set
+     does not already hold has a `gen.qa` row, so the frame keeps its 5,143 rows and 4,312 markers.
+
+   Everything the change moves, measured again:
+
+   | | 18 environments | 19 environments (shipped) |
+   |---|---|---|
+   | line plots in the correction | 56,929 | 62,478 |
+   | environments, blocks, common-check plots | 18, 1,707, 7,294 | 19, 1,867, 7,923 |
+   | plots a line | 11 | 12 |
+   | line values (kg/ha) | 2,029 to 4,584, mean 3,578, SD 354 (237 within a family) | 2,101 to 4,603, mean 3,582, SD 352 (235) |
+   | the two against each other | | pooled r 0.9862 (Spearman 0.9828), within family 0.9696 (lowest family 0.938), difference SD 59 kg/ha and 56 within a family, mean shift +3.5 |
+   | environment effects (kg/ha) | -1,436 to +1,536, span 2,972 | -1,460 to +1,519, span 2,979 |
+   | block effects, SD (kg/ha) | 318, 425 unshrunk | 317, 427 unshrunk |
+   | entry-mean heritability | 0.789 | 0.797, against the 0.822 Diers et al. publish |
+   | between-family share of the variance | 55.3% | 55.7% |
+   | check strains, founders among them | 45, 39 | 46, 40 |
+   | declared metric over the 60 shipped splits, ridge | 0.2167 | 0.2180 |
+   | the same ridge at a ten times larger penalty | 0.2271 | 0.2255 |
+   | untuned LightGBM | 0.2045 | 0.1996 |
+   | GBLUP on the genomic relationship matrix | 0.2253 | 0.2259 |
+   | ridge on markers centred inside the row's own family | 0.2971 | 0.2961 |
+
+   No model moves by more than 0.007 where a fold moves it by 0.02 to 0.03, so the change settles no decision and
+   overturns none. The accepted few-groups text of issue 3 was measured again on these values over the same 60
+   splits, since every figure in it depends on the target: four model families still beat the dummy on 60 of 60
+   folds, per-family r has SD 0.10 to 0.11, the standard error over 39 families is 0.010 to 0.015 against means of
+   0.12 to 0.23 (12 to 21 standard errors from zero), 38 or 39 of 39 families score positive under each, and the
+   within-family permutation over 500 runs gives mean +0.00003, SD 0.0029, max 0.0082, the measured scores 41 to
+   78 null SDs above it. `dataset check` ends at 0 errors, 0 warnings and 1 info over 28 checks. Not built: no
+   container exists for this folder. The model scores elsewhere in the notes that were measured before the change
+   are labelled there rather than re-run; the two targets agree within a family at 0.970.
+
 5. **Keep the blank marker cells blank, and on what reason?**
 
    * **Problem:**
@@ -458,9 +601,17 @@ matrices, are in the definition. The record's fields agree with the definition a
    * **Unknown:** whether a breeder meets the same unscored-marker pattern in a new cross is sound inference (a new
      cross of the same common parent, genotyped on the same chip, is scored where it segregates) but it is
      inference, not a measurement, and the rewritten sentence should say so.
-   * **Depends on:** issue 6, the metric: the declared per-family metric is what makes the blanks a documentation
-     question rather than a recording one, so if the source's pooled metric is restored there, this issue reopens
-     on that basis (the measurements are in issue 6's dependency table).
+   * **Depends on:** issue 6, the metric, in one respect only. The blanks are not a leak under either metric: the
+     pattern names the cross, and a breeder facing a new cross knows its parents, so the information sits at the
+     prediction point (for a cross not yet genotyped it is inference rather than a measurement, which the rewritten
+     note says). What keeps a genuine leak out is the split: under a random split a line's siblings sit in training
+     and the missingness hands the model the grouping that identifies them, which is entity leakage. What the metric
+     keeps out is a different thing: a pooled score would pay a model for ranking the families, which the breeder
+     already holds, free and better, from the parent's own yield. So restoring the pooled metric in issue 6 reopens
+     a question about what the benchmark measures, not about what was recorded, and that is the footing the blind
+     reviewer's exclusion vote was measured on (the measurements are in issue 6's dependency table). Wording
+     corrected by the AI on 2026-11-26: the earlier text made the metric what keeps the blanks harmless and called a
+     restored pooled metric a question about what was recorded. No decision changes with it.
    * **Options:**
 
      | | Option | What it does | Pro | Con |
@@ -483,6 +634,22 @@ matrices, are in the definition. The record's fields agree with the definition a
    [^clean]: **CLEAN-2** (Must): "Leave to the benchmark's pipeline what it does ... no imputation"; **CLEAN-11**
      (Should): impossible values become missing and the row stays. **CLEAN-7** (Must) is the rule the definition
      cites, against computing a value from statistics over all rows, which is what a family-mean fill would be.
+
+   **Andrej (2026-11-26, change):** Keep the blanks and replace the reason.
+
+   **Resolved (2026-11-26, Andrej):** B. The blank cells stay and the justification is replaced, in the `_clean`
+   comment, in the missing-calls note and in the missing-share decision: a marker is blank exactly where the cross
+   does not segregate, so the donor parent carries the common parent's allele and the design determines the value
+   rather than failing to read it, which means the breeder does know it. It is kept blank because the shared allele
+   cannot be read from what ships: the common parent IA3023 has no genotype row in `gen.qa`, and of the 500 markers
+   that segregate in two or more families all 500 carry both homozygotes in every such family, so the matrix does
+   not say which allele is the shared one and a fill would be our inference rather than the source's call. The
+   measured harmlessness stands beside it: within a family the missing indicators score -0.028 against the calls'
+   +0.213, and filling with the family mean moves the declared metric by +0.0009. The sentence the panel refuted
+   ("imputing would invent the call a breeder does not have either") is gone, and the note now says plainly that a
+   breeder meeting the same pattern in a new cross is sound inference and not a measurement. Nothing in the data
+   moves: the genotype matrix, its 25.65% blank calls and the 5,143 shipped rows are untouched, by this and by the
+   IN_2014 change of issue 4.
 
 6. **Record the metric overrule as an exception?**
 
@@ -513,10 +680,12 @@ matrices, are in the definition. The record's fields agree with the definition a
    * **Panel:** the practitioner argued the metric is literally the term the breeder's equation multiplies and
      measured the realized gain agreeing with it to 5%; the critic did not dispute the metric, only the missing
      record of the departure; the precedent checker counted it as the third of one reason.
-   * **Depends on:** issue 5, whether the blank marker cells stay blank, rests on the metric decided here. The
-     blank pattern names the cross exactly: clustering on the missing-value mask alone recovers the 39 families at
-     adjusted Rand 1.0000, and all 4,185 distinct missingness patterns over the 5,143 lines lie inside one family.
-     What that is worth depends on the score.
+   * **Depends on:** issue 5, the blank marker cells, in one respect. The blank pattern names the cross exactly:
+     clustering on the missing-value mask alone recovers the 39 families at adjusted Rand 1.0000, and all 4,185
+     distinct missingness patterns over the 5,143 lines lie inside one family. That by itself is not a leak, because
+     a breeder facing a new cross knows its parents and so holds the grouping at the prediction point (inference,
+     for a cross not yet genotyped). What that pattern is worth to a model depends on the split and on the score,
+     which do two different jobs.
 
      | | pooled, the source's metric | within a family, the declared metric |
      |---|---|---|
@@ -524,10 +693,16 @@ matrices, are in the definition. The record's fields agree with the definition a
      | a held-out family's mean, from the missingness profile | r 0.665 against 0.346 from the mean genotype | anything constant inside a family scores 0 |
      | family-mean imputation of the blank blocks, end to end | not measured | +0.0009 |
 
-     So the metric decides more than the score: under the declared per-family metric the blanks are a question
-     about what the notes claim (issue 5), and under a pooled one they would be a question about what was
-     recorded. If the pooled metric is ever restored (option D), issue 5 reopens on that basis, and so does the
-     blind reviewer's vote to exclude, which was measured on exactly that pooled footing.
+     The two protections are not the same one. The split is what keeps a genuine leak out: holding whole families
+     out stops the missingness from pointing a test line at its own siblings in training, which under a random
+     split would be entity leakage. The metric keeps out something else: a pooled score pays a model for ranking
+     the families, which the breeder reads off the parents at r 0.94, so the benchmark would measure something
+     other than genomic prediction. Restoring the pooled metric (option D) therefore reopens a question of task
+     validity, what the score measures, and not one about what was recorded; that is the footing on which the blind
+     reviewer's vote to exclude was measured, and the blanks stay a documentation question in issue 5 either way.
+     Wording corrected by the AI on 2026-11-26: this passage had made the metric what keeps the blank cells
+     harmless and called a restored pooled metric a question about what was recorded. No decision changes with it,
+     and the measurements above stand.
    * **Options:**
 
      | | Option | What it does | Pro | Con |
@@ -552,6 +727,43 @@ matrices, are in the definition. The record's fields agree with the definition a
    [^met11]: **MET-11** (Must): every metric has one origin, and the notes name the original whenever the declared
      metric is not exactly it. Departing from a Should is recorded as an exception, and the third exception of one
      reason is when an amendment is proposed.
+
+   **Answer (AI, 2026-11-26):** the decision is untouched by the IN_2014 change of issue 4, which does not move
+   what the metric scores or which original it overrules; three figures of the experiments table are measured
+   again on the line values that ship after it, and the rest are labelled rather than re-run.
+
+   | in the table above | on the values that ship after IN_2014 |
+   |---|---|
+   | share of line-value variance between families, 55.3% | 55.7% (54.3% before the rebuild of 2026-11-26) |
+   | family-mean oracle, pooled r / RMSE 0.683 / 238 against ridge's 0.236 / 360 | 0.69 / 234 against 0.23 / 360, over the first 6 shipped splits |
+   | the parent's own trial yield against the family mean, r = 0.937 | r 0.94 over the 38 families |
+   | the mask and ridge rows (+0.1629, +0.0016, -0.028, +0.213, 0.236 against 0.239) | measured before IN_2014, on values the shipped ones follow at a within-family r of 0.970; not re-run, and the metric reason says so |
+
+   **Andrej (2026-11-26, change):** Option C: Record the exception and amend the rule in the same change.
+
+   **Resolved (2026-11-26, Andrej):** C, in the state the rule is in by the time it is applied. The amendment was
+   taken earlier the same day, as the cross-dataset decision on the three datasets of this shape, so what is left of
+   C is this case, and it is written as the application of the new per-group rule rather than as a standing
+   exception. The new rule names exactly this shape — the scored rows fall into groups the actor does not choose
+   between, a predictor that knows nothing but each group's mean beats the models under the pooled score, so the
+   metric is declared per group and the pooled score is named as the original — and it lists this dataset among its
+   cases as applied. An exception block would file a departure from a rule we now follow, and the next dataset of
+   the shape would meet two entries that contradict each other.
+
+   The exception half of C is met by recording the overrule in the open, which this case needs because the source
+   does name a metric: the overruled original is Azodi et al. 2019's Pearson's r pooled over the held-out lines,
+   "the standard metric for GP performance", the field's own criterion, and the declaration names it. The
+   measurements that carry the overrule, on the 19-environment values that ship: 55.7% of the line-value variance
+   lies between the 39 families; a family-mean oracle, giving every test line the true mean of its own cross and
+   nothing else, scores a pooled r of 0.69 (RMSE 234 kg/ha) against ridge's 0.23 (360) and exactly 0 within a
+   family; and the family ranking is free to the breeder, the non-recurrent parent's own trial yield predicting its
+   family's mean at r 0.94 over the 38 families.
+
+   The rule's own cases row is brought to those same numbers, where it carried the figures measured before the 19th
+   environment went in (54.3%, 0.683, 0.236 and 0.937), so the record and the register say one thing. Nothing in the
+   definition changes: the declared metric stays `mean_group_pearsonr` on the family, from context, and its reason
+   already names the original and reports both measurements the rule asks for. Not done: the two earlier datasets
+   keep their own exception lines, which their cases rows already explain as written before the rule existed.
 
 7. **A public companion file holds another derivation of the target: record it, or hold the dataset back?**
 
@@ -613,6 +825,28 @@ matrices, are in the definition. The record's fields agree with the definition a
    [^prov15]: **PROV-15** (Must): a problem of another copy is noted in the record of the dataset it concerns, so it
      can be reported later, and raised as an issue only when it changes one of our decisions. Here it changes what a
      score on this dataset means, which is why it is an issue.
+
+   **Andrej (2026-11-26, change):** Record it in the notes and the record, with the measured size.
+
+   **Resolved (2026-11-26, Andrej):** B. `curation_comments` gains a bullet under the version note, and the
+   record's comments a line of their own, with the size as measured.
+
+   | what the public companion file is worth | measured |
+   |---|---|
+   | markers shared with ours | 4,230 of 4,312 |
+   | test rows matched to a published line by genotype alone | 91.9% |
+   | its values against ours | r 0.63 row-wise, 0.30 within a family |
+   | blended with the best honest model, declared metric | 0.30848 to 0.399 |
+   | a join on the published line ids, within a family | about 0.9 against the honest 0.308 |
+
+   Said plainly in both places: no remedy removes it. The markers are the features and the line identifiers are in
+   the public file too, so dropping or perturbing columns would destroy the task without closing the join. It is
+   recorded so that a reader knows the bound — the honest ranking of honest models is unaffected, while a
+   leaderboard open to the web can be topped by a lookup — and not because anything about the data is defective.
+   The blend and the match rate were measured before IN_2014 joined the correction (issue 4) and were not re-run;
+   the note says so. The ceiling moves only a little with the target: an unadjusted line mean now correlates 0.904
+   within a family (0.945 pooled) with the shipped value, against the 0.893 and 0.937 measured before IN_2014 and
+   the 0.8991 and 0.9437 of the row above, which predate the rebuild of 2026-11-26 as well.
 
 8. **What does the exception for the line value we compute ourselves say?**
 
@@ -700,6 +934,27 @@ matrices, are in the definition. The record's fields agree with the definition a
    [^keeprows]: **SPLIT-26** (Should): "Keep the source's rows: deduplicating with averaged targets is a different
      dataset." Cases: superconductivity. **SPLIT-23** (Must), which outranks it: the source's use case decides what
      one prediction is.
+
+   **Andrej (2026-11-26, ok):** As implemented.
+
+   **Resolved (2026-11-26, Andrej):** A. The computed line value stays and the departure is written down: the
+   exception text drafted in the notes above now stands in the record's comments and in the definition's
+   `curation_comments`, updated for the IN_2014 change that issue 4 made the same day. What the update changes in
+   that text:
+
+   | in the drafted exception | as written |
+   |---|---|
+   | 56,929 plot yields | 62,478, over 19 environments |
+   | 1,707 blocks, the 39 family founders left out | 1,867 blocks, the 40 family founders left out |
+   | an environment span of 2,972 kg/ha, a block SD of 318 against a line SD of 354 | 2,979 kg/ha, 317 against 352 |
+   | a family misses up to 3 of the 18 environments | up to 3 of the 19 |
+   | values 2,029 to 4,584 (mean 3,578, SD 354, 237 within a family), heritability 0.789 | 2,101 to 4,603 (mean 3,582, SD 352, 235 within a family), 0.797 |
+   | the plain mean at r 0.937 pooled, 0.893 within a family | 0.945 pooled, 0.904 within a family |
+
+   The model form is still the source's, the data paper's model 1, and the choice of checks and the shrinkage are
+   still ours, so what the exception claims does not change, only the figures it is checkable against. One thing
+   the notes for the AI asked for is not done here: the rule's own Cases table is untouched, this change being
+   scoped to the dataset, so that row is still to be added.
 
 **Review panel:** ship after changes (mediator). Two of its points are closed by the rebuild of 2026-11-26: the
 check-only environment effects (issue 2) and the family founders in the check index. Full tier, 11 roles: claim
