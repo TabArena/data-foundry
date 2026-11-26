@@ -20,8 +20,9 @@ not hardened for multi-user or public exposure.
 
 Claims come from the live claims board (:mod:`data_foundry.curation.claims`), not from the records: a background
 thread fetches the board every :data:`CLAIMS_REFRESH_S` seconds, the records payload shows each record's live holder
-in ``claimed_by`` (with the details in ``live_claim``), and editing the Claimed by cell claims (your own name) or
-releases (empty) through ``POST /api/claims/<name>``, which also mirrors the claim into the record.
+in ``claim_holder`` (with the details in ``live_claim``), a column of the grid that is not a record field, and editing
+the Claimed by cell claims (your own name) or releases (empty) through ``POST /api/claims/<name>``. The record file is
+never written for a claim.
 """
 
 from __future__ import annotations
@@ -72,6 +73,17 @@ START_REPO_PATH: str = ".claude/skills/README.md"
 CLAIMS_REFRESH_S: float = 20.0
 """How often the dashboard server fetches the claims board."""
 
+BOARD_COLUMN: dict[str, object] = {
+    "name": "claim_holder",
+    "label": "Claimed by",
+    "kind": "select",
+    "vocab": None,
+    "help": "Who holds the dataset's claim on the live claims board; others leave it alone until it is released. "
+    "Not stored in the record.",
+    "board": True,
+}
+"""The grid's Claimed by column: the live board's holder (:func:`_overlay_claim`), listed with the record fields."""
+
 GRID_READ_ONLY: frozenset[str] = frozenset({"review"})
 """Record fields a dashboard edit may not change: the review is written by the review workflows and never deleted."""
 
@@ -89,11 +101,10 @@ _H1 = re.compile(r"^ {0,3}#[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$")
 
 
 def _schema_payload() -> dict[str, object]:
+    fields = [{"name": f.name, "label": f.label, "kind": f.kind, "vocab": f.vocab_key, "help": f.help} for f in FIELDS]
     return {
-        "fields": [
-            {"name": f.name, "label": f.label, "kind": f.kind, "vocab": f.vocab_key, "help": f.help} for f in FIELDS
-        ],
-        "vocabularies": load_vocabularies(),
+        "fields": [*fields, BOARD_COLUMN],
+        "vocabularies": {**load_vocabularies(), BOARD_COLUMN["name"]: claims.curators()},
     }
 
 
@@ -136,14 +147,9 @@ def _claims_payload() -> dict[str, object]:
 
 
 def _overlay_claim(row: dict[str, object], board: claims.Board | None) -> dict[str, object]:
-    """Show the live holder in ``claimed_by`` and the claim in ``live_claim``.
-
-    Without a board (none fetched, or no claims branch yet) the row keeps the record's own value.
-    """
-    if board is None or board.tip is None:
-        return row
-    claim = board.claims.get(str(row["unique_name"]))
-    row["claimed_by"] = claim.holder if claim else None
+    """Show the live holder in ``claim_holder`` and the claim in ``live_claim`` (both empty without a fetched board)."""
+    claim = board.claims.get(str(row["unique_name"])) if board is not None and board.tip is not None else None
+    row["claim_holder"] = claim.holder if claim else None
     row["live_claim"] = {**asdict(claim), "expired": claim.expired()} if claim else None
     return row
 
@@ -159,7 +165,7 @@ def _records_payload(directory: Path | None) -> list[dict[str, object]]:
     (``curation/records/<name>.md``), so a record can be referenced directly from the UI. The
     ``*_url`` keys are not part of the record schema and are never written back — the
     dashboard's per-row 📓 / 📄 buttons read them (live and on the static site). With a cached
-    claims board, ``claimed_by`` is the live holder and ``live_claim`` the claim (:func:`_overlay_claim`).
+    claims board, ``claim_holder`` is the live holder and ``live_claim`` the claim (:func:`_overlay_claim`).
     :data:`MTIME_KEY` is the file's ``mtime_ns``, taken before the file is read, which an edit sends back.
     """
     repo_root = resolve_curation_root().parent.resolve()
@@ -459,7 +465,7 @@ class CurationHandler(BaseHTTPRequestHandler):
         self._send_json(out)
 
     def _claim_action(self, unique_name: str) -> None:
-        """Claim (``{"action": "claim"}``) or release a dataset on the board, mirror it into the record, return the row.
+        """Claim (``{"action": "claim"}``) or release a dataset on the board and return the row.
 
         The stage follows the record: ``add`` for an accepted dataset, else ``triage``. A dataset another curator
         holds, a missing curator name or an unreachable remote answer 409 with the reason.
@@ -485,7 +491,6 @@ class CurationHandler(BaseHTTPRequestHandler):
         if unique_name in outcome.skipped:
             self._send_json({"error": f"{unique_name}: {outcome.skipped[unique_name]}"}, status=409)
             return
-        claims.mirror_to_records(outcome.board, [unique_name], self._records_dir)
         mtime = path.stat().st_mtime_ns
         row = _overlay_claim(record_to_dict(load_record(path)), outcome.board)
         self._send_json({**row, MTIME_KEY: str(mtime)})

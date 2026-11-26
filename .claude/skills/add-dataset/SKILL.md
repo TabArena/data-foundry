@@ -55,8 +55,8 @@ source, the use case, the collection facts and the regime, the risks) and the re
 `Samples:`, `Time:`, `Target:`, `Entities:` and `Features:` tags; SPLIT-32). Verify its claims as you go instead of
 redoing its research; a measurement on the data supersedes what screening read from the page. No record: stop and
 point to `/screen-candidates`. Claim the records first, in the curator's name: `claims claim <names> --stage add
---note "add-dataset"` ([claims.md](../knowledge-data-foundry/references/claims.md)); it pushes the claim to the board
-and writes `WIP (DF)` and `claimed_by` into the records. Never work on a dataset another curator holds: a name the
+--note "add-dataset"` ([claims.md](../knowledge-data-foundry/references/claims.md)); it pushes the claim to the board,
+and the records carry nothing about it. Never work on a dataset another curator holds: a name the
 command skips is left out and reported.
 
 A batch (several names or a dashboard filter) runs one `dataset-builder` agent per source unit for steps 0-6

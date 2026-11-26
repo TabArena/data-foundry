@@ -8,8 +8,6 @@ data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
 - BeyondArena
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 1
 tags:

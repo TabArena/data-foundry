@@ -101,9 +101,7 @@ dev = [
     "langdetect",
 ]
 curation = [
-    # Optional: publish the flat snapshot to a read-only Google Sheet.
     # The editing dashboard itself needs no extra dependencies (stdlib server).
-    "gspread",
     # The review page of the review-added-datasets skill renders the run report's markdown.
     "markdown-it-py",
 ]
