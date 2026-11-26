@@ -1,6 +1,23 @@
 # Changelog: TabArena v0.2 working copy
 
 ## 2026-11-23, every definition names its split-tree leaf; `RetrospectiveFillIn` and `Target: Fixed Delay` in use (no container built)
+## 2026-11-26 (later), curator's second round of marks on the better-data datasets
+
+- craigslist_used_vehicles_f150: no test truck in training any more: a truck relisted in a later scrape, linked by
+  VIN or by title, model year and mileage, keeps only its copies from its last test scrape on (7,843 rows dropped,
+  97,291 left; issue 2, c). The advert's title from the url ships as text (`advert_title`) with every number of
+  1,000 or more that is no model year and every "<n>k" removed, asserted in `_clean` (issue 1, b). The five one-scrape
+  windows are signed off unchanged (H), training on 52.0% to 87.7%. Untuned LightGBM RMSLE 0.302 against 0.314.
+  Check 0 errors, 0 warnings.
+- nhanes_dxa_body_fat: metric checked, verdict ship; the stationary-relation test reads flat on the three newest
+  cycles and not flat across the 2011 scanner change, so the four temporal windows stay; whether to note it in the
+  splits comment is open (issue 5).
+- phreshphish_phishing_pages: issue 3 answered: the hand brand list's gain is one campaign of the test windows
+  (Robinhood); lists fixed before the windows add little; the page title as a text column encoded on each training
+  side is recommended. Issue 1 records the curator's note on new metrics. Both open.
+- aquatic_toxicity_lunghini_consensus and ga_merchandise_store_sessions: split (and metric) checked, verdict ship.
+- REVIEW.md: a cross-dataset item on counting a new metric as a gain for the collection (rule wording).
+
 ## 2026-11-26, curator's marks on the better-data datasets
 
 - nhanes_dxa_body_fat: the sagittal abdominal diameter dropped again (issue 4, B, superseding issue 2's d): every

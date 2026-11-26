@@ -71,7 +71,7 @@ CC (2026-11-26, Andrej): issue 2, as implemented (A): the canonical URL stays a 
 
 **Outcome:** added; the AI recommends shipping. Task: PhreshPhish v1.0.1 (Dalton et al. 2025, Hugging Face, CC BY 4.0) as a dated phishing task, 348,287 web pages of August to October 2024 and 1 June to 7 September 2025, 21% phishing, each read from its URL and HTML as 50 counts of ours, the page's language and the URL as text, scored by ROC AUC in three four-week windows (16 June to 7 September 2025) with a one-day gap. Validity: the release recorded the two classes differently in four ways, and each is now removed for both classes: the URL's form (query, scheme, host case, default port, some characters); the copies (one row per URL); the HTML capture form of October and November 2025 (dropped); and a minimum page size (10,000 characters, now applied to both classes). The data end on 7 September 2025, the last day before the source's own test split, from which the source removed pages that repeat earlier ones; the date orders the split and is no input. Applied after the panel: that end date, the size floor, the URL fixes, the one-day gap, fit `approximate`, the `Selection Bias` and `Class-dependent Recording` markers, a protocol line against reading other test rows, the metric's reason and original, six 0/1 flags as categories and corrected numbers. Value: in the task probe on the new windows, untuned models score ROC AUC 0.967 (random forest) and 0.964 (LightGBM), a linear model 0.927, the URL text alone 0.896 and a depth-2 tree 0.809; no flag. Decided 2026-11-26: the horizon (three four-week windows with a one-day gap, as implemented) and the URL as a text input (issue 2, A); the four warnings they bring (`url` one value per row; 3 windows against 9, the gap on a date that dates the label, a day with phishing pages only) are accepted. `dataset check`: 0 errors, 0 warnings, 4 accepted.
 
-**Main points:** Open: the metric (issue 1): ROC AUC, the partial ROC AUC up to a 1% false-positive rate, or, closest to the source, its average precision at a fixed 1% phishing rate (needs a new registry entry); and the brand-against-host feature (issue 3), where the brand named in the title carries the signal and a title flag with a text count lifts the scores in every window.
+**Main points:** Open: the metric (issue 1): ROC AUC, the partial ROC AUC up to a 1% false-positive rate, or, closest to the source, its average precision at a fixed 1% phishing rate (needs a new registry entry); and the brand feature (issue 3). The hand list's gain is one brand of the test windows' campaigns (Robinhood), and lists fixed before the windows add little. The AI recommends the page title as a text column, encoded on each training side.
 
 **Horizon:**
 
@@ -193,6 +193,11 @@ CC (2026-11-26, Andrej): issue 2, as implemented (A): the canonical URL stays a 
 
    [^m2]: **MET-11** (Must): a `stand_in` is the closest computable metric when the source's own cannot be computed on our data, with its closeness measured on the shipped splits. **MET-13** (Must): a custom metric ships in the shared metric library in the same change, tested against a reference, by hand and on 1M rows. **MET-9** (Should): average precision moves with the positive share.
 
+   **Andrej (2026-11-26, discuss):** Two things:
+   This does not affect only this dataset but is a more general observation: You seem reluctant to implementing new metrics and often list that as a con. However, the opposite behavior should be the case. A new metric that tests something different and has no close equivalent in our implemented metrics should be encouraged for benchmark diversity. Open up an across dataset issue for a potential rule change that could help with that.
+
+   **Answer (AI, 2026-11-26):** the general point is now a cross-dataset item (the review's "Count a new metric as a gain for the collection, not as a cost"), which proposes rule wording so that a new metric's implementation counts against no option; read that way, the options above lose "no new code" as a pro of a and d and "needs a new entry" as a con of b, c and e, and the recommendation stays c, average precision at a 1% phishing rate. The note opens with "Two things" and names one; the issue stays open for the second and for the decision.
+
 2. **Keep the canonical URL as a text input, and accept its identifier warning?**
 
    * **Problem:**
@@ -277,6 +282,69 @@ CC (2026-11-26, Andrej): issue 2, as implemented (A): the canonical URL stays a 
      | c | Title flag and text count | `brand_title_off_host` (0/1) and `n_brands_text_off_host` (how many listed brands the text names off their hosts), from the list above, named and dated in the notes | the title signal a filter reads; +0.002 to +0.028 ROC AUC, +0.007 to +0.040 partial ROC AUC; no sign of the collection | two features of ours; the list is ours and misses brands (Booking.com) |
 
    * **Recommendation:** c: the title carries the signal, filters read it, and nothing in it follows the collection; the list stays as fixed today rather than grown from `target`. a if you would rather ship no list of ours. **Decision:** a, b or c?
+
+   **Andrej (2026-11-26, discuss):** I generally tend towards C, but I also believe that this should be designed based on either each train side of the split or a general rule like creating a list based on all brands that are always in every train part of the splits or something that is defined based on public knowledge from a clear source independent of this dataset. Think about that and assess additional options.
+
+   **Answer (AI, 2026-11-26):** No list fixed before the windows reproduces option c's gain, because that gain is one brand, Robinhood, whose phishing campaign runs in the two newest test windows and which only the hand list names; the per-split way the framework already supports is the page title as a text column, which lifts the scores a little in every window without a list of ours.
+
+   * **Problem:**
+     - Robinhood carries c's gain. From 13 July to 7 September 2025, 4,409 phishing titles name it off its host, against 204 before 15 June and 6 benign pages in all. Without Robinhood, the hand list's LightGBM ROC AUC falls from 0.988 / 0.946 to 0.982 / 0.913 in the two newest windows, below the 50 features alone (0.984 / 0.919). Logistic regression falls from 0.929 / 0.911 to 0.892 / 0.859.
+     - None of the dated public lists names Robinhood (Check Point, Cloudflare, Interbrand), and neither does the release's `target` on the rows before the earliest window (fewer than 20 pages). The hand list was drawn up on 2026-11-26 by a reviewer who had read this data, so it cannot show that it was fixed before the windows. Its gain is knowledge of the test campaigns, not a filter's input.
+     - Lists fixed before the windows add little or nothing to LightGBM: ROC AUC moves by −0.012 to +0.002, partial ROC AUC by −0.003 to +0.008. They do lift logistic regression in partial ROC AUC (+0.001 to +0.045) and in average precision at 1% (+0.002 to +0.104).
+     - A list rebuilt on each training side follows the campaigns. Robinhood enters the list for the newest window, and LightGBM's partial ROC AUC there rises by +0.042. But a shipped feature is a per-row column fixed before splitting, so this list cannot ship as a column. It would need a split-scoped transform fitted on the training rows. The framework has such transforms only for text columns (the `tfidf-svd` encoding), not for one built from `target`, a label-side column that the task would then have to carry for the training rows.
+     - The release's `target` may be read on training rows, as a target encoding is. Using it on the rows before the earliest window (the training rows of every split, since the training sides are nested) ships as a fixed list. That list misses the brands that arrive later (Robinhood, Naver, Booking).
+     - No list carries a sign of the collection: within benign pages, no title flag tells 2025 from 2024 pages (ROC AUC 0.500 to 0.503). The title as text tells them apart less well than the 50 features do (0.523 against 0.703).
+   * **The lists:** each is matched as whole words (spaced or joined) in the title and the visible text. A brand's own hosts are its joined name plus the registered labels whose benign pages, on the training side the list belongs to, name it in at least half of their titles (5 pages at least). For the public lists that side is the earliest one, so the rule reads only benign rows that every split trains on. Check Point with the name alone as its own host gives nearly the same numbers.
+
+     | List | Source and date | Size | Licence | Reproducible |
+     |---|---|---|---|---|
+     | Hand list (option c) | drawn up 2026-11-26 from reports, after reading this data | 59 | ours | text in the definition; not dated before the windows |
+     | `target`, each training side | the release's `target` on that side's phishing rows, 20 pages at least | 94 / 75 / 53 | CC BY 4.0 (the release) | yes, from the data; differs per split |
+     | `target`, earliest training side (= in every training side) | the same on rows before 15 June 2025 | 53 | CC BY 4.0 | yes; fixed |
+     | Check Point | Brand Phishing Report top 10, Q1 2024 to Q1 2025 (published April 2024 to 21 April 2025), union | 17 | no data licence ("all rights reserved"); brand names are facts | quarterly pages and web archive copies |
+     | Cloudflare | "The 50 most impersonated brands" (13 March 2023) | 50 | no terms stated | one dated page |
+     | Interbrand | Best Global Brands 2024 (October 2024), a fame list, not a phishing one | 100 | "all rights reserved" | dated report |
+     | Tranco | list YXL6G (2024-06-01), top 1,000 domains' registered labels | 846 | none stated; one input (Cloudflare Radar) is CC BY-NC 4.0 | fixed list id |
+
+     Not usable: APWG's reports name sectors and a count of brands, not the brands; PhishTank's target field covers only phishes online now, with no dated archive; OpenPhish's terms forbid redistribution and commercial use; Kantar BrandZ publishes only its top 10.
+   * **Experiments:** the shipped windows, newest first; the definition's frame; untuned LightGBM and logistic regression on every feature but `url` and `date`, plus the two features of option c built from each list (or the title's 16 `tfidf-svd` components fitted on each training side). Coverage is the share of test-window phishing pages whose release `target` is on the list (the hand list: one of its patterns matches the `target`). It is used only for this check; 87% to 94% of these pages name a brand. The flag columns give the rate on test-window pages: the title flag for benign and phishing pages, and a text count above 0 for benign and phishing pages.
+
+     | List | Coverage | Benign title | Phishing title | Benign text | Phishing text |
+     |---|---|---|---|---|---|
+     | Hand list | 52% / 46% / 38% | 1.5% | 16% to 29% | 51% to 54% | 50% to 59% |
+     | `target`, each training side | 76% / 43% / 50% | 1.2% to 1.8% | 12% to 37% | 52% to 59% | 42% to 68% |
+     | `target`, earliest side | 23% / 27% / 50% | 1.1% to 1.3% | 11% to 24% | 52% to 53% | 36% to 55% |
+     | Check Point | 14% / 12% / 20% | 1.0% to 1.1% | 7% to 12% | 48% to 51% | 33% to 43% |
+     | Cloudflare | 26% / 26% / 38% | 1.0% to 1.1% | 8% to 17% | 45% | 27% to 44% |
+     | Interbrand | 14% / 14% / 19% | 2.3% to 2.6% | 8% to 12% | 58% to 60% | 37% to 45% |
+     | Tranco | 44% / 50% / 31% | 13% to 14% | 30% to 35% | 90% to 91% | 76% to 89% |
+
+     | Features | LightGBM ROC AUC | LightGBM partial ROC AUC, FPR ≤ 1% | LightGBM average precision at 1% | Logistic regression ROC AUC | Logistic regression partial ROC AUC | Logistic regression average precision at 1% |
+     |---|---|---|---|---|---|---|
+     | 50 as shipped | 0.984 / 0.919 / 0.986 | 0.821 / 0.796 / 0.841 | 0.692 / 0.631 / 0.731 | 0.886 / 0.862 / 0.942 | 0.612 / 0.668 / 0.624 | 0.203 / 0.311 / 0.250 |
+     | + hand list | 0.988 / 0.946 / 0.988 | 0.861 / 0.802 / 0.852 | 0.744 / 0.648 / 0.752 | 0.929 / 0.911 / 0.947 | 0.638 / 0.682 / 0.658 | 0.283 / 0.348 / 0.320 |
+     | + hand list without Robinhood | 0.982 / 0.913 / 0.988 | 0.826 / 0.803 / 0.852 | 0.686 / 0.643 / 0.751 | 0.892 / 0.859 / 0.947 | 0.625 / 0.679 / 0.658 | 0.236 / 0.334 / 0.320 |
+     | + `target`, each training side | 0.988 / 0.913 / 0.988 | 0.863 / 0.796 / 0.848 | 0.767 / 0.633 / 0.753 | 0.927 / 0.855 / 0.947 | 0.651 / 0.681 / 0.669 | 0.306 / 0.340 / 0.354 |
+     | + `target`, earliest side | 0.983 / 0.907 / 0.988 | 0.826 / 0.799 / 0.848 | 0.702 / 0.637 / 0.753 | 0.891 / 0.856 / 0.947 | 0.623 / 0.683 / 0.669 | 0.233 / 0.342 / 0.354 |
+     | + Check Point | 0.983 / 0.913 / 0.987 | 0.821 / 0.799 / 0.848 | 0.680 / 0.636 / 0.741 | 0.888 / 0.860 / 0.943 | 0.617 / 0.676 / 0.646 | 0.212 / 0.325 / 0.282 |
+     | + Cloudflare | 0.983 / 0.913 / 0.988 | 0.821 / 0.798 / 0.843 | 0.687 / 0.632 / 0.743 | 0.890 / 0.858 / 0.946 | 0.618 / 0.678 / 0.651 | 0.223 / 0.331 / 0.309 |
+     | + Interbrand | 0.984 / 0.917 / 0.988 | 0.823 / 0.802 / 0.846 | 0.693 / 0.642 / 0.741 | 0.889 / 0.863 / 0.944 | 0.614 / 0.673 / 0.641 | 0.206 / 0.328 / 0.270 |
+     | + Tranco | 0.984 / 0.917 / 0.987 | 0.827 / 0.793 / 0.842 | 0.698 / 0.628 / 0.733 | 0.894 / 0.868 / 0.947 | 0.620 / 0.669 / 0.636 | 0.221 / 0.314 / 0.275 |
+     | + title as text (`tfidf-svd`, each training side) | 0.986 / 0.919 / 0.987 | 0.845 / 0.798 / 0.849 | 0.737 / 0.634 / 0.746 | 0.923 / 0.870 / 0.961 | 0.651 / 0.673 / 0.697 | 0.301 / 0.362 / 0.394 |
+
+     The bootstrap SD of a single score is 0.0006 to 0.0015 for ROC AUC and 0.003 to 0.005 for partial ROC AUC (issue 1).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | No brand feature (implemented) | the 50 counts as they are | nothing of ours to defend | the title's brand signal is missing |
+     | b | Option c with a public list | c's two features from Check Point's quarterly top 10s (Q1 2024 to Q1 2025, 17 brands), named and dated in the notes | independent of the data, dated before the windows | LightGBM gains nothing (−0.006 to +0.001 ROC AUC); covers 12% to 20% of the targets |
+     | c | Option c with the earliest training side's `target` | c's two features from the 53 brands with 20 or more phishing pages before 15 June 2025 (in every training side) | fixed and shippable; legitimate use of training labels | built from the label side; misses the later campaigns; LightGBM −0.012 to +0.002 ROC AUC |
+     | d | Option c with a list per training side | the list rebuilt from each split's training `target` | follows the campaigns (+0.042 partial ROC AUC in the newest window) | cannot ship as a column; needs a split-scoped transform built from `target` and `target` kept for the training rows, which the framework does not have |
+     | e | The page title as a text column | `title` as `string`, encoded per split by the framework's `tfidf-svd` (or `e5-small-v2`); no list | the brand words are learned from each training side; supported today; LightGBM +0.000 to +0.003 ROC AUC, +0.002 to +0.024 partial ROC AUC; logistic regression +0.008 to +0.036 ROC AUC; no sign of the collection | one more text input, which also carries words other than brands; the host comparison is left to the model (via `url`) |
+     | f | Option c with this morning's hand list | as recommended this morning | the largest gain | the gain is Robinhood, which knowledge of the test windows put on the list |
+
+   * **Recommendation:** e: it is the per-training-side design you ask for, and the framework already has it. a if you would rather not add a text input. b only if a brand flag must ship regardless, since it brings no measurable gain. f no longer. **Decision:** a, b, c, d, e or f?
 
 **Review panel:** ship after changes (mediator). The panel reviewed the definition before these changes (monthly windows July to September 2025 on 404,979 pages); its numbers refer to that frame. Claim audit: 23 claims, 4 refuted and 2 partly refuted, all fixed (the benign count, the share of tiny pages, URL characters stripped from benign pages only, the metric's reason, and the near-duplicate verdict, false for 8-30 September). Column audit: a minimum page size the release applied to benign pages only, carried by the tag counts (fixed). Split audit: the leaf, floors and count hold; the newest window was mostly the source's pruned test split (fixed by ending the data). Domain practitioner: fit approximate; ROC AUC misses the region a filter works in (issue 1). Precedent check: two departures, no gap and no `Selection Bias` marker (both applied). Blind review: would include with changes; drop or declare `url` (issue 2). Task gamer: same-day burst counts over test rows gain up to +0.045 (protocol line). Debate: agreed on every fix; disputed: the window layout after the cut (H) and the metric (issue 1).
 

@@ -7,7 +7,7 @@ checked_by:
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Andrej
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -79,9 +79,15 @@ CC (2026-11-26, Andrej): review issue 2, b: "Reply (b): rmse as the source's." `
 
 **Assessment (AI, 2026-11-26):** issue 2 (b) applied. `dataset.py`: `Metric.source("rmse", original="the cross-validated determination coefficient the genetic algorithm maximises; the models are then reported and compared by r2 and RMSE", reference=the thesis that reproduces the article, definition=...)` replaces `Metric.fallback(reason=...)`; the definition carries the three places where the article compares models by RMSE (the abstract, p. 668 and p. 669), the identity (1 - MSE/Var(y) ranks every pair of models exactly as rmse does on a fixed test set, a squared Pearson correlation does not) and the fact that Table S5, which holds the formula, is gated and unread. `curation_comments` gains a metric bullet with that evidence and the source's own fish figures (RMSE 0.73 with r2 0.67 in fivefold cross-validation repeated ten times, RMSE 0.61 with r2 0.73 on the external test set at 66% data coverage, RMSE 0.69 for the final merged model), and the article bullet now points at the metric's definition instead of a reason. `dataset check`: 0 errors, 0 warnings, 0 info (28 checks); the metric reads `rmse`, origin source. Nothing else moves: 2,186 chemicals, one feature, 1,764 scaffold groups, 30 splits, and the score is identical under either origin.
 
+CC (2026-11-26, Andrej): the declared metric (`rmse` on the shipped scale, minus the log of moles per litre, recorded as the source's own: the number the article compares models by whenever it ranks one model against another, while the criterion it selects models by is the cross-validated determination coefficient, whose formula sits in the gated Table S5) is checked, as implemented.
+
+CC (2026-11-26, Andrej): the declared split (grouped on the Bemis-Murcko scaffold of the structure, 1,764 groups over 2,186 chemicals, 10 repeats of 3 folds, 666 to 816 test chemicals a fold, a ring-less chemical and each chemical of the bare benzene scaffold held out on its own, `UnseenGroup`) is checked, as implemented.
+
+CC (2026-11-26, Andrej): verdict ship; nothing open in the review (issue 1 was decided on 2026-11-25 and issue 2 on 2026-11-26, and both are applied).
+
 ## Review
 
-**Outcome:** added. The fish 96-hour LC50 of the Lunghini et al. 2020 consensus collection: 2,186 chemicals, the structure as the only feature, scaffold-grouped splits, `rmse`. The review panel recommends shipping after changes, and the changes are applied. Andrej settled the prediction point on 2026-11-25 (issue 1, A: the untested substance) and the metric's origin on 2026-11-26 (issue 2, b: `rmse` recorded as the source's own criterion), and both are applied. Judgment record:
+**Outcome:** added, and settled. The fish 96-hour LC50 of the Lunghini et al. 2020 consensus collection: 2,186 chemicals, the structure as the only feature, grouped on the Bemis-Murcko scaffold (1,764 groups, 10 repeats of 3 folds, 666 to 816 test chemicals a fold), `rmse` as the source's own criterion. The review panel recommends shipping after changes, and the changes are applied. Andrej settled the prediction point on 2026-11-25 (issue 1, A: the untested substance) and the metric's origin on 2026-11-26 (issue 2, b: `rmse` recorded as the source's own criterion), and both are applied; on 2026-11-26 he read the page, checked the declared metric and the declared split, and gave the verdict ship, so nothing stays open. Judgment record:
 
 ```text
 Verdict: ship after changes (applied).
@@ -103,7 +109,7 @@ Decided: issue 1 (A, the untested substance, 2026-11-25) and issue 2 (b, `rmse` 
   criterion, 2026-11-26). Nothing stays open.
 ```
 
-**Main points:** Both calls are settled. The dataset predicts for the untested substance, with the structure as its one feature, and the file's Daphnia and algae values stay out (issue 1, A). `rmse` is recorded as the source's own criterion rather than as the regression fallback (issue 2, b): the article compares models by RMSE whenever it ranks one against another, while the criterion it selects models by is the cross-validated determination coefficient, whose formula sits in a supporting table the publisher gates, so the metric states the identity instead of resting on it. No score and no row changes. Applied without a decision: the three substances the file draws under two molecular formulas are repaired from the chemical registry instead of dropped whole (2,183 rows to 2,186), the target is rounded back to the three decimals the file publishes, the use case is narrowed to the screening moment, and the statements about the source, the split and the sibling overlap are rewritten from the article - which is open and was read - and from the shipped frame. The record's `Time: Lost` becomes `Time: Dated`, since a parent source dates most of these entries.
+**Main points:** Verdict ship, with the declared metric and the declared split checked (2026-11-26); nothing stays open. Both calls are settled. The dataset predicts for the untested substance, with the structure as its one feature, and the file's Daphnia and algae values stay out (issue 1, A). `rmse` is recorded as the source's own criterion rather than as the regression fallback (issue 2, b): the article compares models by RMSE whenever it ranks one against another, while the criterion it selects models by is the cross-validated determination coefficient, whose formula sits in a supporting table the publisher gates, so the metric states the identity instead of resting on it. No score and no row changes. Applied without a decision: the three substances the file draws under two molecular formulas are repaired from the chemical registry instead of dropped whole (2,183 rows to 2,186), the target is rounded back to the three decimals the file publishes, the use case is narrowed to the screening moment, and the statements about the source, the split and the sibling overlap are rewritten from the article - which is open and was read - and from the shipped frame. The record's `Time: Lost` becomes `Time: Dated`, since a parent source dates most of these entries.
 
 **Issues for Andrej:**
 

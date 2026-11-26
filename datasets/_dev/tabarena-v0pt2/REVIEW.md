@@ -499,3 +499,11 @@
   and the splits comment and the row description say so. consumer_complaints_1m, rosbank1 and
   sberbank_housing_market_forecasting accept `time_newest_period_short` with the numbers of the table. Each record
   has the CC line and an Assessment. `dataset check`: 0 errors on all four.
+
+### From the better-data review of 2026-11-26 (metrics)
+
+- **Count a new metric as a gain for the collection, not as a cost (from `phreshphish_phishing_pages`'s metric)?** Reviews list "needs a new metric" or "needs a new registry entry" as a con when weighing metrics: `phreshphish_phishing_pages` (partial ROC AUC and average precision at a fixed phishing rate, the panel's "keep `roc_auc` if the curator prefers no new registry entry"), `asp_potassco_classification` (a rank target set aside partly because it "needs a new metric"), `fremtpl2` (the offset form "costs a new metric") and `noaa_storm_events_damage` (one vote per cell preferred as "no code"). The rules invite that reading: MET-11's stand-in is "the closest computable metric", which reviews read as the closest one already implemented, and MET-10 counts diversity only on a call "still in doubt". Your note of 2026-11-26 on `phreshphish_phishing_pages` issue 1: a new metric that tests something different and has no close equivalent among the implemented ones should be encouraged for benchmark diversity.
+  Implemented: nothing in the rule files; the open metric calls stay in their datasets' reviews.
+  Proposal: (1) MET-10 gains a factor: a metric that scores something no implemented metric scores (a fixed base rate, the low false-positive region, a top-k, a cost) counts for it, while its implementation work counts against no option; (2) MET-11's stand-in reads "the closest metric computable on our data", whether or not it is implemented yet; (3) the review briefs state the work of a new metric (MET-12 name, MET-13 reference implementation and tests) as an effort note under the options, never as a con. MET-13's bar for correctness and speed stays as it is.
+  Alternative: only (3), the briefs, leaving MET-10 and MET-11's wording as it is.
+  Decision needed: adopt (1) to (3), only (3), or leave the rules as they are.
