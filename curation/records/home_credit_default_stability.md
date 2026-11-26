@@ -77,10 +77,13 @@ CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note 
 
 **Outcome:** added as `home_credit_default_stability_1m`. On 2026-11-11 you chose four-month windows (H, c), which
 also settles the windows (issue 1): July to 5 October 2020, March to June 2020 and November 2019 to February 2020,
-each trained on at least half the applications; both are applied and nothing is left open.
+each trained on at least half the applications; both are applied. A second reading of the built task on 2026-11-26
+reproduced every declared number from the source files and opened two issues: the reason recorded for no gap, and the
+clients who apply again.
 
 **Main points:** Settled on 2026-11-11: three four-month test windows after, across and before the drop of late March
-2020, as a scorecard serves for months between refits.
+2020, as a scorecard serves for months between refits. Open: the reason for no gap (issue 2) and a note on repeat
+applicants (issue 3).
 
 **Horizon:**
 
@@ -166,7 +169,7 @@ default 1M sample), the note above `temporal`, the metric stand-in's reason (14,
 SE is 0.23, 0.17 and 0.08, in place of "5-10 week") and its curation note are rewritten. The record has the horizon CC
 line. `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
-**Issues for Lennart:**
+**Issues for Andrej:**
 
 1. **Which two-month windows: the three newest, or the newest, the change of March 2020 and the 2019 holidays?**
 
@@ -272,6 +275,137 @@ line. `dataset check`: 0 errors, 0 warnings (README not regenerated).
    which at four months tile the months from the oldest start that keeps half the applications to the release end.
    The same edits as the horizon's (`temporal`, `task_summary.split`, `splits_comment`, the note above `temporal`);
    the record has the CC line. `dataset check`: 0 errors, 0 warnings.
+
+2. **Is "the labels look final" the right reason for no gap?**
+
+   * **Problem:**
+     - Each train side ends on the day its window starts, so it carries settled outcomes for applications decided
+       days before a refit that could not yet have known them.
+     - The reason recorded for no gap is that the weekly default rate stays flat to the end of the release, which
+       shows the labels are mature, not that a lender held them at the refit.
+     - That maturity is the evidence against the reason: the final week of the release already carries its 2.27%
+       default rate, so the outcomes were observed months after the decision.
+   * **Background:**
+     - No source we can read states the observation span: the competition's overview, data and evaluation pages
+       return no text to a fetch, and TabReD's preprocessing page gives only its own split.
+     - The one horizon named anywhere in the release is a year, in the description of the bureau score
+       `riskassesment_302T` ("Estimated probability that the client will default on their credit obligation within
+       the next year"), and a year of gap is impossible here.
+     - The rule on late labels accepts no gap where every label is final at release, and then asks the notes for what
+       the newest training labels add at equal training size[^h-split10].
+   * **Statistics:** train sides under each gap, of 1,526,659 applications.
+
+     | Window | Gap | Train rows | Train share | Train ends | Train rows after 1 April 2020 |
+     |---|---|---|---|---|---|
+     | July 2020 | none | 1,376,419 | 90.2% | 2020-06-30 | 82,976 |
+     | July 2020 | 3 months | 1,293,443 | 84.7% | 2020-03-31 | 0 |
+     | July 2020 | 12 months | 438,744 | 28.7% | 2019-06-30 | 0 |
+     | March 2020 | none | 1,232,695 | 80.7% | 2020-02-29 | 0 |
+     | March 2020 | 3 months | 944,751 | 61.9% | 2019-11-30 | 0 |
+     | November 2019 | none | 828,906 | 54.3% | 2019-10-31 | 0 |
+     | November 2019 | 3 months | 536,310 | 35.1% | 2019-07-31 | 0 |
+     | November 2019 | 12 months | 0 | 0.0% | 2018-10-31 | 0 |
+
+   * **Experiments:** what the newest three months of labels add at equal training size: 300,000 applications ending
+     at the window against 300,000 ending three months earlier, one gradient-boosted fit per cell on the base and
+     static tables only (187 features, not the benchmark's full feature set), scored as ROC AUC on the whole window.
+
+     | Window | Train ends at the window | Train ends 3 months earlier | Difference |
+     |---|---|---|---|
+     | July to 5 October 2020 | 0.8251 | 0.8214 | +0.0037 |
+     | March to June 2020 | 0.7947 | 0.7856 | +0.0091 |
+     | November 2019 to February 2020 | 0.7814 | 0.7433 | +0.0381 |
+
+   * **Effect on the task:** The score keeps a part that a refit could not have earned, largest in the oldest window,
+     where three months of fresher labels are worth 0.038 AUC at equal training size; the newest window, the one the
+     drop of April 2020 falls before, moves by 0.004.
+   * **Consistency:** The same question was settled the same way on lt_vehicle_loan_default_prediction, whose case
+     reworded the rule; where a needed gap breaks the training floor, the departure is taken as an exception.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | No gap, reason as it stands (implemented) | the splits comment keeps "the labels look final, as for lt_vehicle_loan_default_prediction" | nothing changes | the reason answers censoring, not what a refit knew; the note the rule asks for is missing |
+     | B | No gap, reason corrected and the note added | the splits comment says the span is undocumented, that every label is final at release, and what the newest labels add at equal training size | keeps the three four-month windows and the drop of April 2020 inside the task; the record stops claiming more than the data show | the delay itself stays unsimulated, so the fit stays approximate |
+     | C | A three-month gap on the four-month windows | every train side ends three months before its window | the newest window loses the 82,976 post-drop applications a refit could not have had | the oldest window trains on 35.1%, under the floor, so it needs an exception; three months is a guess |
+     | D | A three-month gap with two-month windows | windows tile back from the release end (5 August, 5 June and 5 April 2020), train sides 85.3%, 81.2% and 70.9% | every train side stays above the floor and the gap is simulated | all three windows then lie after the drop, so the task no longer spans the change; 40,859 to 115,760 applications per window; the two-month length was retired on 2026-11-11 |
+
+   * **Recommendation:** B: no gap length can be defended here, since the only documented horizon is a year and a year
+     of gap leaves the oldest window no training data at all, while three months is a guess that costs the floor or
+     the regime change; what is wrong is the reason and the missing note, not the split. **Decision:** A, B, C or D?
+
+   **Notes for the AI:** on B, the no-gap sentence of `splits_comment` becomes: "No gap: the span over which a default
+   counts is not stated by the release, and the only horizon named in it is the year of the bureau score
+   `riskassesment_302T`, which 21 months of applications cannot hold as a gap. Every label is final at release (the
+   weekly default rate stays at 1.8% to 2.8% to the last week, which ends 5 October 2020), so no window selects the
+   applications whose outcome came fast, as for lt_vehicle_loan_default_prediction. The newest labels were still
+   unknown at a refit: at equal training size (300,000 applications, base and static tables only) a train side ending
+   at the window scores 0.8251, 0.7947 and 0.7814 against 0.8214, 0.7856 and 0.7433 for one ending three months
+   earlier, so the task keeps a gain of 0.004 to 0.038 AUC that a refit could not have earned." Then a CC line in the
+   record and a dated CHANGELOG entry; the data do not change, so no rebuild. On C, `gap=3, gap_unit="months"` with
+   the floor exception recorded for the November 2019 window; on D, `TemporalSplits(window=2, unit="months",
+   cutoffs=("2020-08-05", "2020-06-05", "2020-04-05"), gap=3, gap_unit="months")`.
+
+   [^h-split10]: **SPLIT-10** (Should): a model refit at a window's start knows only the rows whose label had
+     arrived, so train on those with a gap of about the label's delay; no gap is needed where a fixed outcome horizon
+     leaves every label final at release, and then "the notes give what they add at equal training size".
+
+3. **Note the clients who apply again?**
+
+   * **Problem:**
+     - Neither the record nor the definition says a client can appear more than once, and the release carries no
+       client id, only one row per application.
+     - A key of five applicant fields matches 29,764 of the 566,701 applications that carry all five, and 3.2% to
+       4.5% of each window's keyed applications have an earlier application of the same key on their train side.
+     - The match carries the label far beyond what the shared profile explains, so these are the same people, not
+       look-alikes.
+   * **Background:**
+     - The key is the applicant's birth date, sex, registered-address zip code, employed-from date and income,
+       all from the person table of the release; 37.1% of applications carry all five.
+     - The share is a lower bound: an application missing any of the five cannot be matched at all.
+     - The features already summarise a client's earlier applications to Home Credit, so a lender meeting a returning
+       client knows their history by design.
+   * **Statistics:** pairs of applications under each key, the second application's default rate by the first's.
+
+     | Pairs under | Pairs | Second defaults, first defaulted | Second defaults, first did not | Lift |
+     |---|---|---|---|---|
+     | the five-field key | 12,776 | 24.2% | 3.9% | 6.3x |
+     | the key with the birth date shuffled | 5,761 | 6.1% | 3.3% | 1.8x |
+     | the key with the employed-from date shuffled | 4,318 | 7.7% | 3.0% | 2.6x |
+     | the key with the income shuffled | 7,117 | 9.5% | 3.5% | 2.7x |
+     | zip code, sex and income only | 16,353 | 6.5% | 4.4% | 1.5x |
+
+     The base default rate is 3.65% over keyed applications. Keyed test applications with an earlier application of
+     the same key in training: 1,585 of 35,493 (July 2020 window), 1,363 of 30,895 (March 2020), 5,479 of 171,966
+     (November 2019).
+   * **Effect on the task:** None on the split: a lender does see a returning client and their history, so the
+     temporal split is the treatment the rules ask for[^h-leak42], and the repeat is signal, not leakage. What is
+     missing is the statement that the rules ask for with it.
+   * **Consistency:** The entity-leakage round of 2026-11 gave 21 datasets a decision item of this shape; this one was
+     not among them, and its sibling tasks from the same release were not tested for repeats either.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Say nothing (implemented) | the repeats stay unmeasured and unstated | nothing changes | the rules ask for the verdict and the share in the notes; a reader cannot tell the rows are not independent people |
+     | B | Add a note with the verdict and the share | a `curation_comments` bullet gives the key, the share per window, the lift and why the temporal split settles it | the dataset says what it is; the next review of a sibling task starts from it | the key is ours, rebuilt from five fields, not an id from the source |
+     | C | Group the split by the recovered key | whole clients go to one side | no client spans the split | wrong for the use case, which is a lender scoring a returning client, and only 37.1% of applications can be keyed at all |
+
+   * **Recommendation:** B: the link is real and the temporal split already handles it, so the gap is in the record,
+     not in the task. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, add a `curation_comments` bullet: "Repeat applicants: the release has no client id, but
+   a key of birth date, sex, registered-address zip code, employed-from date and income matches 29,764 of the 566,701
+   applications that carry all five fields. The match carries the label (a second application defaults in 24.2% of
+   pairs when the first did, against 3.9% when it did not; every control, with one key field shuffled or with the
+   coarse profile alone, lies between 1.5x and 2.7x), so these are the same clients. 3.2% to 4.5% of each window's
+   keyed applications have an earlier application of the same client on their train side. Kept as it is: a lender
+   scoring a returning client has that history, and the features already summarise it, so the temporal split is the
+   treatment the entity rules ask for." Then a CC line in the record and a dated CHANGELOG entry; the definition's
+   data does not change, so no rebuild.
+
+   [^h-leak42]: **LEAK-42** (Must): repeats of a unit the data does not record get one of four verdicts, stated in the
+     notes with the evidence; a temporal fix fits where the use case sees the unit again at prediction time.
 
 ## Reference
 

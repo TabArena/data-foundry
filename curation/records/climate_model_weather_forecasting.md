@@ -59,11 +59,13 @@ CC (2026-11-11, Lennart): the declared horizon (7 days, a 3-day gap, windows sta
 ## Review
 
 **Outcome:** added as `climate_model_weather_forecasting_1m`. On 2026-11-11 you chose a 3-day gap before each one-week
-window (H, B) and the weeks of 24-30 July, 1-7 May and 13-19 February 2023 (issue 1, B); both are applied and nothing
-is left open.
+window (H, B) and the weeks of 24-30 July, 1-7 May and 13-19 February 2023 (issue 1, B); both are applied. A second
+reading of the built task on 2026-11-26 reproduced every declared number from the source file and opened issue 2, on
+the forecasts that repeat one measurement.
 
 **Main points:** Settled on 2026-11-11: three one-week windows from February to July 2023, each trained on what was
-measured three days before it, as a forecast is issued up to three days ahead.
+measured three days before it, as a forecast is issued up to three days ahead. Open: whether the notes say that a row
+is one forecast, not one measurement (issue 2).
 
 **Horizon:**
 
@@ -134,7 +136,7 @@ is your pick. Test 377,992, 385,508 and 270,717 rows, train 16,429,730, 11,733,0
 51.6% of 16,951,828); the 144,106 rows of 21-23 July 2023, the newest window's gap, lie in no split. The record has
 the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
-**Issues for Lennart:**
+**Issues for Andrej:**
 
 1. **Which weeks of 2023 should the test windows be?**
 
@@ -215,6 +217,62 @@ the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regenerat
    against 26.55 on its train side); late winter, when the upper-air forecasts differ most from training. Test 377,992,
    385,508 and 270,717 rows, train 96.9%, 69.2% and 51.6%. The record has the decision CC line. `dataset check`: 0
    errors, 0 warnings.
+
+2. **Say that a row is one forecast, not one measurement?**
+
+   * **Problem:**
+     - 95.7% of the rows share their station and measurement time with another row, so the 16,951,828 rows carry
+       5,141,583 measurements, with one target value in all but 63 of the 4,412,203 repeated groups.
+     - The newest window scores 377,992 rows that stand for 98,285 measurements, about a quarter as many independent
+       outcomes as the row count suggests.
+     - Nothing says so, and the row description calls a row one temperature measurement at one of 1,864 stations,
+       where the data hold 1,948.
+   * **Background:**
+     - The repeats are forecasts of one measurement issued at different times: every row of a group carries its own
+       issue time, and in a 50-station sample only 1.8% of the groups share one upper-air forecast value.
+     - The windows cut on the measurement time, so every forecast of a measurement falls on one side of the split and
+       no measurement spans a train side and a window.
+     - A benchmark that cuts its inner folds by the container's split column keeps a measurement together; one that
+       splits the train side at random does not.
+   * **Statistics:** the frame the splits use holds 16,807,722 rows.
+
+     | Window | Rows scored | Measurements behind them | Forecasts per measurement | Stations |
+     |---|---|---|---|---|
+     | 24-30 July 2023 | 377,992 | 98,285 | 3.85 | 1,711 |
+     | 1-7 May 2023 | 385,508 | 94,935 | 4.06 | 1,669 |
+     | 13-19 February 2023 | 270,717 | 90,882 | 2.98 | 1,620 |
+
+     Measurements by the forecasts they carry: 729,380 with one, 1,138,433 with two, 1,193,286 with three, 940,090
+     with four, and a tail to 16.
+   * **Effect on the task:** No label crosses the split; the repeats weight the score, since a measurement counts once
+     per forecast, and leave a benchmark that splits its inner validation at random with one measurement on both
+     sides.
+   * **Consistency:** The unit is recorded, the use case scores one row per forecast and no repeat crosses the split,
+     so the rule on repeated entities asks for no change here[^c-leak17]; no v2 dataset declares a group beside a
+     temporal split, and the two regimes are alternatives in the API.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Leave it unstated (implemented) | the notes say nothing about the repeats; the row description keeps "one temperature measurement" and 1,864 stations | nothing changes on a shipped definition | a reader takes 377,992 scored rows for as many independent outcomes; two numbers in the row description are wrong |
+     | B | State the repeats, correct the row description | a note gives the measurements behind each window and the station count; `row` says one forecast for one measurement | the score's precision and the inner-validation rule become visible; the description matches the data | the definition changes while its build is already stale |
+     | C | Keep one forecast per measurement | all but the newest forecast of each measurement are dropped | every scored row is one independent measurement | 70% of the rows go, and with them the task of correcting each forecast as it is issued |
+
+   * **Recommendation:** B: the data are what the use case asks for, so only the description and a note have to catch
+     up. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, `task_summary.row` becomes "One forecast of the temperature at one of 1,948 weather
+   stations, July 2022 to July 2023, as filtered and sub-sampled by TabReD; one measurement carries up to 16 forecasts
+   issued at different times." and `curation_comments` gets a bullet: "Repeated measurements: a row is one forecast,
+   and 95.7% of the rows share their station and measurement time with another row (5,141,583 measurements behind
+   16,951,828 rows, up to 16 forecasts each, one target value in all but 63 of the 4,412,203 repeated groups). The
+   windows cut on the measurement time, so no measurement spans a train side and a window; the scored windows hold
+   98,285, 94,935 and 90,882 measurements. A benchmark cuts its inner validation folds by the time column, which keeps
+   a measurement together." Then a CC line in the record, a dated CHANGELOG entry and `dataset check`. On C, keep the
+   newest forecast per `(fact_station_id, fact_time)` in `_clean` and measure the windows again.
+
+   [^c-leak17]: **LEAK-17** (Must): repeated entities in different rows leak the target across the split even when the
+     rows differ; keep one row per entity when the use case is that row, or group.
 
 ## Reference
 
