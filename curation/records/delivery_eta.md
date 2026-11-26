@@ -68,8 +68,8 @@ CC (2026-11-17, Andrej): the declared split (temporal on `timestamp`, windows of
 **Outcome:** added as `delivery_eta_1m`. On 2026-11-10 you chose every other week as the test windows (issue 1, B:
 1-7 January, 18-24 December and 4-10 December) and kept the 45 features that stop on 23 November 2023, with a note
 (issue 2, A); the 7-day length stays for its reason, TabReD's own validation and test length. A second reading of the
-built task on 2026-11-26 reproduced every declared number from the source file and measured which rows TabReD's
-quantile transform was fit on, which issue 3 asks you to record.
+this definition against the source file on 2026-11-26 reproduced every number it declares and measured which rows
+TabReD's quantile transform was fit on, which issue 3 asks you to record.
 
 **Main points:** Settled on 2026-11-10: the test weeks are 1-7 January, 18-24 December and 4-10 December (issue 1, B),
 the block `num_76` to `num_121` stays with a note (issue 2, A), and the declared horizon is checked. Open: how to

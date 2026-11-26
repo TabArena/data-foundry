@@ -77,9 +77,9 @@ CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note 
 
 **Outcome:** added as `home_credit_default_stability_1m`. On 2026-11-11 you chose four-month windows (H, c), which
 also settles the windows (issue 1): July to 5 October 2020, March to June 2020 and November 2019 to February 2020,
-each trained on at least half the applications; both are applied. A second reading of the built task on 2026-11-26
-reproduced every declared number from the source files and opened two issues: the reason recorded for no gap, and the
-clients who apply again.
+each trained on at least half the applications; both are applied. A second reading of this definition against the
+source files on 2026-11-26 reproduced every number it declares and opened two issues: the reason recorded for no gap,
+and the clients who apply again.
 
 **Main points:** Settled on 2026-11-11: three four-month test windows after, across and before the drop of late March
 2020, as a scorecard serves for months between refits. Open: the reason for no gap (issue 2) and a note on repeat

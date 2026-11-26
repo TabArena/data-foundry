@@ -60,8 +60,8 @@ CC (2026-11-11, Lennart): the declared horizon (7 days, a 3-day gap, windows sta
 
 **Outcome:** added as `climate_model_weather_forecasting_1m`. On 2026-11-11 you chose a 3-day gap before each one-week
 window (H, B) and the weeks of 24-30 July, 1-7 May and 13-19 February 2023 (issue 1, B); both are applied. A second
-reading of the built task on 2026-11-26 reproduced every declared number from the source file and opened issue 2, on
-the forecasts that repeat one measurement.
+reading of this definition against the source file on 2026-11-26 reproduced every number it declares and opened
+issue 2, on the forecasts that repeat one measurement.
 
 **Main points:** Settled on 2026-11-11: three one-week windows from February to July 2023, each trained on what was
 measured three days before it, as a forecast is issued up to three days ahead. Open: whether the notes say that a row
