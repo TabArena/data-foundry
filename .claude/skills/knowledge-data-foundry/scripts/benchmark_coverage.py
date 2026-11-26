@@ -231,9 +231,9 @@ def score(f: dict, thin: dict[str, list[str]]) -> dict:
     }
 
 
-def open_reviews(root: Path, records: Path) -> set[str]:
+def open_reviews(records: Path) -> set[str]:
     """The records whose review has something open for the curator (``review.is_settled``)."""
-    return {r.name for r in read_reviews(records, root) if not is_settled(r, records)}
+    return {r.name for r in read_reviews(records) if not is_settled(r, records)}
 
 
 def measure(root: Path, records: Path, names: list[str] | None) -> dict:
@@ -252,7 +252,7 @@ def measure(root: Path, records: Path, names: list[str] | None) -> dict:
                 accepted.append(f)
     thin = thin_values(accepted)
     if names is None:
-        open_review = open_reviews(root, records)
+        open_review = open_reviews(records)
         chosen = [f for f in folders if f.name in by_folder and by_folder[f.name].unique_name in open_review]
     else:
         wanted = {by_folder[f.name].unique_name: f for f in folders if f.name in by_folder}

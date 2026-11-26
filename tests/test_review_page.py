@@ -106,7 +106,7 @@ def test_a_review_with_no_issue_when_a_panel_ran(rp, tmp_path):
     fields, issues = _parts(text)
     no_issue = text.replace(fields, "").replace(issues, "")
     root, records, _ = _broken_copy(tmp_path / "a", AIRFOIL, text, no_issue)
-    by_name = {r.name: r for r in rv.read_reviews(records, root)}
+    by_name = {r.name: r for r in rv.read_reviews(records)}
     assert (by_name["airfoil_self_noise"].numbers, by_name["airfoil_self_noise"].fields) == ([], [])
     # A new dataset's round marks its metric, so the record stays for its verdict; without that it is settled.
     assert "airfoil_self_noise" in _on_page(rp, root, records, "--metric-marks", "airfoil_self_noise")[0]
@@ -115,12 +115,12 @@ def test_a_review_with_no_issue_when_a_panel_ran(rp, tmp_path):
     no_panel = no_issue[: no_issue.index("**Review panel:**")]
     root, records, _ = _broken_copy(tmp_path / "b", AIRFOIL, text, no_panel)
     with pytest.raises(rv.ReviewFormatError, match="no issue, no record field and no review panel"):
-        rv.read_reviews(records, root)
+        rv.read_reviews(records)
 
 
 def test_the_example_reviews_parse():
     """The example reviews give their outcome, issues with their states and turns, field rows and panel."""
-    reviews = rv.read_reviews(REVIEW_FILES / "records", REVIEW_FILES)
+    reviews = rv.read_reviews(REVIEW_FILES / "records")
     by_name = {r.name: r for r in reviews}
     assert sorted(by_name) == ["airfoil_self_noise", "churn_telco_south_asia_duplicate"]
     airfoil = by_name["airfoil_self_noise"]
@@ -218,28 +218,12 @@ def test_a_retired_record_keeps_its_review(tmp_path):
     """A dataset retired from the working copy (its folder gone, ``v2_path`` cleared) keeps its review in its record:
     the parser reads it without a folder, from the outcome's ``added``.
     """
-    root, records = _copy_files(tmp_path)
+    _root, records = _copy_files(tmp_path)
     rec = load_record(records / "airfoil_self_noise.md")
     rec.v2_path = None
     save_record(rec, records)
-    reviews = rv.read_reviews(records, root, ["airfoil_self_noise"])
+    reviews = rv.read_reviews(records, ["airfoil_self_noise"])
     assert [(r.name, r.folder, r.numbers) for r in reviews] == [("airfoil_self_noise", "airfoil_self_noise", [1])]
-
-
-def test_a_review_file_and_an_open_issues_block_are_refused(tmp_path):
-    """The review lives in the record: a REVIEW.md anywhere in the working copy, or an open-issues block left in a
-    record's comments, stops the parser.
-    """
-    root, records = _copy_files(tmp_path)
-    (root / "airfoil_self_noise").mkdir()
-    for stray in (root / "airfoil_self_noise" / "REVIEW.md", root / "REVIEW.md"):
-        stray.write_text("# airfoil_self_noise\n\n**Outcome:** added.\n")
-        with pytest.raises(rv.ReviewFormatError, match="a review file in the working copy"):
-            rv.read_reviews(records, root)
-        stray.unlink()
-    _add_comment(records / "airfoil_self_noise.md", "**Open issues (AI, 2026-11-11):** not added.\n\n1. **Q?** x.")
-    with pytest.raises(rv.ReviewFormatError, match="open-issues block in the comments"):
-        rv.read_reviews(records, root)
 
 
 @pytest.mark.parametrize(
@@ -287,33 +271,32 @@ def test_a_review_file_and_an_open_issues_block_are_refused(tmp_path):
 )
 def test_format_errors_name_the_record_and_line(tmp_path, file, old, new, line, message):
     """A review that breaks the format stops the parser with the record and the line."""
-    root, records, path = _broken_copy(tmp_path, file, old, new)
+    _root, records, path = _broken_copy(tmp_path, file, old, new)
     with pytest.raises(rv.ReviewFormatError, match=re.escape(message)) as error:
-        rv.read_reviews(records, root)
+        rv.read_reviews(records)
     assert str(error.value).startswith(f"{path}, line {line}:" if line else f"{path}:")
 
 
 def test_a_label_line_inside_an_issue_stays_in_the_issue(tmp_path):
     """A bold label that is not a block of the review (``**Split:**``) is text of the issue it stands in."""
     old = "     scale a practitioner models it on.\n"
-    root, records, _ = _broken_copy(tmp_path, AIRFOIL, old, old + "**Split:** x\n")
-    airfoil = next(r for r in rv.read_reviews(records, root) if r.name == "airfoil_self_noise")
+    _root, records, _ = _broken_copy(tmp_path, AIRFOIL, old, old + "**Split:** x\n")
+    airfoil = next(r for r in rv.read_reviews(records) if r.name == "airfoil_self_noise")
     assert airfoil.issues[0].text.endswith("**Split:** x")
 
 
 def test_fenced_code_stays_in_the_panel(tmp_path):
     """Inside a fence, a panel's lines are text: a `#` comment or a `</details>` neither breaks nor closes it."""
     fenced = "```python\n# the check\nprint('</details>')\n```\n\nShip."
-    root, records, _ = _broken_copy(tmp_path, AIRFOIL, "Ship. The advocate", fenced)
-    airfoil = next(r for r in rv.read_reviews(records, root) if r.name == "airfoil_self_noise")
+    _root, records, _ = _broken_copy(tmp_path, AIRFOIL, "Ship. The advocate", fenced)
+    airfoil = next(r for r in rv.read_reviews(records) if r.name == "airfoil_self_noise")
     assert [s.title for s in airfoil.panel.sections] == ["Claim audit", "Mediator"]
     assert "# the check" in airfoil.panel.text
 
 
 def test_working_copy_reviews_parse():
-    """The committed reviews (the records' ``## Review``) follow the format; the working copy holds no review file."""
-    assert rv.review_files(ROOT) == []
-    reviews = rv.read_reviews(RECORDS, ROOT)
+    """The committed reviews (the records' ``## Review``) follow the format (no review file: test_records_integrity)."""
+    reviews = rv.read_reviews(RECORDS)
     with_review = [
         p.stem for p in sorted(RECORDS.glob("*.md")) if not p.name.startswith("_") and "\n## Review\n" in p.read_text()
     ]
@@ -381,8 +364,9 @@ def test_the_example_reviews_build_the_page(rp, tmp_path):
 
 def test_panel_becomes_page_data(rp, tmp_path):
     """The panel's summary, recommendation and sections reach the page; a label-like line inside it stays in it."""
-    root, records, _ = _broken_copy(tmp_path, AIRFOIL, "Ship. The advocate", "**Split:** agreed.\n\nShip. The advocate")
-    by_name = {r.name: r for r in rv.read_reviews(records, root)}
+    old, new = "Ship. The advocate", "**Split:** agreed.\n\nShip. The advocate"
+    _root, records, _ = _broken_copy(tmp_path, AIRFOIL, old, new)
+    by_name = {r.name: r for r in rv.read_reviews(records)}
     airfoil, churn = by_name["airfoil_self_noise"], by_name["churn_telco_south_asia_duplicate"]
     assert rp._panel(churn.panel) is None
     assert airfoil.numbers == [1]
@@ -496,7 +480,7 @@ def test_the_horizon_block_and_its_sign_off(rp, tmp_path):
     with_horizon = text.replace("**Issues for the curator:**", horizon + "**Issues for the curator:**")
     fields, issues = _parts(with_horizon)
     root, records, _ = _broken_copy(tmp_path, AIRFOIL, text, with_horizon.replace(fields, "").replace(issues, ""))
-    airfoil = {r.name: r for r in rv.read_reviews(records, root)}["airfoil_self_noise"]
+    airfoil = {r.name: r for r in rv.read_reviews(records)}["airfoil_self_noise"]
     assert airfoil.horizon.startswith("a week, the refit cadence")
     assert "airfoil_self_noise" not in _on_page(rp, root, records)[0]  # nothing marked: settled
     assert "airfoil_self_noise" in _on_page(rp, root, records, "--horizon-marks", "airfoil_self_noise")[0]

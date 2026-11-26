@@ -9,10 +9,10 @@ Usage, from the repository root::
         [--root datasets/_dev/tabarena-v0pt2] [--records curation/records]
 
 Both read every record's ``## Review`` through ``data_foundry.curation.review`` (the one parser; the format is
-``references/review_file_format.md``) and stop with the record and the line on a review that breaks it, on a
-``REVIEW.md`` in the working copy, or on an open-issues block left in a record's comments. They leave out a record with
-nothing left to decide (``review.is_settled``) unless ``--keep-settled``, print the counts and warn on stderr about
-an open issue out of shape. ``check`` stops there; ``build`` writes ``<out>/data.json`` and ``<out>/review_page.html``
+``references/review_file_format.md``) and stop with the record and the line on a review that breaks it. They leave
+out a record with nothing left to decide (``review.is_settled``) unless ``--keep-settled``, print the counts and warn
+on stderr about an open issue out of shape. ``check`` stops there; ``build`` writes ``<out>/data.json`` and
+``<out>/review_page.html``
 (``assets/review_page.html`` with the data embedded).
 
 Per record the page embeds the review, the definition's ``dataset.py``, ``task_summary``, declared ``metric`` (with
@@ -1038,7 +1038,7 @@ def select(args: argparse.Namespace) -> tuple[list[rv.Review], Marks, list[str]]
             or a marks flag names a record without one.
     """
     names = [n.strip() for n in args.names.split(",") if n.strip()] if args.names else None
-    reviews = rv.read_reviews(args.records, args.root, names)
+    reviews = rv.read_reviews(args.records, names)
     marks = Marks(_marks(args.metric_marks), _marks(args.horizon_marks), _marks(args.split_marks))
     for what in MARK_FLAGS:
         unknown = sorted((getattr(marks, what) or set()) - {r.name for r in reviews})

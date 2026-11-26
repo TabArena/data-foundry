@@ -16,13 +16,11 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from data_foundry.curation.comments import RULE_ID
 from data_foundry.curation.store import load_record
 
-REVIEW_FILE = "REVIEW.md"
-"""A review file, which the working copy no longer holds: a dataset's review is its record's ``## Review`` section."""
 REVIEW_HEADING = re.compile(r"^## Review[ \t]*\r?$", re.MULTILINE)
-OPEN_BLOCK = re.compile(r"^\*\*Open issues \(AI, (\d{4}-\d{2}-\d{2})\):\*\*\s*(.*)$")
-"""The open-issues block a record without a folder kept in its comments until 2026-11-11 (retired)."""
+"""The heading of a record's review section."""
 
 LABEL = re.compile(r"^\*\*([^*]+?):\*\*\s*(.*)$")
 BLOCKS = ("outcome", "points", "fields", "judgment", "horizon", "issues", "panel")
@@ -67,7 +65,6 @@ MD_ROW = re.compile(r"^\s*\|(.*)\|\s*$")
 RECOMMENDED = re.compile(r"\*\*Recommendation:\*\*\s*\**([A-Za-z])\b")
 IMPLEMENTED = re.compile(r"\s*\((?:implemented|as implemented)\)", re.IGNORECASE)
 
-RULE_ID = re.compile(r"\b(?:SEL|USE|LEAK|SPLIT|PROV|TP|CLEAN|EV|MET)-\d+\b")
 SHAPE_PARTS = ("**Problem:**", "**Options:**", "**Recommendation:**")
 HORIZON_PARTS = ("**Verdict:**", "**Options:**", "**Recommendation:**")
 HORIZON_SIZE_COLUMN = re.compile(r"^\s*\|[^\n]*\|\s*Test windows\s*\|", re.MULTILINE)
@@ -612,17 +609,12 @@ def read_review(path: Path) -> Review | None:
     """The ``## Review`` section of the record at ``path``, or None when it has none.
 
     Raises:
-        ReviewFormatError: The review breaks the format (the line counts in the record file), or the record's
-            comments still hold an open-issues block.
+        ReviewFormatError: The review breaks the format (the line counts in the record file).
     """
     path = Path(path)
     text = path.read_text(encoding="utf-8")
     record = load_record(path)
     lines = text.splitlines()
-    block = next((ln for ln in (record.comments or "").splitlines() if OPEN_BLOCK.match(ln)), None)
-    if block is not None:
-        at = lines.index(block) if block in lines else None
-        raise ReviewFormatError(path, at, "an open-issues block in the comments: move it into the record's `## Review`")
     heading = REVIEW_HEADING.search(text)
     if heading is None or not record.review:
         return None
@@ -635,34 +627,21 @@ def read_review(path: Path) -> Review | None:
     return parse_review(record.review, name=name, folder=folder, path=path, offset=after)
 
 
-def review_files(root: Path) -> list[Path]:
-    """A ``REVIEW.md`` anywhere in the working copy: none may exist, a dataset's review is in its record."""
-    return sorted(Path(root).rglob(REVIEW_FILE))
-
-
-def read_reviews(records: Path, root: Path | None = None, names: list[str] | None = None) -> list[Review]:
+def read_reviews(records: Path, names: list[str] | None = None) -> list[Review]:
     """The reviews of the records in ``records``, sorted by unique name; ``names`` keeps only those.
 
-    ``root``, the working copy, is checked for a stray ``REVIEW.md``.
-
     Raises:
-        ReviewFormatError: A review breaks the format, the working copy holds a review file, or a name has no review.
+        ReviewFormatError: A review breaks the format, or a name has no review.
     """
     records = Path(records)
-    for folder, what in ((root, "the working copy"), (records, "the records")):
-        if folder is not None and not Path(folder).is_dir():
-            raise ReviewFormatError(Path(folder), None, f"no such folder ({what}); run from the repository root")
-    stray = review_files(root) if root is not None else []
-    if stray:
-        raise ReviewFormatError(
-            stray[0], None, "a review file in the working copy: a dataset's review lives in its record's `## Review`"
-        )
+    if not records.is_dir():
+        raise ReviewFormatError(records, None, "no such folder (the records); run from the repository root")
     found: dict[str, Review] = {}
     for path in sorted(records.glob("*.md")):
         if path.name.startswith("_"):
             continue
         text = path.read_text(encoding="utf-8")
-        if not REVIEW_HEADING.search(text) and "**Open issues (AI," not in text:
+        if not REVIEW_HEADING.search(text):
             continue
         review = read_review(path)
         if review is not None:
