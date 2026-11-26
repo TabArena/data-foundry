@@ -4,12 +4,12 @@ unique_name: sf_permit_time
 container_format: 2
 checksum: v2:092052048c445a134bcfdda4adf8e5342bffe053a9786ff7233424e4b98e9edb
 build:
-  uuid: 01a217ff-a215-762c-9647-d6e7fb86936d
+  uuid: 01a218c6-0298-71e1-bd77-a05c2da9b4a7
   checksum: v2:092052048c445a134bcfdda4adf8e5342bffe053a9786ff7233424e4b98e9edb
-  built_at: '2026-11-26T13:16:01+00:00'
-  path: sf_permit_time/01a217ff-a215-762c-9647-d6e7fb86936d
+  built_at: '2026-11-26T16:52:42+00:00'
+  path: sf_permit_time/01a218c6-0298-71e1-bd77-a05c2da9b4a7
   data_foundry_version: 0.0.5
-  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  git_sha: 0d939f6d218cce0b083c3474f78e93095b5804d0-dirty
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -67,12 +67,16 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - splits_dimensions_off_protocol
+  warnings: []
   infos:
   - dataset_conflicting_duplicate_rows
   - splits_rows_unused
   accepted:
+    splits_dimensions_off_protocol: 'Eight windows against the nine an IID split of
+      99,847 permits would get (SPLIT-33): with half-year windows and the six-month
+      gap, a ninth window would train on less than half the permits. The splits comment
+      names the target, the count reached and what stops more (SPLIT-15; Lennart,
+      2026-11-26).'
     dataset_constant_column: 'The flagged columns are Y-or-missing flags (e.g. Fire
       Only Permit: Y in 12,204 rows); missing means the flag is not set, so they are
       not constant.'
@@ -87,7 +91,7 @@ decisions:
 
 Regression of `DaysToIssue`, scored with `rmsle` on temporal splits by `Filed Date`. 99,847 rows and 37 features. Source: GOV Website (2026).
 
-Built as `01a217ff-a215-762c-9647-d6e7fb86936d` on 2026-11-26. See [Build](#build).
+Built as `01a218c6-0298-71e1-bd77-a05c2da9b4a7` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -287,14 +291,14 @@ The days to issue are known only once a permit is issued, and many permits filed
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 2 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `splits_dimensions_off_protocol`: 8 test window(s) with their own training side, against the 9 splits an IID split of 99,847 scored units would get (SPLIT-33). (hint: SPLIT-15 aims at that count and accepts fewer: the splits comment names the target, the count reached and what stops more windows (the use case's horizon or gap, the training floor, the least test window); then accept this warning with it.)
 - **info** `dataset_conflicting_duplicate_rows`: 18 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 - **info** `splits_rows_unused`: 193 row(s) (0.2%) appear in no train and no test set. (hint: Expected of a temporal split (the rows of a gap, history no window trains on, rows a filter keeps out of every training side); say why in `splits_comment`.)
 
 Accepted on purpose:
 
+- `splits_dimensions_off_protocol`: Eight windows against the nine an IID split of 99,847 permits would get (SPLIT-33): with half-year windows and the six-month gap, a ninth window would train on less than half the permits. The splits comment names the target, the count reached and what stops more (SPLIT-15; Lennart, 2026-11-26).
 - `dataset_constant_column`: The flagged columns are Y-or-missing flags (e.g. Fire Only Permit: Y in 12,204 rows); missing means the flag is not set, so they are not constant.
 
 ## Data checks
@@ -443,10 +447,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a217ff-a215-762c-9647-d6e7fb86936d |
+| uuid | 01a218c6-0298-71e1-bd77-a05c2da9b4a7 |
 | checksum | v2:092052048c445a134bcfdda4adf8e5342bffe053a9786ff7233424e4b98e9edb |
-| built_at | 2026-11-26T13:16:01+00:00 |
-| path | sf_permit_time/01a217ff-a215-762c-9647-d6e7fb86936d |
+| built_at | 2026-11-26T16:52:42+00:00 |
+| path | sf_permit_time/01a218c6-0298-71e1-bd77-a05c2da9b4a7 |
 | data_foundry_version | 0.0.5 |
-| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| git_sha | 0d939f6d218cce0b083c3474f78e93095b5804d0-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -72,6 +72,8 @@ CC (2026-11-10, Lennart): the declared horizon (52 weekly eras, a 4-era gap, win
 
 CC (2026-11-17, Andrej): the declared split (temporal on `era`, windows of 52 values, 3 windows, gap 4 values) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-26, Lennart): accepted `splits_dimensions_off_protocol` (SPLIT-15) after the rebuild of 2026-11-26: three windows against SPLIT-33's 30; older windows would test eras that built the v5.0 features. Also accepted: `task_feature_looks_like_exposure` (a random-word name of an anonymised feature) and `task_target_value_dominant` (the five-level target is 0.5 on half the rows by construction).
+
 ## Review
 
 **Outcome:** added as `numerai_v5_2_1m`. Resolved on 2026-11-10: the test windows stay the three newest years, eras

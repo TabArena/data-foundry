@@ -74,6 +74,8 @@ CC (2026-11-17, Andrej): verdict ship (blind split walk).
 
 CC (2026-11-17, Andrej): the declared split (temporal on `first_publication_year`, windows of 10 values, 4 windows at fixed cutoffs, no gap) is checked: split mark in the blind split walk.
 
+CC (2026-11-26, Lennart): accepted `splits_dimensions_off_protocol` (SPLIT-15) after the rebuild of 2026-11-26: four ten-year windows against SPLIT-33's 30; the newest half of the data holds 526 compounds.
+
 ## Review
 
 **Outcome:** added. ApisTox (Zenodo 13350981): whether an agrochemical is acutely toxic to honey bees, from its

@@ -84,6 +84,8 @@ CC (2026-11-05, Lennart): ship. Every issue of the second-pass review is settled
 
 CC (2026-11-17, Andrej): the declared split (temporal on `trip_start`, windows of 4 days, 3 windows at fixed cutoffs, gap 1 day) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-26, Lennart): accepted `splits_dimensions_off_protocol` (SPLIT-15) after the rebuild of 2026-11-26: three windows against SPLIT-33's nine; a fourth would train on less than half the trips.
+
 ## Review
 
 **Outcome:** added. A second-pass review panel (full) after Lennart's review of PR #33 on 2026-11-04 recommends

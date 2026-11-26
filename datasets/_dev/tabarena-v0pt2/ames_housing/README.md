@@ -4,12 +4,12 @@ unique_name: ames_housing
 container_format: 2
 checksum: v2:bc581d789f1c7a7273743c1f4edc959b97b71350c7abe978d946a1ecb0ebd5b2
 build:
-  uuid: 01a21800-819a-747a-bc6c-9bfa2fb6687a
+  uuid: 01a218c5-c1ba-7052-8431-2fb172b4b8d7
   checksum: v2:bc581d789f1c7a7273743c1f4edc959b97b71350c7abe978d946a1ecb0ebd5b2
-  built_at: '2026-11-26T13:16:57+00:00'
-  path: ames_housing/01a21800-819a-747a-bc6c-9bfa2fb6687a
+  built_at: '2026-11-26T16:52:25+00:00'
+  path: ames_housing/01a218c5-c1ba-7052-8431-2fb172b4b8d7
   data_foundry_version: 0.0.5
-  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  git_sha: 0d939f6d218cce0b083c3474f78e93095b5804d0-dirty
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -74,11 +74,15 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - splits_dimensions_off_protocol
+  warnings: []
   infos:
   - dataset_conflicting_duplicate_rows
-  accepted: {}
+  accepted:
+    splits_dimensions_off_protocol: 'Thirteen windows against the 30 an IID split
+      of 2,837 sales would get (SPLIT-33): a fourteenth two-month window (March-April
+      2008) would train on 47% of the sales, below the floor of half the data, and
+      monthly windows would hold only 19 to 109 sales. The splits comment names the
+      target, the count reached and what stops more (SPLIT-15; Lennart, 2026-11-26).'
 decisions:
 - 'Sales of July 2010 dropped: the extract cut the month'
 - Two-month test windows
@@ -92,7 +96,7 @@ decisions:
 
 Regression of `log_SalePrice`, scored with `rmse` on temporal splits by `Month Sold`. 2,837 rows and 78 features. Source: Other (2011).
 
-Built as `01a21800-819a-747a-bc6c-9bfa2fb6687a` on 2026-11-26. See [Build](#build).
+Built as `01a218c5-c1ba-7052-8431-2fb172b4b8d7` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -345,10 +349,13 @@ The assessor values a house at its market value. Sales between family members, a
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 1 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `splits_dimensions_off_protocol`: 13 test window(s) with their own training side, against the 30 splits an IID split of 2,837 scored units would get (SPLIT-33). (hint: SPLIT-15 aims at that count and accepts fewer: the splits comment names the target, the count reached and what stops more windows (the use case's horizon or gap, the training floor, the least test window); then accept this warning with it.)
 - **info** `dataset_conflicting_duplicate_rows`: 2 row(s) (0.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+
+Accepted on purpose:
+
+- `splits_dimensions_off_protocol`: Thirteen windows against the 30 an IID split of 2,837 sales would get (SPLIT-33): a fourteenth two-month window (March-April 2008) would train on 47% of the sales, below the floor of half the data, and monthly windows would hold only 19 to 109 sales. The splits comment names the target, the count reached and what stops more (SPLIT-15; Lennart, 2026-11-26).
 
 ## Data checks
 
@@ -548,10 +555,10 @@ The assessor values a house at its market value. Sales between family members, a
 
 | field | value |
 |---|---|
-| uuid | 01a21800-819a-747a-bc6c-9bfa2fb6687a |
+| uuid | 01a218c5-c1ba-7052-8431-2fb172b4b8d7 |
 | checksum | v2:bc581d789f1c7a7273743c1f4edc959b97b71350c7abe978d946a1ecb0ebd5b2 |
-| built_at | 2026-11-26T13:16:57+00:00 |
-| path | ames_housing/01a21800-819a-747a-bc6c-9bfa2fb6687a |
+| built_at | 2026-11-26T16:52:25+00:00 |
+| path | ames_housing/01a218c5-c1ba-7052-8431-2fb172b4b8d7 |
 | data_foundry_version | 0.0.5 |
-| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| git_sha | 0d939f6d218cce0b083c3474f78e93095b5804d0-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

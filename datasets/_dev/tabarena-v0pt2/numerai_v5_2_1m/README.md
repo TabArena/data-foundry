@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: numerai_v5_2_1m
 container_format: 2
-checksum: v2:5ee7bcded7179c766d53da1d431c4af18052577ec0df7ae4f4838a111a2209e7
+checksum: v2:1672385d846098a33013cb30c7b54a877f1e955d524c8a4fcf66a8baa47c364f
 build:
-  uuid: 01a217fb-953a-7e86-b147-2561139cbb95
-  checksum: v2:5ee7bcded7179c766d53da1d431c4af18052577ec0df7ae4f4838a111a2209e7
-  built_at: '2026-11-26T13:26:05+00:00'
-  path: numerai_v5_2_1m/01a217fb-953a-7e86-b147-2561139cbb95
+  uuid: 01a218ca-2052-7ea4-b72c-31e63d9ade2b
+  checksum: v2:1672385d846098a33013cb30c7b54a877f1e955d524c8a4fcf66a8baa47c364f
+  built_at: '2026-11-26T17:10:34+00:00'
+  path: numerai_v5_2_1m/01a218ca-2052-7ea4-b72c-31e63d9ade2b
   data_foundry_version: 0.0.5
-  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  git_sha: 0d939f6d218cce0b083c3474f78e93095b5804d0-dirty
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -67,11 +67,12 @@ splits:
     years lie as close to that date as three one-year windows allow, though not after
     it (45 of the 52 eras of the oldest window, 1080-1131, come before it). Windows
     that keep at least half the rows for training reach back to era 716 (51.4%); the
-    curator kept the three newest years on 2026-11-10. Inner validation (tuning, early
-    stopping) must be era-blocked with a 4-era gap as well: a stock''s 20-day targets
-    overlap for 3 eras, so on the newest train side a random hold-out gives LightGBM
-    a per-era correlation of 0.040 (t 16.8), against 0.004 (t 1.1) on the last 52
-    train eras after a 4-era gap.'
+    curator kept the three newest years on 2026-11-10, 3 of the 30 splits an IID split
+    of this size would get (SPLIT-33). Inner validation (tuning, early stopping) must
+    be era-blocked with a 4-era gap as well: a stock''s 20-day targets overlap for
+    3 eras, so on the newest train side a random hold-out gives LightGBM a per-era
+    correlation of 0.040 (t 16.8), against 0.004 (t 1.1) on the last 52 train eras
+    after a 4-era gap.'
   n_train:
     min: 5834640
     max: 6492875
@@ -88,14 +89,22 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - task_feature_looks_like_exposure
-  - splits_dimensions_off_protocol
-  - task_target_value_dominant
+  warnings: []
   infos:
   - dataset_duplicates_skipped
   - task_metric_input_is_model_input
   accepted:
+    splits_dimensions_off_protocol: 'Three windows against the 30 an IID split of
+      1,235 eras would get (SPLIT-33): older one-year windows would test eras whose
+      targets built the v5.0 features of July 2024, so the curator kept the three
+      newest years on 2026-11-10. The splits comment names the target, the count reached
+      and what stops more (SPLIT-15; Lennart, 2026-11-26).'
+    task_feature_looks_like_exposure: 'A false positive of the name heuristic: `feature_swept_irrespirable_grillade`
+      is one of Numerai''s 2,376 anonymised features, whose names are random words;
+      no feature is an amount at risk (Lennart, 2026-11-26).'
+    task_target_value_dominant: The target is Numerai's within-era rank of a return,
+      binned into five ordered levels; the middle level 0.5 holds half the rows by
+      construction, and the task is scored by per-era correlation (Lennart, 2026-11-26).
     task_target_low_cardinality: The target is a continuous return that Numerai ranks
       within each era and bins into 5 ordered levels (0 to 1); Numerai treats it as
       regression (its example models are regressors scored by correlation), and so
@@ -110,7 +119,7 @@ decisions:
 
 Regression of `target_ender_20`, scored with `mean_group_pearsonr` on temporal splits by `era` (one step is a week). 6,881,281 rows and 2,377 features. Source: Other (2025).
 
-Built as `01a217fb-953a-7e86-b147-2561139cbb95` on 2026-11-26. See [Build](#build).
+Built as `01a218ca-2052-7ea4-b72c-31e63d9ade2b` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -259,7 +268,7 @@ We start with train.parquet and validation.parquet of the Numerai tournament dat
 
 Expanding-window temporal splits: 3 test window(s) of 52 time values, walking back from the newest data, newest first; train is all earlier data up to a gap of 4 time values. The test windows by `era`, as listed: 1184 to 1235 (361,712 test, 6,492,875 train rows); 1132 to 1183 (333,081 test, 6,161,238 train rows); 1080 to 1131 (327,025 test, 5,834,640 train rows). Each test window keeps at most 500k of its rows, drawn at random; each train side holds every earlier row, and a benchmark sub-samples it to 1M rows (by default rows drawn at random from the newest year before each window, extended back in time until it holds that many rows, `subsample_train`).
 
-An era's 20-market-day target resolves about 5 weeks later: the download of 2026-10-06 has targets up to era 1235 and none for 1236-1240, so at era T the newest known target is that of era T - 5. Numerai's v5.2 notebook says to "embargo the first 4 eras following our last train era", but its code skips only 3 eras, so our gap is one era stricter. One year per window: Numerai ranks a model by its one-year average score ("Your model's reputation is just its 1 year average score", which "directly determines the rank of models on the model leaderboard", https://docs.numer.ai/numerai-tournament/scoring) and advises retraining at major data releases ("it's usually best to re-train your models when major versions are released", https://docs.numer.ai/numerai-tournament/data), so a model fit before the window predicts 52 weekly eras; participants refit anywhere from weekly to once per release (https://forum.numer.ai/t/how-often-do-you-re-train-your-model/8164). A year also holds every season. The newest window always stays, and the two before it walk back from it because the 2,376 features are v5.0's set of July 2024 (about era 1125) and Numerai builds its features with the targets of the eras it has, so an older window would test on eras that shaped the features: the three newest years lie as close to that date as three one-year windows allow, though not after it (45 of the 52 eras of the oldest window, 1080-1131, come before it). Windows that keep at least half the rows for training reach back to era 716 (51.4%); the curator kept the three newest years on 2026-11-10. Inner validation (tuning, early stopping) must be era-blocked with a 4-era gap as well: a stock's 20-day targets overlap for 3 eras, so on the newest train side a random hold-out gives LightGBM a per-era correlation of 0.040 (t 16.8), against 0.004 (t 1.1) on the last 52 train eras after a 4-era gap.
+An era's 20-market-day target resolves about 5 weeks later: the download of 2026-10-06 has targets up to era 1235 and none for 1236-1240, so at era T the newest known target is that of era T - 5. Numerai's v5.2 notebook says to "embargo the first 4 eras following our last train era", but its code skips only 3 eras, so our gap is one era stricter. One year per window: Numerai ranks a model by its one-year average score ("Your model's reputation is just its 1 year average score", which "directly determines the rank of models on the model leaderboard", https://docs.numer.ai/numerai-tournament/scoring) and advises retraining at major data releases ("it's usually best to re-train your models when major versions are released", https://docs.numer.ai/numerai-tournament/data), so a model fit before the window predicts 52 weekly eras; participants refit anywhere from weekly to once per release (https://forum.numer.ai/t/how-often-do-you-re-train-your-model/8164). A year also holds every season. The newest window always stays, and the two before it walk back from it because the 2,376 features are v5.0's set of July 2024 (about era 1125) and Numerai builds its features with the targets of the eras it has, so an older window would test on eras that shaped the features: the three newest years lie as close to that date as three one-year windows allow, though not after it (45 of the 52 eras of the oldest window, 1080-1131, come before it). Windows that keep at least half the rows for training reach back to era 716 (51.4%); the curator kept the three newest years on 2026-11-10, 3 of the 30 splits an IID split of this size would get (SPLIT-33). Inner validation (tuning, early stopping) must be era-blocked with a 4-era gap as well: a stock's 20-day targets overlap for 3 eras, so on the newest train side a random hold-out gives LightGBM a per-era correlation of 0.040 (t 16.8), against 0.004 (t 1.1) on the last 52 train eras after a 4-era gap.
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 5,834,640 to 6,492,875 rows, test 327,025 to 361,712 rows. Prediction horizon: 52 weeks. Gap between train and test: 4 weeks. Row budget: at most 500k test rows per split; a benchmark trains on at most 1M. The train sides keep every row available to them; `subsample_train` draws the 1M rows a benchmark fits on from the newest year before each window, extended back in time until it holds that many rows, at random, as rows.
 
@@ -294,16 +303,16 @@ Numerai sets every stock of a feature-era without data to 2; an era in which a f
 
 ## Bundle checks
 
-0 error(s), 3 warning(s), 2 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `task_feature_looks_like_exposure`: Feature(s) ['feature_swept_irrespirable_grillade'] look like an amount at risk (time insured, area swept). A realized one is cut by the outcome and never a feature; it is the rate's denominator and the weight (LEAK-41, MET-15). (hint: Say in the notes what the column is (planned or realized) and accept the warning, or ship the rate with the column as its weight scoring column, `fit=True`.)
-- **warning** `splits_dimensions_off_protocol`: 3 test window(s) with their own training side, against the 30 splits an IID split of 1,235 scored units would get (SPLIT-33). (hint: SPLIT-15 aims at that count and accepts fewer: the splits comment names the target, the count reached and what stops more windows (the use case's horizon or gap, the training floor, the least test window); then accept this warning with it.)
-- **warning** `task_target_value_dominant`: The target value 0.5 holds 50% of the rows. (hint: A cap (a censored value), a placeholder for missing, or a zero-inflated target: say which in `curation_comments`, drop censored or placeholder rows, or accept it with the reason.)
 - **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 16,363,686,218 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to run them; nothing else checks duplicate rows and columns.)
 - **info** `task_metric_input_is_model_input`: The metric reads the task's group or time column(s) ['era'] where they are; they are not scoring columns.
 
 Accepted on purpose:
 
+- `splits_dimensions_off_protocol`: Three windows against the 30 an IID split of 1,235 eras would get (SPLIT-33): older one-year windows would test eras whose targets built the v5.0 features of July 2024, so the curator kept the three newest years on 2026-11-10. The splits comment names the target, the count reached and what stops more (SPLIT-15; Lennart, 2026-11-26).
+- `task_feature_looks_like_exposure`: A false positive of the name heuristic: `feature_swept_irrespirable_grillade` is one of Numerai's 2,376 anonymised features, whose names are random words; no feature is an amount at risk (Lennart, 2026-11-26).
+- `task_target_value_dominant`: The target is Numerai's within-era rank of a return, binned into five ordered levels; the middle level 0.5 holds half the rows by construction, and the task is scored by per-era correlation (Lennart, 2026-11-26).
 - `task_target_low_cardinality`: The target is a continuous return that Numerai ranks within each era and bins into 5 ordered levels (0 to 1); Numerai treats it as regression (its example models are regressors scored by correlation), and so do we.
 
 ## Data checks
@@ -466,10 +475,10 @@ No categorical/object features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a217fb-953a-7e86-b147-2561139cbb95 |
-| checksum | v2:5ee7bcded7179c766d53da1d431c4af18052577ec0df7ae4f4838a111a2209e7 |
-| built_at | 2026-11-26T13:26:05+00:00 |
-| path | numerai_v5_2_1m/01a217fb-953a-7e86-b147-2561139cbb95 |
+| uuid | 01a218ca-2052-7ea4-b72c-31e63d9ade2b |
+| checksum | v2:1672385d846098a33013cb30c7b54a877f1e955d524c8a4fcf66a8baa47c364f |
+| built_at | 2026-11-26T17:10:34+00:00 |
+| path | numerai_v5_2_1m/01a218ca-2052-7ea4-b72c-31e63d9ade2b |
 | data_foundry_version | 0.0.5 |
-| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| git_sha | 0d939f6d218cce0b083c3474f78e93095b5804d0-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

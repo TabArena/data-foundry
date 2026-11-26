@@ -4,12 +4,12 @@ unique_name: thyroid_discordant_archive
 container_format: 2
 checksum: v2:40f0c01228053b156f51eb4d48c8e12b203dbaf1e25b59ed94909f14b44b5fae
 build:
-  uuid: 01a21801-03be-758b-8646-0ab68842f252
+  uuid: 01a218c5-c1a9-7339-8fa5-1220fcf4eeed
   checksum: v2:40f0c01228053b156f51eb4d48c8e12b203dbaf1e25b59ed94909f14b44b5fae
-  built_at: '2026-11-26T13:17:30+00:00'
-  path: thyroid_discordant_archive/01a21801-03be-758b-8646-0ab68842f252
+  built_at: '2026-11-26T16:52:24+00:00'
+  path: thyroid_discordant_archive/01a218c5-c1a9-7339-8fa5-1220fcf4eeed
   data_foundry_version: 0.0.5
-  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  git_sha: 0d939f6d218cce0b083c3474f78e93095b5804d0-dirty
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -93,10 +93,14 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - splits_dimensions_off_protocol
+  warnings: []
   infos: []
   accepted:
+    splits_dimensions_off_protocol: 'Three windows against the nine an IID split of
+      9,162 requests would get (SPLIT-33): they follow thyroid_discordant''s split
+      decision, and five four-month windows fit only down to 30% training, the curator''s
+      exception (SPLIT-14). The splits comment names the target, the count reached
+      and what stops more (SPLIT-15; Lennart, 2026-11-26).'
     dataset_pure_feature_value: 'on_thyroxine and TSH_measured are on the request,
       before the report comment: a patient on thyroxine or without a TSH result is
       rarely commented as discordant (1 of 1,239 and 1 of 834); no leak'
@@ -109,7 +113,7 @@ decisions: []
 
 Binary classification of `discordant`, scored with `roc_auc` on temporal splits by `request_date`. 9,162 rows and 29 features. Source: UCI (1987).
 
-Built as `01a21801-03be-758b-8646-0ab68842f252` on 2026-11-26. See [Build](#build).
+Built as `01a218c5-c1a9-7339-8fa5-1220fcf4eeed` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -283,12 +287,12 @@ Each test window against its train side, by statistics of the data, never of a m
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 0 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `splits_dimensions_off_protocol`: 3 test window(s) with their own training side, against the 9 splits an IID split of 9,162 scored units would get (SPLIT-33). (hint: SPLIT-15 aims at that count and accepts fewer: the splits comment names the target, the count reached and what stops more windows (the use case's horizon or gap, the training floor, the least test window); then accept this warning with it.)
 
 Accepted on purpose:
 
+- `splits_dimensions_off_protocol`: Three windows against the nine an IID split of 9,162 requests would get (SPLIT-33): they follow thyroid_discordant's split decision, and five four-month windows fit only down to 30% training, the curator's exception (SPLIT-14). The splits comment names the target, the count reached and what stops more (SPLIT-15; Lennart, 2026-11-26).
 - `dataset_pure_feature_value`: on_thyroxine and TSH_measured are on the request, before the report comment: a patient on thyroxine or without a TSH result is rarely commented as discordant (1 of 1,239 and 1 of 834); no leak
 
 ## Data checks
@@ -416,10 +420,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a21801-03be-758b-8646-0ab68842f252 |
+| uuid | 01a218c5-c1a9-7339-8fa5-1220fcf4eeed |
 | checksum | v2:40f0c01228053b156f51eb4d48c8e12b203dbaf1e25b59ed94909f14b44b5fae |
-| built_at | 2026-11-26T13:17:30+00:00 |
-| path | thyroid_discordant_archive/01a21801-03be-758b-8646-0ab68842f252 |
+| built_at | 2026-11-26T16:52:24+00:00 |
+| path | thyroid_discordant_archive/01a218c5-c1a9-7339-8fa5-1220fcf4eeed |
 | data_foundry_version | 0.0.5 |
-| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| git_sha | 0d939f6d218cce0b083c3474f78e93095b5804d0-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

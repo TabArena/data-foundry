@@ -4,12 +4,12 @@ unique_name: college_scorecard
 container_format: 2
 checksum: v2:b91217b2125d42139009b84d7719acb934c115a520b8803c8f96f3f179eb427d
 build:
-  uuid: 01a217ff-fa22-7f5e-b2e8-ae3aaa02cf3c
+  uuid: 01a218c5-f4b9-7f8d-96b9-0976d690ac28
   checksum: v2:b91217b2125d42139009b84d7719acb934c115a520b8803c8f96f3f179eb427d
-  built_at: '2026-11-26T13:16:25+00:00'
-  path: college_scorecard/01a217ff-fa22-7f5e-b2e8-ae3aaa02cf3c
+  built_at: '2026-11-26T16:52:38+00:00'
+  path: college_scorecard/01a218c5-f4b9-7f8d-96b9-0976d690ac28
   data_foundry_version: 0.0.5
-  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  git_sha: 0d939f6d218cce0b083c3474f78e93095b5804d0-dirty
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -67,11 +67,15 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - splits_dimensions_off_protocol
+  warnings: []
   infos:
   - splits_rows_unused
   accepted:
+    splits_dimensions_off_protocol: 'Four windows against the nine an IID split of
+      34,431 institution cohorts would get (SPLIT-33): the five-year gap until a cohort''s
+      completion rate is published leaves no fifth window that trains on half of the
+      18 cohorts. The splits comment names the target, the count reached and what
+      stops more (SPLIT-15; Lennart, 2026-11-26).'
     splits_feature_missing_in_test: 'Decided (Lennart, 2026-11-11): `DISTANCEONLY`
       is recorded from the 2011 cohort on, so the 2015 and 2016 windows train on cohorts
       without it (curation_comments).'
@@ -86,7 +90,7 @@ decisions:
 
 Regression of `completion_rate_150pct`, scored with `rmse` on temporal splits by `cohort_year` (one step is a year). 34,431 rows and 92 features. Source: GOV Website (2026).
 
-Built as `01a217ff-fa22-7f5e-b2e8-ae3aaa02cf3c` on 2026-11-26. See [Build](#build).
+Built as `01a218c5-f4b9-7f8d-96b9-0976d690ac28` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -294,13 +298,13 @@ Both are published in the entry-year file, so a user has them at the prediction 
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 1 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `splits_dimensions_off_protocol`: 4 test window(s) with their own training side, against the 9 splits an IID split of 34,431 scored units would get (SPLIT-33). (hint: SPLIT-15 aims at that count and accepts fewer: the splits comment names the target, the count reached and what stops more windows (the use case's horizon or gap, the training floor, the least test window); then accept this warning with it.)
 - **info** `splits_rows_unused`: 3,676 row(s) (10.7%) appear in no train and no test set. (hint: Expected of a temporal split (the rows of a gap, history no window trains on, rows a filter keeps out of every training side); say why in `splits_comment`.)
 
 Accepted on purpose:
 
+- `splits_dimensions_off_protocol`: Four windows against the nine an IID split of 34,431 institution cohorts would get (SPLIT-33): the five-year gap until a cohort's completion rate is published leaves no fifth window that trains on half of the 18 cohorts. The splits comment names the target, the count reached and what stops more (SPLIT-15; Lennart, 2026-11-26).
 - `splits_feature_missing_in_test`: Decided (Lennart, 2026-11-11): `DISTANCEONLY` is recorded from the 2011 cohort on, so the 2015 and 2016 windows train on cohorts without it (curation_comments).
 
 ## Data checks
@@ -511,10 +515,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a217ff-fa22-7f5e-b2e8-ae3aaa02cf3c |
+| uuid | 01a218c5-f4b9-7f8d-96b9-0976d690ac28 |
 | checksum | v2:b91217b2125d42139009b84d7719acb934c115a520b8803c8f96f3f179eb427d |
-| built_at | 2026-11-26T13:16:25+00:00 |
-| path | college_scorecard/01a217ff-fa22-7f5e-b2e8-ae3aaa02cf3c |
+| built_at | 2026-11-26T16:52:38+00:00 |
+| path | college_scorecard/01a218c5-f4b9-7f8d-96b9-0976d690ac28 |
 | data_foundry_version | 0.0.5 |
-| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| git_sha | 0d939f6d218cce0b083c3474f78e93095b5804d0-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

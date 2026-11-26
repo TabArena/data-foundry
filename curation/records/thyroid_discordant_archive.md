@@ -41,6 +41,8 @@ CC (2026-11-16, Lennart): PR #102 review: the temporal split is ok (the request 
 
 CC (2026-11-17, Andrej): the declared split (temporal on `request_date`, windows of 4 months, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk).
 
+CC (2026-11-26, Lennart): accepted `splits_dimensions_off_protocol` (SPLIT-15) after the rebuild of 2026-11-26: three windows against SPLIT-33's nine, as thyroid_discordant's split decision; five would train on 30%.
+
 ## Review
 
 **Outcome:** added. Built on Andrej's mark on thyroid_discordant issue 4 ("Do C and add it as a new dataset, then I

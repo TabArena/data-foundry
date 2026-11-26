@@ -4,12 +4,12 @@ unique_name: apistox
 container_format: 2
 checksum: v2:22a042201f5c7e32ba6009c38b0c1f45244addda035ca16cf543a4de3c535794
 build:
-  uuid: 01a21800-b088-7355-b4b5-d3938bdcf7ce
+  uuid: 01a218c5-c27b-78af-8eb4-451066234ff7
   checksum: v2:22a042201f5c7e32ba6009c38b0c1f45244addda035ca16cf543a4de3c535794
-  built_at: '2026-11-26T13:17:09+00:00'
-  path: apistox/01a21800-b088-7355-b4b5-d3938bdcf7ce
+  built_at: '2026-11-26T16:52:24+00:00'
+  path: apistox/01a218c5-c27b-78af-8eb4-451066234ff7
   data_foundry_version: 0.0.5
-  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  git_sha: 0d939f6d218cce0b083c3474f78e93095b5804d0-dirty
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -67,10 +67,14 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - splits_dimensions_off_protocol
+  warnings: []
   infos: []
-  accepted: {}
+  accepted:
+    splits_dimensions_off_protocol: 'Four windows against the 30 an IID split of 1,035
+      compounds would get (SPLIT-33): the newest half of the data holds 526 compounds,
+      and ten years is the shortest window with about 50 compounds at the newest end.
+      The splits comment names the target, the count reached and what stops more (SPLIT-15;
+      Lennart, 2026-11-26).'
 decisions:
 - PPDB level, toxicity route and source database dropped
 - Ten-year temporal windows on the first publication year
@@ -82,7 +86,7 @@ decisions:
 
 Binary classification of `toxic_to_bees`, scored with `roc_auc` on temporal splits by `first_publication_year` (one step is a year). 1,035 rows and 5 features. Source: Other (2024).
 
-Built as `01a21800-b088-7355-b4b5-d3938bdcf7ce` on 2026-11-26. See [Build](#build).
+Built as `01a218c5-c27b-78af-8eb4-451066234ff7` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -282,9 +286,12 @@ New compounds are few in recent years, so ten years is the shortest window that 
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 0 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `splits_dimensions_off_protocol`: 4 test window(s) with their own training side, against the 30 splits an IID split of 1,035 scored units would get (SPLIT-33). (hint: SPLIT-15 aims at that count and accepts fewer: the splits comment names the target, the count reached and what stops more windows (the use case's horizon or gap, the training floor, the least test window); then accept this warning with it.)
+
+Accepted on purpose:
+
+- `splits_dimensions_off_protocol`: Four windows against the 30 an IID split of 1,035 compounds would get (SPLIT-33): the newest half of the data holds 526 compounds, and ten years is the shortest window with about 50 compounds at the newest end. The splits comment names the target, the count reached and what stops more (SPLIT-15; Lennart, 2026-11-26).
 
 ## Data checks
 
@@ -346,10 +353,10 @@ New compounds are few in recent years, so ten years is the shortest window that 
 
 | field | value |
 |---|---|
-| uuid | 01a21800-b088-7355-b4b5-d3938bdcf7ce |
+| uuid | 01a218c5-c27b-78af-8eb4-451066234ff7 |
 | checksum | v2:22a042201f5c7e32ba6009c38b0c1f45244addda035ca16cf543a4de3c535794 |
-| built_at | 2026-11-26T13:17:09+00:00 |
-| path | apistox/01a21800-b088-7355-b4b5-d3938bdcf7ce |
+| built_at | 2026-11-26T16:52:24+00:00 |
+| path | apistox/01a218c5-c27b-78af-8eb4-451066234ff7 |
 | data_foundry_version | 0.0.5 |
-| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| git_sha | 0d939f6d218cce0b083c3474f78e93095b5804d0-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

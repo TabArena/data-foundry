@@ -4,12 +4,12 @@ unique_name: brazilian_ecommerce
 container_format: 2
 checksum: v2:865b58e639e1cc8c5c8d987d75cb7380b82902802f3a5a17c3a65b2f335d3773
 build:
-  uuid: 01a21800-6415-714c-9db3-b8b59e834afb
+  uuid: 01a218c5-cbe6-79b2-9ceb-919987cd2b8f
   checksum: v2:865b58e639e1cc8c5c8d987d75cb7380b82902802f3a5a17c3a65b2f335d3773
-  built_at: '2026-11-26T13:16:50+00:00'
-  path: brazilian_ecommerce/01a21800-6415-714c-9db3-b8b59e834afb
+  built_at: '2026-11-26T16:52:27+00:00'
+  path: brazilian_ecommerce/01a218c5-cbe6-79b2-9ceb-919987cd2b8f
   data_foundry_version: 0.0.5
-  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  git_sha: 0d939f6d218cce0b083c3474f78e93095b5804d0-dirty
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -69,12 +69,16 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - splits_dimensions_off_protocol
+  warnings: []
   infos:
   - dataset_conflicting_duplicate_rows
   - splits_rows_unused
-  accepted: {}
+  accepted:
+    splits_dimensions_off_protocol: 'Five windows against the nine an IID split of
+      88,721 orders would get (SPLIT-33): with monthly windows and the one-month gap,
+      a sixth window would train on less than half the orders. The splits comment
+      names the target, the count reached and what stops more (SPLIT-15; Lennart,
+      2026-11-26).'
 decisions:
 - 'Orders placed from August 2018 on are cut: the last survey was sent on 2018-08-31'
 - Training rows are orders placed a month or more before the window and delivered
@@ -87,7 +91,7 @@ decisions:
 
 Regression of `log_delivery_days`, scored with `rmsle` on temporal splits by `order_purchase_timestamp`. 88,721 rows and 24 features. Source: Kaggle (2018).
 
-Built as `01a21800-6415-714c-9db3-b8b59e834afb` on 2026-11-26. See [Build](#build).
+Built as `01a218c5-cbe6-79b2-9ceb-919987cd2b8f` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -285,11 +289,14 @@ At the start of a window many orders of the last month are still in transit, and
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 2 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `splits_dimensions_off_protocol`: 5 test window(s) with their own training side, against the 9 splits an IID split of 88,721 scored units would get (SPLIT-33). (hint: SPLIT-15 aims at that count and accepts fewer: the splits comment names the target, the count reached and what stops more windows (the use case's horizon or gap, the training floor, the least test window); then accept this warning with it.)
 - **info** `dataset_conflicting_duplicate_rows`: 29 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 - **info** `splits_rows_unused`: 4 row(s) (0.0%) appear in no train and no test set. (hint: Expected of a temporal split (the rows of a gap, history no window trains on, rows a filter keeps out of every training side); say why in `splits_comment`.)
+
+Accepted on purpose:
+
+- `splits_dimensions_off_protocol`: Five windows against the nine an IID split of 88,721 orders would get (SPLIT-33): with monthly windows and the one-month gap, a sixth window would train on less than half the orders. The splits comment names the target, the count reached and what stops more (SPLIT-15; Lennart, 2026-11-26).
 
 ## Data checks
 
@@ -415,10 +422,10 @@ At the start of a window many orders of the last month are still in transit, and
 
 | field | value |
 |---|---|
-| uuid | 01a21800-6415-714c-9db3-b8b59e834afb |
+| uuid | 01a218c5-cbe6-79b2-9ceb-919987cd2b8f |
 | checksum | v2:865b58e639e1cc8c5c8d987d75cb7380b82902802f3a5a17c3a65b2f335d3773 |
-| built_at | 2026-11-26T13:16:50+00:00 |
-| path | brazilian_ecommerce/01a21800-6415-714c-9db3-b8b59e834afb |
+| built_at | 2026-11-26T16:52:27+00:00 |
+| path | brazilian_ecommerce/01a218c5-cbe6-79b2-9ceb-919987cd2b8f |
 | data_foundry_version | 0.0.5 |
-| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| git_sha | 0d939f6d218cce0b083c3474f78e93095b5804d0-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

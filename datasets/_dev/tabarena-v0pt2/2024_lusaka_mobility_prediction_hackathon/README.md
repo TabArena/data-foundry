@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: 2024_lusaka_mobility_prediction_hackathon
 container_format: 2
-checksum: v2:20ea7bdd0370160db8cb6a861c1c1a43b2056fc39c77e6da7985e222897b9d20
+checksum: v2:c9c25c8a5b0401741256a26165a553f10f04711f9e0cf4ac5a73ad062cab105d
 build:
-  uuid: 01a21800-7ad7-7eb5-afdb-043bb6128ce4
-  checksum: v2:20ea7bdd0370160db8cb6a861c1c1a43b2056fc39c77e6da7985e222897b9d20
-  built_at: '2026-11-26T13:16:56+00:00'
-  path: 2024_lusaka_mobility_prediction_hackathon/01a21800-7ad7-7eb5-afdb-043bb6128ce4
+  uuid: 01a218c5-c21c-79dc-be74-77670a88fc2d
+  checksum: v2:c9c25c8a5b0401741256a26165a553f10f04711f9e0cf4ac5a73ad062cab105d
+  built_at: '2026-11-26T16:52:25+00:00'
+  path: 2024_lusaka_mobility_prediction_hackathon/01a218c5-c21c-79dc-be74-77670a88fc2d
   data_foundry_version: 0.0.5
-  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  git_sha: 0d939f6d218cce0b083c3474f78e93095b5804d0-dirty
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -62,7 +62,10 @@ splits:
     A fourth
 
     earlier four-day window would violate the half-data training floor after this
-    gap. The latest window ends
+    gap, so the windows stay
+
+    at 3 of the 9 splits an IID split of this size would get (SPLIT-33). The latest
+    window ends
 
     February 2 but only has observations through early February 1. No performance
     was used to choose windows.
@@ -88,10 +91,14 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - splits_dimensions_off_protocol
+  warnings: []
   infos: []
-  accepted: {}
+  accepted:
+    splits_dimensions_off_protocol: 'Three windows against the nine an IID split of
+      110,336 trips would get (SPLIT-33): with four-day windows and the one-day gap,
+      a fourth window would train on less than half the trips of the one-month extract.
+      The splits comment names the target, the count reached and what stops more (SPLIT-15;
+      Lennart, 2026-11-26).'
 decisions:
 - Rows dropped before the split
 - Source dates, weather 3 hours before the start hour, and the duration-label gap
@@ -103,7 +110,7 @@ decisions:
 
 Regression of `Target`, scored with `rmse` on temporal splits by `trip_start`. 110,336 rows and 9 features. Source: Zindi (2024).
 
-Built as `01a21800-7ad7-7eb5-afdb-043bb6128ce4` on 2026-11-26. See [Build](#build).
+Built as `01a218c5-c21c-79dc-be74-77670a88fc2d` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -252,7 +259,8 @@ cadence. Each training side uses all earlier trips starting at least one day bef
 kept trip lasts at most 3 hours (the longest 175 minutes), so training trips finish before each
 test-start/refit time. Subsequent
 label reporting delay and original cohort extraction/follow-up timing are undocumented. A fourth
-earlier four-day window would violate the half-data training floor after this gap. The latest window ends
+earlier four-day window would violate the half-data training floor after this gap, so the windows stay
+at 3 of the 9 splits an IID split of this size would get (SPLIT-33). The latest window ends
 February 2 but only has observations through early February 1. No performance was used to choose windows.
 The windows hold different weekday mixes (the one from January 25 has no Sunday); trips are shorter on all
 five Sundays (11.1 to 12.1 minutes on average, against 13.7 to 14.7 on other days), a weekly pattern, not
@@ -307,9 +315,12 @@ Dates are preserved despite the description's 2024 claim. The weather row is sta
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 0 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `splits_dimensions_off_protocol`: 3 test window(s) with their own training side, against the 9 splits an IID split of 110,336 scored units would get (SPLIT-33). (hint: SPLIT-15 aims at that count and accepts fewer: the splits comment names the target, the count reached and what stops more windows (the use case's horizon or gap, the training floor, the least test window); then accept this warning with it.)
+
+Accepted on purpose:
+
+- `splits_dimensions_off_protocol`: Three windows against the nine an IID split of 110,336 trips would get (SPLIT-33): with four-day windows and the one-day gap, a fourth window would train on less than half the trips of the one-month extract. The splits comment names the target, the count reached and what stops more (SPLIT-15; Lennart, 2026-11-26).
 
 ## Data checks
 
@@ -364,10 +375,10 @@ Dates are preserved despite the description's 2024 claim. The weather row is sta
 
 | field | value |
 |---|---|
-| uuid | 01a21800-7ad7-7eb5-afdb-043bb6128ce4 |
-| checksum | v2:20ea7bdd0370160db8cb6a861c1c1a43b2056fc39c77e6da7985e222897b9d20 |
-| built_at | 2026-11-26T13:16:56+00:00 |
-| path | 2024_lusaka_mobility_prediction_hackathon/01a21800-7ad7-7eb5-afdb-043bb6128ce4 |
+| uuid | 01a218c5-c21c-79dc-be74-77670a88fc2d |
+| checksum | v2:c9c25c8a5b0401741256a26165a553f10f04711f9e0cf4ac5a73ad062cab105d |
+| built_at | 2026-11-26T16:52:25+00:00 |
+| path | 2024_lusaka_mobility_prediction_hackathon/01a218c5-c21c-79dc-be74-77670a88fc2d |
 | data_foundry_version | 0.0.5 |
-| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| git_sha | 0d939f6d218cce0b083c3474f78e93095b5804d0-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

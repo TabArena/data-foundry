@@ -22,37 +22,43 @@
     `dataset_identifier_column`;
   - 2024_lusaka_mobility_prediction_hackathon, ames_housing, brazilian_ecommerce, college_scorecard,
     numerai_v5_2_1m and sf_permit_time get SPLIT-15's window count (`splits_dimensions_off_protocol`), which their
-    READMEs predate; main's check gives it for lusaka, college_scorecard and sf_permit_time as well. Open: the
-    splits comment names the target and what stops more windows, then the definition accepts the warning;
+    READMEs predate; main's check gives it for lusaka, college_scorecard and sf_permit_time as well;
   - numerai_v5_2_1m's committed README was never from a build. Its build adds `task_feature_looks_like_exposure`
     (the name heuristic reads "swept" in the anonymised `feature_swept_irrespirable_grillade`) and
-    `task_target_value_dominant` (the five-level target is 0.5 on half the rows). Open for the curator.
-- Open warnings: 37 in 25 datasets. `splits_dimensions_off_protocol` (the eight above); `dataset_constant_column`
-  (aps_failure, asp_potassco_classification, labour_inspection_compliance, mercedes_benz_greener_manufacturing,
+    `task_target_value_dominant` (the five-level target is 0.5 on half the rows).
+  - Accepted (Lennart, 2026-11-26): `splits_dimensions_off_protocol` in those eight definitions, each acceptance
+    naming SPLIT-33's target, the windows reached and what stops more (SPLIT-15); the splits comments of
+    2024_lusaka_mobility_prediction_hackathon and numerai_v5_2_1m now name the target as well. numerai_v5_2_1m also
+    accepts its two new warnings. A CC line in each record; the eight datasets were rebuilt.
+- Open warnings after the acceptances: 27 in 17 datasets. `dataset_constant_column` (aps_failure,
+  asp_potassco_classification, labour_inspection_compliance, mercedes_benz_greener_manufacturing,
   pva_revenue_prediction_kddcup98, sat11_hand_algo_runtime); `dataset_conflicting_duplicate_rows`
   (asp_potassco_classification, blood_transfusion, hr_analytics, ljubljana_primary_tumor, superconductivity,
   website_phishing); `dataset_duplicate_rows` (blood_transfusion, concrete_compressive_strength, hr_analytics,
-  ljubljana_primary_tumor, website_phishing); `dataset_pure_feature_value` (amazon_employee_access, aps_failure);
-  `task_feature_looks_like_exposure` (early_learning_predictors, numerai_v5_2_1m); `task_target_value_dominant`
-  (numerai_v5_2_1m, pva_revenue_prediction_kddcup98); one each of `dataset_identifier_column`
-  (loan_default_prediction_imperial_college), `dataset_duplicate_columns` (mercedes_benz_greener_manufacturing),
-  `dataset_missing_value_sentinel` (musk), `dataset_missing_value_label` and `meta_license_unknown`
-  (pva_revenue_prediction_kddcup98) and `splits_test_minority_few` (seismic_bumps).
+  ljubljana_primary_tumor, website_phishing); `dataset_pure_feature_value` (amazon_employee_access, aps_failure); one
+  each of `task_feature_looks_like_exposure` (early_learning_predictors), `task_target_value_dominant`,
+  `dataset_missing_value_label` and `meta_license_unknown` (pva_revenue_prediction_kddcup98),
+  `dataset_identifier_column` (loan_default_prediction_imperial_college), `dataset_duplicate_columns`
+  (mercedes_benz_greener_manufacturing), `dataset_missing_value_sentinel` (musk) and `splits_test_minority_few`
+  (seismic_bumps).
 - Inputs: the build traced 2,658 raw files (107.3 GB), and a check-only rebuild from links to those files alone gives
   every checksum again. The tracer missed SQLite reads (aeolus_rebuilt_1m's `stations.db`,
   noaa_afsc_bottom_trawl_survey_cpue's strata GeoPackage): `build_one.py` now notes `sqlite3.connect`, both were
   rebuilt with the same checksums and reproduce. `minimal_inputs.py links` copies a traced `.prepared_raw_files.json`
-  instead of linking it.
+  instead of linking it, and `compare_builds.py` reads a README's front matter up to its closing line (a splits
+  reason may hold a table).
 - Task probes (`data-foundry probe task --built`) on the 22 datasets whose rows or splits changed. Flags with a
   decision already: numerai_v5_2_1m and g_research_crypto_forecasting_1m (no_signal, drift_baseline, unstable: R^2
   of untuned models under a correlation metric, as their records say), expresso_churn_prediction_1m (one_feature,
-  kept 2026-10-07). New flags, open for the curator (task_probes.md):
-  - maps_router_eta_1m, one_feature: `num_18` alone reaches skill 0.761 against the random forest's 0.800 (RMSE
-    0.183 against 0.168; the constant 0.375);
-  - consumer_complaints_1m, no_spread: LightGBM log loss 0.403, random forest 0.413, linear 0.569 (paired SE 0.19);
-    `Company` alone 0.438, the class shares 0.744;
-  - acquire_valued_shoppers_challenge, drift_baseline beside its decided no_spread: the newest rows' class shares
-    have log loss 0.623 against the random forest's 0.615, while LightGBM's ROC AUC is 0.616 against 0.5.
+  kept 2026-10-07). New flags, each kept as shipped (Lennart, 2026-11-26, on a review page; CC lines in the
+  records and rows in task_probes.md's cases):
+  - maps_router_eta_1m, one_feature (TP-4): `num_18` alone reaches skill 0.761 against the random forest's 0.800
+    (RMSE 0.183 against 0.168; the constant 0.375), and all 21 BeyondArena configurations beat it;
+  - consumer_complaints_1m, no_spread (TP-3): LightGBM log loss 0.403, random forest 0.413, linear 0.569 (paired SE
+    0.19); the tuned configurations spread from 0.410 to 0.565;
+  - acquire_valued_shoppers_challenge, drift_baseline beside its decided no_spread (TP-1, TP-2): the newest rows'
+    class shares have log loss 0.623 against the random forest's 0.615, but ROC AUC, the metric, ignores them, and
+    all 21 tuned configurations beat 0.5 in 5 of 5 folds.
   On the `_1m` containers, which now hold every training row, the task probe loads the whole container before it
   caps the sides: 490 GB peak for maps_router_eta_1m and 634 GB for numerai_v5_2_1m, so they run one at a time.
 - Group probes re-run (`data-foundry probe group`, mean of three splits each) for the four definitions with a unit

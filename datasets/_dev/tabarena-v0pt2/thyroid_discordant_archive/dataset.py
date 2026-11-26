@@ -170,6 +170,12 @@ class ThyroidDiscordantArchive(AbstractCuratedDataset):
         splits=TemporalSplits(window=4, unit="months", cutoffs=("1986-02-01", "1986-06-01", "1986-10-01")),
     )
     accepted_check_warnings = {
+        "splits_dimensions_off_protocol": (
+            "Three windows against the nine an IID split of 9,162 requests would get (SPLIT-33): they follow "
+            "thyroid_discordant's split decision, and five four-month windows fit only down to 30% training, the "
+            "curator's exception (SPLIT-14). The splits comment names the target, the count reached and what stops "
+            "more (SPLIT-15; Lennart, 2026-11-26)."
+        ),
         "dataset_pure_feature_value": "on_thyroxine and TSH_measured are on the request, before the report comment: "
         "a patient on thyroxine or without a TSH result is rarely commented as discordant (1 of 1,239 and 1 of 834); "
         "no leak",

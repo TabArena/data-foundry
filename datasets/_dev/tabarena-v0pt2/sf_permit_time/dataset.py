@@ -194,6 +194,11 @@ class SfPermitTime(AbstractCuratedDataset):
     # Half-year windows after a six-month gap; train keeps only the permits issued before the window starts
     temporal = Temporal(on="Filed Date", splits=WINDOWS, label_known_on=_issued)
     accepted_check_warnings = {
+        "splits_dimensions_off_protocol": (
+            "Eight windows against the nine an IID split of 99,847 permits would get (SPLIT-33): with half-year "
+            "windows and the six-month gap, a ninth window would train on less than half the permits. The splits "
+            "comment names the target, the count reached and what stops more (SPLIT-15; Lennart, 2026-11-26)."
+        ),
         "dataset_constant_column": "The flagged columns are Y-or-missing flags (e.g. Fire Only Permit: Y in 12,204 rows); "
         "missing means the flag is not set, so they are not constant.",
     }
