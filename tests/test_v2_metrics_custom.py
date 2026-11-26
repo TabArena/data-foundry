@@ -16,7 +16,7 @@ from data_foundry.schema import ScoringColumn
 from data_foundry.v2.dataset import metric_spec
 from data_foundry.v2.metrics import METRICS, Metric, dummy_prediction, row_weight_column, score
 from scipy import special, stats
-from sklearn.metrics import mean_squared_error, roc_auc_score
+from sklearn.metrics import average_precision_score, mean_squared_error, roc_auc_score
 
 from tests.test_bundle_checks import make_iid_frame, make_v2_container, metric_findings
 
@@ -149,6 +149,104 @@ def test_top_k_params_take_exactly_one_cut_off() -> None:
         Metric.source("precision_at_k", params={"k": 3, "k_fraction": 0.1})
     with pytest.raises(ValueError, match="k_fraction"):
         Metric.source("average_precision_at_k", params={"k_fraction": 1.5})
+
+
+# --- average_precision_at_base_rate --------------------------------------------------------------------------------
+
+
+def _ap_at_rate(rate: float):
+    return _spec("average_precision_at_base_rate", "binary_classification", params={"base_rate": rate})
+
+
+def ap_at_rate_reference(y, s, rate) -> float:
+    """scikit-learn's average precision, each negative weighted so that the positives are ``rate`` of the weight."""
+    n_pos, n_neg = y.sum(), len(y) - y.sum()
+    weight = np.where(y == 1, 1.0, n_pos / n_neg * (1 - rate) / rate)
+    return float(average_precision_score(y, s, sample_weight=weight))
+
+
+@pytest.mark.parametrize("seed", [0, 1, 2])
+@pytest.mark.parametrize("rate", [0.0005, 0.01, 0.05, 0.5])
+def test_average_precision_at_base_rate_equals_sklearn_with_sample_weights(seed: int, rate: float) -> None:
+    """Equal to scikit-learn's weighted average precision to 1e-9, on random scores with and without ties."""
+    rng = np.random.default_rng(seed)
+    for n, share in ((50, 0.3), (5000, 0.2), (40000, 0.02)):
+        y = (rng.uniform(size=n) < share).astype(int)
+        y[:2] = [0, 1]
+        s = rng.uniform(size=n) + 0.5 * y
+        for scores in (s, np.round(s, 2)):  # without and with ties
+            value = score(_ap_at_rate(rate), y, scores)
+            assert value == pytest.approx(ap_at_rate_reference(y, scores, rate), rel=1e-9, abs=1e-12)
+
+
+def test_average_precision_at_base_rate_by_hand() -> None:
+    """Two small cases computed by hand, one with tied scores."""
+    # 2 positives, 2 negatives, base_rate 0.2: each negative weighs 2/2 * 0.8/0.2 = 4. By descending score:
+    # 0.9 positive: precision 1/1; 0.8 negative; 0.7 positive: precision 2 / (2 + 4) = 1/3; 0.6 negative.
+    # AP = (1 + 1/3) / 2 = 2/3.
+    y = np.array([1, 0, 1, 0])
+    s = np.array([0.9, 0.8, 0.7, 0.6])
+    assert score(_ap_at_rate(0.2), y, s) == pytest.approx(2 / 3, rel=1e-12)
+    # Ties form one threshold: 2 positives, 1 negative, base_rate 0.5, the negative weighs 2/1 * 1 = 2. At 0.5 a
+    # positive and the negative enter together: precision 1 / (1 + 2); at 0.1 the second positive: 2 / (2 + 2).
+    # AP = (1/3 + 1/2) / 2 = 5/12, in any row order.
+    y, s = np.array([1, 0, 1]), np.array([0.5, 0.5, 0.1])
+    assert score(_ap_at_rate(0.5), y, s) == pytest.approx(5 / 12, rel=1e-12)
+    assert score(_ap_at_rate(0.5), y[[1, 2, 0]], s[[1, 2, 0]]) == pytest.approx(5 / 12, rel=1e-12)
+
+
+def test_average_precision_at_base_rate_at_the_set_s_own_share_is_average_precision() -> None:
+    """At the scored rows' own positive share every weight is 1: plain average precision."""
+    rng = np.random.default_rng(7)
+    y = (rng.uniform(size=3000) < 0.25).astype(int)
+    s = np.round(rng.uniform(size=3000) + 0.4 * y, 3)
+    assert score(_ap_at_rate(float(y.mean())), y, s) == pytest.approx(average_precision_score(y, s), rel=1e-9)
+
+
+def test_average_precision_at_base_rate_is_near_the_mean_over_subsets_drawn_to_the_rate() -> None:
+    """The source's way: every negative kept, the positives drawn to the rate; the reweighted score is close to the
+    mean over such draws (not equal: a draw's precision is a ratio of counts).
+    """
+    rng = np.random.default_rng(8)
+    y = (rng.uniform(size=40000) < 0.2).astype(int)
+    s = rng.uniform(size=40000) + 1.5 * y
+    negatives, positives = np.flatnonzero(y == 0), np.flatnonzero(y == 1)
+    n_draw = round(len(negatives) * 0.01 / 0.99)
+    draws = []
+    for _ in range(200):
+        rows = np.concatenate([negatives, rng.choice(positives, n_draw, replace=False)])
+        draws.append(average_precision_score(y[rows], s[rows]))
+    assert score(_ap_at_rate(0.01), y, s) == pytest.approx(np.mean(draws), abs=0.01)
+
+
+def test_average_precision_at_base_rate_edges_and_params() -> None:
+    """NaN with one class, finite on certain and constant predictions, base_rate required in (0, 1)."""
+    spec = _ap_at_rate(0.01)
+    assert np.isnan(score(spec, [0, 0, 0], [0.1, 0.2, 0.3], labels=[0, 1]))  # no positive
+    assert np.isnan(score(spec, [1, 1], [0.1, 0.2], labels=[0, 1]))  # no negative
+    assert score(spec, [0, 1, 0, 1], [0.0, 1.0, 0.0, 1.0]) == 1.0  # certain and right
+    assert np.isfinite(score(spec, [0, 1, 0, 1], [1.0, 0.0, 1.0, 0.0]))  # certain and wrong
+    assert np.isfinite(score(spec, [0, 1, 0, 1], [0.3] * 4))  # constant: one threshold
+    with pytest.raises(ValueError, match="missing param"):
+        Metric.source("average_precision_at_base_rate")
+    for bad in (0, 1, 1.5, -0.1, True, "0.01"):
+        with pytest.raises(ValueError, match="base_rate"):
+            Metric.source("average_precision_at_base_rate", params={"base_rate": bad})
+
+
+def test_average_precision_at_base_rate_is_fast_on_one_million_rows() -> None:
+    """Timed on 1M rows, scores with and without ties."""
+    import time  # noqa: PLC0415
+
+    rng = np.random.default_rng(9)
+    y = (rng.uniform(size=1_000_000) < 0.2).astype(int)
+    s = rng.uniform(size=1_000_000) + 0.3 * y
+    for scores in (s, np.round(s, 3)):
+        start = time.perf_counter()
+        score(_ap_at_rate(0.01), y, scores)
+        elapsed = time.perf_counter() - start
+        print(f"average_precision_at_base_rate on 1M rows: {elapsed:.3f} s")
+        assert elapsed < 5
 
 
 # --- rmspe ---------------------------------------------------------------------------------------------------------
@@ -1098,6 +1196,7 @@ def test_every_custom_metric_documents_itself() -> None:
     assert (
         sorted(
             [
+                "average_precision_at_base_rate",
                 "average_precision_at_k",
                 "cost_matrix",
                 "gini_stability",
@@ -1131,6 +1230,7 @@ _CHECK_PARAMS = {
     "cost_matrix": {"labels": ["no", "yes"], "matrix": [[0, 1], [5, 0]]},
     "precision_at_k": {"k_fraction": 0.2},
     "average_precision_at_k": {"k_fraction": 0.1},
+    "average_precision_at_base_rate": {"base_rate": 0.01},
     "par_k": {"cutoff": 5000},
     "mean_group_top_k_overlap": {"k": 2},
     "rescaled_mean_tweedie_deviance": {"power": 1.5, "min_prediction": 1e-3},

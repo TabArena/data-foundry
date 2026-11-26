@@ -110,6 +110,7 @@ side (metadata, checks, the dataset review) is tracked in the curation records a
   | `cost_matrix` | custom, label or proba (`params.prediction`) | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition (label, the 11 x 11 penalty matrix); `*` aps_failure (proba, false alarm 10, miss 500), `*` credit_g (proba, Statlog's 5:1) |
   | `precision_at_k` | custom, proba | coil_2000 (`k_fraction` 0.2); `*` labour_inspection_compliance (`k_fraction` 0.5) |
   | `average_precision_at_k` | custom, proba | huntprohibited_1m (`k` 12,500) |
+  | `average_precision_at_base_rate` | custom, proba | phreshphish_phishing_pages (`base_rate` 0.01, since 2026-11-26) |
   | `gini_top_capture` | custom, proba | amex_non_iid_1m (top 4%, negatives weighted 20), per customer (`grouping.aggregation` `last`) |
   | `rmspe` | custom, value | rossmann_store_sales |
   | `net_revenue_at_cost` | custom, value | pva_revenue_prediction_kddcup98 (`cost` 0.68, the cup's price of a mailed piece; no fixed best value, see below) |

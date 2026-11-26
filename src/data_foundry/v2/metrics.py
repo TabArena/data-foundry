@@ -47,8 +47,9 @@ does not depend on the row order, ties counting by the mean over their orderings
 a ValueError in :func:`score`; a fold whose truth leaves the metric undefined (one class, a constant target, no loss)
 gives NaN, and a group that cannot tell models apart is left out by a stated rule.
 
-The custom metrics (``kind="custom"``): ``cost_matrix``, ``precision_at_k``, ``average_precision_at_k``, ``rmspe``,
-``net_revenue_at_cost``, ``gini_top_capture``, ``normalized_gini``, ``normalized_weighted_gini``,
+The custom metrics (``kind="custom"``): ``cost_matrix``, ``precision_at_k``, ``average_precision_at_k``,
+``average_precision_at_base_rate``, ``rmspe``, ``net_revenue_at_cost``, ``gini_top_capture``, ``normalized_gini``,
+``normalized_weighted_gini``,
 ``ordered_lorenz_gini``, ``rescaled_mean_tweedie_deviance``, ``weighted_pearsonr``, ``mean_group_pearsonr``,
 ``mean_group_normalized_rmse``, ``hierarchical_balanced_accuracy``, ``gini_stability``, ``par_k``,
 ``mean_group_top_k_overlap`` and ``normalized_early_detection_utility``. Each :class:`MetricDef` holds its formula, its
@@ -877,6 +878,43 @@ def _average_precision_at_k(y_true, y_pred, *, labels=None, params, **_):
     return float((precision * rel).sum() / min(k, n_positive))
 
 
+# average_precision_at_base_rate: average precision with the positives' share set to a fixed rate
+
+
+def _check_base_rate(params: Mapping[str, Any]) -> None:
+    _require(params, "base_rate")
+    rate = params["base_rate"]
+    if isinstance(rate, bool) or not isinstance(rate, (int, float)) or not 0 < rate < 1:
+        raise ValueError(f"base_rate is a number in (0, 1), not {rate!r}.")
+
+
+def _average_precision_at_base_rate(y_true, y_pred, *, labels=None, params, **_):
+    """Average precision as if the positives were ``base_rate`` of the rows: each negative row weighs
+    ``n_pos / n_neg * (1 - base_rate) / base_rate``, each positive 1, so recall is unchanged and precision is the one
+    a set with that positive share would see. It is scikit-learn's ``average_precision_score`` with that
+    ``sample_weight``, and close to the mean average precision of subsets that keep every negative and draw the
+    positives to the rate, without the draw's noise.
+
+    Tied scores form one threshold and enter the curve together (scikit-learn's rule), so the score does not depend
+    on the row order. NaN when the scored rows hold one class: without a positive or a negative there is no share to
+    set.
+    """
+    positive = _binary_truth(np.asarray(y_true), labels).astype(float)
+    n_positive = positive.sum()
+    n_negative = positive.size - n_positive
+    if n_positive == 0 or n_negative == 0:
+        return float("nan")
+    rate = float(params["base_rate"])
+    negative_weight = n_positive / n_negative * (1.0 - rate) / rate
+    _, block = np.unique(-_positive_proba(y_pred), return_inverse=True)  # thresholds by descending score
+    n_blocks = block.max() + 1
+    block_positive = np.bincount(block, weights=positive, minlength=n_blocks)
+    block_negative = np.bincount(block, weights=1.0 - positive, minlength=n_blocks)
+    hits = np.cumsum(block_positive)
+    precision = hits / (hits + negative_weight * np.cumsum(block_negative))  # each block holds a row, so > 0 below
+    return float((block_positive * precision).sum() / n_positive)
+
+
 # rmspe
 
 
@@ -1467,6 +1505,22 @@ _CUSTOM_METRICS = (
         "AP@K, https://www.kaggle.com/competitions/avito-prohibited-content/overview/evaluation",
         params=_TOP_K_PARAMS,
         check_params=_check_top_k,
+        one_class_undefined=True,
+    ),
+    _custom(
+        "average_precision_at_base_rate",
+        _BIN,
+        "proba",
+        _HIGHER,
+        _average_precision_at_base_rate,
+        "sum over thresholds by descending score of (recall_t - recall_(t-1)) * precision_t, each negative weighted "
+        "n_pos / n_neg * (1 - base_rate) / base_rate and each positive 1, so the positives count as base_rate of the "
+        "rows; tied scores form one threshold; NaN with one class",
+        "average precision at fixed positive rates, as scored on test subsets at phishing rates of 0.05% to 5% by "
+        "Dalton et al. 2025, PhreshPhish, arXiv 2507.10854, Sec. 5.1; tested against "
+        "sklearn.metrics.average_precision_score with that sample_weight",
+        params={"base_rate": "the share of positives the score is computed at, in (0, 1); required"},
+        check_params=_check_base_rate,
         one_class_undefined=True,
     ),
     _custom(

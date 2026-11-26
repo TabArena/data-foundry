@@ -1,6 +1,17 @@
 # Changelog: TabArena v0.2 working copy
 
 ## 2026-11-23, every definition names its split-tree leaf; `RetrospectiveFillIn` and `Target: Fixed Delay` in use (no container built)
+## 2026-11-26 (evening), PhreshPhish metric and the new-metric rule
+
+- phreshphish_phishing_pages: the metric is `average_precision_at_base_rate` with `base_rate` 0.01, new in the metric
+  library (average precision with the benign pages weighted so that phishing pages are 1% of each window), a stand-in
+  for the source's average precision on test subsets at fixed phishing rates of 0.05% to 5%, replacing the fallback
+  ROC AUC (issue 1, c). Untuned LightGBM scores 0.782 / 0.662 / 0.794, newest window first. The split is checked;
+  nothing open. Check 0 errors, 0 warnings, 4 accepted.
+- Rules: a metric that scores something no metric of the library scores counts for it, and its work counts against no
+  option (MET-10); a stand-in is the closest metric computable on our data, implemented or not (MET-11); an option's
+  work is an effort note, never a con, in review options tables (cross-dataset item, adopted).
+
 ## 2026-11-26 (afternoon), curator's third round of marks on the better-data datasets
 
 - phreshphish_phishing_pages: the page's HTML `<title>` ships as a text column (`title`), read the same way from both

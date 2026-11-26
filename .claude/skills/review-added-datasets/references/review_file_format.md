@@ -92,7 +92,8 @@ The options table has the columns `| | Option | What it does | Pro | Con |`, one
 first column, `(implemented)` on the row the definition has now (the page names it on the "As implemented" button
 and highlights it when that mark is set). Every issue has two rows or more. Several points in
 one cell are separated by `; `: the page shows them as bullets (green for Pro, red for Con) and tags the implemented
-row and the row the `**Recommendation:**` names by its letter. A rule ID belongs in
+row and the row the `**Recommendation:**` names by its letter. The work an option needs (a new metric, an
+encoding, framework code) is no Con: state it under the table as an effort note. A rule ID belongs in
 a footnote or the notes for the AI, never in the bullets or the title. The page shows the problem, then every other
 bullet before the options in a closed box "Details" (its summary lists their leads), then the options and the
 recommendation. It shows the footnotes in a closed box "Rules and references" (a click on a reference opens it) and the

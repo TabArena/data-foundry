@@ -384,22 +384,28 @@ class PhreshphishPhishingPages(AbstractCuratedDataset):
     # Task
     target = "is_phishing"
     problem_type = "binary_classification"
-    metric = Metric(
-        name=None,
-        origin="fallback",
-        original="average_precision",
+    metric = Metric.stand_in(
+        "average_precision_at_base_rate",
+        params={"base_rate": 0.01},
+        original=(
+            "average precision on 975 subsets of the source's test split at fixed phishing rates of 0.05% to 5% "
+            "(the card's benchmarks), the mean over the subsets, next to precision at recall 0.9 (Sec. 5.1)"
+        ),
         reference="Dalton et al. 2025, arXiv 2507.10854, Sec. 5.1",
         reason=(
-            "The paper scores average precision and precision at recall 0.9, argued from the cost of a false "
-            'positive ("Users ... are typically highly sensitive to false positives", Sec. 5.1), on subsets of its '
-            "test split at fixed phishing base rates of 0.05% to 5% (the card's benchmarks). Our test windows hold "
-            "13.5% to 38.0% phishing, so average precision here would measure something else (MET-2, MET-9), and "
-            "precision at recall 0.9 needs a threshold (MET-6): the fallback roc_auc, which does not depend on the "
-            "class share, here set by the collection. It scores the whole curve, while a filter sets its threshold "
-            "at a false-positive rate of 1% or less: on the earlier monthly windows the best of four untuned models "
-            "was the same under every score, but among the three weaker ones ROC AUC ranked the URL-only LightGBM "
-            "last, and the partial ROC AUC up to a 1% false-positive rate, the true-positive rate at 0.1% and the "
-            "average precision at 1% phishing ranked it first."
+            "The paper scores average precision at low phishing rates, argued from the cost of a false positive "
+            '("Users ... are typically highly sensitive to false positives", Sec. 5.1). It cannot be computed as '
+            "published here: its subsets are drawn from its test split from 2025-09-08 on, after our data end, and "
+            "our test windows hold 13.5% to 38.0% phishing, a share set by the collection, under which plain average "
+            "precision scores each window's own share. So average precision at one fixed rate of 1%, inside the "
+            "source's range: each window whole, its benign pages weighted so that phishing pages are 1% of the "
+            "weight. On the shipped windows it equals the mean over 100 subsets drawn to 1% (every benign page, "
+            "phishing pages drawn) to within 0.005 (LightGBM and logistic regression), without the draw's noise "
+            "(one subset varies by 0.017 to 0.034). One rate rather than the mean over the range: at 0.1% the score "
+            "rests on 22 to 40 benign pages per window. On seven untuned models it ranks them alike across the three "
+            "windows (Kendall tau 0.94, as the partial ROC AUC up to a 1% false-positive rate), where ROC AUC does "
+            "not (0.75). Precision at recall 0.9 needs a threshold, and at a 1% rate it jumps between windows "
+            "(LightGBM 0.03 to 0.21)."
         ),
     )
 

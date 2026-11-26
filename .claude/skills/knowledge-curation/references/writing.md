@@ -95,7 +95,8 @@ the recommendation must read alone: a curator who never opens Details knows what
 and what is recommended. Another bullet with a bold lead is fine when it helps (`**Sources:**`, `**Cost:**`). The
 options table has the columns `| | Option | What it does | Pro | Con |`: a letter (A, B, ...), the option in a few words
 with `(implemented)` on the one the definition has now, what it changes in the dataset (rows, columns, split, score),
-and its pros and cons in a few words each. A cell with several points separates them with `; `, and the page shows them
+and its pros and cons in a few words each; the work an option needs (a new metric, an encoding, framework code) is
+no con, but an effort note under the table. A cell with several points separates them with `; `, and the page shows them
 as bullets (Andrej, 2026-11-03), so keep a `;` out of a single point. Every issue has at least two rows; the curator's
 mark "as implemented" takes the implemented row, and "change" names the letter. Mark one row `(implemented)` also
 when the question is whether to change something elsewhere (a sibling, a rule): the row that changes nothing is what

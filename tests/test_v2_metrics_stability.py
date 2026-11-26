@@ -22,6 +22,7 @@ EXAMPLE_PARAMS = {
     ("cost_matrix", "multiclass_classification"): {"labels": [0, 1, 2], "matrix": [[0, 1, 2], [1, 0, 1], [2, 1, 0]]},
     ("precision_at_k", "binary_classification"): {"k": 5},
     ("average_precision_at_k", "binary_classification"): {"k": 5},
+    ("average_precision_at_base_rate", "binary_classification"): {"base_rate": 0.01},
     ("par_k", "regression"): {"cutoff": 100},
     ("mean_group_top_k_overlap", "regression"): {"k": 3},
     ("mean_tweedie_deviance", "regression"): {"power": 1.5, "min_prediction": 1.0},
