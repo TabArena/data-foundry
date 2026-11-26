@@ -193,6 +193,47 @@ CC (2026-11-25, Andrej): accepted for adding (asked in chat to build it); issue 
 
    * **Recommendation:** A; the advocate, the critic and the mediator agree the rule is not triggered on its text, and with the facts written down, the next undated diagnosis can be judged against them instead of against this outcome alone. **Decision:** A, B or C?
 
+   **Andrej (2026-11-26, discuss):** Can we really handle all potential leaks by dropping features and can we make sure that the target is predicted based on information that is available before the diagnosis?
+
+   **Answer (AI, 2026-11-26):** no: the release keeps no date and no order of the codes, so no feature set can be shown to precede the diagnosis, and dropping flags only lowers the score without making that guarantee.
+
+   * **Problem:**
+     - Each patient's codes are a deduplicated list in random order: an injury's initial-encounter code precedes its subsequent-encounter code in 1,960 patients and follows it in 1,950, and E85.4 precedes E85.82 (a code only from October 2017) in 271 of 516 patients; the paper used "only the presence or absence of the ICD codes (and not the temporal sequence)" over a window ending 30 April 2019, with no cut at the diagnosis[^q1].
+     - Without the work-up and disease-course flags (cardiomyopathies, heart-failure subtypes, cardiomegaly, abnormal heart imaging and ECG, effusions, ascites, pulmonary hypertension, conduction disease, devices, transplant), the remaining signal comes from kidney disease, atrial fibrillation, abnormal blood chemistry, anticoagulation and oedema, which can come before or after amyloidosis[^q2].
+     - The antecedents the paper names (carpal tunnel, synovitis, spinal stenosis, tendon disorders and similar) carry little alone, and even they can be coded during the work-up.
+   * **Experiments:** ROC AUC (higher is better), 9 shipped splits (3 x 3-fold), 13,454 patients; flags classed by the codes behind at least half of their carriers.
+
+     | Flag set | Flags | LightGBM | Logistic regression (L2) |
+     |---|---|---|---|
+     | all (implemented) | 1,695 | 0.827 | 0.810 |
+     | without work-up and course flags (cardiac core) | 1,648 | 0.796 | 0.778 |
+     | also without conduction, devices, arrhythmia, protein and kidney work-up | 1,619 | 0.792 | 0.775 |
+     | neutral flags only (no work-up, no named antecedent) | 1,566 | 0.786 | 0.769 |
+     | named antecedents only | 53 | 0.582 | 0.596 |
+     | work-up and course flags only | 47 | 0.751 | 0.752 |
+
+     | Top single flag, without the work-up flags | Cases | Controls |
+     |---|---|---|
+     | hypertensive heart and kidney disease with heart failure | 31.1% | 15.0% |
+     | atrial fibrillation and flutter | 65.8% | 50.5% |
+     | chronic kidney disease | 56.1% | 41.1% |
+     | persistent atrial fibrillation | 20.0% | 7.4% |
+     | carpal tunnel syndrome, unspecified limb | 14.6% | 5.2% |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Keep all flags (implemented) | lifetime presence as the paper used it | the source's task | half of the top single flags are written by the work-up; no claim about the prediction point holds |
+     | b | Drop the work-up and course families | the 76 flags of the second and third experiment rows go | removes what is clearly late; still a real signal (0.79) | our own list; what remains has no timing either, so the guarantee asked for is still missing |
+     | c | Keep only the named antecedents | 53 flags | closest to a history before referral | near chance (0.58); these too may be coded during the work-up |
+     | d | Retire as an undated past diagnosis | `No Good Target`, as stroke_prediction | consistent with three retirements; no claim we cannot support | loses the one claims-based screening task |
+
+   * **Recommendation:** d: the release cannot place a single code before the diagnosis, so the guarantee asked for is not available under any cut, and the same fact retired stroke_prediction; if the dataset stays, b is the most defensible cut, with a note that the remaining 0.79 has no proven timing. **Decision:** a, b, c or d?
+
+   [^q1]: **USE-3** (Must): name the prediction point: when the model is used and what is known then. A value that did not exist at that point is a leak.
+   [^q2]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the target away; out: a column recorded after the outcome, a part, a consequence or another encoding of the target.
+
    [^sel7]: **SEL-7** (Must): a label the respondent already knows, asked in the same interview as the features (a past diagnosis), is predicted by nobody; a screening task needs positives found by an independent measurement.
 
 4. **Which codes written during the work-up go? (issue 1, reopened as you asked)**

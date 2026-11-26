@@ -123,6 +123,47 @@ CC (2026-11-25, Andrej): accepted for adding in the screening review (issues 1 A
 
    **Notes for the AI:** On B or C: add `Class-dependent Recording` to the record's `decision_markers`; on C also filter the block in `_clean` (discovery rows 3-55, carriers without any of the three polymorphisms at the file's start), update the counts, re-run `dataset check` on the cluster.
 
+   **Andrej (2026-11-26, discuss):** Can we analyze better whether this could be a leak that models may exploit or whether this is part of the task?
+
+   **Answer (AI, 2026-11-26):** an artefact, but a small one: training on the block lifts the shipped score by 0.006 (gradient boosting) to 0.012 (lookup) through the block's own test rows, lowers the other hospital test people's score by up to 0.011, and gives a participant nothing to exploit.
+
+   * **Problem:**
+     - The 53 carriers have no polymorphism recorded, likely because they were typed another way, and the block holds carriers only, so their recorded genotypes are probably incomplete for this class alone[^a1].
+     - Most of the block holds a single p.V37I allele and nothing else; outside the block that genotype is 77% patients (60 of 78), with the block 53%.
+     - In the hospital file, carriers are more common without a recorded polymorphism only because of the block: 25.7% against 22.6% with it, 18.1% against 22.6% without it.
+   * **Experiments:** ROC AUC (higher is better) on the shipped 10 x 3-fold splits (30 runs); gradient boosting untuned; the lookup is each genotype's share of patients in training; the rule is the textbook rule without the three polymorphisms; recognition measured out of fold.
+
+     | Measure | Result |
+     |---|---|
+     | block against the other hospital carriers, from the features (boosting / logistic regression) | 0.922 / 0.934 |
+     | the same, among carriers without any polymorphism | 0.829 / 0.835 |
+     | people outside the block with the same genotypes as block people | 164 (30% carriers); only 4 block people have a genotype of their own |
+
+     | Model | Trained | All test people | Outside the block | Hospital people outside the block | Block carriers against test patients |
+     |---|---|---|---|---|---|
+     | gradient boosting | with the block | 0.750 | 0.731 | 0.716 | 0.886 |
+     | gradient boosting | without the block | 0.744 | 0.738 | 0.727 | 0.783 |
+     | lookup | with the block | 0.776 | 0.758 | 0.741 | 0.907 |
+     | lookup | without the block | 0.764 | 0.758 | 0.744 | 0.805 |
+     | rule | not trained | 0.677 | 0.670 | 0.686 | 0.725 |
+
+     | Exploit (paired gain over gradient boosting, 30 runs) | All test people | Outside the block |
+     |---|---|---|
+     | indicator "genotype seen only in the block" | +0.000 (0/30) | +0.000 |
+     | knowing who is in the block (not available: rows shuffled, no file column) | +0.021 (30/30) | +0.008 (25/30) |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | No marker, keep the rows (implemented) | nothing | no change | the block inflates the score by 0.006-0.012 and is not flagged |
+     | b | Add the marker, keep the rows | `Class-dependent Recording` and these numbers in the note | real carriers kept; the effect documented | the most common single-allele genotype keeps a carrier share made up by the block; the other hospital people lose 0.011 |
+     | c | Add the marker, drop the 53 rows | marker; the block filtered in cleaning; its own PR | removes a recording that differs by class and cannot be aligned; the genotype-to-label relation is the hospital's again | loses 18% of the hospital carriers (patients 76.2% to 78.5%); the shipped score falls by 0.006-0.012 |
+
+   * **Recommendation:** c: the block's recording cannot be aligned with the other rows, it changes the label share of the most common single-allele genotype, and models use it in the wrong direction for the other hospital people (worse on 28 of 30 runs); b if you would rather keep every carrier. **Decision:** a, b or c?
+
+   [^a1]: **LEAK-39** (Must): rows of one class recorded through a separate route, found by a recording fingerprint, are dropped when models recognise them and the route cannot be aligned with the other rows; the marker is set whether such rows are dropped, kept with a note or still open.
+
    [^leak39]: **LEAK-39** (Must): rows of one class recorded through a separate route, found by a recording fingerprint, are dropped when models recognise them and the route cannot be aligned with the other rows.
    [^marker]: Decision marker `Class-dependent Recording` (selection.md, markers table): the classes were measured, formatted or filled differently; set on kept and retired datasets, whether the artefact was fixed, is kept with a note or is still open.
 
@@ -148,6 +189,28 @@ CC (2026-11-25, Andrej): accepted for adding in the screening review (issues 1 A
      | C | Group the folds by genotype | each genotype on one side | tests unseen genotypes | not the use case; models fall below the rule |
 
    * **Recommendation:** A, unchanged; every panel agent that looked keeps every person. **Decision:** A, B or C?
+
+   **Andrej (2026-11-26, discuss):** If you say family clusters, do you mean literally related humans? Or just families in the genotypes that might come from humans who have nothing to do with each other in the real world?
+
+   **Answer (AI, 2026-11-26):** literally related people, inferred from the raw file's row order; the data has no family key, so they are likely relatives, not confirmed ones.
+
+   * **Problem:**
+     - The paper recruited patients "and their immediate family members" in both sources, and the release keeps no family id.
+     - In the raw files, people who share a rare variant sit next to each other far more often than chance, in the pattern of a family entered together: a patient with two different pathogenic alleles next to two carriers with one allele each (the parents), or siblings with the same genotype.
+     - Unrelated people who merely share a common genotype are not counted: the clusters link only neighbours within three rows who share a variant carried by at most 30 people.
+   * **Experiments:** raw row order of both files; the shipped data is shuffled, so participants never see it.
+
+     | Measure | Observed | By chance |
+     |---|---|---|
+     | pairs sharing a variant carried by exactly 2 people, within 3 rows | 40% of 28 pairs | 0.8% |
+     | the same pairs, within 10 rows | 55% | 2.3% |
+     | neighbouring pairs sharing a variant carried by at most 30 people | 16 | 0.45 |
+     | clusters recovered (window of 3 rows, variant carried by at most 30 / 60 people) | 22 clusters, 49 people / 30 clusters, 67 people | |
+     | same label within a cluster | 0.62-0.64 (the base rate is 0.64); 12 of 22 clusters hold both labels | |
+     | ROC AUC, untuned gradient boosting, 10 x 3 folds: random / grouped by cluster | 0.750 / 0.752 | |
+
+   * **Effect on the task:** none measurable: the label does not travel with the family (patients sit next to their carrier parents), and grouping the folds by these clusters leaves the score unchanged. Families that share only common variants (such as c.235delC) cannot be recovered at all.
+   * **Recommendation:** nothing changes for issue 4: keep every person a row (A); the relatives note in the definition says the same. **Decision:** agree, or say what to change.
 
    [^leak18]: **LEAK-18** (Should): few features and plausible repeats are natural: keep them and say so.
 
@@ -195,6 +258,37 @@ CC (2026-11-25, Andrej): accepted for adding in the screening review (issues 1 A
 
    [^clean12]: **CLEAN-12** (Should): reconstruction that restores what the file split (codes into categories, dates split across columns) is always welcome.
    [^minimal]: The curator's line on minimal preprocessing (Andrej): fix what separates the classes for non-target reasons, nothing more.
+
+7. **Split: a grouped split instead of random folds?**
+
+   * **Problem:**
+     - The data supports few groupings: two source files, three recruiting sources of which the community screening is unmarked (no proxy found in the row order or the genotypes), 22 recovered family clusters (49 people), the 53-carrier block, and the exact genotype, which is similarity, not a group of people[^b1].
+     - The issues sit in who was recruited per class inside each file, which no split removes; a counsellor mostly meets common genotypes, and each fold needs its own training side[^b2].
+   * **Background:** your note on the split (Andrej, 2026-11-26): "It seems like there are several issues due to different collection routines in the dataset and subgroups in the dataset. Could we get rid of issues by designing a grouped split somehow?"
+   * **Experiments:** ROC AUC (higher is better); gradient boosting untuned; lookup = each genotype's share of patients in training; rule = textbook rule without the three polymorphisms; the 10 x 3-fold rows give the mean over 30 runs, the file rows each fold.
+
+     | Split | Groups | Folds | Removes | Gradient boosting | Lookup | Rule | Ahead of the rule (boosting / lookup) |
+     |---|---|---|---|---|---|---|---|
+     | random 10 x 3 (implemented) | 1,778 people | 30 | nothing | 0.750 | 0.776 | 0.677 | 30/30, 30/30 |
+     | recovered families | 1,751 | 30 | relatives on both sides | 0.749 | 0.780 | 0.677 | 30/30, 30/30 |
+     | families plus the block as one group | 1,699 | 30 | relatives; the block informing its own test rows | 0.739 | 0.769 | 0.676 | 30/30, 30/30 |
+     | exact genotype | 341 | 30 (test sides 203-1,016) | repeated genotypes (the use case) | 0.498 | 0.401 | 0.677 | 2/30, 0/30 |
+     | source file, discovery to validation | 2 | 1 of 2 | source overlap | 0.747 | 0.776 | 0.639 | |
+     | source file, validation to discovery | 2 | 2 of 2 | source overlap | 0.672 | 0.724 | 0.695 | |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Random 10 x 3-fold over all people (implemented) | as shipped | varied training sides; common genotypes on both sides, as in the use case | relatives and, if kept, the block on both sides |
+     | B | 10 x 3 folds grouped by recovered families, the block as one group | the 22 clusters and the block each on one side | relatives never split; the block cannot score itself (-0.013) | clusters inferred from row order; test sizes 538-646; moot if the block is dropped |
+     | C | The source's file split, as a recorded departure | train on one file, test on the other, both ways | the transfer the source tested | two fixed training sides, one half the size; the rule beats boosting from validation to discovery; the community subgroup stays mixed in |
+     | D | Grouped by exact genotype | each genotype on one side | tests unseen genotypes | not the use case; models fall below chance and below the rule |
+
+   * **Recommendation:** A, with the block dropped as recommended under issue 3: no grouping removes the selection, which sits in the labels of both files, and grouping by family leaves the score unchanged (0.749 against 0.750); if the block stays, B. **Decision:** A, B, C or D?
+
+   [^b1]: **SPLIT-24** (Must): group on a true group id, or on one constructed from the data exactly or by a calibrated link whose match rule comes from how the data were recorded, never from the score.
+   [^b2]: Folds that share one training side are one split; the training side must vary across folds.
 
 **Review panel:** ship after changes (mediator). Claims: 34 tested, 28 hold, 4 refuted (the 53-carrier block's cause, three sources not two, the collection period, the benign wording; all reworded), 2 untested. Blind review: include with changes. Task gamer: not gameable, no exploit above ±0.0024. Agreed: no leak, the split, every person a row, the marker for the 53-carrier block. Disputed: where the gain over the rule counts (issue 5); the mediator departs from the panel on the aliases (issue 6).
 

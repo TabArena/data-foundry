@@ -130,6 +130,31 @@ CC (2026-11-25, Andrej): accepted for adding in the screening review (issues 1 A
 
    **Notes for the AI:** On A: reword `use_case`, `row`, `known` and `fit_reason` as option A says; add the distinguishing fact (metastases found by imaging, the plasma values known at the recurrence) to SEL-7's Cases. On B: filter `previous_ppgl == "No"` in `_clean`, drop the column, update the counts in every note, re-run `dataset check` and the task probe on the cluster.
 
+   **Andrej (2026-11-26, discuss):** Can we identify whether the same patients occur multiple times?
+
+   **Answer (AI, 2026-11-26):** one patient is probably entered twice within the earlier cohorts; no patient is found in both cohorts.
+
+   * **Problem:**
+     - The release has no patient key, but a patient's sex, age at the first tumour, location, SDHB status, tumour category and first-tumour volume stay the same at every enrolment, so a repeat must match on all six.
+     - The 47 cross-cohort pairs the split audit counted match on sex, age, location, SDHB and category only, and every one of them differs in tumour volume.
+   * **Experiments:** pairs of rows in the raw file (788 patients; the 36 without a volume left out of the six-field match).
+
+     | Match | Pairs | Across the two cohorts | Same label | Expected by chance |
+     |---|---|---|---|---|
+     | all six fields exact | 1 | 0 | 1 | 0.13 (age and volume shuffled within sex and location, 200 draws) |
+     | five fields, volume left out | 85 | 47 | 64 | not computed |
+     | same sex and location, age within 0.1 year, volume within 1% | 0 | 0 | 0 | |
+
+   * **Background:** the one pair (rows 468 and 475 of the earlier cohorts): men aged 54.9, bilateral adrenal tumours of volume 159.5 (no other row has it), no earlier tumour, both not metastatic; their plasma values differ, and row 475's metanephrine equals its normetanephrine (537 and 537), which looks like an entry error.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Keep both rows, with a note (implemented: rows kept, no note yet) | a note naming the pair | no guess about which row is right | one patient may sit on both sides of a fold, with the same label |
+     | b | Drop row 475 | one row fewer | no repeated patient; drops the row with the likely entry error | an inference from six matching fields, not a patient key |
+
+   * **Recommendation:** a: one pair of 788 with the same label cannot move a score, and the release cannot confirm it is one person; this does not change issue 3's A or B. **Decision:** a or b?
+
    [^use3]: **USE-3** (Must): name the prediction point: when the model is used and what is known then. A value that did not exist at that point is a leak.
    [^use11]: **USE-11** (Must): when the use case is the first event of each entity, one row per entity; take one row per entity only when the use case is that row.
    [^source]: Source task before our own: the source's own task and split are tested first and preferred when valid.
