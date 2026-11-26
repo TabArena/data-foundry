@@ -47,11 +47,12 @@ def test_format_2_dtypes_round_trip(tmp_path):
     container = _toy(df)
     loaded = CuratedContainer.load(container.save(save_dir=tmp_path))
     assert loaded.verify()
+    # the container's own frame: under pandas 3 it holds text categories as `object`, as pandas 2 does
     for col in df.columns:
-        pdt.assert_series_equal(loaded.dataset[col], df[col], check_categorical=True)
+        pdt.assert_series_equal(loaded.dataset[col], container.dataset[col], check_categorical=True)
         if isinstance(df[col].dtype, pd.CategoricalDtype):
-            assert loaded.dataset[col].cat.ordered == df[col].cat.ordered
-            assert str(loaded.dataset[col].cat.categories.dtype) == str(df[col].cat.categories.dtype)
+            assert loaded.dataset[col].cat.ordered == container.dataset[col].cat.ordered
+            assert str(loaded.dataset[col].cat.categories.dtype) == str(container.dataset[col].cat.categories.dtype)
 
 
 def test_text_saved_under_infer_string_loads_with_its_missing_values(tmp_path):
