@@ -3,13 +3,15 @@
 Usage::
 
     python .claude/skills/knowledge-data-foundry/scripts/generated_probes.py <unique_name> ... [--all] [--built]
-        [--jobs 8] [--out DIR]
+        [--jobs 8] [--max-features 10000] [--out DIR]
 
 Runs the checks of ``curation_probes.generated`` on each dataset's frame, with its group columns left out of the
 features; ``.claude/skills/knowledge-curation/scripts/curation_probes/generated.py`` says what each check measures
 and when it raises a flag (its ``check_frame`` runs them on any table, for data without a definition). ``--all``
 probes every definition under ``--root``; ``--built`` reads the container recorded in each ``README.md``'s build
-record instead of rebuilding the frame from the raw files; ``--jobs`` sets the datasets probed in parallel.
+record instead of rebuilding the frame from the raw files; ``--max-features`` caps the feature columns (default
+10,000: above it that many are drawn at random with a fixed seed, never by the target, and the output's ``feature
+sample`` line says so); ``--jobs`` sets the datasets probed in parallel.
 ``--out DIR`` writes one JSON per dataset and ``summary.md`` there. A flag is a question, not a verdict; how to read
 them: ``.claude/skills/knowledge-curation/references/task_probes.md`` (generated data).
 """
@@ -31,11 +33,13 @@ from curation_probes import generated
 from joblib import Parallel, delayed
 
 
-def probe(name: str, root: Path, *, built: bool) -> dict:
+def probe(name: str, root: Path, *, built: bool, max_features: int = dataset_io.MAX_FEATURES) -> dict:
     """Run the checks of ``curation_probes.generated`` on one dataset."""
     started = time.time()
-    data = dataset_io.load(name, root, built=built)
+    data = dataset_io.load(name, root, built=built).sample_features(max_features)
     result = {"name": name, "origin": data.origin}
+    if data.feature_sample is not None:
+        result["feature_sample"] = data.feature_sample.as_dict()
     result |= generated.check_frame(data.df, data.target, data.problem_type, data.group_cols)
     result["seconds"] = round(time.time() - started)
     return result
@@ -73,6 +77,8 @@ def render(r: dict) -> str:
             f"; within {r['classes']} classes: {r['class_pair_share']:.1%} of {r['class_pairs']} pairs dependent, "
             f"{r['class_uniform_columns']} of {r['class_uniform_tested']} uniform"
         )
+    if sample := r.get("feature_sample"):
+        detail += "; " + dataset_io.FeatureSample(**sample).line()
     rules = r.get("flag_rules", {})
     flags = [f"{flag} ({rules[flag]})" if flag in rules else flag for flag in r["flags"]]
     return f"{r['name']} ({r['problem_type']}, {r['rows']} rows): {detail}; flags {flags}"
@@ -85,13 +91,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--all", action="store_true", help="Probe every definition under --root.")
     parser.add_argument("--root", type=Path, default=Path("datasets/_dev/tabarena-v0pt2"))
     parser.add_argument("--built", action="store_true", help="Read the built containers (README build record).")
+    dataset_io.add_feature_cap_argument(parser)
     parser.add_argument("--jobs", type=int, default=1, help="Datasets probed in parallel.")
     parser.add_argument("--out", type=Path, help="Write one JSON per dataset and summary.md here.")
     args = parser.parse_args(argv)
     names = dataset_io.dataset_names(args.root) if args.all else args.names
     if not names:
         parser.error("name at least one dataset, or pass --all")
-    results = Parallel(n_jobs=args.jobs)(delayed(_safe)(n, args.root, built=args.built) for n in names)
+    results = Parallel(n_jobs=args.jobs)(
+        delayed(_safe)(n, args.root, built=args.built, max_features=args.max_features) for n in names
+    )
     for r in results:
         print(render(r))
     if args.out:

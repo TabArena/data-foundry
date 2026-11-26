@@ -3,7 +3,7 @@
 Usage::
 
     python .claude/skills/knowledge-data-foundry/scripts/hidden_groups.py <unique_name> ... [--all] [--built] [--jobs 8]
-        [--out DIR] [--include-grouped]
+        [--max-features 10000] [--out DIR] [--include-grouped]
 
 Runs the hidden-group probe of ``curation_probes.hidden_groups``
 (``.claude/skills/knowledge-curation/scripts/curation_probes/hidden_groups.py`` says what it measures and when a
@@ -13,7 +13,9 @@ task is skipped. ``--include-grouped`` also runs the grouped datasets as if they
 marked, and left out of the near-copy tokens, the composite keys and the text keys; a key with the same groups is marked
 as the known group): the positive controls for the thresholds. ``--all`` probes every definition under ``--root``;
 ``--built`` reads the container recorded in each ``README.md``'s build record instead of rebuilding the frame from the
-raw files. ``--n-jobs`` sets the threads per model and ``--jobs`` the datasets probed in parallel. ``--out DIR`` writes
+raw files. ``--max-features`` caps the feature columns (default 10,000: above it that many are drawn at random with a
+fixed seed, never by the target, and the output's ``feature sample`` line says so). ``--n-jobs`` sets the threads per
+model and ``--jobs`` the datasets probed in parallel. ``--out DIR`` writes
 one JSON per dataset and ``summary.md`` there. How to read the output:
 ``.claude/skills/knowledge-curation/references/task_probes.md`` (hidden groups).
 """
@@ -36,12 +38,22 @@ from curation_probes.hidden_groups import COPY_MAX_CLUSTER, COPY_MIN_SHARED, N_T
 from joblib import Parallel, delayed
 
 
-def probe(name: str, root: Path, *, built: bool, n_jobs: int, include_grouped: bool) -> dict:
+def probe(
+    name: str,
+    root: Path,
+    *,
+    built: bool,
+    n_jobs: int,
+    include_grouped: bool,
+    max_features: int = dataset_io.MAX_FEATURES,
+) -> dict:
     """Run the probe of ``curation_probes.hidden_groups`` on one dataset."""
     started = time.time()
-    data = dataset_io.load(name, root, built=built)
+    data = dataset_io.load(name, root, built=built).sample_features(max_features)
     regime = "temporal" if data.time_on is not None else "grouped" if data.grouping is not None else "iid"
     result: dict = {"name": name, "regime": regime, "origin": data.origin}
+    if data.feature_sample is not None:
+        result["feature_sample"] = data.feature_sample.as_dict()
     if regime == "grouped" and not include_grouped:
         return result | {"skipped": f"{regime} task"}
     result |= hidden.run(
@@ -103,6 +115,8 @@ def render(result: dict) -> str:
     lines = [f"== {result['name']} ({result['regime']}, {result.get('rows', '?')} rows)"]
     if "skipped" in result or "error" in result:
         return lines[0] + f": {result.get('skipped') or result.get('error')}"
+    if sample := result.get("feature_sample"):
+        lines.append("   " + dataset_io.FeatureSample(**sample).line())
     if result["regime"] == "temporal":
         lines.append(f"   candidates {result['candidates']}; entity-like {result['entity_like']} (temporal: no hits)")
     else:
@@ -189,6 +203,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", type=Path, default=Path("datasets/_dev/tabarena-v0pt2"))
     parser.add_argument("--built", action="store_true", help="Read the built containers (README build record).")
     parser.add_argument("--include-grouped", action="store_true", help="Also run grouped tasks (positive controls).")
+    dataset_io.add_feature_cap_argument(parser)
     parser.add_argument("--n-jobs", type=int, default=4, help="Threads per model.")
     parser.add_argument("--jobs", type=int, default=1, help="Datasets probed in parallel.")
     parser.add_argument("--out", type=Path, help="Write one JSON per dataset and summary.md here.")
@@ -196,7 +211,12 @@ def main(argv: list[str] | None = None) -> int:
     names = dataset_io.dataset_names(args.root) if args.all else args.names
     if not names:
         parser.error("name at least one dataset, or pass --all")
-    kwargs = {"built": args.built, "n_jobs": args.n_jobs, "include_grouped": args.include_grouped}
+    kwargs = {
+        "built": args.built,
+        "n_jobs": args.n_jobs,
+        "include_grouped": args.include_grouped,
+        "max_features": args.max_features,
+    }
     results = Parallel(n_jobs=args.jobs)(delayed(_safe)(n, args.root, **kwargs) for n in names)
     for result in results:
         print(render(result))

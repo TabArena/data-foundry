@@ -3,13 +3,16 @@
 Usage::
 
     python .claude/skills/knowledge-data-foundry/scripts/group_probes.py <unique_name>
-        [--root datasets/_dev/tabarena-v0pt2] [--repeats 3] [--permutations 100] [--max-rows 200000] [--n-jobs 8]
+        [--root datasets/_dev/tabarena-v0pt2] [--repeats 3] [--permutations 100] [--max-rows 200000]
+        [--max-features 10000] [--n-jobs 8]
 
 Rebuilds the frame and the split plan from ``<root>/<unique_name>/dataset.py`` and runs the group probes of
 ``curation_probes.groups`` (``.claude/skills/knowledge-curation/scripts/curation_probes/groups.py`` says what each
 number measures) on the grouping's columns and the shipped grouped splits: the first ``--repeats`` repeats,
 ``--permutations`` runs of the permutation test when the labels are one per group (``Grouping(labels="per_group")``),
-a random set of whole groups when the frame has more than ``--max-rows`` rows, and ``--n-jobs`` processes. A
+a random set of whole groups when the frame has more than ``--max-rows`` rows, at most ``--max-features`` feature
+columns (a random draw with a fixed seed above the cap, printed as the ``feature sample`` line), and ``--n-jobs``
+processes. A
 definition without a grouping is no grouped task (exit code 1). A task with a training weight (``sample_weight``) is
 probed with it: every model is fitted with it (kNN takes none) and every score is weighted. The numbers are indicative
 (untuned models) and meant for the curation decision; how to read them:
@@ -38,6 +41,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--permutations", type=int, default=100)
     parser.add_argument("--max-rows", type=int, default=200_000)
+    dataset_io.add_feature_cap_argument(parser)
     parser.add_argument("--n-jobs", type=int, default=8)
     args = parser.parse_args(argv)
 
@@ -45,7 +49,9 @@ def main(argv: list[str] | None = None) -> int:
     if ds.task_metadata.grouping is None:
         print(f"{args.name} is not a grouped task.")
         return 1
-    data = dataset_io.from_definition(ds)
+    data = dataset_io.from_definition(ds).sample_features(args.max_features)
+    if data.feature_sample is not None:
+        print(data.feature_sample.line())
     groups.run(
         data.df,
         data.target,

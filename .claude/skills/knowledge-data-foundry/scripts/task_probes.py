@@ -12,7 +12,9 @@ and, for a task scored per group (``Grouping(prediction_unit="group")``), the gr
 ``time_on``. ``--all`` probes every definition under ``--root``; ``--built`` reads the container recorded in each
 ``README.md``'s build record instead of rebuilding the frame from the raw files. ``--splits`` sets the splits probed
 (default: up to 30 for small data, else 5), ``--max-rows`` caps each train and test side (default 200,000; a
-temporal task's train side keeps its newest rows), ``--no-text`` leaves text columns out instead of encoding them,
+temporal task's train side keeps its newest rows), ``--max-features`` caps the feature columns (default 10,000: a
+very wide table is probed on a random draw of that many columns, with a fixed seed and never by the target, and the
+output's ``feature sample`` line says so), ``--no-text`` leaves text columns out instead of encoding them,
 ``--n-jobs`` sets the threads per model and ``--jobs`` the datasets probed in parallel (a sweep of the working copy
 with ``--jobs 8`` takes about 2-3 hours, at most about 13 GB per job). ``--out DIR`` writes one JSON per dataset
 and ``summary.md`` there.
@@ -46,10 +48,20 @@ from curation_probes import task
 from joblib import Parallel, delayed
 
 
-def probe(name: str, root: Path, *, built: bool, n_splits: int | None, max_rows: int, n_jobs: int, text: bool) -> dict:
+def probe(
+    name: str,
+    root: Path,
+    *,
+    built: bool,
+    n_splits: int | None,
+    max_rows: int,
+    n_jobs: int,
+    text: bool,
+    max_features: int = dataset_io.MAX_FEATURES,
+) -> dict:
     """Run the probes of ``curation_probes.task`` on one dataset and return the numbers and flags."""
     started = time.time()
-    data = dataset_io.load(name, root, built=built)
+    data = dataset_io.load(name, root, built=built).sample_features(max_features)
     grouping = data.grouping
     result = task.run(
         data.df,
@@ -71,7 +83,8 @@ def probe(name: str, root: Path, *, built: bool, n_splits: int | None, max_rows:
     )
     seconds = round(time.time() - started)
     head = {"name": name, "origin": data.origin, "regime": data.regime, "sample_weight": data.weight_column}
-    return head | result | {"seconds": seconds}
+    sample = {"feature_sample": data.feature_sample.as_dict()} if data.feature_sample is not None else {}
+    return head | result | sample | {"seconds": seconds}
 
 
 def weight_and_metric_lines(result: dict) -> list[str]:
@@ -119,6 +132,8 @@ def render(result: dict) -> str:
         + f", {result['splits_probed']} of {result['splits_shipped']} splits, {result['seconds']} s"
     )
     lines = [head, *weight_and_metric_lines(result)]
+    if sample := result.get("feature_sample"):
+        lines.append("  " + dataset_io.FeatureSample(**sample).line())
     for key in ["dummy", "drift", "linear", "selected_linear", "random_forest", "lightgbm", "single_feature"]:
         if key in t:
             cells = score_cells(t[key], keys, result.get("declared_metric"))
@@ -167,6 +182,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--built", action="store_true", help="Read the built containers (README build record).")
     parser.add_argument("--splits", type=int, help="Splits to probe (default: up to 30 for small data, else 5).")
     parser.add_argument("--max-rows", type=int, default=task.MAX_ROWS)
+    dataset_io.add_feature_cap_argument(parser)
     parser.add_argument("--no-text", action="store_true", help="Leave text columns out instead of encoding them.")
     parser.add_argument("--n-jobs", type=int, default=8, help="Threads per model.")
     parser.add_argument("--jobs", type=int, default=1, help="Datasets probed in parallel.")
@@ -182,6 +198,7 @@ def main(argv: list[str] | None = None) -> int:
         "max_rows": args.max_rows,
         "n_jobs": args.n_jobs,
         "text": not args.no_text,
+        "max_features": args.max_features,
     }
     results = Parallel(n_jobs=args.jobs)(delayed(_safe_probe)(n, args.root, **kwargs) for n in names)
     for result in results:

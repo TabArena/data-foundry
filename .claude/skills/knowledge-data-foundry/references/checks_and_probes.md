@@ -55,18 +55,18 @@ predictions at the metric's floor (`min_prediction`, MET-13).
 
 ```bash
 K=.claude/skills/knowledge-data-foundry/scripts
-.venv/bin/python $K/leak_probes.py <unique_name> [--splits 3] [--max-rows 50000] [--max-single-features 300] [--n-jobs 8] [--out DIR]
+.venv/bin/python $K/leak_probes.py <unique_name> [--splits 3] [--max-rows 50000] [--max-single-features 300] [--max-features 10000] [--n-jobs 8] [--out DIR]
 .venv/bin/python $K/leak_probes.py <unique_name> --period-only [--time-on COLUMN] [--period D|W|M|Q|Y] [--tz ZONE] [--positive LABEL] [--tail N]
 .venv/bin/python $K/leak_probes.py <unique_name> --raw [--splits 3] [--max-rows 50000] [--n-jobs 8] [--out DIR]
 .venv/bin/python $K/leak_probes.py <unique_name> --weight-proxy [--weight-column COLUMN] [--objective metric|l2|OBJ] [--seeds 3] [--splits 3] [--max-rows 50000]
 .venv/bin/python $K/leak_probes.py <unique_name> --forced-split [--time-on COLUMN] [--period Y|Q|M|W|D] [--objective metric|l2|OBJ] [--seeds 3] [--forced-splits 9] [--max-rows 50000]
 .venv/bin/python $K/leak_probes.py <unique_name> --stationary-relation [--time-on COLUMN] [--period Y|Q|M|W|D] [--unordered] [--unit COLUMN|none] [--exclude COLUMN ...] [--windows 3] [--test-period LABEL ...] [--stationary-seeds 5] [--foundation none|tabpfn|kumo] [--device cpu|cuda] [--threads N]
-.venv/bin/python $K/task_probes.py <unique_name> [--built] [--splits N] [--no-text] [--out DIR]   # or --all --jobs 8
-.venv/bin/python $K/group_probes.py <unique_name> [--repeats 3] [--permutations 100]
-.venv/bin/python $K/hidden_groups.py <unique_name> [--built] [--include-grouped] [--out DIR]     # or --all
-.venv/bin/python $K/generated_probes.py <unique_name> [--built] [--out DIR]                     # or --all
-.venv/bin/python $K/dtype_probes.py <unique_name> [--codebook URL] [--no-fetch] [--out DIR]    # or --all --jobs 4
-.venv/bin/python $K/time_probes.py <unique_name> [--built] [--include-temporal] [--out DIR]     # or --all --jobs 4
+.venv/bin/python $K/task_probes.py <unique_name> [--built] [--splits N] [--max-features 10000] [--no-text] [--out DIR]   # or --all --jobs 8
+.venv/bin/python $K/group_probes.py <unique_name> [--repeats 3] [--permutations 100] [--max-features 10000]
+.venv/bin/python $K/hidden_groups.py <unique_name> [--built] [--include-grouped] [--max-features 10000] [--out DIR]   # or --all
+.venv/bin/python $K/generated_probes.py <unique_name> [--built] [--max-features 10000] [--out DIR]                 # or --all
+.venv/bin/python $K/dtype_probes.py <unique_name> [--codebook URL] [--no-fetch] [--max-features 10000] [--out DIR] # or --all --jobs 4
+.venv/bin/python $K/time_probes.py <unique_name> [--built] [--include-temporal] [--max-features 10000] [--out DIR] # or --all --jobs 4
 .venv/bin/python $K/tuned_results.py <unique_name> [--feature auto]
 ```
 
@@ -166,6 +166,34 @@ K=.claude/skills/knowledge-data-foundry/scripts
   format-1 containers: say so when the v2 definition changed the split, the columns or the scoring.
 * `check_collection_bundles.py [--collection BeyondArena] [--json PATH]`: the bundle checks over every container of a
   registered collection, for the v1 collections ([DATA_FOUNDRY_V1.md](../../../../DATA_FOUNDRY_V1.md)).
+
+### The column budget: `--max-features`
+
+Every probe entry point takes `--max-features` (default **10,000**; `0` for every column). A frame with at most that
+many feature columns is probed exactly as before: the same columns, the same numbers, the same output. Above the cap
+the probe draws that many feature columns at random and runs on them, which is what lets a very wide table be probed
+at all: on `gse40279_methylation_age` (656 rows x 473,037 columns) three probes were killed at about 20 GB and the
+group probe produced nothing in 3.5 hours before the cap.
+
+* **The draw is honest.** It reads no values, so it cannot select on the target: this is a random subset, never the
+  supervised selection the rules forbid (`selected_linear` inside `task_probes.py` still picks its inputs on each
+  train side, as it always did). It uses a fixed seed (0), so the same cap on the same frame draws the same columns
+  and two runs are comparable.
+* **Nothing that is not a feature is dropped.** The target, the group columns, the time columns and the scoring
+  columns stay whatever the cap is; only model inputs are drawn from. The frame's own column order is kept.
+* **The output says so.** A probe that sampled prints
+  `feature sample: 10,000 of 473,034 feature columns, drawn at random without looking at the target (cap 10,000,
+  seed 0); every number below is from this sample, not from the whole table`, and writes the same four numbers to its
+  JSON as `feature_sample` (`cap`, `drawn`, `total`, `seed`). Never quote a sampled number as the dataset's: say
+  which sample it came from, and raise the cap when the decision turns on it.
+* **What the cap does not reach.** It is a budget on the frame the probes model, not on loading: the definition's
+  full frame is still built first, so the peak memory of reading a very wide source is unchanged, and
+  `leak_probes.py --raw` and `time_probes.py` still read the whole raw table for the checks that need it. The leak
+  probes' `--max-single-features` (default 300) applies on top, to the columns fitted one by one.
+
+The budget lives in one place, `dataset_io.py`: `MAX_FEATURES`, `ProbeInput.sample_features` and, for the frame-level
+callers, `sampled_columns`. A new probe script adds `dataset_io.add_feature_cap_argument(parser)` and one
+`sample_features` call; `tests/test_skill_files.py` checks that each one does.
 
 ### The stationary-relation test
 

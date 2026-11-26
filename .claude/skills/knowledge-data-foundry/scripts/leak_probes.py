@@ -4,7 +4,7 @@ Usage::
 
     python .claude/skills/knowledge-data-foundry/scripts/leak_probes.py <unique_name>
         [--root datasets/_dev/tabarena-v0pt2] [--splits 3] [--max-rows 50000] [--max-single-features 300]
-        [--n-jobs 8] [--out DIR]
+        [--max-features 10000] [--n-jobs 8] [--out DIR]
         [--time-on COLUMN] [--period D|W|M|Q|Y] [--tz ZONE] [--positive LABEL] [--tail N] [--period-only] [--raw]
     python .claude/skills/knowledge-data-foundry/scripts/leak_probes.py <unique_name> --weight-proxy
         [--weight-column COLUMN] [--objective metric|l2|OBJECTIVE] [--seeds 3] [--splits 3] [--max-rows 50000]
@@ -20,8 +20,12 @@ Usage::
 Rebuilds the frame and the split plan from ``<root>/<unique_name>/dataset.py`` and runs the leak probes of
 ``curation_probes.leak`` (``.claude/skills/knowledge-curation/scripts/curation_probes/leak.py`` says what each number
 measures) on the first ``--splits`` shipped splits: untuned LightGBM with ``--n-jobs`` threads, train and test rows
-capped at ``--max-rows`` each, at most ``--max-single-features`` columns (and missing patterns) fitted one by one, and
-the definition's group columns left out of the features. ``--out DIR`` also writes the numbers to
+capped at ``--max-rows`` each, at most ``--max-single-features`` columns (and missing patterns) fitted one by one, at
+most ``--max-features`` feature columns in all, and the definition's group columns left out of the features. Above
+``--max-features`` (default 10,000) that many feature columns are drawn at random with a fixed seed, never by the
+target, and every mode of this script prints the ``feature sample`` line and writes the draw to its JSON, so a very
+wide table can be probed at all and no reader takes the result for a full one; the target, group, time and scoring
+columns are kept whatever the cap is. ``--out DIR`` also writes the numbers to
 ``DIR/<unique_name>.json``. The numbers are indicative (untuned models, a few splits) and meant for comparing the
 shipped data with a suspected fix. For a classification task whose raw file is one table holding the target column,
 it also counts, per column and class, the cells on a straight line between their neighbours in the raw file's order
@@ -438,24 +442,29 @@ def probe(args: argparse.Namespace) -> dict:
     ds = dataset_io.definition(args.name, args.root)
     raw = getattr(args, "raw", False)  # a Namespace built by hand may not have it
     data = dataset_io.from_definition(ds, raw=True) if raw else dataset_io.from_definition(ds)
+    data = data.sample_features(getattr(args, "max_features", dataset_io.MAX_FEATURES))
+    sample: dict = {}
+    if data.feature_sample is not None:
+        leak.say(data.feature_sample.line())
+        sample = {"feature_sample": data.feature_sample.as_dict()}
     if raw:
-        result = {"name": args.name, "raw_state": raw_state(ds, data, args)}
+        result = {"name": args.name, "raw_state": raw_state(ds, data, args), **sample}
         result["seconds"] = round(time.time() - started)
         return result
     if args.period_only:
-        result = {"name": args.name, "target_by_period": target_by_period(data, args)}
+        result = {"name": args.name, "target_by_period": target_by_period(data, args), **sample}
         result["seconds"] = round(time.time() - started)
         return result
     if getattr(args, "weight_proxy", False):
-        result = {"name": args.name, "weight_proxy": weight_proxy(data, args)}
+        result = {"name": args.name, "weight_proxy": weight_proxy(data, args), **sample}
         result["seconds"] = round(time.time() - started)
         return result
     if getattr(args, "stationary_relation", False):
-        result = {"name": args.name, "stationary_relation": stationary_relation(data, args)}
+        result = {"name": args.name, "stationary_relation": stationary_relation(data, args), **sample}
         result["seconds"] = round(time.time() - started)
         return result
     if getattr(args, "forced_split", False):
-        result = {"name": args.name, "forced_split": forced_split(ds, data, args)}
+        result = {"name": args.name, "forced_split": forced_split(ds, data, args), **sample}
         result["seconds"] = round(time.time() - started)
         return result
     result = leak.run(
@@ -472,6 +481,7 @@ def probe(args: argparse.Namespace) -> dict:
         n_jobs=args.n_jobs,
         sample_weight=data.weights,
     )
+    result |= sample
     result["target_by_period"] = target_by_period(data, args)
     raw = ds.raw
     if data.problem_type != "regression" and isinstance(raw, pd.DataFrame) and data.target in raw.columns:
@@ -498,6 +508,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--max-single-features", type=int, default=300, help="Columns (and missing patterns) fitted one by one."
     )
+    dataset_io.add_feature_cap_argument(parser)
     parser.add_argument("--n-jobs", type=int, default=8, help="Threads per LightGBM model.")
     parser.add_argument("--out", type=Path, help="Also write the numbers to OUT/<name>.json.")
     parser.add_argument("--time-on", help="Probe 13's time column; default the task's.")

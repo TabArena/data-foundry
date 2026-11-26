@@ -3,7 +3,7 @@
 Usage::
 
     python .claude/skills/knowledge-data-foundry/scripts/time_probes.py <unique_name> ... [--all] [--built]
-        [--include-temporal] [--jobs 4] [--out DIR] [--root DIR]
+        [--include-temporal] [--jobs 4] [--max-features 10000] [--out DIR] [--root DIR]
 
 Runs ``curation_probes.time_recovery`` on each dataset: date-like columns in the frame and among the raw columns the
 definition drops, the target along the raw row order and along each ID-like column, few-valued columns that encode
@@ -14,7 +14,10 @@ the local warehouse (``$DATA_FOUNDRY_WAREHOUSE``, else ``local-data-warehouse/``
 ``--all`` probes every definition under ``--root`` whose split is not temporal (``--include-temporal`` adds the
 temporal ones). ``--built`` reads a container instead of the raw files: the build of the ``README.md``'s build record
 when it is in the local warehouse, else the copy of a registered collection (BeyondArena), from the cache
-(``$DATA_FOUNDRY_CACHE``, else ``~/.cache/data_foundry/<collection>/``) or downloaded into it. A container's rows are
+(``$DATA_FOUNDRY_CACHE``, else ``~/.cache/data_foundry/<collection>/``) or downloaded into it. ``--max-features``
+caps the feature columns scanned (default 10,000: above it that many are drawn at random with a fixed seed, never by
+the target, and the output's ``feature sample`` line says so; the raw table it also reads is not capped).
+A container's rows are
 shuffled, so with ``--built`` the checks of the row order are not run (the output says so); the checks of the values
 (date columns, IDs, period values) are. ``--out DIR`` writes one JSON per dataset and ``summary.md``. A flag is a
 question: the reading is in ``.claude/skills/knowledge-curation/references/splits.md`` (SPLIT-32) and
@@ -43,7 +46,14 @@ BUILT_WARNING = (
 )
 
 
-def probe(name: str, root: Path, *, built: bool, include_temporal: bool = False) -> dict:
+def probe(
+    name: str,
+    root: Path,
+    *,
+    built: bool,
+    include_temporal: bool = False,
+    max_features: int = dataset_io.MAX_FEATURES,
+) -> dict:
     """Run ``time_recovery.check_frame`` on one dataset."""
     started = time.time()
     if built:
@@ -55,7 +65,10 @@ def probe(name: str, root: Path, *, built: bool, include_temporal: bool = False)
                 "flags": []
             }
         data = dataset_io.from_definition(ds, raw=True)
+    data = data.sample_features(max_features)
     result = {"name": name, "origin": data.origin, "regime": data.regime}
+    if data.feature_sample is not None:
+        result["feature_sample"] = data.feature_sample.as_dict()
     if data.regime == "temporal_non_iid" and not include_temporal:
         return result | {"skipped": "temporal split", "flags": []}
     exclude = tuple(data.group_cols) + tuple(data.scoring_cols)
@@ -137,6 +150,8 @@ def render(r: dict) -> str:
         parts.append("time columns " + ", ".join(f"{c} ({why})" for c, why in r["time_columns"].items()))
     if r.get("dropped_time_columns"):
         parts.append("dropped " + ", ".join(r["dropped_time_columns"]))
+    if sample := r.get("feature_sample"):
+        parts.append(dataset_io.FeatureSample(**sample).line())
     parts += _render_order(r)
     drifting = [c for c, o in r["id_orders"].items() if o["flag"]]
     if drifting:
@@ -155,6 +170,7 @@ def main() -> None:
     parser.add_argument("--all", action="store_true")
     parser.add_argument("--built", action="store_true")
     parser.add_argument("--include-temporal", action="store_true")
+    dataset_io.add_feature_cap_argument(parser)
     parser.add_argument("--jobs", type=int, default=4)
     parser.add_argument("--out", type=Path)
     args = parser.parse_args()
@@ -162,7 +178,14 @@ def main() -> None:
     if not names:
         parser.error("name a dataset or pass --all")
     results = Parallel(n_jobs=args.jobs)(
-        delayed(_safe)(n, args.root, built=args.built, include_temporal=args.include_temporal) for n in names
+        delayed(_safe)(
+            n,
+            args.root,
+            built=args.built,
+            include_temporal=args.include_temporal,
+            max_features=args.max_features,
+        )
+        for n in names
     )
     lines = [render(r) for r in results]
     if args.built:

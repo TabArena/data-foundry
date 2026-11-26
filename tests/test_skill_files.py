@@ -242,6 +242,36 @@ def test_probe_library_docstring_names_every_module():
     )
 
 
+PROBE_SCRIPTS = (
+    "leak_probes.py",
+    "task_probes.py",
+    "group_probes.py",
+    "hidden_groups.py",
+    "generated_probes.py",
+    "dtype_probes.py",
+    "time_probes.py",
+)
+"""The probe entry points: each one loads a frame and must take the column budget, so a very wide table can be
+probed at all."""
+
+
+@pytest.mark.parametrize("script", PROBE_SCRIPTS)
+def test_every_probe_script_takes_the_feature_cap(script):
+    """Every probe takes ``--max-features`` and draws the sample through ``dataset_io``, never its own way."""
+    text = (KDF / "scripts" / script).read_text(encoding="utf-8")
+    assert "dataset_io.add_feature_cap_argument(parser)" in text, f"{script} does not take --max-features"
+    assert "sample_features(" in text or "sampled_columns(" in text, f"{script} does not sample its columns"
+    assert "--max-features" in text.split('"""')[1], f"{script}'s docstring does not document --max-features"
+
+
+def test_the_probe_reference_documents_the_feature_cap():
+    """A reader of the probes finds the cap, the flag and the sampled-output line where the probes are described."""
+    text = (KDF / "references" / "checks_and_probes.md").read_text(encoding="utf-8")
+    assert "--max-features" in text
+    assert "10,000" in text
+    assert "feature sample" in text
+
+
 # --------------------------------------------------------------------------- the register on the repository
 def test_decision_register_runs_on_the_repository():
     """The register reads every record and knowledge file without error and finds the rule IDs it should."""
