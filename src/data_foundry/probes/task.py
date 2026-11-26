@@ -230,9 +230,6 @@ def run(  # noqa: C901, PLR0912, PLR0913
     """
     regression = problem_type == "regression"
     group_cols = list(group_cols)
-    X, names, text_cols = numeric(df, list(dict.fromkeys([target, *group_cols, *non_features])))
-    if not text:
-        text_cols = []
     labels_of = df[target]
     classes: pd.Index = pd.Index([])
     if regression:
@@ -266,6 +263,17 @@ def run(  # noqa: C901, PLR0912, PLR0913
         elif len(test) > max_rows:
             test = np.sort(rng.choice(test, max_rows, replace=False))
         pairs.append((train, test, full_train))
+
+    # The model inputs of the rows a model fits or predicts only (the whole train sides feed the constants, which read
+    # the target alone): a `_1m` container holds millions of training rows, of which each side keeps `max_rows`.
+    used = np.unique(np.concatenate([np.concatenate([train, test]) for train, test, _ in pairs])) if pairs else None
+    X, names, text_cols = numeric(df, list(dict.fromkeys([target, *group_cols, *non_features])), rows=used)
+    if not text:
+        text_cols = []
+
+    def at(rows: np.ndarray) -> np.ndarray:
+        """The positions of ``rows`` (positions in ``df``) in ``X``."""
+        return np.searchsorted(used, rows) if used is not None else rows
 
     results: dict[str, list[dict]] = {}
     categorical = [f"f{i}" for i, name in enumerate(names) if isinstance(df[name].dtype, pd.CategoricalDtype)]
@@ -309,7 +317,7 @@ def run(  # noqa: C901, PLR0912, PLR0913
         ref = reference_of(full_train)
         y_tr, y_te = y[train], y[test]
         w_tr = scoring.take(weight, train)
-        X_tr, X_te = X.iloc[train].reset_index(drop=True), X.iloc[test].reset_index(drop=True)
+        X_tr, X_te = X.iloc[at(train)].reset_index(drop=True), X.iloc[at(test)].reset_index(drop=True)
         text_blocks: dict[str, list[str]] = {}
         if text_cols:
             t_tr, t_te, text_blocks = encode_text(df, text_cols, train, test)

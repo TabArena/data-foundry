@@ -158,7 +158,11 @@ class ProbeInput:
         fields = _spec_fields(self.metric)
         if not fields or fields.get("kind") == "local":
             return None
-        frame = self.df.reset_index(drop=True)
+        # the columns the scorer reads: the target, the metric's inputs and the grouping's (not a copy of every feature)
+        read = {self.target, *(fields.get("inputs") or {}).values(), *self.group_cols}
+        if self.grouping is not None and getattr(self.grouping, "time_on", None):
+            read.add(self.grouping.time_on)
+        frame = self.df[[c for c in self.df.columns if c in read]].reset_index(drop=True)
         if self.scoring is not None:
             frame = frame.join(self.scoring[[c for c in self.scoring.columns if c not in frame.columns]])
         task = SimpleNamespace(target_column_name=self.target, objective_metric=self.metric, grouping=self.grouping)
