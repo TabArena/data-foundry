@@ -7,7 +7,7 @@ checked_by:
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Andrej
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 4
 decision_markers:
 - Outdated
@@ -88,6 +88,10 @@ CC (2026-11-25, Andrej): review issue 3, b: "Reply (b): Log loss for both, decid
 
 CC (2026-11-25, Andrej): the declared metric (log loss, from context; the case study's c statistic named as the original) is checked: the source scores calibration next to the c statistic and argues the c statistic misses it, the treatment decision acts on the absolute risk, and log loss separates a logistic regression with splines from a plain one on 7 of 8 region folds, as ROC AUC does.
 
+CC (2026-11-26, Andrej): the declared split (whole regions in one round of 8-fold grouped cross-validation, two of the 16 regions per test fold) is checked, as implemented.
+
+CC (2026-11-26, Andrej): verdict ship. Open in the review: issue 2, whether the dataset joins next to `mic` or takes its place (one call with `mic`'s issue 5); the verdict leaves out only issue 2's option C. The build is stale until rebuilt.
+
 **Assessment (AI, 2026-11-25):** issue 3 (b) applied. `dataset.py`: `Metric.from_context("log_loss", ...)` replaces the roc_auc fallback; the reason quotes the case study's sentence on the c statistic, names the c statistic as the original, and gives the absolute-risk decision and the regions' death rates (5.3% to 8.4%); the probe note gives the log-loss figures. Check: 0 errors, 0 warnings (2 accepted), 3 info; metric `log_loss` (origin context). Task probe on the 8 region folds, log loss: linear 0.2006, random forest 0.2039, LightGBM 0.2044, age alone 0.2322, class shares 0.2547 (linear beats the class shares on every split, by 21.2% of their loss); no flag. heart_disease changed in the same round (its own record).
 
 ## Review
@@ -114,7 +118,7 @@ Decided: issue 1 (1 x 8 folds), issue 3 (log loss, from context, with heart_dise
   issue 2 (next to mic or in its place).
 ```
 
-**Main points:** Andrej chose one round of 8 folds of 2 regions (issue 1) and kept the three ages of 108 to 110 with a note (issue 4), and chose log loss from context for this dataset and heart_disease together (issue 3: the source scores calibration next to the c statistic and argues the c statistic misses it; heart_disease's source scored calibration and accuracy, never ROC AUC). One call stays open, not a validity question: whether the dataset joins next to `mic` or replaces it (one call with `mic`'s issue 5). Applied without a decision: `height` dropped (its fills leak the outcome), the five flags kept as released (the builder had dropped them), impossible pulse and pressure values set to missing, `groups_test_groups_few` accepted with its reason, and the wording of the use case, fit and split. The record now carries `Outdated` and `Class-dependent Recording` (the height fills), both for the curator to confirm.
+**Main points:** Andrej chose one round of 8 folds of 2 regions (issue 1) and kept the three ages of 108 to 110 with a note (issue 4), and chose log loss from context for this dataset and heart_disease together (issue 3: the source scores calibration next to the c statistic and argues the c statistic misses it; heart_disease's source scored calibration and accuracy, never ROC AUC). Verdict ship and the split checked (2026-11-26). One call stays open, not a validity question: whether the dataset joins next to `mic` or replaces it (one call with `mic`'s issue 5). Applied without a decision: `height` dropped (its fills leak the outcome), the five flags kept as released (the builder had dropped them), impossible pulse and pressure values set to missing, `groups_test_groups_few` accepted with its reason, and the wording of the use case, fit and split. The record now carries `Outdated` and `Class-dependent Recording` (the height fills), both for the curator to confirm.
 
 **Issues for the curator:**
 

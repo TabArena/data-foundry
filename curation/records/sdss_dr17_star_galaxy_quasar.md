@@ -7,7 +7,7 @@ checked_by:
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Andrej
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 4
 decision_markers:
 - Selection Bias
@@ -100,13 +100,19 @@ CC (2026-11-25, Andrej): issue 2, d ("Add both"): the imaging pipeline's object 
 
 CC (2026-11-25, Andrej): issue 3, B ("Implement B."): three test windows, one per targeting era, newest first: 1 January 2019 to the end of the data (with 2020; the end of eBOSS, then eFEDS), the calendar year 2016 (eBOSS) and the calendar year 2013 (BOSS), each trained on every earlier spectrum, no gap; three is the target an IID split of 4,249,921 objects would get (one repeat of 3 folds), and the eight yearly windows were inherited from `sdss_17`, whose 100,000 rows have a target of 9.
 
+CC (2026-11-26, Andrej): the declared metric (log_loss, fallback: SDSS DR17 is a data release with no prediction task or metric) is checked, as implemented.
+
+CC (2026-11-26, Andrej): the declared split (temporal on the spectrum's date, three test windows, one per targeting era: 2019 with 2020, 2016 and 2013, each trained on every earlier spectrum, no gap) is checked, as implemented.
+
+CC (2026-11-26, Andrej): verdict ship. Open in the review: the DESI consistency check under issue 1, a question for DESI's record, which does not hold this one. The build is stale until rebuilt.
+
 **Assessment (AI, 2026-11-25):** the three windows hold 52,526 (2019-2020), 179,009 (2016) and 447,141 (2013) objects, none cut by the 500,000 test cap, and train on 4,197,395 (98.8%), 3,564,868 (83.9%) and 2,769,428 (65.2%); quasars are 50.3%, 42.4% and 15.6% of the test windows against 17.3%, 13.3% and 9.6% of their training sides. `dataset check`: 0 errors, 0 warnings. Task probe (3 of 3 windows, log loss): LightGBM 0.232, random forest 0.252, logistic regression 0.346, the best single feature 0.520, the class shares 1.130; LightGBM ahead in every window.
 
 ## Review
 
 **Outcome:** added as `sdss_dr17_star_galaxy_quasar_1m`; the horizon is signed off as implemented and the spectra DR17 flags are dropped (issue 1, B, 2026-11-25, Andrej); the imaging's object type and the dust extinction join the inputs (issue 2, d, 2026-11-25, Andrej); three test windows, one per targeting era (issue 3, B, 2026-11-25, Andrej). 4,249,921 objects with a spectrum in SDSS DR17 whose class the pipeline does not flag (`zWarning` = 0; February 2000 to March 2020), the target the spectroscopic pipeline's class (galaxy 61.60%, star 20.73%, quasar 17.68%), inputs the sky position, the camera column, the model and PSF magnitudes in five bands, the imaging pipeline's object type (`photo_type`) and the extinction in five bands; redshift, plate and fibre dropped as in `sdss_17`, the date no input. Split: three windows, one per targeting era, 2019-2020 together (52,526 objects), 2016 (179,009) and 2013 (447,141), each trained on every earlier spectrum (98.8%, 83.9%, 65.2%), no gap; metric the fallback log loss. Validity: no column leaks (all features AUC 0.973 in the leak probe, the best single one `photo_type` 0.812; missing indicators 0.50, number formats 0.52; no exact copy across the split); the one exploit, reading the test window's other rows, is closed by a protocol line. Value: on the three windows, untuned LightGBM 0.232 log loss, random forest 0.252, logistic regression 0.346, the best single feature 0.520, the class shares 1.130. `dataset check`: 0 errors, 0 warnings. Not built.
 
-**Main points:** Horizon signed off (one year, no gap), the flagged spectra dropped (issue 1, B) and the imaging's object type and dust extinction added as inputs, both known to a practitioner at training and prediction time (issue 2, d), and three test windows, one per targeting era, the count the size calls for (issue 3, B); open: the DESI consistency check under issue 1.
+**Main points:** Verdict ship, metric and split checked (2026-11-26). Horizon signed off (one year, no gap), the flagged spectra dropped (issue 1, B) and the imaging's object type and dust extinction added as inputs, both known to a practitioner at training and prediction time (issue 2, d), and three test windows, one per targeting era, the count the size calls for (issue 3, B); open: the DESI consistency check under issue 1.
 
 **Record judgment:** The panel changed the definition in two places and the builder's draft in one. The spectra whose fibre carried no light are dropped by the source's own flags (18,513 UNPLUGGED, and 1,068 NODATA that the mediator found, all labelled galaxy): a class fitted to no light is a missing label, so this needed no weighing. The PSF magnitudes are added: the feature set of `sdss_17` came from the Kaggle file, not from a choice against them, and they lowered the log loss by 0.09 to 0.15 in four tests (the task probe now 0.354 against the builder's 0.489). The rest is writing in the definition: the no-gap reason (a window's length is not a gap), the number of splits an IID split would get at this size (3, not 9), the reason for merging 2019 and 2020 (eight plates of one programme), the sky position note with its cost, the re-observed objects, the 492,959 primary spectra with no photometric object, the linear baseline quoted from one run, and the protocol line against reading the test window's other rows. "Task easier" is gone from issue 1 as a reason. The record's screening named DESI DR1 as `TBD -> Yes`; it is suspended (Comments, Assessment of 2026-11-25). Retiring `sdss_17` is decided in its own review.
 

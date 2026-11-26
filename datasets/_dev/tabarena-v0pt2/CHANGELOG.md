@@ -1,6 +1,25 @@
 # Changelog: TabArena v0.2 working copy
 
 ## 2026-11-23, every definition names its split-tree leaf; `RetrospectiveFillIn` and `Target: Fixed Delay` in use (no container built)
+## 2026-11-26, curator's marks on the better-data datasets
+
+- nhanes_dxa_body_fat: the sagittal abdominal diameter dropped again (issue 4, B, superseding issue 2's d): every
+  2017-2018 test row lacks it, and there it worsened LightGBM's RMSE (3.405 against 3.350); back to the eleven
+  measures every cycle shares, `splits_feature_missing_in_test` no longer accepted. Check 0 errors, 1 warning.
+- phreshphish_phishing_pages: horizon signed off (three four-week windows, one-day gap) and the canonical URL kept as
+  a text input (issue 2); `splits_below_target`, `task_label_time_gap`, `dataset_pure_feature_value` and
+  `dataset_identifier_column` accepted. The metric (issue 1) and a brand feature (issue 3) are answered with
+  measurements and stay open. Check 0 errors, 0 warnings.
+- craigslist_used_vehicles_f150: the earlier-scrapes split kept (issue 3, a); `task_summary` names the use case as
+  ours (a price guide refit once per scrape) and `splits_comment` records what the same-scrape design would score.
+  The title (issue 1) and the relisted trucks (issue 2) are answered and stay open. Check 0 errors.
+- aquatic_toxicity_lunghini_consensus: `rmse` recorded as the source's criterion (issue 2, b); no row or score
+  changes. Check 0 errors, 0 warnings.
+- Record-only: ga_merchandise_store_sessions keeps eight windows (issue 2, b); fiat_500's time basis settled as
+  `RetrospectiveFillIn` (issue 6, B, already declared); thyroid_discordant_archive kept as the better data (issue 2,
+  A) and shipped; gusto_i_mi_mortality, sdss_dr17_star_galaxy_quasar and ready_biodegradability_huang_zhang have
+  their split (and metric) checked and verdict ship.
+
 ## 2026-11-25 (night), phreshphish_phishing_pages: added (no container built)
 
 - New folder: PhreshPhish v1.0.1 (Dalton et al. 2025, Hugging Face, CC BY 4.0), the dated phishing task decided in

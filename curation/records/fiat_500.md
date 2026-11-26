@@ -58,6 +58,8 @@ CC (2026-11-05, Andrej): domain `business & marketing` (Review issue 5, B), in t
 
 CC (2026-11-17, Andrej): the declared split (random, 10x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-26, Andrej): review issue 6, B: the split's time basis is a fill-in of one crawl, declared as `RetrospectiveFillIn` (the prototype the issue called `Snapshot`).
+
 ## Review
 
 **Outcome:** added. Used Fiat 500s listed on the Italian site automobile.it, one crawl uploaded to Kaggle in 2020:
@@ -74,7 +76,7 @@ leak-free depreciation model with dealer effects ranks 9th of 41. Quality: no ot
 with a use case anyone can name +; one crawl of unstated date and filter, a small table, and better data for the same
 task under screening (autoscout24_car_listings_2025, priority 1) -.
 
-**Main points:** The 4 issues parked on 2026-11-11 are open again (2026-11-25). Better-data check (2026-11-25, issue 7): Keep fiat_500 until a Craigslist one-model record (Ford F-150, windows by scrape) replaces it, as the answer of 2026-11-05 recommended: no newer table meets the ask of one model, a time component and one or several sites, and the Craigslist pick holds once its placeholder prices and relisted trucks are handled (the later-market gap stays at 15% to 25%). Earlier: Parked (2026-11-11) on Andrej's note until it is decided whether better suited datasets replace this task: the one-row-per-car key (issue 1), the 56,779 km placeholder (issue 2), the split (issues 3 and 6) and the Craigslist replacement (issue 4) wait. The domain is settled (issue 5, 2026-11-05). The definition's split
+**Main points:** The 4 issues parked on 2026-11-11 are open again (2026-11-25); issue 6 is settled (B, 2026-11-26: the time basis `RetrospectiveFillIn`, the issue's `Snapshot`). Better-data check (2026-11-25, issue 7): Keep fiat_500 until a Craigslist one-model record (Ford F-150, windows by scrape) replaces it, as the answer of 2026-11-05 recommended: no newer table meets the ask of one model, a time component and one or several sites, and the Craigslist pick holds once its placeholder prices and relisted trucks are handled (the later-market gap stays at 15% to 25%). Earlier: Parked (2026-11-11) on Andrej's note until it is decided whether better suited datasets replace this task: the one-row-per-car key (issue 1), the 56,779 km placeholder (issue 2), the split (issues 3 and 6) and the Craigslist replacement (issue 4) wait. The domain is settled (issue 5, 2026-11-05). The definition's split
 is random with the time basis `Retrospective` (CC 2026-11-17).
 
 **Record judgment:** valid, small, superseded soon. The crawl is real (the copies of one car at several dealers show a
@@ -704,6 +706,10 @@ dated listing table (autoscout24_car_listings_2025), screened in its own record.
    **Andrej (2026-11-11, discuss):** Park it until we decide on checking in with better suited datasets for this task.
 
    **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 7 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
+
+   **Andrej (2026-11-26, change):** Option B: Named Snapshot.
+
+   **Resolved (2026-11-26, Andrej):** B, the split is named as a fill-in of one crawl. The rules renamed the `Snapshot` prototype `RetrospectiveFillIn` after this issue was written, and the definition already declares it (`time_basis = TimeBasis("RetrospectiveFillIn", ...)`, one crawl of listings published on Kaggle in 2020, crawl date not stated, a later market not tested), so nothing changed in the definition.
 
 7. **Keep fiat_500 until a Craigslist Ford F-150 record (split by scrape) replaces it, or keep it as it is?**
 

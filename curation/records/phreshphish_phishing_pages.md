@@ -61,11 +61,17 @@ CC (2026-11-25, Andrej): add PhreshPhish as a dated phishing task (website_phish
 
 **Assessment (AI, 2026-11-25):** corrections to today's screening block above, which predates the capture test (the block itself stays as written): its Split line names monthly windows 2025-08 to 2025-11 over the months with both classes to November 2025 (547,483 rows); October and November 2025 were then dropped for the changed HTML capture, and the data now end on 2025-09-07, so the windows are three four-week windows from 16 June to 7 September 2025 with a one-day gap. The release holds 367,989 benign pages, not 368,989. In the kept data the phishing share runs 12% to 50% by month, not 15% to 100%. The fit is approximate, not direct (the URL is cut down, the features are ours, the class mix follows the collection). The paper's metrics are argued from the cost of a false positive, not reported side by side without a choice; the fallback stands on the base rates (0.05% to 5% in the source, 13.5% to 38.0% in our windows). Two more class-dependent recordings were found: a minimum page size kept for benign pages only, and URL characters stored for phishing pages only.
 
+CC (2026-11-26, Andrej): the declared horizon (four weeks, a one-day gap, windows starting 2025-08-11, 2025-07-14 and 2025-06-16) is checked, as implemented (A): the source names no refit cadence, so a four-week refit is assumed, close to a monthly one; the one-day gap is the time a refit takes to build, since a phishing label is its feed report made minutes before the crawl; the data end on 2025-09-07, before the source's pruned test split. The three warnings that follow from it (3 windows against 9, the gap on a date that dates the label, 2024-10-31 with phishing pages only) are accepted.
+
+CC (2026-11-26, Andrej): issue 2, as implemented (A): the canonical URL stays a text input, the filter's own input and not an id; its identifier warning is accepted.
+
+**Assessment (AI, 2026-11-26):** the horizon and issue 2 applied: `accepted_check_warnings` takes `dataset_identifier_column`, `splits_below_target`, `task_label_time_gap` and `dataset_pure_feature_value` with their reasons and the date. Windows as declared: 11 August, 14 July and 16 June 2025, 50,120, 35,257 and 42,194 test pages (9,899, 13,397 and 5,701 phishing), trained on 85.5%, 74.8% and 63.3% of 348,287 rows. `dataset check`: 0 errors, 0 warnings, 4 accepted. Open, with answers in the review: the metric (issue 1; average precision reweighted to 1% phishing equals the mean of the source's kind of subsets to within 0.005 and is independent of our windows' 13.5% to 38.0% share, but needs a new registry entry) and the brand feature (issue 3; a listed brand in the title on another host marks 1.4% to 1.5% of benign and 17% to 36% of phishing pages and lifts untuned LightGBM by +0.002 to +0.028 ROC AUC).
+
 ## Review
 
-**Outcome:** added; the AI recommends shipping. Task: PhreshPhish v1.0.1 (Dalton et al. 2025, Hugging Face, CC BY 4.0) as a dated phishing task, 348,287 web pages of August to October 2024 and 1 June to 7 September 2025, 21% phishing, each read from its URL and HTML as 50 counts of ours, the page's language and the URL as text, scored by ROC AUC in three four-week windows (16 June to 7 September 2025) with a one-day gap. Validity: the release recorded the two classes differently in four ways, and each is now removed for both classes: the URL's form (query, scheme, host case, default port, some characters); the copies (one row per URL); the HTML capture form of October and November 2025 (dropped); and a minimum page size (10,000 characters, now applied to both classes). The data end on 7 September 2025, the last day before the source's own test split, from which the source removed pages that repeat earlier ones; the date orders the split and is no input. Applied after the panel: that end date, the size floor, the URL fixes, the one-day gap, fit `approximate`, the `Selection Bias` and `Class-dependent Recording` markers, a protocol line against reading other test rows, the metric's reason and original, six 0/1 flags as categories and corrected numbers. Value: in the task probe on the new windows, untuned models score ROC AUC 0.967 (random forest) and 0.964 (LightGBM), a linear model 0.927, the URL text alone 0.896 and a depth-2 tree 0.809; no flag. `dataset check`: 0 errors, 4 warnings, none accepted yet: `url` has one value per row (issue 2); the count of 3 windows against 9, the gap on a date that dates the label, and a day with phishing pages only, all three following from the horizon (H).
+**Outcome:** added; the AI recommends shipping. Task: PhreshPhish v1.0.1 (Dalton et al. 2025, Hugging Face, CC BY 4.0) as a dated phishing task, 348,287 web pages of August to October 2024 and 1 June to 7 September 2025, 21% phishing, each read from its URL and HTML as 50 counts of ours, the page's language and the URL as text, scored by ROC AUC in three four-week windows (16 June to 7 September 2025) with a one-day gap. Validity: the release recorded the two classes differently in four ways, and each is now removed for both classes: the URL's form (query, scheme, host case, default port, some characters); the copies (one row per URL); the HTML capture form of October and November 2025 (dropped); and a minimum page size (10,000 characters, now applied to both classes). The data end on 7 September 2025, the last day before the source's own test split, from which the source removed pages that repeat earlier ones; the date orders the split and is no input. Applied after the panel: that end date, the size floor, the URL fixes, the one-day gap, fit `approximate`, the `Selection Bias` and `Class-dependent Recording` markers, a protocol line against reading other test rows, the metric's reason and original, six 0/1 flags as categories and corrected numbers. Value: in the task probe on the new windows, untuned models score ROC AUC 0.967 (random forest) and 0.964 (LightGBM), a linear model 0.927, the URL text alone 0.896 and a depth-2 tree 0.809; no flag. Decided 2026-11-26: the horizon (three four-week windows with a one-day gap, as implemented) and the URL as a text input (issue 2, A); the four warnings they bring (`url` one value per row; 3 windows against 9, the gap on a date that dates the label, a day with phishing pages only) are accepted. `dataset check`: 0 errors, 0 warnings, 4 accepted.
 
-**Main points:** Open: the horizon (H), now four-week windows because the data end on 7 September, against calendar months with a short last window; the metric (issue 1), ROC AUC or the partial ROC AUC up to a 1% false-positive rate, where a filter works; accepting the identifier warning for the URL text (issue 2); and an optional brand-against-host feature (issue 3).
+**Main points:** Open: the metric (issue 1): ROC AUC, the partial ROC AUC up to a 1% false-positive rate, or, closest to the source, its average precision at a fixed 1% phishing rate (needs a new registry entry); and the brand-against-host feature (issue 3), where the brand named in the title carries the signal and a title flag with a text count lifts the scores in every window.
 
 **Horizon:**
 
@@ -101,6 +107,10 @@ CC (2026-11-25, Andrej): add PhreshPhish as a dated phishing task (website_phish
 [^h2]: **SPLIT-10** (Should): a gap of about the label's delay; "A planning gap the use case has ... is a gap too." Cases: fugaku_hpc_job_failure_1m and ga_merchandise_store_sessions (one-day gap, applied).
 [^h3]: **LEAK-42** (Must): repeats of a unit the data does not record get one verdict, natural here (reused kits kept); the source's own pruning after 8 September broke that verdict for the newest window, fixed by ending the data. **SPLIT-15** (Must for the newest window): the newest window is the deployment period, argued from statistics of the data, never a model's score. **SPLIT-14** (Must): at least 3 windows, each training on at least 50% of the rows.
 
+**Andrej (2026-11-26, ok):** As implemented.
+
+**Resolved (2026-11-26, Andrej):** A: three four-week test windows, 11 August to 7 September, 14 July to 10 August and 16 June to 13 July 2025 (50,120, 35,257 and 42,194 pages; 9,899, 13,397 and 5,701 phishing), each trained on every page collected at least one day before it (85.5%, 74.8% and 63.3% of the rows); the four-week refit is assumed, the one-day gap stands for building the refit. The three warnings that follow from the horizon are accepted in `accepted_check_warnings` with their reasons and the date: `splits_below_target` (3 windows against 9; a fourth window, 19 May to 15 June 2025, would hold 3,517 pages and train on 2024 alone), `task_label_time_gap` (the gap is the refit's, not the label's delay) and `dataset_pure_feature_value` (2024-10-31 holds 3,562 phishing pages only; the date is no input); the splits comment says so. The record carries the horizon's CC line. `dataset check`: 0 errors, 0 warnings, 4 accepted.
+
 **Issues for Andrej:**
 
 1. **Keep ROC AUC, or score the partial ROC AUC up to a 1% false-positive rate?**
@@ -135,6 +145,54 @@ CC (2026-11-25, Andrej): add PhreshPhish as a dated phishing task (website_phish
 
    [^m1]: **MET-1** (Must): the declared metric scores the real task, the decision of the use case, the way a practitioner would have chosen a model for it. **MET-11** (Must): every metric has one origin; `context` is for a task that makes one metric obvious, and covers a source metric overruled under MET-2; the fallback when the source defines none the task would use (MET-5, MET-6, MET-9). **MET-9** (Should): average precision depends on the base rate.
 
+   **Andrej (2026-11-26, discuss):** the source scores average precision and precision at recall 0.9, because "Users ... are typically highly sensitive to false positives" (Sec. 5.1), on subsets of its test split at fixed phishing base rates of 0.05% to 5%
+
+   Is there a way to design a metric to get closer to the source?
+
+   **Answer (AI, 2026-11-26):** yes: the source's average precision at a fixed phishing rate of 1%, computed on each whole window by giving the benign pages the weight that sets the phishing share to 1%; it equals the mean over the source's kind of subsets, needs one new registry entry, and is the closest we can get.
+
+   * **Problem:**
+     - Reweighted to a 1% base rate, average precision on each whole window equals the mean of 100 subsets drawn the source's way (every benign page, phishing pages drawn to 1%) to within 0.005 for both models in all three windows, without the draw's noise (one subset varies by 0.017 to 0.034). So it is the source's metric at a rate inside its range, fixed rather than set by our collection.
+     - Raw average precision moves with the window's phishing share (19.8%, 38.0% and 13.5%, August, July and June windows): logistic regression scores its highest raw average precision (0.848) in the July window, where its ROC AUC is lowest (0.862) and 38% of the pages are phishing. ROC AUC does not depend on the share, and neither does average precision at a fixed rate.
+     - The registry can express only ROC AUC and raw average precision. `average_precision` takes no weight, and a weight column could not carry the reweighting anyway: the weight depends on each window's class counts, and a `weight` input is also read as a training weight. Partial ROC AUC, average precision at a fixed rate and precision at a recall each need a new entry with its tests; `Metric.local` cannot ship.
+     - Precision at recall 0.9 does not carry over: to reach recall 0.9 LightGBM lets through 3.9%, 33% and 3.4% of the benign pages (August, July, June), so at a 1% rate its precision is 0.19, 0.03 and 0.21, and at 0.1% it stays under 0.03.
+   * **Experiments:** the shipped windows (August, July and June, newest first), LightGBM and logistic regression with fixed defaults on every feature but `url` and `date`. "Gap" is how far LightGBM leads, counted in standard deviations of that lead over 200 bootstrap draws of each test window (both classes resampled); the smallest of the three windows:
+
+     | Metric | LightGBM | Logistic regression | LightGBM ahead in draws | Gap, smallest | In the registry |
+     |---|---|---|---|---|---|
+     | ROC AUC (implemented) | 0.984 / 0.919 / 0.986 | 0.886 / 0.862 / 0.942 | 100% | 35 SD | yes |
+     | Partial ROC AUC, FPR ≤ 1% (McClish) | 0.821 / 0.796 / 0.841 | 0.612 / 0.668 / 0.624 | 100% | 30 SD | no |
+     | Average precision, raw | 0.950 / 0.912 / 0.939 | 0.727 / 0.848 / 0.754 | 100% | 37 SD | yes |
+     | Average precision at 1% phishing | 0.692 / 0.631 / 0.731 | 0.203 / 0.311 / 0.250 | 100% | 20 SD | no |
+     | Average precision at 0.1% phishing | 0.377 / 0.474 / 0.438 | 0.035 / 0.074 / 0.038 | 100% | 9.5 SD | no |
+     | Precision at recall 0.9, raw | 0.852 / 0.631 / 0.805 | 0.381 / 0.504 / 0.448 | 100% | 29 SD | no |
+     | Precision at recall 0.9, 1% phishing | 0.191 / 0.027 / 0.210 | 0.025 / 0.016 / 0.050 | 100% | 13 SD | no |
+     | Precision at recall 0.9, 0.1% phishing | 0.023 / 0.003 / 0.026 | 0.002 / 0.002 / 0.005 | 100% | 11 SD | no |
+
+     The source's kind of subsets, 100 draws per window (mean ± SD of one draw):
+
+     | Phishing share | Model | August | July | June |
+     |---|---|---|---|---|
+     | 1% | LightGBM | 0.692 ± 0.017 | 0.631 ± 0.032 | 0.731 ± 0.017 |
+     | 1% | Logistic regression | 0.207 ± 0.018 | 0.316 ± 0.034 | 0.252 ± 0.017 |
+     | 0.1% | LightGBM | 0.378 ± 0.074 | 0.460 ± 0.093 | 0.448 ± 0.073 |
+     | 0.1% | Logistic regression | 0.044 ± 0.021 | 0.091 ± 0.041 | 0.047 ± 0.019 |
+
+     Every candidate separates these two models in every draw: they are far apart. What differs is the spread across windows (LightGBM: partial ROC AUC 0.796 to 0.841, ROC AUC 0.919 to 0.986, average precision at 1% 0.631 to 0.731) and the noise at 0.1%, where 22 to 40 benign pages per window (0.1% of them) decide the score. The reversals among closer models are those of the earlier monthly windows above.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | ROC AUC, the fallback (implemented) | `roc_auc` on each window | no new code; does not depend on the phishing share | the source's metric only in the reason; weighs the whole curve while a filter works below 1% false positives |
+     | b | Partial ROC AUC up to 1% FPR | as issue 1's B: a new `partial_roc_auc` entry, origin `context` | the steadiest across windows; does not depend on the share | a metric the source did not name |
+     | c | Average precision at 1% phishing | a new entry `average_precision_at_base_rate` (param `base_rate=0.01`; the benign rows weighted n_phishing / n_benign × 99), origin `stand_in`, original average precision (Sec. 5.1) | the source's own metric at a rate in its range, equal to the mean of its kind of subsets; does not depend on our share | new code; one rate, where the source averages 0.05% to 5% |
+     | d | Raw average precision | `Metric.source("average_precision")` | no new code; the source's name | measures each window's phishing share (13.5% to 38.0%), not the source's 0.05% to 5% |
+     | e | Precision at recall 0.9 at 1% phishing | a new entry with `recall` and `base_rate` | the source's second metric | jumps between windows (LightGBM 0.03 to 0.21); near zero at 0.1% |
+
+   * **Recommendation:** c: it is the source's metric at a rate the source uses, made independent of our collection's share. A mean over several rates (0.1%, 1%, 5%) is the same code with a list of rates, but the 0.1% term is three to four times noisier. b if you prefer a score of the ROC family; a if no new metric code is wanted now. **Decision:** a, b, c, d or e?
+
+   [^m2]: **MET-11** (Must): a `stand_in` is the closest computable metric when the source's own cannot be computed on our data, with its closeness measured on the shipped splits. **MET-13** (Must): a custom metric ships in the shared metric library in the same change, tested against a reference, by hand and on 1M rows. **MET-9** (Should): average precision moves with the positive share.
+
 2. **Keep the canonical URL as a text input, and accept its identifier warning?**
 
    * **Problem:**
@@ -155,6 +213,10 @@ CC (2026-11-25, Andrej): add PhreshPhish as a dated phishing task (website_phish
 
    [^u1]: **SPLIT-13** (Should): look for grouped structure inside a temporal task; an entity the deployed model meets again stays across the cut. Precedent: phiusil_phishing (the URL accepted as the task's input, not a row id), cited again for drug_induced_autoimmunity_prediction.
 
+   **Andrej (2026-11-26, ok):** As implemented (A).
+
+   **Resolved (2026-11-26, Andrej):** A: the canonical URL stays a text input, the filter's own input and not an id. `dataset.py` accepts `dataset_identifier_column` in `accepted_check_warnings` ("one value per row by the rule of one row per URL; alone it scores ROC AUC 0.896", with the date), and the curation notes' "Kept" line says the warning is accepted. CC line in the comments. `dataset check`: 0 errors, 0 warnings, 4 accepted.
+
 3. **Add a feature for a brand named on the page while the host is not that brand's?**
 
    * **Problem:**
@@ -172,6 +234,49 @@ CC (2026-11-25, Andrej): add PhreshPhish as a dated phishing task (website_phish
    * **Recommendation:** A: the feature is unmeasured and adds a brand list of our choosing; B if you see the flag as an input every filter reads. **Decision:** keep A, or change to B?
 
    **Notes for the AI:** For B, add the flag in `html_features` from a fixed list (named and dated in the notes), never from `target`; it re-runs `_prepare_raw_files` (about 20 minutes over the HTML); re-run `dataset check` and the leak and task probes.
+
+   **Andrej (2026-11-26, discuss):** Try implementing B and then we can see what it would change.
+
+   **Answer (AI, 2026-11-26):** B as one flag changes little, because a brand named anywhere in the text marks half the pages of both classes; the brand named in the title carries the signal, and with it the scores rise in every window, with no sign that it records the collection rather than phishing.
+
+   * **Problem:**
+     - A listed brand in the page's title on a host that is not the brand's marks 1.4% to 1.5% of benign pages in every month and 17% to 36% of phishing pages; in the visible text it marks 52% to 53% of benign and 48% to 60% of phishing pages (footer links: of the flagged benign pages, 78,842 name Facebook and 55,450 Google). So B's one flag (title or text) alone scores ROC AUC 0.50.
+     - Added to the 50 features, B's flag lifts untuned LightGBM by +0.001 to +0.008 ROC AUC; a title flag plus a count of the off-host brands in the text lifts it by +0.002 to +0.028 ROC AUC and +0.007 to +0.040 partial ROC AUC (1% FPR), and logistic regression by up to +0.049 ROC AUC. Each of these gains is above the bootstrap SD of a single score (ROC AUC 0.0006 to 0.0015, partial ROC AUC 0.003 to 0.005; issue 1).
+     - No sign of the collection: B's flag does not tell 2024 from 2025 pages within either class (ROC AUC 0.499 benign, 0.497 phishing), and the benign title rate is 1.4% to 1.5% in every month; the phishing title rate moves with the campaigns (36% in August 2024, 17% in June 2025). The one shift is in a third flag tried, a listed brand named on its own host: on phishing pages it fell from 7% to 10% in 2024 to 0.2% to 1.3% in 2025 (where phishing is hosted), and it carries 0.1% of the gain, so it is left out of the options.
+   * **The list:** 59 often-impersonated brands, each with the registered names of its own hosts (Microsoft with live, office, outlook, sharepoint and others; Google with gmail, youtube, blogspot): Microsoft, Google, Apple, Facebook, Instagram, WhatsApp, Amazon, PayPal, Netflix, DHL, FedEx, USPS, LinkedIn, Adobe, Dropbox, DocuSign, WeTransfer, Yahoo, Naver, Roblox, Steam, Coinbase, Binance, MetaMask, Trezor, Ledger, Kraken, Bybit, Trust Wallet, WalletConnect, OpenSea, Robinhood, Chase, Wells Fargo, Bank of America, Citibank, American Express, HSBC, Santander, BNP Paribas, SBI, Rakuten, Kleinanzeigen, bet365, Betwinner, Spotify, Discord, Telegram, Twitter, TikTok, eBay, Walmart, AT&T, Verizon, Xfinity, the IRS, Royal Mail, Australia Post and Mercado Libre. Drawn up on 2026-11-26 from the brands the 2024-2025 phishing reports name most, never from the release's `target`. A host's registered name is the label before the public suffix (`co.uk` and the like handled). Measured against `target` only as a check: the title or text flag is set on 81% to 94% of the pages imitating Facebook, Meta, Robinhood and WhatsApp, and on none of the 3,251 imitating Booking.com, which the list lacks; filling such gaps from `target` would fit the feature to the labels.
+   * **Experiments:** the shipped windows (August, July and June, newest first), the definition's frame, LightGBM and logistic regression with fixed defaults on every feature but `url` and `date`:
+
+     | Model | Features | ROC AUC | Partial ROC AUC, FPR ≤ 1% | Average precision at 1% phishing |
+     |---|---|---|---|---|
+     | LightGBM | 50 as shipped | 0.984 / 0.919 / 0.986 | 0.821 / 0.796 / 0.841 | 0.692 / 0.631 / 0.731 |
+     | LightGBM | + B's flag | 0.986 / 0.927 / 0.987 | 0.835 / 0.797 / 0.844 | 0.721 / 0.636 / 0.739 |
+     | LightGBM | + title flag, text count (and the on-host flag) | 0.988 / 0.947 / 0.988 | 0.861 / 0.803 / 0.852 | 0.753 / 0.651 / 0.754 |
+     | Logistic regression | 50 as shipped | 0.886 / 0.862 / 0.942 | 0.612 / 0.668 / 0.624 | 0.203 / 0.311 / 0.250 |
+     | Logistic regression | + B's flag | 0.897 / 0.869 / 0.943 | 0.613 / 0.668 / 0.630 | 0.217 / 0.316 / 0.266 |
+     | Logistic regression | + title flag, text count (and the on-host flag) | 0.929 / 0.911 / 0.948 | 0.641 / 0.679 / 0.660 | 0.289 / 0.343 / 0.322 |
+
+     In LightGBM, B's flag ranks 9th to 10th of 53 features by gain (1.7% to 2.5% of it); the title flag ranks 6th to 8th of 55 (3.8% to 6.0%), the text count 11th to 14th, the on-host flag 46th to 47th. Share of pages flagged:
+
+     | Month | Benign: title / title or text | Phishing: title / title or text |
+     |---|---|---|
+     | Aug 2024 | 1.4% / 52.5% | 36.3% / 53.7% |
+     | Sep 2024 | 1.5% / 53.3% | 33.9% / 56.1% |
+     | Oct 2024 | 1.4% / 53.3% | 18.9% / 50.7% |
+     | Jun 2025 | 1.5% / 53.0% | 16.8% / 48.4% |
+     | Jul 2025 | 1.5% / 52.0% | 24.5% / 52.1% |
+     | Aug 2025 | 1.5% / 53.5% | 28.2% / 54.1% |
+     | 1-7 Sep 2025 | 1.5% / 52.3% | 26.4% / 59.6% |
+
+     Reading the brands off the 379,759 pages of the kept months is one more pass over the HTML, about 7 minutes on 15 processes.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | No brand feature (implemented) | the 50 counts as they are | no list of our choosing | misses the signal the title carries |
+     | b | B's one flag | 0/1: a listed brand in the title or the text on a host not its own | one feature | the text half marks half of each class; +0.001 to +0.008 ROC AUC |
+     | c | Title flag and text count | `brand_title_off_host` (0/1) and `n_brands_text_off_host` (how many listed brands the text names off their hosts), from the list above, named and dated in the notes | the title signal a filter reads; +0.002 to +0.028 ROC AUC, +0.007 to +0.040 partial ROC AUC; no sign of the collection | two features of ours; the list is ours and misses brands (Booking.com) |
+
+   * **Recommendation:** c: the title carries the signal, filters read it, and nothing in it follows the collection; the list stays as fixed today rather than grown from `target`. a if you would rather ship no list of ours. **Decision:** a, b or c?
 
 **Review panel:** ship after changes (mediator). The panel reviewed the definition before these changes (monthly windows July to September 2025 on 404,979 pages); its numbers refer to that frame. Claim audit: 23 claims, 4 refuted and 2 partly refuted, all fixed (the benign count, the share of tiny pages, URL characters stripped from benign pages only, the metric's reason, and the near-duplicate verdict, false for 8-30 September). Column audit: a minimum page size the release applied to benign pages only, carried by the tag counts (fixed). Split audit: the leaf, floors and count hold; the newest window was mostly the source's pruned test split (fixed by ending the data). Domain practitioner: fit approximate; ROC AUC misses the region a filter works in (issue 1). Precedent check: two departures, no gap and no `Selection Bias` marker (both applied). Blind review: would include with changes; drop or declare `url` (issue 2). Task gamer: same-day burst counts over test rows gain up to +0.045 (protocol line). Debate: agreed on every fix; disputed: the window layout after the cut (H) and the metric (issue 1).
 

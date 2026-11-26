@@ -65,11 +65,15 @@ CC (2026-11-25, Andrej): created as the replacement candidate for fiat_500 (Revi
 
 **Assessment (AI, 2026-11-25):** review panel (full): ship after changes; disputed: USE-6 against P1 (the advert's title as an input), LEAK-42 (the drop of one truck's copies across sites, a key rebuilt from the features; relistings across scrapes kept under verdict 3), SPLIT-14 (Mar 2020 clears the floor only with version 1); for the curator: issues 1-2 and the horizon H. Priority 3: gap 0, use case 0, source +, shape +, risk 0 (gap: no thin domain, problem type or regime; use case: ours, the card names none; risk: the one leak, relistings, is kept on purpose and moves the RMSE by under 2%, and no open issue threatens validity).
 
+CC (2026-11-26, Andrej): review issue 3, a: "Agree. In this case, since the use case is made up anyway, we can pick the one where we are the safest regarding leakage, which would be a." The earlier-scrapes split stays as declared (five one-scrape windows, Mar 2020 to May 2021, each trained on every earlier scrape); `task_summary` says the source names no use case and names ours, a price guide refit once per scrape.
+
+**Assessment (AI, 2026-11-26):** issue 3 applied as a: the split is unchanged; `task_summary` (use case and split) is reworded and `splits_comment` records what the undeclared same-scrape design (b) would score, RMSLE 0.296 against 0.314 on average over the five windows (3.2%, 2.5%, 12.3%, 2.7% and 6.6% lower). Issues 1 and 2 are answered in the review and stay open: the advert title's numbers, its links to earlier copies and its gain (RMSLE 5.3% to 7.2% lower, 4.6% to 7.6% with every linked truck removed), and the relistings that put a test truck in training (12.6%, 18.0%, 2.2%, 5.4% and 3.2% of the windows by VIN, 16.6%, 24.9%, 3.9%, 7.6% and 5.1% with the title, year and mileage as a second link).
+
 ## Review
 
-**Outcome:** added. Ford F-150 asking prices from nine nationwide Craigslist scrapes on Kaggle (2018 to May 2021, 105,134 trucks), split into five later-scrape windows; the AI recommends shipping it. Validity: every input is in the advert when it is written; the one leak, a truck relisted in a later scrape, is kept on purpose as a repost a dealer knows (no listing id appears in two periods; dropping the linked ones moves the RMSE by -1.6% to +1.9%). Value: untuned LightGBM beats a linear model in every window (RMSLE 0.312 against 0.404, dummy 0.859; RMSE in dollars 4,839 against 6,052); model year carries most of the signal (R² 0.666 without it). The panel's changes are applied: one row per truck also across Craigslist sites (issue 2), RMSLE from context as for every other asking-price task, charm prices such as 9,999 kept, impossible and placeholder values set missing, the seller type (owner or dealer) shipped, and the notes corrected. `dataset check`: 0 errors, 0 warnings, 1 info; the four warnings of the build-up are accepted with reasons. Not built.
+**Outcome:** added. Ford F-150 asking prices from nine nationwide Craigslist scrapes on Kaggle (2018 to May 2021, 105,134 trucks), split into five later-scrape windows; the AI recommends shipping it. Validity: every input is in the advert when it is written; the one leak, a truck relisted in a later scrape, is kept on purpose as a repost a dealer knows (no listing id appears in two periods; dropping the linked ones moves the RMSE by -1.6% to +1.9%). Value: untuned LightGBM beats a linear model in every window (RMSLE 0.312 against 0.404, dummy 0.859; RMSE in dollars 4,839 against 6,052); model year carries most of the signal (R² 0.666 without it). The panel's changes are applied: one row per truck also across Craigslist sites (issue 2), RMSLE from context as for every other asking-price task, charm prices such as 9,999 kept, impossible and placeholder values set missing, the seller type (owner or dealer) shipped, and the notes corrected. The split stays the earlier-scrapes windows, the safest against leakage (issue 3, a, decided 2026-11-26), with its use case named as ours, a price guide refit once per scrape. `dataset check`: 0 errors, 0 warnings, 1 info; the four warnings of the build-up are accepted with reasons. Not built.
 
-**Main points:** Ship the advert's title, carried in the url, as an input (issue 1)? Confirm the drop of one truck's copies across Craigslist sites (issue 2), and sign off the five one-scrape windows (H), whose oldest clears the 50% floor only with the inferred-date 2018 scrape in training. Keep the earlier-scrapes split for a price guide, or mirror a seller who knows the rest of the scrape (issue 3)?
+**Main points:** Ship the advert's title as text (issue 1)? Its numbers go with the cleaning rule and its gain (RMSLE 4.6% to 7.6% lower) survives the removal of every linked truck, so the AI recommends it together with issue 2's drop. Under "no test truck in train" (issue 2), the cross-site copies can stay as they are, but the relistings kept so far must go: 2.2% to 18.0% of a window's test trucks are in training by VIN; the AI recommends dropping their earlier copies, linked by VIN or by title, model year and mileage (7,834 rows). Sign off the five one-scrape windows (H), whose oldest clears the 50% floor only with the inferred-date 2018 scrape in training.
 
 **Horizon:**
 
@@ -147,6 +151,61 @@ CC (2026-11-25, Andrej): created as the replacement candidate for fiat_500 (Revi
    [^c3]: **CLEAN-3** (Should): keep an identifier that carries meaning and process it into that meaning.
    [^c19]: **CLEAN-19** (Should): we build a feature only when it removes a leak, restores meaning the source destroyed, or is what a data scientist on this task would build because the raw data cannot be used as it is.
 
+   **Andrej (2026-11-26, discuss):** I lean towards B, but I fear leakage a lot. How can we make sure there is none?
+
+   **Answer (AI, 2026-11-26):** once its numbers are removed the title holds no price, and its gain holds with every linked truck removed from both sides, so the one leak it can carry is a relisted truck it helps a model recognise, which issue 2's drop removes; the AI recommends b below, the title as text shipped together with that drop.
+
+   * **Problem:**
+     - With every test truck that has a copy in training taken out of the test, and every training copy of a test truck taken out of training, the title still lowers RMSLE by 4.6% to 7.6% per window (5.3% to 7.2% on all rows): the gain is the trim and cab words, not remembered trucks.
+     - The price stands in 203 raw slugs (0.2%), and a number of 1,000 or more that is no model year in 578; the cleaning rule of B removes all of them. Left after it: 43 titles whose model year equals the price (a 2000 truck at 2,000 dollars, no price), and 40 with an "<n>k" within 15% of the price, among 1,129 "<n>k" tokens that are mostly mileages ("110k").
+     - The title alone is no identifier: 57% to 68% of a window's test rows share their title with a training row, but such pairs carry one VIN in only 5% to 42%. With model year and mileage it is one (93% to 99.7% VIN agreement): it links 2.9% to 21.1% of a window's test rows to a training truck, a third of them at a price seen before. These are issue 2's relistings[^t1a]; on them the title adds a little more (2.6% to 8.8% against 4.6% to 6.9% on the rest), the part a model could remember.
+     - The tokens behind the gain are trims and condition words; no number but "150" is among the 30 strongest, and the title's tokens hold 3% of the model's split gain (model year 81%).
+   * **Experiments:** the definition's frame with the title taken from the url (city prefix dropped, numbers of 1,000 or more that are no model year removed); untuned LightGBM (400 trees, learning rate 0.05, 63 leaves), RMSLE; the title as binary token columns (tokens in 20 or more training rows, at most 1,500), fitted per window on its training side.
+
+     | Price-like content, 105,134 rows | Raw slug | Title after the cleaning rule |
+     |---|---|---|
+     | the price as one number (14995) | 203 | 43, all a model year equal to the price |
+     | the price split in two (14-995) | 0 | 0 |
+     | the price as "<n>k" within 15% | 40 | 40 |
+     | a number of 1,000 or more that is no model year | 578 | 0 |
+     | such a number within 5% of the price | 171 | 0 |
+     | "obo", "price", "reduced", "cash", "firm" | 165, 282, 216, 67, 5 | 160, 190, 129, 61, 5 |
+     | "down", "financing", "payment(s)", "month", "mo" | 254, 184, 34, 25, 49 | 250, 163, 34, 25, 49 |
+
+     | Window | Test rows | Same title in training | Same title, one VIN | Title, year and mileage in training | Same VIN | At a price seen before | VIN in training |
+     |---|---|---|---|---|---|---|---|
+     | Mar 2020 | 13,087 | 63.7% | 31.0% | 13.2% | 99.7% | 36.7% | 12.6% |
+     | Jun 2020 | 10,015 | 68.4% | 42.4% | 21.1% | 99.6% | 44.7% | 18.0% |
+     | Sep 2020 | 6,405 | 61.2% | 4.5% | 2.9% | 92.9% | 39.6% | 2.2% |
+     | Dec 2020 | 8,631 | 57.4% | 12.6% | 5.6% | 98.6% | 32.8% | 5.4% |
+     | May 2021 | 12,008 | 61.8% | 7.0% | 3.9% | 98.4% | 31.0% | 3.2% |
+
+     "One VIN" and "same VIN": among linked pairs with a VIN on both sides, the share carrying the same VIN.
+
+     | Window | Without the title | With the title | Change | Linked test rows | Change, linked | Change, unlinked | Change, linked trucks removed from training and test |
+     |---|---|---|---|---|---|---|---|
+     | Mar 2020 | 0.308 | 0.292 | -5.3% | 4,111 | -8.7% | -4.6% | -4.6% |
+     | Jun 2020 | 0.294 | 0.273 | -7.2% | 4,021 | -8.1% | -6.9% | -7.6% |
+     | Sep 2020 | 0.350 | 0.331 | -5.3% | 1,443 | -2.6% | -5.7% | -5.6% |
+     | Dec 2020 | 0.295 | 0.276 | -6.6% | 2,102 | -8.8% | -6.3% | -6.6% |
+     | May 2021 | 0.321 | 0.301 | -6.3% | 2,641 | -6.5% | -6.2% | -6.1% |
+
+     "Linked" is the widest net: the same VIN, the same raw slug, the same title with model year and mileage, or the same model year and odd mileage in an earlier scrape; the last column drops those test rows and every training row linked to a test truck (3,459 to 8,048 per window).
+
+     The strongest tokens, May 2021 window (share of the model's split gain; median price in training): raptor 0.46% (37,498), lightning 0.29% (15,900), lariat 0.24% (17,900), xl 0.23% (13,995), supercrew 0.13% (18,997), harley 0.12% (12,995), platinum 0.11% (25,824), xlt 0.10% (17,995), svt 0.09% (29,950), fx4 0.09% (17,900), then swb, king, credit, 150, parts (1,275), crew, limited, lifted, f150, regular, shelby (77,247), needs (2,000), runs (3,000). Mar 2020 shows the same list.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Leave the title out (implemented) | No title input | nothing of the poster's text ships | the 5.3% to 7.2% of the error the title removes stays; premium trims listed as a bare "f-150" stay the largest errors |
+     | b | The title as text, with issue 2's drop | B's cleaning, also removing every "<n>k"; ships only with the drop of test trucks seen in training (issue 2, c); a test in `dataset check` that no shipped title holds a number of 1,000 or more that is no model year | the gain that survives the link removal (4.6% to 7.6%); no price left; no test truck it could recognise | a free-text field of the poster's; depends on issue 2 |
+     | c | The title as text, relistings as now | B as written, issue 2 left as is | the full gain (5.3% to 7.2%) | the title helps recognise a relisted truck in training (8.7% gain on linked rows in Mar 2020), on top of the leak relistings already carry |
+     | d | Trim and cab flags | The old option C: about 27 flags parsed with a fixed list | no free text | a list of our own; the flags with the seller type measured 6.8% to 10.4% in dollars, not compared with the text |
+
+   * **Recommendation:** b: the title's gain is content, its numbers go, and the relisting leak it could sharpen is removed by issue 2's drop, which the title's link also makes more complete. **Decision:** a, b, c or d?
+
+   [^t1a]: **LEAK-42** (Must), verdict 2: copies of one unit go down to one row; the title, model year and mileage form a key rebuilt from the features, a discussion point for the curator. **P1** (ethics) ranks above **USE-6** (Must), so the shipped title is scanned for personal data and numbers.
+
 2. **Confirm the drop of one truck's copies across Craigslist sites within a scrape?**
 
    * **Problem:**
@@ -196,6 +255,52 @@ CC (2026-11-25, Andrej): created as the replacement candidate for fiat_500 (Revi
 
    [^l42]: **LEAK-42** (Must), verdict 2: copies of one record (entered twice, listed again) go down to one row per unit; a key rebuilt from the features, and every drop, is a discussion point for the curator, with the share dropped and the target's distribution before and after.
    [^l42t]: **LEAK-42** (Must), verdict 3: a temporal split fits when the use case sees the unit again at prediction time (a renewal, a repost the moderator has seen). **SPLIT-13** (Should): an entity that recurs across the cutoff is part of the task when the model predicts for known entities.
+
+   **Andrej (2026-11-26, discuss):** What is crucial is that no test truck appears in train. If trucks within train or within train reappear, this is not an issue. Within test is only a reweighting of some trucks, which is a minor issue, but could also be taken care of. How does this assessment change the options?
+
+   **Answer (AI, 2026-11-26):** under that test the cross-site copies need no drop, since they never leave their scrape, but the relistings kept so far break it in every window (2.2% to 18.0% of test trucks in training by VIN, 3.9% to 24.9% with the title as a second link); the AI recommends dropping each such truck's earlier copies, linked by VIN or by title, model year and mileage (c, 7,834 rows), and keeping the cross-site step as the test-side dedup.
+
+   * **Problem:**
+     - A test truck in training is a relisting: a truck of the test scrape seen in an earlier scrape. The definition keeps them on purpose, as a repost a dealer knows[^l42t], so every window breaks the test: 12.6%, 18.0%, 2.2%, 5.4% and 3.2% of the Mar 2020 to May 2021 test rows by VIN.
+     - The cross-site copies never cross: the step's key holds the scrape, and a scrape is never cut, so each group lies within one window's test or within training. In training they do not matter (without the step, scored on one row per truck, RMSLE within 0.1% of the step's); in a test they weight one truck up to 56 times (9.5% of May 2021's rows) and move its RMSLE by 0.2% to 1.3%. The step is that test-side dedup; it can stay as it is.
+     - It is enough to drop one side of each link: the later copy (the test row) or the earlier ones (the training rows). Copies within training-only scrapes may stay.
+     - Only 46.5% of the rows carry a VIN. The advert's title (from the url, used for the link, not shipped) with model year and mileage agrees with the VIN in 93% to 99.7% of the pairs where both carry one and finds about a third more relistings; model year and odd mileage alone agree in only 61% to 96%.
+   * **Experiments:** the definition's frame; a truck is the set of rows connected by the link across scrapes; untuned LightGBM, RMSLE on the shipped columns.
+
+     | Test rows with a copy in training | Mar 2020 | Jun 2020 | Sep 2020 | Dec 2020 | May 2021 |
+     |---|---|---|---|---|---|
+     | by VIN | 12.6% | 18.0% | 2.2% | 5.4% | 3.2% |
+     | by VIN, or title, model year and mileage | 16.6% | 24.9% | 3.9% | 7.6% | 5.1% |
+     | by those, or model year and odd mileage | 18.0% | 26.6% | 5.7% | 9.6% | 7.2% |
+
+     | Cross-site copies the step drops | Oct 2018 | Oct 2019 | Dec 2019 | Jan 2020 | Mar 2020 | Jun 2020 | Sep 2020 | Dec 2020 | May 2021 |
+     |---|---|---|---|---|---|---|---|---|---|
+     | rows (all within the scrape) | 250 | 292 | 301 | 255 | 333 | 281 | 192 | 313 | 1,264 |
+     | share of the scrape | 1.5% | 2.2% | 2.3% | 2.0% | 2.5% | 2.7% | 2.9% | 3.5% | 9.5% |
+     | RMSLE without the step, all test rows | | | | | 0.305 | 0.292 | 0.346 | 0.294 | 0.317 |
+     | the same model, one row per truck | | | | | 0.307 | 0.294 | 0.349 | 0.295 | 0.322 |
+     | with the step (implemented) | | | | | 0.308 | 0.294 | 0.350 | 0.295 | 0.321 |
+
+     | Option | Rows kept | Dropped (from training-only scrapes) | Test rows kept, Mar 2020 / Jun / Sep / Dec / May 2021 | Training share, Mar 2020 | RMSLE, Mar 2020 / Jun / Sep / Dec / May 2021 | Mean |
+     |---|---|---|---|---|---|---|
+     | a | 105,134 | 0 | 100% each | 52.3% | 0.308 / 0.294 / 0.350 / 0.295 / 0.321 | 0.314 |
+     | b | 100,709 | 4,425 (0) | 87.4% / 82.0% / 97.8% / 94.6% / 96.8% | 54.6% | 0.321 / 0.311 / 0.351 / 0.299 / 0.325 | 0.321 |
+     | c | 97,300 | 7,834 (4,411) | 82.8% / 98.1% / 90.8% / 95.5% / 100% | 52.0% | 0.328 / 0.300 / 0.352 / 0.302 / 0.325 | 0.321 |
+     | d | 98,946 | 6,188 (0) | 83.4% / 75.1% / 96.1% / 92.4% / 94.9% | 55.6% | 0.324 / 0.319 / 0.352 / 0.300 / 0.325 | 0.324 |
+     | e | 96,213 | 8,921 (5,129) | 81.6% / 97.1% / 89.8% / 94.9% / 100% | 51.8% | 0.329 / 0.302 / 0.353 / 0.301 / 0.324 | 0.322 |
+
+     No option b to e leaves a linked test truck in training. Every option keeps the cross-site step.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | As implemented | Cross-site step within a scrape; relistings kept | no rows lost | breaks the test in every window (2.2% to 18.0% by VIN), and the task looks 2.5% easier than it is (mean RMSLE 0.314 against 0.321) |
+     | b | Drop the later copies, VIN | A row of a window scrape whose VIN was seen in an earlier scrape goes | the training-only scrapes stay whole; a link certain by definition | the test keeps only first adverts (82% of Jun 2020); relistings without a VIN stay in training |
+     | c | Drop the earlier copies, VIN or title | Every row whose truck (by VIN, or by title, model year and mileage) has a later copy in a window scrape goes | the windows keep their full stream of adverts (May 2021 whole, Jun 2020 98%); the title finds a third more links; Mar 2020 still trains on 52.0% | 4,411 training-only rows lost; trucks without a VIN whose title or mileage changed stay unlinked |
+     | d | Drop the later copies, VIN or title | As b, with the title link | the training-only scrapes stay whole | the test loses a quarter of Jun 2020 and keeps only first adverts |
+     | e | c plus model year and odd mileage | As c, with a third link | removes the most | the third link agrees with the VIN in only 61% (Sep 2020) to 96%, so it removes different trucks too |
+
+   * **Recommendation:** c, with the cross-site step kept: it meets your test with the two links that are near-certain, leaves the newest window whole, and keeps the Mar 2020 window above the floor; `fit_reason` and the relisting note then say the relistings are removed, not kept. **Decision:** a, b, c, d or e?
 
 3. **Can the split mirror a seller who prices one truck at a scrape, knowing the rest of that scrape?**
 
@@ -286,6 +391,10 @@ CC (2026-11-25, Andrej): created as the replacement candidate for fiat_500 (Revi
    * **Recommendation:** a, as declared, with `task_summary` saying the source names no use case and naming (a)'s as a price guide refit once per scrape. The source settles nothing here, so the choice rests on validity and value: (a) is the only option that needs no departure and tests the move to a later market, the reason this dataset replaces `fiat_500`. If you want the use case closest to the uploader's framing instead, b with copies kept, as in this issue's notes. **Decision:** a, b or c?
 
    [^r3e]: **USE-1** (Must): a use case is an actor, a moment and a decision. The priority's "clear use case" counts only one the source names, not one the curation wrote, so this dataset scores use case 0 whichever split is chosen.
+
+   **Andrej (2026-11-26, discuss):** Agree. In this case, since the use case is made up anyway, we can pick the one where we are the safest regarding leakage, which would be a.
+
+   **Resolved (2026-11-26, Andrej):** a, the earlier-scrapes split as declared: five one-scrape windows, Mar 2020 to May 2021, each trained on every earlier scrape; no split code changes. `task_summary` now says the source names no use case and names ours, a price guide refit once per scrape (`use_case` and `split`), and `splits_comment` records what the undeclared same-scrape design (b) would score (RMSLE 0.296 against 0.314 on average, 2.5% to 12.3% lower per window). `dataset check`: 0 errors, 0 warnings, 1 info.
 
 **Review panel:** ship after changes (mediator). Claims: 22, 15 hold, 6 refuted (all fixed), 1 untested (version 1's calendar date). Blind review: would benchmark with changes; its main concern, one listing in several scrapes, is refuted (no listing id appears in two periods). Task gamer: a relisted truck's earlier price gains 0.9%, near noise. Agreed: the split, the relistings kept, RMSLE, the cleaning fixes, the seller type. Disputed: the advert's title as an input (issue 1); the horizon (H). Agreed by both sides but left to the curator: the cross-site drop, a key rebuilt from the features (issue 2).
 

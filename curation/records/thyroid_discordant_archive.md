@@ -43,6 +43,8 @@ CC (2026-11-16, Lennart): PR #102 review: the temporal split is ok (the request 
 
 CC (2026-11-17, Andrej): the declared split (temporal on `request_date`, windows of 4 months, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk).
 
+CC (2026-11-26, Andrej): better data checked 2026-11-25 (review issue 2, A): no open table beats the archive; candidates and verdicts in the review. Verdict ship; nothing open in the review.
+
 ## Review
 
 **Outcome:** added. Built on Andrej's mark on thyroid_discordant issue 4 ("Do C and add it as a new dataset, then I
@@ -51,7 +53,7 @@ Garvan Institute's requests of August 1984 to January 1987), label = report code
 four-month windows from February 1986 to January 1987. No review panel (not asked); `dataset check` passes with one
 warning. The AI recommends keeping this version and retiring thyroid_discordant, whose rows it contains (issue 1).
 
-**Main points:** Better-data check (2026-11-25, issue 2): Keep thyroid_discordant_archive as it is (A): it already is the better data (the source's full archive, 9,162 requests, 197 discordant), and every other open thyroid table is a copy or subset of it, holds no discordant label, or is another collection. Earlier: Settled: this version ships (issue 1, B, 2026-11-12; split and metric `ok`). thyroid_discordant
+**Main points:** Settled 2026-11-26, verdict ship. Better-data check (2026-11-25, issue 2, A on 2026-11-26): Keep thyroid_discordant_archive as it is (A): it already is the better data (the source's full archive, 9,162 requests, 197 discordant), and every other open thyroid table is a copy or subset of it, holds no discordant label, or is another collection. Earlier: Settled: this version ships (issue 1, B, 2026-11-12; split and metric `ok`). thyroid_discordant
 is retired as its `Duplicate` (that dataset's issue 4, a, 2026-11-12).
 
 **Record judgment:** valid. The label is the archive's own report code R, "discordant assay results"
@@ -210,6 +212,10 @@ thyroid_discordant).
    [^prov6]: **PROV-6** (Must): different versions or cuts of one underlying dataset are duplicates too when neither adds a distinct task: a swapped target, another slice of the same cohort, added or dropped rows or columns.
    [^prov7]: **PROV-7** (Must; narrows PROV-4 and PROV-6): records that share a source but give different tasks are not duplicates.
    [^better]: selection.md, "Small or dated, and the task is still done today": a better dataset from another source is its own record, a newer release of the same source is a version (PROV-6), and the old record keeps the verdict its own data earns until the curator decides.
+
+   **Andrej (2026-11-26, ok):** As recommended (A).
+
+   **Resolved (2026-11-26, Andrej):** A, the archive stays as it is: no open thyroid table beats it, and nothing replaces it or needs adding. No definition change.
 
 ## Reference
 

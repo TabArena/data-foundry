@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: nhanes_dxa_body_fat
 container_format: 2
-checksum: v2:4d1dd34191316cfabd876572f0ec5723e07368a451611126bae19b13867d68a9
+checksum: v2:e7d4078db33c01a200b043427d0d6e30f7262b38a0c191f74bbe44ad5067ad63
 build: null
 build_stale: false
 raw_files:
@@ -32,10 +32,10 @@ raw_files:
   DEMO_J.xpt: c0b46e0345ea19404928656277c8b0d10b0cca348a9b2fe4fc3c67e8b7ee73ec
 data:
   n_rows: 38708
-  n_features: 12
+  n_features: 11
   dtypes:
     category: 2
-    float64: 10
+    float64: 9
     int64: 1
   n_test_dataset_rows: null
 task:
@@ -78,11 +78,6 @@ bundle_checks:
     splits_below_target: 'Four of the nine windows an IID split of 38,708 people would
       get (SPLIT-33): the release holds eight cycles, and a fifth window, 2005-2006,
       would train on 43.6% of the people, below the half-the-data floor (splits comment).'
-    splits_feature_missing_in_test: The sagittal abdominal diameter, taken in 2011-2016
-      only, has no training value in the 2011-2012 window (trained on 1999-2006) and
-      is in 99% of its 4,381 test rows. The curator kept it as the one era-only measure
-      the 2013-2014 and 2015-2016 windows hold in training and test rows (CC 2026-11-25,
-      Andrej, Review issue 2, d).
 decisions: []
 ---
 
@@ -90,27 +85,27 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `percent_body_fat`, scored with `rmse` on temporal splits by `survey_cycle` (one step is a year). 38,708 rows and 12 features. Source: GOV Website (2008).
+Regression of `percent_body_fat`, scored with `rmse` on temporal splits by `survey_cycle` (one step is a year). 38,708 rows and 11 features. Source: GOV Website (2008).
 
-Not built yet. The current definition gives checksum `v2:4d1dd34191316cfabd876572f0ec5723e07368a451611126bae19b13867d68a9`.
+Not built yet. The current definition gives checksum `v2:e7d4078db33c01a200b043427d0d6e30f7262b38a0c191f74bbe44ad5067ad63`.
 
 ## In brief
 
-**Question.** What is a person's whole-body fat percentage, as a DXA scan measures it, judging from sex, age, ethnicity, a tape and a scale, and the abdominal caliper's sagittal diameter where it was taken?
+**Question.** What is a person's whole-body fat percentage, as a DXA scan measures it, judging from sex, age, ethnicity and a tape and a scale?
 
-**Use case.** A clinician, a screening programme or a gym estimates body fat, and so body-fat obesity, from weight, height and a few tape or caliper measures instead of a DXA scan, as the relative fat mass equation built on these files does (Woolcott and Bergman 2018). The tested population is aged 8-59: no one older was scanned after 2010.
+**Use case.** A clinician, a screening programme or a gym estimates body fat, and so body-fat obesity, from weight, height and a few tape measures instead of a DXA scan, as the relative fat mass equation built on these files does (Woolcott and Bergman 2018). The tested population is aged 8-59: no one older was scanned after 2010.
 
 **One row.** One person aged 8 or over examined by the US National Health and Nutrition Examination Survey in one of the eight two-year cycles with whole-body DXA (1999-2006, 2011-2018), whose whole-body percent fat CDC measured, not imputed, on a scan with every body region valid.
 
 **Predicted.** The whole-body fat percentage of the DXA scan taken at the same examination.
 
-**Known at prediction time.** The survey cycle, sex, age, race and ethnicity, weight, height, body-mass index, waist and upper-arm circumference, upper-leg and upper-arm length, and the sagittal abdominal diameter (2011-2016 only).
+**Known at prediction time.** The survey cycle, sex, age, race and ethnicity, weight, height, body-mass index, waist and upper-arm circumference, and upper-leg and upper-arm length.
 
 **What the test data stands for.** Each of the four newest cycles (2011-2012, 2013-2014, 2015-2016, 2017-2018) is the test data once, with every earlier cycle for training, so the test people stand for people met after the equation was fitted.
 
-**Our changes to the source.** We keep only measured scans with every body region valid, the rule CDC's analysts apply to both eras, not CDC's imputed ones; the measures taken in every cycle plus the sagittal abdominal diameter of 2011-2016, which training and test rows both carry (skinfolds, thigh, calf and hip, taken in some cycles only, are left out); from 2011 non-Hispanic Asians get their own ethnicity level.
+**Our changes to the source.** We keep only measured scans with every body region valid, the rule CDC's analysts apply to both eras, not CDC's imputed ones, and only the measures taken in every cycle (skinfolds, thigh, calf, sagittal diameter and hip were each taken in some cycles only); from 2011 non-Hispanic Asians get their own ethnicity level.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The features are what a tape, a scale, an abdominal caliper and a short interview give, and the label is the scan they replace. The scanner and its software changed between 1999-2006 and 2011-2018, and many of the heaviest people have no usable scan, so the sample thins the top of the range.
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features are what a tape, a scale and a short interview give, and the label is the scan they replace. The scanner and its software changed between 1999-2006 and 2011-2018, and many of the heaviest people have no usable scan, so the sample thins the top of the range.
 
 ## Files in this folder
 
@@ -195,7 +190,7 @@ Only curators run `build`, when the dataset ships.
 | reference | nchs2008nhanesdxa |
 | part: NHANES Body Measures (BMX), the same eight cycles | GOV Website: https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/BMX_J.htm; license: Public domain (US federal government data); the NCHS data user agreement applies |
 | part: NHANES Demographics (DEMO), the same eight cycles | GOV Website: https://wwwn.cdc.gov/Nchs/Data/Nhanes/Public/2017/DataFiles/DEMO_J.htm; license: Public domain (US federal government data); the NCHS data user agreement applies |
-| rows x columns | 38,708 x 13 |
+| rows x columns | 38,708 x 12 |
 | task.target | percent_body_fat |
 | task.problem_type | regression |
 | task.metric | rmse |
@@ -239,15 +234,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 38,708 rows of the final frame (the oldest rows: the frame is sorted by `survey_cycle`); 12 of 13 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 38,708 rows of the final frame (the oldest rows: the frame is sorted by `survey_cycle`). Cells are cut at 40 characters.
 
 | percent_body_fat | survey_cycle | sex | age_years | race_ethnicity | weight_kg | standing_height_cm | bmi | upper_leg_length_cm | upper_arm_length_cm | arm_circumference_cm | waist_circumference_cm |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 37.8 | 1999 | Female | 36 | Non-Hispanic Black | 65.8 | 165.7 | 23.97 | 40.3 | 35 | 29.2 | 86.4 |
-| 21.1 | 1999 | Male | 16 | Non-Hispanic Black | 70.6 | 181.6 | 21.41 | 46.6 | 36.5 | 28.6 | 78.7 |
-| 25.7 | 1999 | Male | 17 | Non-Hispanic Black | 75.1 | 171.8 | 25.44 | 49.6 | 36.2 | 33.3 | 84.1 |
-| 22 | 1999 | Male | 82 | Non-Hispanic White | 54.4 | 170.6 | 18.69 | 40.3 | 35.9 | 25 | 74.9 |
-| 30.7 | 1999 | Female | 30 | Non-Hispanic White | 51.9 | 161.5 | 19.9 | 37.9 | 33.5 | 26.8 | 72.7 |
+| 27 | 1999 | Male | 54 | Non-Hispanic White | 80.9 | 170.1 | 27.96 | 40.7 | 37.6 | 33.4 | 98.6 |
+| 21.2 | 1999 | Male | 8 | Non-Hispanic Black | 29.8 | 133 | 16.85 | 31.4 | 27.8 | 21.1 | 56.1 |
+| 32.4 | 1999 | Female | 18 | Mexican American | 52.5 | 158.9 | 20.79 | 36.4 | 34 | 26 | 69.5 |
+| 15.1 | 1999 | Male | 26 | Non-Hispanic White | 64.8 | 182.4 | 19.48 | 42.4 | 36.5 | 30 | 75.4 |
+| 25.7 | 1999 | Male | 51 | Mexican American | 66.8 | 166.7 | 24.04 | 40.9 | 35.5 | 30.6 | 85.7 |
 
 ## Curation notes
 
@@ -292,24 +287,21 @@ measures (BMX) and demographics (DEMO) of the same cycle, for the eight cycles w
 - Features: the measures taken in every cycle (weight, height, BMI, upper-leg and upper-arm length, upper-arm and
   waist circumference), sex, age in years, race and ethnicity and the cycle's first year. BMI is weight over
   height squared as CDC computes it, kept as released.
-- Sagittal abdominal diameter (`BMDAVSAD`, BMX_G to BMX_I: "Average Sagittal Abdominal Diameter (cm)", the mean
-  of two to four caliper readings), taken in 2011-2016 only: missing in every row of 1999-2006 and 2017-2018,
-  and in 1% of the 2011-2016 rows (13,498 of 13,646 have it). It ships because windows hold it on both sides:
-  the 2013-2014 and 2015-2016 windows train and test on it. The 2011-2012 window trains on 1999-2006 alone, so
-  it has no training value there (`splits_feature_missing_in_test`, accepted), and every 2017-2018 test row
-  lacks it while 38% of that window's training rows carry it; a method meets it as missing there.
-- Left out, each because no window can use it: thigh and calf circumference and the triceps and subscapular
-  skinfolds (1999-2006 only: missing in every test row of every window) and hip circumference (2017-2018 only:
-  missing in every training row). The exam's six-month period (`RIDEXMON`) is not a measurement of the person; the
+- Left out, each because it was taken in some cycles only: thigh and calf circumference and the triceps and
+  subscapular skinfolds (1999-2006 only: missing in every test row of every window), hip circumference
+  (2017-2018 only: missing in every training row) and the sagittal abdominal diameter (`BMDAVSAD`, 2011-2016
+  only). The diameter is the one such measure some windows hold on both sides (2013-2014 and 2015-2016, where
+  it gains 0.004 and 0.012 RMSE points), but every 2017-2018 test row lacks it while 38% of that window's
+  training rows carry it: there it raised the RMSE from 3.350 to 3.405 and turned the Asian rows' mean error
+  from +0.58 to -0.91 points (untuned LightGBM, 5 seeds), and the newest window is the period a deployed
+  equation meets. The exam's six-month period (`RIDEXMON`) is not a measurement of the person; the
   survey weights describe the sample design and are not read.
 - Race and ethnicity: `RIDRETH1`, the coding of every cycle, plus a "Non-Hispanic Asian" level from `RIDRETH3`
   for 2011-2018, when NHANES began to oversample Asian Americans. `RIDRETH1` counts them in "Other race", which
   holds 3-5% of the 1999-2006 rows and 17-25% of the 2011-2018 rows, two thirds or more of them Asian. Asians
   of 1999-2006 stay in "Other race": those cycles do not code them apart. Asians carry more fat at a given
   BMI. Measured in the 2017-2018 test window (untuned LightGBM, 5 seeds; mean error, measured minus predicted,
-  for its 544 Asian people): on the common measures the level moves it from +0.94 to +0.58 points; with the
-  sagittal diameter, which every Asian training row has and every 2017-2018 test row lacks, from +0.74 to
-  -0.91.
+  for its 544 Asian people), the level moves it from +0.94 to +0.58 points.
 - Missing measures stay missing and the rows stay (0.3% to 0.9% per measure), as at an examination where one
   measure could not be taken.
 - Duplicates: no row repeats; a few rows share every feature with another person and differ in percent fat,
@@ -336,8 +328,8 @@ training on every earlier cycle: 35,414, 31,057, 26,149 and 21,768 people (91.5%
 Every window tests on the Discovery A scanner of 2011-2018. The first three train on both eras; the 2011-2012
 window trains on the old scanner's cycles alone and so tests across the change of scanner and of sampling (the
 largest feature drift of the candidate windows, by the window statistics), a change in data collection that a
-deployed equation meets; there the "Non-Hispanic Asian" level (13.9% of the test people) and the sagittal
-abdominal diameter have no training row, since 1999-2006 neither code the one nor measured the other. Four
+deployed equation meets; there the "Non-Hispanic Asian" level (13.9% of the test people) has no training row,
+since 1999-2006 do not code it. Four
 windows against the nine a random split of 38,708 people would get: only eight cycles exist, and a fifth
 window, 2005-2006, would train on 43.6% of the people, below the floor of half the data. No gap: the scan and the measures are taken at the same examination, so a person's label exists when
 they are examined. The 2011-2018 values as released are CDC's re-analysis with the Apex software (every
@@ -360,10 +352,10 @@ Each test window against its train side, by statistics of the data, never of a m
 
 | window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
 |---|---|---|---|---|---|---|---|---|
-| 0 | 2017 - 2017 (years) | 3294 | 0.915 | mean 31.61, median 31.5, p10 19.9, p90 42.8 | mean 31.43, median 31.1, p10 19.5, p90 43.5 | 2.469 | sagittal_abdominal_diameter_cm (2.47), age_years (0.73), race_ethnicity (0.21) | 0 |
-| 1 | 2015 - 2015 (years) | 4357 | 0.802 | mean 31.65, median 31.3, p10 20, p90 43.1 | mean 31.35, median 31, p10 19.4, p90 43.5 | 3.894 | sagittal_abdominal_diameter_cm (3.89), age_years (0.78), race_ethnicity (0.20) | 0 |
-| 2 | 2013 - 2013 (years) | 4908 | 0.676 | mean 32, median 31.7, p10 20.8, p90 43.5 | mean 31.29, median 30.9, p10 19.2, p90 43.5 | 4.907 | sagittal_abdominal_diameter_cm (4.91), age_years (0.77), race_ethnicity (0.22) | 0 |
-| 3 | 2011 - 2011 (years) | 4381 | 0.562 | mean 31.13, median 30.7, p10 19.4, p90 43 | mean 31.31, median 31, p10 19.1, p90 43.6 | 13.586 | sagittal_abdominal_diameter_cm (13.59), race_ethnicity (1.17), age_years (0.83) | 0.1386 |
+| 0 | 2017 - 2017 (years) | 3294 | 0.915 | mean 31.61, median 31.5, p10 19.9, p90 42.8 | mean 31.39, median 31, p10 19.4, p90 43.5 | 0.787 | age_years (0.79), race_ethnicity (0.22), standing_height_cm (0.03) | 0 |
+| 1 | 2015 - 2015 (years) | 4357 | 0.802 | mean 31.65, median 31.3, p10 20, p90 43.1 | mean 31.4, median 31.1, p10 19.5, p90 43.5 | 0.786 | age_years (0.79), race_ethnicity (0.20), upper_leg_length_cm (0.08) | 0 |
+| 2 | 2013 - 2013 (years) | 4908 | 0.676 | mean 32, median 31.7, p10 20.8, p90 43.5 | mean 31.24, median 30.8, p10 19.2, p90 43.6 | 0.791 | age_years (0.79), race_ethnicity (0.22), upper_leg_length_cm (0.05) | 0 |
+| 3 | 2011 - 2011 (years) | 4381 | 0.562 | mean 31.13, median 30.7, p10 19.4, p90 43 | mean 31.29, median 30.9, p10 19.1, p90 43.6 | 1.168 | race_ethnicity (1.17), age_years (0.83), upper_leg_length_cm (0.10) | 0.1386 |
 
 ## Bundle checks
 
@@ -376,29 +368,27 @@ Each test window against its train side, by statistics of the data, never of a m
 Accepted on purpose:
 
 - `splits_below_target`: Four of the nine windows an IID split of 38,708 people would get (SPLIT-33): the release holds eight cycles, and a fifth window, 2005-2006, would train on 43.6% of the people, below the half-the-data floor (splits comment).
-- `splits_feature_missing_in_test`: The sagittal abdominal diameter, taken in 2011-2016 only, has no training value in the 2011-2012 window (trained on 1999-2006) and is in 99% of its 4,381 test rows. The curator kept it as the one era-only measure the 2013-2014 and 2015-2016 windows hold in training and test rows (CC 2026-11-25, Andrej, Review issue 2, d).
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (13 rows)</summary>
+<summary>Show the table (12 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | sex | category | 0 | 0 | 2 | Male, Female |
 | race_ethnicity | category | 0 | 0 | 6 | Non-Hispanic White, Mexican American, Non-Hispanic Black, Other Hispanic, Non-H… |
-| sagittal_abdominal_diameter_cm | float64 | 25210 | 65.13 | 281 | 17.0, 17.8, 16.9, 17.4, 19.9, 18.9, 18.0, 16.7, 17.5, 17.7 |
 | upper_leg_length_cm | float64 | 324 | 0.84 | 281 | 40.0, 39.0, 41.0, 38.0, 42.0, 37.0, 39.5, 40.5, 41.5, 43.0 |
-| waist_circumference_cm | float64 | 305 | 0.79 | 1010 | 74.0, 97.0, 92.0, 94.0, 86.0, 91.0, 81.0, 76.0, 80.0, 77.0 |
-| arm_circumference_cm | float64 | 197 | 0.51 | 373 | 32.0, 31.0, 30.0, 33.0, 29.0, 28.0, 34.0, 29.5, 27.0, 26.0 |
+| waist_circumference_cm | float64 | 305 | 0.79 | 1010 | 74.0, 97.0, 92.0, 94.0, 86.0, 91.0, 80.0, 81.0, 76.0, 77.0 |
+| arm_circumference_cm | float64 | 197 | 0.51 | 373 | 32.0, 31.0, 30.0, 33.0, 29.0, 28.0, 34.0, 27.0, 29.5, 26.0 |
 | upper_arm_length_cm | float64 | 193 | 0.5 | 237 | 36.0, 38.0, 37.0, 35.0, 39.0, 34.0, 36.5, 40.0, 35.5, 37.5 |
-| bmi | float64 | 179 | 0.46 | 3132 | 22.6, 24.5, 23.7, 21.1, 21.5, 24.6, 23.8, 21.3, 26.2, 22.0 |
-| standing_height_cm | float64 | 158 | 0.41 | 781 | 163.6, 163.0, 165.3, 161.4, 166.9, 161.7, 166.5, 162.0, 167.1, 162.8 |
-| weight_kg | float64 | 112 | 0.29 | 1471 | 62.8, 71.4, 69.4, 65.3, 61.3, 71.6, 63.1, 63.5, 68.4, 60.6 |
+| bmi | float64 | 179 | 0.46 | 3132 | 22.6, 24.5, 23.7, 21.1, 21.5, 24.6, 21.3, 23.8, 26.2, 22.0 |
+| standing_height_cm | float64 | 158 | 0.41 | 781 | 163.6, 163.0, 165.3, 161.4, 161.7, 166.9, 162.0, 166.5, 167.1, 162.8 |
+| weight_kg | float64 | 112 | 0.29 | 1471 | 62.8, 69.4, 71.4, 65.3, 61.3, 63.1, 71.6, 63.5, 60.6, 63.8 |
 | age_years | float64 | 0 | 0 | 78 | 12.0, 13.0, 14.0, 16.0, 18.0, 15.0, 8.0, 17.0, 9.0, 11.0 |
-| percent_body_fat | float64 | 0 | 0 | 433 | 27.3, 27.9, 29.1, 31.3, 30.8, 26.1, 30.9, 28.3, 32.1, 28.6 |
+| percent_body_fat | float64 | 0 | 0 | 433 | 27.3, 27.9, 29.1, 30.8, 26.1, 31.3, 30.9, 28.3, 32.1, 28.6 |
 | survey_cycle | int64 | 0 | 0 | 8 | 2001, 2003, 2013, 2005, 1999, 2011, 2015, 2017 |
 
 </details>
@@ -411,9 +401,6 @@ Accepted on purpose:
 
 ### Numeric features
 
-<details>
-<summary>Show the table (11 rows)</summary>
-
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | survey_cycle | 38708 | 2007.15 | 6.21816 | 1999 | 2017 |
@@ -425,10 +412,7 @@ Accepted on purpose:
 | upper_arm_length_cm | 38515 | 35.9336 | 3.5845 | 21 | 47.5 |
 | arm_circumference_cm | 38511 | 30.3046 | 5.71848 | 13.8 | 56.5 |
 | waist_circumference_cm | 38403 | 87.8889 | 17.263 | 32 | 176 |
-| sagittal_abdominal_diameter_cm | 13498 | 20.1333 | 4.76036 | 9.6 | 40.6 |
 | percent_body_fat | 38708 | 31.4271 | 8.80808 | 11.5 | 56.2 |
-
-</details>
 
 ### Categorical features
 

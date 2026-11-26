@@ -150,7 +150,8 @@ class AquaticToxicityLunghiniConsensus(AbstractCuratedDataset):
         - Split (SPLIT-31): grouped on the Bemis-Murcko scaffold of the structure (`scaffold_groups`); a chemical without a ring, and each chemical of a scaffold holding more than a tenth of the set, is a group of its own. An assessor estimates the toxicity of an untested substance, often of a series not yet measured, so whole series are held out; qsar_fish_toxicity, qsar_bioconcentration, qsar_oral_toxicity and qsar_tid_11 group the same way. The source split at random within its own modelling.
         - Sibling of qsar_fish_toxicity (908 fathead-minnow chemicals, Cassotti et al. 2015): on the shipped rows this set holds 807 of those 908 (88.9% by canonical SMILES with the stereo set aside, 785 by CAS-RN) at the same values (r 0.995, median absolute difference 0.0009, 570 of the 807 within 0.01) and adds 1,379 chemicals. Another compilation by another group from overlapping public pools, so its own record (PROV-4); whether the older set stays beside it is that record's open decision. The Daphnia endpoint of this file is the sibling of qsar_aquatic_toxicity in the same way, and holds 374 of its 546.
         - The file's row order carries no clock: the records are the published SMILES in alphabetical order (only one of the 3,680 is out of that order), so neighbouring rows are near-analogs and the target repeats along the order - that is what the time probe's `order_drift` flags, a lag-1 autocorrelation of 0.33, not a trend with the row number (Spearman -0.03, p 0.18). The order is the leading atom of the structure, bromine first and the aromatic carbons last, not when a value was measured. The base class shuffles the rows regardless.
-        - The companion article is open and was read (PROV-17): the publisher's copy is paywalled, but the first author's thesis reproduces it, deposited at https://theses.fr/2020STRAF016/document (the Strasbourg repository serves the PDF), and the journal pages 655-675 are reproduced in it. Pages 658, 660 and 661 give the collection rule, the criterion the authors' search optimises and what they report for the models, all quoted above and in the metric's reason. Unread: Table S5 of the supporting information, which holds the formulas behind the reported r2 and RMSE and which the publisher gates; what it says would settle whether rmse is the source's own criterion (see the metric).
+        - The companion article is open and was read (PROV-17): the publisher's copy is paywalled, but the first author's thesis reproduces it, deposited at https://theses.fr/2020STRAF016/document (the Strasbourg repository serves the PDF), and the journal pages 655-675 are reproduced in it. Pages 658, 660 and 661 give the collection rule, the criterion the authors' search optimises and what they report for the models, all quoted above and in the metric's definition. Unread: Table S5 of the supporting information, which holds the formulas behind the reported r2 and RMSE and which the publisher gates; what it says would settle whether the criterion their search maximises ranks models exactly as rmse does (see the metric).
+        - The metric is the source's own (MET-5, MET-11): `rmse` on the shipped scale is the number the article compares models by every time it ranks one against another - its own models against the ECHA ones (p. 668) and against ECOSAR, VEGA and T.E.S.T. (p. 669), and the abstract's headline "RMSE_ext = 0.56-0.78 ... in line with those of state-of-the-art models". For the fish endpoint this record ships, the public consensus model scores RMSE 0.73 with r2 0.67 in fivefold cross-validation repeated ten times and RMSE 0.61 with r2 0.73 on the external test set at 66% data coverage (Tables 4 and 5, p. 666 and p. 668), and the final model merged with the industrial data RMSE 0.69. What the article selects models by is the cross-validated determination coefficient (p. 660), which ranks models exactly as rmse does if it is 1 - MSE/Var(y); that formula sits in the unread Table S5, so the metric's definition states the identity rather than resting on it. Declaring r2 itself would make the numbers depend on each fold's spread - the article shows it, since the ECHA fish model has the lower cross-validated RMSE (0.60 against 0.73) while the public one has the higher r2 (0.67 against 0.64) - and would break the comparison with qsar_fish_toxicity on the same target and scale. No score and no row changes either way.
         - What a model fitted here is good for (USE-8): these rows are the public cut of the authors' collection, which they extended with industrial data and where they report that "industrial data performances were noticeably lower than those on public data", so an inventory of that kind is harder than these folds suggest. The error grows with the distance to the training side: measured over three repeats of the shipped splits, RMSE 0.87 on the 30.5% of scored test rows whose nearest training chemical is below 0.40 Tanimoto, against 0.49 where it is above 0.9. And the label has a floor of its own: the article's Figure 3 puts the agreement between the collected databases on the fish endpoint at RMSE 0.55 to 0.67, against the 0.715 an untuned LightGBM reaches here, so the headroom above today's models is smaller than an R2 of 0.67 suggests.
         - Licence: the deposit states CC BY 4.0.
     """
@@ -173,18 +174,27 @@ class AquaticToxicityLunghiniConsensus(AbstractCuratedDataset):
     # Task
     target = "LC50"
     problem_type = "regression"
-    metric = Metric.fallback(
-        reason=(
-            "The deposit scores nothing. The article names one criterion the authors deliberately select by, but for "
-            'the search rather than for the task: "Cross-validated determination coefficient was selected as fitness '
+    metric = Metric.source(
+        "rmse",
+        original=(
+            "the cross-validated determination coefficient the genetic algorithm maximises; the models are then "
+            "reported and compared by r2 and RMSE"
+        ),
+        reference="https://theses.fr/2020STRAF016/document",
+        definition=(
+            "sqrt(mean((y - y_hat)**2)) on the shipped scale, minus the log of moles per litre. It is the number the "
+            "article compares models by whenever it says one model is better than another: the abstract's "
+            '"Reasonable predictive performances were achieved (RMSE_ext = 0.56-0.78) which are in line with those '
+            'of state-of-the-art models", "their error (RMSE) is still higher than the ECHA models" (p. 668) and '
+            '"ECOSAR is performing significantly worse than any model (RMSE = 1.57-1.94) ... our models are '
+            'performing similarly to VEGA and T.E.S.T. tools, with comparable RMSE values" (p. 669). The criterion '
+            'the authors deliberately select by, "Cross-validated determination coefficient was selected as fitness '
             "function\" (p. 660) of the genetic algorithm that picks each model's descriptor space and SVM "
-            'hyperparameters. For the task itself it reports two numbers side by side, "the r2 determination '
-            'coefficient and the RMSE parameters" (p. 661), with their formulas in a supporting table the open copy '
-            "does not reproduce. rmse could stand for that criterion only by identity: R2 = 1 - MSE/Var(y) ranks "
-            "models exactly as RMSE does on a fixed test set, a squared Pearson correlation does not, and which of "
-            "the two the authors wrote down is in the unread table. So the target's scale decides instead (MET-5): "
-            "rmse is the regression fallback on a log concentration, and it is what qsar_fish_toxicity ships on the "
-            "same target and the same scale."
+            "hyperparameters, ranks every pair of models exactly as rmse does on a fixed test set if it is "
+            "1 - MSE/Var(y), and differently if it is a squared Pearson correlation; which of the two the authors "
+            "wrote down is in Table S5 of the supporting information, which the publisher gates and which is "
+            "therefore unread (checked 2026-11-25). The models themselves are reported with r2 and RMSE side by "
+            'side, "the r2 determination coefficient and the RMSE parameters" (p. 661).'
         ),
     )
 

@@ -71,8 +71,8 @@ class CraigslistUsedVehiclesF150(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="At what price is a used Ford F-150 listed on Craigslist?",
         use_case=(
-            "For example, a seller or dealer sets the asking price of a used F-150, or a buyer or a marketplace judges "
-            "a listing, with a model trained on the listings of earlier months."
+            "The source names none; ours: a price guide refit once per scrape on every earlier scrape prices the next "
+            "scrape's F-150 listings, for a seller or dealer setting an asking price or a buyer or marketplace judging one."
         ),
         row=(
             "One F-150 listing in one of nine nationwide scrapes of Craigslist's US car adverts (2018 to May 2021), "
@@ -84,7 +84,10 @@ class CraigslistUsedVehiclesF150(AbstractCuratedDataset):
             "fuel, title status, transmission, drive, size, body type, colour, whether an owner or a dealer sells it, "
             "the Craigslist site and its coordinates, and the scrape's date."
         ),
-        split="Each test set is one later scrape, with all earlier scrapes for training: the next market a model meets.",
+        split=(
+            "Each test set is one later scrape, with all earlier scrapes for training: the next market the price guide "
+            "meets after its refit."
+        ),
         changes=(
             "We keep the Ford F-150 of a scraped table of all makes, one row per truck within a scrape (also across "
             "sites), drop placeholder prices (0, 1, 12345, 99999, down payments) and the 2026 scrape, set values "
@@ -179,6 +182,7 @@ class CraigslistUsedVehiclesF150(AbstractCuratedDataset):
         Five test windows, each one scrape, each trained on every earlier scrape: May 2021 (versions 9 and 10, 12,008 trucks, 88.6% of the rows in training), Dec 2020 (8,631; 80.4%), Sep 2020 (6,405; 74.3%), Jun 2020 (10,015; 64.8%) and Mar 2020 (13,087; 52.3%). The horizon is one scrape (uploads 5 to 21 weeks apart; the scraper ran "every few months"): a pricing model refit on the listings so far meets the next market. No gap for the label: the price arrives with the advert. The scrape schedule leaves postings unseen before each window, by listing id about 7, 3, 16, 7.5 and 15 weeks before the Mar 2020 to May 2021 windows.
         Every scrape whose training side keeps half the rows is a window; the older scrapes (Oct 2018, Oct 2019, Dec 2019, Jan 2020) train on 0% to 40.3% and stay training data. The Mar 2020 window clears the 50% floor only with version 1 in training (43.5% without it); version 1's order is measured from listing ids, only its date is inferred. Five windows against the nine an IID split of 105,134 trucks would get (SPLIT-15): the 50% floor stops more. The windows are named by upload; their postings are, by listing id, about Jan to mid-Feb 2020 (Mar 2020, before COVID-19), Mar to Apr 2020 (Jun 2020, the pandemic's start), Aug to early Sep 2020, 28 Oct to 3 Dec 2020 and mid-Mar to 5 May 2021, when used-truck asking prices rose (the median of comparable trucks, 2013-2015 with 60,000 to 120,000 miles, from about 21,000 dollars in Jun 2020 to about 26,000).
         The 2026 scrape (version 11) is not a window: five years after the others, with trucks of model years the training data never shows.
+        Not declared: a seller who also knows the rest of the scrape being priced. Training on the earlier scrapes plus four fifths of the test scrape (5 random folds) scores lower than this split, by 3.2%, 2.5%, 12.3%, 2.7% and 6.6% in the Mar 2020 to May 2021 windows (untuned LightGBM, RMSLE 0.296 against 0.314 on average, measured 2026-11-25), mostly the market's move within one scrape; it puts training rows beside test rows of the same period and no longer tests a model meeting a later market.
     """
     temporal = Temporal(
         on="scrape_date",

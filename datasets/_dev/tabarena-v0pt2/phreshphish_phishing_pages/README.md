@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: phreshphish_phishing_pages
 container_format: 2
-checksum: v2:7d8f063e6d588ddd8cba2fdb8289dca79d136a5d0ba19ece686ab507968f7e46
+checksum: v2:07a5c610d6e9e6c28dc3dc449e0567d23304de0bdad1bcfe63070a5357c7fcd8
 build: null
 build_stale: false
 raw_files:
@@ -125,13 +125,23 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - dataset_identifier_column
-  - dataset_pure_feature_value
-  - task_label_time_gap
-  - splits_below_target
+  warnings: []
   infos: []
-  accepted: {}
+  accepted:
+    dataset_identifier_column: 'The canonical URL is the filter''s input, not an id:
+      one value per row by the rule of one row per URL; alone it scores ROC AUC 0.896
+      (Andrej, 2026-11-26).'
+    splits_below_target: 'Three of the nine windows an IID split of 348,287 pages
+      would get: a fourth four-week window (19 May to 15 June 2025) would hold 3,517
+      pages and train on 2024 alone, after 7.5 months without benign pages, and shorter
+      windows would shorten the assumed four-week refit only to reach the count (Andrej,
+      2026-11-26).'
+    task_label_time_gap: 'The one-day gap stands for the time a refit takes to build
+      before it is used, not for the label''s delay: a phishing page''s label is its
+      feed report, made minutes before the crawl (Andrej, 2026-11-26).'
+    dataset_pure_feature_value: 2024-10-31 holds 3,562 phishing pages and no benign
+      one, a day of the collection's schedule; the date orders the split and is no
+      input (Andrej, 2026-11-26).
 decisions: []
 ---
 
@@ -141,7 +151,7 @@ decisions: []
 
 Binary classification of `is_phishing`, scored with `roc_auc` on temporal splits by `date`. 348,287 rows and 53 features. Source: HuggingFace (2025).
 
-Not built yet. The current definition gives checksum `v2:7d8f063e6d588ddd8cba2fdb8289dca79d136a5d0ba19ece686ab507968f7e46`.
+Not built yet. The current definition gives checksum `v2:07a5c610d6e9e6c28dc3dc449e0567d23304de0bdad1bcfe63070a5357c7fcd8`.
 
 ## In brief
 
@@ -400,7 +410,8 @@ research" (CC BY 4.0).
 - Target: `label` renamed `is_phishing` ("Yes" for phish).
 - Dropped: `sha256` (an id), `target` (the brand a phishing page imitates; empty on every benign page), the
   raw URL (replaced by the canonical one) and the release's split (`source_split`, a cut on the date).
-- Kept: the canonical URL as text (`url`), `lang`, the language the release detected, and `lang_score`, its
+- Kept: the canonical URL as text (`url`; the filter's input, not an id, so its identifier warning is
+  accepted), `lang`, the language the release detected, and `lang_score`, its
   confidence; the release writes -1 where it gives no language (1.0% of benign, 4.2% of phishing pages),
   set to missing. Six 0/1 flags of ours (`host_is_ip`, `host_punycode`, `host_www`, `host_port`,
   `path_is_root`, `path_page_extension`) are categories. A `title_length` over 1,000 characters (an unclosed
@@ -438,7 +449,7 @@ target of 9 for 348,287 rows (SPLIT-33): a fourth four-week window (19 May to 15
 pages and train on 2024 alone, and shorter windows would shorten the assumed refit only to reach the count.
 `dataset check` warns on the count, on the gap on a date that dates the label (the gap stands for the refit,
 not the label) and on 2024-10-31, a day with phishing pages only (the date is no input); the three are
-proposed for acceptance with the horizon.
+accepted with the horizon (`accepted_check_warnings`).
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 220,600 to 297,809 rows, test 35,257 to 50,120 rows. Prediction horizon: 4 weeks. Gap between train and test: 1 days. The time column `date` dates the label, which arrives after the prediction point: it orders and splits the rows, so every training label was known at its window's start, and is no model input (`feature_columns(container)` leaves it out).
 
@@ -461,12 +472,15 @@ Each test window against its train side, by statistics of the data, never of a m
 
 ## Bundle checks
 
-0 error(s), 4 warning(s), 0 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `dataset_identifier_column`: 1 column(s) have one distinct value per row: ['url']. (hint: Uninformative sample identifiers should be dropped (curation guidelines); keep and process only informative ones (e.g. a time index).)
-- **warning** `dataset_pure_feature_value`: 1 feature value(s) determine the class on their own: date = 2024-10-31: 3,562 rows, 100.0% is_phishing=Yes (overall 20.9%). (hint: Often a leak: a column derived from the outcome or recorded after it. Check the column's documentation; drop it if so, otherwise accept the warning with the reason.)
-- **warning** `task_label_time_gap`: The splits leave a gap (1 days) on a time that dates the label (`date`). (hint: A split on when the label became known trains only on labels known at each window's start, which is what a gap for the label's delay simulates (SPLIT-10). Drop the gap, or accept this warning with the planning or refit delay it stands for.)
-- **warning** `splits_below_target`: 3 window(s), against the 9 splits an IID split of 348,287 scored units would get (SPLIT-33). (hint: SPLIT-15 aims at that count and accepts fewer: the splits comment names the target, the count reached and what stops more windows (the use case's horizon or gap, the training floor, the least test window); then accept this warning with it.)
+
+Accepted on purpose:
+
+- `dataset_identifier_column`: The canonical URL is the filter's input, not an id: one value per row by the rule of one row per URL; alone it scores ROC AUC 0.896 (Andrej, 2026-11-26).
+- `splits_below_target`: Three of the nine windows an IID split of 348,287 pages would get: a fourth four-week window (19 May to 15 June 2025) would hold 3,517 pages and train on 2024 alone, after 7.5 months without benign pages, and shorter windows would shorten the assumed four-week refit only to reach the count (Andrej, 2026-11-26).
+- `task_label_time_gap`: The one-day gap stands for the time a refit takes to build before it is used, not for the label's delay: a phishing page's label is its feed report, made minutes before the crawl (Andrej, 2026-11-26).
+- `dataset_pure_feature_value`: 2024-10-31 holds 3,562 phishing pages and no benign one, a day of the collection's schedule; the date orders the split and is no input (Andrej, 2026-11-26).
 
 ## Data checks
 

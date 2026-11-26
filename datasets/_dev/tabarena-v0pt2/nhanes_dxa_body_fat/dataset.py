@@ -53,9 +53,6 @@ COMMON_MEASURES = {
     "BMXARMC": "arm_circumference_cm",
     "BMXWAIST": "waist_circumference_cm",
 }
-# The sagittal abdominal diameter (calipers), the mean of the readings, taken in 2011-2016 only (BMX_G to BMX_I);
-# missing in 1999-2006 and 2017-2018.
-SAGITTAL = {"BMDAVSAD": "sagittal_abdominal_diameter_cm"}
 
 # Codebook words (DEMO): RIAGENDR and RIDRETH1, the same codes in every cycle; from 2011 the non-Hispanic Asians of
 # RIDRETH3 get their own level (step 5 of `_clean`).
@@ -74,14 +71,14 @@ CODE_LABELS = {
 class NhanesDxaBodyFat(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question=(
-            "What is a person's whole-body fat percentage, as a DXA scan measures it, judging from sex, age, ethnicity, "
-            "a tape and a scale, and the abdominal caliper's sagittal diameter where it was taken?"
+            "What is a person's whole-body fat percentage, as a DXA scan measures it, judging from sex, age, ethnicity "
+            "and a tape and a scale?"
         ),
         use_case=(
             "A clinician, a screening programme or a gym estimates body fat, and so body-fat obesity, from weight, "
-            "height and a few tape or caliper measures instead of a DXA scan, as the relative fat mass equation built "
-            "on these files does (Woolcott and Bergman 2018). The tested population is aged 8-59: no one older was "
-            "scanned after 2010."
+            "height and a few tape measures instead of a DXA scan, as the relative fat mass equation built on these "
+            "files does (Woolcott and Bergman 2018). The tested population is aged 8-59: no one older was scanned "
+            "after 2010."
         ),
         row=(
             "One person aged 8 or over examined by the US National Health and Nutrition Examination Survey in one of "
@@ -91,7 +88,7 @@ class NhanesDxaBodyFat(AbstractCuratedDataset):
         predicted="The whole-body fat percentage of the DXA scan taken at the same examination.",
         known=(
             "The survey cycle, sex, age, race and ethnicity, weight, height, body-mass index, waist and upper-arm "
-            "circumference, upper-leg and upper-arm length, and the sagittal abdominal diameter (2011-2016 only)."
+            "circumference, and upper-leg and upper-arm length."
         ),
         split=(
             "Each of the four newest cycles (2011-2012, 2013-2014, 2015-2016, 2017-2018) is the test data once, with "
@@ -99,14 +96,14 @@ class NhanesDxaBodyFat(AbstractCuratedDataset):
         ),
         changes=(
             "We keep only measured scans with every body region valid, the rule CDC's analysts apply to both eras, "
-            "not CDC's imputed ones; the measures taken in every cycle plus the sagittal abdominal diameter of "
-            "2011-2016, which training and test rows both carry (skinfolds, thigh, calf and hip, taken in some cycles "
-            "only, are left out); from 2011 non-Hispanic Asians get their own ethnicity level."
+            "not CDC's imputed ones, and only the measures taken in every cycle (skinfolds, thigh, calf, sagittal "
+            "diameter and hip were each taken in some cycles only); from 2011 non-Hispanic Asians get their own "
+            "ethnicity level."
         ),
         fit="direct",
         fit_reason=(
-            "The features are what a tape, a scale, an abdominal caliper and a short interview give, and the label is "
-            "the scan they replace. The scanner and its software changed between 1999-2006 and 2011-2018, and many of the heaviest "
+            "The features are what a tape, a scale and a short interview give, and the label is the scan they "
+            "replace. The scanner and its software changed between 1999-2006 and 2011-2018, and many of the heaviest "
             "people have no usable scan, so the sample thins the top of the range."
         ),
     )
@@ -204,24 +201,21 @@ class NhanesDxaBodyFat(AbstractCuratedDataset):
         - Features: the measures taken in every cycle (weight, height, BMI, upper-leg and upper-arm length, upper-arm and
           waist circumference), sex, age in years, race and ethnicity and the cycle's first year. BMI is weight over
           height squared as CDC computes it, kept as released.
-        - Sagittal abdominal diameter (`BMDAVSAD`, BMX_G to BMX_I: "Average Sagittal Abdominal Diameter (cm)", the mean
-          of two to four caliper readings), taken in 2011-2016 only: missing in every row of 1999-2006 and 2017-2018,
-          and in 1% of the 2011-2016 rows (13,498 of 13,646 have it). It ships because windows hold it on both sides:
-          the 2013-2014 and 2015-2016 windows train and test on it. The 2011-2012 window trains on 1999-2006 alone, so
-          it has no training value there (`splits_feature_missing_in_test`, accepted), and every 2017-2018 test row
-          lacks it while 38% of that window's training rows carry it; a method meets it as missing there.
-        - Left out, each because no window can use it: thigh and calf circumference and the triceps and subscapular
-          skinfolds (1999-2006 only: missing in every test row of every window) and hip circumference (2017-2018 only:
-          missing in every training row). The exam's six-month period (`RIDEXMON`) is not a measurement of the person; the
+        - Left out, each because it was taken in some cycles only: thigh and calf circumference and the triceps and
+          subscapular skinfolds (1999-2006 only: missing in every test row of every window), hip circumference
+          (2017-2018 only: missing in every training row) and the sagittal abdominal diameter (`BMDAVSAD`, 2011-2016
+          only). The diameter is the one such measure some windows hold on both sides (2013-2014 and 2015-2016, where
+          it gains 0.004 and 0.012 RMSE points), but every 2017-2018 test row lacks it while 38% of that window's
+          training rows carry it: there it raised the RMSE from 3.350 to 3.405 and turned the Asian rows' mean error
+          from +0.58 to -0.91 points (untuned LightGBM, 5 seeds), and the newest window is the period a deployed
+          equation meets. The exam's six-month period (`RIDEXMON`) is not a measurement of the person; the
           survey weights describe the sample design and are not read.
         - Race and ethnicity: `RIDRETH1`, the coding of every cycle, plus a "Non-Hispanic Asian" level from `RIDRETH3`
           for 2011-2018, when NHANES began to oversample Asian Americans. `RIDRETH1` counts them in "Other race", which
           holds 3-5% of the 1999-2006 rows and 17-25% of the 2011-2018 rows, two thirds or more of them Asian. Asians
           of 1999-2006 stay in "Other race": those cycles do not code them apart. Asians carry more fat at a given
           BMI. Measured in the 2017-2018 test window (untuned LightGBM, 5 seeds; mean error, measured minus predicted,
-          for its 544 Asian people): on the common measures the level moves it from +0.94 to +0.58 points; with the
-          sagittal diameter, which every Asian training row has and every 2017-2018 test row lacks, from +0.74 to
-          -0.91.
+          for its 544 Asian people), the level moves it from +0.94 to +0.58 points.
         - Missing measures stay missing and the rows stay (0.3% to 0.9% per measure), as at an examination where one
           measure could not be taken.
         - Duplicates: no row repeats; a few rows share every feature with another person and differ in percent fat,
@@ -271,8 +265,8 @@ class NhanesDxaBodyFat(AbstractCuratedDataset):
         Every window tests on the Discovery A scanner of 2011-2018. The first three train on both eras; the 2011-2012
         window trains on the old scanner's cycles alone and so tests across the change of scanner and of sampling (the
         largest feature drift of the candidate windows, by the window statistics), a change in data collection that a
-        deployed equation meets; there the "Non-Hispanic Asian" level (13.9% of the test people) and the sagittal
-        abdominal diameter have no training row, since 1999-2006 neither code the one nor measured the other. Four
+        deployed equation meets; there the "Non-Hispanic Asian" level (13.9% of the test people) has no training row,
+        since 1999-2006 do not code it. Four
         windows against the nine a random split of 38,708 people would get: only eight cycles exist, and a fifth
         window, 2005-2006, would train on 43.6% of the people, below the floor of half the data. No gap: the scan and the measures are taken at the same examination, so a person's label exists when
         they are examined. The 2011-2018 values as released are CDC's re-analysis with the Apex software (every
@@ -284,12 +278,6 @@ class NhanesDxaBodyFat(AbstractCuratedDataset):
             "Four of the nine windows an IID split of 38,708 people would get (SPLIT-33): the release holds eight "
             "cycles, and a fifth window, 2005-2006, would train on 43.6% of the people, below the half-the-data floor "
             "(splits comment)."
-        ),
-        "splits_feature_missing_in_test": (
-            "The sagittal abdominal diameter, taken in 2011-2016 only, has no training value in the 2011-2012 window "
-            "(trained on 1999-2006) and is in 99% of its 4,381 test rows. The curator kept it as the one era-only "
-            "measure the 2013-2014 and 2015-2016 windows hold in training and test rows (CC 2026-11-25, Andrej, "
-            "Review issue 2, d)."
         ),
     }
 
@@ -340,7 +328,6 @@ class NhanesDxaBodyFat(AbstractCuratedDataset):
                 "RIDAGEYR": "age_years",
                 "RIDRETH1": "race_ethnicity",
                 **COMMON_MEASURES,
-                **SAGITTAL,
             }
         )
         # 5. The codebook's words for sex and ethnicity (CLEAN-12); from 2011, RIDRETH3's non-Hispanic Asians get their
@@ -348,19 +335,11 @@ class NhanesDxaBodyFat(AbstractCuratedDataset):
         df = decode(df, CODE_LABELS)
         asian = df["RIDRETH3"].eq(RIDRETH3_ASIAN)
         df["race_ethnicity"] = df["race_ethnicity"].where(~asian, "Non-Hispanic Asian")
-        # 6. The features measured in every cycle, the sagittal diameter (2011-2016, missing elsewhere), the time key and
-        #    the target (curation notes for the drops). BMX and DEMO code no sentinels in these columns (missing is
-        #    blank); the ranges are plausible (weight 16.9 to 188.5 kg, height 105.5 to 195.1 cm, waist 32 to 176 cm,
-        #    sagittal diameter 9.6 to 40.6 cm), and no row repeats.
-        keep = [
-            "survey_cycle",
-            "sex",
-            "age_years",
-            "race_ethnicity",
-            *COMMON_MEASURES.values(),
-            *SAGITTAL.values(),
-            "percent_body_fat",
-        ]
+        # 6. The features measured in every cycle, the time key and the target (curation notes for the drops, the
+        #    sagittal diameter of 2011-2016 among them). BMX and DEMO code no sentinels in these columns (missing is
+        #    blank); the ranges are plausible (weight 16.9 to 188.5 kg, height 105.5 to 195.1 cm, waist 32 to 176 cm),
+        #    and no row repeats.
+        keep = ["survey_cycle", "sex", "age_years", "race_ethnicity", *COMMON_MEASURES.values(), "percent_body_fat"]
         return df[keep]
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

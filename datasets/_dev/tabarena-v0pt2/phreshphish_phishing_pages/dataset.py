@@ -332,9 +332,9 @@ class PhreshphishPhishingPages(AbstractCuratedDataset):
         - Target: `label` renamed `is_phishing` ("Yes" for phish).
         - Dropped: `sha256` (an id), `target` (the brand a phishing page imitates; empty on every benign page), the
           raw URL (replaced by the canonical one) and the release's split (`source_split`, a cut on the date).
-        - Kept: the canonical URL as text (`url`), `lang`, the language the release detected, and `lang_score`, its
-          confidence; the release writes -1 where it gives no language (1.0% of benign, 4.2% of phishing pages),
-          set to missing. Six 0/1 flags of ours (`host_is_ip`, `host_punycode`, `host_www`, `host_port`,
+        - Kept: the canonical URL as text (`url`; the filter's input, not an id, so its identifier warning is
+          accepted), `lang`, the language the release detected, and `lang_score`, its confidence; the release writes
+          -1 where it gives no language (1.0% of benign, 4.2% of phishing pages), set to missing. Six 0/1 flags of ours (`host_is_ip`, `host_punycode`, `host_www`, `host_port`,
           `path_is_root`, `path_page_extension`) are categories. A `title_length` over 1,000 characters (an unclosed
           or embedded `<title>`, 25 pages) is set to missing.
         - Note: registered domains recur across every window (hosting platforms such as gitbook.io, webflow.io and
@@ -405,8 +405,27 @@ class PhreshphishPhishingPages(AbstractCuratedDataset):
         pages and train on 2024 alone, and shorter windows would shorten the assumed refit only to reach the count.
         `dataset check` warns on the count, on the gap on a date that dates the label (the gap stands for the refit,
         not the label) and on 2024-10-31, a day with phishing pages only (the date is no input); the three are
-        proposed for acceptance with the horizon.
+        accepted with the horizon (`accepted_check_warnings`).
     """
+    accepted_check_warnings = {
+        "dataset_identifier_column": (
+            "The canonical URL is the filter's input, not an id: one value per row by the rule of one row per URL; "
+            "alone it scores ROC AUC 0.896 (Andrej, 2026-11-26)."
+        ),
+        "splits_below_target": (
+            "Three of the nine windows an IID split of 348,287 pages would get: a fourth four-week window (19 May to "
+            "15 June 2025) would hold 3,517 pages and train on 2024 alone, after 7.5 months without benign pages, and "
+            "shorter windows would shorten the assumed four-week refit only to reach the count (Andrej, 2026-11-26)."
+        ),
+        "task_label_time_gap": (
+            "The one-day gap stands for the time a refit takes to build before it is used, not for the label's "
+            "delay: a phishing page's label is its feed report, made minutes before the crawl (Andrej, 2026-11-26)."
+        ),
+        "dataset_pure_feature_value": (
+            "2024-10-31 holds 3,562 phishing pages and no benign one, a day of the collection's schedule; the date "
+            "orders the split and is no input (Andrej, 2026-11-26)."
+        ),
+    }
 
     prepared_raw_files = (FEATURES_FILE,)
 
