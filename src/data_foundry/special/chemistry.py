@@ -45,7 +45,7 @@ from data_foundry.special import SpecialColumn
 from data_foundry.utils.optional import import_build_dependency
 
 if TYPE_CHECKING:
-    from data_foundry.bundle_checks import CheckResult
+    from data_foundry.checks.results import CheckResult
     from data_foundry.schema import SpecialFeature
 
 RDKIT_VERSION = "2026.03.6"
@@ -248,7 +248,7 @@ class Smiles(SpecialColumn):
     @classmethod
     def check(cls, df: pd.DataFrame, feature: SpecialFeature) -> Iterator[CheckResult]:
         """The column is ``string``, a missing structure is flagged, and every value parses with the pinned RDKit."""
-        from data_foundry.bundle_checks import CheckResult  # noqa: PLC0415 - bundle_checks loads the kinds lazily
+        from data_foundry.checks.results import CheckResult  # noqa: PLC0415 - the bundle checks load the kinds lazily
 
         (column,) = feature.columns
         if df[column].dtype != "string":

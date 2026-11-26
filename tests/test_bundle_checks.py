@@ -6,13 +6,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from data_foundry import bundle_checks
-from data_foundry.bundle_checks import (
-    BundleCheckError,
+from data_foundry.checks import bundle as bundle_checks
+from data_foundry.checks.bundle import (
     canonical_metric_name,
     run_bundle_checks,
     verify_saved_container,
 )
+from data_foundry.checks.results import BundleCheckError
 from data_foundry.curation_container import (
     CuratedContainer,
     feature_columns as model_inputs,
@@ -966,7 +966,7 @@ def test_a_budget_explains_the_rows_its_test_samples_leave_out():
 
 
 def test_round_trip_comparison_sees_category_order_but_not_string_storage():
-    from data_foundry.bundle_checks import _compare_frames
+    from data_foundry.checks.bundle import _compare_frames
 
     df = pd.DataFrame(
         {

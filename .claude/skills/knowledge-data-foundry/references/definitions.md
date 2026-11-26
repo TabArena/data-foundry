@@ -833,7 +833,9 @@ changed, appeared or went; `raw_files_missing` (error) a pattern that matches no
 
 ## Bundle checks and what to do at scaffold time
 
-`dataset check` runs them (and `dataset build` refuses to save on an error). Pre-empt them:
+`dataset check` runs them (and `dataset build` refuses to save on an error). The checks live in
+`src/data_foundry/checks/`; every slug, its severities and whether a definition may accept it is in
+[check_slugs.md](check_slugs.md), generated from `checks/registry.py`. Pre-empt them:
 
 | Check slug | Scaffold action |
 |---|---|
@@ -885,7 +887,10 @@ changed, appeared or went; `raw_files_missing` (error) a pattern that matches no
 | `meta_license_unknown`, `meta_source_link`, `meta_splits_comment_empty` | a licence, a real URL or DOI, and a substantive splits comment |
 
 A warning that is correct for the dataset goes into `accepted_check_warnings` with its reason (one per slug, filled by
-the curator once they have seen the warnings); `README.md` lists it under "Accepted on purpose".
+the curator once they have seen the warnings); `README.md` lists it under "Accepted on purpose". An error stays in the
+report even when its slug is listed, unless the registry's `ACCEPTABLE_ERRORS` names it with the rule that allows the
+exception (today `splits_test_too_small`, SPLIT-14); a slug that can only be an error is refused when the definition
+loads.
 
 ## Decisions: evidence for the calls a reviewer would question
 

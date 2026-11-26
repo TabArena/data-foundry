@@ -2,7 +2,7 @@
 row budget when it sets one (``collection_row_budget``).
 
 Use this to (a) audit an already-shipped collection and (b) calibrate a new check in
-``data_foundry.bundle_checks`` before choosing its severity: a rule that fires on many
+``data_foundry.checks.bundle`` before choosing its severity: a rule that fires on many
 healthy datasets is noise, and a hard ``error`` must be reproducible on a real bundle.
 
 Run from the repo root::
@@ -23,7 +23,8 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from data_foundry.bundle_checks import SEVERITY_ORDER, run_bundle_checks
+from data_foundry.checks.bundle import run_bundle_checks
+from data_foundry.checks.results import SEVERITY_ORDER
 from data_foundry.collections import get_collection
 
 

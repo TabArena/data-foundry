@@ -8,7 +8,7 @@ import pandas.testing as pdt
 import pydantic
 import pytest
 
-from data_foundry.bundle_checks import verify_saved_container
+from data_foundry.checks import verify_saved_container
 from data_foundry.curation_container import CuratedContainer, non_feature_columns
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE, splits_from_row_table, splits_to_row_table
 from data_foundry.schema import (

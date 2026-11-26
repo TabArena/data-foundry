@@ -28,7 +28,7 @@ from typing import TYPE_CHECKING, Any, Literal
 import numpy as np
 import pandas as pd
 
-from data_foundry.bundle_checks import CheckResult
+from data_foundry.checks.results import CheckResult
 from data_foundry.sampling import (
     SPLIT_RANDOM_STATE,
     STEPS_PER_YEAR,
@@ -944,7 +944,7 @@ def sample_temporal_splits(
 
 
 def protocol_checks(container: CuratedContainer) -> list[CheckResult]:
-    """The split-protocol checks of a format-2 container; :func:`~data_foundry.bundle_checks.run_bundle_checks` runs
+    """The split-protocol checks of a format-2 container; :func:`~data_foundry.checks.bundle.run_bundle_checks` runs
     them for every format-2 container.
 
     * ``splits_test_over_budget`` (warning): a split tests on more rows than the container's

@@ -24,9 +24,9 @@ from typing import TYPE_CHECKING, Any
 import pandas as pd
 import yaml
 
+from data_foundry.checks import groups as group_checks
 from data_foundry.curation._paths import records_dir, resolve_curation_root
 from data_foundry.curation_container import feature_columns
-from data_foundry.definition import group_checks
 from data_foundry.definition.dataset import (
     CLI_COMMAND,
     DEFINITION_FILENAME,

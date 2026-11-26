@@ -12,8 +12,8 @@ import pytest
 from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.metrics import mean_poisson_deviance
 
+from data_foundry.checks import run_all_checks
 from data_foundry.curation_container import CuratedContainer
-from data_foundry.dataset_checks import run_all_checks
 from data_foundry.definition.dataset import metric_spec
 from data_foundry.examples import (
     TOY_CONTAINER_UNIQUE_NAME,
@@ -73,7 +73,6 @@ def test_toy_container_satisfies_curation_contract():
         data=container.dataset,
         problem_type=container.task_metadata.problem_type,
         target_feature=container.task_metadata.target_column_name,
-        print_report=False,
     )
 
 

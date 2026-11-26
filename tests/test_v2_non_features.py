@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from data_foundry.bundle_checks import run_bundle_checks
+from data_foundry.checks import run_bundle_checks
 from data_foundry.definition import (
     DatasetDefinitionError,
     dataset as dataset_module,

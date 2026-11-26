@@ -46,7 +46,9 @@ All commands run from the repository root in the repository's environment (`.ven
    picks up every edit to the definition; not committed).
 5. **Check.** `.venv/bin/python -m data_foundry.curation.cli dataset check <folder>` runs the whole pipeline and the
    bundle checks without saving, and writes `README.md`. Repeat until there are no errors. A warning that is correct
-   for the dataset goes into `accepted_check_warnings = {"<slug>": "<why>"}`; the reason is the audit trail.
+   for the dataset goes into `accepted_check_warnings = {"<slug>": "<why>"}`; the reason is the audit trail. An error
+   cannot be accepted, except the few the rules allow an exception for: every slug, its severity and whether it can be
+   accepted is in [`check_slugs.md`](.claude/skills/knowledge-data-foundry/references/check_slugs.md).
 6. **Probe.** `.claude/skills/knowledge-data-foundry/scripts/leak_probes.py <unique_name>` (leaks), `task_probes.py`
    (signal against dummy baselines) and, for a grouped task, `group_probes.py`. A task-probe flag is a question:
    check it against the benchmark's tuned methods (`tuned_results.py`) and answer it as

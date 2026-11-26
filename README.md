@@ -318,8 +318,8 @@ data-foundry/
 │   ├── special/, encodings.py   # special features (SMILES, spectra) and the recommended encodings
 │   ├── definition/           # the definition API (`dataset.py` classes): AbstractCuratedDataset, split protocol, README report
 │   ├── v1/                   # the format-1 metadata of the shipped BeyondArena containers
-│   ├── dataset_checks.py     # run_all_checks(...) — sanity stats, rendered in each dataset's README
-│   ├── bundle_checks.py      # run_bundle_checks(...) / verify_saved_container(...) — bundle integrity
+│   ├── checks/               # the checks: run_bundle_checks / verify_saved_container, the README tables
+│   │                         #   (run_all_checks), the task and definition checks, registry.py of every slug
 │   ├── curation/             # curation log toolkit — CurationRecord, store, dashboard (serve), import/export, build-site
 │   └── examples/toy_container/  # tiny ready-to-load CuratedContainer shipped in-package
 ├── curation/                 # the curation log (git-tracked data) — records/*.md + vocabularies.yaml
@@ -346,8 +346,10 @@ The short version (v2):
 1. Scaffold the folder: `.venv/bin/python -m data_foundry.curation.cli dataset new <unique_name> --root
    datasets/_dev/tabarena-v0pt2` (or `/add-dataset <unique_name>` in Claude Code), and fill in `dataset.py`.
 2. Run `.venv/bin/python -m data_foundry.curation.cli dataset check <folder>` until there are no errors and every
-   warning is fixed or accepted with a reason; it writes the folder's `README.md`. Then run the probes in
-   `.claude/skills/knowledge-data-foundry/scripts/` (leak, task and, for a grouped task, group probes).
+   warning is fixed or accepted with a reason; it writes the folder's `README.md`. The checks and their slugs are in
+   `src/data_foundry/checks/` ([`check_slugs.md`](.claude/skills/knowledge-data-foundry/references/check_slugs.md)).
+   Then run the probes in `.claude/skills/knowledge-data-foundry/scripts/` (leak, task and, for a grouped task, group
+   probes).
 3. Open a PR; a curator runs `dataset build`, which saves the container and records its UUID.
 
 The long version is [**CONTRIBUTING_DATASETS.md**](CONTRIBUTING_DATASETS.md); a first contribution to TabArena v0.2

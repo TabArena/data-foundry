@@ -29,7 +29,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pandas as pd
 
-from data_foundry.bundle_checks import CheckResult
+from data_foundry.checks.results import CheckResult
 from data_foundry.metrics import METRICS
 
 if TYPE_CHECKING:

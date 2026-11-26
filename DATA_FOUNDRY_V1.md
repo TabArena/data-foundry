@@ -110,11 +110,14 @@ For a shipped BeyondArena dataset (the re-check of `/add-dataset` covers v2 defi
 2. **Automated checks.**
 
    ```python
-   from data_foundry.bundle_checks import run_bundle_checks
+   from data_foundry.checks import run_bundle_checks
    from data_foundry.collections import BEYOND_ARENA
 
    report = run_bundle_checks(BEYOND_ARENA.get_dataset("<name>"))   # prints the report
    ```
+
+   The checks moved from `data_foundry.bundle_checks` to `data_foundry.checks` on 2026-11-26; what each slug means
+   is in [`check_slugs.md`](.claude/skills/knowledge-data-foundry/references/check_slugs.md).
 
    For the whole collection: `.venv/bin/python .claude/skills/knowledge-data-foundry/scripts/check_collection_bundles.py
    --collection BeyondArena --examples 5`. The leak, task and group probes run on v2 definitions; for a shipped

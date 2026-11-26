@@ -5,8 +5,8 @@ Where the other two check layers sit:
 * :mod:`data_foundry.schema` — *coherence of one metadata object*, enforced in
   ``__post_init__`` at creation time (e.g. ``group_labels`` requires ``group_on``).
   Cheap, no DataFrame needed, so a broken combination cannot even be constructed.
-* :mod:`data_foundry.dataset_checks` — *exploratory* report on the DataFrame
-  (``run_all_checks``): statistics a human reads while curating.
+* :mod:`data_foundry.checks.tables` — the summary tables of the DataFrame
+  (``run_all_checks``) that each dataset's README shows.
 * this module — *cross-referential* checks that need the whole bundle at once:
   the DataFrame, the task metadata, the splits, and the dataset metadata together.
   These are the ones that can only run at the end: "does ``time_on`` name a real
@@ -21,8 +21,8 @@ Usage in a curation notebook — build the container, check it, then save::
     save_path = curated_data.save()
     verify_saved_container(save_path, container=curated_data).raise_if_errors()
 
-Every finding carries a stable ``slug``; pass ``ignore=["slug", ...]`` to accept a
-finding on purpose (the notebook then documents the accepted deviation).
+Every finding carries a stable ``slug``, listed in :mod:`data_foundry.checks.registry`; pass
+``ignore=["slug", ...]`` to accept a finding on purpose (the notebook then documents the accepted deviation).
 
 A format-2 container (the v2 definitions) is also judged by the v2 split protocol,
 :func:`data_foundry.definition.splits.protocol_checks` (always 3 folds, and the row budget the container records, if
@@ -33,18 +33,18 @@ containers are pinned and never rebuilt. Every other check is the same for both 
 from __future__ import annotations
 
 import itertools
-import json
 import math
 import re
 import warnings
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
 
 from data_foundry import time_basis as basis_rules
+from data_foundry.checks.results import SEVERITY_ORDER, BundleCheckReport, CheckResult, Severity
 from data_foundry.curation_container import CuratedContainer, non_feature_columns
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
 from data_foundry.schema import TIME_BASIS_TAGS, as_column_list, current_tag, training_only_weight
@@ -62,10 +62,6 @@ if TYPE_CHECKING:
         Source,
         UnitWeight,
     )
-
-Severity = Literal["error", "warning", "info"]
-
-SEVERITY_ORDER: dict[Severity, int] = {"error": 0, "warning": 1, "info": 2}
 
 DEFAULT_HEAVY_CELL_BUDGET = 50_000_000
 """Cell budget (``n_rows * n_cols``) above which O(rows x cols) checks are skipped.
@@ -178,135 +174,6 @@ PURE_VALUE_MAX_LEVELS = 50
 
 PLACEHOLDER_PATTERNS: tuple[str, ...] = (r"\bTODO\b", r"\bFIXME\b", r"xxx\.csv", r"<unique_name>")
 """Scaffolding markers (regexes) that must not survive into a shipped bundle."""
-
-
-class BundleCheckError(RuntimeError):
-    """Raised by :meth:`BundleCheckReport.raise_if_errors` when a bundle has errors."""
-
-
-@dataclass(frozen=True)
-class CheckResult:
-    """One finding of a bundle check.
-
-    Attributes:
-        slug: Stable identifier of the check (use it in ``ignore=[...]``).
-        severity: ``"error"`` (must fix), ``"warning"`` (look at it), or ``"info"``.
-        message: What was found, including the offending values.
-        hint: Optional "what to do about it" follow-up.
-    """
-
-    slug: str
-    severity: Severity
-    message: str
-    hint: str | None = None
-
-    def __str__(self) -> str:
-        text = f"[{self.slug}] {self.message}"
-        return f"{text}\n    -> {self.hint}" if self.hint else text
-
-
-@dataclass
-class BundleCheckReport:
-    """The findings of :func:`run_bundle_checks` for one bundle.
-
-    Print it (``print(report)`` / just evaluate it in a notebook cell) for the
-    human-readable report, use :meth:`raise_if_errors` to fail a notebook run, and
-    :meth:`to_dict` to persist a machine-readable record of what was checked.
-    """
-
-    unique_name: str
-    results: list[CheckResult] = field(default_factory=list)
-    ignored: tuple[str, ...] = ()
-    n_checks_run: int = 0
-
-    def by_severity(self, severity: Severity) -> list[CheckResult]:
-        """Return all findings of one severity, in the order they were produced."""
-        return [r for r in self.results if r.severity == severity]
-
-    @property
-    def errors(self) -> list[CheckResult]:
-        """Findings that must be fixed before the bundle is saved/shipped."""
-        return self.by_severity("error")
-
-    @property
-    def warnings(self) -> list[CheckResult]:
-        """Findings that need a human call (often fine, sometimes a real defect)."""
-        return self.by_severity("warning")
-
-    @property
-    def infos(self) -> list[CheckResult]:
-        """Informational findings, including checks skipped for cost reasons."""
-        return self.by_severity("info")
-
-    @property
-    def ok(self) -> bool:
-        """Whether the bundle produced no errors (warnings are allowed)."""
-        return not self.errors
-
-    @property
-    def slugs(self) -> list[str]:
-        """The slugs of all findings, in report order."""
-        return [r.slug for r in self.results]
-
-    def raise_if_errors(self) -> BundleCheckReport:
-        """Raise :class:`BundleCheckError` if any finding is an error, else return self."""
-        if self.ok:
-            return self
-        details = "\n".join(f"  - {r}" for r in self.errors)
-        raise BundleCheckError(
-            f"{len(self.errors)} bundle check error(s) for {self.unique_name!r}:\n{details}\n"
-            "Fix the bundle, or pass `ignore=[<slug>, ...]` to accept a finding on purpose.",
-        )
-
-    def to_dict(self) -> dict:
-        """Return a JSON-serializable record of the report."""
-        return {
-            "unique_name": self.unique_name,
-            "n_checks_run": self.n_checks_run,
-            "ignored": list(self.ignored),
-            "counts": {
-                "error": len(self.errors),
-                "warning": len(self.warnings),
-                "info": len(self.infos),
-            },
-            "findings": [
-                {"slug": r.slug, "severity": r.severity, "message": r.message, "hint": r.hint} for r in self.results
-            ],
-        }
-
-    def to_json(self, path: Path | str) -> Path:
-        """Write :meth:`to_dict` to ``path`` (as an audit trail next to the bundle)."""
-        path = Path(path)
-        with path.open("w") as f:
-            json.dump(self.to_dict(), f, indent=2)
-        return path
-
-    def summary(self) -> str:
-        """Return the human-readable report (same text as ``str(report)``)."""
-        head = (
-            f"Bundle checks — {self.unique_name}: "
-            f"{len(self.errors)} error(s), {len(self.warnings)} warning(s), {len(self.infos)} info "
-            f"({self.n_checks_run} checks run"
-            + (f", {len(self.ignored)} ignored: {', '.join(self.ignored)}" if self.ignored else "")
-            + ")"
-        )
-        if not self.results:
-            return f"{head}\nAll checks passed. ✓"
-
-        lines = [head]
-        for severity, label in (("error", "ERRORS"), ("warning", "WARNINGS"), ("info", "INFO")):
-            found = self.by_severity(severity)  # type: ignore[arg-type]
-            if not found:
-                continue
-            lines.append(f"\n{label}")
-            lines.extend(f"  {r}" for r in found)
-        return "\n".join(lines)
-
-    def __str__(self) -> str:
-        return self.summary()
-
-    def __repr__(self) -> str:
-        return self.summary()
 
 
 # --- Shared, precomputed view of the bundle ------------------------------------------
@@ -2406,7 +2273,7 @@ def run_bundle_checks(
     and before :meth:`~data_foundry.curation_container.CuratedContainer.save`, so a
     broken bundle never reaches the warehouse. See the module docstring for how this
     layer relates to the schema's ``__post_init__`` validation and to
-    :func:`data_foundry.dataset_checks.run_all_checks`.
+    :func:`data_foundry.checks.tables.run_all_checks`.
 
     Args:
         container: The bundle to check. Its ``dataset`` must be loaded.

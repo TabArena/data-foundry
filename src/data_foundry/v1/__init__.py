@@ -122,7 +122,7 @@ class DatasetMetadata:
         """Validate what is checkable from this object alone.
 
         Cross-object and data-dependent checks (does the BibTeX compile, do the tags
-        match the split regime, ...) live in :mod:`data_foundry.bundle_checks`.
+        match the split regime, ...) live in :mod:`data_foundry.checks.bundle`.
         """
         if not SNAKE_CASE_PATTERN.fullmatch(self.unique_name or ""):
             raise ValueError(
@@ -290,7 +290,7 @@ class PredictiveMLTaskMetadata:
 
         Only checks that need no dataset and no other metadata object — whether the
         columns named here exist, have the right dtype, or match the splits is checked
-        by :mod:`data_foundry.bundle_checks` once the bundle is assembled.
+        by :mod:`data_foundry.checks.bundle` once the bundle is assembled.
         """
         if not (self.target_column_name or "").strip():
             raise ValueError("target_column_name must name the target column.")

@@ -16,7 +16,8 @@ import pandas as pd
 import pytest
 
 import data_foundry.definition.dataset as dataset_module
-from data_foundry.bundle_checks import run_bundle_checks
+from data_foundry.checks import run_bundle_checks
+from data_foundry.checks.definition import definition_findings
 from data_foundry.curation_container import (
     CuratedContainer,
     feature_columns,
@@ -204,9 +205,9 @@ def test_definition_checks_warn_on_a_time_column_changed_in_the_split(tmp_path: 
     del warehouse
     write_definition(tmp_path / "datasets")
     ds = get_dataset(tmp_path / "datasets", "toy_ds")
-    assert "definition_time_changed_in_split" not in {r.slug for r in ds._definition_checks()}
+    assert "definition_time_changed_in_split" not in {r.slug for r in definition_findings(ds)}
     ds._time_changed_in_split = 5
-    found = {r.slug: r for r in ds._definition_checks()}
+    found = {r.slug: r for r in definition_findings(ds)}
     assert found["definition_time_changed_in_split"].severity == "warning"
     assert "Coarsen" in found["definition_time_changed_in_split"].hint
 
@@ -2191,15 +2192,8 @@ def test_cli_check_without_report_leaves_readme_alone(tmp_path: Path, warehouse:
     assert (folder / "README.md").exists()
 
 
-def test_the_data_checks_skip_the_duplicate_passes(
-    tmp_path: Path, warehouse: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Their results are printed only, never returned, and they read the full frame."""
+def test_the_data_checks_are_the_tables_the_readme_renders(tmp_path: Path, warehouse: Path) -> None:
     del warehouse
-    seen = {}
-    real = dataset_module.run_all_checks
-    monkeypatch.setattr(dataset_module, "run_all_checks", lambda **kwargs: seen.update(kwargs) or real(**kwargs))
     write_definition(tmp_path / "datasets")
     tables = get_dataset(tmp_path / "datasets", "toy_ds").run_all_checks()
-    assert (seen["duplicate_row_check"], seen["duplicate_column_check"]) == (False, False)
-    assert set(tables) == {"head", "summary", "numeric_stats", "cat_stats", "target"}
+    assert set(tables) == {"summary", "numeric_stats", "cat_stats", "target"}

@@ -60,7 +60,7 @@ def make_toy_dataframe(n_rows: int = 200, rng_seed: int = 0) -> pd.DataFrame:
     x_cat = pd.Categorical(rng.choice(["a", "b", "c"], size=n_rows))
     noise = rng.normal(scale=0.5, size=n_rows)
     # A classification target must be ``category`` dtype — this is the Data Foundry curation
-    # contract (see ``dataset_checks.summarize_dataset``), and what consumers (e.g. TabArena's
+    # contract (see ``data_foundry.checks.tables.run_all_checks``), and what consumers (e.g. TabArena's
     # ``convert_curated_container_to_user_task``) rely on. Use string labels like a real curated set.
     target = pd.Categorical(np.where((x_num + 0.3 * x_int + noise) > 0, "pos", "neg"))
     return pd.DataFrame(

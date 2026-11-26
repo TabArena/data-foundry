@@ -10,9 +10,10 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from data_foundry.checks import definition as definition_checks
+from data_foundry.checks.definition import NEWEST_PERIOD_RATIO, newest_period_rate, window_size_findings
 from data_foundry.definition import get_dataset
 from data_foundry.definition.cli import add_dataset_parser
-from data_foundry.definition.dataset import NEWEST_PERIOD_RATIO, AbstractCuratedDataset, newest_period_rate
 from data_foundry.definition.splits import (
     TemporalSplits,
     split_count,
@@ -174,7 +175,7 @@ def test_the_floor_counts_rows_also_for_unique_windows() -> None:
     assert all(len(w.train) >= 0.5 * len(df) for w in windows)
 
 
-def test_the_floor_findings_ask_for_the_curators_sign_off() -> None:
+def test_the_floor_findings_ask_for_the_curators_sign_off(monkeypatch: pytest.MonkeyPatch) -> None:
     """Every window trains on half the rows; under half is the curator's exception (a warning), under 30% an error;
     the shares count every row of the curated frame, not only the container's (SPLIT-14).
     """
@@ -183,8 +184,9 @@ def test_the_floor_findings_ask_for_the_curators_sign_off() -> None:
         splits = {i: {0: (list(range(n)), list(range(40)))} for i, n in enumerate(train_sizes)}
         container = SimpleNamespace(experiment_metadata=SimpleNamespace(splits=splits), dataset=range(60))
         definition = SimpleNamespace(temporal=object(), _frame_rows=frame_rows)
-        definition._window_size_findings = lambda c, w, n: []
-        return {r.slug: r.severity for r in AbstractCuratedDataset._floor_findings(definition, container)}
+        return {r.slug: r.severity for r in definition_checks.floor_findings(definition, container)}
+
+    monkeypatch.setattr(definition_checks, "window_size_findings", lambda c, w, n: [])
 
     assert findings([90, 70, 55]) == {}
     assert findings([90, 70, 45]) == {"splits_train_under_half": "warning"}
@@ -208,10 +210,7 @@ def test_test_windows_hold_33_scored_units_and_the_count_follows_split_33() -> N
         inputs = {"group": "taxon" if cut else "era"} if unit_column else {}
         task = SimpleNamespace(objective_metric=SimpleNamespace(inputs=inputs))
         container = SimpleNamespace(task_metadata=task, dataset=frame)
-        return {
-            r.slug: r.severity
-            for r in AbstractCuratedDataset._window_size_findings(SimpleNamespace(), container, windows, n_rows)
-        }
+        return {r.slug: r.severity for r in window_size_findings(container, windows, n_rows)}
 
     assert findings([40, 40, 40], 5_000) == {"splits_below_target": "warning"}  # 9 splits for 5,000 rows
     assert findings([40] * 9, 5_000) == {}
@@ -232,7 +231,7 @@ def test_splits_count_by_their_training_sides() -> None:
     task = SimpleNamespace(objective_metric=SimpleNamespace(inputs={}))
     container = SimpleNamespace(task_metadata=task, dataset=frame)
     shared = [(i, list(range(100)), list(range(100 + 40 * i, 140 + 40 * i))) for i in range(9)]
-    found = AbstractCuratedDataset._window_size_findings(SimpleNamespace(), container, shared, 5_000)
+    found = window_size_findings(container, shared, 5_000)
     assert [(r.slug, r.message.split(" ")[0]) for r in found] == [("splits_below_target", "1")]
 
 

@@ -13,7 +13,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from data_foundry import bundle_checks, sampling
+from data_foundry import sampling
+from data_foundry.checks import bundle as bundle_checks
 from data_foundry.definition import splits as protocol
 from data_foundry.definition.splits import (
     fit_splits_to_budget,
