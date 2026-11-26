@@ -6,7 +6,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+)
 
 # The calendar the day counters read: every store-day of train.csv (2013-01-01 to 2015-07-31) and test.csv (to
 # 2015-09-17), closed days included. A store-day without a row is unknown and counts as no event.
@@ -121,7 +130,7 @@ def _day_counters(calendar: pd.DataFrame, rows: pd.DataFrame, store: pd.DataFram
     p2_start = pd.Series(pd.NaT, index=st.index, dtype="datetime64[ns]")
     p2_start[has_p2] = [
         pd.Timestamp.fromisocalendar(int(y), int(w), 1)
-        for y, w in zip(st.loc[has_p2, "Promo2SinceYear"], st.loc[has_p2, "Promo2SinceWeek"])
+        for y, w in zip(st.loc[has_p2, "Promo2SinceYear"], st.loc[has_p2, "Promo2SinceWeek"], strict=False)
     ]
     interval = st["PromoInterval"].fillna("").map(lambda v: [_MONTHS[m] for m in v.split(",") if m])
     d = rows["Date"].reset_index(drop=True)
@@ -129,9 +138,9 @@ def _day_counters(calendar: pd.DataFrame, rows: pd.DataFrame, store: pd.DataFram
     months = rows["Store"].map(interval).reset_index(drop=True)
     started = (d >= starts).to_numpy()
     month = d.dt.month.to_numpy()
-    in_month = np.array([m in lst for m, lst in zip(month, months)])
+    in_month = np.array([m in lst for m, lst in zip(month, months, strict=False)])
     since_cycle = np.full(len(rows), np.nan)
-    for i, (m, lst, day) in enumerate(zip(month, months, d)):
+    for i, (m, lst, day) in enumerate(zip(month, months, d, strict=False)):
         if started[i] and lst:
             earlier = [x for x in lst if x <= m]
             first = pd.Timestamp(day.year, max(earlier), 1) if earlier else pd.Timestamp(day.year - 1, max(lst), 1)

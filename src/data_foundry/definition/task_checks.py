@@ -5,7 +5,7 @@ a score is only defined, and only stable, when each test fold holds both classes
 varies.
 
 * ``splits_test_single_class``: a classification test fold holds a single class. An error under a metric that one class
-  leaves undefined (:attr:`~data_foundry.v2.metrics.MetricDef.one_class_undefined`: ROC AUC, average precision, a
+  leaves undefined (:attr:`~data_foundry.metrics.MetricDef.one_class_undefined`: ROC AUC, average precision, a
   Gini, the early-detection utility) and under a metric the registry does not hold (a local one, which cannot say);
   a warning under any other registered metric, where few or no positives in a window are part of the task (SPLIT-16).
 * ``splits_test_minority_few`` (warning): a binary test fold holds fewer than :data:`MIN_TEST_MINORITY` rows of its
@@ -30,7 +30,7 @@ import numpy as np
 import pandas as pd
 
 from data_foundry.bundle_checks import CheckResult
-from data_foundry.v2.metrics import METRICS
+from data_foundry.metrics import METRICS
 
 if TYPE_CHECKING:
     from data_foundry.curation_container import CuratedContainer
@@ -61,7 +61,7 @@ def task_findings(container: CuratedContainer) -> list[CheckResult]:
 
 def one_class_undefined(metric: str | None) -> bool:
     """Whether a test fold of one class leaves ``metric`` undefined (SPLIT-16): the registry's
-    :attr:`~data_foundry.v2.metrics.MetricDef.one_class_undefined`; ROC AUC when no metric is named, and true for a
+    :attr:`~data_foundry.metrics.MetricDef.one_class_undefined`; ROC AUC when no metric is named, and true for a
     metric the registry does not hold, which cannot say.
     """
     spec = METRICS.get(metric or "roc_auc")

@@ -12,6 +12,7 @@ from __future__ import annotations
 import re
 
 import pytest
+
 from data_foundry.curation._paths import records_dir, resolve_curation_root
 from data_foundry.curation.consistency import COLLECTION_TYPES
 from data_foundry.curation.split_tree import (
@@ -26,9 +27,9 @@ from data_foundry.curation.split_tree import (
     placement_problems,
 )
 from data_foundry.curation.store import load_all
+from data_foundry.definition import discover_datasets
 from data_foundry.schema import FORCED_TIME_TAGS
 from data_foundry.time_basis import tags_of
-from data_foundry.v2 import discover_datasets
 
 REPO = resolve_curation_root().parent
 V02 = REPO / "datasets/_dev/tabarena-v0pt2"

@@ -9,7 +9,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,

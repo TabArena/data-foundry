@@ -7,7 +7,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+)
 
 # Entries of one sale scraped twice: the same address, ZIP code and sold price, with the same year built (51 pairs, a
 # median 61 Kaggle IDs apart) or, where one copy lacks the year, the same living area (6 pairs). One of the 6 older copies would leave anyway with the listings that

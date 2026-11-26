@@ -355,7 +355,7 @@ decided.
 | MET-4 | expresso_churn_prediction_1m | `roc_auc` kept (2026-10-21, Lennart) | the first competition (UmojaHack Ghana 2020) scored log loss, its 2021 re-run on the same files ROC AUC | applied |
 | MET-4, MET-6 | hiva_agnostic | `balanced_accuracy` kept (2026-10-21, Lennart) | the challenge most likely ranked by the balanced error rate on hard labels (not verified) | applied |
 | MET-7 | coil_2000 | `precision_at_k` kept (2026-10-21, Lennart) | CoIL 2000 counted the policy owners among the 800 customers selected from 4,000 | applied |
-| MET-4 | rossmann_store_sales | `rmspe` kept (2026-10-21, Lennart) | Kaggle scored RMSPE, now a custom metric of `data_foundry.v2.metrics` | applied |
+| MET-4 | rossmann_store_sales | `rmspe` kept (2026-10-21, Lennart) | Kaggle scored RMSPE, now a custom metric of `data_foundry.metrics` | applied |
 | MET-1, MET-11 | churn_telco_south_asia | fallback `roc_auc` kept (2026-10-21, Lennart) | the first publication (closed access) could not be read; no metric is known | applied |
 | MET-2 (amended 2026-11-02, Andrej), MET-1, MET-12 | blogfeedback | `mean_group_top_k_overlap` (k = 10) with the time column `basetime_day` as its group, Buza's Hits@10 per test day (2026-11-02, Andrej) | the source scores each test day's top 10; the day is the task's time column, which the metric reads where it is, as sat11 reads its group column | applied |
 | MET-2 (amended 2026-11-02, Andrej), MET-4 | liberty_mutual_fire_peril_loss_cost | the competition's `normalized_weighted_gini`; `var11` stays a feature and its copy ships as the weight scoring column (2026-11-02, Andrej; the copy 2026-11-05, Lennart) | `var11`, the sum insured, is a policy characteristic the host shipped in the test file for every team, set at underwriting and known for train and test rows alike; on a weighted Gini the best order is by expected loss whatever the weights, and as a feature it moved an untuned model's score by -0.010 (within fold noise) | applied |
@@ -386,5 +386,5 @@ decided.
 ## In Data Foundry
 
 How a definition declares the metric (`Metric.source`, `Metric.stand_in`, `Metric.fallback`), the scoring columns and
-the spec in the container, and how to add a custom metric to `src/data_foundry/v2/metrics.py` and test it:
+the spec in the container, and how to add a custom metric to `src/data_foundry/metrics.py` and test it:
 [definitions.md](../../knowledge-data-foundry/references/definitions.md), "Field mapping" and "Metrics".

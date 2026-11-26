@@ -3,8 +3,8 @@
 How a dataset is written down in Data Foundry v2: the folder, the `dataset.py` class, what the base class does, the
 field mapping from the record, the preprocessing recipe, the split declarations, the bundle checks and how decisions
 are recorded. What to decide (which split, which columns, which cleaning) is in the general knowledge skill; this file
-says how to express it. Read the class docstrings of `data_foundry.v2.AbstractCuratedDataset`
-(`src/data_foundry/v2/dataset.py`) before writing.
+says how to express it. Read the class docstrings of `data_foundry.definition.AbstractCuratedDataset`
+(`src/data_foundry/definition/dataset.py`) before writing.
 
 ## The folder
 
@@ -19,8 +19,8 @@ copy, [working_copy.md](working_copy.md)):
 The dataset's review (the issues for the curator, open and settled, and the review panel) is not in the folder: it is
 the `## Review` section of its curation record ([records.md](records.md), "The review section").
 
-Discovery is `data_foundry.v2.discover_datasets(root)`, and `tests/test_v2_datasets.py` tests every discovered folder
-(each import in its own test), so there is no per-dataset test file and no registry to edit.
+Discovery is `data_foundry.definition.discover_datasets(root)`, and `tests/test_v2_datasets.py` tests every discovered
+folder (each import in its own test), so there is no per-dataset test file and no registry to edit.
 
 ## The definition file
 
@@ -32,7 +32,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+from data_foundry.definition import (
     AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits, drop_columns,
 )
 
@@ -152,7 +152,7 @@ Do not re-implement any of this.
   (`definition_nondeterministic` checks the first three). The order `_clean` returns matters only where it changes
   values (`drop_duplicates(keep="first")`, an id numbered by consecutive blocks). Only the last bit of a numpy `log` or
   `exp` can differ between CPUs, so a rebuild elsewhere may give another checksum for a log-scaled target.
-* Splits: the v2 split protocol (`src/data_foundry/v2/splits.py`), below.
+* Splits: the v2 split protocol (`src/data_foundry/definition/splits.py`), below.
 
 ## In brief: `task_summary`
 
@@ -222,25 +222,26 @@ A metric input known at the prediction point (a weight that is a function of the
   holds geographic information (ZIP, latitude and longitude, region, store location). An IID or grouped split carries
   one time basis that says why it is not temporal (SPLIT-32 in
   [splits.md](../../knowledge-curation/references/splits.md)), declared as `time_basis = TimeBasis(tag, reason)`
-  (`from data_foundry.v2 import TimeBasis`), never as a tag in `data_tags` or a line written by hand: the build adds the
-  tag to `data_tags` and renders the reason as the `- Time basis: <tag>: <reason>` bullet of `curation_comments`, which
-  the container and the README carry. The tag is a use-case prototype, `"Timeless"` (the target is a fixed property of
-  the item, and the data has no time dimension, or its time changes only which items are held, as in a catalogue whose
-  entry date does not decide the split), `"RetrospectiveFillIn"` (the data is one snapshot of a moment or period, and
-  the use case fills in what is missing for that time, not a later one; a definition refuses the old name
-  `"Retrospective"`, which containers built before 2026-11-23 carry and are read with), `"StationaryRelation"` (the
-  use case scores later units, too few periods give the windows SPLIT-14 asks for, and the stationary-relation test
-  over the periods held, dated or a rebuilt order, reads the relation flat; it replaces a forced tag) or `"UnseenGroup"`
-  (the use case aims at groups the data does not hold, a site, a well, a protein or a chemical family, not at a later
-  period; it needs a `grouping` on the group); or a forced tag, `"ForcedIIDFromTemporal"` when a forward use case has no
-  usable time or too few periods and ships IID (a definition that declares a `grouping` or `temporal` refuses it),
-  `"ForcedGroupedFromTemporal"` when such a task ships grouped (it needs a `grouping`; SPLIT-8).
-  `"AssumedStationaryRelation"` replaces a forced tag where a person judged earlier and later samples interchangeable
-  for a reason from the dataset's domain or use case and nothing can be measured (no comparison over time is possible,
-  or the stationary-relation test is inconclusive); the split is then random, or grouped by the unit where a unit has
-  several rows and the use case meets new units. Only a person sets `StationaryRelation` (on the measurement) and
-  `AssumedStationaryRelation` (on a reason): never set them yourself unless a person asks (you may offer and recommend
-  them in a review), and give `set_by` and `on`, which render as `<tag> (<person>, <YYYY-MM-DD>):`:
+  (`from data_foundry.definition import TimeBasis`), never as a tag in `data_tags` or a line written by hand: the build
+  adds the tag to `data_tags` and renders the reason as the `- Time basis: <tag>: <reason>` bullet of
+  `curation_comments`, which the container and the README carry. The tag is a use-case prototype, `"Timeless"` (the
+  target is a fixed property of the item, and the data has no time dimension, or its time changes only which items are
+  held, as in a catalogue whose entry date does not decide the split), `"RetrospectiveFillIn"` (the data is one snapshot
+  of a moment or period, and the use case fills in what is missing for that time, not a later one; a definition refuses
+  the old name `"Retrospective"`, which containers built before 2026-11-23 carry and are read with),
+  `"StationaryRelation"` (the use case scores later units, too few periods give the windows SPLIT-14 asks for, and the
+  stationary-relation test over the periods held, dated or a rebuilt order, reads the relation flat; it replaces a
+  forced tag) or `"UnseenGroup"` (the use case aims at groups the data does not hold, a site, a well, a protein or a
+  chemical family, not at a later period; it needs a `grouping` on the group); or a forced tag,
+  `"ForcedIIDFromTemporal"` when a forward use case has no usable time or too few periods and ships IID (a definition
+  that declares a `grouping` or `temporal` refuses it), `"ForcedGroupedFromTemporal"` when such a task ships grouped (it
+  needs a `grouping`; SPLIT-8). `"AssumedStationaryRelation"` replaces a forced tag where a person judged earlier and
+  later samples interchangeable for a reason from the dataset's domain or use case and nothing can be measured (no
+  comparison over time is possible, or the stationary-relation test is inconclusive); the split is then random, or
+  grouped by the unit where a unit has several rows and the use case meets new units. Only a person sets
+  `StationaryRelation` (on the measurement) and `AssumedStationaryRelation` (on a reason): never set them yourself
+  unless a person asks (you may offer and recommend them in a review), and give `set_by` and `on`, which render as
+  `<tag> (<person>, <YYYY-MM-DD>):`:
 
   ```python
   time_basis = TimeBasis(
@@ -275,7 +276,7 @@ A metric input known at the prediction point (a weight that is a function of the
   or a classification target, where taking one means dropping the other, gets one folder per framing: the second is
   `<unique_name>_clf/` (or `_reg/`) with its own `unique_name` and its own definition, and the record's
   `problem_type` follows the one that ships.
-* `metric` (required): a `Metric` from `data_foundry.v2.metrics`; which one is decided by
+* `metric` (required): a `Metric` from `data_foundry.metrics`; which one is decided by
   [metrics.md](../../knowledge-curation/references/metrics.md) (MET). Three constructors, one per origin (MET-11):
   * `Metric.source(name, original=..., reference=..., params=..., inputs=..., definition=...)`: what the source
     scored (zillow_prize `Metric.source("mae", original="MAE of logerror", reference=<the evaluation page>)`). A
@@ -327,7 +328,7 @@ A metric input known at the prediction point (a weight that is a function of the
   over its plot's quadrats, so each plot counts once), and `ordered_lorenz_gini` with `params={"per_unit": True}`, where
   the target and the prediction are already per unit of the weight (a loss per year insured; the unnormalised weighted
   Gini). Without `per_unit` its weight is the base premium that totals are compared against, not a row weight.
-  `data_foundry.v2.metrics.row_weight_column(spec)` returns a spec's row-weight column, or `None`. The regression
+  `data_foundry.metrics.row_weight_column(spec)` returns a spec's row-weight column, or `None`. The regression
   fallback takes the weight too (`Metric.fallback(reason=..., inputs={"weight": ...})`); the spec of a weighted `rmse`
   states the weighted formula, while the unweighted spec keeps `sqrt(mean((y - p)^2))`, so the containers built before
   keep their checksum. The three deviances require `min_prediction`, the floor on the predicted mean, the lowest value
@@ -412,7 +413,7 @@ A metric input known at the prediction point (a weight that is a function of the
   reason). Temporal: `temporal = Temporal(on=..., splits=TemporalSplits(...))`. Grouped: `grouping = Grouping(...)`.
   A task is grouped or temporal, never both; an order inside groups is `Grouping(time_on=...)`.
 * `special_features = (...)`: the model inputs that need handling beyond their dtype, declared like the target
-  (`data_foundry.v2.special`). Each entry is one special feature, in one of two layouts:
+  (`data_foundry.special`). Each entry is one special feature, in one of two layouts:
   * **one column**, a `SpecialColumn`: `Smiles(column="SMILES")`, a molecule's structure (CLEAN-24), cast to `string`;
   * **a group of columns** that hold one object together, a `SpecialColumnGroup`: `Spectrum(name="serum_ms",
     prefix="M/Z:", unit="m/z", technique="mass_spectrometry", state="raw", description=...)`, one numeric column per
@@ -424,8 +425,8 @@ A metric input known at the prediction point (a weight that is a function of the
   `task_metadata.special_features` (`SpecialFeature`: name, kind, layout, columns, `encoding_required`, the recommended
   encoding, a spectrum's details); `special_features(container, kind)` lists them and `encode_special_feature(df,
   feature)` encodes one in place of its columns. A new kind (a shipped embedding, a sequence) is one class in
-  `data_foundry.v2.special`'s registry, never a new definition attribute. The recommended encodings of dates and text
-  are in `data_foundry.v2.encodings` (`recommended_encodings()`): skrub's `DatetimeEncoder` as BeyondArena for a date,
+  `data_foundry.special`'s registry, never a new definition attribute. The recommended encodings of dates and text
+  are in `data_foundry.encodings` (`recommended_encodings()`): skrub's `DatetimeEncoder` as BeyondArena for a date,
   TF-IDF and e5 sentence embeddings for text (check both).
 
 ### `curation_comments`
@@ -519,22 +520,21 @@ version (all found in the v0.2 copy, 2026-10-06):
   first: `df[cols].astype("string").fillna("nan")`.
 * Writing a number into a text column (`fillna(0)`, `df.loc[mask, col] = n`): pandas 3 refuses. Cast the column to
   `object` first, or test `notna()` instead of filling.
-* `df.select_dtypes(include="object")`: use `object_columns(df)` from `data_foundry.v2`, which counts `str` too.
+* `df.select_dtypes(include="object")`: use `object_columns(df)` from `data_foundry.definition`, which counts `str` too.
 * `DataFrame.applymap`: removed in pandas 3; use `DataFrame.map`.
 
 ## Splits
 
 ### IID and grouped
 
-Keep the default: no split attributes. The base class runs the v2 split protocol (`src/data_foundry/v2/splits.py`):
-always 3-fold cross-validation, with 20, 10, 3 or 1 repeats by the size of the train side, in the units the metric
-scores (the groups of `per_group` labels, else the scored units, set by the metric's `group` input, when all rows of
-each are in one group, else the rows; SPLIT-33, `recommended_dimensions`),
+Keep the default: no split attributes. The base class runs the v2 split protocol
+(`src/data_foundry/definition/splits.py`): always 3-fold cross-validation, with 20, 10, 3 or 1 repeats by the size of
+the train side, in the units the metric scores (the groups of `per_group` labels, else the scored units, set by the
+metric's `group` input, when all rows of each are in one group, else the rows; SPLIT-33, `recommended_dimensions`),
 built by `iid_splits` / `grouped_splits` with the benchmark seed, on the full frame: Data Foundry caps no split unless
 the definition is a version with a row budget (a `_1m` version, below; the whole path as a decision tree:
-[split_protocol.md](split_protocol.md)). The comment is "Default splits."; set
-`splits_comment` only when there is something to say (a split that deliberately differs from the source's protocol,
-what a grouped test fold holds).
+[split_protocol.md](split_protocol.md)). The comment is "Default splits."; set `splits_comment` only when there is
+something to say (a split that deliberately differs from the source's protocol, what a grouped test fold holds).
 
 ### Grouped: `Grouping`
 
@@ -675,7 +675,7 @@ is statistics of the data, never a model's score:
 ```
 
 It lists the candidate windows of the declared length and gap (`window_stats` of the definition,
-`src/data_foundry/v2/windows.py`), walking back from the newest data while a train side keeps 30% of the rows
+`src/data_foundry/definition/windows.py`), walking back from the newest data while a train side keeps 30% of the rows
 (SPLIT-14's lower bound for a curator's exception; every other window keeps 50%, which the train share shows), the
 definition's own marked `*`: the dates and the months covered, the weekdays of a window shorter than a week, the test
 rows and the train share, the target on each side (a binary target's event share and count, a regression target's mean
@@ -707,7 +707,7 @@ budget, `row_budget = RowBudget(train=N, test=M)` in its `collection.py`, works 
   window or fold (stratified, whole groups, or whole time values).
 * **The train side keeps every row available to it.** All history before a temporal window (minus the gap), or
   every row of an IID or grouped fold outside its test side. N is recorded, not applied: a benchmark sub-samples each
-  train side to N rows before a fit, with `subsample_train(container, repeat, fold)` (from `data_foundry.v2`) or a
+  train side to N rows before a fit, with `subsample_train(container, repeat, fold)` (from `data_foundry.sampling`) or a
   sampler of its own that keeps the constraints the container records (`experiment_metadata.train_sampling`: what to
   keep whole, the stratum). A model can so see more history or bring its own sub-sampling, and the sampling can be
   studied.
@@ -760,8 +760,9 @@ dataset fully. The rows a version's sampled test sides leave out are never teste
 ## Traps to flag at scaffold time
 
 Turn each one that plausibly applies into a `# TODO(verify):` marker in `dataset.py` and a bullet in
-`curation_comments`. What each means and the precedents: [leak_checks.md](../../knowledge-curation/references/leak_checks.md)
-and [cleaning_features.md](../../knowledge-curation/references/cleaning_features.md).
+`curation_comments`. What each means and the precedents:
+[leak_checks.md](../../knowledge-curation/references/leak_checks.md) and
+[cleaning_features.md](../../knowledge-curation/references/cleaning_features.md).
 
 * A part, consequence or encoding of the target among the features: "list every feature that is a component or a
   consequence of the target and drop it."
@@ -814,12 +815,12 @@ meaning as an input; a running id often encodes the order of collection or the o
 
 ## Assembled from several files: `read_files`
 
-`read_files(raw_dir, "*.csv")` (from `data_foundry.v2`) stacks the files that match a pattern, in the order of their
-sorted paths, and adds three columns: `source_file` (the file's path under the raw folder), `source_row` (the row's
-number in its file, from 1) and `source_id` (the file's own id column with `id_column=...`, else a hash of the row's
-values, which survives a re-saved or reordered file). `(source_file, source_id)` identifies a row. `read=` takes
-another reader (`pd.read_parquet`, `partial(pd.read_csv, sep="\t")`). Declare the three columns with
-`non_features = (*provenance_columns(), ...)`, so every task drops them.
+`read_files(raw_dir, "*.csv")` (from `data_foundry.definition`) stacks the files that match a pattern, in the order of
+their sorted paths, and adds three columns: `source_file` (the file's path under the raw folder), `source_row` (the
+row's number in its file, from 1) and `source_id` (the file's own id column with `id_column=...`, else a hash of the
+row's values, which survives a re-saved or reordered file). `(source_file, source_id)` identifies a row. `read=` takes
+another reader (`pd.read_parquet`, `partial(pd.read_csv, sep="\t")`). Declare the three columns with `non_features =
+(*provenance_columns(), ...)`, so every task drops them.
 
 ## The raw-file manifest
 
@@ -925,7 +926,7 @@ column's ROC AUC for the rain before 9 am on day D against the label's window).
 ## Metrics
 
 Which metric a dataset declares is decided by [metrics.md](../../knowledge-curation/references/metrics.md); this is
-how a custom one gets into the library. The registry is `METRICS` in `src/data_foundry/v2/metrics.py`; it is also the
+how a custom one gets into the library. The registry is `METRICS` in `src/data_foundry/metrics.py`; it is also the
 list of names the bundle checks know. The module imports only numpy, pandas, scikit-learn and scipy (a test refuses any
 other Data Foundry import), so it can be copied out on its own.
 

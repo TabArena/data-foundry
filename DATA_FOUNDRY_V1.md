@@ -34,6 +34,9 @@ git (`git show 04e6cfe:datasets/_template/_template.ipynb`).
 
 ## Format-1 containers
 
+The format-1 metadata classes live in `data_foundry.v1` (`DatasetMetadata`, `PredictiveMLTaskMetadata`) since
+2026-11-25; the rest of the package is format 2, and loading a format-1 container needs nothing else.
+
 * The task metadata is `PredictiveMLTaskMetadata` (`predictive-ml-task-mold-v1`): the regime is the flat
   `time_on`, or `group_on` with `group_labels` and an optional `group_time_on`. There is no grouping block, so
   `container.grouping` returns None; `container.format_version` is 1, and `container_metadata.json` has no

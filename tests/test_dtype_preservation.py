@@ -8,12 +8,12 @@ import logging
 import numpy as np
 import pandas as pd
 import pandas.testing as pdt
+
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.schema import (
-    DatasetMetadata,
     PredictiveMLSplitsMetadata,
-    PredictiveMLTaskMetadata,
 )
+from data_foundry.v1 import DatasetMetadata, PredictiveMLTaskMetadata
 
 # ---------------------------------------------------------------------------
 # Helpers

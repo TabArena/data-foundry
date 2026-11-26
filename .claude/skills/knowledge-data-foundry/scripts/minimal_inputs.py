@@ -25,8 +25,8 @@ import zipfile
 from collections import defaultdict
 from pathlib import Path
 
+from data_foundry.definition.dataset import PREPARED_MARKER
 from data_foundry.schema import resolve_warehouse_dir
-from data_foundry.v2.dataset import PREPARED_MARKER
 
 STORED = (".gz", ".parquet", ".zip", ".xlsx", ".bz2", ".7z", ".xz", ".png", ".jpg")
 """Already compressed: stored as they are rather than deflated again."""

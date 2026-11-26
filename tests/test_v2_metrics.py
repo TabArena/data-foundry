@@ -1,4 +1,4 @@
-"""Tests for the metric registry and the scorers (``data_foundry.v2.metrics``)."""
+"""Tests for the metric registry and the scorers (``data_foundry.metrics``)."""
 
 from __future__ import annotations
 
@@ -12,15 +12,18 @@ import pandas as pd
 import pytest
 import scipy.special
 import scipy.stats
-from data_foundry import bundle_checks
-from data_foundry.schema import MetricSpec, PredictiveMLTaskMetadataV2, ScoringColumn
-from data_foundry.v2 import metrics as m
-from data_foundry.v2.dataset import metric_spec
-from data_foundry.v2.metrics import METRICS, Metric, row_weight_column, score, scorer, to_sklearn_scorer
 from pydantic import TypeAdapter
 from sklearn import metrics as skm
 from sklearn.dummy import DummyClassifier
 from sklearn.linear_model import LinearRegression, LogisticRegression
+
+from data_foundry import (
+    bundle_checks,
+    metrics as m,
+)
+from data_foundry.definition.dataset import metric_spec
+from data_foundry.metrics import METRICS, Metric, row_weight_column, score, scorer, to_sklearn_scorer
+from data_foundry.schema import MetricSpec, PredictiveMLTaskMetadataV2, ScoringColumn
 
 N = 500
 RNG = np.random.default_rng(0)
@@ -372,7 +375,7 @@ def test_metric_spec_fields_are_the_spec_dict() -> None:
 def test_scorer_aggregates_per_group_as_the_grouping_says():
     from types import SimpleNamespace
 
-    from data_foundry.v2.metrics import Metric, scorer
+    from data_foundry.metrics import Metric, scorer
 
     frame = pd.DataFrame(
         {
@@ -395,7 +398,7 @@ def test_scorer_aggregates_per_group_as_the_grouping_says():
 
 
 def test_a_metric_from_context_needs_a_reason():
-    from data_foundry.v2.metrics import Metric
+    from data_foundry.metrics import Metric
 
     spec = Metric.from_context("rmsle", reason="a price's error matters relative to the price").spec("regression")
     assert (spec["name"], spec["origin"]) == ("rmsle", "context")

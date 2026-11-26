@@ -25,13 +25,14 @@ Every finding carries a stable ``slug``; pass ``ignore=["slug", ...]`` to accept
 finding on purpose (the notebook then documents the accepted deviation).
 
 A format-2 container (the v2 definitions) is also judged by the v2 split protocol,
-:func:`data_foundry.v2.splits.protocol_checks` (always 3 folds, and the row budget the container records, if any).
-Format 1 (the v1 notebooks, the shipped BeyondArena containers, frozen) has no split-protocol check left: its
+:func:`data_foundry.definition.splits.protocol_checks` (always 3 folds, and the row budget the container records, if
+any). Format 1 (the v1 notebooks, the shipped BeyondArena containers, frozen) has no split-protocol check left: its
 containers are pinned and never rebuilt. Every other check is the same for both formats.
 """
 
 from __future__ import annotations
 
+import itertools
 import json
 import math
 import re
@@ -43,12 +44,13 @@ from typing import TYPE_CHECKING, Literal
 import numpy as np
 import pandas as pd
 
+from data_foundry import time_basis as basis_rules
 from data_foundry.curation_container import CuratedContainer, non_feature_columns
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
-from data_foundry import time_basis as basis_rules
-from data_foundry.schema import TIME_BASIS_TAGS, DatasetMetadata, as_column_list, current_tag, training_only_weight
+from data_foundry.schema import TIME_BASIS_TAGS, as_column_list, current_tag, training_only_weight
 from data_foundry.utils.checksum import categorical_details
 from data_foundry.utils.dtypes import is_str_dtype, object_columns
+from data_foundry.v1 import DatasetMetadata, PredictiveMLTaskMetadata
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Iterable, Iterator
@@ -56,7 +58,6 @@ if TYPE_CHECKING:
     from data_foundry.schema import (
         DatasetMetadataV2,
         PredictiveMLSplitsMetadata,
-        PredictiveMLTaskMetadata,
         PredictiveMLTaskMetadataV2,
         Source,
         UnitWeight,
@@ -75,13 +76,13 @@ Skipped checks are reported as ``info`` findings — never silently dropped.
 
 def known_metric_names() -> dict[str, set[str]]:
     """The canonical metric names per problem type (short, lower-case, as TabArena spells them): the registry of
-    :mod:`data_foundry.v2.metrics`, the one list of metric names.
+    :mod:`data_foundry.metrics`, the one list of metric names.
 
     Format 2: a name outside the registry is an error (a custom metric is added to the registry under a general
     name). Format 1 (BeyondArena): an unrecognized name is an info, a known metric spelled another way (an alias in
     :data:`METRIC_ALIASES`, or different casing) an error.
     """
-    from data_foundry.v2.metrics import known_metrics  # noqa: PLC0415 - data_foundry.v2 imports this module
+    from data_foundry.metrics import known_metrics  # noqa: PLC0415 - data_foundry.definition imports this module
 
     return known_metrics()
 
@@ -110,11 +111,11 @@ TABARENA_DEFAULT_METRICS: dict[str, str] = {
     "multiclass_classification": "log_loss",
     "regression": "rmse",
 }
-"""The default metric per problem type (:meth:`data_foundry.v2.metrics.Metric.fallback`), and the one TabArena
+"""The default metric per problem type (:meth:`data_foundry.metrics.Metric.fallback`), and the one TabArena
 falls back to when it does not accept the task's metric.
 
 Mirrors ``tabarena.benchmark.task.data_foundry.DEFAULT_EVAL_METRICS`` and
-:data:`data_foundry.v2.metrics.FALLBACK_METRICS`.
+:data:`data_foundry.metrics.FALLBACK_METRICS`.
 """
 
 
@@ -461,7 +462,7 @@ def _check_dataset_frame(ctx: _Ctx) -> Iterator[CheckResult]:
 
 
 @_check
-def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
+def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901, PLR0912 - one rule per dtype
     """Per-column quality signals: constant, identifier-like, all-missing, unused categories."""
     df = ctx.df
     if df is None or ctx.n_rows == 0:
@@ -489,8 +490,7 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
             id_like.append(column)
         is_integer = pd.api.types.is_integer_dtype(series.dtype) and not pd.api.types.is_bool_dtype(series.dtype)
         if (
-            column != ctx.target
-            and column != order_column
+            column not in (ctx.target, order_column)
             and is_integer
             and unique_per_row
             and int(series.max()) - int(series.min()) < 2 * ctx.n_rows
@@ -579,13 +579,13 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
 def _check_dataset_special_features(ctx: _Ctx) -> Iterator[CheckResult]:
     """Every special feature (:class:`~data_foundry.schema.SpecialFeature`) has its columns in the frame, then passes
     its kind's checks: a SMILES column is ``string`` and parses with the pinned RDKit, a spectrum's columns are numeric
-    and finite (:mod:`data_foundry.v2.special`).
+    and finite (:mod:`data_foundry.special`).
     """
     df = ctx.df
     features = getattr(ctx.task, "special_features", None) or ()
     if df is None or not features:
         return
-    from data_foundry.v2.special import special_feature_kind  # noqa: PLC0415 - v2 builds on this module
+    from data_foundry.special import special_feature_kind  # noqa: PLC0415 - v2 builds on this module
 
     for feature in features:
         absent = [c for c in feature.columns if c not in df.columns]
@@ -601,7 +601,7 @@ def _check_dataset_special_features(ctx: _Ctx) -> Iterator[CheckResult]:
 
 
 @_check
-def _check_dataset_duplicates(ctx: _Ctx) -> Iterator[CheckResult]:
+def _check_dataset_duplicates(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901 - a flat list of cases
     """Duplicate columns and contradictory duplicate rows (same features, different target)."""
     df = ctx.df
     if df is None or ctx.n_rows == 0 or not ctx.has_column(ctx.target):
@@ -956,7 +956,7 @@ def _metric_spec_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901, PL
     """Format 2: the spec names a registry metric of the problem type, carries its origin's evidence, finds its
     inputs among the scoring columns, and computes on every split.
     """
-    from data_foundry.v2.metrics import METRICS  # noqa: PLC0415 - data_foundry.v2 imports this module
+    from data_foundry.metrics import METRICS  # noqa: PLC0415 - data_foundry.definition imports this module
 
     task = ctx.task
     spec = task.objective_metric
@@ -986,7 +986,7 @@ def _metric_spec_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901, PL
             yield CheckResult(
                 "task_metric_unknown",
                 "error",
-                f"Metric {name!r} is not in the registry of data_foundry.v2.metrics.",
+                f"Metric {name!r} is not in the registry of data_foundry.metrics.",
                 hint="Use a standard name, or add the custom metric to the registry under a general name.",
             )
         return
@@ -1076,7 +1076,7 @@ def _target_transform_findings(ctx: _Ctx) -> Iterator[CheckResult]:
     """A ``target_transform`` is for a regression target whose inverse is finite on every shipped value; a mean
     deviance warns on one, as a model fit on the transformed scale predicts below the mean.
     """
-    from data_foundry.v2.metrics import INVERSE_TRANSFORMS  # noqa: PLC0415 - data_foundry.v2 imports this module
+    from data_foundry.metrics import INVERSE_TRANSFORMS  # noqa: PLC0415 - data_foundry.definition imports this module
 
     task = ctx.task
     transform = getattr(task.objective_metric, "target_transform", "identity") or "identity"
@@ -1232,7 +1232,7 @@ def _weight_findings(ctx: _Ctx) -> Iterator[CheckResult]:
     Poisson target rebuilds whole counts; a feature named like an amount at risk is explained when the task declares no
     weight (LEAK-41).
     """
-    from data_foundry.v2.metrics import row_weight_column  # noqa: PLC0415 - data_foundry.v2 imports this module
+    from data_foundry.metrics import row_weight_column  # noqa: PLC0415 - data_foundry.definition imports this module
 
     task = ctx.task
     spec = task.objective_metric
@@ -1330,7 +1330,7 @@ def _weight_column_findings(ctx: _Ctx, column: str, *, scored: bool) -> Iterator
 
 def _metric_computes_findings(ctx: _Ctx) -> Iterator[CheckResult]:
     """The metric computes a finite value on domain-valid test predictions for each split."""
-    from data_foundry.v2.metrics import METRICS, dummy_prediction, is_finite, score  # noqa: PLC0415
+    from data_foundry.metrics import METRICS, dummy_prediction, is_finite, score  # noqa: PLC0415
 
     spec = ctx.task.objective_metric
     if spec.name not in METRICS:
@@ -1701,7 +1701,7 @@ def _check_splits_temporal(ctx: _Ctx) -> Iterator[CheckResult]:
 
     if len(test_end) > 1:
         ends = [value for _label, value in test_end]
-        if not all(a >= b for a, b in zip(ends, ends[1:], strict=False)):
+        if not all(a >= b for a, b in itertools.pairwise(ends)):
             newest = max(test_end, key=lambda item: item[1])[0]
             yield CheckResult(
                 "splits_temporal_order",
@@ -1905,10 +1905,10 @@ def _check_splits_groups(ctx: _Ctx) -> Iterator[CheckResult]:
 
 @_check
 def _check_splits_protocol_v2(ctx: _Ctx) -> Iterator[CheckResult]:
-    """Format 2: the v2 split protocol (:func:`data_foundry.v2.splits.protocol_checks`)."""
+    """Format 2: the v2 split protocol (:func:`data_foundry.definition.splits.protocol_checks`)."""
     if ctx.container.format_version < 2:
         return
-    from data_foundry.v2.splits import protocol_checks  # noqa: PLC0415 - data_foundry.v2 imports this module
+    from data_foundry.definition.splits import protocol_checks  # noqa: PLC0415 - the definition side imports this
 
     yield from protocol_checks(ctx.container)
 

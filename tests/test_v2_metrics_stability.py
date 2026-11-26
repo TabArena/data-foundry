@@ -14,8 +14,9 @@ import warnings
 
 import numpy as np
 import pytest
-from data_foundry.v2.dataset import metric_spec
-from data_foundry.v2.metrics import METRICS, Metric, score
+
+from data_foundry.definition.dataset import metric_spec
+from data_foundry.metrics import METRICS, Metric, score
 
 EXAMPLE_PARAMS = {
     ("cost_matrix", "binary_classification"): {"labels": [0, 1], "matrix": [[0, 1], [5, 0]]},

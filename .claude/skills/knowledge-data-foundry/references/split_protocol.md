@@ -4,9 +4,10 @@ How a v2 dataset of the TabArena v0.2 working copy turns its rows and groups int
 scored on, from the definition to the fit. It implements the split rules of knowledge-curation
 ([splits.md](../../knowledge-curation/references/splits.md)); how to declare the splits in a `dataset.py` is in
 [definitions.md](definitions.md). The code is
-[`src/data_foundry/v2/splits.py`](../../../../src/data_foundry/v2/splits.py) (the protocol) and the base class in
-[`src/data_foundry/v2/dataset.py`](../../../../src/data_foundry/v2/dataset.py); the working copy sets its budget once
-in [`collection.py`](../../../../datasets/_dev/tabarena-v0pt2/collection.py).
+[`src/data_foundry/definition/splits.py`](../../../../src/data_foundry/definition/splits.py) (the protocol),
+[`src/data_foundry/sampling.py`](../../../../src/data_foundry/sampling.py) (the train sampler) and the base class in
+[`src/data_foundry/definition/dataset.py`](../../../../src/data_foundry/definition/dataset.py); the working copy sets
+its budget once in [`collection.py`](../../../../datasets/_dev/tabarena-v0pt2/collection.py).
 
 - Every task has at least 3 test folds: IID and grouped data get repeated 3-fold cross-validation, temporal data at
   least 3 time windows.

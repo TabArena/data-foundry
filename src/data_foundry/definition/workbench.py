@@ -6,8 +6,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from data_foundry.v2.dataset import DEFINITION_FILENAME, AbstractCuratedDataset
-from data_foundry.v2.registry import load_definition
+from data_foundry.definition.dataset import DEFINITION_FILENAME, AbstractCuratedDataset
+from data_foundry.definition.registry import load_definition
 
 
 def workbench(path: Path | str | None = None, *, wide_display: bool = True) -> AbstractCuratedDataset:

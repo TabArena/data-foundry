@@ -15,6 +15,7 @@ from pathlib import Path
 import pandas as pd
 import pydantic
 import pytest
+
 from data_foundry.curation import exporter, notebooks
 from data_foundry.curation._paths import DATA_FOUNDRY_CURATION_ENV
 from data_foundry.curation.app import (
@@ -91,7 +92,7 @@ def test_the_review_is_a_section_of_its_own(sample_record: CurationRecord) -> No
     the record is the one source of a dataset's curation); the flat view leaves it out (a sheet cell holds 50,000
     characters).
     """
-    from data_foundry.curation.exporter import to_dataframe  # noqa: PLC0415
+    from data_foundry.curation.exporter import to_dataframe
 
     text = record_to_markdown(sample_record)
     assert text.index("## Comments") < text.index("## Review") < text.index("## Reference")

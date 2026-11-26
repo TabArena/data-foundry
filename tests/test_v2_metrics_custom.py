@@ -1,4 +1,4 @@
-"""The custom metrics of ``data_foundry.v2.metrics`` against their official or reference implementations.
+"""The custom metrics of ``data_foundry.metrics`` against their official or reference implementations.
 
 Each official implementation is vendored below, as published (only reformatted, with the I/O around it removed), with
 its source. Each metric is also checked on a small case computed by hand. The 1M-row timings were measured
@@ -12,12 +12,12 @@ import itertools
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry.schema import ScoringColumn
-from data_foundry.v2.dataset import metric_spec
-from data_foundry.v2.metrics import METRICS, Metric, dummy_prediction, row_weight_column, score
 from scipy import special, stats
 from sklearn.metrics import mean_squared_error, roc_auc_score
 
+from data_foundry.definition.dataset import metric_spec
+from data_foundry.metrics import METRICS, Metric, dummy_prediction, row_weight_column, score
+from data_foundry.schema import ScoringColumn
 from tests.test_bundle_checks import make_iid_frame, make_v2_container, metric_findings
 
 CUSTOM = sorted(name for name, d in METRICS.items() if d.kind == "custom")
@@ -463,7 +463,7 @@ def test_rescaled_mean_tweedie_deviance_edges_and_declaration() -> None:
 
 def test_rescaled_mean_tweedie_deviance_is_fast_on_one_million_rows() -> None:
     """Timed on 1M rows (0.03 s on 2026-11-08)."""
-    import time  # noqa: PLC0415
+    import time
 
     rate, years, pred = _pure_premiums(0, n=1_000_000)
     spec = _rescaled()
@@ -653,7 +653,7 @@ def test_mean_group_normalized_rmse_by_hand() -> None:
 
 
 def test_mean_group_normalized_rmse_is_fast_on_one_million_rows() -> None:
-    import time  # noqa: PLC0415
+    import time
 
     rng = np.random.default_rng(0)
     n = 1_000_000
@@ -882,7 +882,7 @@ def test_mean_group_top_k_overlap_by_hand() -> None:
 
 
 def compute_prediction_utility(labels, predictions, dt_early=-12, dt_optimal=-6, dt_late=3.0, max_u_tp=1,  # noqa: C901, PLR0912
-                               min_u_fn=-2, u_fp=-0.05, u_tn=0, check_errors=True):  # noqa: FBT002  # fmt: skip
+                               min_u_fn=-2, u_fp=-0.05, u_tn=0, check_errors=True):  # fmt: skip
     """``compute_prediction_utility`` of the official evaluate_sepsis_score.py (verbatim)."""
     # Check inputs for errors.
     if check_errors:
@@ -1079,7 +1079,7 @@ def test_net_revenue_at_cost_refuses_bad_params() -> None:
 
 
 def test_net_revenue_at_cost_is_fast_on_one_million_rows() -> None:
-    import time  # noqa: PLC0415
+    import time
 
     rng = np.random.default_rng(0)
     n = 1_000_000

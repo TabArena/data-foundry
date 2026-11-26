@@ -723,7 +723,7 @@ qsar_bioconcentration: "in other cases, we also moved towards a scaffold split a
 molecule dataset whose rows carry exact structures groups on the Bemis-Murcko scaffold, as a new chemical under
 assessment often comes from a series not yet measured. A molecule without a ring is a group of its own, and so is each
 molecule of a scaffold that holds more than a tenth of the molecules, which is no series and would leave folds of very
-unequal size (`scaffold_groups` in `data_foundry.v2.chemistry`). Where the set is a cut of a catalogue that keeps
+unequal size (`scaffold_groups` in `data_foundry.special.chemistry`). Where the set is a cut of a catalogue that keeps
 growing, SPLIT-37 says when the date a molecule entered it replaces the scaffold. Cases:
 drug_induced_autoimmunity_prediction, qsar_bioconcentration, qsar_oral_toxicity, qsar_tid_11.
 

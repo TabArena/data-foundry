@@ -13,8 +13,8 @@ without any model. For each window it reports:
   shows.
 
 :func:`candidate_windows` lists the windows of a declared length walking back from the newest data, each train side
-keeping at least ``min_train_fraction`` of the rows; :func:`window_stats` describes any windows. A definition gets
-both through :meth:`~data_foundry.v2.dataset.AbstractCuratedDataset.window_stats`, and ``data-foundry dataset windows
+keeping at least ``min_train_fraction`` of the rows; :func:`window_stats` describes any windows. A definition gets both
+through :meth:`~data_foundry.definition.dataset.AbstractCuratedDataset.window_stats`, and ``data-foundry dataset windows
 <name>`` prints the table. The chosen windows are declared with ``TemporalSplits(cutoffs=...)``.
 """
 
@@ -27,7 +27,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from data_foundry.v2.splits import SPLIT_RANDOM_STATE, TemporalSplits, derived_window, window_bounds
+from data_foundry.definition.splits import SPLIT_RANDOM_STATE, TemporalSplits, derived_window, window_bounds
 
 PSI_BINS = 10
 """A numeric feature's population stability index compares the train side's deciles."""
@@ -76,8 +76,8 @@ def candidate_windows(
     index lists.
 
     ``window=None`` (``unit="unique"`` or ``"rows"``) takes the length it resolves to in the definition's splits
-    (:func:`~data_foundry.v2.splits.derived_window`): the newest ``1 - windows.min_train_fraction`` of the axis cut
-    into ``windows.n_windows`` windows, ``min_train_fraction`` standing in when ``windows`` states none.
+    (:func:`~data_foundry.definition.splits.derived_window`): the newest ``1 - windows.min_train_fraction`` of the axis
+    cut into ``windows.n_windows`` windows, ``min_train_fraction`` standing in when ``windows`` states none.
     """
     window = windows.window
     if window is None:

@@ -6,7 +6,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+)
 
 
 class WineQuality(AbstractCuratedDataset):

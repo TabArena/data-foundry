@@ -7,7 +7,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -572,7 +573,7 @@ class HouseSales(AbstractCuratedDataset):
         building = changes[(changes["record"] == "Bldg 1") & changes["attribute"].isin([a for _, a in CHANGED_COLUMNS])]
         building = building[(building["updated"] >= "2015-06-22") & (building["updated"] < "2015-08-17")]
         column = building["attribute"].map({a: c for (_, a), c in CHANGED_COLUMNS.items()})
-        in_file = [house.at[i, c] if i in house.index else np.nan for i, c in zip(building["id"], column)]
+        in_file = [house.at[i, c] if i in house.index else np.nan for i, c in zip(building["id"], column, strict=False)]
         week = building["updated"].dt.to_period("W-SUN").astype(str)
         snapshot = (
             pd.DataFrame({"week of the change": week, "equal": building["old"].to_numpy() == np.asarray(in_file)})

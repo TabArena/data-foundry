@@ -9,7 +9,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -44,9 +45,10 @@ def _from_flags(df: pd.DataFrame, flags: dict) -> pd.Series:
 
 def _two_years_in_file(df: pd.DataFrame) -> pd.Series:
     """True where the file holds the member's two policy years before the row's year."""
-    keys = set(zip(df["PolicyNum"], df["Year"]))
+    keys = set(zip(df["PolicyNum"], df["Year"], strict=False))
     return pd.Series(
-        [(p, y - 1) in keys and (p, y - 2) in keys for p, y in zip(df["PolicyNum"], df["Year"])], index=df.index
+        [(p, y - 1) in keys and (p, y - 2) in keys for p, y in zip(df["PolicyNum"], df["Year"], strict=False)],
+        index=df.index,
     )
 
 

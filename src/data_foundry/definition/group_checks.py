@@ -1,6 +1,6 @@
 """Group statistics of a grouped v2 task, shown in the README's "Group structure" section, and their findings.
 
-The statistics are cheap and deterministic, so :meth:`~data_foundry.v2.dataset.AbstractCuratedDataset.check`
+The statistics are cheap and deterministic, so :meth:`~data_foundry.definition.dataset.AbstractCuratedDataset.check`
 computes them for every grouped task:
 
 * the shape: groups, rows per group, the largest group's share, and the test groups per fold (the sample size of a
@@ -33,7 +33,7 @@ import pandas as pd
 
 from data_foundry.bundle_checks import CheckResult
 from data_foundry.schema import as_column_list
-from data_foundry.v2._optional import import_build_dependency
+from data_foundry.utils.optional import import_build_dependency
 
 if TYPE_CHECKING:
     from data_foundry.curation_container import CuratedContainer

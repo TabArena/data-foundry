@@ -31,8 +31,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "knowledge-curation
 import dataset_io
 import pandas as pd
 from curation_probes import dtypes
-from data_foundry.schema import as_column_list
 from joblib import Parallel, delayed
+
+from data_foundry.schema import as_column_list
 
 
 def codebook_link(ds: object) -> str | None:

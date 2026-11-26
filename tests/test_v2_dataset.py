@@ -1,4 +1,4 @@
-"""Tests for the v2 dataset interface (``data_foundry.v2``) on toy definitions in a temporary tree."""
+"""Tests for the v2 dataset interface (``data_foundry.definition``) on toy definitions in a temporary tree."""
 
 from __future__ import annotations
 
@@ -11,10 +11,11 @@ import tempfile
 import time
 from pathlib import Path
 
-import data_foundry.v2.dataset as dataset_module
 import numpy as np
 import pandas as pd
 import pytest
+
+import data_foundry.definition.dataset as dataset_module
 from data_foundry.bundle_checks import run_bundle_checks
 from data_foundry.curation_container import (
     CuratedContainer,
@@ -23,8 +24,7 @@ from data_foundry.curation_container import (
     special_features,
     split_columns,
 )
-from data_foundry.schema import DATA_FOUNDRY_WAREHOUSE_ENV, TrainSampling
-from data_foundry.v2 import (
+from data_foundry.definition import (
     AbstractCuratedDataset,
     DatasetDefinitionError,
     GroupBasis,
@@ -49,8 +49,8 @@ from data_foundry.v2 import (
     splits as protocol,
     workbench,
 )
-from data_foundry.v2.cli import add_dataset_parser
-from data_foundry.v2.dataset import (
+from data_foundry.definition.cli import add_dataset_parser
+from data_foundry.definition.dataset import (
     PREPARED_MARKER,
     _categories_like,
     _gap,
@@ -58,8 +58,10 @@ from data_foundry.v2.dataset import (
     _prepare_code_hash,
     _time_values_changed,
 )
-from data_foundry.v2.spectra import MS_RAW_ENCODING
-from data_foundry.v2.splits import subsample_train, temporal_window_splits
+from data_foundry.definition.splits import temporal_window_splits
+from data_foundry.sampling import subsample_train
+from data_foundry.schema import DATA_FOUNDRY_WAREHOUSE_ENV, TrainSampling
+from data_foundry.special.spectra import MS_RAW_ENCODING
 
 DEFINITION = '''
 from __future__ import annotations
@@ -68,7 +70,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, drop_columns
+from data_foundry.definition import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, drop_columns
 
 
 class Toy(AbstractCuratedDataset):
@@ -268,7 +270,7 @@ def test_readme_explains_the_folder(tmp_path: Path, warehouse: Path) -> None:
 def test_sample_rows_cut_wide_frames_and_long_text() -> None:
     from types import SimpleNamespace
 
-    from data_foundry.v2 import report
+    from data_foundry.definition import report
 
     df = pd.DataFrame(
         {"text": ["a" * 100] * 7 + ["C[C@H](C)<b>|"]} | {f"x{i}": range(8) for i in range(20)} | {"y": range(8)}
@@ -388,7 +390,7 @@ BASE = {
 
 
 def _define(**attrs: object) -> type[AbstractCuratedDataset]:
-    def _load_raw(self, raw_dir: Path) -> pd.DataFrame:  # noqa: ARG001
+    def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         return pd.DataFrame()
 
     return type("Toy", (AbstractCuratedDataset,), {**BASE, **attrs, "_load_raw": _load_raw})
@@ -589,10 +591,10 @@ def temporal_body(
     return (
         DEFINITION.format(name="toy_ds", comment="Toy data.")
         .replace(
-            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, "
+            "from data_foundry.definition import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, "
             "drop_columns",
-            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, "
-            "TemporalSplits, drop_columns",
+            "from data_foundry.definition import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, "
+            "Temporal, TemporalSplits, drop_columns",
         )
         .replace('        return drop_columns(df, ["row_id"])', clean + '        return drop_columns(df, ["row_id"])')
         .replace(
@@ -867,7 +869,8 @@ def test_unseeded_randomness_is_an_error(tmp_path: Path, warehouse: Path) -> Non
         DEFINITION.format(name="toy_ds", comment="x")
         .replace(
             '        return drop_columns(df, ["row_id"])',
-            '        df["row_id"] = [uuid.uuid4().hex for _ in range(len(df))]\n        return drop_columns(df, ["row_id"])',
+            '        df["row_id"] = [uuid.uuid4().hex for _ in range(len(df))]\n'
+            '        return drop_columns(df, ["row_id"])',
         )
         .replace("from pathlib import Path\n", "import uuid\nfrom pathlib import Path\n", 1)
     )
@@ -877,7 +880,7 @@ def test_unseeded_randomness_is_an_error(tmp_path: Path, warehouse: Path) -> Non
 
 
 def test_subsampled_frames_drop_unused_categories() -> None:
-    from data_foundry.v2.dataset import _drop_unused_categories
+    from data_foundry.definition.dataset import _drop_unused_categories
 
     df = pd.DataFrame({"g": pd.Categorical(["a", "b", "c"]), "x": [1, 2, 3]}).iloc[:2]
     out = _drop_unused_categories(df)
@@ -886,7 +889,8 @@ def test_subsampled_frames_drop_unused_categories() -> None:
 
 
 # --- the v2 split protocol: versions sub-sampled to a row budget --------------------------------------------------
-IMPORTS = "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, drop_columns"
+_IMPORTED = "AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, drop_columns"
+IMPORTS = f"from data_foundry.definition import {_IMPORTED}"
 
 
 def version_body(name: str = "toy_ds_0p2k", extra: str = "") -> str:
@@ -1047,7 +1051,7 @@ def test_a_version_records_its_budget_and_is_held_to_it(tmp_path: Path, warehous
 def write_collection(root: Path, budget: str = "RowBudget(train=200, test=50)") -> None:
     """Write ``<root>/collection.py`` setting the collection's row budget."""
     root.mkdir(parents=True, exist_ok=True)
-    (root / "collection.py").write_text(f"from data_foundry.v2 import RowBudget\n\nrow_budget = {budget}\n")
+    (root / "collection.py").write_text(f"from data_foundry.definition import RowBudget\n\nrow_budget = {budget}\n")
 
 
 def test_a_collection_version_gets_the_budget_by_its_name(tmp_path: Path, warehouse: Path) -> None:
@@ -1281,7 +1285,7 @@ def test_cli_list_fails_when_a_definition_does_not_import(tmp_path: Path) -> Non
 def test_nondeterministic_calls_are_found_by_the_syntax_tree() -> None:
     import ast
 
-    from data_foundry.v2.dataset import nondeterministic_calls
+    from data_foundry.definition.dataset import nondeterministic_calls
 
     code = """
 df = df.sort_values("a")
@@ -1335,7 +1339,7 @@ def test_an_accepted_warning_that_no_longer_fires_is_reported(tmp_path: Path, wa
 
 
 def test_missing_floats_are_written_as_the_standard_nan() -> None:
-    from data_foundry.v2.preprocessing import canonical_nans
+    from data_foundry.definition.preprocessing import canonical_nans
 
     values = np.array([1.0, np.inf - np.inf, -np.nan, np.nan])  # x86 gives sign-bit NaNs for invalid operations
     df = pd.DataFrame({"a": values, "b": values.astype(np.float32), "c": ["x", "y", "z", "w"]})
@@ -1353,7 +1357,7 @@ def test_text_categories_are_stored_as_objects() -> None:
 
 
 def test_dates_and_text_are_stored_the_same_under_pandas_2_and_3() -> None:
-    from data_foundry.v2.preprocessing import canonical_dtypes
+    from data_foundry.definition.preprocessing import canonical_dtypes
 
     dates = pd.Series(["2020-01-01 10:00", None, "2021-06-30 00:00"])
     df = pd.DataFrame(
@@ -1477,7 +1481,7 @@ def test_a_numeric_date_column_needs_a_format() -> None:
 
 
 def test_anonymized_ids_keep_numbers_and_text_apart() -> None:
-    from data_foundry.v2 import anonymize_ids
+    from data_foundry.definition import anonymize_ids
 
     codes = anonymize_ids(pd.Series([1, "1", "a"], dtype=object))
     assert codes.iloc[0] != codes.iloc[1]
@@ -1648,7 +1652,7 @@ def test_a_source_metric_is_written_into_the_spec_and_the_readme(tmp_path: Path,
 
 @pytest.fixture
 def era_metric(monkeypatch: pytest.MonkeyPatch) -> str:
-    from data_foundry.v2.metrics import METRICS, MetricDef
+    from data_foundry.metrics import METRICS, MetricDef
 
     def mean_group_accuracy(y_true, y_pred, *, group, **_):
         frame = pd.DataFrame({"hit": np.asarray(y_true) == np.asarray(y_pred), "g": group})
@@ -1691,7 +1695,7 @@ def test_scoring_columns_are_kept_out_of_the_features(tmp_path: Path, warehouse:
     result = ds.check(verbose=False)
     assert result.ok, result.bundle_report.summary()
     from data_foundry.curation_container import feature_columns
-    from data_foundry.v2.metrics import scorer
+    from data_foundry.metrics import scorer
 
     assert feature_columns(result.container) == ["x1", "colour"]
     text = (folder / "README.md").read_text()
@@ -1743,7 +1747,7 @@ def test_a_smiles_special_feature_ships_as_a_typed_structure(tmp_path: Path, war
     """
     pytest.importorskip("rdkit")
     del warehouse
-    from data_foundry.v2.chemistry import DEFAULT_SMILES_ENCODING
+    from data_foundry.special.chemistry import DEFAULT_SMILES_ENCODING
 
     body = (
         DEFINITION.format(name="toy_ds", comment="Toy data.")

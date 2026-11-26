@@ -151,13 +151,13 @@ spectra, so they are no per-row default.
 ## In Data Foundry
 
 * `special_features = (Spectrum(name=..., prefix=..., unit=..., technique=..., state=..., description=...),)` on the
-  definition (`data_foundry.v2.Spectrum`, a special feature in a group of columns); leave the columns out of
+  definition (`data_foundry.definition.Spectrum`, a special feature in a group of columns); leave the columns out of
   `_feature_types`. The build records each as a `SpecialFeature` of kind `spectrum` (layout `group`, with
   `SpectrumDetails`) in `task_metadata.special_features`, with the recommended encoding's spec id.
 * `special_features(container, "spectrum")` (`data_foundry.curation_container`) lists them;
-  `encode_special_feature(df, feature)` (`data_foundry.v2.special`) encodes one in place of its columns, and
+  `encode_special_feature(df, feature)` (`data_foundry.special`) encodes one in place of its columns, and
   `encodings_for(feature)` gives its candidates, the recommended one first. `encode_spectrum(frame, axis, encoding)`
-  (`data_foundry.v2.spectra`) is the encoder underneath.
+  (`data_foundry.special.spectra`) is the encoder underneath.
 * The bundle check `dataset_spectrum`: the columns are numeric and finite; missing values are a warning.
 * The probes see a spectrum in its recommended encoding; the blind reviewer's clean room sees it as shipped
   ([checks_and_probes.md](../../knowledge-data-foundry/references/checks_and_probes.md)).

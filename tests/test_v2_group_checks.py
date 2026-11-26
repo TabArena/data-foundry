@@ -1,15 +1,16 @@
-"""Tests for the group statistics and findings of grouped v2 tasks (``data_foundry.v2.group_checks``)."""
+"""Tests for the group statistics and findings of grouped v2 tasks (``data_foundry.definition.group_checks``)."""
 
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry.curation_container import CuratedContainer
-from data_foundry.schema import DatasetMetadata, Grouping, PredictiveMLSplitsMetadata, PredictiveMLTaskMetadataV2
-from data_foundry.v2 import group_checks
-from data_foundry.v2.splits import grouped_splits
 
+from data_foundry.curation_container import CuratedContainer
+from data_foundry.definition import group_checks
+from data_foundry.definition.splits import grouped_splits
+from data_foundry.schema import Grouping, PredictiveMLSplitsMetadata, PredictiveMLTaskMetadataV2
+from data_foundry.v1 import DatasetMetadata
 from tests.test_bundle_checks import make_spec
 
 

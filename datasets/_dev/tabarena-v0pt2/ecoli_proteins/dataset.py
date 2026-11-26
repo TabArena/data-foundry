@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary, TimeBasis
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+)
 
 # each shipped protein's family: UniProt protein family, else its Pfam domains, else the protein alone (lookup of
 # 2026-11-23 from the SWISS-PROT entry names)

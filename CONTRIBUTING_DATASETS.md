@@ -42,7 +42,7 @@ All commands run from the repository root in the repository's environment (`.ven
    `temporal = Temporal(...)` for a temporal one, neither for IID), and the hooks: `_load_raw` only reads,
    `_clean` drops and fixes, `_feature_types` names the categorical, string and datetime columns. Resolve every
    `TODO(verify)`.
-4. **Look at the data** in a notebook of your own next to `dataset.py` (`ds = workbench()` from `data_foundry.v2`
+4. **Look at the data** in a notebook of your own next to `dataset.py` (`ds = workbench()` from `data_foundry.definition`
    picks up every edit to the definition; not committed).
 5. **Check.** `.venv/bin/python -m data_foundry.curation.cli dataset check <folder>` runs the whole pipeline and the
    bundle checks without saving, and writes `README.md`. Repeat until there are no errors. A warning that is correct
@@ -61,7 +61,7 @@ All commands run from the repository root in the repository's environment (`.ven
 
 ## 3. What the base class does
 
-[`AbstractCuratedDataset`](src/data_foundry/v2/dataset.py) holds the conventions, so a definition does not repeat
+[`AbstractCuratedDataset`](src/data_foundry/definition/dataset.py) holds the conventions, so a definition does not repeat
 them: the dtype casts from `_feature_types`, the row order (the rows in the order of their content, then a
 shuffle with seed 42 or a stable sort by the time column), the split protocol (3 folds, or at least 3 temporal
 windows; no row budget unless the collection sets one: TabArena v0.2 sets `RowBudget(train=1_000_000, test=500_000)`
@@ -92,7 +92,7 @@ dtypes, accepted warnings) are in [`definitions.md`](.claude/skills/knowledge-da
 What the curator decides at each stage, and how Claude checks it: [the curation skills](.claude/skills/README.md).
 
 * Template: [`datasets/_template/`](datasets/_template/)
-* The v2 package: [`src/data_foundry/v2/`](src/data_foundry/v2/)
+* The v2 package: [`src/data_foundry/definition/`](src/data_foundry/definition/)
 * Scaffolding: [`.claude/skills/add-dataset/`](.claude/skills/add-dataset/SKILL.md)
 * Selection criteria, splits, leaks, cleaning, verification: the curation knowledge
   ([`knowledge-curation`](.claude/skills/knowledge-curation/SKILL.md), also the dashboard's Guidelines page)

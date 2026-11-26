@@ -5,7 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+from scipy.io import arff
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -16,7 +18,6 @@ from data_foundry.v2 import (
     decode,
     drop_columns,
 )
-from scipy.io import arff
 
 # The hazard assessments' codes in the words of the ARFF header, lowest level first (CLEAN-12, CLEAN-14).
 HAZARD_LEVELS = ["lack of hazard", "low hazard", "high hazard", "danger state"]

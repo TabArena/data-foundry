@@ -6,7 +6,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import openml
-from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary, TimeBasis, decode
+
+from data_foundry.definition import AbstractCuratedDataset, Metric, Source, TaskSummary, TimeBasis, decode
 
 if TYPE_CHECKING:
     import pandas as pd

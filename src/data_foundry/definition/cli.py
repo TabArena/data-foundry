@@ -28,10 +28,10 @@ import pandas as pd
 from data_foundry.curation._paths import records_dir
 from data_foundry.curation.consistency import record_problems
 from data_foundry.curation.store import load_record
+from data_foundry.definition.dataset import CLI_COMMAND, DEFINITION_FILENAME, REPORT_FILENAME, DatasetDefinitionError
+from data_foundry.definition.registry import discover_datasets, load_definition
+from data_foundry.definition.report import read_report
 from data_foundry.schema import DatasetSource, Domain
-from data_foundry.v2.dataset import CLI_COMMAND, DEFINITION_FILENAME, REPORT_FILENAME, DatasetDefinitionError
-from data_foundry.v2.registry import discover_datasets, load_definition
-from data_foundry.v2.report import read_report
 
 if TYPE_CHECKING:
     import argparse

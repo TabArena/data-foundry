@@ -110,7 +110,7 @@ def all_problems(records: list[CurationRecord], repo: Path) -> dict[str, list[st
     """Every definition record's contradictions, by unique name: each record with a ``v2_path`` against the definition
     it names (loaded through the registry, so inherited and computed tags count).
     """
-    from data_foundry.v2.registry import load_definition  # noqa: PLC0415 - the curation package imports v2 lazily
+    from data_foundry.definition.registry import load_definition  # noqa: PLC0415 - curation loads it lazily
 
     out = {}
     for record in records:

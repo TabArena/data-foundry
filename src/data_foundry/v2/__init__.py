@@ -1,152 +1,46 @@
-"""data-foundry v2: define a curated dataset as one Python class instead of a notebook.
+"""The old import path of the definition API, kept while open pull requests still use it.
 
-See :mod:`data_foundry.v2.dataset` for the interface, :mod:`data_foundry.v2.preprocessing` for the standard
-steps, :mod:`data_foundry.v2.splits` for the split protocol, :mod:`data_foundry.v2.metrics` for the metrics and
-their scorers, :mod:`data_foundry.v2.chemistry` for SMILES columns, :mod:`data_foundry.v2.spectra` for spectra,
-:mod:`data_foundry.v2.special` for special features (what a definition declares in ``special_features``),
-:mod:`data_foundry.v2.registry` for discovery and :mod:`data_foundry.v2.report` for the generated ``README.md``.
+The modules of ``data_foundry.v2`` moved into the package on 2026-11-25: the definition API to
+:mod:`data_foundry.definition`, the metrics to :mod:`data_foundry.metrics`, the train sampler to
+:mod:`data_foundry.sampling`, special features to :mod:`data_foundry.special` and the encodings to
+:mod:`data_foundry.encodings`. ``from data_foundry.v2 import X`` and ``import data_foundry.v2.<module>`` resolve to
+the new homes, so a definition written against the old path keeps working. New code imports the new paths; this shim
+goes once the open pull requests are merged.
 """
 
 from __future__ import annotations
 
-from data_foundry.schema import (
-    Grouping,
-    RawFile,
-    RowBudget,
-    ScoringColumn,
-    Source,
-    SpecialFeature,
-    SpectrumDetails,
-    TrainSampling,
-    UnitWeight,
-)
-from data_foundry.time_basis import GroupBasis, TimeBasis
-from data_foundry.utils.dtypes import object_columns
-from data_foundry.v2.chemistry import (
-    DEFAULT_SMILES_ENCODING,
-    Smiles,
-    canonical_smiles,
-    encode_smiles,
-    invalid_smiles,
-    murcko_scaffolds,
-    rdkit_descriptors,
-    scaffold_groups,
-)
-from data_foundry.v2.dataset import (
-    AUTO,
-    AbstractCuratedDataset,
-    CurationResult,
-    DatasetDefinitionError,
-    Decision,
-    FeatureTypes,
-    NonFeature,
-    TaskSummary,
-    clean_text,
-)
-from data_foundry.v2.encodings import (
-    Encoding,
-    encode_datetime,
-    encode_text_e5,
-    encode_text_tfidf,
-    recommended_encodings,
-)
-from data_foundry.v2.metrics import Metric, score, scorer
-from data_foundry.v2.preprocessing import (
-    anonymize_ids,
-    cast_dtypes,
-    decode,
-    drop_columns,
-    order_rows,
-    provenance_columns,
-    read_files,
-    set_missing,
-)
-from data_foundry.v2.registry import (
-    discover_datasets,
-    get_dataset,
-    load_definition,
-)
-from data_foundry.v2.report import read_report
-from data_foundry.v2.special import SpecialColumn, SpecialColumnGroup, encode_special_feature, encodings_for
-from data_foundry.v2.spectra import Spectrum, encode_spectrum, spectrum_encoding
-from data_foundry.v2.splits import (
-    SplitPlan,
-    Splits,
-    Temporal,
-    TemporalSplits,
-    sample_train_positions,
-    subsample_train,
-    window_bounds,
-)
-from data_foundry.v2.windows import Window, candidate_windows, window_stats
-from data_foundry.v2.workbench import workbench
+import importlib
+import sys
 
-__all__ = [
-    "AUTO",
-    "DEFAULT_SMILES_ENCODING",
-    "AbstractCuratedDataset",
-    "CurationResult",
-    "DatasetDefinitionError",
-    "Decision",
-    "Encoding",
-    "FeatureTypes",
-    "GroupBasis",
-    "Grouping",
-    "Metric",
-    "NonFeature",
-    "RawFile",
-    "RowBudget",
-    "ScoringColumn",
-    "Smiles",
-    "Source",
-    "SpecialColumn",
-    "SpecialColumnGroup",
-    "SpecialFeature",
-    "Spectrum",
-    "SpectrumDetails",
-    "SplitPlan",
-    "Splits",
-    "TaskSummary",
-    "Temporal",
-    "TemporalSplits",
-    "TimeBasis",
-    "TrainSampling",
-    "UnitWeight",
-    "Window",
-    "anonymize_ids",
-    "candidate_windows",
-    "canonical_smiles",
-    "cast_dtypes",
-    "clean_text",
-    "decode",
-    "discover_datasets",
-    "drop_columns",
-    "encode_datetime",
-    "encode_smiles",
-    "encode_special_feature",
-    "encode_spectrum",
-    "encode_text_e5",
-    "encode_text_tfidf",
-    "encodings_for",
-    "get_dataset",
-    "invalid_smiles",
-    "load_definition",
-    "murcko_scaffolds",
-    "object_columns",
-    "order_rows",
-    "provenance_columns",
-    "rdkit_descriptors",
-    "read_files",
-    "read_report",
-    "recommended_encodings",
-    "sample_train_positions",
-    "scaffold_groups",
-    "score",
-    "scorer",
-    "set_missing",
-    "spectrum_encoding",
-    "subsample_train",
-    "window_bounds",
-    "window_stats",
-    "workbench",
-]
+from data_foundry.definition import *  # noqa: F403 - the old path re-exports the definition API
+from data_foundry.definition import __all__  # noqa: F401
+
+_MOVED = {
+    "metrics": "data_foundry.metrics",
+    "encodings": "data_foundry.encodings",
+    "special": "data_foundry.special",
+    "chemistry": "data_foundry.special.chemistry",
+    "spectra": "data_foundry.special.spectra",
+    "_optional": "data_foundry.utils.optional",
+    **{
+        name: f"data_foundry.definition.{name}"
+        for name in (
+            "dataset",
+            "preprocessing",
+            "registry",
+            "workbench",
+            "report",
+            "cli",
+            "splits",
+            "windows",
+            "task_checks",
+            "group_checks",
+        )
+    },
+}
+
+for _old, _new in _MOVED.items():
+    _module = importlib.import_module(_new)
+    sys.modules[f"{__name__}.{_old}"] = _module
+    globals()[_old] = _module

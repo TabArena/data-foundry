@@ -15,7 +15,7 @@ import sys
 import types
 from pathlib import Path
 
-from data_foundry.v2.dataset import DEFINITION_FILENAME, AbstractCuratedDataset
+from data_foundry.definition.dataset import DEFINITION_FILENAME, AbstractCuratedDataset
 
 logger = logging.getLogger(__name__)
 

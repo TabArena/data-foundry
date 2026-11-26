@@ -9,7 +9,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -149,7 +150,7 @@ def _goa_stratum_1984(latitude: pd.Series, longitude: pd.Series, strata: pd.Data
 
     points = _alaska_albers(latitude.to_numpy(dtype=float), longitude.to_numpy(dtype=float))
     stratum = np.full(len(points), -1)
-    for number, blob in zip(strata["stratum"].astype(int), strata["geom"]):
+    for number, blob in zip(strata["stratum"].astype(int), strata["geom"], strict=False):
         inside = np.zeros(len(points), dtype=bool)
         for shell, *holes in _multipolygon_rings(blob):
             in_polygon = PolygonPath(shell).contains_points(points)

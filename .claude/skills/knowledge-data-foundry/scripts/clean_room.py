@@ -28,7 +28,7 @@ gets and nothing more: ``data.parquet`` with every row, ``splits.parquet`` (the 
 ``side``, ``row``: positions into ``data.parquet``), ``scoring.parquet`` (the scoring columns, when the metric has
 inputs; the training weight is one of them), ``task.json`` and ``task.md`` (the facts above plus the metric, the
 training weight and the prediction point, one neutral sentence the main session writes), a copy of
-``src/data_foundry/v2/metrics.py`` and ``score.py``, which scores a prediction by the shipped metric as the benchmark
+``src/data_foundry/metrics.py`` and ``score.py``, which scores a prediction by the shipped metric as the benchmark
 does, and an empty ``work/`` for the agent's scripts. The kit's folder name must contain ``participant_kit``: the
 ``task_gamer_hook.py`` sandbox lets the agent touch nothing else.
 """
@@ -44,12 +44,13 @@ from pathlib import Path
 
 import dataset_io
 import pandas as pd
+
 from data_foundry.curation._paths import records_dir, resolve_curation_root
 from data_foundry.curation.store import load_record
 
 SEED = 0
 REGIMES = {"iid": "IID", "grouped_non_iid": "grouped", "temporal_non_iid": "temporal"}
-METRICS_PY = Path(__file__).resolve().parents[4] / "src" / "data_foundry" / "v2" / "metrics.py"
+METRICS_PY = Path(__file__).resolve().parents[4] / "src" / "data_foundry" / "metrics.py"
 # The spec fields a participant needs; ``origin``, ``original`` and ``reason`` are our curation notes.
 PARTICIPANT_METRIC_KEYS = (
     "name",
@@ -154,7 +155,7 @@ def source_links(name: str, records: Path, folder_class: type | None = None) -> 
     """
     path = records / f"{name}.md"
     if not path.exists() and folder_class is not None:
-        from data_foundry.v2.dataset import raw_name  # noqa: PLC0415 - the scripts import the package lazily
+        from data_foundry.definition.dataset import raw_name  # noqa: PLC0415 - the scripts import the package lazily
 
         path = records / f"{raw_name(folder_class)}.md"
     if not path.exists():

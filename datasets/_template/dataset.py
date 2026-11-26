@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (  # noqa: F401
+
+from data_foundry.definition import (  # noqa: F401
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -73,7 +74,7 @@ class ClassName(AbstractCuratedDataset):
     problem_type = "TODO"
     # The metric (required). Look for the source's metric first: the competition's evaluation page, the paper's
     # evaluation section, the task description. Then declare one of
-    #   metric = Metric.source("rmse", original="RMSE", reference="https://...")  # the name in data_foundry.v2.metrics
+    #   metric = Metric.source("rmse", original="RMSE", reference="https://...")  # the name in data_foundry.metrics
     #   metric = Metric.stand_in("pearsonr", original="...", reason="why it cannot be computed", reference="https://...")
     # and only when the source defines none, the fallback (roc_auc / log_loss / rmse by problem type) with where you
     # looked. A metric that needs a column (a group, a weight) maps it in `inputs={"group": "era"}` and declares it in

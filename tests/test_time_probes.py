@@ -10,6 +10,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+
 from data_foundry.collections import CollectionEntry, DatasetCollection, LocalWarehouseSource
 from data_foundry.examples import get_toy_container_path
 

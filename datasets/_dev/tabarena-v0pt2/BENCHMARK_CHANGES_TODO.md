@@ -5,7 +5,7 @@ Data Foundry side of every item is done unless the item says otherwise. The fact
 task definitions of this folder on 2026-11-25 ([how to regenerate them](#regenerating-the-lists)); the history of each
 decision is in the curation records, the knowledge skills and [`CHANGELOG.md`](CHANGELOG.md).
 
-The API names are those of Data Foundry's `main` on 2026-11-25. A restructure moves `data_foundry.v2.*` into the
+The API names are those of Data Foundry's `main` on 2026-11-25. A restructure moves `data_foundry.definition.*` into the
 package and adds one task view per container (`container.task()`) that gathers the helpers named here; this file
 follows it.
 
@@ -90,7 +90,7 @@ declares the metric its source scored, or an explicit fallback (rules MET-1 to M
 - Stop replacing unknown metrics silently. Today any name other than `roc_auc`, `log_loss` and `rmse` becomes the
   problem type's default without a warning, so `mape`, `rmsle` and every custom metric below are never used. An
   unsupported name must fail.
-- Score with `data_foundry.v2.metrics.scorer(container)(y_true, y_pred, row_index)`, `row_index` being the scored
+- Score with `data_foundry.metrics.scorer(container)(y_true, y_pred, row_index)`, `row_index` being the scored
   rows' positions in `container.dataset`. It does what the bare metric does not:
   - inverts a modelling scale (`target_transform` `log`, `log1p`, `log10`: 29 tasks) on both the true values and the
     predictions; models fit and predict on the shipped scale;
@@ -159,7 +159,7 @@ fraud_detection_in_electricity_and_gas_consumption, g_research_crypto_forecastin
 huntprohibited, maps_router_eta, numerai_v5_2, nyc_taxi_trip_duration, pkdd_15_taxi_trip_time_prediction_ii,
 sepsis_prediction (each `_1m`).
 
-- Fit on `data_foundry.v2.subsample_train(container, repeat, fold)`: for a temporal train side the newest year,
+- Fit on `data_foundry.sampling.subsample_train(container, repeat, fold)`: for a temporal train side the newest year,
   extended back in time until it holds 1M rows, then a random 1M of those (a year in `task_metadata.time_unit`:
   numerai's eras are weeks); whole groups of a grouped side; stratified rows of an IID side. Deterministic; the whole
   train side for a container without a budget. Without it a model trains on the whole history.
@@ -181,7 +181,7 @@ A container lists every model input that needs handling beyond its dtype in `tas
   dimensions); on apistox that embedding of the SMILES scored no better than no structure at all (ROC AUC 0.78-0.81
   against 0.70-0.82; ECFP4 bits or character n-grams 0.83-0.85).
 - Map each feature to an AutoGluon special type named by its `kind`, with one generator per kind that calls
-  `data_foundry.v2.special.encode_special_feature(df, feature)` (`encodings_for(feature)` lists the candidates, the
+  `data_foundry.special.encode_special_feature(df, feature)` (`encodings_for(feature)` lists the candidates, the
   recommended one first). The text generators exclude them.
 - SMILES (9: apistox, drug_induced_autoimmunity_prediction, nci_aids_antiviral_screen, qsar_aquatic_toxicity,
   qsar_bioconcentration, qsar_biodeg, qsar_fish_toxicity, qsar_oral_toxicity, qsar_tid_11): the recommended
@@ -370,7 +370,7 @@ sources fixed hard-label decisions (MET-4, MET-6), so the metric stays and the t
 
 A benchmark choice (Lennart, 2026-11-02): the literature names no single best pipeline (Cruz-Marcelo et al. 2008;
 Wegdam et al. 2009: "We advocate the evaluation over a range of parameter settings"). Three candidates are
-registered in `data_foundry.v2.spectra`, the placeholder default first: `ms-sqrt-sg21-snip100-tic-r1` (the MALDIquant
+registered in `data_foundry.special.spectra`, the placeholder default first: `ms-sqrt-sg21-snip100-tic-r1` (the MALDIquant
 vignette), `ms-driams-sqrt-sg21-snip20-snip100-tic-r1` (DRIAMS, Weis et al. 2022; its trim and 3 Da bins belong to
 the width step) and `ms-cromwell-udwt-mm-tic-log2-r1` (Cromwell, the log tradition of SELDI-TOF).
 
@@ -398,7 +398,7 @@ each spectrum dataset before choosing a default.
 
 ### F. Text and date encodings
 
-`data_foundry.v2.encodings.recommended_encodings()`: dates by skrub's
+`data_foundry.encodings.recommended_encodings()`: dates by skrub's
 `DatetimeEncoder(add_weekday=True, periodic_encoding="circular")`, as BeyondArena and `tabarena_default` do; text by
 TF-IDF fitted on the training rows and reduced by SVD (`encode_text_tfidf`) and by `intfloat/e5-small-v2` sentence
 embeddings (`encode_text_e5`). Neither text encoding wins everywhere (Lennart, 2026-11-01). TabArena v0.2 embeds text
@@ -421,8 +421,8 @@ impossible readings, the task probe's LightGBM gives 0.872 and no longer diverge
 The dataset lists come from the definitions, without building anything:
 
 ```python
-from data_foundry.v2.registry import discover_datasets
-from data_foundry.v2.dataset import _build_metadata, effective_row_budget
+from data_foundry.definition.registry import discover_datasets
+from data_foundry.definition.dataset import _build_metadata, effective_row_budget
 
 for name, cls in sorted(discover_datasets("datasets/_dev/tabarena-v0pt2").items()):
     _, task = _build_metadata(cls)

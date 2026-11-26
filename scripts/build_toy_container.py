@@ -17,13 +17,13 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.examples import TOY_CONTAINER_UNIQUE_NAME, TOY_CONTAINER_UUID
 from data_foundry.schema import (
-    DatasetMetadata,
     PredictiveMLSplitsMetadata,
-    PredictiveMLTaskMetadata,
 )
+from data_foundry.v1 import DatasetMetadata, PredictiveMLTaskMetadata
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TOY_BASE_DIR = REPO_ROOT / "src" / "data_foundry" / "examples" / "toy_container"

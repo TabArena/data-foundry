@@ -9,18 +9,18 @@ from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry.v2 import get_dataset
-from data_foundry.v2.cli import add_dataset_parser
-from data_foundry.v2.dataset import NEWEST_PERIOD_RATIO, AbstractCuratedDataset, newest_period_rate
-from data_foundry.v2.splits import (
+
+from data_foundry.definition import get_dataset
+from data_foundry.definition.cli import add_dataset_parser
+from data_foundry.definition.dataset import NEWEST_PERIOD_RATIO, AbstractCuratedDataset, newest_period_rate
+from data_foundry.definition.splits import (
     TemporalSplits,
     split_count,
     temporal_window_splits,
     training_sides,
     window_bounds,
 )
-from data_foundry.v2.windows import Window, candidate_windows, window_stats
-
+from data_foundry.definition.windows import Window, candidate_windows, window_stats
 from tests.test_v2_dataset import (  # noqa: F401 - the fixture
     TEMPORAL_BUDGET,
     temporal_version_body,
@@ -202,7 +202,9 @@ def test_test_windows_hold_33_scored_units_and_the_count_follows_split_33() -> N
         # era: two rows each, never cut by a window; taxon: three values in every window, cut by each
         frame = pd.DataFrame({"era": np.arange(n_rows) // 2, "taxon": np.arange(n_rows) % 3})
         starts = [n_rows // 2 + 2 * sum(test_sizes[:i]) for i in range(len(test_sizes))]  # even: an era stays whole
-        windows = [(i, list(range(s)), list(range(s, s + n))) for i, (s, n) in enumerate(zip(starts, test_sizes))]
+        windows = [
+            (i, list(range(s)), list(range(s, s + n))) for i, (s, n) in enumerate(zip(starts, test_sizes, strict=False))
+        ]
         inputs = {"group": "taxon" if cut else "era"} if unit_column else {}
         task = SimpleNamespace(objective_metric=SimpleNamespace(inputs=inputs))
         container = SimpleNamespace(task_metadata=task, dataset=frame)

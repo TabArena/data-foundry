@@ -6,7 +6,8 @@ import hashlib
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,

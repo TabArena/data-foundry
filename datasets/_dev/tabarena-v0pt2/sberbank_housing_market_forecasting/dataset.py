@@ -7,7 +7,8 @@ from pathlib import Path
 
 import pandas as pd
 import polars as pl
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,

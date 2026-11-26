@@ -14,12 +14,12 @@ The build records each entry as a :class:`~data_foundry.schema.SpecialFeature` i
 benchmark reads that one list, whatever the kind (:func:`~data_foundry.curation_container.special_features`), and
 encodes each feature with :func:`encode_special_feature`.
 
-Each kind is one class here, registered in :func:`special_feature_kind`; it fixes the layout, the dtype the build
-casts to, the bundle checks, the candidate encodings (the default first, :func:`encodings_for`) and how they are
-computed. The kinds: ``smiles`` (:class:`data_foundry.v2.chemistry.Smiles`) and ``spectrum``
-(:class:`data_foundry.v2.spectra.Spectrum`). A new kind (a shipped embedding, a sequence) is a subclass of one of the
-two layouts plus its name in :data:`~data_foundry.schema.SpecialFeatureKind`; no definition attribute, container field
-or consumer changes.
+Each kind is one class here, registered in :func:`special_feature_kind`; it fixes the layout, the dtype the build casts
+to, the bundle checks, the candidate encodings (the default first, :func:`encodings_for`) and how they are computed. The
+kinds: ``smiles`` (:class:`data_foundry.special.chemistry.Smiles`) and ``spectrum``
+(:class:`data_foundry.special.spectra.Spectrum`). A new kind (a shipped embedding, a sequence) is a subclass of one of
+the two layouts plus its name in :data:`~data_foundry.schema.SpecialFeatureKind`; no definition attribute, container
+field or consumer changes.
 """
 
 from __future__ import annotations
@@ -35,7 +35,7 @@ from data_foundry.schema import SpecialFeature, SpectrumDetails
 
 if TYPE_CHECKING:
     from data_foundry.bundle_checks import CheckResult
-    from data_foundry.v2.encodings import Encoding
+    from data_foundry.encodings import Encoding
 
 
 class SpecialFeatureError(TypeError):
@@ -177,8 +177,8 @@ def special_feature_kind(kind: str) -> type[SpecialFeatureSpec]:
     Raises:
         ValueError: An unknown kind.
     """
-    from data_foundry.v2.chemistry import Smiles  # noqa: PLC0415 - the kinds import this module
-    from data_foundry.v2.spectra import Spectrum  # noqa: PLC0415
+    from data_foundry.special.chemistry import Smiles  # noqa: PLC0415 - the kinds import this module
+    from data_foundry.special.spectra import Spectrum  # noqa: PLC0415
 
     kinds = {cls.kind: cls for cls in (Smiles, Spectrum)}
     if kind not in kinds:
@@ -198,7 +198,7 @@ def encode_special_feature(
     df: pd.DataFrame, feature: SpecialFeature, encoding: Encoding | str | None = None
 ) -> pd.DataFrame:
     """``df`` with the feature's columns replaced, where they stand, by their encoding: the recommended one, or
-    ``encoding`` (an :class:`~data_foundry.v2.encodings.Encoding` among :func:`encodings_for` or its spec id).
+    ``encoding`` (an :class:`~data_foundry.encodings.Encoding` among :func:`encodings_for` or its spec id).
 
     A SMILES column becomes its descriptor and fingerprint columns (``<column>__<name>``); a spectrum keeps its columns
     with new values. Every encoding works per value or per row, so the rows of every split get the same values.

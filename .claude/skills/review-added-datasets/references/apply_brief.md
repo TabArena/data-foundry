@@ -22,7 +22,7 @@ dataset:
    shares, and model figures measured before the change (dated or measured again). Remove the claims the review found
    false. House style: plain sentences, no rule IDs in `task_summary`.
 2. **The check:** `ds.check(write_report=False)` with 0 errors (never write the README); confirm the counts the notes
-   give (each window's test and train rows with `data_foundry.v2.splits.window_bounds` or `ds.make_splits`). A
+   give (each window's test and train rows with `data_foundry.definition.splits.window_bounds` or `ds.make_splits`). A
    warning the curator signed off goes into `accepted_check_warnings` with the numbers and the CC date; no other.
 3. **The record** (`curation/records/<unique_name>.md`), where the decision lands in full, in its two sections
    ([records.md](../../knowledge-data-foundry/references/records.md)):

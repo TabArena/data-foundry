@@ -140,7 +140,7 @@ def main() -> int:
     args = parser.parse_args()
 
     _install_tracing()
-    from data_foundry.v2 import load_definition  # noqa: PLC0415 - after the readers are wrapped
+    from data_foundry.definition import load_definition  # noqa: PLC0415 - after the readers are wrapped
 
     started = time.time()
     record: dict = {"name": args.name, "check_only": args.check_only}

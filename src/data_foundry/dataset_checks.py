@@ -1,3 +1,5 @@
+"""The data checks of a frame (``run_all_checks``): the summary tables each dataset's README shows."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -7,7 +9,7 @@ from pandas.api import types as pdtypes
 from data_foundry.utils.dtypes import object_columns
 
 
-def run_all_checks(
+def run_all_checks(  # noqa: C901, PLR0912 - one table after another
     *,
     data: pd.DataFrame,
     classification: bool | None = None,
@@ -64,7 +66,7 @@ def run_all_checks(
     sample_random_state : int
         Random state used for sampling reproducibility.
     """
-    from scipy import stats
+    from scipy import stats  # noqa: PLC0415 - scipy is a build dependency
 
     # Set display options to show all rows and columns
     pd.set_option("display.max_rows", None)
@@ -127,14 +129,14 @@ def run_all_checks(
     # Setup a tqdm progress wrapper only when verbose; if tqdm not available, fall back to identity
     if verbose:
         try:
-            from tqdm.auto import tqdm  # type: ignore
-        except Exception:
+            from tqdm.auto import tqdm  # type: ignore  # noqa: PLC0415 - optional progress bars
+        except Exception:  # noqa: BLE001 - any failure falls back to no progress bar
 
-            def tqdm(x, **kwargs):
+            def tqdm(x, **kwargs):  # noqa: ARG001 - the signature of tqdm
                 return x
     else:
 
-        def tqdm(x, **kwargs):
+        def tqdm(x, **kwargs):  # noqa: ARG001 - the signature of tqdm
             return x
 
     # Display high-level overview
@@ -391,7 +393,7 @@ def run_all_checks(
                 dups_wo_target = int(candidates_df.duplicated(subset=cols_wo_target).sum())
                 pct_dups_wo_target = dups_wo_target / n_rows * 100 if n_rows > 0 else 0.0
 
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - falls back to the full scan
             # If staged method fails for any unexpected reason, fall back to conservative full-scan
             print(f"Staged duplicate detection failed with error: {e}; falling back to full detection.")
             total_dups = int(data.duplicated().sum())

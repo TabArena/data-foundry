@@ -1,5 +1,15 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-25, every definition imports `data_foundry.definition` (no container built)
+
+- The package's `v2/` moved into the package proper (codebase review of 2026-11-25): the definition API is
+  `data_foundry.definition`, the metrics `data_foundry.metrics`, the train sampler `data_foundry.sampling`, special
+  features `data_foundry.special` and the encodings `data_foundry.encodings`. All 174 definitions and the template
+  changed their import lines; the nine SMILES definitions (apistox, drug_induced_autoimmunity_prediction,
+  nci_aids_antiviral_screen and the six qsar_*) also name the encoder's new module in their notes. Nothing else of the
+  metadata changed (compared on all 174). `data_foundry.v2` still resolves to the new modules, so a definition on an
+  open branch keeps working until it is rebased.
+
 ## 2026-11-25, the cross-dataset REVIEW.md removed; the benchmark hand-off rewritten (no container built)
 
 - `REVIEW.md` deleted: its 37 items were all settled, their decisions in the knowledge skills, the definitions and

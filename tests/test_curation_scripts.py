@@ -18,13 +18,13 @@ from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry.curation.record import CurationRecord
-from data_foundry.curation.store import save_record
-from data_foundry.schema import ScoringColumn
-from data_foundry.v2 import get_dataset
-from data_foundry.v2.metrics import Metric, score
 from sklearn.metrics import mean_poisson_deviance
 
+from data_foundry.curation.record import CurationRecord
+from data_foundry.curation.store import save_record
+from data_foundry.definition import get_dataset
+from data_foundry.metrics import Metric, score
+from data_foundry.schema import ScoringColumn
 from tests.test_v2_dataset import (  # noqa: F401 - the fixture is used by name
     DEFINITION,
     temporal_body,

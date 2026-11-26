@@ -9,27 +9,28 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.metrics import mean_poisson_deviance
+
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.dataset_checks import run_all_checks
+from data_foundry.definition.dataset import metric_spec
 from data_foundry.examples import (
     TOY_CONTAINER_UNIQUE_NAME,
     TOY_CONTAINER_UUID,
     get_toy_container_path,
     load_toy_container,
 )
+from data_foundry.metrics import Metric, scorer
+from data_foundry.sampling import subsample_train
 from data_foundry.schema import (
-    DatasetMetadata,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadataV2,
     RowBudget,
     ScoringColumn,
     TrainSampling,
 )
-from data_foundry.v2.dataset import metric_spec
-from data_foundry.v2.metrics import Metric, scorer
-from data_foundry.v2.splits import subsample_train
-from sklearn.ensemble import HistGradientBoostingRegressor
-from sklearn.metrics import mean_poisson_deviance
+from data_foundry.v1 import DatasetMetadata
 
 
 def test_toy_container_path_exists_inside_package():
@@ -232,8 +233,8 @@ def test_benchmark_container_example_encodes_every_feature_type(tmp_path, capsys
 def test_benchmark_container_example_scores_an_ordered_target_as_scikit_learn_does(tmp_path):
     """An ordered multiclass target (low < mid < high): the score is scikit-learn's log loss on classes_ order."""
     pytest.importorskip("sklearn")
-    from sklearn.ensemble import HistGradientBoostingClassifier  # noqa: PLC0415 - scikit-learn is optional
-    from sklearn.metrics import log_loss  # noqa: PLC0415 - scikit-learn is optional
+    from sklearn.ensemble import HistGradientBoostingClassifier
+    from sklearn.metrics import log_loss
 
     example = _example("benchmark_container")
     rng = np.random.default_rng(2)
@@ -344,9 +345,8 @@ def test_every_example_parses(path):
 
 def _parity_containers() -> dict[str, CuratedContainer]:
     """Format-2 toys whose non-features go beyond the target: a label time, a grouping with one, a unit weight."""
-    from data_foundry.schema import Grouping  # noqa: PLC0415
-
-    from tests.test_bundle_checks import _unit_container, make_v2_container  # noqa: PLC0415
+    from data_foundry.schema import Grouping
+    from tests.test_bundle_checks import _unit_container, make_v2_container
 
     n = 8
     rows = np.arange(n)
@@ -365,7 +365,7 @@ def _parity_containers() -> dict[str, CuratedContainer]:
 @pytest.mark.parametrize("kind", ["label_time", "grouped", "unit_weight"])
 def test_read_metric_without_data_foundry_takes_the_features_data_foundry_takes(tmp_path, kind):
     """The plain-json example leaves out the same columns as `feature_columns`, a label time and a unit included."""
-    from data_foundry.curation_container import feature_columns  # noqa: PLC0415
+    from data_foundry.curation_container import feature_columns
 
     container = _parity_containers()[kind]
     folder = container.save(save_dir=tmp_path)

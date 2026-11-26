@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, Metric, Source, TaskSummary, TimeBasis, decode
+
+from data_foundry.definition import AbstractCuratedDataset, Decision, Metric, Source, TaskSummary, TimeBasis, decode
 
 N_ORDER_BLOCKS = 10
 """File-order blocks for the decision table on hidden weeks (the raw file's row order)."""
