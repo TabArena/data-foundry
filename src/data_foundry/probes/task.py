@@ -73,8 +73,9 @@ from typing import TYPE_CHECKING
 import numpy as np
 import pandas as pd
 
+from data_foundry.encodings import TEXT_COMPONENTS
 from data_foundry.probes import inputs, models, scoring
-from data_foundry.probes.encode import MAX_TEXT_COLUMNS, TEXT_COMPONENTS, encode_text, numeric
+from data_foundry.probes.encode import MAX_TEXT_COLUMNS, encode_text, numeric
 
 if TYPE_CHECKING:
     import lightgbm as lgb

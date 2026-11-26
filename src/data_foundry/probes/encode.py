@@ -18,15 +18,16 @@ A missing date stays missing in every mode (as NaN seconds or days) until ``nume
 
 from __future__ import annotations
 
-import numpy as np
-import pandas as pd
-from sklearn.decomposition import TruncatedSVD
-from sklearn.feature_extraction.text import TfidfVectorizer
+from typing import TYPE_CHECKING
 
-TEXT_COMPONENTS = 16
+import pandas as pd
+
+from data_foundry.encodings import encode_text_tfidf
+
+if TYPE_CHECKING:
+    import numpy as np
+
 MAX_TEXT_COLUMNS = 30
-ONE_TOKEN_SHARE = 0.9
-"""A text column whose values are a single token in at least this share of rows is encoded by character n-grams."""
 
 
 def seconds(values: pd.Series) -> pd.Series:
@@ -96,37 +97,23 @@ def lightgbm_names(X: pd.DataFrame) -> pd.DataFrame:
     return X.set_axis([f"f{i}" for i in range(X.shape[1])], axis=1)
 
 
-def text_vectorizer(values: np.ndarray) -> TfidfVectorizer:
-    """Word TF-IDF for prose; character 2- to 5-grams when most values are one token (SMILES, codes, URLs)."""
-    sample = pd.Series(values[:5_000], dtype="string").fillna("")
-    one_token = float((~sample.str.strip().str.contains(r"\s")).mean()) if len(sample) else 0.0
-    if one_token >= ONE_TOKEN_SHARE:
-        return TfidfVectorizer(
-            analyzer="char", ngram_range=(2, 5), max_features=20_000, min_df=2, sublinear_tf=True, dtype=np.float32
-        )
-    return TfidfVectorizer(max_features=20_000, min_df=2, sublinear_tf=True, dtype=np.float32)
-
-
 def encode_text(
     df: pd.DataFrame, text: list[str], train: np.ndarray, test: np.ndarray
 ) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, list[str]]]:
-    """Each text column as TF-IDF + SVD components fitted on the train rows; the column blocks by source column."""
+    """Each text column as TF-IDF + SVD components fitted on the train rows (``encodings.encode_text_tfidf``, the
+    recommended encoding); the column blocks by source column. A column with no term in its train rows is left out.
+    """
     tr_parts, te_parts, blocks = [], [], {}
     for k, col in enumerate(text[:MAX_TEXT_COLUMNS]):
-        values = df[col].astype("string").fillna("").to_numpy(dtype=object)
-        try:
-            vectorizer = text_vectorizer(values[train])
-            a_train = vectorizer.fit_transform(values[train])
-        except ValueError:  # no term occurs twice: nothing to encode
+        values = df[col].reset_index(drop=True)
+        tr, te = encode_text_tfidf(
+            values.iloc[train].reset_index(drop=True), values.iloc[test].reset_index(drop=True), prefix=f"t{k}_"
+        )
+        if tr.shape[1] == 0:
             continue
-        n = min(TEXT_COMPONENTS, a_train.shape[1] - 1)
-        if n < 1:
-            continue
-        svd = TruncatedSVD(n_components=n, random_state=0)
-        cols = [f"t{k}_{j}" for j in range(n)]
-        tr_parts.append(pd.DataFrame(svd.fit_transform(a_train), columns=cols))
-        te_parts.append(pd.DataFrame(svd.transform(vectorizer.transform(values[test])), columns=cols))
-        blocks[col] = cols
+        tr_parts.append(tr)
+        te_parts.append(te)
+        blocks[col] = list(tr.columns)
     if not tr_parts:
         return pd.DataFrame(index=range(len(train))), pd.DataFrame(index=range(len(test))), {}
     return pd.concat(tr_parts, axis=1), pd.concat(te_parts, axis=1), blocks
