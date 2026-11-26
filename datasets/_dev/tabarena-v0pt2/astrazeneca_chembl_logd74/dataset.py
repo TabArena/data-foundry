@@ -61,6 +61,25 @@ SALT_FORMS = {
 parent they point at. `_clean` asserts this exact set: a later release re-pointing another activity changes a
 structure, and so a feature, which the count asserts cannot see."""
 
+MERGED_IDS = {
+    "CHEMBL1626": ("CHEMBL1626", "CHEMBL315157"),  # clemastine, both centres defined and both undefined
+    "CHEMBL170": ("CHEMBL97", "CHEMBL522505"),  # quinine and quinidine, epimers at the carbinol centre
+    "CHEMBL273575": ("CHEMBL273575", "CHEMBL51697"),  # nomifensine, the racemate and one enantiomer
+    "CHEMBL499": ("CHEMBL173706", "CHEMBL499"),  # timolol, undefined and (S)
+    "CHEMBL517712": ("CHEMBL9751", "CHEMBL517712"),  # atropine, fully undefined and the tropane-defined form
+}
+"""The five ids that carry two activities each, with the two compounds the deposit registered for them.
+
+They are not the assay measuring one compound twice. In CHEMBL_20 each pair was two separately registered
+compounds, a stereo-defined form and an undefined or differently defined one, each with its own measured value;
+MoleculeNet's copy of that release still carries both, under the two ids and with the two structures, which is how
+the pairing was read: for each merged id, the partner is the member of its 2D structure group that no longer carries
+an activity of its own. ChEMBL has since merged each pair onto one id and one structure, so today's download answers
+with two activities and one SMILES and no longer says which value belongs to which compound. The merge did not take
+in every stereoisomer: nomifensine's other enantiomer (CHEMBL400964) and a third cinchona alkaloid (CHEMBL1294) keep
+their own id, their own activity and their own row here. `_clean` drops all ten merged activities
+(curation_comments)."""
+
 
 def group_structures(smiles: pd.Series) -> pd.Series:
     """Each structure as the scaffold's input: without common salts and solvents, and without repeated identical
@@ -105,7 +124,7 @@ class AstrazenecaChemblLogd74(AbstractCuratedDataset):
         ),
         row=(
             "One compound AstraZeneca measured and later disclosed, with its logD7.4 from one shake-flask protocol "
-            "(4,195 compounds; ChEMBL document CHEMBL3301361, assay CHEMBL3301363)."
+            "(4,190 compounds; ChEMBL document CHEMBL3301361, assay CHEMBL3301363)."
         ),
         predicted=(
             "The measured logD7.4: the log of the compound's concentration ratio between octan-1-ol and pH 7.4 "
@@ -118,10 +137,10 @@ class AstrazenecaChemblLogd74(AbstractCuratedDataset):
         ),
         changes=(
             "We take the assay's 4,200 activities from ChEMBL, the source of the deposit, rather than from "
-            "MoleculeNet's mirror of them, which strips salts, restandardises tautomers and keeps one value of "
-            "each repeated measurement. We average the "
-            "two measurements of the five compounds the assay measured twice, split by chemical series instead of "
-            "at random, and ship the structure as a SMILES string in RDKit's canonical form."
+            "MoleculeNet's mirror of them, which strips salts and restandardises tautomers. We drop the ten "
+            "activities of the five compound pairs ChEMBL has merged onto one id since the deposit, split by "
+            "chemical series instead of at random, and ship the structure as a SMILES string in RDKit's canonical "
+            "form."
         ),
         fit="direct",
         fit_reason=(
@@ -193,9 +212,10 @@ class AstrazenecaChemblLogd74(AbstractCuratedDataset):
         dates a row, so the drift is found only by comparison.
 
         The endpoint serves the current release, so it is not pinned: a later release can revise a structure or add
-        an activity. `_clean` asserts the 4,200 activities, the one standard type, the 4,195 compounds and the six
-        activities whose `parent_molecule_chembl_id` differs from their `molecule_chembl_id` (`SALT_FORMS`), so a
-        further re-pointing fails the check rather than changing a feature unseen. The sha256 and byte size of each
+        an activity. `_clean` asserts the 4,200 activities, the one standard type, the five ids that carry two
+        activities (`MERGED_IDS`), the 4,190 compounds that remain and the six activities whose
+        `parent_molecule_chembl_id` differs from their `molecule_chembl_id` (`SALT_FORMS`), so a further
+        re-pointing or merge fails the check rather than changing a feature unseen. The sha256 and byte size of each
         page as downloaded are in `PAGE_SHA256`:
 
         00e62a2f745aa303985ae3d292771314da050565aab6bc6768817ea98b99fd7f  chembl_activities_0.json     (1,478,910 bytes)
@@ -217,19 +237,19 @@ class AstrazenecaChemblLogd74(AbstractCuratedDataset):
         - Prediction point: a compound that has not been through the assay, before it is made or before it is progressed. Its structure is known; no measurement on it exists. Only the structure ships.
         - Target: `logd74`, the measured value as deposited. It is a measurement, not a derived label, so nothing about the compound can be circular with it.
         - The reporting range is a selection on the target, not censoring within the rows (decision table): every value falls inside -1.5 to 4.5, and the ends carry 1 and 4 compounds against 36 and 135 in the outermost half-log bands, so there is no pile-up at a bound. Compounds whose logD7.4 fell outside the assay's range are not in the deposit at all; a user predicts the number the assay would report, which is the same range.
-        - Repeated measurements (decision table): five compounds carry two activities each (CHEMBL1626, CHEMBL170, CHEMBL273575, CHEMBL499, CHEMBL517712), the same structure measured twice, spread 0.03 to 0.57 log units (mean 0.254). One compound is one row of the use case, so the two values are averaged: both measurements count, and the compound stays. 4,200 activities become 4,195 compounds. MoleculeNet's copy keeps one of the two, without saying which.
-        - Exception to SPLIT-26 (2026-11-26, Andrej): we do not ship the source's rows as they are. The five twice-measured compounds ship as one row each, holding the mean of their two activities, where the rule that keeps the source's rows says deduplicating with averaged targets makes a different dataset. The facts that set this case apart: the repeats are 0.12% of the deposit (5 compounds, 10 of 4,200 activities), against 40% of the rows at superconductivity, which kept both rows and weighted them instead; they are true protocol replicates inside one document and one assay, not separate reports of different sources; and the split is the same either way, since both rows of a pair carry the same structure and therefore the same scaffold, so no pair straddles any of the nine folds. Shipping both rows would instead score five compounds twice and pair two feature-identical rows with targets 0.03 to 0.57 apart, an error floor no model can avoid, unless a 0.5 scoring weight per row were added to count the compound once. Serves P4: the Must that outranks the kept rule lets the source's use case decide what one prediction is, and here it is the compound, so the scored unit matches the prediction unit, no compound is weighed twice in a fold, and no pair of identical rows puts an error floor into the score.
+        - Five merged pairs, dropped (decision table): five ids carry two activities each (CHEMBL1626, CHEMBL170, CHEMBL273575, CHEMBL499, CHEMBL517712). The assay did not measure one compound twice. In CHEMBL_20 each of the five was two separately registered compounds, a stereo-defined form and an undefined or differently defined one, each with its own value: clemastine with both centres defined (3.48) and with neither (3.04, CHEMBL315157), quinine (2.16, CHEMBL97) and quinidine (2.26, CHEMBL522505), the nomifensine racemate (2.08) and one of its enantiomers (2.11, CHEMBL51697), timolol undefined (-0.35, CHEMBL173706) and (S) (-0.22), atropine fully undefined (-0.09, CHEMBL9751) and its tropane-defined form (-0.66). Each pair was read off its 2D structure group: the partner is the member that no longer carries an activity of its own. The merge did not take in every stereoisomer of these structures, and the ones it left keep their row here: nomifensine's other enantiomer (CHEMBL400964, 2.11) and a third cinchona alkaloid (CHEMBL1294, 2.21) still have their own ChEMBL id and their own measurement. MoleculeNet's copy of that release still carries both members of every pair, under the two ids and with the two structures, which is how the pairing was read. ChEMBL has merged each pair onto one id and one structure since, so today's download answers with two activities, one SMILES and no way to tell which value is which compound. Averaging them would put two different compounds in one row and quinine would carry quinidine's measurement; keeping both would pair two now-identical structures with targets up to 0.57 apart. The two structures cannot be recovered from this download, so all ten activities are dropped: 0.24% of the deposit, and 4,200 activities become 4,190 compounds.
+        - Dropping those ten rows against SPLIT-26 (2026-11-26, Andrej; revised 2026-11-26 after the pairs were identified): the rule keeps the source's rows, and ten of them are not shipped. What the rule protects against is a curator quietly reshaping the source's task; here the source's own rows can no longer be reconstructed from the source, because ChEMBL has merged the two registrations and serves one structure for both values. The three ways to ship them are all worse than dropping: one averaged row makes a compound that was never measured and gives quinine quinidine's value; two rows pair identical features with targets up to 0.57 apart, an error floor no model can avoid and one that scores five compounds twice; and restoring the two structures means reading them out of MoleculeNet's copy, the processed mirror this definition rejects for exactly that reason. The cost is bounded and named: 10 of 4,200 activities, 0.24%, five of them compounds a benchmark elsewhere does carry. The earlier reading of these five as protocol replicates, and the averaging it justified, was wrong on the facts; this bullet replaces it.
         - The fit is direct, and these are its limits (USE-8). The range is the assay's own: a compound outside -1.5 to 4.5 has no logD7.4 from this protocol, so the chemist who runs the shake flask instead of asking the model meets the same bound, and the decision the use case names is made at a threshold inside the range. The selection that does not mirror the setting is the population: these are the compounds AstraZeneca disclosed in patents from programmes it advanced that far (median molecular weight 388, three aromatic rings, TPSA 80, 82% of them within Lipinski's rule of five), so early exploratory ideas and newer modalities are under-represented. That shifts which structures a model is trained on, not what logD7.4 is of a given structure, and the scaffold split is what tests against it: on the nine shipped folds the model scores RMSE 0.823 on test compounds with no close training analog against 0.544 on those with one. The second limit is at the ends of the range, where the too-lipophilic and too-polar flags are set: an untuned LightGBM under-calls by 0.71 above logD 3.5 and over-calls by 0.98 below 0, and nothing above 4.5 exists in the deposit to teach it. Against those, a single measurement of this assay has an SD of about 0.11 (the 43 enantiomer pairs in the set, matching AstraZeneca's published 0.07 to 0.10) while the best model reaches RMSE 0.698, so the task is not noise-limited.
         - Other assays of the same deposit (pKa, aqueous solubility, plasma protein binding, intrinsic clearance) are sibling tasks on the same compounds (PROV-7; `hepatocyte_clearance_astrazeneca`), not features: they are measurements that do not exist for a compound that has not been made.
-        - Stereoisomers stay (molecules.md, LEAK-19 as applied to qsar_tid_11): 172 compounds in 79 groups share a 2D structure with another compound once the salts and solvents are off, and differ only in stereochemistry, each with its own measured value. All 4,195 full InChIKeys are distinct, so there are no tautomer copies either. They share a scaffold and never straddle the split; a 2D encoding cannot tell them apart, so their spread bounds the error such a model can reach on them. That bound is 0.5 or less: the median spread is 0.10, only two groups exceed 0.5, and the largest spread, 1.55, is a label error rather than a floor (its two compounds are enantiomers, whose logD7.4 must be identical in an achiral system; decision table).
+        - Stereoisomers stay (molecules.md, LEAK-19 as applied to qsar_tid_11): 168 compounds in 77 groups share a 2D structure with another compound once the salts and solvents are off, and differ only in stereochemistry, each with its own measured value. All 4,190 full InChIKeys are distinct, so there are no tautomer copies either. They share a scaffold and never straddle the split; a 2D encoding cannot tell them apart, so their spread bounds the error such a model can reach on them. That bound is 0.5 or less: the median spread is 0.10, only two groups exceed 0.5, and the largest spread, 1.55, is a label error rather than a floor (its two compounds are enantiomers, whose logD7.4 must be identical in an achiral system; decision table).
         - The structure ships as `SMILES` (CLEAN-24), in RDKit's canonical form (`canonical_smiles`), every fragment kept and stereochemistry kept, declared in `special_features` so a benchmark encodes it as a structure and never as text. Six records hold more than one fragment: four hydrates, one hemihydrate written as two parent molecules and a water (CHEMBL5315124), and one maleate salt (CHEMBL1409). The group key is the structure without them (`group_structures`): RDKit's `FragmentRemover` drops the common salts and solvents and keeps the organic counter-ion of the maleate, and the identical fragments of the hemihydrate are de-duplicated afterwards, so each of the six groups with its parent. `FragmentRemover` alone does not: it leaves the hemihydrate's two parent copies, so the scaffold is still the parent's scaffold written twice and the check run on 2026-11-25 reproduced the old 2,414 groups for that reason (LEAK-17).
         - The six multi-fragment records ship whole, so RDKit reads them whole, and for them the encoded descriptors are the substance's and not the compound's: MolLogP 0.79 against the compound's 3.26 for docetaxel trihydrate (CHEMBL3545252, logD 3.40), 2.26 against 1.54 for the hemihydrate, and 0.82 to 0.83 too low on each of the three remaining hydrates; the maleate's descriptors are the salt's, which is the substance the deposit records. MolLogP is the strongest single feature of the task (R^2 0.134 alone, chosen on 6 of 9 splits), so a benchmark that strips solvents itself will get other values on these rows. Four of the six are also not the deposit's structures: ChEMBL re-pointed those activities (CHEMBL5483011, CHEMBL5416410, CHEMBL5315124, CHEMBL1355736) onto hydrate records registered after CHEMBL_20, while MoleculeNet's 2015-era copy still carries them under the parent id with the identical value (download_description). They are kept whole and unrepaired by decision (2026-11-26): the six rows are 0.14% of the set and bound the effect on the score at about 0.0014 on the declared MAE per fold (about 0.001 RMSE) even if each were predicted a full log worse, the group key already reduces them to their parent so no split is affected, and a repair would add four parent structures that the download does not carry. The cost is named rather than removed: on those four rows the structure we publish is the hydrate ChEMBL now records and not the one the deposit published, and the descriptors a benchmark computes from them are the hydrate's.
         - Split (SPLIT-31, leaf L-EXP.kind): grouped on the Bemis-Murcko scaffold of the group structure (`scaffold_groups`), 2,413 groups over 4,195 compounds, 1,864 of them a single compound. The largest scaffold is the bare benzene ring with 76 compounds (1.8%), far below the tenth at which a scaffold is broken up, and five compounds have no ring. The groups are mostly small rather than deep series: 77.2% hold one compound, 88.1% at most two, 139 hold five or more, and 44.4% of the compounds are alone. What the split buys is measured on the nine shipped folds: 23.0% of the test compounds have a close training analog (Tanimoto 0.7 or more, Morgan radius 2, 2,048 bits; fold SD 2.1), against 46.7% (SD 1.3) over nine random draws of the same test sizes. There is nothing to look up either way: a 1-NN prediction over the same fingerprints scores RMSE 1.243, worse than the training mean's 1.204.
         - Dropped: `molecule_chembl_id`, an identifier (CLEAN-3, CLEAN-22), `standard_type`, which is `LogD7.4` on every row, and `parent_molecule_chembl_id`, read only by the drift assert. The other fields of an activity record are never read: they describe the assay rather than the measurement. The censoring and quality fields are constant across all 4,200 (`units`, `standard_relation`, `relation`, `upper_value`, `standard_upper_value` and `data_validity_comment` null, `standard_flag` 1, `potential_duplicate` 0; checked 2026-11-25). The ones that do vary carry nothing for the task: `activity_id` and `record_id` are running numbers, `molecule_pref_name` is on 651 of the rows and is given long after the assay, and `parent_molecule_chembl_id` differs from the molecule id on exactly the six salt, hydrate and solvate records, which is how they are found.
         - The raw file is sorted by the target, which the shipped frame must not inherit: `activity_id` rises monotonically and the values form two long non-decreasing runs (Spearman of `activity_id` against logD -0.348; a 40-bin step function of the raw row position fits the target at R^2 0.757 in sample, above an honest model's 0.659). The ids are never read and the pipeline shuffles the rows with seed 42 before shipping (CLEAN-23), so the shipped order carries nothing (Spearman of row position against the target 0.029); the shuffle is load-bearing and not housekeeping.
-        - The labels are publicly recoverable, which matters for a pretrained baseline and for nothing else (EV-4, PROV-15): MoleculeNet's CSV of the same assay gives the exact value for 4,161 of the 4,195 compounds by canonical SMILES, ChemPile carries the structure-value pairs as pretraining text, and Zueco et al. (NeurIPS 2026) report MAE 0.0069 by looking the compounds up in ChEMBL. A score from a model that may have read them is not a generalisation score. It changes no decision here: the same work's nearest-neighbour baseline (MAE 0.787) says the split itself is not easy.
+        - The labels are publicly recoverable, which matters for a pretrained baseline and for nothing else (EV-4, PROV-15): MoleculeNet's CSV of the same assay gives the exact value for 4,157 of the 4,190 compounds by canonical SMILES, ChemPile carries the structure-value pairs as pretraining text, and Zueco et al. (NeurIPS 2026) report MAE 0.0069 by looking the compounds up in ChEMBL. A score from a model that may have read them is not a generalisation score. It changes no decision here: the same work's nearest-neighbour baseline (MAE 0.787) says the split itself is not easy.
         - The metric is TDC's MAE in log units and not MoleculeNet's RMSE (decided 2026-11-26): the two benchmarks that made a task of this deposit declare different metrics, neither is the source's, and the one taken is the definer whose task design this definition follows (the scaffold hold-out, one prediction per compound), while MoleculeNet pairs its RMSE with the random split over its own reprocessed copy, which was rejected here. The choice does not change what the benchmark ranks: over eight candidate models the ranking is identical under MAE, RMSE, median absolute error, the share within 0.5 and within 1.0 log, Spearman and a 3-band accuracy (per-fold Kendall tau 1.00 on 7 of the 9 folds, 0.929 on the other two), and an L1-trained LightGBM does not win on MAE either (0.552 against 0.528). Every error in log units quoted elsewhere in these notes and in the splits comment is an RMSE over the nine shipped folds and is labelled as one, measured before the metric was decided and not re-run under it; on the declared metric the untuned LightGBM of that comparison scores MAE 0.528.
-        - MoleculeNet's Lipophilicity.csv is not read (PROV-4, molecules.md: a benchmark is a processed copy, go to the primary). It is the same assay with 4,200 rows and one row per compound id, downloaded here only to compare: 4,180 of its ids are in today's ChEMBL under the same id and 4,176 of those carry exactly the same value (the four that differ are four of the five twice-measured compounds, where it kept one value); 20 of its ids no longer carry this activity in ChEMBL and ChEMBL carries 15 ids it does not, which is the ids drifting between releases - for four of the twenty, ChEMBL now records the activity on a salt or hydrate form whose parent is the id MoleculeNet used. It also drops the compound ids' link to the deposit's other assays and cannot show the repeated measurements.
+        - MoleculeNet's Lipophilicity.csv is not read (PROV-4, molecules.md: a benchmark is a processed copy, go to the primary). It is the same assay with 4,200 rows, 4,200 distinct compound ids and 4,200 distinct structures, downloaded here only to compare: it shares 4,180 ids with today's ChEMBL and on every one of them the value agrees exactly (four of those ids now carry a second activity as well, the value of the compound ChEMBL has merged into them). 20 of its ids no longer carry this activity and ChEMBL carries 15 it does not, which is the ids drifting between releases: six of the twenty are the members of the five merged pairs that lost their own id (`MERGED_IDS`), four are compounds whose activity ChEMBL now records on a salt or hydrate form (`SALT_FORMS`), and ten are other drift. Because it predates the merges, it is the only copy that still shows those five pairs as the ten compounds the deposit measured, which is what identified them. It drops the compound ids' link to the deposit's other assays.
         - Licence: ChEMBL is CC BY-SA 3.0 ("The ChEMBL data is made available on a Creative Commons Attribution-Share Alike 3.0 Unported License", ChEMBL interface documentation, read 2026-11-25). A licence is never a verdict reason (EV-4).
     """
 
@@ -256,9 +276,8 @@ class AstrazenecaChemblLogd74(AbstractCuratedDataset):
             'that "for each dataset, we propose a metric and a splitting pattern that best fit the properties of '
             'the dataset"; its RMSE is not taken, because the pattern it pairs that metric with is the random '
             "split over its own reprocessed copy, and both are what this definition rejected as not the use case. "
-            "The decision reads the error in log units too: a design round works in half-log bands, and the "
-            "assay's own repeats differ by 0.254 log units on average, which a squared error punishes harder than "
-            "the decision does. Neither definer is the source, so the origin is the context (MET-11): the metric "
+            "The decision reads the error in log units too: a design round works in half-log bands, and a "
+            "squared error punishes a large miss harder than the decision does. Neither definer is the source, so the origin is the context (MET-11): the metric "
             "a later definer declares for exactly this task, adopted here, not a source metric (MET-5), and the "
             "regression fallback it replaces is overruled rather than filled in. Little moves either way: over "
             "eight candidate models the ranking is identical under MAE, RMSE, median absolute error, the share "
@@ -306,19 +325,22 @@ class AstrazenecaChemblLogd74(AbstractCuratedDataset):
         # The structure ships as a SMILES column (`special_features`), in RDKit's canonical form; every fragment and
         # the stereochemistry stay (CLEAN-24). It is also the scaffold's input: no counter-ion here has a ring.
         df["SMILES"] = canonical_smiles(df["SMILES"])
-        # One compound is one row of the use case: the five compounds measured twice get the mean of their two
-        # values (curation_comments, decision table).
-        df = df.groupby("molecule_chembl_id", as_index=False, sort=False).agg(
-            SMILES=("SMILES", "first"), **{self.target: (self.target, "mean")}
-        )
-        assert len(df) == 4195, f"expected 4,195 compounds, got {len(df)}"
+        # Five ids carry two activities each. They are two compounds the deposit measured separately, which ChEMBL
+        # has merged onto one id and one structure since (`MERGED_IDS`), so the download no longer says which value
+        # belongs to which compound. All ten activities are dropped (curation_comments, decision table).
+        merged = {i for i, n in df.groupby("molecule_chembl_id").size().items() if n > 1}
+        assert merged == set(MERGED_IDS), f"expected the five known merged ids, got {sorted(merged)}"
+        # reset_index because the splits are positions, not labels (`_require_range_index`)
+        df = df[~df["molecule_chembl_id"].isin(MERGED_IDS)].reset_index(drop=True)
+        assert len(df) == 4190, f"expected 4,190 compounds, got {len(df)}"
         # The split groups: the chemical series (Bemis-Murcko scaffold) of the structure without common salts and
         # solvents and without repeated identical fragments, so a salt or hydrate form groups with its parent
         # (`group_structures`); a compound without a ring is its own group
         df = df.assign(scaffold=scaffold_groups(group_structures(df["SMILES"])))
         # molecule_chembl_id is an identifier (CLEAN-3, CLEAN-22); its only other use, the link to the deposit's
-        # other assays, is a sibling task, not this one
-        return drop_columns(df, ["molecule_chembl_id"])
+        # other assays, is a sibling task, not this one. standard_type is `LogD7.4` on every row and
+        # parent_molecule_chembl_id is read only by the drift assert above (curation_comments).
+        return drop_columns(df, ["molecule_chembl_id", "standard_type", "parent_molecule_chembl_id"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         # The SMILES is typed by `special_features`, `scaffold` is the group column and the target is numeric.
@@ -327,13 +349,14 @@ class AstrazenecaChemblLogd74(AbstractCuratedDataset):
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         measured = raw["standard_value"].astype(float)
-        repeats = (
+        merged = (
             raw.assign(**{self.target: measured})
             .groupby("molecule_chembl_id")[self.target]
-            .agg(measurements="size", lowest="min", highest="max", shipped="mean")
+            .agg(activities="size", lowest="min", highest="max")
         )
-        repeats = repeats[repeats["measurements"] > 1].assign(
-            spread=lambda frame: (frame["highest"] - frame["lowest"]).round(2)
+        merged = merged[merged["activities"] > 1].assign(
+            registered_as=lambda frame: [" + ".join(MERGED_IDS[name]) for name in frame.index],
+            spread=lambda frame: (frame["highest"] - frame["lowest"]).round(2),
         )
         shipped = df[self.target]
         bounds = pd.DataFrame(
@@ -398,11 +421,16 @@ class AstrazenecaChemblLogd74(AbstractCuratedDataset):
         )
         return [
             Decision(
-                "The five compounds measured twice ship as one row each, averaged",
-                "The assay measured five compounds twice. The same structure cannot be two rows of a task whose "
-                "unit is the compound, and both values are the same protocol on the same compound, so the shipped "
-                "value is their mean; the spread below is what the assay repeats to.",
-                repeats,
+                "The five pairs ChEMBL has merged onto one id are dropped",
+                "Five ids carry two activities each. The assay did not measure one compound twice: the deposit "
+                "registered two compounds, a stereo-defined form and an undefined or differently defined one, and "
+                "each carries its own value (quinine and quinidine are one of the pairs, atropine and its "
+                "tropane-defined form another). ChEMBL has merged each pair onto one id and one structure since, "
+                "so the download no longer says which value belongs to which compound. Averaging them would put "
+                "two different compounds in one row, and keeping both would pair two now-identical structures "
+                "with targets up to 0.57 apart. Neither is this task, and the two structures cannot be recovered "
+                "from this download, so all ten activities are dropped: 0.24% of the deposit.",
+                merged,
             ),
             Decision(
                 "The assay's range selects compounds, it does not censor values",

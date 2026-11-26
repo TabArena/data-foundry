@@ -1,5 +1,36 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-26, astrazeneca_chembl_logd74: the five "twice-measured" compounds are merged pairs and are dropped (4,195 -> 4,190; nothing built)
+
+- `astrazeneca_chembl_logd74`, the rows. The five ChEMBL ids that carry two activities each are not one compound
+  measured twice. In CHEMBL_20 each was two separately registered compounds, a stereo-defined form and an undefined
+  or differently defined one, with its own measured value: clemastine defined (3.48) and undefined (3.04,
+  CHEMBL315157), quinine (2.16, CHEMBL97) and quinidine (2.26, CHEMBL522505), the nomifensine racemate (2.08) and
+  one enantiomer (2.11, CHEMBL51697), timolol undefined (-0.35, CHEMBL173706) and (S) (-0.22), atropine fully
+  undefined (-0.09, CHEMBL9751) and its tropane-defined form (-0.66). MoleculeNet's copy of that release still
+  carries both members of every pair, under the two ids and with the two structures, and holds 4,200 rows with
+  4,200 distinct ids and 4,200 distinct structures, which is how the pairing was read: for each merged id the
+  partner is the member of its 2D structure group that no longer carries an activity of its own, and every pairing
+  is confirmed by an exact value match. ChEMBL has merged each pair onto one id and one structure since, so the
+  download no longer says which value belongs to which compound.
+- `astrazeneca_chembl_logd74`, what the change moves. All ten activities are dropped (`MERGED_IDS`, asserted in
+  `_clean`), so the set is 4,190 compounds instead of 4,195. The averaging decided earlier is withdrawn: it built a
+  row for a compound that was never measured and gave quinine quinidine's value, and it contradicted the
+  stereoisomer decision, which keeps stereo variants as distinct compounds. The merge did not take in every
+  stereoisomer, so nomifensine's other enantiomer (CHEMBL400964) and a third cinchona alkaloid (CHEMBL1294) keep
+  their own row. The split is unchanged in kind: 2,411 scaffold groups instead of 2,413, the largest still the bare
+  benzene ring at 76 compounds (1.8%), 1,863 groups of one, five compounds without a ring. The stereo groups are 77
+  over 168 compounds (from 79 over 172), and all 4,190 InChIKeys are distinct. The metric stays `mae` and loses
+  from its reason the clause about "the assay's own repeats", a spread that is stereochemistry between two
+  compounds rather than assay repeatability. `_clean` also names `standard_type` and `parent_molecule_chembl_id` in
+  `drop_columns`, which the removed groupby had dropped implicitly, and resets the index, which the splits require.
+- `astrazeneca_chembl_logd74`, left open (issue 7). Three numbers in the notes do not reproduce or predate the
+  drop: the noise floor of about 0.11 from "43 enantiomer pairs" (31 pairs and SD 0.211 on the shipped data, about
+  0.12 only if the 1.55 label-error pair is excluded), MolLogP's R^2 of 0.134 (-0.167 against the training mean),
+  and every fold figure, which re-measures in the same range but not on the same values (RMSE 0.698 -> 0.710, MAE
+  0.528 -> 0.542). None is read outside the notes and none changes a decision.
+- `dataset check`: 0 errors, 0 warnings, 28 checks; README regenerated. Not built.
+
 ## 2026-11-26, genomic_prediction_soy_yield and the cross-dataset items: the metric carries the blank marker cells, and the marker scope (text only, nothing built)
 
 - `genomic_prediction_soy_yield`, the review. Issue 6, the metric exception, gains a `Depends on:` passage that

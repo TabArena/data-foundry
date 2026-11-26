@@ -101,7 +101,7 @@ deposit now reads as experimental results rather than a catalogue cut, and the s
 - Added with `/add-dataset`; the open points go into this record's `## Review`.
 
 **Assessment (AI, 2026-11-25):** review panel (full): ship after changes, with every change the panel settled already applied (the group key moved to the structure without its salts, solvents and repeated fragments, which closes LEAK-17 on the one row that straddled 6 of 9 folds; the five download pages pinned by sha256 and the six salt/hydrate records asserted under PROV-8; the fit statement, the time-basis reason and the stereoisomer decision rewritten, with ten refuted or missing statements corrected); disputed: USE-8 with selection.md's marker (the critic opened for `approximate` plus `Selection Bias` and withdrew both in its rebuttal; shipped as `direct` with no marker) and PROV-13 against CLEAN-24 on the six multi-fragment records (repair the four ChEMBL re-pointed onto hydrates after the deposit, or keep the shipped SMILES whole); for the curator: issues 1-5.
-- Priority 2: gap 0, use case 0, source +, shape +, risk - (chemistry and regression are both well covered; the deposit names no actor and no decision, so the use case is ours; the assay, its protocol and its reporting range are documented on the source's own page under a DOI; 4,195 compounds in 2,413 chemical series; one feature column, so a score depends on the benchmark's encoding, and issue 4 may change four rows' structures).
+- Priority 2: gap 0, use case 0, source +, shape +, risk - (chemistry and regression are both well covered; the deposit names no actor and no decision, so the use case is ours; the assay, its protocol and its reporting range are documented on the source's own page under a DOI; 4,190 compounds in 2,411 chemical series; one feature column, so a score depends on the benchmark's encoding, and issue 4 may change four rows' structures).
 
 **CC (2026-11-26, Andrej):** the review decisions on the five open issues.
 - Issue 1, as implemented: the fit stays `direct` and no selection marker is added; both selections fall under the written carve-outs, and the definition keeps their measured cost.
@@ -119,9 +119,33 @@ deposit now reads as experimental results rather than a catalogue cut, and the s
 
 **Exception to SPLIT-26 (2026-11-26, Andrej):** we do not ship the source's rows as they are: the five compounds the assay measured twice (CHEMBL1626, CHEMBL170, CHEMBL273575, CHEMBL499, CHEMBL517712) ship as one row each, holding the mean of their two activities, where the rule that keeps the source's rows says deduplicating with averaged targets makes a different dataset. Three facts set the case apart from `superconductivity`, which kept both rows and counted a composition once with a scoring weight: the repeats are 0.12% of the deposit here (5 compounds, 10 of 4,200 activities) against 40% of the rows there; they are true protocol replicates inside one document and one assay, not separate literature reports; and there is no split consequence either way, both rows of a pair carrying the same structure and therefore the same scaffold, so no pair straddles any of the nine folds. Serves P4: the Must above the kept rule lets the source's use case decide what one prediction is, and here it is the compound, so the scored unit matches the prediction unit, no compound is weighed twice in a fold, and no pair of feature-identical rows with targets 0.03 to 0.57 apart puts an error floor into the score.
 
+**CC (2026-11-26, Andrej):** the declared metric and the declared split are signed off and the verdict is ship.
+- Verdict: ship. All five issues of the review are resolved, no record field disagrees with the definition and nothing is parked; the record's `Yes` stands and the dataset joins the accepted set, to be built later.
+- The declared metric is checked as it stands: `mae` in log units under the context origin, TDC's declared choice for this data rather than the regression fallback it shipped with until 2026-11-26 (the sign-off line below).
+- The declared split is checked as it stands: whole chemical series held out on the Bemis-Murcko scaffold, 3 repeats of 3 folds (the sign-off line below).
+- No change to `dataset.py` and nothing built: the folder has no container, as the second round of decisions already records.
+
+CC (2026-11-26, Andrej): the declared metric (`mae` in log units, origin `context`, taken as TDC's declared choice for exactly this task and not as the regression fallback, with MoleculeNet's RMSE the other definer's choice and not taken) is checked and stays as declared.
+
+CC (2026-11-26, Andrej): the declared split (grouped on `scaffold`, the Bemis-Murcko scaffold of the structure without its common salts and solvents, 2,413 groups over 4,195 compounds, 3x3 folds, `UnseenGroup`, split leaf `L-EXP.kind`) is checked and stays as declared: a test compound belongs to a chemical series this assay never measured, which is the prediction the use case asks for, and 23.0% of test compounds still have a close training analog against 46.7% under random draws of the same test sizes.
+
+CC (2026-11-26, Andrej): issue 6, option B. The five ids that carry two activities are not one compound measured
+twice; each is two compounds the deposit registered and measured separately, merged onto one ChEMBL id since
+(quinine and quinidine, atropine and its tropane-defined form, and three more). All ten activities are dropped.
+- The set is 4,190 compounds in 2,411 scaffold groups; the split is unchanged in kind and the largest group is
+  still the bare benzene ring at 76 compounds (1.8%). The group counts in the CC above predate this.
+- The averaging decided in issue 2 is withdrawn, and the SPLIT-26 departure is rewritten around the merge: the
+  source's own rows can no longer be rebuilt from the source, because ChEMBL serves one structure for both values.
+- The metric is unchanged. Its reason loses the clause about "the assay's own repeats", a spread that is
+  stereochemistry between two compounds rather than assay repeatability.
+- Issue 7 is opened and left open, on three numbers in the notes: the noise floor quoted as about 0.11 from 43
+  enantiomer pairs re-measures as 31 pairs and SD 0.211; MolLogP's R^2 of 0.134 re-measures as -0.167 against the
+  training mean; and every fold figure predates the drop, re-measuring in the same range but not on the same values
+  (RMSE 0.698 -> 0.710, MAE 0.528 -> 0.542). None is read outside the notes and none changes a decision.
+
 ## Review
 
-**Outcome:** added. AstraZeneca's shake-flask logD7.4 assay as deposited in ChEMBL, 4,195 compounds with the
+**Outcome:** added. AstraZeneca's shake-flask logD7.4 assay as deposited in ChEMBL, 4,190 compounds with the
 structure as the one feature, whole chemical series held out in 3x3 grouped splits and scored by `mae` in log units.
 A full review
 panel ran (seven evidence agents, an advocate and a critic over two rounds, a mediator) and recommends shipping after
@@ -132,14 +156,18 @@ without repeated identical fragments: a levofloxacin hemihydrate, written as its
 grouped apart from the same chemical and landed on the other side of 6 of 9 folds. The download is pinned by the
 checksums of its five pages and guarded by an assert on the six activities ChEMBL records on a salt or hydrate; the
 fit statement, the time-basis reason, the stereoisomer decision and ten refuted or missing statements are rewritten.
-The AI recommends shipping it. All five decisions were settled on 2026-11-26: the direct fit with no selection
-marker, the collection facts, the six multi-fragment rows kept whole, the averaging of the five twice-measured
-compounds kept and written as an exception, and the metric, which becomes TDC's `mae` in log units under the context
-origin in place of the regression fallback.
+The AI recommends shipping it, and the curator signed it off. All five decisions were settled on 2026-11-26: the
+direct fit with no selection marker, the collection facts, the six multi-fragment rows kept whole, the averaging of
+the five twice-measured compounds kept and written as an exception, and the metric, which becomes TDC's `mae` in log
+units under the context origin in place of the regression fallback. On the same day the declared metric and the
+declared split were checked and the verdict set to ship: nothing is left to decide, no record field disagrees with
+the definition, and the folder waits only for a build, since no container exists for it yet.
 
-**Main points:** Nothing left to decide. The last two decisions of 2026-11-26 were the averaging of the five
-twice-measured compounds, kept and recorded as the exception it is, and the metric, now TDC's `mae` rather than
-MoleculeNet's RMSE or the fallback it shipped until then.
+**Main points:** Nothing left to decide; the dataset is signed off and ships. All five issues are resolved, and on
+2026-11-26 the declared metric (`mae` in log units, TDC's choice rather than MoleculeNet's RMSE or the fallback it
+shipped until then) and the declared split (whole Bemis-Murcko scaffolds held out, 3x3 folds) were checked and the
+verdict set to ship. The five twice-measured compounds stay averaged into one row each, written down as the
+exception it is. Not built yet.
 
 **Record judgment:** valid. One company's deposit of one assay, with the protocol, the reporting range and the
 document quoted on the source's own page; the screening's reading of the source holds, two of its counted numbers do
@@ -319,6 +347,115 @@ Neither changes a field.
    the rows at `superconductivity`, they are true protocol replicates inside one document and one assay, and the
    split is the same either way, both rows of a pair carrying the same structure and scaffold. Nothing in the data,
    the split or the score changes.
+
+   **Re-decided (2026-11-26, Andrej):** overturned by issue 6. One of the three facts that carried this decision,
+   "they are true protocol replicates inside one document and one assay", is refuted by the data: each of the five
+   is two compounds the deposit registered and measured separately, which ChEMBL has merged onto one id since. The
+   averaging is withdrawn, the ten activities are dropped, and the SPLIT-26 exception is rewritten around the merge
+   instead of around replicates.
+
+6. **The five "twice-measured" compounds are merged pairs, not repeats: drop them?**
+
+   * **Problem:**
+     - MoleculeNet's copy of CHEMBL_20 holds 4,200 rows with **4,200 distinct compound ids and 4,200 distinct
+       structures**, so the deposit measured 4,200 compounds and repeated none.
+     - The five ids that carry two activities today are five pairs of separately registered compounds that ChEMBL
+       has merged since, each a stereo-defined form and an undefined or differently defined one. One pair is
+       quinine and quinidine; another is atropine and its tropane-defined form.
+     - Averaging therefore builds a row for a compound that was never measured, and gives quinine quinidine's
+       value. It also contradicts the stereoisomer decision three rows down, which keeps 168 compounds in 77
+       2D-structure groups precisely because stereoisomers "are distinct compounds, not copies".
+     - The merge did not take in every stereoisomer: nomifensine's other enantiomer (CHEMBL400964) and a third
+       cinchona alkaloid (CHEMBL1294) keep their own id and their own row, so the set still holds the near-copies
+       the split has always had.
+   * **Effect on the task:** ten activities leave, 4,195 compounds become 4,190, and five rows that paired a
+     structure with a value measured on a different compound are gone. The split is unaffected in kind: 2,411
+     scaffold groups instead of 2,413, the largest still the bare benzene ring at 76 compounds (1.8%).
+   * **Experiments:** each pair was resolved by its 2D structure group, taking as partner the member that no longer
+     carries an activity of its own; every pairing is confirmed by an exact value match against MoleculeNet.
+
+     | Merged id | The two compounds CHEMBL_20 registered | logD7.4 |
+     |---|---|---|
+     | CHEMBL1626 | CHEMBL1626 (both centres defined) + CHEMBL315157 (neither) | 3.48 / 3.04 |
+     | CHEMBL170 | CHEMBL97 quinine + CHEMBL522505 quinidine | 2.16 / 2.26 |
+     | CHEMBL273575 | CHEMBL273575 (racemate) + CHEMBL51697 (one enantiomer) | 2.08 / 2.11 |
+     | CHEMBL499 | CHEMBL173706 (undefined) + CHEMBL499 (S) | -0.35 / -0.22 |
+     | CHEMBL517712 | CHEMBL9751 (fully undefined) + CHEMBL517712 (tropane defined) | -0.09 / -0.66 |
+
+     Six of the twenty MoleculeNet ids that no longer carry this activity are the members that lost their id; four
+     are the compounds whose activity moved onto a salt or hydrate form; ten are other drift.
+   * **Consistency:** the stereoisomer decision in this same definition keeps stereo variants as distinct
+     compounds. Dropping is the only option that agrees with it, since the two structures cannot be recovered from
+     this download.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the averaging, rewrite its reason | 4,195 rows; the SPLIT-26 exception rests on the merge | row count as signed off | five rows still average two different compounds |
+     | B | Drop the five merged ids (implemented) | 4,190 compounds; ten activities leave | no row holds a value measured on another compound; agrees with the stereoisomer decision | 0.24% of the deposit leaves, five of them compounds other benchmarks carry |
+     | C | Restore both structures from MoleculeNet | 4,200 rows, matching MoleculeNet and TDC | the deposit's own task | reads structures out of the processed mirror this definition rejects |
+
+   * **Recommendation:** B. **Decision:** A, B or C?
+
+   **Andrej (2026-11-26, as implemented):** B.
+
+   **Resolved (2026-11-26, Andrej):** B. The ten activities of the five merged pairs are dropped and the dataset
+   ships 4,190 compounds. `MERGED_IDS` names each pair and `_clean` asserts the exact set, so a further merge fails
+   the check rather than changing a row unseen. The metric reason loses its appeal to "the assay's own repeats
+   differ by 0.254 log units on average": that spread is stereochemistry between two compounds, not assay
+   repeatability. `mae` itself is unchanged, since it rests on TDC's declaration for this task.
+
+7. **Three measured numbers in the notes do not reproduce, or predate the drop.** (open)
+
+   * **Problem:**
+     - `fit_reason` and the stereoisomer decision both state "a single measurement of this assay has an SD of about
+       0.11 (the 43 enantiomer pairs in the set, matching AstraZeneca's published 0.07 to 0.10)", and the claim is
+       what says the task is not noise-limited.
+     - Re-measured on the shipped data, no recipe gives 43 pairs: 31 pairs are true enantiomers (every tetrahedral
+       centre inverted), 64 2D-structure groups hold exactly two compounds, and 106 within-group pairs exist in all.
+     - The SD does not reproduce either. On the 31 enantiomer pairs it is 0.211, not 0.11. About 0.12 is reachable
+       only by dropping the one 1.55 pair, which this definition already calls a label error - defensible, but the
+       exclusion is not stated.
+   * **Effect on the task:** nothing in the data, the split or the metric. It is a claim in the notes that a reader
+     would use to judge whether the headline error is near the measurement floor, and at 0.211 the margin is half
+     what the text implies.
+   * **Second, MolLogP.** The notes call MolLogP "the strongest single feature of the task (R^2 0.134 alone,
+     chosen on 6 of 9 splits)", and the six multi-fragment rows are argued from it. A re-measure on the shipped
+     folds (random forest on MolLogP alone, R^2 against the training mean) gives -0.167, so the feature does not
+     beat the training mean by itself. The two numbers are probably different baselines rather than a different
+     fact, but the recipe behind 0.134 is not written down and could not be reproduced.
+   * **Third, the fold figures predate the drop.** Every RMSE, MAE and analog share quoted in the notes and in the
+     splits comment was measured on the 4,195-row build, before issue 6. An independent re-measure on the shipped
+     4,190 rows (untuned LightGBM on the recommended encoding, nine folds) puts them in the same range but not on
+     the same values, and the gap is bigger than five rows can explain, so the panel's recipe and this one differ
+     in details not recorded:
+
+     | | in the notes (4,195) | re-measured (4,190) |
+     |---|---|---|
+     | LightGBM RMSE | 0.698 | 0.710 |
+     | LightGBM MAE | 0.528 | 0.542 |
+     | R^2 against the training mean | 0.659 | 0.651 |
+     | test compounds with a close analog | 23.0% | 22.7% |
+     | the same, random draws | 46.7% | 45.3% |
+     | RMSE, no close analog | 0.823 | 0.747 |
+     | RMSE, with a close analog | 0.544 | 0.567 |
+     | 1-NN RMSE | 1.243 | 1.243 |
+     | training-mean RMSE | 1.204 | 1.202 |
+     | mean error above logD 3.5 | -0.71 | -0.75 |
+     | mean error below logD 0 | +0.98 | +1.01 |
+
+     Nothing here changes a decision: the signal is real on either set of numbers, the 1-NN baseline still loses to
+     the training mean, and the analog-stratified gap still runs the same way.
+   * **Options:** (a) restate the noise floor as the measured 31 pairs and SD 0.211, give MolLogP's baseline, and
+     re-run the fold figures once under one recorded recipe; (b) keep about 0.12 with the 1.55 label-error pair
+     named as excluded, and otherwise as (a); (c) drop the noise-floor and MolLogP claims and leave only
+     AstraZeneca's published 0.07 to 0.10 and the fold figures.
+   * **Recommendation:** (b). The excluded pair is already argued to be an error, and one recorded re-run would
+     settle all three at once. **Decision:** (a), (b) or (c)?
+
+   **Notes for the AI:** the noise floor appears in `fit_reason` and in the "Stereoisomers keep their own row"
+   decision text; MolLogP in the multi-fragment bullet. None of the three is read outside the notes, so no field
+   or build depends on the answer.
 
 3. **Do the record's collection facts change to samples over time?**
 
