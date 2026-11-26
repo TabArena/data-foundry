@@ -88,7 +88,6 @@ class SepsisPrediction1m(AbstractCuratedDataset):
     )
     # Regime tags by hand: the automatic ones would read `GroupedTemporal` from `Grouping(time_on=...)`, but the split
     # uses the groups only (`time_on` orders the hours inside a stay).
-    data_tags = ("Non-IID", "Grouped")
     download_description = """
         We download the data from Kaggle as the link for the data from the original PhysioNet challenge seems to be down.
 

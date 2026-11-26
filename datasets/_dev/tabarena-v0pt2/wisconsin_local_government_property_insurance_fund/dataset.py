@@ -188,7 +188,6 @@ class WisconsinLocalGovernmentPropertyInsuranceFund(AbstractCuratedDataset):
             "2011, JASA 106:1085-1098), computed with the premium the fund collected as the denominator"
         ),
         reference="https://doi.org/10.3390/risks4010004",
-        inputs={"weight": "Premium"},
     )
     scoring_columns = (
         ScoringColumn(

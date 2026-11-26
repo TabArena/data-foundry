@@ -57,7 +57,7 @@ class MyDataset(AbstractCuratedDataset):
             """,                         # the key is parsed from the entry
         ),
     )
-    data_tags = ("Spatial",)            # context tags only; regime tags are added from the task
+    data_tags = ("Spatial",)            # context tags only; the regime tags are derived from the task
     download_description = """
         kaggle datasets download ... && unzip ...
     """                                  # indented like code: dedented by the base class
@@ -137,7 +137,10 @@ Do not re-implement any of this.
   Multi-line text (`download_description`, a source's `bibtex`, `curation_comments`, `splits_comment`) is indented
   like code and dedented for you. A source's BibTeX key is parsed from its `bibtex` (set `Source(bibtex_key=...)` only
   when it must differ). The regime tags (`IID`, or `Non-IID` with `Temporal`, `Grouped` or `GroupedTemporal`) are
-  added from the task.
+  derived from the task; `data_tags` that list one are refused. A `time_basis` or `group_basis` is stored as data in
+  the dataset metadata (and its tag added to `data_tags`), never written into `curation_comments`. A weight is declared
+  once, on its `ScoringColumn` (`fit=True` for the training weight, `unit=...` for a unit weight), and the metric's
+  `inputs` are derived from the scoring columns' roles.
 * Defaults: `stratify_on` is the target for classification; set it only to deviate. `metric` has no default: it is
   required, and `Metric.fallback(reason=...)` resolves to the problem type's `roc_auc`, `log_loss` or `rmse` at build.
 * After `_clean`: it casts the columns `_feature_types` names (a dict gives datetime formats; unused categories are
@@ -192,7 +195,7 @@ A metric input known at the prediction point (a weight that is a function of the
 ## Field mapping (record to definition)
 
 Each attribute of the class, what it holds, its allowed values and the house conventions (`unique_name`, `domain`,
-`sources`, `data_tags`, `problem_type`, the metric, `sample_weight`, `scoring_columns`, `special_features` and the
+`sources`, `data_tags`, `problem_type`, the metric, `scoring_columns` and their weights, `special_features` and the
 rest) are in [definition_fields.md](definition_fields.md). The one free-text field with a house format is next.
 
 ### `curation_comments`
@@ -257,7 +260,7 @@ The order the collection's definitions converge on. Emit the steps that plausibl
 # 9. TODO(verify): duplicate rows: decide and document (leak_checks.md, Copies across the split (LEAK-16 to LEAK-21)).
 # 10. TODO(verify): target transform: `np.log` / `np.log1p` a skewed positive target and rename the column; skip it
 #     when the source already logged it or a deviance scores the target (CLEAN-16). A count or amount over a realized
-#     amount at risk becomes the rate, the amount its weight scoring column and `sample_weight` (MET-14, MET-15).
+#     amount at risk becomes the rate, the amount its weight scoring column with `fit=True` (MET-14, MET-15).
 # 11. TODO(verify): censored or capped target values: decide case by case and document it in `curation_comments`
 #     (asp_potassco_classification and sat11_hand_algo_runtime keep a timed-out run at its recorded limit and drop
 #     only the instances on which every configuration timed out; a target censored by the download date: LEAK-24).
@@ -620,8 +623,8 @@ slug, its severities and whether a definition may accept it is in [check_slugs.m
 | `task_target_dtype`, `task_target_class_count` | a classification target is a `category` with the right class count |
 | `task_target_missing_values` | drop rows with a missing target |
 | `splits_class_missing` | a class missing from a fold (a multiclass test side without it, a train side without a class its test side holds, a fold that flips between binary and multiclass) or too rare to stratify: widen the windows, or, for a class too rare to stratify: keep a rare class of the source's labels when its rows carry about their share of the score, merge only by a convention of the field, and accept with the counts ([task_probes.md](../../knowledge-curation/references/task_probes.md), TP-7 and TP-8) |
-| `task_metric_*` | declare `metric` with its origin and reference, the canonical name and the params and inputs the metric takes; each input column a `ScoringColumn` ([definition_fields.md](definition_fields.md), `metric`) |
-| `task_sample_weight_not_metric_weight`, `task_weight_invalid`, `task_rate_count_not_whole`, `task_feature_looks_like_exposure` | a count or amount over a realized amount at risk: build the rate in `_clean` (assert that target x weight rebuilds the count), ship the amount as the weight scoring column the metric reads and as `sample_weight`, never as a feature (MET-14, MET-15, LEAK-41); a feature named like an amount at risk that is known at the prediction point is accepted with that reason; a weight for training alone that the metric does not read is declared `used_by="training"` (MET-16) |
+| `task_metric_*` | declare `metric` with its origin and reference, the canonical name and the params the metric takes; each input column a `ScoringColumn` of the input's role, which gives the metric its `inputs` ([definition_fields.md](definition_fields.md), `metric`) |
+| `task_sample_weight_not_metric_weight`, `task_weight_invalid`, `task_rate_count_not_whole`, `task_feature_looks_like_exposure` | a count or amount over a realized amount at risk: build the rate in `_clean` (assert that target x weight rebuilds the count), ship the amount as the weight scoring column the metric reads, declared `fit=True` (the task's `sample_weight`), never as a feature (MET-14, MET-15, LEAK-41); a feature named like an amount at risk that is known at the prediction point is accepted with that reason; a weight for training alone that the metric does not read is declared `fit=True, used_by="training"` (MET-16) |
 | `task_stratify_*` | stratify on the target (classification) or a discrete feature |
 | `task_time_on_dtype`, `task_time_on_missing_values`, `task_time_on_not_sorted` | a datetime (`_feature_types`) or numeric time column without NaN; the base class sorts |
 | `task_group_labels_mismatch` | pick `per_group` or `per_sample` correctly: `per_group` with groups of several labels is an error; `per_sample` with at least 95% single-label groups is a warning: `per_group` if one label by construction, else accept with the count of mixed groups |
@@ -726,8 +729,9 @@ A custom metric is added in the same change as the dataset that needs it (MET-13
    * the stability checklist below, which `tests/test_v2_metrics_stability.py` runs on every registered metric (a
      metric with required params needs an entry in its `EXAMPLE_PARAMS`).
 4. In the definition, declare it (`Metric.source("cost_matrix", params={...}, reference=...)`), declare every input
-   column as a `ScoringColumn`, and run `dataset check`: `task_metric_not_computable` scores a random prediction on
-   every split, so a test fold that lacks what the metric needs shows up there (MET-2).
+   column as a `ScoringColumn` of the input's role (which maps it into the metric's `inputs`), and run `dataset check`:
+   `task_metric_not_computable` scores a random prediction on every split, so a test fold that lacks what the metric
+   needs shows up there (MET-2).
 
 ### Metric stability
 

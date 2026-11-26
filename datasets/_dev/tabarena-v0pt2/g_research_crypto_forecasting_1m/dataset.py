@@ -177,7 +177,6 @@ class GResearchCryptoForecasting1m(AbstractCuratedDataset):
         "weighted_pearsonr",
         original="weighted version of the Pearson correlation coefficient",
         reference="https://www.kaggle.com/competitions/g-research-crypto-forecasting/overview/evaluation",
-        inputs={"weight": "Weight"},
         definition="Pearson correlation of Target and the prediction over all test rows, each row weighted by its asset's Weight",
     )
     scoring_columns = (

@@ -58,7 +58,6 @@ except ImportError:  # pragma: no cover - depends on the environment
         "    uv pip install --python .venv/bin/python markdown-it-py",
     )
 
-from data_foundry import time_basis as basis_rules
 from data_foundry.curation import review as rv
 from data_foundry.curation.consistency import COLLECTION_TYPES, collection_type_problems, time_basis_problems
 from data_foundry.definition.dataset import DEFAULT_SPLITS_COMMENT, TaskSummary
@@ -638,12 +637,11 @@ def _declared_tags(code: str) -> list[str]:
     return [*DECLARED_BASIS.findall(code), *group]
 
 
-def _time_basis(tags: list[str], comments: str | None, regime: str | None = None) -> dict:
-    """The definition's time basis (a prototype or a forced tag), its `Time basis:` line and its regime."""
-    line = basis_rules.parse(comments)
+def _time_basis(tags: list[str], reason: str | None, regime: str | None = None) -> dict:
+    """The definition's time basis (a prototype or a forced tag), its reason and its regime."""
     return {
         "basis": next((t for t in tags if t in TIME_BASIS or t in FORCED), None),
-        "lineHtml": MD.renderInline(line.reason) if line else "",
+        "lineHtml": MD.renderInline(" ".join(reason.split())) if reason else "",
         "regime": regime,
     }
 
@@ -662,7 +660,7 @@ def _time_facts(split: dict, record_path: Path) -> None:
     )
 
 
-def _split(readme: str | None, tags: list[str], comments: str | None) -> dict | None:
+def _split(readme: str | None, tags: list[str], comments: str | None, basis_reason: str | None = None) -> dict | None:
     """The declared split, as the generated README states it.
 
     From the front matter: the regime, the stratification, time and group columns, the grouping, the repeats and
@@ -695,7 +693,7 @@ def _split(readme: str | None, tags: list[str], comments: str | None) -> dict | 
         "noteHtml": render(note) if note and note != DEFAULT_SPLITS_COMMENT else "",
         "tableHtml": MD.render(table) if table else "",
         "notes": _split_notes(comments),
-        "time": _time_basis(tags, comments, task["split_regime"]),
+        "time": _time_basis(tags, basis_reason, task["split_regime"]),
     }
 
 
@@ -781,6 +779,7 @@ def _live_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
             readme.read_text() if readme.is_file() else None,
             list(cls.dataset_metadata.data_tags),
             cls.dataset_metadata.curation_comments,
+            cls.time_basis.reason if cls.time_basis is not None else None,
         ),
         "temporal": _temporal_from_class(cls),
         "meta": _meta(regime, getattr(cls, "problem_type", None), front, retired=False),

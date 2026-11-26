@@ -31,33 +31,33 @@ the preprocessing recipe, the splits, the checks and how decisions are recorded)
   * `files=("*.csv",)` names the raw files that come from a source, as paths or glob patterns under the raw folder.
     The container lists them with their SHA-256, size and rows (`raw_files`; [definitions.md](definitions.md), "The
     raw-file manifest").
-* `data_tags`: context tags only, since listing a regime tag yourself switches the automatic ones off. `"Anonymized"`
-  when the source hid what the features are, by replacing their names or values on purpose (common for competition
-  data; the record gets the `Anonymized` marker, and the cases without it are in
-  [selection.md](../../knowledge-curation/references/selection.md), "Anonymized data"); `"Spatial"` when the data
-  holds geographic information (ZIP, latitude and longitude, region, store location). An IID or grouped split carries
-  one time basis that says why it is not temporal (SPLIT-32 in
-  [splits.md](../../knowledge-curation/references/splits.md)), declared as `time_basis = TimeBasis(tag, reason)`
-  (`from data_foundry.definition import TimeBasis`), never as a tag in `data_tags` or a line written by hand: the build
-  adds the tag to `data_tags` and renders the reason as the `- Time basis: <tag>: <reason>` bullet of
-  `curation_comments`, which the container and the README carry. The tag is a use-case prototype, `"Timeless"` (the
-  target is a fixed property of the item, and the data has no time dimension, or its time changes only which items are
-  held, as in a catalogue whose entry date does not decide the split), `"RetrospectiveFillIn"` (the data is one snapshot
-  of a moment or period, and the use case fills in what is missing for that time, not a later one; a definition refuses
-  the old name `"Retrospective"`, which containers built before 2026-11-23 carry and are read with),
-  `"StationaryRelation"` (the use case scores later units, too few periods give the windows SPLIT-14 asks for, and the
-  stationary-relation test over the periods held, dated or a rebuilt order, reads the relation flat; it replaces a
-  forced tag) or `"UnseenGroup"` (the use case aims at groups the data does not hold, a site, a well, a protein or a
-  chemical family, not at a later period; it needs a `grouping` on the group); or a forced tag,
-  `"ForcedIIDFromTemporal"` when a forward use case has no usable time or too few periods and ships IID (a definition
-  that declares a `grouping` or `temporal` refuses it), `"ForcedGroupedFromTemporal"` when such a task ships grouped (it
-  needs a `grouping`; SPLIT-8). `"AssumedStationaryRelation"` replaces a forced tag where a person judged earlier and
-  later samples interchangeable for a reason from the dataset's domain or use case and nothing can be measured (no
-  comparison over time is possible, or the stationary-relation test is inconclusive); the split is then random, or
-  grouped by the unit where a unit has several rows and the use case meets new units. Only a person sets
-  `StationaryRelation` (on the measurement) and `AssumedStationaryRelation` (on a reason): never set them yourself
-  unless a person asks (you may offer and recommend them in a review), and give `set_by` and `on`, which render as
-  `<tag> (<person>, <YYYY-MM-DD>):`:
+* `data_tags`: context tags only. The build derives the regime tags (`IID`, or `Non-IID` with `Temporal`, `Grouped` or
+  `GroupedTemporal`) from the task, and a definition that lists one is refused at import. `"Anonymized"` when the source
+  hid what the features are, by replacing their names or values on purpose (common for competition data; the record gets
+  the `Anonymized` marker, and the cases without it are in
+  [selection.md](../../knowledge-curation/references/selection.md), "Anonymized data"); `"Spatial"` when the data holds
+  geographic information (ZIP, latitude and longitude, region, store location). An IID or grouped split carries one time
+  basis that says why it is not temporal (SPLIT-32 in [splits.md](../../knowledge-curation/references/splits.md)),
+  declared as `time_basis = TimeBasis(tag, reason)` (`from data_foundry.definition import TimeBasis`), never as a tag in
+  `data_tags` or a line written by hand: the build adds the tag to `data_tags` and stores the declaration in the dataset
+  metadata (`time_basis`: tag, reason, `set_by`, `on`, `note`), and the README shows it as the `- Time basis: <tag>:
+  <reason>` bullet under the curation notes. The tag is a use-case prototype, `"Timeless"` (the target is a fixed
+  property of the item, and the data has no time dimension, or its time changes only which items are held, as in a
+  catalogue whose entry date does not decide the split), `"RetrospectiveFillIn"` (the data is one snapshot of a moment
+  or period, and the use case fills in what is missing for that time, not a later one; a definition refuses the old name
+  `"Retrospective"`, which containers built before 2026-11-23 carry and are read with), `"StationaryRelation"` (the use
+  case scores later units, too few periods give the windows SPLIT-14 asks for, and the stationary-relation test over the
+  periods held, dated or a rebuilt order, reads the relation flat; it replaces a forced tag) or `"UnseenGroup"` (the use
+  case aims at groups the data does not hold, a site, a well, a protein or a chemical family, not at a later period; it
+  needs a `grouping` on the group); or a forced tag, `"ForcedIIDFromTemporal"` when a forward use case has no usable
+  time or too few periods and ships IID (a definition that declares a `grouping` or `temporal` refuses it),
+  `"ForcedGroupedFromTemporal"` when such a task ships grouped (it needs a `grouping`; SPLIT-8).
+  `"AssumedStationaryRelation"` replaces a forced tag where a person judged earlier and later samples interchangeable
+  for a reason from the dataset's domain or use case and nothing can be measured (no comparison over time is possible,
+  or the stationary-relation test is inconclusive); the split is then random, or grouped by the unit where a unit has
+  several rows and the use case meets new units. Only a person sets `StationaryRelation` (on the measurement) and
+  `AssumedStationaryRelation` (on a reason): never set them yourself unless a person asks (you may offer and recommend
+  them in a review), and give `set_by` and `on`, which the README shows as `<tag> (<person>, <YYYY-MM-DD>):`:
 
   ```python
   time_basis = TimeBasis(
@@ -71,13 +71,12 @@ the preprocessing recipe, the splits, the checks and how decisions are recorded)
   The reason states the fact behind the tag and ends with what the split cannot test; a forced tag's reason names
   why (time lost, or too few periods) and what a dated release would change. `group_basis = GroupBasis(reason)` sits
   beside the time basis when the use case holds out a group of distinct items the data cannot key (no structure for a
-  scaffold, no stand id or coordinates, a single site): it adds `"ForcedIIDFromGrouped"` and the `- Group basis:`
-  bullet, naming the group, why it cannot be keyed and the overlap left, and marks an IID split (SPLIT-35). A definition
+  scaffold, no stand id or coordinates, a single site): it adds `"ForcedIIDFromGrouped"` and is stored as the dataset
+  metadata's `group_basis` (the README's `- Group basis:` bullet), naming the group, why it cannot be keyed and the
+  overlap left, and marks an IID split (SPLIT-35). A definition
   refuses a malformed declaration, a prototype on a temporal split, a regime the tag contradicts, a human-set tag
   without a person, a date and a reason of eight words or more, and a time-basis tag or line written by hand beside
   `time_basis` (`data_foundry.time_basis` holds the rules, which `dataset check` applies to a built container too).
-  A forced tag in `data_tags` and a free-text line without `time_basis` are refused; `dataset check` still notes them
-  on an old container (`meta_time_basis_unstructured`).
   `dataset check` also notes a split that is not temporal and says nothing about why, and date columns in the data of
   such a split unless the basis is `RetrospectiveFillIn` or a forced tag's line gives the reason; it prints where the
   curation record's collection type and facts contradict the definition (`data_foundry.curation.consistency`).
@@ -115,25 +114,26 @@ the preprocessing recipe, the splits, the checks and how decisions are recorded)
   `Metric.from_context("rmsle", reason=..., target_transform="log")`. A custom metric never inverts the target
   itself (par_k reads the runtime after the spec's inverse).
 
-  `name` is a key of `METRICS` (standard scikit-learn style names, or a custom metric under a general name, MET-12);
-  an unknown name or param is refused when `dataset.py` is imported, with the close names. `params` holds JSON values
-  only (a cost matrix, k, weights); `inputs` maps each role the metric needs (`group`, `weight`, `time`) to a column.
-  Each such column is a **scoring column**, except the task's group or time column, which the metric reads where it
-  is (`task_metric_input_is_model_input`, info). A feature the metric also needs (MET-2: a weight known for every
-  row at the prediction point, such as liberty_mutual_fire_peril_loss_cost's `var11`) stays a feature and is copied
-  in `_clean` into a scoring column named for its role (`var11_weight`), so the scoring columns are the complete
-  set of the extra data a metric reads; a metric input that is a plain feature is a warning
-  (`task_metric_input_is_feature`), and the copy is exempt from `dataset_duplicate_columns`. A scoring column stays in
-  the frame, is never a feature, and is declared as
-  `scoring_columns = (ScoringColumn(column="era", role="group", used_by="mean_group_pearsonr", description="the week a
-  row belongs to; the metric is the mean of the per-era correlations"),)`. `feature_columns(container)` returns the
-  model's inputs without the target, the group column, the scoring columns and a time column that dates the label
-  (`Temporal(..., time_of="label")`); all of them come from `non_feature_columns(task)`, which the probes call too.
-  `scorer(container)` takes the scoring columns' values by row index: `scorer(container)(y_test, y_pred, test_idx)`. It
-  reads class probabilities in the sorted order of the classes (scikit-learn's `classes_`), also for an ordered target,
-  whose declared order stays type information; a DataFrame whose columns are the class names is matched by name, and a
-  missing or unknown class name is an error (Lennart, 2026-11-05). Before declaring a metric with inputs, check on the
-  data that every test fold holds what it needs (MET-2).
+  `name` is a key of `METRICS` (standard scikit-learn style names, or a custom metric under a general name, MET-12); an
+  unknown name or param is refused when `dataset.py` is imported, with the close names. `params` holds JSON values only
+  (a cost matrix, k, weights); the spec's `inputs` map each role the metric needs (`group`, `weight`, `order`) to a
+  column. Each such column is a **scoring column**, and the build derives the `inputs` from the scoring columns' roles;
+  only the task's group or time column, which the metric reads where it is, is named in `inputs=` by hand
+  (`task_metric_input_is_model_input`, info). A feature the metric also needs (MET-2: a weight known for every row at
+  the prediction point, such as liberty_mutual_fire_peril_loss_cost's `var11`) stays a feature and is copied in `_clean`
+  into a scoring column named for its role (`var11_weight`), so the scoring columns are the complete set of the extra
+  data a metric reads; a metric input that is a plain feature is a warning (`task_metric_input_is_feature`), and the
+  copy is exempt from `dataset_duplicate_columns`. A scoring column stays in the frame, is never a feature, and is
+  declared as `scoring_columns = (ScoringColumn(column="era", role="group", used_by="mean_group_pearsonr",
+  description="the week a row belongs to; the metric is the mean of the per-era correlations"),)`, which gives the
+  metric `{"group": "era"}`. `feature_columns(container)` returns the model's inputs without the target, the group
+  column, the scoring columns and a time column that dates the label (`Temporal(..., time_of="label")`); all of them
+  come from `non_feature_columns(task)`, which the probes call too. `scorer(container)` takes the scoring columns'
+  values by row index: `scorer(container)(y_test, y_pred, test_idx)`. It reads class probabilities in the sorted order
+  of the classes (scikit-learn's `classes_`), also for an ordered target, whose declared order stays type information; a
+  DataFrame whose columns are the class names is matched by name, and a missing or unknown class name is an error
+  (Lennart, 2026-11-05). Before declaring a metric with inputs, check on the data that every test fold holds what it
+  needs (MET-2).
 
   A row weight makes each row count in proportion to it: `normalized_weighted_gini`, `weighted_pearsonr` (without
   `weights`), `rescaled_mean_tweedie_deviance` (its required `weight`; since 2026-11-08: each scored set's predictions
@@ -144,13 +144,13 @@ the preprocessing recipe, the splits, the checks and how decisions are recorded)
   over its plot's quadrats, so each plot counts once), and `ordered_lorenz_gini` with `params={"per_unit": True}`, where
   the target and the prediction are already per unit of the weight (a loss per year insured; the unnormalised weighted
   Gini). Without `per_unit` its weight is the base premium that totals are compared against, not a row weight.
-  `data_foundry.metrics.row_weight_column(spec)` returns a spec's row-weight column, or `None`. The regression
-  fallback takes the weight too (`Metric.fallback(reason=..., inputs={"weight": ...})`); the spec of a weighted `rmse`
+  `data_foundry.metrics.row_weight_column(spec)` returns a spec's row-weight column, or `None`. The regression fallback
+  takes the weight too (a weight scoring column beside `Metric.fallback(reason=...)`); the spec of a weighted `rmse`
   states the weighted formula, while the unweighted spec keeps `sqrt(mean((y - p)^2))`, so the containers built before
   keep their checksum. The three deviances require `min_prediction`, the floor on the predicted mean, the lowest value
   the use case's actor acts on, stated with its fact, never above the smallest plausible mean on the scale the metric
-  scores (MET-13 as amended 2026-11-09; `1e-4` claims per year for fremtpl2 and bemtpl97, $10 for noaa_storm).
-  `score()` refuses an input the metric does not take, so a weight is never dropped without notice.
+  scores (MET-13 as amended 2026-11-09; `1e-4` claims per year for fremtpl2 and bemtpl97, $10 for noaa_storm). `score()`
+  refuses an input the metric does not take, so a weight is never dropped without notice.
 
   The build writes the spec into the task metadata as `objective_metric`: `name`, `kind` (`standard` or `custom`),
   `prediction` (`proba`, `label`, `value`), `greater_is_better`, `origin`, `params`, `inputs`, `original`,
@@ -168,54 +168,59 @@ the preprocessing recipe, the splits, the checks and how decisions are recorded)
   `task_metric_deviance_on_transformed_target` (error since 2026-11-06, CLEAN-16: a Poisson or Tweedie deviance scores
   the mean on the original scale, which a model fit on a log target misses; ship the target untransformed, as
   pricing_game_2017_french_mtpl) and `task_metric_weight_without_sample_weight` (warning: the metric reads a row weight
-  and the task declares no `sample_weight`; accept it with the reason when the weight is a function of the features).
-  The training weight's checks: `task_sample_weight_not_metric_weight` (error: `sample_weight` is not the metric's row
-  weight), `task_weight_invalid` (error: a missing, non-finite or negative weight, a zero weight on a row a deviance
+  and the task has no training weight; accept it with the reason when the weight is a function of the features).
+  The training weight's checks: `task_sample_weight_not_metric_weight` (error: the training weight is not the metric's
+  row weight), `task_weight_invalid` (error: a missing, non-finite or negative weight, a zero weight on a row a deviance
   scores, a split side whose weights sum to 0), `task_rate_count_not_whole` (warning: under a weighted Poisson
   deviance, target x weight is not a whole count) and `task_feature_looks_like_exposure` (warning: a numeric feature
   named like an amount at risk on a task without a weight; accept it with what the column is, planned or realized).
-* `sample_weight = "<column>"` (optional, opt-in per dataset): the task's training weight, a rate's realized
-  denominator such as the years insured (MET-14, MET-15). It names a scoring column of role `weight` that the
-  objective metric reads as its row weight, so every model trains with the weight it is scored by:
+* A weight is declared once, on its scoring column; the metric's `inputs` come from the scoring columns' roles
+  (`weight`, `group`, `order`), so a metric names `inputs` itself only for a column that is no scoring column (the
+  task's group column, as sepsis_prediction_1m's `{"group": "Patient_ID", "order": "Hour"}`). A metric's `inputs` that
+  contradict a scoring column (another column for the role, or a scoring column of another role) are refused at
+  import.
+
+  The training weight, `ScoringColumn(..., role="weight", fit=True)` (optional, opt-in per dataset): a rate's realized
+  denominator such as the years insured (MET-14, MET-15), which the objective metric reads as its row weight, so every
+  model trains with the weight it is scored by:
 
   ```python
-  sample_weight = "Exposure"
-  scoring_columns = (ScoringColumn(column="Exposure", role="weight", used_by="mean_poisson_deviance",
+  metric = Metric.source("mean_poisson_deviance", ..., params={"min_prediction": 1e-4})
+  scoring_columns = (ScoringColumn(column="Exposure", role="weight", used_by="mean_poisson_deviance", fit=True,
                                    description="years insured, cut short by a cancellation after a claim; the "
                                    "rate's denominator, the metric's row weight and the training weight"),)
-  metric = Metric.source("mean_poisson_deviance", ..., inputs={"weight": "Exposure"}, params={"min_prediction": 1e-4})
   ```
 
-  The container stores it in the task metadata. `feature_columns(container)` leaves it out with the other scoring
-  columns, `sample_weight(container)` (`data_foundry.curation_container`) returns it (`None` when the task has none),
-  and a harness fits every model with it as each training row's weight, never as a feature. The test-row values of a
-  weight scoring column, a training weight or not, are for the scorer only: never read them when predicting a test
-  row (LEAK-41; the README and `describe()` say so, Lennart, 2026-11-08). The amount at risk is described in
-  text: the scoring column's `description` (what it measures, whether the outcome can cut it short) and a
+  The container stores it in the task metadata as `sample_weight`. `feature_columns(container)` leaves it out with the
+  other scoring columns, `sample_weight(container)` (`data_foundry.curation_container`) returns it (`None` when the
+  task has none), and a harness fits every model with it as each training row's weight, never as a feature. The
+  test-row values of a weight scoring column, a training weight or not, are for the scorer only: never read them when
+  predicting a test row (LEAK-41; the README and `describe()` say so, Lennart, 2026-11-08). The amount at risk is
+  described in text: the scoring column's `description` (what it measures, whether the outcome can cut it short) and a
   `curation_comments` bullet. A metric weight that is a function of the features (liberty_mutual_fire_peril_loss_cost's
-  `var11_weight`, g_research_crypto_forecasting_1m's asset `Weight`) needs no sample weight: accept
+  `var11_weight`, g_research_crypto_forecasting_1m's asset `Weight`) is no training weight: accept
   `task_metric_weight_without_sample_weight` with that reason.
 
   A weight for training alone (MET-16: a design weight when sampling depends on the outcome, a label's precision) is
-  the `sample_weight` too, its scoring column declared `used_by="training"` and left out of the metric's `inputs`:
+  declared `fit=True` with `used_by="training"`; the metric does not read it, so it is no input of the metric:
 
   ```python
-  sample_weight = "replicate_weight"
-  scoring_columns = (ScoringColumn(column="replicate_weight", role="weight", used_by="training",
+  scoring_columns = (ScoringColumn(column="replicate_weight", role="weight", used_by="training", fit=True,
                                    description="replicate measurements behind the mean label; trains, does not "
                                    "score, since each compound is one decision"),)
   ```
 
   The checks then accept it as the training weight and no unused scoring column; it is never a feature, and a harness
   still weights a validation loss by the metric's weight (`validation_weight(container)`), not by this one.
-* `unit_weight = UnitWeight(column="<weight column>", unit="<unit column>")` (optional): a score that counts each unit
+
+  A unit weight, `ScoringColumn(..., role="weight", unit="<unit column>")` (optional): a score that counts each unit
   once (MET-17), e.g. each plot of boreal_postfire_lichen_biomass or each mouse of pancreatic_cancer_mouse_detection.
-  The column is the metric's weight scoring column (`inputs={"weight": column}`), 1 over the unit's rows (`1.0 /
-  df.groupby(unit)[unit].transform("size")`); the unit is a column `_clean` keeps (the group column, or a column kept
-  for it), metadata, never a feature. It is for scoring and validation only, never a `sample_weight`. The task metadata
-  stores it, so downstream tools can read it: `unit_weight(container)` returns it, `validation_weight(container)`
-  returns the column a validation loss is weighted by (the metric's row weight: the training weight, a unit weight or a
-  weight that is a function of the features), and `feature_columns(container)` leaves the unit out. Its checks:
+  The column is the metric's weight, 1 over the unit's rows (`1.0 / df.groupby(unit)[unit].transform("size")`); the
+  unit is a column `_clean` keeps (the group column, or a column kept for it), metadata, never a feature. It is for
+  scoring and validation only, never with `fit`. The task metadata stores it as `unit_weight` (the column and the
+  unit), so downstream tools can read it: `unit_weight(container)` returns it, `validation_weight(container)` returns
+  the column a validation loss is weighted by (the metric's row weight: the training weight, a unit weight or a weight
+  that is a function of the features), and `feature_columns(container)` leaves the unit out. Its checks:
   `task_unit_weight_not_one_per_unit` (error: a unit's weights do not sum to 1) and `task_unit_weight_unit_split`
   (warning: a unit has rows on both sides of a split). With it declared, `task_metric_weight_without_sample_weight` is
   not raised (Lennart, 2026-11-08: downstream tools "need to know it to set their own validation loss correctly").

@@ -101,8 +101,8 @@ DataTags = Literal[
     "Spatial",  # data that contains spatial/geographical information
     "Anonymized",  # data that has no semantic meaning anymore on purpose
     # Use-case prototypes that justify an IID or grouped split of data that is not IID (SPLIT-32); one per definition,
-    #   never on a temporal split, declared as `time_basis = TimeBasis(...)` (data_foundry.time_basis), which renders
-    #   the `Time basis:` line of `curation_comments`.
+    #   never on a temporal split, declared as `time_basis = TimeBasis(...)`, which the dataset metadata stores
+    #   (DatasetMetadataV2.time_basis).
     "Timeless",  # the target is a fixed property of the item, and the data has no time dimension
     # the samples arise over time in the use case, but the data is one snapshot of a moment or period, and the use case
     #   looks back: it fills in what is missing for the time the snapshot covers, not a later time
@@ -120,11 +120,11 @@ DataTags = Literal[
     #   later period: whole groups held out
     "UnseenGroup",
     # Forced from temporal (SPLIT-8): a forward use case whose target time affects, but no usable time or too few
-    #   periods; the closest split, IID or grouped, with a `Time basis:` line that names the reason.
+    #   periods; the closest split, IID or grouped, with a time basis that names the reason.
     "ForcedIIDFromTemporal",
     "ForcedGroupedFromTemporal",
     # Forced from grouped (SPLIT-35): the use case holds out a group of distinct items (a family, a site, an area) the
-    #   data cannot key; an IID split beside the time basis, with a `Group basis:` line
+    #   data cannot key; an IID split beside the time basis, with a group basis (DatasetMetadataV2.group_basis)
     "ForcedIIDFromGrouped",
     # Retired (2026-10-21): kept readable for containers that carry it; new definitions refuse it (RETIRED_DATA_TAGS).
     "2ndTierData",
@@ -174,6 +174,52 @@ listing, the year a compound entered a catalogue). Declared for a temporal task'
 (:attr:`PredictiveMLTaskMetadataV2.time_of`) and for the order inside a group (:attr:`Grouping.time_of`). A label time
 orders the rows and is never a model input; the column of the prediction point, when there is one, is named as
 ``prediction_time``."""
+
+
+GROUP_BASIS_TAG = "ForcedIIDFromGrouped"
+"""The tag of every :class:`GroupBasis`."""
+
+
+@pydantic.dataclasses.dataclass(frozen=True, config=pydantic.ConfigDict(extra="forbid"))
+class TimeBasis:
+    """Why a split is not temporal (SPLIT-32), or why a forward use case ships a forced split (SPLIT-8).
+
+    A definition declares it (``time_basis = TimeBasis(tag, reason)``); the build adds the tag to ``data_tags`` and
+    stores the declaration as :attr:`DatasetMetadataV2.time_basis`. Its rules are in :mod:`data_foundry.time_basis`.
+    """
+
+    tag: str
+    """A use-case prototype (``Timeless``, ``RetrospectiveFillIn``, ``StationaryRelation``,
+    ``AssumedStationaryRelation``, ``UnseenGroup``) or a forced tag (``ForcedIIDFromTemporal``,
+    ``ForcedGroupedFromTemporal``)."""
+    reason: str
+    """The fact behind it, ending with what the split cannot test; for a forced tag the reason (time lost, or too few
+    periods) and what a dated release would change; for ``StationaryRelation`` the measurement."""
+    set_by: str | None = None
+    """The person who set it; required for a tag only a person sets (``StationaryRelation``,
+    ``AssumedStationaryRelation``)."""
+    on: str | None = None
+    """The date they set it, ``YYYY-MM-DD``; set exactly with :attr:`set_by`."""
+    note: str | None = None
+    """A short note on the basis's history (`` `Timeless` before``)."""
+
+
+@pydantic.dataclasses.dataclass(frozen=True, config=pydantic.ConfigDict(extra="forbid"))
+class GroupBasis:
+    """Why a split is random although the use case holds out a group the data cannot key (SPLIT-35).
+
+    A definition declares it (``group_basis = GroupBasis(reason)``); the build adds :data:`GROUP_BASIS_TAG` to
+    ``data_tags`` and stores the declaration as :attr:`DatasetMetadataV2.group_basis`.
+    """
+
+    reason: str
+    """The group the use case holds out, why the data cannot key it, and the overlap the random split leaves."""
+    set_by: str | None = None
+    """The person who set it, when a person did."""
+    on: str | None = None
+    """The date they set it, ``YYYY-MM-DD``; set exactly with :attr:`set_by`."""
+    tag: str = GROUP_BASIS_TAG
+    """Always :data:`GROUP_BASIS_TAG`."""
 
 
 @pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
@@ -625,6 +671,12 @@ class DatasetMetadataV2:
     """Context tags and the split-regime tags (:data:`DataTags`)."""
     curation_comments: MultilineStr | None = None
     """The audit trail of the curation: the starting artifact, then one bullet per non-obvious decision."""
+    time_basis: TimeBasis | None = None
+    """Why the split is not temporal, or why a forward use case ships a forced split (:class:`TimeBasis`); its tag is
+    in :attr:`data_tags` too. ``None`` for a temporal split, and for a split that does not say."""
+    group_basis: GroupBasis | None = None
+    """Why the split is random although the use case holds out a group the data cannot key (:class:`GroupBasis`); its
+    tag is in :attr:`data_tags` too."""
     derived_from: str | None = None
     """The ``unique_name`` of the definition this one derives from (its parent in a family), else None."""
     derivation: MultilineStr | None = None
@@ -634,6 +686,9 @@ class DatasetMetadataV2:
 
     type_adapter_id: str = "dataset-mold-v2"
     """Identifier for name of the type adapter used to serialize/deserialize."""
+
+    _OMIT_WHEN_UNSET: ClassVar[tuple[str, ...]] = ("time_basis", "group_basis")
+    """Fields added after containers shipped: dropped from the checksum and the saved JSON while ``None``."""
 
     def __post_init__(self):
         """A snake_case name, exactly one publication (listed first), and a derivation exactly with a parent."""
@@ -646,6 +701,8 @@ class DatasetMetadataV2:
             raise ValueError(f"derived_from equals unique_name ({self.unique_name!r}).")
         if (self.derived_from is None) != (not (self.derivation or "").strip()):
             raise ValueError("`derivation` says how the dataset differs from `derived_from`: set both or neither.")
+        if self.group_basis is not None and self.group_basis.tag != GROUP_BASIS_TAG:
+            raise ValueError(f"GroupBasis.tag is always {GROUP_BASIS_TAG!r}, got {self.group_basis.tag!r}.")
 
     @property
     def publication(self) -> Source:
@@ -677,6 +734,9 @@ class DatasetMetadataV2:
             f"  download_description: {one_line(self.download_description)}",
             f"  curation_comments:    {one_line(self.curation_comments)}",
         ]
+        for label, basis in (("time_basis", self.time_basis), ("group_basis", self.group_basis)):
+            if basis is not None:
+                lines.append(f"  {label + ':':21s} {basis.tag}: {one_line(basis.reason)}")
         if self.derived_from is not None:
             lines.append(f"  derived_from:         {self.derived_from}: {one_line(self.derivation)}")
         return "\n".join(lines)

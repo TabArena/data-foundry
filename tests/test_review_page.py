@@ -840,9 +840,9 @@ def test_issue_options_name_what_each_mark_locks_in(rp):
     assert rp._thread("Plain text.")["options"] == []
 
 
-def _iid_split(rp, tags, comments):
+def _iid_split(rp, tags, comments, basis_reason=None):
     readme = "---\ntask:\n  split_regime: iid\nsplits:\n  n_repeats: 3\n  n_folds: 3\n---\n"
-    return rp._split(readme, tags, comments)
+    return rp._split(readme, tags, comments, basis_reason)
 
 
 def _record(tmp_path, *tags):
@@ -852,8 +852,8 @@ def _record(tmp_path, *tags):
 
 
 def test_the_split_box_shows_the_basis_and_the_records_facts(rp, tmp_path):
-    """The time basis, its `Time basis:` line and the record's collection facts reach the split box, as information."""
-    split = _iid_split(rp, ["IID", "ForcedIIDFromTemporal"], "- Time basis: all scored in September 2005.\n- x")
+    """The time basis, its reason and the record's collection facts reach the split box, as information."""
+    split = _iid_split(rp, ["IID", "ForcedIIDFromTemporal"], "- x", "all scored in\n    September 2005.")
     rp._time_facts(
         split, _record(tmp_path, "Samples: One Moment", "Target: Fixed Delay", "Entities: Recur", "Tiny Data")
     )

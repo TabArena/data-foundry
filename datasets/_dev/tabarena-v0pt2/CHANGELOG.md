@@ -1,5 +1,26 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-26, a weight is declared once and the time basis is data (no container built)
+
+- A weight is declared on its scoring column alone (codebase review of 2026-11-25): `ScoringColumn(..., fit=True)` is
+  the training weight and `ScoringColumn(..., unit="<unit column>")` a unit weight, and the metric's `inputs` are
+  derived from the scoring columns' roles. The class attributes `sample_weight` and `unit_weight` are gone; the task
+  metadata still stores both, unchanged. 18 definitions changed their declaration only, with the same task metadata:
+  asp_potassco_classification, australian_vehicle_insurance_2004_2005, bemtpl97, boreal_postfire_lichen_biomass,
+  dementia_prediction, frempl_french_motor_personal_line, fremtpl2, g_research_crypto_forecasting_1m,
+  liberty_mutual_fire_peril_loss_cost, noaa_afsc_bottom_trawl_survey_cpue, noaa_storm_events_damage,
+  pancreatic_cancer_mouse_detection, pricing_game_2016_french_fleet, sat11_hand_algo_runtime,
+  spanish_motor_insurance_coverage_level_2022_2024, superconductivity, wadden_sea_sibes_macoma_abundance and
+  wisconsin_local_government_property_insurance_fund.
+- The time basis and the group basis are stored in the dataset metadata (`time_basis`, `group_basis`) instead of a
+  bullet rendered into `curation_comments`; the README shows the same line under the curation notes. A rebuilt
+  container of the 106 definitions with a time basis carries the field and no bullet.
+- Regime tags in `data_tags` are refused: amex_non_iid_1m, electric_motor_temperature_prediction and
+  sepsis_prediction_1m listed `Non-IID` and `Grouped` by hand and now get the derived tags, `GroupedTemporal` in place
+  of `Grouped`, since each orders the rows inside a group (`grouping.time_on`), as
+  force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition already does. Their splits are
+  unchanged.
+
 ## 2026-11-26, GETTING_STARTED.md brought up to date (no container built)
 
 - `GETTING_STARTED.md` no longer says the folder's `README.md` lists the datasets (it has no table), names the skills

@@ -490,7 +490,7 @@ _TABLE: tuple[tuple[str, tuple[Severity, ...], Stage, str], ...] = (
         "meta_group_basis_missing",
         ("error",),
         "metadata",
-        "`ForcedIIDFromGrouped` has no `Group basis:` line (SPLIT-35).",
+        "`ForcedIIDFromGrouped` without its group basis (SPLIT-35).",
     ),
     ("meta_license_unknown", ("warning",), "metadata", "A source's license is unknown."),
     (
@@ -508,17 +508,16 @@ _TABLE: tuple[tuple[str, tuple[Severity, ...], Stage, str], ...] = (
     ("meta_tags_missing_regime", ("warning",), "metadata", "A temporal or grouped split without its regime's tag."),
     ("meta_tags_multiple_regimes", ("warning",), "metadata", "`data_tags` carry more than one split regime."),
     (
-        "meta_time_basis_line_missing",
+        "meta_time_basis_field_missing",
         ("info",),
         "metadata",
-        "A time basis tag without its `Time basis:` line.",
+        "A time basis tag in `data_tags` without the stored time basis.",
     ),
-    ("meta_time_basis_lines", ("error",), "metadata", "`curation_comments` hold more than one `Time basis:` line."),
     (
         "meta_time_basis_mismatch",
         ("error",),
         "metadata",
-        "The `Time basis:` line names another tag than `data_tags` carry.",
+        "The stored time basis names another tag than `data_tags` carry.",
     ),
     (
         "meta_time_basis_missing",
@@ -540,12 +539,6 @@ _TABLE: tuple[tuple[str, tuple[Severity, ...], Stage, str], ...] = (
         ("error",),
         "metadata",
         "A time basis only a person sets, without the person and date (SPLIT-32).",
-    ),
-    (
-        "meta_time_basis_unstructured",
-        ("info",),
-        "metadata",
-        "A free-text `Time basis:` line instead of `TimeBasis(tag, reason)`.",
     ),
     ("meta_time_gap_without_time_on", ("error",), "metadata", "`time_gap` is set on a task without a time column."),
     (

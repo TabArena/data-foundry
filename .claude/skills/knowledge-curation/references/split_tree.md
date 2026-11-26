@@ -59,9 +59,9 @@ question no answer fits: only a reviewer adds a branch.
 
 ## Words
 
-* **Time basis**: why a split that is not temporal is not, declared as `TimeBasis(tag, reason)` and rendered as the
-  `Time basis:` line. **Group basis**: why a split is random although the use case holds out a group
-  (`ForcedIIDFromGrouped`), beside the time basis.
+* **Time basis**: why a split that is not temporal is not, declared as `TimeBasis(tag, reason)`, stored with the dataset
+  and shown in its README as the `Time basis:` line. **Group basis**: why a split is random although the use case holds
+  out a group (`ForcedIIDFromGrouped`), beside the time basis.
 * **IID** in `ForcedIIDFromTemporal` and `ForcedIIDFromGrouped` means a random split of the rows, not a judgement that
   the rows are independent.
 * **`RetrospectiveFillIn`**: the use case fills in what is missing for the time the data covers (rows without a

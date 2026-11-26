@@ -256,7 +256,6 @@ class WaddenSeaSibesMacomaAbundance(AbstractCuratedDataset):
             "on the density over the spread of its true densities, averaged, keeps RMSE within a year (a fixed divisor "
             "ranks models as RMSE does) and gives each survey's map one vote (Andrej, 2026-11-10)."
         ),
-        inputs={"group": "survey_year"},
         target_transform="log1p",
     )
     scoring_columns = (

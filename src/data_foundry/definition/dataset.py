@@ -51,6 +51,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 
 import numpy as np
 import pandas as pd
+import pydantic
 
 from data_foundry import time_basis as basis_rules
 from data_foundry.checks import (
@@ -78,16 +79,19 @@ from data_foundry.metrics import Metric
 from data_foundry.schema import (
     GROUP_BASIS_TAGS,
     RETIRED_DATA_TAGS,
+    TRAINING_ONLY,
     DatasetDefinitionError,
     DatasetMetadataV2,
+    GroupBasis,
     Grouping,
     MetricSpec,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadataV2,
     RawFile,
     RowBudget,
-    ScoringColumn,
+    ScoringColumn as TaskScoringColumn,
     Source,
+    TimeBasis,
     TrainSampling,
     UnitWeight,
     as_column_list,
@@ -95,7 +99,6 @@ from data_foundry.schema import (
     resolve_warehouse_dir,
     rows_text,
 )
-from data_foundry.time_basis import GroupBasis, TimeBasis
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -131,6 +134,37 @@ AUTO: Any = _Auto()
 """Sentinel default of ``stratify_on``: the target for classification, nothing for regression."""
 
 REGIME_TAGS = ("IID", "Non-IID", "Temporal", "Grouped", "GroupedTemporal")
+"""The split-regime tags the build derives from the task; a definition never lists them."""
+
+METRIC_INPUT_ROLES = ("weight", "group", "order")
+"""The roles of a scoring column that are inputs of the metric (:attr:`~data_foundry.schema.MetricSpec.inputs`)."""
+
+
+@pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
+class ScoringColumn(TaskScoringColumn):
+    """A column the metric needs, as a definition declares it (``scoring_columns``): the container's
+    :class:`~data_foundry.schema.ScoringColumn` plus what the task does with a weight.
+
+    It is the one declaration of the column: the metric's ``inputs`` are derived from the roles (``weight``, ``group``,
+    ``order``) of the scoring columns the metric reads, the task's ``sample_weight`` from ``fit`` and its
+    ``unit_weight`` from ``unit``.
+    """
+
+    fit: bool = False
+    """A weight (role ``weight``) every model is fitted with as each row's weight: the task's ``sample_weight``. It
+    is the metric's row weight (a rate's realized denominator, MET-15), or, with ``used_by="training"``, a weight for
+    training alone that the metric does not read (MET-16)."""
+    unit: str | None = None
+    """For a weight (role ``weight``) that counts each unit once (MET-17): the column naming the unit, whose rows
+    share 1 (the task's ``unit_weight``). Metadata, never a feature; for scoring and validation only, never with
+    ``fit``."""
+
+    def to_task(self) -> TaskScoringColumn:
+        """The container's scoring column: the column, its role, the metric that uses it and its description."""
+        return TaskScoringColumn(
+            column=self.column, role=self.role, used_by=self.used_by, description=clean_text(self.description)
+        )
+
 
 LINEAGE_COLUMN = "__raw_row__"
 """The column :meth:`AbstractCuratedDataset.process` adds to a one-table raw frame to trace its rows (lineage)."""
@@ -377,17 +411,17 @@ class AbstractCuratedDataset(ABC):
     """Commands (and notes) that recreate the raw files in ``local-data-warehouse/<unique_name>/``."""
     data_tags: ClassVar[tuple[str, ...]] = ()
     """Context tags (``Spatial``, ``Anonymized``, ...). The regime tags (``IID`` or ``Non-IID`` plus
-    ``Temporal``/``Grouped``) are added from the task unless one is listed here."""
+    ``Temporal``/``Grouped``) are derived from the task and refused here, as are the tags of a time basis."""
     curation_comments: ClassVar[str] = ""
     """The audit trail: the starting artifact, then one bullet per non-obvious decision."""
     time_basis: ClassVar[TimeBasis | None] = None
     """Why a split that is not temporal is not (SPLIT-32), or why a forward use case ships a forced split (SPLIT-8):
     ``TimeBasis("RetrospectiveFillIn", "one census of 1990 ...; a later census stays untested")``. The build adds its
-    tag to ``data_tags`` and renders it as the ``- Time basis:`` bullet of ``curation_comments``; a human-set tag
+    tag to ``data_tags`` and stores it as the dataset metadata's ``time_basis``; a human-set tag
     (``StationaryRelation``, ``AssumedStationaryRelation``) also names ``set_by`` and ``on``."""
     group_basis: ClassVar[GroupBasis | None] = None
     """Why a split is random although the use case holds out a group the data cannot key (SPLIT-35): the build adds
-    ``ForcedIIDFromGrouped`` and renders the ``- Group basis:`` bullet."""
+    ``ForcedIIDFromGrouped`` to ``data_tags`` and stores it as the dataset metadata's ``group_basis``."""
     split_leaf: ClassVar[str | None] = None
     """The leaf of the split decision tree (SPLIT-36, ``split_tree.md``) the split comes from, by its ID
     (``"L-FILL.unit"``). The tests check that the leaf exists and that the definition ships its split and tag, unless
@@ -404,21 +438,13 @@ class AbstractCuratedDataset(ABC):
     original that cannot be computed (``Metric.stand_in(...)``), else ``Metric.fallback(reason=...)`` (roc_auc /
     log_loss / rmse by problem type, and where we looked)."""
     scoring_columns: ClassVar[tuple[ScoringColumn, ...]] = ()
-    """The columns the metric needs (``ScoringColumn(column=..., role=..., used_by=..., description=...)``, e.g.
-    Numerai's ``era`` as the ``group`` of a per-era correlation): kept in the frame, never model features. Each one is
-    an input of the metric (``Metric.source(..., inputs={"group": "era"})``)."""
-    sample_weight: ClassVar[str | None] = None
-    """The training weight, a scoring column every model is fitted with as each row's weight, never a feature: the
-    metric's row weight (``inputs={"weight": col}``). Declare it when the weight is a realized amount at risk, the
-    denominator of a rate target (the years insured of a claims-per-year target, MET-15); a weight that is a function
-    of the features (a sum insured) needs none. A weight for training alone, which the metric does not read (a label's
-    precision, a design weight when sampling depends on the outcome), is declared here too, its scoring column
-    ``used_by="training"`` (MET-16). ``None``: models train unweighted."""
-    unit_weight: ClassVar[UnitWeight | None] = None
-    """A score that counts each unit once (MET-17): ``UnitWeight(column="plot_weight", unit="plot")``, the metric's
-    weight scoring column (1 over the unit's rows, ``inputs={"weight": column}``) and the column naming the unit, kept
-    in the frame as metadata, never a feature. For scoring and validation only, never a ``sample_weight``; the check
-    tests that each unit's weights sum to 1. Downstream tools read it to weight their validation loss alike."""
+    """The columns the metric needs (:class:`ScoringColumn`), kept in the frame, never model features: e.g. Numerai's
+    ``era`` as the ``group`` of a per-era correlation, ``ScoringColumn(column="era", role="group",
+    used_by="mean_group_pearsonr", description=...)``. Each one the metric reads is an input of the metric under its
+    role (``inputs={"group": "era"}``, derived; a metric that names its ``inputs`` must agree). A weight declares what
+    the task does with it: ``fit=True`` for the training weight (a rate's realized denominator, MET-15; with
+    ``used_by="training"`` a weight for training alone, MET-16), ``unit="<unit column>"`` for a weight that counts
+    each unit once (MET-17; for scoring and validation only, each unit's weights sum to 1)."""
     special_features: ClassVar[tuple[SpecialFeatureSpec, ...]] = ()
     """Model inputs that need handling beyond their dtype, declared like the target. Each entry is one special
     feature, in one of two layouts (:mod:`data_foundry.special`):
@@ -1673,8 +1699,8 @@ def _gap(cls: type[AbstractCuratedDataset]) -> tuple[int | None, str | None]:
 
 def _validate_time_basis(cls: type[AbstractCuratedDataset], fail: Callable[[str], None]) -> None:
     """The time basis of a task (SPLIT-8, SPLIT-32, SPLIT-35): ``time_basis`` and ``group_basis`` well formed, never
-    a tag in ``data_tags`` or a line in ``curation_comments`` by hand, and the rendered tags and lines free of the
-    errors of :func:`~data_foundry.time_basis.problems`, which the bundle check reads on a container.
+    a tag in ``data_tags`` or a line in ``curation_comments`` by hand, and free of the errors of
+    :func:`~data_foundry.time_basis.problems`, which the bundle check applies to a container.
     """
     if (cls.grouping is not None and not isinstance(cls.grouping, Grouping)) or (
         cls.temporal is not None and not isinstance(cls.temporal, Temporal)
@@ -1685,22 +1711,24 @@ def _validate_time_basis(cls: type[AbstractCuratedDataset], fail: Callable[[str]
         if value is not None and not isinstance(value, kind):
             fail(f"`{name}` must be a `{kind.__name__}(...)`, not {type(value).__name__}.")
             return
-        for problem in value.problems() if value is not None else ():
+        for problem in basis_rules.declaration_problems(value) if value is not None else ():
             fail(f"`{name}`: {problem}.")
-    comments = cls.curation_comments or ""
     listed = [t for t in cls.data_tags if current_tag(t) in (*basis_rules.BASIS_TAGS, *GROUP_BASIS_TAGS)]
-    handwritten = [kind for kind in ("Time", "Group") if basis_rules.lines(comments, kind)]
-    if cls.time_basis is not None or cls.group_basis is not None:
+    handwritten = [
+        kind
+        for kind in ("Time", "Group")
+        if any(line.strip().startswith(f"- {kind} basis:") for line in (cls.curation_comments or "").splitlines())
+    ]
+    if listed or handwritten:
         by_hand = [*(f"`{t}` from `data_tags`" for t in listed), *(f"the `{k} basis:` line" for k in handwritten)]
-        if by_hand:
-            fail(f"`time_basis` and `group_basis` add the tag and the line; drop {' and '.join(by_hand)}.")
-    elif listed or handwritten:
         fail(
-            "declare the time basis as `time_basis = TimeBasis(...)` (and `group_basis = GroupBasis(...)`), not "
-            "by a tag in `data_tags` and a line in `curation_comments` (SPLIT-32)."
+            "declare the time basis as `time_basis = TimeBasis(...)` (and `group_basis = GroupBasis(...)`), which add "
+            f"the tag and are stored with the dataset; drop {' and '.join(by_hand)} (SPLIT-32)."
         )
+    tags = _regime_tags(cls)
+    temporal, grouped = cls.temporal is not None, cls.grouping is not None
     for _slug, severity, message in basis_rules.problems(
-        _regime_tags(cls), _rendered_comments(cls), temporal=cls.temporal is not None, grouped=cls.grouping is not None
+        tags, cls.time_basis, cls.group_basis, temporal=temporal, grouped=grouped
     ):
         if severity == "error":
             fail(message)
@@ -1708,8 +1736,6 @@ def _validate_time_basis(cls: type[AbstractCuratedDataset], fail: Callable[[str]
 
 def _regime_tags(cls: type[AbstractCuratedDataset]) -> list[str]:
     tags = list(dict.fromkeys([*cls.data_tags, *basis_rules.tags_of(cls.time_basis, cls.group_basis)]))
-    if any(tag in REGIME_TAGS for tag in tags):
-        return tags
     if cls.temporal is not None:
         regime = ["Non-IID", "Temporal"]
     elif cls.grouping is not None:
@@ -1767,13 +1793,6 @@ def raw_name(cls: type[AbstractCuratedDataset]) -> str:
     return cls.unique_name
 
 
-def _rendered_comments(cls: type[AbstractCuratedDataset]) -> str | None:
-    """``curation_comments`` as the container carries them: with the ``Time basis:`` and ``Group basis:`` bullets of
-    ``time_basis`` and ``group_basis`` (SPLIT-32, SPLIT-35).
-    """
-    return basis_rules.render(clean_text(cls.curation_comments), cls.time_basis, cls.group_basis)
-
-
 def _clean_source(source: Source) -> Source:
     """``source`` with its BibTeX dedented, ending in one newline (its citation key is read when it is built)."""
     return dataclasses.replace(source, bibtex=clean_text(source.bibtex) + "\n") if source.bibtex else source
@@ -1786,8 +1805,20 @@ def _build_dataset_metadata(cls: type[AbstractCuratedDataset]) -> DatasetMetadat
         sources=[_clean_source(source) for source in cls.sources],
         download_description=clean_text(cls.download_description),
         data_tags=_regime_tags(cls),
-        curation_comments=_rendered_comments(cls),
+        curation_comments=clean_text(cls.curation_comments),
+        time_basis=_clean_basis(cls.time_basis),
+        group_basis=_clean_basis(cls.group_basis),
     )
+
+
+def _clean_basis(basis: TimeBasis | GroupBasis | None) -> TimeBasis | GroupBasis | None:
+    """``basis`` with its reason and note on one line each, as the dataset metadata stores it."""
+    if basis is None:
+        return None
+    changes = {"reason": " ".join(basis.reason.split())}
+    if getattr(basis, "note", None):
+        changes["note"] = " ".join(basis.note.split())
+    return dataclasses.replace(basis, **changes)
 
 
 def _build_metadata(cls: type[AbstractCuratedDataset]) -> tuple[DatasetMetadataV2, PredictiveMLTaskMetadataV2]:
@@ -1807,9 +1838,9 @@ def _build_metadata(cls: type[AbstractCuratedDataset]) -> tuple[DatasetMetadataV
         time_of="label" if cls.temporal is not None and cls.temporal.time_of == "label" else None,
         prediction_time=cls.temporal.prediction_time if cls.temporal is not None else None,
         grouping=grouping,
-        scoring_columns=[dataclasses.replace(c, description=clean_text(c.description)) for c in cls.scoring_columns],
-        sample_weight=cls.sample_weight,
-        unit_weight=cls.unit_weight,
+        scoring_columns=[c.to_task() for c in cls.scoring_columns],
+        sample_weight=training_weight(cls),
+        unit_weight=unit_weight(cls),
     )
     return dataset, task
 
@@ -1823,8 +1854,91 @@ def metric_spec(metric: Metric, problem_type: str) -> MetricSpec:
 
 
 def _declared_metric(cls: type[AbstractCuratedDataset]) -> Metric:
-    """The definition's ``metric`` (required; :func:`_validate_definition` checks it is a :class:`Metric`)."""
-    return cls.metric
+    """The definition's ``metric`` (required; :func:`_validate_definition` checks it is a :class:`Metric`), its
+    ``inputs`` completed from the scoring columns (:func:`metric_inputs`).
+    """
+    inputs = metric_inputs(cls)
+    return cls.metric if inputs == dict(cls.metric.inputs) else dataclasses.replace(cls.metric, inputs=inputs)
+
+
+def _read_by_metric(cls: type[AbstractCuratedDataset]) -> dict[str, str]:
+    """The metric's inputs the scoring columns declare: each role of :data:`METRIC_INPUT_ROLES` mapped to the scoring
+    column of that role the metric reads (every one but a weight for training alone).
+    """
+    return {
+        c.role: c.column for c in cls.scoring_columns if c.role in METRIC_INPUT_ROLES and c.used_by != TRAINING_ONLY
+    }
+
+
+def metric_inputs(cls: type[AbstractCuratedDataset]) -> dict[str, str]:
+    """The metric's ``inputs``: those the definition's metric names, completed by the roles of the scoring columns it
+    reads (``ScoringColumn(column="expo", role="weight", ...)`` gives ``{"weight": "expo"}``). A metric names an input
+    itself only for a column that is no scoring column (the task's group column); a contradiction is refused at
+    import.
+    """
+    named = dict(cls.metric.inputs)
+    return {**named, **{role: column for role, column in _read_by_metric(cls).items() if role not in named}}
+
+
+def training_weight(cls: type[AbstractCuratedDataset]) -> str | None:
+    """The task's ``sample_weight``: the scoring column declared ``fit=True``, or None."""
+    return next((c.column for c in cls.scoring_columns if c.fit), None)
+
+
+def unit_weight(cls: type[AbstractCuratedDataset]) -> UnitWeight | None:
+    """The task's ``unit_weight``: the scoring column declared with a ``unit``, and that unit; or None."""
+    return next((UnitWeight(column=c.column, unit=c.unit) for c in cls.scoring_columns if c.unit is not None), None)
+
+
+def _validate_scoring_columns(cls: type[AbstractCuratedDataset], fail: Callable[[str], None]) -> None:
+    """The scoring columns as the one declaration of the metric's inputs, the training weight and the unit weight:
+    ``fit`` and ``unit`` on a weight only, once each and never together; no role read twice; and the metric's own
+    ``inputs`` in agreement with them.
+    """
+    for attribute in ("sample_weight", "unit_weight"):
+        if hasattr(cls, attribute):
+            option = "fit=True" if attribute == "sample_weight" else 'unit="<unit column>"'
+            fail(f"`{attribute}` is declared on its scoring column: `ScoringColumn(..., role='weight', {option})`.")
+    columns = cls.scoring_columns
+    if isinstance(columns, TaskScoringColumn) or not all(isinstance(c, ScoringColumn) for c in columns):
+        fail("`scoring_columns` must be a tuple of `ScoringColumn(...)` (from `data_foundry.definition`).")
+    for c in columns:
+        if (c.fit or c.unit is not None) and c.role != "weight":
+            fail(f"`{c.column}`: `fit` and `unit` declare what the task does with a weight; its role is {c.role!r}.")
+        if c.fit and c.unit is not None:
+            fail(f"`{c.column}`: a unit weight is for scoring and validation only, never `fit` (MET-15, MET-17).")
+        if c.used_by == TRAINING_ONLY and not c.fit:
+            fail(f'`{c.column}`: `used_by="training"` is a weight for training alone; declare it `fit=True` (MET-16).')
+    for flag, label in ((lambda c: c.fit, "`fit=True`"), (lambda c: c.unit is not None, "a `unit`")):
+        flagged = [c.column for c in columns if flag(c)]
+        if len(flagged) > 1:
+            fail(f"{label} on {flagged}: a task has one.")
+    _validate_metric_inputs(cls, fail)
+
+
+def _validate_metric_inputs(cls: type[AbstractCuratedDataset], fail: Callable[[str], None]) -> None:
+    """No role of the metric read from two scoring columns, and the metric's own ``inputs`` in agreement with the
+    scoring columns: the same column for a role both give, and never a scoring column of another role.
+    """
+    columns = cls.scoring_columns
+    read = [c for c in columns if c.role in METRIC_INPUT_ROLES and c.used_by != TRAINING_ONLY]
+    roles = [c.role for c in read]
+    for role in dict.fromkeys(r for r in roles if roles.count(r) > 1):
+        fail(f"the metric reads one {role!r}; scoring columns {[c.column for c in read if c.role == role]} declare it.")
+    metric = getattr(cls, "metric", None)
+    if not isinstance(metric, Metric):
+        return
+    derived, by_column = _read_by_metric(cls), {c.column: c for c in columns}
+    for role, column in metric.inputs.items():
+        if role in derived and derived[role] != column:
+            fail(
+                f"the metric's inputs map {role!r} to {column!r}, the scoring columns to {derived[role]!r}: drop "
+                "`inputs`, which the scoring columns give."
+            )
+        declared = by_column.get(column)
+        if declared is not None and (declared.role != role or declared.used_by == TRAINING_ONLY):
+            reads = "a weight for training alone" if declared.used_by == TRAINING_ONLY else f"role {declared.role!r}"
+            fail(f"the metric's inputs map {role!r} to {column!r}, a scoring column of {reads}.")
 
 
 _REQUIRED = (
@@ -1861,6 +1975,9 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         fail("`sources` must be a tuple of `Source(...)`, the publication first.")
     if isinstance(cls.data_tags, str):
         fail("`data_tags` must be a tuple of tags, not one string.")
+    regime = [tag for tag in cls.data_tags if tag in REGIME_TAGS]
+    if regime:
+        fail(f"`data_tags` {regime}: the build derives the regime tags from the task; list context tags only.")
     retired = [tag for tag in cls.data_tags if tag in RETIRED_DATA_TAGS]
     if retired:
         fail(
@@ -1875,14 +1992,7 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
     metric = getattr(cls, "metric", None)
     if metric is not None and not isinstance(metric, Metric):
         fail("`metric` must be a `Metric` (`Metric.source(...)`, `Metric.stand_in(...)` or `Metric.fallback(...)`).")
-    if isinstance(cls.scoring_columns, ScoringColumn) or not all(
-        isinstance(c, ScoringColumn) for c in cls.scoring_columns
-    ):
-        fail("`scoring_columns` must be a tuple of `ScoringColumn(...)`.")
-    if cls.sample_weight is not None and not isinstance(cls.sample_weight, str):
-        fail("`sample_weight` names one scoring column (a string), or is None.")
-    if cls.unit_weight is not None and not isinstance(cls.unit_weight, UnitWeight):
-        fail("`unit_weight` is a `UnitWeight(column=..., unit=...)`, or None.")
+    _validate_scoring_columns(cls, fail)
     from data_foundry.special import SpecialFeatureSpec  # noqa: PLC0415 - the kinds import this module
 
     specs = cls.special_features
