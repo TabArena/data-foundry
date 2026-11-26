@@ -55,6 +55,10 @@ CC (2026-11-25, Andrej): accepted for adding in the screening review (issues 1 A
 
 CC (2026-11-26, Andrej): issue 3 c: `Class-dependent Recording` added and the 53-carrier block dropped (1,725 people); issues 4 A (every person a row), 5 A (all rows), 6 A (aliases listed, not merged) and 7 A (random 10x3 folds).
 
+CC (2026-11-26, Andrej): verdict: ship.
+
+CC (2026-11-26, Andrej): the declared metric (ROC AUC, the source's: Luo et al. rank their models by AUC) is checked and stays as declared.
+
 ## Review
 
 **Outcome:** added. 1,778 carriers of GJB2, SLC26A4 or MT-RNR1 variants (Luo et al. 2021, Mendeley 6mh8mpnbgv), hearing loss (76%) from 126 allele counts, every person a row and 10 x 3-fold cross-validation on random people as decided (issues 1 and 2). Valid: no leak, and no attack moves the score beyond noise. Value: the methods beat the textbook rule on all 30 splits, but on the 1,220 people with a variant other than three benign-listed GJB2 polymorphisms gradient boosting only matches it (issue 5). The panel recommends shipping after changes; the wording changes are made, and four questions are yours: the recording marker for a block of 53 carriers (issue 3), the repeated genotypes you asked to reopen (issue 4), where the gain over the rule sits (issue 5) and the variant aliases (issue 6). Since 2026-11-26 the block is dropped (issue 3 c): 1,725 people.
