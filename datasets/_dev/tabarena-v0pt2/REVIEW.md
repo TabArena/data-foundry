@@ -499,3 +499,295 @@
   and the splits comment and the row description say so. consumer_complaints_1m, rosbank1 and
   sberbank_housing_market_forecasting accept `time_newest_period_short` with the numbers of the table. Each record
   has the CC line and an Assessment. `dataset check`: 0 errors on all four.
+
+### From the TabBench-Bio review panels of 2026-11-25
+
+- **Amend the source-metric rule for a task scored as a mean within a group?** The rule that makes a paper's named
+  criterion the source's metric has been overruled three times now for one reason: a pooled score credits a model for
+  ranking the groups, which the actor reads off something they already hold, while the decision is a ranking inside
+  the group. The first two are logged as exception rows; `genomic_prediction_soy_yield` is the third, and the point
+  at which an amendment is proposed rather than a fourth exception written. It is also the first where the source has
+  a unique original rather than a fallback (Azodi et al. 2019 rank by pooled Pearson's r "as it is the standard
+  metric for GP performance"), so the declaration overrules a deliberate choice instead of replacing a gap.
+  * **Problem:** the three datasets took the same call on the same evidence, each wrote it down as a one-off, and a
+    fourth will meet three precedents and no rule.
+  * **Statistics:** what a pooled score would reward in each, and what the declared per-group metric costs.
+
+    | Dataset | Group | Between-group share of the target's variance | What the actor knows without a model |
+    |---|---|---|---|
+    | protein_model_quality_rf_pcp | protein | the protein's true mean beats LightGBM pooled (0.134 against 0.188) | the protein |
+    | huesken_sirna_efficacy | target gene | knowing the gene mean cuts pooled RMSE from 0.1582 to 0.1378 | the gene |
+    | genomic_prediction_soy_yield | biparental family | 54.3%; a family-mean oracle scores pooled r 0.683 against ridge's 0.236 and exactly 0 within a family | the non-recurrent parent's own trial yield predicts the family mean at r = 0.937 |
+
+  * **Options:**
+
+    | | Option | What it does | Pro | Con |
+    |---|---|---|---|---|
+    | A | One exception row per dataset (implemented) | each definition names the original and the register carries a row | no rule change; each case is judged on its own evidence | a fourth case meets three precedents and no rule; the third occurrence is when the rules ask for an amendment |
+    | B | Amend the rule | a clause: when the actor already holds the between-group ranking and the decision is inside the group, the per-group metric is declared and the source's pooled one is named as the original, with the between-group share measured | settles the pattern once; the three cases become its Cases row | written from three datasets of one shape (proteins, genes, families) |
+    | C | Amend and re-walk the register | B, plus a check of every grouped-ranking dataset for the same shape | consistent across the collection | the decision register has to be re-walked |
+
+  * **Recommendation:** B, with the three datasets as its Cases row; `genomic_prediction_soy_yield`'s own issue 6
+    records this case either way.
+  * **Decision:** A, B or C?
+
+  **Notes for the AI:** on B, the clause goes into the metrics rules beside the rule it narrows, with a Cases row
+  naming the three datasets and the measured between-group share of each; each of the three records gets a line
+  saying its exception is now the rule. On A, only the exception row for `genomic_prediction_soy_yield` is added.
+
+  **Andrej (2026-11-26, B):** Yes, amend the rule since this seems to be reoccuring.
+
+  **Resolved (2026-11-26, Andrej):** B, amended. The metric rules carry MET-18 beside the rules it narrows (MET-4 and
+  MET-5): when the scored rows fall into groups the actor does not choose between, and a predictor that knows nothing
+  but each group's mean beats the models under a pooled score, the metric is declared per group and the pooled score
+  is named as the original from context, whether or not it is the source's metric; the declaration reports the
+  between-group share of the target's variance and what the group-mean predictor scores against the models. The three
+  datasets are its Cases rows with their numbers (the two earlier ones rewritten from exceptions to MET-5 into
+  applications of the new rule, `genomic_prediction_soy_yield` added with the 54.3% share, the family-mean oracle at
+  pooled r 0.683 against ridge's 0.236 and the parent's trial yield at r = 0.937). The metric patterns table and the
+  source-metric tension in the principles name the new rule. Not done, as C was not taken: the grouped-ranking
+  register was not re-walked, and the three records' own lines are left to the datasets' own reviews
+  (`genomic_prediction_soy_yield`'s issue 6 records this case).
+
+- **How do we record a public derived copy of a rebuilt dataset's target?** When we rebuild a dataset from its origin
+  because a benchmark's derived cut destroyed something (a scale, an aggregation), that cut usually stays public, and
+  it holds a copy of the target for the same rows. Our leak rules govern the shipped table and the split, and the
+  remedy ladder has no rung that removes a file from the internet, so there is no rule for this at all. It is generic
+  to every dataset we build this way, and the going-to-the-origin pattern is already a precedent in several records.
+  * **Problem:** a leaderboard open to the web can be topped by a join to the public cut, and nothing in a definition
+    or a record tells its operators so.
+  * **Background:** found on `genomic_prediction_soy_yield` by the task gamer, which had only the participant kit and
+    the web: the CC0 copy of the same population shares 4,230 of our 4,312 markers, so 91.9% of test rows match a
+    published line by genotype alone with no identifier, and blending the looked-up value with the best honest model
+    lifts the declared metric from 0.308 to 0.399, while a clean identifier join reaches about 0.9 within a family
+    against an honest 0.3. The same shape holds wherever the honest signal is weak and the public copy of the label
+    is strong.
+  * **Options:**
+
+    | | Option | What it does | Pro | Con |
+    |---|---|---|---|---|
+    | A | Nothing; each panel finds it again (implemented) | no rule, no check | nothing to write | the next dataset rebuilt from an origin repeats the search, or misses it |
+    | B | A rule: a definition that rejects a public derived cut says whether that cut holds the target for the same rows, and measures the lookup when it does | one bullet per such definition, with the measured size | cheap; the fact is already gathered when the cut is rejected; the record then says what a score means | a published note tells a participant where to look |
+    | C | B, plus a probe that tries the join | the probe downloads the named cut and measures the match rate and the lift | measured the same way everywhere | a probe that downloads a third-party file, and it only works where the cut is named |
+
+  * **Recommendation:** B. The exposure cannot be removed, so the honest move is to say how large it is; the probe of
+    C is worth having only if a second dataset meets the same shape.
+  * **Decision:** A, B or C?
+
+  **Notes for the AI:** on B, the rule goes beside the provenance rule on another copy's problems, with
+  `genomic_prediction_soy_yield` as its first Cases entry; the definitions that reject a derived cut
+  (`nci_aids_antiviral_screen`, `qsar_biodeg`, `qsar_tid_11` and the soy record) each get the one sentence, and only
+  the soy one has the measurement today.
+
+  **Andrej (2026-11-26, A):** There is nothing to do here since searching the web is not an option for the benchmarks
+  we build.
+
+  **Resolved (2026-11-26, Andrej):** A, left as is. No rule, no sentence in the definitions and no probe: the
+  collection fits the models itself, on the shipped table and the shipped splits, so looking a label up on the web is
+  not a route a scored model has. The measurement the task gamer made on `genomic_prediction_soy_yield` stays in that
+  record as what it is, a finding about the public cut, and the provenance rules are unchanged.
+
+- **Amend the rules that say another party's model and pretraining overlap never change a decision?** (from
+  `gse40279_methylation_age`; it belongs with the rules, in `evidence.md` and `provenance.md`.) Two published
+  epigenetic clocks were fitted on the ages of that dataset's 656 rows, their coefficients are public, and
+  recalibrating one of them per split beats every honest model measured there, with an external control separating
+  the leak from legitimate transfer. The rules that place such a carrier out of reach of a validity objection also
+  say, as written, that it is "not an issue for the curator", yet the dataset's issue 1 makes it one and writes a
+  note about it. The outcome does not block that issue: under either reading the dataset ships with the note.
+  * **Problem:** what the rules were written against is an unverifiable overlap (is this table in some model's
+    pretraining set?), while here the gain is measured on our own shipped splits with a control that separates leak
+    from transfer, so without a clause the note is a departure from a Must by an unwritten fact.
+  * **Effect:** none on that dataset; on the shelf it decides whether the next such case gets a note or is waved past
+    as pretraining overlap.
+  * **Statistics:** the distinction is the control itself, mean RMSE in years over the 60 shipped splits of
+    `gse40279_methylation_age`.
+
+    | model | RMSE | fitted on those rows' labels? |
+    |---|---|---|
+    | best honest baseline | 5.279 | no |
+    | the honest model plus the two clocks fitted on these rows | 4.645 | yes |
+    | the honest model plus three clocks fitted elsewhere (control) | 5.163 | no |
+    | one of the two clocks alone, recalibrated per split | 4.949 | yes |
+    | the best external clock alone, recalibrated | 5.976 | no |
+
+  * **Consistency:** the rules' existing cases are all unmeasured or another collection's artefacts (another
+    collection's columns, published leaderboard scores, pretraining membership); none is a measurement on our own
+    folds. The reach is real but bounded: the contamination bites only where a published model predicts our target
+    and was fitted on our rows' labels, which on this shelf means the other methylation records first
+    (`skull_bone_molecular_age`, then the GSE42861, GSE147221, GSE50660, sarcoma and CNS-tumour records), none of
+    them checked by that panel.
+  * **Options:**
+
+    | | Option | What it does | Pro | Con |
+    |---|---|---|---|---|
+    | A | Leave the rules as they are (implemented) | the note is written anyway | no rule change | the note is then a departure from a Must with no recorded fact, and the next panel has no guidance |
+    | B | Add a clause | keeps "never evidence" for an unmeasured overlap, and adds that a measured gain on our own shipped splits from a published model fitted on our own rows' labels is declared in a kept-leak note and is never a reason to exclude | makes the note lawful; bounded by the measurement requirement; changes no existing case | a rule change prompted by one dataset |
+    | C | B plus a screening question | B, and screening asks of every candidate cohort whether a published model was fitted on its labels | catches the family before a panel is spent on it | more screening work for a thin family |
+    | D | Read the rules as already excluding this | state that they speak to an unverifiable overlap only, record it as a precedent, change no text | cheapest | leaves the next reader to rediscover the reading; a precedent is weaker than an amendment |
+
+  * **Recommendation:** B, with the amendment naming that dataset as the case that prompted it, and the decision
+    register re-read for decisions that rest on the old wording. C is worth adding if you want the family caught at
+    screening; the biomedical records above are the ones to re-read either way.
+  * **Decision:** amend, or record it as a precedent only?
+
+  **Notes for the AI:** on B, the clause goes into `evidence.md` beside the "never evidence" bullet on pretraining
+  data and into `provenance.md` beside the sentence that names pretraining overlap, with a Cases row naming
+  `gse40279_methylation_age` and the measured contrast above; then `decision_register.py --rule EV-4` and
+  `--rule PROV-15` are re-walked. On D, the reading goes into the same two places as a Cases row only.
+
+  **Andrej (2026-11-26, B):** Yes, B sounds right. We only exclude the dataset if another source that used other data
+  found a rule or coefficients that work better on a dataset without ever seeing it.
+
+  **Resolved (2026-11-26, Andrej):** B, in his formulation. EV-4's pretraining bullet and PROV-15 now say the same
+  two things. A third party's published model, rule or coefficients fitted on this dataset's own rows and labels do
+  not exclude it: the gain is measured on our shipped splits against a control of the same kind fitted elsewhere and
+  declared in a `Potential leak, kept on purpose:` note. A dataset is excluded only the other way round, when a model
+  or rule fitted on other data, which never saw this dataset, scores better on it than the models we fit, because
+  then the task is already solved from outside and adds nothing. The control decides, not the size of the gain. The
+  measured case is a Cases row in both files: on `gse40279_methylation_age` the two clocks fitted on these rows gain
+  0.633 years RMSE over the 60 shipped splits (5.279 to 4.645) while three clocks fitted elsewhere gain 0.115
+  together (5.163) and the best external clock alone loses to the baseline (5.976), so the external route is worse
+  and the dataset stays. The screening question of C was not added, and the register was re-read for decisions that
+  rest on the old wording: the decisions on record under those two rules are licences, other benchmarks' published
+  scores, another collection's columns, a model's feature cap, errors of a third-party copy and an unverifiable
+  pretraining overlap. None of them is a model fitted on our own rows' labels, so none changes; the one decision the
+  clause bears on is `gse40279_methylation_age`'s own issue on how far to declare the contamination, which stays with
+  that record.
+
+- **What would a memory-, runtime- and token-efficient treatment of an extremely wide table be?** (from
+  `gse40279_methylation_age`; it belongs with the framework, in `src/data_foundry/`.) Raised on 2026-11-25 as "raise
+  the thrift limits where we read parquet, so a wide frame can be loaded at all", and rewritten on 2026-11-26 on the
+  curator's note below, which asks for the treatment of such a table rather than the one keyword pair. **This still
+  blocks a build:** a container written for that dataset today cannot be loaded by the call the collection documents,
+  and the clean room's generated `score.py` is unusable as shipped for the same reason. It is the first dataset wide
+  enough to hit the limit (the previous widest ships 36,355 features), so there is no precedent; it is a framework
+  matter, not a curation rule.
+  * **Problem:**
+    - A plain `pd.read_parquet` fails outright on the 473,038-column file's footer (`Couldn't deserialize thrift:
+      TProtocolException: Exceeded size limit`), as does `pq.ParquetFile`.
+    - Every step we run on such a table loads the whole frame, which is where its memory and its runtime go.
+    - An agent reading it pays the same way, since no answer can name 473k columns: every question has to be settled
+      by an aggregate or a sample.
+  * **Background:** the file itself is valid and reads correctly once `thrift_string_size_limit` and
+    `thrift_container_size_limit` are raised to 2^31-1 (mean age 64.035 over 9 plates), and polars reads it either
+    way, which is why nothing noticed before. It has a single row group with 473,038 column chunks, so writing it in
+    column groups is not available without rewriting the file. Read sites `curation_container.py:675` (and `:613`),
+    `row_table.py:12` and `:109`; the write at `curation_container.py:546` needs no change. Measured on pyarrow
+    24.0.0.
+  * **Effect on the task:** none on any shipped dataset; total on this one until something lands.
+  * **Statistics:** what this run measured on the 656 x 473,037 table.
+
+    | What | Measured |
+    |---|---|
+    | `dataset check` | about 33 minutes, about 8.5 GB |
+    | three probes on a shared node | OOM-killed at about 20 GB; they had to move to a compute node |
+    | a Gram (kernel) fit of all 473,037 columns | through a 656 x 656 matrix, seconds |
+    | the file's layout | one row group, 473,038 column chunks |
+    | the default pandas/pyarrow read | fails on the footer |
+
+  * **Options:** the pieces combine; each row says what it costs and what it changes.
+
+    | | Option | What it does | Pro | Con |
+    |---|---|---|---|---|
+    | a | Nothing, the plain read everywhere (implemented) | no change | costs nothing | the container does not load at all for a table this wide, and every step keeps loading whole frames |
+    | b | Raise the thrift limits at the read sites | passes both thrift limits at the package's parquet reads and in the clean room's generated `score.py` | one keyword pair, no format change and no data rewrite; the only piece that makes the file open at all, and it covers every future wide dataset | a guard against malformed footers is raised for every file we read; it changes nothing about memory, runtime or tokens |
+    | c | Read column subsets, not whole frames | the readers take the columns a caller asks for (the target, the split and scoring columns, a probe's sample) instead of the whole table | a step's memory falls with the columns it needs, and both numbers above are whole-frame loads; no format change and no rewrite | the read sites and their callers have to pass a column list; a step that genuinely needs every column still pays |
+    | d | A kernel (Gram) path for the models that allow it | a ridge-like model fits through the 656 x 656 Gram matrix instead of the 656 x 473k design | this run fitted all 473,037 columns that way in seconds, where the whole-frame probes were killed at about 20 GB | a second fitting path, and only ridge-like models take it: no tree model, and no step that has to see the columns |
+    | e | Store a wide frame in column groups or another layout | the container writes such a table in groups of columns, or in another format, so a reader opens a part of it | a part can be read on its own, and the footer stops being one object | a format change plus a rewrite of this file (one row group, 473,038 column chunks), with every reader and the checksums following: the largest change here |
+    | f | A declared feature budget per dataset, or a reduced sibling version | the dataset declares a cap on its columns, or ships a narrower version beside the full one | everything downstream stays as it is | the full table then does not ship, or ships twice; narrowing a table for a tool's limit is what the width rule forbids, so it would need a rule of its own first |
+    | g | Probes that sample columns | a probe fits on a sample of the columns, the measured ones kept, and names the sample in its report | the probe run fits on a shared node instead of being killed; cheap to add | a finding is then on the sample, and a leak in a column outside it can be missed |
+
+  * **Recommendation:** b now, the minimum that unblocks the build and the only piece with no alternative, then c and
+    g as the efficiency work, with d used where the model allows it; e and f wait for a second dataset of this width,
+    since e rewrites shipped containers and f needs a rule of its own.
+  * **Decision:** which of b to g, and does b go in before that folder is built?
+
+  **Notes for the AI:** b is `thrift_string_size_limit=2**31-1, thrift_container_size_limit=2**31-1` passed through
+  to pyarrow at the read sites named above and in the clean room's `score.py` template, with a round-trip test on a
+  frame of about 473k columns; c gives those readers a column list to pass down; g adds a sampled-column mode to the
+  probes that load a frame, with the sample named in the report.
+
+  **Andrej (2026-11-26, discuss):** We should not just raise it but rather implement a memory, runtime and ai-token
+  efficient solution to deal with extremely wide datasets. What could we do?
+
+  **Answer (AI, 2026-11-26):** The item is rewritten on that question, and the options above say what each piece
+  costs and what it changes; the recommendation is b now, with c and g as the efficiency work and d where a model
+  allows it. Nothing is implemented and the item stays open for your choice.
+
+- **Record a Cases row that a deterministic function of the group key is treated as the key?** (from
+  `gse40279_methylation_age`; it belongs with the rules, under the rule that keeps a group id out of the features.)
+  That dataset's `ethnicity` column is constant within every one of its nine plates, so it is an exact two-level
+  coarsening of the group key and hands a model back part of what the split withholds; it is dropped, and its own
+  record's issue 2 puts the drop to the curator.
+  * **Problem:** the rule's object is the group id itself, and no precedent covers a feature that is a deterministic
+    function of it, so the next such column is decided from scratch.
+  * **Background:** the distinguishing fact is measurable and worth recording with the row: each of the nine plates
+    holds exactly one ethnicity, while both sexes occur on every plate (female share 0.312 to 0.728), so `sex` passes
+    the test `ethnicity` fails and the call rests on the key rather than on a preference about demographics. The
+    column that failed carries the study's recruitment design (alone 13.645 against a constant's 15.566; predicting
+    by its training-side mean age 16.07 to 14.18, beating the dummy on 52 of 60 folds) and hurts a real model
+    (-0.275).
+  * **Effect:** none on any shipped dataset today; it settles the next one.
+  * **Options:**
+
+    | | Option | What it does | Pro | Con |
+    |---|---|---|---|---|
+    | A | Nothing (implemented) | the drop is recorded in that dataset's record only | no rule file touched | the next panel re-derives it, and the one-step extension from the id to its coarsening stays unwritten |
+    | B | A Cases row under the group-id rule | one row: a feature that is a deterministic function of the group key is treated as the key, with the test (does the feature vary within a group?) and this dataset as the case | cheap; names the test rather than the dataset | written from one case |
+    | C | Amend the rule text | the rule itself says "a group id column, or a deterministic function of one" | the shortest statement of the test | a Must amended from one case |
+
+  * **Recommendation:** B, once the curator settles that dataset's issue 2; on a keep-with-an-exception there the row
+    records the exception instead.
+  * **Decision:** A, B or C?
+
+  **Notes for the AI:** on B the row goes into `leak_checks.md` under the group-id rule's Cases table, naming the
+  test and `gse40279_methylation_age`; on C the rule sentence changes and the Cases row names the first case.
+
+  **Andrej (2026-11-26, B):** go ahead.
+
+  **Resolved (2026-11-26, Andrej):** B, the Cases row added. The rule that keeps a group id out of the features now
+  carries the case: a column that is a deterministic function of the group key is treated as the key and left out as
+  well, and the test is whether the feature varies within a group. The row names the measurement that fixed it on
+  `gse40279_methylation_age`: each of the nine assay plates holds exactly one ethnicity, so that column is an exact
+  coarsening of the key and is dropped, while both sexes occur on every plate (female share 0.312 to 0.728), so `sex`
+  passes the test the dropped column fails. The rule's own sentence is unchanged (C was not taken).
+
+- **Widen the class-dependent-recording marker from classes to a grouping that carries the target?** (from
+  `genomic_prediction_soy_yield`; it belongs with the rules, with the marker table and the rules on artefacts that
+  differ by class.) The rule on gaps a source filled from neighbouring rows already describes the shape we met there:
+  "Setting them to missing is no fix when the gaps follow the classes: the missing values then mark a class." In that
+  dataset the gaps follow the biparental family rather than a class, and the target is a yield in kg/ha.
+  * **Problem:** the marker and the rules it points at are written about classes, so a continuous target whose
+    recording follows a grouping that carries it cannot be stated at all, and the argument that it is harmless has
+    to be reconstructed from scratch each time.
+  * **Background:** 55.3% of the soy line values' variance lies between families; the mask of unscored marker calls
+    recovers the 39 families exactly; pooled it is worth R^2 +0.163 against the genotype values' +0.002, and within
+    a family r -0.028 against the calls' +0.213. The grouped split and the per-family metric are what make it
+    harmless, and that reasoning lives only in that record's issues 5 and 6.
+  * **Why it reaches further:** it touches any grouped dataset whose recording differs by group, and the two
+    neighbouring cases of the same batch mark both edges of the test.
+
+    | Dataset | What differs by group or class | Where it stands today |
+    |---|---|---|
+    | `genomic_prediction_soy_yield` | the blank marker calls follow the biparental family, which carries 55.3% of the target's variance | no marker; the argument sits in its own review |
+    | `gse40279_methylation_age` | a feature was an exact coarsening of the group key, each of the nine assay plates holding exactly one ethnicity while both sexes occur on every plate, and it was dropped | the Cases row on a deterministic function of the group key; no recording marker |
+    | `gse147221_schizophrenia_methylation` | every case drawn as EDTA whole blood and every control as a blood-donor buffy coat | `Class-dependent Recording`, a genuine class case with no metric choice that defuses it |
+
+  * **Options:**
+
+    | | Option | What it does | Pro | Con |
+    |---|---|---|---|---|
+    | A | Leave the marker as it is (implemented) | the grouped case keeps being argued inside each dataset's own review | nothing to change; the 13 records that carry the marker today keep exactly their meaning | the next grouped dataset re-derives the argument, and a reader who scans the markers finds nothing on the soy case |
+    | B | Widen the wording and write down the test | the marker reads "a class, or a grouping that carries the target", and the test it is decided by stands beside it: does the recording vary within the group, and is the group scored across or within | one sentence covers both shapes, and the test is the one all three cases above were decided by; the 13 marked records keep their marker unchanged, since each is a classification task and a class is such a grouping | the marker's meaning widens, so anyone counting marked datasets as class cases has to re-read them |
+    | C | A second marker for the grouped case | a new marker beside the existing one, for a recording that follows a grouping which is not the class | the class cases and their counts stay untouched | two markers that one test decides, each future case first needing the split between them judged, and a vocabulary entry added for one dataset |
+
+  * **Recommendation:** B. All three cases are decided by the same two questions, and the only difference is whether
+    the grouping is the label; a second marker would spread one test over two names, while leaving it as it is keeps
+    the soy argument out of reach of anyone who did not read that review.
+  * **Decision:** A, B or C?
+
+  **Notes for the AI:** on B, the marker row in `selection.md` and the marker paragraph under the rules on artefacts
+  that differ by class in `leak_checks.md` gain the clause and the two-question test; the vocabulary entry keeps its
+  name. On C, the new name goes into `curation/vocabularies.yaml` and both rule files. Either way, whether
+  `genomic_prediction_soy_yield` itself then carries the marker is a decision for its own review, raised there if B
+  or C is taken.

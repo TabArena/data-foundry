@@ -1,5 +1,229 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-26, genomic_prediction_soy_yield and the cross-dataset items: the metric carries the blank marker cells, and the marker scope (text only, nothing built)
+
+- `genomic_prediction_soy_yield`, the review. Issue 6, the metric exception, gains a `Depends on:` passage that
+  writes down what the panel measured but never stated as a coupling: the blank marker calls name the cross exactly
+  (clustering on the missing-value mask alone recovers the 39 families at adjusted Rand 1.0000, and all 4,185
+  distinct patterns over the 5,143 lines lie inside one family), pooled that mask is worth R^2 +0.163 against the
+  genotype values' +0.002 and predicts a held-out family's mean at r 0.665 against 0.346 from the mean genotype,
+  while within a family it scores r -0.028 against the calls' +0.213 and a family-mean fill moves the declared
+  metric by +0.0009. So the declared per-family metric is what keeps issue 5 a question about what the notes claim
+  rather than about what was recorded, and restoring the source's pooled metric reopens issue 5 and the blind
+  reviewer's exclusion vote, both measured on that pooled footing. Issue 5 gets the one-line pointer back. No
+  option, recommendation or issue number changes, and nothing in the data, the definition or the splits.
+- The cross-dataset file. A new item at the end of the TabBench-Bio section asks whether the
+  `Class-dependent Recording` marker should widen from classes to a grouping that carries the target: the rule on
+  gaps filled from neighbouring rows already describes the shape ("the missing values then mark a class"), but
+  marker and rules are written about classes, so the soy case cannot be stated and is re-derived each time. It
+  names the two neighbouring cases that mark the edges of the test, `gse40279_methylation_age` (a feature that was
+  an exact coarsening of the group key, dropped) and `gse147221_schizophrenia_methylation` (cases as EDTA whole
+  blood, controls as blood-donor buffy coat, with no metric choice that defuses it), and offers leaving the marker
+  as it is, widening its wording with the test that decides it, or a second marker for the grouped case; the
+  recommendation is to widen. The 13 records that carry the marker today are all classification tasks, so no
+  marked dataset changes under any option. No rule file is touched.
+
+## 2026-11-26, astrazeneca_chembl_logd74 and genomic_prediction_soy_yield: the logD metric and the soy few-groups warning (Andrej's review decisions, no container built)
+
+- `astrazeneca_chembl_logd74`, the metric. The declared metric becomes `mae` in log units with the origin `context`,
+  in place of the regression fallback (which happened to be `rmse`). The deposit defines no metric, and the two
+  benchmarks that made a task of it declare different ones; the one taken is TDC's, the definer whose task design
+  this definition follows (the Bemis-Murcko scaffold hold-out and one prediction per compound), while MoleculeNet's
+  RMSE is paired with the random split over its own reprocessed copy, both rejected here. The reason names both
+  definers, says why the tie breaks that way, and keeps the measurement: over eight candidate models the ranking is
+  identical under MAE, RMSE, median absolute error, the share within 0.5 and within 1.0 log, Spearman and a 3-band
+  accuracy (per-fold Kendall tau 1.00 on 7 of the 9 folds, 0.929 on the other two), and an L1-trained LightGBM does
+  not win on MAE either (0.552 against 0.528). `dataset check` ends at 0 errors, 0 warnings and 0 info over 28
+  checks, and the README is regenerated on the new metric. The errors in log units elsewhere in the notes were
+  measured as RMSEs over the nine shipped folds and are labelled as such; the one bound stated in the metric's own
+  units, the six multi-fragment rows, now reads about 0.0014 on the declared MAE per fold.
+- `astrazeneca_chembl_logd74`, the averaging. The five compounds the assay measured twice keep shipping as one row
+  each, holding the mean, and the departure from the rule that keeps the source's rows is now written down: an
+  exception line in the record and in the notes, and an exception row in the splits rules' Cases table. The three
+  facts that set it apart from `superconductivity`, which weighted its repeats instead: 0.12% of the deposit against
+  40% of the rows there, true protocol replicates inside one document and one assay, and no split consequence, both
+  rows of a pair carrying the same structure and scaffold. Nothing in the data changes.
+- `genomic_prediction_soy_yield`, the few-groups warning. `accepted_check_warnings` now carries
+  `groups_test_groups_few` with its measured reason, so `dataset check` ends at 0 errors, 0 warnings and 1 info over
+  28 checks (1 warning before), the warning ignored rather than raised. Every figure in the reason depends on the
+  target, so all were measured again on the values the rebuild of the same day ships, over the 60 shipped splits:
+  39 families, 13 per test fold, 1,642 to 1,776 lines scored per fold; GBLUP, ridge, random forest and LightGBM each
+  beat the dummy on 60 of 60 folds; per-family r has SD 0.09 to 0.10, a standard error of 0.015 to 0.017 against a
+  mean of 0.18 to 0.23, 12 to 16 standard errors from zero; 38 of the 39 families score positive under ridge and all
+  39 under the other three; and a null that shuffles the labels inside each test family (500 runs, each scored over
+  the 60 folds) gives mean +0.0001, SD 0.0031, max 0.0089, with the measured score 68 null SDs above it at the
+  p = 0.002 floor of 500 runs. No data, target, split or metric change.
+- The records. logD's issues 2 and 5 are resolved and its review has nothing open; soy's issue 3 is resolved, its
+  issue 1 is closed as void for the superseded target and asked again as issue 8, for the construction that ships
+  now, with the rebuild's measurements and an options table (keep the computed line value and record the exception,
+  ship the plot rows, or ship a plain per-line mean). `gse40279_methylation_age` gets the sign-off lines for its
+  declared metric and split and the ship verdict; its own check stays deferred, so its README is still stale against
+  its definition.
+
+## 2026-11-26, curation rules: the per-group metric, a measured third-party model, and a coarsening of the group key (Andrej's decisions on the cross-dataset items, no dataset changed)
+
+- The metric rules carry a new rule, MET-18, beside the two it narrows (a competition's and a paper's metric): when
+  the scored rows fall into groups the actor does not choose between, and a predictor that knows nothing but each
+  group's mean beats the models under a pooled score, the metric is declared per group and the pooled score is named
+  as the original from context, whether or not it is the source's. The declaration reports the between-group share of
+  the target's variance and what the group-mean predictor scores against the models. Its Cases rows are the three
+  datasets that took this call: protein_model_quality_rf_pcp and huesken_sirna_efficacy, whose rows move from
+  exceptions to the paper-metric rule to applications of the new one, and genomic_prediction_soy_yield (54.3% between
+  families, a family-mean oracle at pooled r 0.683 against ridge's 0.236 and exactly 0 within a family), the first
+  case where the clause overrules a source's deliberate choice. The metric patterns table and the source-metric
+  tension in the principles name the new rule.
+- The evidence and provenance rules say what a third party's published model does to a decision. One fitted on this
+  dataset's own rows and labels is no longer waved past as pretraining overlap: its gain is measured on our shipped
+  splits against a control fitted elsewhere and declared in a `Potential leak, kept on purpose:` note, and it never
+  excludes the dataset. Exclusion runs the other way only, when a model or rule fitted on other data, which never saw
+  this dataset, scores better on it than the models we fit, because the task then adds nothing. The Cases row in both
+  files is gse40279_methylation_age: over its 60 shipped splits the two clocks fitted on these rows gain 0.633 years
+  RMSE (5.279 to 4.645) while three clocks fitted elsewhere gain 0.115 together (5.163) and the best external clock
+  alone loses to the baseline (5.976), so the external route is worse and the dataset stays.
+- The rule that keeps a group id out of the features gets its Cases entry: a column that is a deterministic function
+  of the group key is treated as the key and left out too, the test being whether the feature varies within a group.
+  The case is gse40279_methylation_age, where each of the nine assay plates holds exactly one ethnicity, so that
+  column is an exact coarsening of the key and is dropped, while both sexes occur on every plate (female share 0.312
+  to 0.728) and `sex` stays. The rule's own sentence is unchanged.
+- Two cross-dataset items changed no file. A public derived copy of a rebuilt dataset's target gets no rule and no
+  probe: the collection fits the models itself, so looking a label up on the web is not a route a scored model has.
+  The wide-table item stays open and still blocks that dataset's build: the curator asked for a memory-, runtime- and
+  token-efficient treatment of very wide tables rather than only raising the parquet thrift limits, and the item now
+  puts that question with seven options (raising the limits, column-subset reads, a kernel path, another layout, a
+  feature budget or a reduced sibling, sampled-column probes) and what each costs.
+
+## 2026-11-26, genomic_prediction_soy_yield: the line value from the common check plots alone (Andrej's decision, no container built)
+
+- The target. Each plot is now corrected for its environment and for its field block, both measured on the check
+  plots alone, and a line's value is the mean of its own corrected plots; before, the environment effects were
+  fitted over all 56,929 line plots and the field block entered as one slope on an index of all 45 check strains.
+  That is model 1 of Diers et al. 2018, with the block effects shrunk by `vb / (vb + ve / n)` (0.43 to 0.92 over
+  the 1,707 blocks), and it is how Lennart's build of this dataset computes the value. No line's yield enters
+  another line's value any more, so the `Potential leak, kept on purpose:` note is gone.
+- The checks of the correction are the six grown across the trial (IA3023, the common parent, with U06-100052,
+  LD04-11056, LD04-13265, IA2094 and U09-215057): 7,294 plots that fill all 1,707 blocks. The other 39 strains of
+  the check table are the families' own founder parents, 38 standing only in their own family's blocks and
+  LD02-4485 fathering family 12 while serving as a general check in 18 families. Taking the founders in as well
+  moves the line values by 27.8 kg/ha SD and the declared metric 0.005 up for ridge and 0.001 down for LightGBM.
+- What moved: line values 2,029 to 4,584 kg/ha (mean 3,578, SD 354) against 2,099 to 4,602 (3,607, SD 353), the two
+  correlating 0.9925 pooled and 0.987 within a family (lowest family 0.956, difference SD 44 kg/ha and 39 within a
+  family); the entry-mean heritability 0.789 against 0.809, with 0.822 published by Diers et al.; the between-family
+  share 55.3% against 54.3%; the plain mean of a line's plots now correlating 0.937. Over 3 grouped folds the
+  declared metric moves from 0.207 to 0.198 (ridge by eigendecomposition) and from 0.223 to 0.229 (untuned
+  LightGBM), inside a fold-to-fold spread of 0.03 to 0.06. `dataset check` is unchanged at 0 errors, 1 warning
+  (`groups_test_groups_few`) and 1 info over 28 checks.
+- The notes: the target, check-plot and plain-mean bullets are rewritten on the new construction, a bullet records
+  what the change moved, the maturity figures are re-measured (within-family r 0.266 with an R8 line value built the
+  same way; ridge 0.198 falling to 0.182 when the maturity component is taken out), and `_decisions` compares the
+  shipped value with the founders taken in, with the environment-only value and with the plain mean.
+- The record: issue 2 of its review is resolved with the measurements, the founder-parent point of the column audit
+  closes with it, issues 1, 4 and 7 get a turn naming the figures that were measured on the superseded values, and
+  the panel's summary line says which two points the change closed.
+
+## 2026-11-25, gse40279_methylation_age added: chronological age from whole-blood methylation (no container built)
+
+- New folder. Hannum et al.'s GEO series GSE40279 as deposited: 656 whole-blood 450K samples, one person each,
+  473,034 average-beta probes, chronological age 19 to 101. The authors' KNN imputation is undone from the origin by
+  reading BeadStudio's signal file, whose `max(B, 0) / (A + B + 100)` reproduces the deposit to 3.14e-07 over all its
+  cells, so 430,448 cells (0.139%) go back to missing. Grouped 20x3 splits holding out whole assay plates (9 plates
+  of 17 to 92 samples, leaf `L-PLACE.groups`, `UnseenGroup`), scored by the regression fallback, rmse in years. No
+  container is built: the written frame cannot be read by the plain `pd.read_parquet` the container loader uses, which
+  is the cross-dataset framework item below.
+- After the review panel (full tier, 11 roles), the changes it settled without a decision: `ethnicity` is dropped from
+  the features, because each of the nine plates holds exactly one ethnicity, so the column is a deterministic
+  two-level coarsening of the group key, while both sexes occur on every plate and `sex` stays; the use case,
+  `fit_reason` and the prediction-point bullet are rewritten on the clock builder who chooses a model by its held-out
+  error in years, with the forensic estimate named as the decision the clock serves and the aging rate as a purpose
+  rather than an actor (the fit stays `direct`); and the metric reason now says where we looked and weighs the
+  field's absolute-error practice against the fallback, which stands.
+- The splits comment: the grounds for rejecting the site key (the number of distinct partitions and the fold sizes)
+  are replaced by the experiment that decides the key, plate labels permuted inside cells of ethnicity by age
+  quintile, which splits the plate split's +1.79 years over random people into +1.5 for plate membership and +0.25
+  for cohort composition; added are the 41 distinct training sides and test sets of the 60 splits, 0.0% of test rows
+  keeping their own plate against the site key's 32.3%, the 8 Sentrix lots of which 4 cross a plate (a lot-held-out
+  split is easier, clock 5.93 against 6.12), the place the leaf means (the assay batch), the distance behind the
+  nearest-neighbour figure (Euclidean, 60.4% by sample correlation), the two untested transfers with UCSD's 100%, and
+  the two-component split (UCSD against the rest) as the bound on what the shipped split cannot test. The pair-key
+  sentence is corrected: the 12-group key is the weakest of the three, not the stricter option.
+- Also written: `accepted_check_warnings` for `task_group_count_low` and `groups_test_groups_few`, with the evidence
+  that now exists (four model families beating the dummy on 60 of 60 splits and shuffled ages on 0 of 60 over three
+  seeds, per-split RMSE 4.62 to 6.66 with a fold-to-fold sd of 1.24, plates of 17 to 92 samples), and the clause that
+  304 of the 430,448 restored cells are measured rather than imputed.
+- The record: the panel's eleven reports and five open decisions in its `## Review` (how far the published-clock
+  contamination is declared, the `ethnicity` drop, the group key's departure, the metric, and the two warning
+  acceptances), the assessment line, and `priority` 2 confirmed. Two items went to this directory's `REVIEW.md`
+  instead: the amendment of the rules that say another party's model and pretraining overlap never change a decision,
+  and the wide-parquet reader fix in `src/data_foundry/`, which blocks any build of this folder. A third item there
+  proposes the Cases row that a deterministic function of the group key is treated as the key.
+
+## 2026-11-25, genomic_prediction_soy_yield added: SoyNAM genomic selection for yield (no container built)
+
+- New folder. 5,143 recombinant inbred lines of 39 biparental families from the SoyNAM project's own release, read
+  from the CRAN package (`soybase`: `data.line.qa`, `data.check.qa`, `gen.qa`), not from the benchmark's standardized
+  cut. The features are 4,312 quality-assured SNP calls (0/1/2, 25.65% not scored by the design of a nested
+  association panel); the target `yield_kg_ha` is ours to fit, the line effect of `yield = mu + b * block index +
+  environment + line` by least squares over the 56,929 plot yields, with the block index from the check plots alone
+  so no line's yield enters another's. Grouped 20x3 splits holding out whole families (leaf `L-EXP.kind`,
+  `UnseenGroup`, `context="all_rows"`), scored by `mean_group_pearsonr` on the family. `dataset check` 0 errors, 1
+  warning (`groups_test_groups_few`, for the curator) and 1 info over 28 checks; the probes raise no flag (four model
+  families beat the dummy on 100% of the 60 splits, a within-family permutation over 500 runs gives p = 0.002, 0 of
+  102,860 test rows have an exact feature copy in training, 1-NN R^2 -0.42).
+- Prose, after the review panel (full tier, 11 roles; no data changed, the frame and both decision tables are
+  identical before and after): the target fit is attributed to the package's own `BLUP()` and the two real departures
+  from Diers et al. 2018 are named (two stages with block BLUPs from 10 check varieties; the entry random and no
+  environment term), with the planting-date departure recorded as immaterial since the covariate is absent from the
+  quality-assured release and is constant within an environment. The fit statement is rewritten on the germplasm with
+  its measured direction (the breadth costs about 0.06 of within-family ability rather than flattering the score),
+  keeping `fit="approximate"`, with the measurement in the notes. Corrected: the single-marker sentence (the 0.145 is
+  the missingness, a label of the cross, not a QTL), "45 check cultivars" (4 near-ubiquitous checks, 3 covering 18
+  families, 38 family founders, with the 38 kg/ha and -0.005 to -0.007 sensitivity), the heritability (0.808, with
+  Diers' 0.822 beside it) and three slips (19 Zenodo files, 401 lines, 43.2%).
+- New in the notes and the comments: the dropped plot traits' worth (+0.391 against the markers' +0.213, stacked
+  +0.12), `set` as considered and rejected with the load-bearing seed-42 shuffle, the block structure of the
+  missingness with the pooled-against-within-family numbers, the maturity paragraph, the licence clause (the data is
+  the GPL-3 package's, the CC0 record is the derived cut we do not read), the parent-yield fact (r = 0.937) in the
+  metric reason, the departure from the source's split on the declared metric (0.036 to 0.117, not the 0.309 in
+  R^2), the context gain (+0.0795) in the splits comment and the grouping definition, and the half-sib limit accepted
+  inside the time-basis text.
+- The record: the panel's reports and seven open decisions in its `## Review` (the exception for a target we fit, the
+  check-only environment fix, the few-groups acceptance, the unread `soyin` object, the blank marker cells, the
+  metric exception, and a public companion file that recovers the target), the assessment line, and `priority` 4 to
+  3. Two items went to this file instead: the amendment of the source-metric rule, which spans three datasets, and
+  how to record a public derived copy of a rebuilt dataset's target.
+
+## 2026-11-25, astrazeneca_chembl_logd74 added: AstraZeneca's shake-flask logD7.4 assay (no container built)
+
+- New folder. 4,195 compounds of ChEMBL assay CHEMBL3301363 (document CHEMBL3301361, AstraZeneca's 2015 deposit of
+  publicly disclosed compounds), read from the ChEMBL activity endpoint in five pages of 1,000. The structure is the
+  one feature, a `SMILES` special feature in RDKit's canonical form with every fragment and the stereochemistry kept;
+  the target `logd74` is the measured value as deposited, with the five twice-measured compounds averaged. Grouped
+  3x3 splits on the Bemis-Murcko scaffold (2,413 groups, leaf `L-EXP.kind`, `UnseenGroup`), metric `rmse` as the
+  regression fallback. `dataset check` 0 errors, 0 warnings over 28 checks; the task, leak and group probes raise no
+  flag (LightGBM R^2 0.659 against the dummy on 9 of 9 splits, 0.0% of test rows with an exact feature copy in
+  training, 1-NN R^2 0.032 on the closest tenth, IID-against-grouped gap 0.057).
+- The group key is the structure without its common salts and solvents and without repeated identical fragments
+  (`group_structures`), not the shipped SMILES. On the shipped SMILES one record, levofloxacin hemihydrate written as
+  its parent twice plus a water, had the parent's scaffold string twice and grouped apart from the same chemical,
+  landing on the other side of 6 of 9 folds. `FragmentRemover` alone does not fix it (it keeps both parent copies,
+  which is why the check run against it reproduced the old 2,414 groups); the two steps together give 2,413 groups,
+  change that one row's group and leave every other row where it was.
+- The download is pinned by the sha256 and byte size of each of the five pages, and `_clean` asserts the six
+  activities whose `parent_molecule_chembl_id` differs from their `molecule_chembl_id`, so a further re-pointing
+  fails the check instead of changing a structure unseen. The download description now says that the deposit is
+  CHEMBL_20 while the endpoint answers from CHEMBL_37, and names the four activities ChEMBL re-pointed onto hydrate
+  records since.
+- Prose, after the review panel: the fit statement names the disclosure population and the end-of-range shrinkage
+  (the measured numbers moved to the notes to keep the summary short); the time-basis reason replaces "no clock
+  orders the rows" with the recoverable disclosure order and the control that rules a temporal split out; the
+  stereoisomer decision no longer reads its 1.55 spread as a floor (it is an enantiomer pair, a label error, and the
+  real bound is 0.5 or less); the analog shares are the shipped folds' 22.9% and 46.0%; the group counts, the
+  dropped-field sentence and the identifier rule citation are corrected; and new bullets record the raw file's sort
+  by the target with the load-bearing seed-42 shuffle, the publicly recoverable labels and the measured
+  ranking-invariance of the metric.
+- The record: the panel's reports and five open decisions in its `## Review` (the fit grade and the marker, the
+  written exception for the averaging, the collection facts, whether to repair the four re-pointed rows, and a cases
+  row in the metric rules), the assessment line, and `priority` 3 to 2.
+
 ## 2026-11-23, huesken_sirna_efficacy: 20 x 3 splits over the target genes (Andrej's decision, no container built)
 
 - The score averages one per-gene correlation and every fold holds out whole target genes, so the split rule counts

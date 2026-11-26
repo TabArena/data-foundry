@@ -347,7 +347,11 @@ data, covered by its tag and the `Anonymized` marker: no action. Cases: ieee_fra
 
 These rules protect against removing real signal.
 
-**LEAK-33 (Must).** A group id column is split metadata, never a feature.
+**LEAK-33 (Must).** A group id column is split metadata, never a feature. Cases: gse40279_methylation_age, where a
+column that is a deterministic function of the group key is treated as the key and left out as well. The test is
+whether the feature varies within a group: each of the nine assay plates holds exactly one `ethnicity`, which is
+therefore an exact coarsening of the key and is dropped, while both sexes occur on every plate (female share 0.312 to
+0.728), so `sex` passes the test the dropped column fails.
 
 **LEAK-34 (Must; narrows LEAK-10).** An entity's own history under a temporal split is legitimate, also when it
 carries labels forward (a known entity: USE-10). Cases: ghana's reporter history; ieee_fraud_detection's `uid` (test
