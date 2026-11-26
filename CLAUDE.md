@@ -27,8 +27,9 @@ gotchas that look like blockers but aren't — lives in
     the local dashboard (`.venv/bin/python -m data_foundry.curation.cli serve`) on its Screening queue,
   * add a dataset — `/add-dataset`
     ([`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md)): the v2 folder (`dataset.py`
-    class + generated `README.md`, API in `src/data_foundry/definition/`), checks and probes, then a review
-    panel of agents (`.claude/agents/`); the open questions go into the record's `## Review`; also "is X ready?",
+    class + generated `README.md`, API in `src/data_foundry/definition/`), checks and probes
+    (`data-foundry probe {leak,task,group,...} NAME`, in `src/data_foundry/probes/`), then a review panel of agents
+    (`.claude/agents/`); the open questions go into the record's `## Review`; also "is X ready?",
   * the curator reviews what was added — `/review-added-datasets`
     ([`.claude/skills/review-added-datasets/SKILL.md`](.claude/skills/review-added-datasets/SKILL.md)): the review
     page from the records' `## Review` sections; the curator's decisions are checked for consistency and applied.

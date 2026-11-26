@@ -761,7 +761,7 @@ def _group_section(result: CurationResult) -> list[str]:
         "The nearest neighbour is computed on the standardised numeric features of a sample of up to "
         f"{group_checks.NEIGHBOUR_SAMPLE_ROWS:,} rows; chance is the share expected if the groups were unrelated to "
         "the features. The model-based diagnostics run with "
-        "`.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.",
+        "`data-foundry probe group`.",
         "",
     ]
     return out

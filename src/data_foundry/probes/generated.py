@@ -47,13 +47,18 @@ proposing anything.
 
 from __future__ import annotations
 
+import argparse
+import time
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 from scipy.stats import chi2_contingency, kstest, norm, rankdata
 from sklearn.linear_model import QuantileRegressor
 from sklearn.tree import DecisionTreeClassifier
 
-from curation_probes.text import is_time, seconds
+from data_foundry.probes import inputs
+from data_foundry.probes.encode import is_time, seconds
 
 MAX_ROWS = 20_000
 MAX_LEVELS = 20
@@ -426,3 +431,52 @@ def check_frame(
     result["flags"] = flags
     result["flag_rules"] = {flag: FLAG_RULES[flag] for flag in flags}
     return result
+
+
+# On a dataset: `data-foundry probe generated`
+
+
+def probe(name: str, root: Path, args: argparse.Namespace) -> dict:
+    """Run ``check_frame`` on one dataset's model inputs and target."""
+    started = time.time()
+    data = inputs.load(name, root, built=args.built)
+    result = {"name": name, "origin": data.origin}
+    result |= check_frame(data.df, data.target, data.problem_type, data.group_cols, feature_cols=data.features)
+    result["seconds"] = round(time.time() - started)
+    return result
+
+
+def render(r: dict) -> str:
+    """One line per dataset."""
+    if "error" in r:
+        return f"{r['name']}: error {r['error']}"
+    if "exact_share" in r:
+        detail = (
+            f"exact {r['exact_share']:.1%} ({r['transform']}) vs shuffled {r['exact_share_shuffled']:.1%}, "
+            f"{r['terms']} terms on {r['n_fit']} rows"
+        )
+    elif "pure_minority_share" in r:
+        detail = (
+            f"rule leaves cover {r['pure_minority_share']:.1%} of the minority rows ({len(r['rule_leaves'])} leaves)"
+        )
+    else:
+        detail = r.get("skipped", "")
+    if "pair_share" in r:
+        detail += (
+            f"; columns: {r['pair_share']:.1%} of {r['pairs']} pairs dependent, "
+            f"{r['uniform_columns']} of {r['uniform_tested']} uniform"
+        )
+    if "class_pair_share" in r:
+        detail += (
+            f"; within {r['classes']} classes: {r['class_pair_share']:.1%} of {r['class_pairs']} pairs dependent, "
+            f"{r['class_uniform_columns']} of {r['class_uniform_tested']} uniform"
+        )
+    rules = r.get("flag_rules", {})
+    flags = [f"{flag} ({rules[flag]})" if flag in rules else flag for flag in r["flags"]]
+    return f"{r['name']} ({r['problem_type']}, {r['rows']} rows): {detail}; flags {flags}"
+
+
+def summary(results: list[dict]) -> str:
+    """``summary.md``: the line of each dataset, the flagged ones first."""
+    ordered = sorted(results, key=lambda r: (not r.get("flags"), r["name"]))
+    return "\n".join(f"- {render(r)}" for r in ordered) + "\n"

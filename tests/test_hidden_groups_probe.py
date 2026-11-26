@@ -1,38 +1,26 @@
-"""Tests for the hidden-group probe (``curation_probes.hidden_groups``) and its command-line wrapper."""
+"""Tests for the hidden-group probe (``data_foundry.probes.hidden_groups``) and its report."""
 
 from __future__ import annotations
 
-import importlib.util
 import math
-import sys
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
 
-pytest.importorskip("lightgbm")
+from data_foundry.probes import hidden_groups
 
-REPO = Path(__file__).resolve().parents[1]
-SCRIPTS = REPO / ".claude" / "skills" / "knowledge-data-foundry" / "scripts"
+
+@pytest.fixture(scope="module")
+def probe():
+    """The probe's module: its core and its report (``render``, ``_summary_row``)."""
+    return hidden_groups
 
 
 @pytest.fixture(scope="module")
 def cli():
-    """hidden_groups.py, imported as a module (it puts the probe library on the path)."""
-    if str(SCRIPTS) not in sys.path:
-        sys.path.insert(0, str(SCRIPTS))
-    spec = importlib.util.spec_from_file_location("hidden_groups_cli", SCRIPTS / "hidden_groups.py")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
-
-
-@pytest.fixture(scope="module")
-def probe(cli):
-    """curation_probes.hidden_groups."""
-    return cli.hidden
+    """The report of ``data-foundry probe hidden-groups``: the same module."""
+    return hidden_groups
 
 
 def test_float_column_with_few_values_is_a_candidate(probe):

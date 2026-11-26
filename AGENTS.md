@@ -34,6 +34,8 @@ Data Foundry is the data-layer toolkit behind
   summary tables (`tables.py`), and the registry of every check slug (`registry.py`). `checks/` imports nothing of
   `definition/` (a test holds it); `definition/` uses `checks/`. The consumer side (`task.py`, the task view;
   `metrics.py`, `sampling.py`, `special/`, `encodings.py`) loads none of `definition/` and `checks/`;
+* the **probes** (`probes/`, the `probes` extra): leak, task, group, hidden-group, time, dtype and generated-data probes
+  on a definition or a built container, run as `data-foundry probe <probe> NAME...`;
 * a git-native **curation backlog** (`src/data_foundry/curation/`) that replaces
   the legacy curation Google Sheet. The source of truth is **one markdown record
   per candidate dataset** (YAML front-matter for the structured/dropdown fields +
@@ -48,8 +50,8 @@ Data Foundry is the data-layer toolkit behind
   (`.venv/bin/python -m data_foundry.curation.cli -h`) also covers `sync-notebooks` (refreshes each
   record's two stored pointers: `notebook_path`, its BeyondArena notebook, and
   `v2_path`, its `dataset.py` in the TabArena v0.2 working copy), `validate`,
-  `export`, `dataset` (list / check / build / new for v2 folders)
-  and `build-site` (a read-only static site). That static site is published to
+  `export`, `dataset` (list / check / build / new for v2 folders), `probe` (the probes; `data-foundry` is the same
+  command) and `build-site` (a read-only static site). That static site is published to
   GitHub Pages at https://tabarena.github.io/data-foundry/ — regenerated from
   `curation/records/` on every push to `main` by `.github/workflows/pages.yaml`,
   so editing a record and merging to `main` is what updates the public site.
@@ -73,7 +75,7 @@ apply lives in two reference skills, read by every workflow at the step that nee
 * [`knowledge-curation`](.claude/skills/knowledge-curation/SKILL.md): how we decide whether a dataset belongs in
   TabArena and how we curate it, independent of the tooling, as ranked rules with IDs and strengths (principles,
   scope, use case, leaks, splits, provenance, task quality, cleaning; evidence, the verification checklist, writing
-  for the curator), plus the general probe library;
+  for the curator);
 * [`knowledge-data-foundry`](.claude/skills/knowledge-data-foundry/SKILL.md): how this repository implements it
   (records, dashboard, the v2 `dataset.py` API, checks and probe commands, the working copy, batch runs) and the house
   rules.
@@ -202,7 +204,7 @@ bump versions or publish without explicit human authorization.
 | Data Foundry knowledge (records, dashboard, `dataset.py`, checks and probes, working copy, house rules) | [`.claude/skills/knowledge-data-foundry/SKILL.md`](.claude/skills/knowledge-data-foundry/SKILL.md) |
 | The curation skills for people (commands, pipeline, review panel) | [`.claude/skills/README.md`](.claude/skills/README.md) |
 | Screen candidates (quick pass, priority) and review the screening (dashboard) | [`.claude/skills/screen-candidates/SKILL.md`](.claude/skills/screen-candidates/SKILL.md) · [`.claude/skills/review-screened-candidates/SKILL.md`](.claude/skills/review-screened-candidates/SKILL.md) |
-| Leak checks and the probes | [`leak_checks.md`](.claude/skills/knowledge-curation/references/leak_checks.md) · [`checks_and_probes.md`](.claude/skills/knowledge-data-foundry/references/checks_and_probes.md) |
+| Leak checks and the probes | [`leak_checks.md`](.claude/skills/knowledge-curation/references/leak_checks.md) · [`checks_and_probes.md`](.claude/skills/knowledge-data-foundry/references/checks_and_probes.md) · [`src/data_foundry/probes/`](src/data_foundry/probes/) |
 | Container save/load + describe | [`src/data_foundry/curation_container.py`](src/data_foundry/curation_container.py) |
 | The checks (bundle, task, definition, saved files) and the registry of their slugs | [`src/data_foundry/checks/`](src/data_foundry/checks/) · [`check_slugs.md`](.claude/skills/knowledge-data-foundry/references/check_slugs.md) |
 | Collections + cache helpers | [`src/data_foundry/collections/`](src/data_foundry/collections/) |

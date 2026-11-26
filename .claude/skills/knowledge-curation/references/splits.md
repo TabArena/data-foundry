@@ -147,11 +147,12 @@ about time), and they do not change with the split a definition chooses. A fact 
   and the fact stays what the source says.
 * **Time,** for samples over time: `Time: Dated` when the release or a parent source keeps the date (a date column, a
   value that encodes the period, a date dropped from the raw file, or a parent upload that matches the rows by an id;
-  the time probe, `time_probes.py`, looks for them); `Time: Inferred` when only an order that tracks time survives,
-  with no calendar (an id, a case number, a file position); else `Time: Lost`. An order found only within each entity
-  (a policy's terms, a patient's visits, the 2 Hz samples of one bench session) is `Time: Within Entity`, whatever the
-  samples fact says (electric_motor_temperature_prediction: designed sessions, `Samples: No Time Dimension`). A time
-  recoverable only through the outcome does not count (heart_failure_followup_survival can date its survivors only).
+  the time probe, `data-foundry probe time`, looks for them); `Time: Inferred` when only an order that tracks time
+  survives, with no calendar (an id, a case number, a file position); else `Time: Lost`. An order found only within each
+  entity (a policy's terms, a patient's visits, the 2 Hz samples of one bench session) is `Time: Within Entity`,
+  whatever the samples fact says (electric_motor_temperature_prediction: designed sessions,
+  `Samples: No Time Dimension`). A time recoverable only through the outcome does not count
+  (heart_failure_followup_survival can date its survivors only).
 * **Target:** `Target: Fixed Delay` (after the features, at one shared date or after a fixed window; named `Target:
   Later` until 2026-11-23, as older notes call it), `Target: Varying Delay` (after a delay that differs between samples:
   a settlement, a chargeback, a follow-up), `Target: Revised Later` (assigned, then updated or propagated; also a label

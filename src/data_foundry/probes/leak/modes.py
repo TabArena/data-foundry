@@ -1,27 +1,25 @@
-"""Quick leak probes for one v2 dataset: what a model learns from the data that it should not.
+"""The leak probes on one v2 dataset, as ``data-foundry probe leak`` runs them.
 
 Usage::
 
-    python .claude/skills/knowledge-data-foundry/scripts/leak_probes.py <unique_name>
-        [--root datasets/_dev/tabarena-v0pt2] [--splits 3] [--max-rows 50000] [--max-single-features 300]
-        [--n-jobs 8] [--out DIR]
+    data-foundry probe leak NAME... [--root datasets/_dev/tabarena-v0pt2] [--splits 3] [--max-rows 50000]
+        [--max-single-features 300] [--n-jobs 8] [--jobs 1] [--out DIR]
         [--time-on COLUMN] [--period D|W|M|Q|Y] [--tz ZONE] [--positive LABEL] [--tail N] [--period-only] [--raw]
-    python .claude/skills/knowledge-data-foundry/scripts/leak_probes.py <unique_name> --weight-proxy
+    data-foundry probe leak NAME --weight-proxy
         [--weight-column COLUMN] [--objective metric|l2|OBJECTIVE] [--seeds 3] [--splits 3] [--max-rows 50000]
-        [--n-jobs 8] [--out DIR]
-    python .claude/skills/knowledge-data-foundry/scripts/leak_probes.py <unique_name> --forced-split
+    data-foundry probe leak NAME --forced-split
         [--time-on COLUMN] [--period D|W|M|Q|Y] [--tz ZONE] [--objective metric|l2|OBJECTIVE] [--seeds 3]
-        [--forced-splits 9] [--max-rows 50000] [--n-jobs 8] [--out DIR]
-    python .claude/skills/knowledge-data-foundry/scripts/leak_probes.py <unique_name> --stationary-relation
+        [--forced-splits 9] [--max-rows 50000]
+    data-foundry probe leak NAME --stationary-relation
         [--time-on COLUMN] [--period D|W|M|Q|Y] [--unordered] [--unit COLUMN|none] [--exclude COLUMN ...]
         [--windows 3] [--stationary-seeds 5] [--max-test N] [--foundation none|tabpfn|kumo] [--device cpu|cuda]
-        [--threads N] [--max-foundation-train 20000] [--max-foundation-test 5000] [--n-jobs 8] [--out DIR]
+        [--threads N] [--max-foundation-train 20000] [--max-foundation-test 5000]
 
-Rebuilds the frame and the split plan from ``<root>/<unique_name>/dataset.py`` and runs the leak probes of
-``curation_probes.leak`` (``.claude/skills/knowledge-curation/scripts/curation_probes/leak.py`` says what each number
-measures) on the first ``--splits`` shipped splits: untuned LightGBM with ``--n-jobs`` threads, train and test rows
-capped at ``--max-rows`` each, at most ``--max-single-features`` columns (and missing patterns) fitted one by one, and
-the definition's group columns left out of the features. ``--out DIR`` also writes the numbers to
+Rebuilds the frame and the split plan from ``<root>/<unique_name>/dataset.py`` and runs the leak probes
+(``data_foundry.probes.leak`` says what each number measures) on the first ``--splits`` shipped splits: untuned
+LightGBM with ``--n-jobs`` threads, train and test rows capped at ``--max-rows`` each, at most
+``--max-single-features`` columns (and missing patterns) fitted one by one, and the definition's group columns left
+out of the features. ``--out DIR`` also writes the numbers to
 ``DIR/<unique_name>.json``. The numbers are indicative (untuned models, a few splits) and meant for comparing the
 shipped data with a suspected fix. For a classification task whose raw file is one table holding the target column,
 it also counts, per column and class, the cells on a straight line between their neighbours in the raw file's order
@@ -59,7 +57,7 @@ and a column named by a period word (``leak.period_columns``; the output names t
 test (``leak.shared_units``) counts the test rows whose group, exact profile of the model inputs, or profile without the
 period column has a training row, and fits a lookup of their training target. How to read them:
 ``.claude/skills/knowledge-curation/references/leak_checks.md``.
-``--stationary-relation`` runs the stationary-relation test alone (SPLIT-32; ``curation_probes.stationarity`` says
+``--stationary-relation`` runs the stationary-relation test alone (SPLIT-32; ``data_foundry.probes.stationarity`` says
 how it is built and read): on the periods of the same period column, for the newest ``--windows`` periods (every
 period with ``--unordered``), a forward model trained before the period against a contemporaneous one of the same size
 that also holds the period's other half, scored on the same test half over ``--stationary-seeds`` seeds, with probe
@@ -78,20 +76,19 @@ the same checks on the source's labels in a scratch notebook as well (section 1 
 from __future__ import annotations
 
 import argparse
-import json
-import sys
 import time
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "knowledge-curation" / "scripts"))
-import dataset_io
-from curation_probes import leak, stationarity
+from data_foundry.probes import inputs, leak, models, stationarity
+
+READS_BUILT = False
+"""The leak probes read the definition (the raw files and the split plan), never a built container."""
 
 
-def target_by_period(data: dataset_io.ProbeInput, args: argparse.Namespace) -> dict | None:
+def target_by_period(data: inputs.ProbeInput, args: argparse.Namespace) -> dict | None:
     """Probe 13 on the task's time column (or ``--time-on``); None, with the reason printed, when it cannot run."""
     time_on = args.time_on or data.time_on
     if not time_on:
@@ -115,8 +112,8 @@ def target_by_period(data: dataset_io.ProbeInput, args: argparse.Namespace) -> d
         return None
 
 
-def raw_state(ds: object, data: dataset_io.ProbeInput, args: argparse.Namespace) -> dict:
-    """The probes of the raw state (10, 18, 19, 20, 21; ``curation_probes.leak``): see the module docstring."""
+def raw_state(ds: object, data: inputs.ProbeInput, args: argparse.Namespace) -> dict:
+    """The probes of the raw state (10, 18, 19, 20, 21; ``leak.raw``): see the module docstring."""
     out: dict = {"lineage": data.raw_note}
     raw = data.raw
     if raw is None:
@@ -211,17 +208,17 @@ def fit_params(
     return params
 
 
-def original_rate(data: dataset_io.ProbeInput, metric: dict | None) -> np.ndarray | None:
+def original_rate(data: inputs.ProbeInput, metric: dict | None) -> np.ndarray | None:
     """The target of a regression task with a training weight on its original scale (a log-shipped target sent
     back), the rate ``rate_objective`` reads; None for any other task.
     """
     if data.problem_type != "regression" or data.weights is None:
         return None
     shipped = pd.to_numeric(data.df[data.target], errors="coerce").to_numpy(dtype=float)
-    return leak._FROM_SHIPPED[(metric or {}).get("transform") or "identity"](shipped)
+    return leak.FROM_SHIPPED[(metric or {}).get("transform") or "identity"](shipped)
 
 
-def weight_proxy(data: dataset_io.ProbeInput, args: argparse.Namespace) -> dict | None:
+def weight_proxy(data: inputs.ProbeInput, args: argparse.Namespace) -> dict | None:
     """Probe 22 on the task's sample weight or ``--weight-column``; None, with the reason printed, when it cannot run.
 
     A column that is still a feature is taken out of the features for this probe; a scoring column (the metric's
@@ -231,10 +228,10 @@ def weight_proxy(data: dataset_io.ProbeInput, args: argparse.Namespace) -> dict 
     if not column:
         leak.say("weight proxy (probe 22): not run (the task has no sample_weight; name a column with --weight-column)")
         return None
-    features = list(data.feature_cols) if data.feature_cols is not None else None
+    features = data.features
     if column in data.df.columns:
         values = data.df[column]
-        if features is not None and column in features:
+        if column in features:
             features.remove(column)
             leak.say(f"weight proxy (probe 22): `{column}` is a feature; it is left out of the features here")
     elif data.scoring is not None and column in data.scoring.columns:
@@ -285,7 +282,7 @@ def forced_tags(ds: object) -> list[str]:
     return [tag for tag in tags if tag in FORCED_TAGS]
 
 
-def period_column(data: dataset_io.ProbeInput, args: argparse.Namespace) -> tuple[str | None, pd.Series | None, str]:
+def period_column(data: inputs.ProbeInput, args: argparse.Namespace) -> tuple[str | None, pd.Series | None, str]:
     """Probe 23's period column, its values row by row and why it was chosen: ``--time-on``, the task's time column,
     else the first of ``leak.period_columns`` over the frame and the scoring columns (dates, then years, then a column
     named by a period word); or None, None and why there is none.
@@ -306,7 +303,7 @@ def period_column(data: dataset_io.ProbeInput, args: argparse.Namespace) -> tupl
     return column, frame[column], why
 
 
-def forced_split(ds: object, data: dataset_io.ProbeInput, args: argparse.Namespace) -> dict | None:
+def forced_split(ds: object, data: inputs.ProbeInput, args: argparse.Namespace) -> dict | None:
     """Probe 23 on a split forced from temporal: the period-outcome test on the period column (``period_column``) and
     the shared-unit test; None, with the reason printed, for a split not tagged forced.
     """
@@ -318,7 +315,7 @@ def forced_split(ds: object, data: dataset_io.ProbeInput, args: argparse.Namespa
     params = fit_params(getattr(args, "objective", "metric"), metric, original_rate(data, metric), data.weights)
     common = {
         "sample_weight": data.weights,
-        "feature_cols": data.feature_cols,
+        "feature_cols": data.features,
         "group_cols": data.group_cols,
         "metric": metric,
         "name": args.name,
@@ -352,7 +349,7 @@ def forced_split(ds: object, data: dataset_io.ProbeInput, args: argparse.Namespa
                 period_kind=kind,
                 **common,
             )
-    features = data.feature_cols if data.feature_cols is not None else list(data.df.columns)
+    features = data.features
     out["shared_units"] = leak.shared_units(
         data.df,
         data.target,
@@ -365,8 +362,8 @@ def forced_split(ds: object, data: dataset_io.ProbeInput, args: argparse.Namespa
     return out
 
 
-def stationary_relation(data: dataset_io.ProbeInput, args: argparse.Namespace) -> dict | None:
-    """The stationary-relation test (SPLIT-32, ``curation_probes.stationarity``) on the period column
+def stationary_relation(data: inputs.ProbeInput, args: argparse.Namespace) -> dict | None:
+    """The stationary-relation test (SPLIT-32, ``data_foundry.probes.stationarity``) on the period column
     (``period_column``): LightGBM, and TabPFN v3.5 (``--foundation tabpfn``) or Kumo-Tabular (``kumo``); None, with the
     reason, without periods.
     """
@@ -395,10 +392,10 @@ def stationary_relation(data: dataset_io.ProbeInput, args: argparse.Namespace) -
         y = data.df[data.target]
         classes = None if data.problem_type == "regression" else np.unique(y.to_numpy())
     if kind_of_model == "tabpfn":
-        foundation = stationarity.tabpfn_v35(data.problem_type, classes, device=args.device or "cuda")
+        foundation = models.tabpfn_v35(data.problem_type, classes, device=args.device or "cuda")
         name = "TabPFN v3.5"
     elif kind_of_model == "kumo":
-        foundation = stationarity.kumo_tabular(
+        foundation = models.kumo_tabular(
             data.problem_type,
             classes,
             device=args.device or "cpu",
@@ -416,7 +413,7 @@ def stationary_relation(data: dataset_io.ProbeInput, args: argparse.Namespace) -
         ordered=not getattr(args, "unordered", False),
         units=units,
         sample_weight=data.weights,
-        feature_cols=data.feature_cols,
+        feature_cols=data.features,
         exclude_cols=[c for c in {column, unit_col, *(getattr(args, "exclude", None) or [])} if c],
         metric=metric,
         fit_params=params,
@@ -432,12 +429,13 @@ def stationary_relation(data: dataset_io.ProbeInput, args: argparse.Namespace) -
     )
 
 
-def probe(args: argparse.Namespace) -> dict:
+def probe(name: str, root: Path, args: argparse.Namespace) -> dict:
     """Print the probes for one dataset and return their numbers; see the module docstring."""
     started = time.time()
-    ds = dataset_io.definition(args.name, args.root)
+    args = argparse.Namespace(**{**vars(args), "name": name, "root": root})
+    ds = inputs.definition(args.name, args.root)
     raw = getattr(args, "raw", False)  # a Namespace built by hand may not have it
-    data = dataset_io.from_definition(ds, raw=True) if raw else dataset_io.from_definition(ds)
+    data = inputs.from_definition(ds, raw=True) if raw else inputs.from_definition(ds)
     if raw:
         result = {"name": args.name, "raw_state": raw_state(ds, data, args)}
         result["seconds"] = round(time.time() - started)
@@ -464,7 +462,7 @@ def probe(args: argparse.Namespace) -> dict:
         data.problem_type,
         data.flat_splits(),
         group_cols=data.group_cols,
-        feature_cols=data.feature_cols,
+        feature_cols=data.features,
         name=args.name,
         n_splits=args.splits,
         max_rows=args.max_rows,
@@ -488,64 +486,6 @@ def probe(args: argparse.Namespace) -> dict:
     return result
 
 
-def main(argv: list[str] | None = None) -> int:
-    """Print the probes for one dataset; see the module docstring."""
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("name")
-    parser.add_argument("--root", default="datasets/_dev/tabarena-v0pt2")
-    parser.add_argument("--splits", type=int, default=3)
-    parser.add_argument("--max-rows", type=int, default=50_000)
-    parser.add_argument(
-        "--max-single-features", type=int, default=300, help="Columns (and missing patterns) fitted one by one."
-    )
-    parser.add_argument("--n-jobs", type=int, default=8, help="Threads per LightGBM model.")
-    parser.add_argument("--out", type=Path, help="Also write the numbers to OUT/<name>.json.")
-    parser.add_argument("--time-on", help="Probe 13's time column; default the task's.")
-    parser.add_argument("--period", choices=leak.PERIOD_FREQS, help="Probe 13's calendar period; default chosen.")
-    parser.add_argument("--tz", help="Probe 13's timezone: aware times are converted to it.")
-    parser.add_argument("--positive", help="Probe 13's event class of a binary target; default the minority class.")
-    parser.add_argument("--tail", type=int, help="Probe 13's newest periods tested; default a fifth, 2 to 8.")
-    parser.add_argument("--period-only", action="store_true", help="Run probe 13 alone, without a model.")
-    parser.add_argument("--raw", action="store_true", help="Run the probes of the raw state alone (10, 18-21).")
-    parser.add_argument("--weight-proxy", action="store_true", help="Run probe 22 alone: do features carry the weight?")
-    parser.add_argument("--weight-column", help="Probe 22's weight; default the task's sample weight.")
-    parser.add_argument(
-        "--objective",
-        default="metric",
-        help="Probe 22's fits of the target: metric (default: a deviance's own loss, else L2), l2, or an objective.",
-    )
-    parser.add_argument("--seeds", type=int, default=3, help="Probe 22's and 23's LightGBM seeds per split.")
-    parser.add_argument(
-        "--forced-split", action="store_true", help="Run probe 23 alone: the leak tests of a forced split."
-    )
-    parser.add_argument("--forced-splits", type=int, default=9, help="Probe 23's splits (default 9).")
-    parser.add_argument(
-        "--stationary-relation", action="store_true", help="Run the stationary-relation test alone (SPLIT-32)."
-    )
-    parser.add_argument("--unordered", action="store_true", help="Its periods have no order (month classes).")
-    parser.add_argument("--unit", help="Its unit column, or none; default the definition's group column.")
-    parser.add_argument("--exclude", nargs="*", help="Further columns that name the period: no model input.")
-    parser.add_argument("--windows", type=int, default=3, help="Its windows, newest first (default 3).")
-    parser.add_argument("--test-period", nargs="*", help="Only these windows, by period label (one job per window).")
-    parser.add_argument("--stationary-seeds", type=int, default=5, help="Its seeds (default 5).")
-    parser.add_argument("--max-test", type=int, help="Its LightGBM test rows per window, at most; default all.")
-    parser.add_argument(
-        "--foundation",
-        choices=("none", "tabpfn", "kumo"),
-        default="none",
-        help="Its foundation model, one state-of-the-art TFM for a time basis: tabpfn (TabPFN v3.5) or kumo.",
-    )
-    parser.add_argument("--device", help="The foundation model's device; default cuda for tabpfn, cpu for kumo.")
-    parser.add_argument("--threads", type=int, help="The foundation model's threads; default --n-jobs.")
-    parser.add_argument("--max-foundation-train", type=int, default=20_000, help="Its training rows per fit, at most.")
-    parser.add_argument("--max-foundation-test", type=int, default=5_000, help="Its test rows per window, at most.")
-    args = parser.parse_args(argv)
-    result = probe(args)
-    if args.out:
-        args.out.mkdir(parents=True, exist_ok=True)
-        (args.out / f"{args.name}.json").write_text(json.dumps(result, indent=1, default=str))
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+def render(result: dict) -> str:
+    """The closing line of one dataset (the probes print their report as they run)."""
+    return f"{result['name']}: leak probes done in {result.get('seconds', '?')} s"

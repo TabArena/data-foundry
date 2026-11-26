@@ -46,6 +46,7 @@ dependencies = [
 ]
 
 [project.scripts]
+data-foundry = "data_foundry.curation.cli:main"
 data-foundry-curation = "data_foundry.curation.cli:main"
 
 [project.urls]
@@ -88,8 +89,14 @@ encodings = [
     "skrub",
     "sentence-transformers",
 ]
-tests = [
+# The probes (`data-foundry probe ...`, `data_foundry.probes`): LightGBM next to the build extra's scikit-learn and
+# SciPy. TabPFN and Kumo-Tabular (the stationary-relation test's foundation models) are installed on the GPU node.
+probes = [
     "data-foundry[build]",
+    "lightgbm",
+]
+tests = [
+    "data-foundry[build,probes]",
     "pytest",
     # The review page tests parse the records' review sections.
     "markdown-it-py",

@@ -22,7 +22,7 @@ all) and ``task_group_labels_mismatch`` (``per_sample`` labels with at least :da
 of one label, or ``per_group`` labels that differ within a group).
 
 Model-based diagnostics (the IID vs grouped score gap, learnability across groups with a permutation test) are slow,
-so they run on demand: ``.claude/skills/knowledge-data-foundry/scripts/group_probes.py``.
+so they run on demand: ``data-foundry probe group``.
 """
 
 from __future__ import annotations
@@ -144,8 +144,7 @@ def group_findings(stats: GroupStats | None) -> list[CheckResult]:
                 f"Rows are no closer to their own group than chance ({stats.neighbour_same_group:.1%} of nearest "
                 f"neighbours vs {stats.neighbour_chance:.1%}), and the group explains no more of the label than "
                 f"shuffled groups ({stats.label_share_by_group:.2f} vs {stats.label_share_shuffled:.2f}).",
-                hint="The grouping may not be needed: compare IID and grouped scores with "
-                "`.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.",
+                hint="The grouping may not be needed: compare IID and grouped scores with `data-foundry probe group`.",
             ),
         )
     return findings

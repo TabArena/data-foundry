@@ -4,34 +4,24 @@ that are no model input, and rows without a target.
 
 from __future__ import annotations
 
-import importlib.util
-import sys
+import argparse
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
 
-pytest.importorskip("lightgbm")
-
-REPO = Path(__file__).resolve().parents[1]
-SCRIPTS = REPO / ".claude" / "skills" / "knowledge-data-foundry" / "scripts"
-LIBRARY = REPO / ".claude" / "skills" / "knowledge-curation" / "scripts"
-for path in (SCRIPTS, LIBRARY):
-    if str(path) not in sys.path:
-        sys.path.insert(0, str(path))
-
-import dataset_io  # noqa: E402
-from curation_probes import generated, groups, hidden_groups, leak, task, text, time_recovery  # noqa: E402
-
-
-def _script(name: str):
-    """A runner script of ``knowledge-data-foundry/scripts``, imported as a module."""
-    spec = importlib.util.spec_from_file_location(f"{name}_edge_cli", SCRIPTS / f"{name}.py")
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
+from data_foundry.probes import (
+    encode,
+    generated,
+    groups,
+    hidden_groups,
+    inputs,
+    leak,
+    models,
+    task,
+    time_recovery,
+)
 
 
 def _folds(n: int, k: int = 3, seed: int = 0) -> list[tuple[np.ndarray, np.ndarray]]:
@@ -39,10 +29,10 @@ def _folds(n: int, k: int = 3, seed: int = 0) -> list[tuple[np.ndarray, np.ndarr
     return [(np.sort(np.concatenate([parts[j] for j in range(k) if j != i])), np.sort(parts[i])) for i in range(k)]
 
 
-def _probe_input(df: pd.DataFrame, **kwargs) -> dataset_io.ProbeInput:
+def _probe_input(df: pd.DataFrame, **kwargs) -> inputs.ProbeInput:
     fields = {"target": "y", "problem_type": "binary_classification", "regime": "iid", "grouping": None}
     fields |= {"time_on": None, "origin": "definition", "splits": {0: dict(enumerate(_folds(len(df))))}}
-    return dataset_io.ProbeInput(df=df, **(fields | kwargs))
+    return inputs.ProbeInput(df=df, **(fields | kwargs))
 
 
 # 1. a missing date stays missing
@@ -58,9 +48,9 @@ def _probe_input(df: pd.DataFrame, **kwargs) -> dataset_io.ProbeInput:
     ],
 )
 def test_a_missing_time_is_filled_with_the_median_not_a_huge_number(values):
-    """``text.features`` fills a missing date, period or duration like a missing number: with the median."""
-    X, _, _ = text.features(pd.DataFrame({"t": values}), [])
-    observed = text.seconds(pd.Series(values)).dropna()
+    """``encode.numeric`` fills a missing date, period or duration like a missing number: with the median."""
+    X, _, _ = encode.numeric(pd.DataFrame({"t": values}), [])
+    observed = encode.seconds(pd.Series(values)).dropna()
     assert X["f0"].iloc[1] == pytest.approx(observed.median())
     assert X["f0"].min() >= observed.min()
 
@@ -133,7 +123,7 @@ def test_durations_enter_the_task_and_leak_probes_as_seconds():
     df, _ = _binary_frame()
     df["td"] = pd.to_timedelta(np.random.default_rng(3).integers(0, 100, len(df)), unit="D")
     df.loc[5, "td"] = pd.NaT
-    assert np.isnan(leak.model_inputs(df[["td"]])["td"].iloc[5])
+    assert np.isnan(encode.native(df[["td"]])["td"].iloc[5])
     folds = _folds(len(df))
     leak_result = leak.run(df, "y", "binary_classification", folds, n_splits=1, n_jobs=1)
     assert leak_result["features_probed"] == 2
@@ -205,7 +195,7 @@ def test_hidden_groups_and_time_recovery_read_only_the_feature_columns():
 
 
 def test_runners_pass_the_feature_columns(monkeypatch):
-    """Every runner hands ``data.feature_cols`` to its probe."""
+    """Every probe hands ``data.features`` (the model inputs) to its core."""
     df = pd.DataFrame({"g": [0, 0, 1, 1], "x": [1.0, 2.0, 3.0, 4.0], "t": [1, 2, 3, 4], "y": [0, 1, 0, 1]})
     grouping = type("G", (), {"on": "g", "labels": "per_row", "time_on": None})()
     data = _probe_input(df, grouping=grouping, regime="grouped_non_iid", feature_cols=("x",))
@@ -218,19 +208,17 @@ def test_runners_pass_the_feature_columns(monkeypatch):
 
         return record
 
-    group_cli = _script("group_probes")
-    monkeypatch.setattr(group_cli.dataset_io, "definition", lambda *_a, **_k: type("D", (), {"task_metadata": data})())
-    monkeypatch.setattr(group_cli.dataset_io, "from_definition", lambda *_a, **_k: data)
-    monkeypatch.setattr(group_cli.groups, "run", capture("groups"))
-    assert group_cli.main(["toy"]) == 0
-    monkeypatch.setattr(dataset_io, "load", lambda *_a, **_k: data)
-    generated_cli = _script("generated_probes")
-    monkeypatch.setattr(generated_cli.generated, "check_frame", capture("generated"))
-    generated_cli.probe("toy", Path(), built=True)
-    time_cli = _script("time_probes")
-    monkeypatch.setattr(time_cli.time_recovery, "check_frame", capture("time"))
-    time_cli.probe("toy", Path(), built=True)
-    assert seen == {"groups": ("x",), "generated": ("x",), "time": ("x",)}
+    monkeypatch.setattr(inputs, "definition", lambda *_a, **_k: type("D", (), {"task_metadata": data})())
+    monkeypatch.setattr(inputs, "from_definition", lambda *_a, **_k: data)
+    monkeypatch.setattr(inputs, "load", lambda *_a, **_k: data)
+    monkeypatch.setattr(groups, "run", capture("groups"))
+    args = argparse.Namespace(built=False, repeats=3, permutations=0, max_rows=1000, n_jobs=1)
+    groups.probe("toy", Path(), args)
+    monkeypatch.setattr(generated, "check_frame", capture("generated"))
+    generated.probe("toy", Path(), argparse.Namespace(built=True))
+    monkeypatch.setattr(time_recovery, "check_frame", capture("time"))
+    time_recovery.probe("toy", Path(), argparse.Namespace(built=True, include_temporal=False))
+    assert seen == {"groups": ["x"], "generated": ["x"], "time": ["x"]}
 
 
 # 8. the hidden-groups runner takes the regime from the task
@@ -241,16 +229,15 @@ def test_hidden_groups_runner_reads_the_regime_not_the_time_column(monkeypatch):
     df = pd.DataFrame({"g": [0, 0, 1, 1], "t": [1, 2, 3, 4], "x": [1.0, 2.0, 3.0, 4.0], "y": [0, 1, 0, 1]})
     grouping = type("G", (), {"on": "g", "labels": "per_row", "time_on": "t"})()
     data = _probe_input(df, grouping=grouping, regime="grouped_non_iid", time_on="t", feature_cols=("x", "t"))
-    cli = _script("hidden_groups")
-    monkeypatch.setattr(cli.dataset_io, "load", lambda *_a, **_k: data)
+    monkeypatch.setattr(inputs, "load", lambda *_a, **_k: data)
     calls = []
-    monkeypatch.setattr(cli.hidden, "run", lambda *_a, **k: calls.append(k) or {})
-    skipped = cli.probe("toy", Path(), built=True, n_jobs=1, include_grouped=False)
+    monkeypatch.setattr(hidden_groups, "run", lambda *_a, **k: calls.append(k) or {})
+    skipped = hidden_groups.probe("toy", Path(), argparse.Namespace(built=True, n_jobs=1, include_grouped=False))
     assert skipped["regime"] == "grouped"
     assert "skipped" in skipped
-    cli.probe("toy", Path(), built=True, n_jobs=1, include_grouped=True)
+    hidden_groups.probe("toy", Path(), argparse.Namespace(built=True, n_jobs=1, include_grouped=True))
     assert calls[0]["time_on"] is None
-    assert calls[0]["feature_cols"] == ("x", "t")
+    assert calls[0]["feature_cols"] == ["x", "t"]
 
 
 # 9. rows without a target are dropped where the probes load the data
@@ -262,14 +249,14 @@ def test_rows_without_a_target_are_dropped_and_the_splits_moved():
     splits = {0: {0: (np.array([0, 1, 2]), np.array([3, 4, 5])), 1: (np.array([3, 4, 5]), np.array([0, 1, 2]))}}
     scoring = pd.DataFrame({"era": [10, 11, 12, 13, 14, 15]})
     data = _probe_input(df, splits=splits, weights=np.arange(6.0) + 1, scoring=scoring)
-    clean = dataset_io.without_missing_target(data)
+    clean = inputs.without_missing_target(data)
     assert clean.df["x"].tolist() == [0.0, 1.0, 3.0, 5.0]
     assert [a.tolist() for a in clean.splits[0][0]] == [[0, 1], [2, 3]]
     assert [a.tolist() for a in clean.splits[0][1]] == [[2, 3], [0, 1]]
     assert clean.weights.tolist() == [1.0, 2.0, 4.0, 6.0]
     assert clean.scoring["era"].tolist() == [10, 11, 13, 15]
     assert clean.target_note.startswith("2 of 6 rows")
-    assert dataset_io.without_missing_target(clean) is clean
+    assert inputs.without_missing_target(clean) is clean
 
 
 def test_task_probe_runs_after_the_loader_drops_a_missing_target():
@@ -277,7 +264,7 @@ def test_task_probe_runs_after_the_loader_drops_a_missing_target():
     df, _ = _binary_frame()
     df["y"] = df["y"].map({0: "a", 1: "b"}).astype(object)
     df.loc[5, "y"] = None
-    data = dataset_io.without_missing_target(_probe_input(df))
+    data = inputs.without_missing_target(_probe_input(df))
     result = task.run(data.df, "y", "binary_classification", data.flat_splits(), n_splits=1, n_jobs=1, text=False)
     assert result["rows"] == len(df) - 1
 
@@ -285,7 +272,10 @@ def test_task_probe_runs_after_the_loader_drops_a_missing_target():
 # 10. one encoder for every probe
 
 
-def test_group_probe_shares_the_task_probe_inputs():
-    """The group probe reads its inputs and linear encoding from the shared modules, not from copies."""
-    assert groups.features is text.features
-    assert groups.linear_inputs is task.linear_inputs
+def test_probes_share_one_encoder_and_one_model_module():
+    """The task, group and hidden-group probes read their inputs and models from the shared modules, not copies."""
+    assert groups.numeric is encode.numeric
+    assert task.numeric is encode.numeric
+    assert hidden_groups.numeric is encode.numeric
+    assert groups.models is models
+    assert task.models is models

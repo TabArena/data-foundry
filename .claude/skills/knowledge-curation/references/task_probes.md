@@ -214,7 +214,7 @@ used weaker rules (one feature chosen once on the first split, an unpaired sprea
 with codes, 0.92 one-hot), and `unstable` counted the standard error on temporal tasks that beat the dummy on every
 window.
 
-### Hidden groups (`hidden_groups.py`)
+### Hidden groups (`data-foundry probe hidden-groups`)
 
 The rule for a hit (a question, decided by the context and the use case, never by the gap alone) is SPLIT-30, with
 SPLIT-29 and SPLIT-31, in [splits.md](splits.md), "Hidden groups in an IID task". The probe ranks columns with repeated
@@ -326,7 +326,7 @@ most 58 s (2.5M rows); a sweep of all 184 definitions with 10 jobs of 2 threads 
 | concrete_compressive_strength | `(all but Age)` (428 mixes; 2026-10-14) | grouped by mix (2026-10-14) | a mix is its seven ingredient amounts and 182 mixes are tested at several ages; a random split gave 73% of the test rows their mix in train at another age. R² random / by mix: LightGBM 0.925 / 0.874, MLP 0.916 / 0.838, ridge 0.816 / 0.804, the ranking changes. The use case designs a new mix. Missed by the column and near-copy checks |
 | account_debt_south_africa | none (the eight municipalities have no column; they show as blocks of the file) | IID kept, tagged `ForcedIIDFromTemporal` (2026-10-12) | a municipality scores its own accounts, so its level is known; held out by file position, LightGBM ROC AUC falls from 0.877 to 0.843 (blocks of 2,500 rows) and 0.786 (thirds of the file), recorded in a bullet. One extract without dates: the status at the extract stands in for a forecast |
 
-### Generated data (`generated_probes.py`)
+### Generated data (`data-foundry probe generated`)
 
 Simulated data is out of scope (SEL-16 in [selection.md](selection.md), marker `AHDS`), and a generator leaves marks a
 model can learn completely: the best possible score is then known, and strong methods reach it, so their ranking is
@@ -447,4 +447,5 @@ task-probe flags the decision answers. The decisions on metrics (2026-10-21) are
 
 How to run the task, group, hidden-group and generated-data probes and the tuned-results check on a definition, and
 where their output goes: [checks_and_probes.md](../../knowledge-data-foundry/references/checks_and_probes.md). The
-probe methods themselves are in this skill's [scripts/](../scripts/).
+probe methods themselves are in the package, `data_foundry.probes`
+([src/data_foundry/probes/](../../../../src/data_foundry/probes/)).

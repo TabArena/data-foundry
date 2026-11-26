@@ -49,9 +49,9 @@ All commands run from the repository root in the repository's environment (`.ven
    for the dataset goes into `accepted_check_warnings = {"<slug>": "<why>"}`; the reason is the audit trail. An error
    cannot be accepted, except the few the rules allow an exception for: every slug, its severity and whether it can be
    accepted is in [`check_slugs.md`](.claude/skills/knowledge-data-foundry/references/check_slugs.md).
-6. **Probe.** `.claude/skills/knowledge-data-foundry/scripts/leak_probes.py <unique_name>` (leaks), `task_probes.py`
-   (signal against dummy baselines) and, for a grouped task, `group_probes.py`. A task-probe flag is a question:
-   check it against the benchmark's tuned methods (`tuned_results.py`) and answer it as
+6. **Probe.** `data-foundry probe leak <unique_name>` (leaks), `data-foundry probe task` (signal against dummy
+   baselines) and, for a grouped task, `data-foundry probe group`. A task-probe flag is a question: check it against the
+   benchmark's tuned methods (`tuned_results.py`) and answer it as
    [`task_probes.md`](.claude/skills/knowledge-curation/references/task_probes.md) says.
 7. **Second opinion.** `/add-dataset <unique_name>` in Claude Code, run on the existing folder, re-checks it: the
    verification checklist ([`verification.md`](.claude/skills/knowledge-curation/references/verification.md)), the

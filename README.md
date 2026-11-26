@@ -233,6 +233,7 @@ data-foundry-curation sync-notebooks           # refresh each record's notebook_
 data-foundry-curation export --format xlsx out.xlsx   # flat snapshot (csv|xlsx)
 data-foundry-curation build-site site/          # read-only static copy (e.g. GitHub Pages)
 data-foundry-curation dataset check <folder>    # run a v2 dataset.py + bundle checks, write README.md (no save)
+data-foundry probe task <name>                  # a probe (leak, task, group, ...) on a dataset; needs the probes extra
 ```
 
 **Browse it online.** A read-only copy of the backlog is published to GitHub Pages —
@@ -299,7 +300,8 @@ uvx ruff@0.15.15 check . && uvx ruff@0.15.15 format --check .  # lint + format, 
 Loading and using a container needs only the core install; the `benchmark` extra adds scikit-learn and scipy, which
 the metrics import when they score. The `build` extra adds what building a dataset from its
 definition needs: `scikit-learn` for the splits, `scipy` for the checks, and the readers the definitions use
-(`liac-arff`, `openml`, `polars`, the Excel engines, `matplotlib`). `tests` adds `build` and `pytest`; `dev` adds
+(`liac-arff`, `openml`, `polars`, the Excel engines, `matplotlib`). The `probes` extra adds LightGBM for the probes
+(`data-foundry probe ...`). `tests` adds `build`, `probes` and `pytest`; `dev` adds
 both plus the curation tools (`autogluon`, `kaggle`, `seaborn`, `ruff`, …). pandas 2.3 and 3 build and load the same
 containers; the lock stays on pandas 2 because AutoGluon (and so TabArena) requires pandas below 2.4.
 
@@ -320,6 +322,7 @@ data-foundry/
 │   ├── v1/                   # the format-1 metadata of the shipped BeyondArena containers
 │   ├── checks/               # the checks: run_bundle_checks / verify_saved_container, the README tables
 │   │                         #   (run_all_checks), the task and definition checks, registry.py of every slug
+│   ├── probes/               # the probes (leak, task, group, hidden groups, time, dtypes, generated): `data-foundry probe`
 │   ├── curation/             # curation log toolkit — CurationRecord, store, dashboard (serve), import/export, build-site
 │   └── examples/toy_container/  # tiny ready-to-load CuratedContainer shipped in-package
 ├── curation/                 # the curation log (git-tracked data) — records/*.md + vocabularies.yaml
@@ -331,8 +334,8 @@ data-foundry/
 ├── examples/                 # runnable demos (covers the use-cases above); see examples/README.md
 ├── scripts/                  # one-off tooling (toy container builder, release)
 ├── .claude/skills/           # Claude Code skills; each skill's scripts/ holds the tools it runs
-│   ├── knowledge-curation/   # curation knowledge (references/) and the general probe library (scripts/)
-│   ├── knowledge-data-foundry/  # this repo's conventions (references/), the probe, pipeline and rebuild scripts
+│   ├── knowledge-curation/   # curation knowledge (references/)
+│   ├── knowledge-data-foundry/  # this repo's conventions (references/), the pipeline and rebuild scripts
 │   └── <command>/            # screen-candidates, review-screened-candidates, add-dataset, review-added-datasets
 ├── .claude/agents/           # the agents of screening and of the review panel
 ├── tests/                    # pytest test suite

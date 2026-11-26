@@ -218,7 +218,7 @@ The task is going from the structure to a prediction (Lennart, 2026-11-01). So:
   encodings and `recommended_encodings()` are in `data_foundry.encodings`.
 * **Checks:** the bundle check `dataset_smiles_column` parses every value with the pinned RDKit, and a SMILES column
   raises no `dataset_identifier_column`.
-* **Probes:** they see the column in the recommended encoding (`dataset_io.py`); the blind reviewer's clean room keeps
-  the string.
+* **Probes:** they see the column in the recommended encoding (`data_foundry.probes.inputs`); the blind reviewer's clean
+  room keeps the string.
 * **What TabArena still needs** (the guard against the text embedding, the encoder, the cache, timing in the fit time):
   `datasets/_dev/tabarena-v0pt2/BENCHMARK_CHANGES_TODO.md`, items 6 and 12.

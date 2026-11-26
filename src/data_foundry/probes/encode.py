@@ -1,15 +1,19 @@
-"""Model inputs for the probes: a table's columns as numbers, and text columns as TF-IDF + SVD components.
+"""Model inputs for the probes: one encoder, so a column enters every probe the same way.
 
-Tooling-independent (pandas, NumPy and scikit-learn); the probes of this package share these encoders, so a column
-enters every probe the same way.
+The probes read the model inputs only (``ProbeInput.feature_cols``); these functions turn them into what a model fits:
 
-* ``features``: the numeric model inputs of a frame. Categoricals enter as their codes, a missing value as one more
-  code after the levels (a median code would depend on the order of the levels); datetimes, periods and durations as
-  seconds (``seconds``); a missing number or date as the column's median (0 for a column without values). String
-  columns are left out and returned by name.
+* ``numeric``: every input as a number, for models that need numbers (linear, random forest, kNN). Categoricals
+  enter as their codes, a missing value as one more code after the levels (a median code would depend on the order
+  of the levels); datetimes, periods and durations as seconds (``seconds``); a missing number or date as the column's
+  median (0 for a column without values). String columns are left out and returned by name.
+* ``native``: the inputs as LightGBM and the trees read them, categories kept as categories and missing values as
+  missing. String columns are left out, durations enter as seconds, and datetimes are left out or, with
+  ``dates=True``, enter as days since the earliest (a participant reads the period from them).
 * ``encode_text``: each text column as ``TEXT_COMPONENTS`` TF-IDF + SVD components fitted on the train rows only:
   words for prose, character 2- to 5-grams for strings that are mostly one token (a SMILES, a code, a URL), where
   words would only match whole repeated values.
+
+A missing date stays missing in every mode (as NaN seconds or days) until ``numeric`` fills it with the median.
 """
 
 from __future__ import annotations
@@ -46,8 +50,10 @@ def is_time(values: pd.Series) -> bool:
     )
 
 
-def features(df: pd.DataFrame, drop: list[str]) -> tuple[pd.DataFrame, list[str], list[str]]:
-    """Numeric model inputs (columns ``f0``, ``f1``, ...), their original names, and the text columns."""
+def numeric(df: pd.DataFrame, drop: list[str] | tuple[str, ...] = ()) -> tuple[pd.DataFrame, list[str], list[str]]:
+    """Numeric model inputs (columns ``f0``, ``f1``, ...), their original names, and the text columns left out;
+    ``drop`` names columns that are no inputs.
+    """
     X = df.drop(columns=[c for c in drop if c in df.columns])
     text = list(X.select_dtypes(include=["string", "object"]).columns)
     X = X.drop(columns=text)
@@ -61,6 +67,33 @@ def features(df: pd.DataFrame, drop: list[str]) -> tuple[pd.DataFrame, list[str]
     X = X.fillna(X.median()).fillna(0.0)
     X.columns = [f"f{i}" for i in range(X.shape[1])]
     return X, names, text
+
+
+def native(features: pd.DataFrame, *, dates: bool = False) -> pd.DataFrame:
+    """The inputs as LightGBM and the trees read them: no string column, a duration as seconds, and a datetime left
+    out or, with ``dates``, as days since the column's earliest (after the other columns). Missing values stay missing.
+    """
+    # pandas keeps timezone-aware datetimes apart ("datetimetz"); "datetime" alone lets them through to LightGBM
+    X = features.select_dtypes(exclude=["string", "object", "datetime", "datetimetz"])
+    durations = X.select_dtypes("timedelta").columns
+    if len(durations) or dates:
+        X = X.copy()
+    for col in durations:
+        X[col] = seconds(X[col])
+    if dates:
+        for col in features.columns:
+            s = features[col]
+            if pd.api.types.is_datetime64_any_dtype(s):
+                s = s.dt.tz_localize(None) if s.dt.tz is not None else s
+                X[col] = (s - s.min()).dt.total_seconds() / 86_400
+    return X
+
+
+def lightgbm_names(X: pd.DataFrame) -> pd.DataFrame:
+    """``X`` with its columns named ``f0``, ``f1``, ...: LightGBM refuses names with JSON characters (a spectrum's
+    ``M/Z:800.32``), and the fits need no names.
+    """
+    return X.set_axis([f"f{i}" for i in range(X.shape[1])], axis=1)
 
 
 def text_vectorizer(values: np.ndarray) -> TfidfVectorizer:

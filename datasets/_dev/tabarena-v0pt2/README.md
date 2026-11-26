@@ -29,7 +29,7 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 - Build with the `build` extra installed (the repository's `.venv` has it). scikit-learn must stay below 1.8, which
   changes the grouped splits. Rows and splits are the same on every machine, but a numpy log or exp can differ in its
   last bit between CPUs, so compare checksums on one machine.
-- `.claude/skills/knowledge-data-foundry/scripts/task_probes.py --all --built` sweeps the built containers against
+- `data-foundry probe task --all --built` sweeps the built containers against
   dummy baselines (answer its flags with
   [`task_probes.md`](../../../.claude/skills/knowledge-curation/references/task_probes.md)), and
-  `.claude/skills/knowledge-data-foundry/scripts/group_probes.py <name>` probes a grouped task.
+  `data-foundry probe group <name>` probes a grouped task.

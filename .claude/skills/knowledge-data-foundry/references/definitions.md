@@ -581,17 +581,17 @@ It is stored in the container (`task_metadata.grouping`, read with `container.gr
   `prediction_time="..."` then names the column of each row's prediction point. `context="past_rows"` on a label time
   needs it: a row may read the rows of its group predicted before it, and their labels only where they were known by
   its own prediction point (SPLIT-9; Lennart, 2026-11-16). No dataset declares a label-time order yet.
-* `definition` is required: what one group is, why groups are held out (the use case), and the source with a quote.
-  Say when the grouped split is stricter than the source's protocol. It is rendered in the README's "Group structure"
-  section with the group statistics, which give four findings (few test groups per fold, one group over 20% of the
-  rows, `per_sample` labels nearly one per group, groups not clustered). For the model-based questions run
-  `group_probes.py` ([checks_and_probes.md](checks_and_probes.md)); accept `groups_test_groups_few` only with that
-  evidence. A group id built from the data: `df.groupby(columns).ngroup()` over the defining columns; a calibrated
-  link (SPLIT-24): the connected components of the linked pairs (`scipy.sparse.csgraph.connected_components`). Build
-  it in `_clean` from the columns that define the entity before any step replaces them (santander_transaction_value's
+* `definition` is required: what one group is, why groups are held out (the use case), and the source with a quote. Say
+  when the grouped split is stricter than the source's protocol. It is rendered in the README's "Group structure"
+  section with the group statistics, which give four findings (few test groups per fold, one group over 20% of the rows,
+  `per_sample` labels nearly one per group, groups not clustered). For the model-based questions run
+  `data-foundry probe group` ([checks_and_probes.md](checks_and_probes.md)); accept `groups_test_groups_few` only with
+  that evidence. A group id built from the data: `df.groupby(columns).ngroup()` over the defining columns; a calibrated
+  link (SPLIT-24): the connected components of the linked pairs (`scipy.sparse.csgraph.connected_components`). Build it
+  in `_clean` from the columns that define the entity before any step replaces them (santander_transaction_value's
   customers come from the raw lag columns, before the summaries), carry it as a column, and leave it out of the
-  `drop_duplicates` subset: with it, copies that fall in different groups survive (all 4,459 rows stay there instead
-  of 4,447). The curation notes give the match rule, the chance rate and the verdict (LEAK-42 to LEAK-44).
+  `drop_duplicates` subset: with it, copies that fall in different groups survive (all 4,459 rows stay there instead of
+  4,447). The curation notes give the match rule, the chance rate and the verdict (LEAK-42 to LEAK-44).
 
 ### Temporal: `Temporal` and `TemporalSplits`
 
@@ -864,7 +864,7 @@ slug, its severities and whether a definition may accept it is in [check_slugs.m
 | `splits_test_over_budget` | a test side over the container's `row_budget` (only a version with a budget is checked; a benchmark sub-samples the train sides): the splits of a custom `_make_splits` must keep to it ("Larger than the row budget") |
 | `meta_time_horizon_missing` | a fixed-length window in `Temporal(splits=...)`, or `Temporal(horizon=..., horizon_unit=...)` |
 | `meta_time_gap_without_time_on` | a gap belongs to a temporal task |
-| `groups_test_groups_few` | fewer than 20 test groups in a fold, or fewer than 10 groups in all: keep only with real signal across groups (`group_probes.py`) and more than a handful of groups of each class per fold (else `Too Small`), and accept with that evidence |
+| `groups_test_groups_few` | fewer than 20 test groups in a fold, or fewer than 10 groups in all: keep only with real signal across groups (`data-foundry probe group`) and more than a handful of groups of each class per fold (else `Too Small`), and accept with that evidence |
 | `groups_largest_share_high` | one group over 20% of the rows: check it is one entity, not a catch-all value |
 | `groups_not_clustered` (info) | rows no closer to their group than chance: compare IID and grouped scores before keeping the grouping |
 | `splits_test_single_class`, `splits_test_target_constant` | a test fold whose metric is undefined (or a single-class fold whose train side lacks its class): fewer, larger folds or windows, or the task is too small |
@@ -900,7 +900,7 @@ change it) and `df`, keep it small, and import matplotlib inside the hook.
 | Decision | Evidence |
 |---|---|
 | A column is dropped for what it is: recorded after the prediction point, an outcome, a model output or estimate fit with the label, a field the source says not to use | no numbers: the reason (the source's words) in `curation_comments`, and no decision unless a reviewer could question the call |
-| A column is dropped for what its values show, and the context does not settle it (sub-scores that add up to the target, a column tied to the label's time window, a block with no signal) | the comparison that shows it (its correlation with or ROC AUC alone for the target against a reference), with `roc_auc_score` and pandas `corr`, not a hand-written helper; how much the drop matters comes from `leak_probes.py` |
+| A column is dropped for what its values show, and the context does not settle it (sub-scores that add up to the target, a column tied to the label's time window, a block with no signal) | the comparison that shows it (its correlation with or ROC AUC alone for the target against a reference), with `roc_auc_score` and pandas `corr`, not a hand-written helper; how much the drop matters comes from `data-foundry probe leak` |
 | The split regime (kick: temporal, not grouped by auction location) | a table of how many groups recur over time; a histogram of time points per group |
 | A suspected leak kept on purpose (kick `WheelType`, homesite) | the target rate by value or by missingness, and the score with and without the column |
 | Duplicate rows kept or dropped | the duplicate share and how many conflict in the target |
@@ -980,7 +980,7 @@ and the rest is checked when the metric is written or reviewed.
      The three deviances require the floor, with no library default (`task_metric_param_invalid` without it): the
      definition states it at the lowest value the use case's actor acts on, with its fact, never above the smallest
      plausible mean on the scale the metric scores (MET-13 as amended 2026-11-09; 1e-4 claims per year on fremtpl2 and
-     bemtpl97), and `task_probes.py` reports the share of predictions at it. The floor
+     bemtpl97), and `data-foundry probe task` reports the share of predictions at it. The floor
      sets the scale of the worst error: one claim predicted at f costs `2 * (log(1/f) - 1 + f)` in Poisson deviance
      (25.6 at 1e-6, 16.4 at 1e-4), and above power 1 a Tweedie deviance charges a claim about `y * p^(1-q)`, so a 2000
      EUR claim predicted at 0 costs about 2e6 at a floor of 1e-6 and 2e3 at 1 EUR. No per-row cap: it makes the

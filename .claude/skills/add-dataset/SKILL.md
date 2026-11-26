@@ -190,7 +190,8 @@ there are no errors and every warning is fixed or proposed for acceptance with a
 every `ruff --fix`.
 
 Then run the leak probes and the task probes, the group probes for a grouped task, the hidden-group probe for an IID
-one, the time probe for a split that is not temporal and the dtype probe
+one, the time probe for a split that is not temporal and the dtype probe:
+`data-foundry probe {leak,task,group,hidden-groups,time,dtypes} <name> --out <run folder>`
 ([checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md)). Every column the dtype probe
 flags gets its meaning from the codebook, and its dtype from CLEAN-14. The time probe lists signs that the data
 carries time (date columns, a drifting row order or ID, figures of a period), as information for the split. Read every

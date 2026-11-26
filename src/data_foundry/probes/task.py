@@ -19,7 +19,7 @@ the task's regime), the group columns, the time column and how a grouped task is
 * the scores: ROC AUC (binary), macro ROC AUC and log loss (multiclass), R^2 and RMSE (regression), per row and,
   for a task scored per group (``prediction_unit="group"`` with the aggregation ``mean``, ``any`` or ``last``), per
   group;
-* with the task's own metric (``metric``, a dict described in ``curation_probes.weights``): each baseline's and
+* with the task's own metric (``metric``, a dict described in ``data_foundry.probes.scoring``): each baseline's and
   family's score by it on the same test rows, computed as the benchmark does (``metric_mean``; ``declared_metric``
   names the best family by it), and for a metric with a floor (``min_prediction``) the share of the predictions at
   or below the floor (``at_floor_mean``), where a family pays the floor's cost;
@@ -56,7 +56,7 @@ deviance has an R^2 near 0.01 by nature, so ``no_signal`` can come with a real g
 bemtpl97, 2026-11-06): the report then names both.
 
 Group and target columns are not features. Text (string) columns enter as 16 TF-IDF + SVD components each, fitted on
-the train side (``text=False`` leaves them out; see ``curation_probes.text``). Categoricals enter as codes and
+the train side (``text=False`` leaves them out; see ``data_foundry.probes.encode``). Categoricals enter as codes and
 datetimes as numbers. Each train side is capped at ``max_rows`` rows: the newest rows for a temporal task (a random
 sample thins the periods next to the test window, the ones a drifting level is learnt from), else random rows; each
 test side at ``max_rows`` random rows (whole groups for a task scored per group). The dummy uses the whole train side.
@@ -65,19 +65,19 @@ The numbers are indicative (untuned models); check a flag against tuned methods 
 
 from __future__ import annotations
 
-import lightgbm as lgb
+import argparse
+import time
+from pathlib import Path
+from typing import TYPE_CHECKING
+
 import numpy as np
 import pandas as pd
-from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.feature_selection import SelectKBest, f_classif, f_regression
-from sklearn.linear_model import LogisticRegression, Ridge
-from sklearn.metrics import log_loss, roc_auc_score
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
-from curation_probes import weights
-from curation_probes.text import MAX_TEXT_COLUMNS, TEXT_COMPONENTS, encode_text, features
+from data_foundry.probes import inputs, models, scoring
+from data_foundry.probes.encode import MAX_TEXT_COLUMNS, TEXT_COMPONENTS, encode_text, numeric
+
+if TYPE_CHECKING:
+    import lightgbm as lgb
 
 SOLVED = 0.995
 """ROC AUC, macro ROC AUC or R^2 from which a task counts as solved."""
@@ -107,10 +107,6 @@ on 2026-10-21: mortgage 99 s at 200,000 against 22 min uncapped, with the same f
 (25 min) and force_2020 (31 min) are the slowest measured, so a sweep with ``--jobs 8`` stays within a few hours."""
 N_SINGLE = 5
 """Single-feature candidates per split: the features LightGBM uses most on its train side."""
-WIDE_INPUTS = 1_000
-"""Above this many model inputs the probe adds ``selected_linear``."""
-SELECTED_INPUTS = 500
-"""The inputs ``selected_linear`` keeps, chosen by a univariate F-test on each train side."""
 
 
 FLAG_RULES = {
@@ -123,92 +119,6 @@ FLAG_RULES = {
     "few_minority": "TP-5, TP-8",
 }
 """The rules of ``task_probes.md`` that answer each flag; its readings, highest rank first, are in ``evidence.md``."""
-
-
-def linear_inputs(categorical: list[str]) -> ColumnTransformer:
-    """The linear family's inputs: categories one-hot (64 levels at most, the rarer ones pooled), the rest scaled.
-
-    A category's code is no number: read as one, a linear model ranks the levels by their arbitrary order.
-    """
-    return ColumnTransformer(
-        [("categories", OneHotEncoder(handle_unknown="infrequent_if_exist", max_categories=64), categorical)],
-        remainder=StandardScaler(),
-    )
-
-
-def models(*, regression: bool, n_jobs: int, categorical: list[str] | None = None, n_inputs: int = 0) -> dict:
-    """The untuned model families; ``categorical`` names the columns the linear family one-hot encodes.
-
-    With more than ``WIDE_INPUTS`` inputs, ``selected_linear`` joins them: the linear model on the
-    ``SELECTED_INPUTS`` inputs of the strongest univariate F-test, chosen inside the pipeline on the train side.
-    """
-    categorical = categorical or []
-    if regression:
-        out = {
-            "linear": lambda: make_pipeline(linear_inputs(categorical), Ridge(alpha=1.0)),
-            "random_forest": lambda: RandomForestRegressor(
-                n_estimators=200, min_samples_leaf=2, max_features="sqrt", n_jobs=n_jobs, random_state=0
-            ),
-            "lightgbm": lambda: lgb.LGBMRegressor(n_estimators=300, learning_rate=0.05, verbose=-1, n_jobs=n_jobs),
-        }
-        select, linear = f_regression, lambda: Ridge(alpha=1.0)
-    else:
-        out = {
-            "linear": lambda: make_pipeline(linear_inputs(categorical), LogisticRegression(C=1.0, max_iter=2000)),
-            "random_forest": lambda: RandomForestClassifier(
-                n_estimators=200, min_samples_leaf=2, n_jobs=n_jobs, random_state=0
-            ),
-            "lightgbm": lambda: lgb.LGBMClassifier(n_estimators=300, learning_rate=0.05, verbose=-1, n_jobs=n_jobs),
-        }
-        select, linear = f_classif, lambda: LogisticRegression(C=1.0, max_iter=2000)
-    if n_inputs > WIDE_INPUTS:
-        out["selected_linear"] = lambda: make_pipeline(
-            linear_inputs(categorical), SelectKBest(select, k=SELECTED_INPUTS), linear()
-        )
-    return out
-
-
-def predict(model, X_test: pd.DataFrame, n_classes: int) -> np.ndarray:
-    """Class probabilities aligned to all classes, or values (``n_classes=0``)."""
-    if not n_classes:
-        return model.predict(X_test)
-    out = np.zeros((len(X_test), n_classes))
-    out[:, model.classes_] = model.predict_proba(X_test)
-    return out
-
-
-def scores(
-    y: np.ndarray, pred: np.ndarray, reference: np.ndarray, n_classes: int, weight: np.ndarray | None = None
-) -> dict[str, float]:
-    """The scores of ``pred`` and its skill against the constant ``reference`` (the dummy's prediction), each row
-    weighted by ``weight`` when given.
-    """
-    if not n_classes:
-        mse = float(np.average((y - pred) ** 2, weights=weight))
-        dummy = float(np.average((y - reference) ** 2, weights=weight))
-        total = float(np.average((y - np.average(y, weights=weight)) ** 2, weights=weight))
-        return {
-            "rmse": mse**0.5,
-            "r2": 1 - mse / total if total else float("nan"),
-            "skill": 1 - mse / dummy if dummy else float("nan"),
-        }
-    labels = list(range(n_classes))
-    p = np.clip(pred, 1e-12, 1)
-    p = np.round(p / p.sum(axis=1, keepdims=True), 12)  # a constant averaged per group stays a constant
-    q = np.clip(np.broadcast_to(reference, p.shape), 1e-12, 1)
-    q = q / q.sum(axis=1, keepdims=True)
-    present = np.unique(y)
-    if n_classes == 2:  # binary
-        auc = float(roc_auc_score(y, p[:, 1], sample_weight=weight)) if len(present) == 2 else float("nan")
-        ll = float(log_loss(y, p, labels=labels, sample_weight=weight))
-        return {"auc": auc, "log_loss": ll, "skill": 2 * auc - 1}
-    ll = float(log_loss(y, p, labels=labels, sample_weight=weight))
-    ll_dummy = float(log_loss(y, q, labels=labels, sample_weight=weight))
-    auc = float("nan")
-    if len(present) > 2:
-        sub = p[:, present] / p[:, present].sum(axis=1, keepdims=True)
-        auc = float(roc_auc_score(y, sub, multi_class="ovr", labels=list(present), sample_weight=weight))
-    return {"macro_auc": auc, "log_loss": ll, "skill": 1 - ll / ll_dummy if ll_dummy else float("nan")}
 
 
 def by_group(frame: pd.DataFrame, aggregation: str, n_classes: int) -> tuple[np.ndarray, np.ndarray]:
@@ -315,11 +225,11 @@ def run(  # noqa: C901, PLR0912, PLR0913
         n_jobs: Threads per model.
         text: Encode the text columns (else leave them out).
         sample_weight: The task's training weight, one value per row of ``df`` (never a column of it), or None.
-        metric: The task's own metric (see ``curation_probes.weights``), scored next to the probe's scores, or None.
+        metric: The task's own metric (see ``data_foundry.probes.scoring``), scored next to the probe's scores, or None.
     """
     regression = problem_type == "regression"
     group_cols = list(group_cols)
-    X, names, text_cols = features(df, list(dict.fromkeys([target, *group_cols, *non_features])))
+    X, names, text_cols = numeric(df, list(dict.fromkeys([target, *group_cols, *non_features])))
     if not text:
         text_cols = []
     labels_of = df[target]
@@ -359,23 +269,23 @@ def run(  # noqa: C901, PLR0912, PLR0913
     results: dict[str, list[dict]] = {}
     categorical = [f"f{i}" for i, name in enumerate(names) if isinstance(df[name].dtype, pd.CategoricalDtype)]
     n_inputs = X.shape[1] + TEXT_COMPONENTS * len(text_cols[:MAX_TEXT_COLUMNS])
-    candidates = models(regression=regression, n_jobs=n_jobs, categorical=categorical, n_inputs=n_inputs)
+    candidates = models.families(regression=regression, n_jobs=n_jobs, categorical=categorical, n_inputs=n_inputs)
     chosen_single: list[str] = []
     class_counts: list[np.ndarray] = []  # the units of each class, per probed test fold
     numeric_blocks = {names[i]: [f"f{i}"] for i in range(len(names))}
 
     def reference_of(rows: np.ndarray) -> np.ndarray:
-        return weights.reference(y, rows, n_classes, weight)
+        return scoring.reference(y, rows, n_classes, weight)
 
     def record(key: str, y_te: np.ndarray, pred: np.ndarray, ref: np.ndarray, test: np.ndarray) -> None:
         extra: dict[str, float | None] = {}
         if metric is not None:  # the row predictions: the task's scorer aggregates a group itself
-            extra["metric"], error = weights.declared_score(metric, truth[test], pred, test, classes)
+            extra["metric"], error = scoring.declared_score(metric, truth[test], pred, test, classes)
             if error:
                 metric_errors.setdefault(key, error)
             if metric.get("floor") is not None and not n_classes:
-                extra["at_floor"] = weights.at_floor(pred, metric["floor"])
-        w_te = weights.take(weight, test)
+                extra["at_floor"] = scoring.at_floor(pred, metric["floor"])
+        w_te = scoring.take(weight, test)
         if unit == "group":
             frame = pd.DataFrame(pred if n_classes else pred[:, None]).assign(_y=y_te, _g=groups[test])
             if order is not None:
@@ -389,15 +299,15 @@ def run(  # noqa: C901, PLR0912, PLR0913
             pred, y_te, ref = (gp if n_classes else gp[:, 0]), gy, (gref if n_classes else gref[:, 0])
             if w_te is not None:  # a group weighs the sum of its rows' weights, in by_group's order
                 w_te = pd.Series(w_te).groupby(groups[test], sort=True).sum().to_numpy()
-        results.setdefault(key, []).append(scores(y_te, pred, ref, n_classes, w_te) | extra)
+        results.setdefault(key, []).append(scoring.scores(y_te, pred, ref, n_classes, w_te) | extra)
 
     def make_single() -> lgb.LGBMModel:
-        return (lgb.LGBMRegressor if regression else lgb.LGBMClassifier)(n_estimators=200, verbose=-1, n_jobs=n_jobs)
+        return models.lightgbm(regression=regression, n_jobs=n_jobs)
 
     for i, (train, test, full_train) in enumerate(pairs):
         ref = reference_of(full_train)
         y_tr, y_te = y[train], y[test]
-        w_tr = weights.take(weight, train)
+        w_tr = scoring.take(weight, train)
         X_tr, X_te = X.iloc[train].reset_index(drop=True), X.iloc[test].reset_index(drop=True)
         text_blocks: dict[str, list[str]] = {}
         if text_cols:
@@ -422,8 +332,8 @@ def run(  # noqa: C901, PLR0912, PLR0913
             record("drift", y_te, drift if n_classes else drift[:, 0], ref, test)
         lightgbm = None
         for key, make in candidates.items():
-            model = weights.fit(make(), X_tr, y_tr, w_tr)
-            pred = predict(model, X_te, n_classes)
+            model = models.fit(make(), X_tr, y_tr, w_tr)
+            pred = models.predict(model, X_te, n_classes)
             if regression:
                 pred = np.clip(pred, y_tr.min(), y_tr.max())
             record(key, y_te, pred, ref, test)
@@ -438,18 +348,17 @@ def run(  # noqa: C901, PLR0912, PLR0913
             best_block, best_inner = ranked[0], -np.inf
             if len(inner_tr) and len(inner_va):
                 inner_ref = reference_of(train[inner_tr])
-                w_fit, w_va = weights.take(w_tr, inner_tr), weights.take(w_tr, inner_va)
+                w_fit, w_va = scoring.take(w_tr, inner_tr), scoring.take(w_tr, inner_va)
                 for block in ranked:
                     cols = blocks[block]
-                    model = weights.fit(make_single(), X_tr.iloc[inner_tr][cols], y_tr[inner_tr], w_fit)
-                    inner = scores(
-                        y_tr[inner_va], predict(model, X_tr.iloc[inner_va][cols], n_classes), inner_ref, n_classes, w_va
-                    )
+                    model = models.fit(make_single(), X_tr.iloc[inner_tr][cols], y_tr[inner_tr], w_fit)
+                    pred = models.predict(model, X_tr.iloc[inner_va][cols], n_classes)
+                    inner = scoring.scores(y_tr[inner_va], pred, inner_ref, n_classes, w_va)
                     if np.isfinite(inner["skill"]) and inner["skill"] > best_inner:
                         best_block, best_inner = block, inner["skill"]
             cols = blocks[best_block]
-            model = weights.fit(make_single(), X_tr[cols], y_tr, w_tr)
-            record("single_feature", y_te, predict(model, X_te[cols], n_classes), ref, test)
+            model = models.fit(make_single(), X_tr[cols], y_tr, w_tr)
+            record("single_feature", y_te, models.predict(model, X_te[cols], n_classes), ref, test)
             chosen_single.append(best_block)
 
     def summary(key: str) -> dict[str, float]:
@@ -540,3 +449,128 @@ def run(  # noqa: C901, PLR0912, PLR0913
         "flags": flags,
         "flag_rules": {flag: FLAG_RULES[flag] for flag in flags},
     }
+
+
+# On a dataset: `data-foundry probe task`
+
+
+def probe(name: str, root: Path, args: argparse.Namespace) -> dict:
+    """Run ``run`` on one dataset's shipped splits, with its group and time columns, its training weight and its
+    declared metric, and return the numbers and flags.
+    """
+    started = time.time()
+    data = inputs.load(name, root, built=args.built)
+    grouping = data.grouping
+    features = set(data.features)
+    result = run(
+        data.df,
+        data.target,
+        data.problem_type,
+        data.flat_splits(),
+        group_cols=data.group_cols,
+        prediction_unit=grouping.prediction_unit if grouping is not None else "row",
+        aggregation=grouping.aggregation if grouping is not None else None,
+        group_time_on=grouping.time_on if grouping is not None else None,
+        time_on=data.time_on,
+        non_features=[c for c in data.df.columns if c not in features],
+        n_splits=args.splits,
+        max_rows=args.max_rows,
+        n_jobs=args.n_jobs,
+        text=not args.no_text,
+        sample_weight=data.weights,
+        metric=data.declared_metric(),
+    )
+    head = {"name": name, "origin": data.origin, "regime": data.regime, "sample_weight": data.weight_column}
+    return head | result | {"seconds": round(time.time() - started)}
+
+
+def weight_and_metric_lines(result: dict) -> list[str]:
+    """The report lines of the training weight and the declared metric (its best family, the folds it failed on)."""
+    lines = []
+    if result.get("sample_weight"):
+        lines.append(f"  every model fitted with `{result['sample_weight']}` as the row weight; every score weighted")
+    declared = result.get("declared_metric")
+    if declared:
+        direction = "higher" if declared["greater_is_better"] else "lower"
+        floor = f"; floor {declared['floor']:g}" if declared.get("floor") is not None else ""
+        lines.append(
+            f"  declared metric {declared['name']} ({direction} is better{floor}): best family {declared['best']}"
+        )
+        if vs := declared.get("vs_dummy"):
+            relative = f", {vs['relative_gain']:.1%} of the dummy's loss" if "relative_gain" in vs else ""
+            lines.append(
+                f"  on it {declared['best']} beats the dummy on {vs['beats_dummy_share']:.0%} of the splits, by "
+                f"{vs['gain_mean']:+.4g} (SE {vs['gain_se']:.2g}{relative})"
+            )
+        lines += [f"  declared metric failed on {k} (scored NaN): {e}" for k, e in declared["errors"].items()]
+    return lines
+
+
+def score_cells(scores: dict, keys: list[str], declared: dict | None) -> str:
+    """One model's mean scores, with the declared metric and the share of predictions at its floor."""
+    cells = ", ".join(f"{k} {scores[f'{k}_mean']:.3f}" for k in keys)
+    if declared and "metric_mean" in scores:
+        cells += f" | {declared['name']} {scores['metric_mean']:.5g}"
+    if "at_floor_mean" in scores:
+        cells += f", at the floor {scores['at_floor_mean']:.1%}"
+    return cells
+
+
+def render(result: dict) -> str:
+    """A short text report of one dataset's probes."""
+    if "error" in result:
+        return f"{result['name']}: CRASH {result['error']}"
+    t = result["scores"]
+    keys = [k for k in ("auc", "macro_auc", "log_loss", "r2", "rmse") if f"{k}_mean" in t["dummy"]]
+    head = (
+        f"{result['name']} ({result['regime']}, {result['problem_type']}, unit {result['unit']}, {result['origin']}): "
+        f"{result['rows']:,} rows, {result['features']} features"
+        + (f" + {result['text_columns']} text columns" if result["text_columns"] else "")
+        + f", {result['splits_probed']} of {result['splits_shipped']} splits, {result['seconds']} s"
+    )
+    lines = [head, *weight_and_metric_lines(result)]
+    for key in ["dummy", "drift", "linear", "selected_linear", "random_forest", "lightgbm", "single_feature"]:
+        if key in t:
+            cells = score_cells(t[key], keys, result.get("declared_metric"))
+            lines.append(f"  {key:>15}: skill {t[key]['skill_mean']:+.3f} +- {t[key]['skill_std']:.3f} | {cells}")
+    lines.append(
+        f"  best family {result['best']}: beats the dummy on {result['best_beats_dummy_share']:.0%} of the splits, "
+        f"standard error of its mean skill {result['best_skill_se']:.3f}"
+    )
+    if "spread" in t:
+        s = t["spread"]
+        lines.append(
+            f"  spread {s['best']} - {s['worst']}: {s['best_minus_worst']:+.3f} (paired SE {s['paired_se']:.3f})"
+        )
+    if result["single_feature"]["chosen"]:
+        chosen = ", ".join(f"{k!r} {v}x" for k, v in result["single_feature"]["chosen"].items())
+        lines.append(f"  single feature chosen per split: {chosen}")
+    if result["smallest_class_per_test_fold"] is not None:
+        what = "groups" if result["unit"].startswith("group") else "rows"
+        lines.append(f"  smallest class in a test fold: {result['smallest_class_per_test_fold']} {what}")
+        if few := result.get("few_minority_classes"):
+            named = ", ".join(f"{k!r} {v}" for k, v in list(few.items())[:20])
+            more = f" and {len(few) - 20} more" if len(few) > 20 else ""
+            lines.append(f"  classes under {FEW_MINORITY} {what} in a test fold (smallest count): {named}{more}")
+    rules = result.get("flag_rules", {})
+    flags = [f"{flag} ({rules[flag]})" if flag in rules else flag for flag in result["flags"]]
+    lines.append(f"  flags: {', '.join(flags) or 'none'}")
+    vs = (result.get("declared_metric") or {}).get("vs_dummy")
+    if "no_signal" in result["flags"] and vs and vs["gain_mean"] > 2 * vs["gain_se"] and vs["beats_dummy_share"] >= 0.8:
+        lines.append("  no_signal reads the probe's own skill; on the declared metric the best family beats the dummy")
+    return "\n".join(lines)
+
+
+def summary(results: list[dict]) -> str:
+    """``summary.md``: one row per dataset with its best family, skill and flags."""
+    rows = [
+        f"| `{r['name']}` | {r.get('regime', '')} | {r.get('unit', '')} | {r.get('best', '')} | "
+        + (
+            f"{r['scores'][r['best']]['skill_mean']:+.3f} | {', '.join(r['flags']) or ''} |"
+            if "error" not in r
+            else f" | CRASH: {r['error'][:80]} |"
+        )
+        for r in results
+    ]
+    header = "| dataset | regime | unit | best model | best skill | flags |\n|---|---|---|---|---|---|\n"
+    return header + "\n".join(rows) + "\n"
