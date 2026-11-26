@@ -1,5 +1,29 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-26, astrazeneca_chembl_logd74: every measured number re-run under one recipe (text only, nothing built)
+
+The notes quoted figures from three different measurements, two of them taken before the five merged compound
+pairs were dropped, and a reader could not tell which recipe produced which. One run on the shipped 4,190
+compounds and the shipped nine folds now produces all of them, and the recipe is written into the notes: an
+untuned LightGBM at its defaults on the recommended encoding of the SMILES column, the training mean of the same
+fold and a 1-NN over Morgan fingerprints (radius 2, 2,048 bits) as the baselines, a close analog at Tanimoto 0.7,
+and R^2 against that training mean.
+
+Three claims changed. The assay's noise floor keeps its value and gains its estimator: a single measurement's SD
+from duplicate pairs is the SD of their differences over root two, which is what AstraZeneca's published 0.07 to
+0.10 reports, and that is 0.106 over the 47 stereocentre-inverted pairs the shipped compounds hold with the one
+1.55 pair excluded that the stereoisomer decision argues is a label error (0.191 with it); the notes had 0.11
+from 43 pairs and did not state the exclusion. MolLogP is no longer called the task's strongest single feature,
+because alone it loses to the training mean on all nine folds (R^2 -0.165); the multi-fragment bullet keeps the
+point it needed, that the descriptor is computed on the substance rather than the compound. The fold figures and
+the split counts are restated on the shipped data, where the split bullet still carried the pre-drop 2,413
+scaffold groups over 4,195 compounds against the 2,411 over 4,190 that ship: RMSE 0.711, MAE 0.542, R^2 0.650
+against a training mean of 1.202, 1-NN 1.243, close analogs 22.7% against 45.9% over random draws, RMSE 0.747
+without a close analog against 0.570 with one.
+
+`dataset check` passes with 0 errors and 0 warnings over 28 checks, and README.md is regenerated. No container was
+saved and no field, split or metric changed.
+
 ## 2026-11-26, genomic_prediction_soy_yield: the metric overrule recorded, the metric and the split signed off, verdict ship (text only, nothing built)
 
 - `genomic_prediction_soy_yield`, the metric overrule (issue 6, change to C: record the exception and amend the rule

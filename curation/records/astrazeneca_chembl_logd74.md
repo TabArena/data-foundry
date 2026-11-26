@@ -143,6 +143,23 @@ twice; each is two compounds the deposit registered and measured separately, mer
   training mean; and every fold figure predates the drop, re-measuring in the same range but not on the same values
   (RMSE 0.698 -> 0.710, MAE 0.528 -> 0.542). None is read outside the notes and none changes a decision.
 
+CC (2026-11-26, Andrej): issue 7 settled, and every measured number in the notes re-run under one recipe.
+
+- One run on the shipped 4,190 compounds and the shipped nine folds now produces every figure the notes quote as a
+  measurement, and the recipe is written into the notes: an untuned LightGBM at its defaults on the recommended
+  encoding of the SMILES column, the training mean of the same fold and a 1-NN over Morgan fingerprints as the
+  baselines, a close analog at Tanimoto 0.7.
+- The noise floor stands at 0.106 and the re-measure that disputed it was the mistaken one: a single measurement's
+  SD from duplicate pairs is the SD of their differences over root two, which is what AstraZeneca's published 0.07
+  to 0.10 reports, while 0.211 is the spread of the differences themselves. The pair count was wrong, though: 47
+  stereocentre-inverted pairs on the shipped compounds, not 43, and the 1.55 pair the stereoisomer decision calls a
+  label error is now named as excluded (0.191 with it).
+- MolLogP is no longer called the task's strongest single feature: alone it loses to the training mean on all nine
+  folds (R^2 -0.165). The multi-fragment bullet keeps the point it needed, that the descriptor is computed on the
+  substance rather than the compound.
+- The fold figures and the split counts are restated on the shipped data, where the split bullet had still carried
+  issue 6's pre-drop 2,413 groups over 4,195 compounds.
+
 ## Review
 
 **Outcome:** added. AstraZeneca's shake-flask logD7.4 assay as deposited in ChEMBL, 4,190 compounds with the
@@ -405,7 +422,7 @@ Neither changes a field.
    differ by 0.254 log units on average": that spread is stereochemistry between two compounds, not assay
    repeatability. `mae` itself is unchanged, since it rests on TDC's declaration for this task.
 
-7. **Three measured numbers in the notes do not reproduce, or predate the drop.** (open)
+7. **Three measured numbers in the notes do not reproduce, or predate the drop.**
 
    * **Problem:**
      - The noise floor the notes claim twice - "a single measurement of this assay has an SD of about 0.11 (the 43
@@ -455,6 +472,37 @@ Neither changes a field.
    **Notes for the AI:** the noise floor appears in `fit_reason` and in the "Stereoisomers keep their own row"
    decision text; MolLogP in the multi-fragment bullet. None of the three is read outside the notes, so no field
    or build depends on the answer.
+
+   **Andrej (2026-11-26, discuss):** Agree.
+
+   **Resolved (2026-11-26, Andrej):** (b). Every figure the notes quote as a measurement now comes from one run on
+   the shipped 4,190 compounds and the shipped nine folds, with the model, the baselines, the fingerprint and the
+   noise-floor estimator written into the notes, so the next reader can reproduce them.
+
+   The noise floor holds and the issue's own 0.211 was the one that did not. A single measurement's SD from
+   duplicate pairs is the SD of their differences over root two, which is also what AstraZeneca's published 0.07 to
+   0.10 reports; the issue took the SD of the differences themselves, which is the difference's spread. On the
+   shipped compounds there are 47 stereocentre-inverted pairs rather than 43, and the floor is 0.106 with the 1.55
+   pair left out and 0.191 with it. The notes now give 0.106, name the exclusion and name the pair's own decision,
+   which already argues it is a label error.
+
+   MolLogP is the claim that did not survive: on its own it loses to the training mean on all nine folds (R^2
+   -0.165), so "the strongest single feature of the task" is gone and the multi-fragment bullet rests on what it
+   needed anyway, that the descriptor is computed on the substance and not the compound. The fold figures move with
+   the drop of issue 6 and are restated: RMSE 0.711, MAE 0.542, R^2 0.650 against a training mean of 1.202, 1-NN
+   1.243, close analogs 22.7% against 45.9% over random draws, RMSE 0.747 without a close analog against 0.570 with
+   one, and the band errors -0.74 above logD 3.5 and +1.00 below 0. The split bullet had also kept issue 6's old
+   counts, which the same run corrects: 2,411 scaffold groups over 4,190 compounds, 1,863 of them alone.
+
+   | | in the notes before | now, from the one recipe |
+   |---|---|---|
+   | single-measurement SD | 0.11, "43 enantiomer pairs" | 0.106 over 46 pairs, the 1.55 pair excluded |
+   | MolLogP alone, R^2 | 0.134, "chosen on 6 of 9 splits" | -0.165, beats the training mean on 0 of 9 folds |
+   | LightGBM RMSE / MAE | 0.698 / 0.528 | 0.711 / 0.542 |
+   | L1-trained LightGBM MAE | 0.552 | 0.567 |
+   | scaffold groups / compounds | 2,413 / 4,195 | 2,411 / 4,190 |
+   | close analog, real / random | 23.0% / 46.7% | 22.7% / 45.9% |
+   | RMSE without / with a close analog | 0.823 / 0.544 | 0.747 / 0.570 |
 
 3. **Do the record's collection facts change to samples over time?**
 
