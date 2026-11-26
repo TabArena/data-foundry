@@ -7,8 +7,10 @@ The task view (``task = container.task()``, ``data_foundry.task.BenchmarkTask``)
   grouped), each with the rows to fit on, ``fold.train``: for a container with a row budget (a ``_1m`` version) the
   default sample of the train side, at most ``task.row_budget.train`` rows (``fold.train_side`` is the whole side);
 * the inputs, ``task.X(rows)`` (``task.features``): no target, no group column, no scoring column (a metric input such
-  as an era, never a feature), no time column that dates the label; a model that tunes on an inner validation split
-  cuts it on ``task.split_columns`` (the group and time columns) first;
+  as an era, never a feature), no time column that dates the label, and no SMILES as text (``special="drop"`` by
+  default; ``"encode"`` gives the recommended encodings); a model that tunes on an inner validation split cuts it by
+  ``task.split_roles`` (``task.validation_split(fold.train)`` is the default cut: whole groups on one side, the newest
+  rows held out after the gap) before it fits;
 * the training weight, ``task.train_weight(rows)`` (``None`` for most tasks): every model is fitted with it as each
   row's weight, never as a feature, such as the years insured of a claims-per-year target; the metric weights the
   test rows by it too;
@@ -110,23 +112,15 @@ def benchmark(container: CuratedContainer) -> list[float]:
 
 
 def encoded_frame(container: CuratedContainer) -> tuple[pd.DataFrame, list[str]]:
-    """The dataset with every feature in a form the model takes, and the names of the model's inputs.
+    """The model inputs of every row in a form the model takes, and their names.
 
-    The encodings that need no fit (special features, dates, ordinals, wide categoricals) apply to all rows here;
-    text is left as it is and encoded per split on its training rows (:func:`_encode_text`).
+    The encodings that need no fit apply to all rows here: the special features through the task view
+    (``task.X(special="encode")``: each in its recommended encoding, in place of its columns), then dates, ordinals
+    and wide categoricals. Text is left as it is and encoded per split on its training rows (:func:`_encode_text`).
     """
     task = container.task()
-    df = container.dataset.copy()
-    features = list(task.features)
-    special = task.special_features
-    if special:  # each in its recommended encoding, in place of its columns
-        from data_foundry.special import encode_special_feature  # noqa: PLC0415 - RDKit or scipy by kind
-
-        before = list(df.columns)
-        for feature in special:
-            df = encode_special_feature(df, feature)
-        replaced = {c for f in special for c in f.columns} - set(df.columns)
-        features = [c for c in features if c not in replaced] + [c for c in df.columns if c not in before]
+    df = task.X(special="encode") if task.special_features else task.X()
+    features = list(df.columns)
     out: list[str] = []
     for column in features:
         values = df[column]

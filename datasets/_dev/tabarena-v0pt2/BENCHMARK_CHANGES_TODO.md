@@ -76,7 +76,10 @@ leaves out:
   label became known, after the prediction point. 12 tasks: 2_month_survival_rate_prediction, apistox,
   bank_marketing, california_house_prices_2020, coffee_rating_prediction, fremtpl2,
   infrared_thermography_temperature, labour_inspection_compliance, qsar_tid_11, sdss_17, seismic_bumps,
-  wine_quality.
+  wine_quality;
+- by default a column whose raw values are no model input (`task.needs_encoding`, a SMILES string): `X(rows,
+  special="drop")` is the default, `"encode"` gives the recommended encodings and `"raw"` the stored values for a
+  method with its own encoder (item 6).
 
 These columns stay in the frame for the split and the scorer (items 3 and 4). `task_metadata.prediction_time`, when
 set (no task yet), names the column of the prediction point, a model input like any other.
@@ -142,8 +145,13 @@ The metrics in use:
 
 ### 4. Inner validation follows the outer split
 
-- Temporal tasks (68): cut the inner hold-out forward on the time column. Read it, with the group column(s), from
-  `task.split_columns` (`time_on_to_groups_data` reads `X[time_on]` today), and only then fit on `task.X(rows)`,
+- The roles: `task.regime` (`iid`, `grouped`, `temporal`) and `task.split_roles` (`group`, `time`, `gap`,
+  `gap_unit`, `unit`) say what each split column is for (`task.split_columns` stays the flat list).
+  `task.validation_split(fold.train)` is the default cut a harness may use (whole groups and units on one side; for a
+  temporal task the newest rows held out after the gap). A format-1 group column is in `split_roles.group`; its
+  `task.grouping` is `None`, as `container.grouping` is.
+- Temporal tasks (68): cut the inner hold-out forward on the time column. Read it from `task.split_roles.time`
+  (`time_on_to_groups_data` reads `X[time_on]` today), and only then fit on `task.X(rows)`,
   which may leave the time column out (item 2). Dropping it first breaks the temporal
   validation; never dropping it feeds the model a time it does not have.
 - Grouped tasks (48): group-aware inner folds for every grouped task. The BeyondArena protocol does it
@@ -180,7 +188,8 @@ A container lists every model input that needs handling beyond its dtype in `tas
 (`data_foundry.schema.SpecialFeature`: `name`, `kind` `smiles` / `spectrum`, `layout` `column` / `group`, `columns`,
 `encoding_required`, `recommended_encoding`, `details`). One contract for every kind (Lennart, 2026-11-02).
 
-- The guard first: a feature with `encoding_required` is encoded or left out, never passed on as its dtype. The
+- The guard first: a feature with `encoding_required` is encoded or left out, never passed on as its dtype
+  (`task.X()` leaves its columns, `task.needs_encoding`, out by default since the panel review of 2026-11-26). The
   model-agnostic pipeline marks every pandas `string` column as text and embeds it (Qwen3-Embedding-8B, 32
   dimensions); on apistox that embedding of the SMILES scored no better than no structure at all (ROC AUC 0.78-0.81
   against 0.70-0.82; ECFP4 bits or character n-grams 0.83-0.85).

@@ -59,11 +59,14 @@ container's metadata:
 |---|---|
 | `name`, `format_version`, `target`, `problem_type` | the dataset, its container format (1 or 2), the target column and the problem type |
 | `classes` | the sorted classes: the column order of `predict_proba` the scorer reads; `None` for regression |
-| `features` | the model inputs |
-| `split_columns` | the columns an inner validation split reads (group, time, unit) |
+| `features` | every model input, the columns of the special features included |
+| `needs_encoding` | the feature columns whose raw values are no model input (a SMILES string); `X()` leaves them out by default |
+| `regime` | `iid`, `grouped` or `temporal`: what the folds and an inner validation split follow |
+| `split_columns` | the columns an inner validation split reads (group, time, unit), as a flat list |
+| `split_roles` | the role of each: `SplitRoles(group, time, gap, gap_unit, unit)` |
 | `special_features` | inputs that need an encoding by kind (a SMILES column, a spectrum's group of columns) |
 | `metric`, `greater_is_better`, `optimum` | the metric spec, its direction and its best value |
-| `grouping` | how a grouped task is used (`data_foundry.schema.Grouping`), or `None` |
+| `grouping` | how a grouped task is used (`data_foundry.schema.Grouping`, as `container.grouping`), or `None` |
 | `sample_weight`, `validation_weight`, `unit_column` | the training weight, the validation weight, the unit of a unit weight |
 | `row_budget`, `time_unit` | the most rows a fit may use (`_1m` versions), the calendar of a numeric time column |
 
@@ -71,20 +74,26 @@ Its methods take row positions in `container.dataset`:
 
 | Method | Returns |
 |---|---|
-| `folds(budget=True)` | every outer split as a `Fold(repeat, fold, train, test, train_side)` |
-| `X(rows)`, `y(rows)` | the inputs and the target of the rows, indexed by their positions |
+| `folds(budget=True)` | every outer split as a `Fold(repeat, fold, train, test, train_side)`; read-only arrays, each train sample drawn once per task |
+| `X(rows, special="drop")`, `y(rows)` | the inputs and the target of the rows, indexed by their positions |
+| `validation_split(rows, fraction=0.2)` | the default inner validation split of the rows, `(fit, validation)`, cut by `split_roles` |
 | `train_weight(rows)`, `validation_weights(rows)` | the weights as floats, or `None` |
 | `score(y_true, y_pred, rows)` | the metric on the rows |
 | `error(score)` | the distance to the optimum, 0 at best |
-| `to_dict()` | the fields above as JSON-able data |
+| `to_dict()` | the fields above as JSON-able data, with `task_view_version` and `data_foundry_version` |
 
 The view uses the helpers of `data_foundry.curation_container` (`feature_columns`, `split_columns`, `sample_weight`,
 `validation_weight`, `unit_weight`, `special_features`), `data_foundry.sampling.subsample_train` and
 `data_foundry.metrics.scorer`. They stay available, and each rule lives in one of them.
 
-A format-2 container saves `to_dict()` next to its metadata as `benchmark_task.json`. The file is derived from the
-metadata and is not part of the checksum, so `verify()` ignores it. Code that reads the container files without Data
-Foundry takes the feature list from it
+`X`, `y` and the weights select the columns before the rows, so a call holds about its result in memory, also on a
+wide container (1M rows and a thousand columns).
+
+A format-2 container saves `to_dict()` next to its metadata as `benchmark_task.json`, with the Data Foundry version
+that wrote it. The file is derived from the metadata and is not part of the checksum, so `verify()` ignores it;
+`verify_saved_container` (`data_foundry.bundle_checks`) recomputes the view and flags a file that differs
+(`export_task_view_mismatch`, any key but `data_foundry_version`) or is missing (`export_task_view_missing`). Code
+that reads the container files without Data Foundry takes the feature list from it, less `needs_encoding`
 ([`examples/read_metric_without_data_foundry.py`](../examples/read_metric_without_data_foundry.py)).
 
 ## Folds and the row budget
@@ -109,17 +118,28 @@ scoring columns (metric inputs such as an era or a weight), the unit of a unit w
 the label (`time_of == "label"`: the moment the label became known, after the prediction point). These columns stay
 in the frame for the split and the scorer.
 
-An inner validation split (early stopping, tuning) reads `task.split_columns` from the same rows before the model
-fits on the features: whole groups on one side for a grouped task, the newest rows held out for a temporal one, a
-unit's rows on one side for a unit weight. A time column of the prediction point is in both lists; a group column or
-a label time only in `split_columns`.
+An inner validation split (early stopping, tuning) is cut by `task.split_roles` before the model fits on the
+features: whole groups (`group`) on one side for a grouped task, the newest rows held out for a temporal one (`time`),
+with the gap of the outer splits (`gap`, `gap_unit`) left out between the two sides, and a unit's rows (`unit`) on one
+side for a unit weight. `task.validation_split(fold.train)` is that cut, the default a harness may use: it returns
+`(fit, validation)` positions, holds out about `fraction` of the rows (whole time values for a temporal task), and
+draws groups with the container's `split_random_state`. A harness with its own inner folds reads the same roles. A
+time column of the prediction point is in both `features` and `split_columns`; a group column or a label time only in
+`split_columns`.
 
 Features come in several dtypes: numeric, categorical, ordinal (an ordered categorical, whose order a model should
 get, for example as its codes), `datetime` and `string` (free text). Pick a model that takes mixed dtypes, or encode
-them; `data_foundry.encodings` has the recommended encodings of dates and text. A special feature
-(`task.special_features`) is encoded by its kind with `data_foundry.special.encode_special_feature(frame, feature)`,
-or by your own encoder. Where `feature.encoding_required` is true (a SMILES) the raw column is no model input: encode
-it or leave it out, never pass it on as text.
+them; `data_foundry.encodings` has the recommended encodings of dates and text. `X` takes the special features
+(`task.special_features`) by an explicit mode:
+
+| `special=` | What X holds |
+|---|---|
+| `"drop"` (default) | no column of `task.needs_encoding` (a SMILES); a spectrum's numeric columns as they are |
+| `"encode"` | every special feature, spectra included, in its recommended encoding (`data_foundry.special.encode_special_feature`; RDKit for a SMILES) |
+| `"raw"` | every column as stored, for a method that brings its own encoder |
+
+A SMILES never reaches a model as text by default; a harness that encodes by kind itself takes `"raw"` and calls
+`encode_special_feature(frame, feature)` or its own encoder.
 
 ## Weights
 
@@ -178,7 +198,7 @@ new dataset) and 1 for the shipped BeyondArena containers. The task view reads b
 | | Format 1 (BeyondArena) | Format 2 (TabArena v0.2) |
 |---|---|---|
 | metric | `objective_metric_name` (`roc_auc`, `log_loss`, `rmse`), turned into a spec | `objective_metric`, the full spec |
-| grouping | the group column as a grouping with one prediction per row, or `None` | `Grouping`: prediction unit, aggregation, context |
+| grouping | `None`; the group column is in `split_roles.group` | `Grouping`: prediction unit, aggregation, context |
 | weights, special features, scoring columns | none | as declared |
 | row budget | none | `_1m` versions |
 | `benchmark_task.json` | not written | written on save |

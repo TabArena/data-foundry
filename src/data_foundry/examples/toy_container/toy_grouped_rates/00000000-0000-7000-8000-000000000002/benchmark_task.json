@@ -1,5 +1,6 @@
 {
-  "task_view_version": 1,
+  "task_view_version": 2,
+  "data_foundry_version": "0.0.5",
   "name": "toy_grouped_rates",
   "format_version": 2,
   "target": "claim_rate",
@@ -10,9 +11,20 @@
     "vehicle_size",
     "region"
   ],
+  "needs_encoding": [],
+  "regime": "grouped",
   "split_columns": [
     "customer"
   ],
+  "split_roles": {
+    "group": [
+      "customer"
+    ],
+    "time": null,
+    "gap": null,
+    "gap_unit": null,
+    "unit": null
+  },
   "special_features": [],
   "metric": {
     "name": "mean_poisson_deviance",

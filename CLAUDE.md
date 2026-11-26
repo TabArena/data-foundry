@@ -76,8 +76,9 @@ and scoring, the examples the reference ([`examples/README.md`](examples/README.
 * **Browse a collection:** `list_collections()`, `get_collection(name)`, `iter_containers()`, `prefetch()`; the last
   two download several GB, so ask first.
 * **Fit and score:** `task = container.task()` gives the folds within the row budget (`task.folds()`), the inputs
-  (`task.X(rows)`), the training weight (`task.train_weight(rows)`), the scorer (`task.score(y_true, y_pred, rows)`)
-  and the error (`task.error(score)`); never re-split, never fit on a scoring column. See
-  `examples/minimal_adapter.py` and `examples/benchmark_container.py`.
+  (`task.X(rows)`, a SMILES left out unless `special="encode"` or `"raw"`), the training weight
+  (`task.train_weight(rows)`), an inner validation split by the regime (`task.validation_split(rows)`, from
+  `task.split_roles`), the scorer (`task.score(y_true, y_pred, rows)`) and the error (`task.error(score)`); never
+  re-split, never fit on a scoring column. See `examples/minimal_adapter.py` and `examples/benchmark_container.py`.
 
 See [AGENTS.md](AGENTS.md) for the long form.

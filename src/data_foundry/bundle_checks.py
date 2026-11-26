@@ -2513,6 +2513,44 @@ def _checksum_results(reloaded: CuratedContainer) -> list[CheckResult]:
     return results
 
 
+def task_view_results(container: CuratedContainer, path: Path | str) -> list[CheckResult]:
+    """A saved format-2 container's ``benchmark_task.json`` against the task view recomputed from it.
+
+    The file is a derived copy outside the checksum (``verify()`` ignores it), so this is the check that it still says
+    what ``container.task().to_dict()`` says: a file written by an older Data Foundry whose view has changed since, or
+    edited by hand, is flagged. Format 1 writes no such file. ``container`` needs its frame loaded.
+    """
+    from data_foundry.task import BENCHMARK_TASK_FILE, task_view_mismatch  # noqa: PLC0415 - circular import
+
+    if container.format_version < 2:  # the format that writes the file
+        return []
+    file = Path(path) / BENCHMARK_TASK_FILE
+    if not file.is_file():
+        return [
+            CheckResult(
+                "export_task_view_missing",
+                "warning",
+                f"The format-2 container has no `{BENCHMARK_TASK_FILE}`.",
+                hint="Save the container again (`save()` writes it), or write `container.task().to_dict()` there.",
+            )
+        ]
+    saved = json.loads(file.read_text())
+    differing = task_view_mismatch(saved, container.task())
+    if not differing:
+        return []
+    return [
+        CheckResult(
+            "export_task_view_mismatch",
+            "error",
+            f"`{BENCHMARK_TASK_FILE}` (written by Data Foundry {saved.get('data_foundry_version', 'unrecorded')}, "
+            f"task view version {saved.get('task_view_version')}) differs from the recomputed task view in "
+            f"{differing}.",
+            hint="Readers without Data Foundry take the features from this file: rewrite it with "
+            "`container.task().to_dict()` before shipping.",
+        )
+    ]
+
+
 def verify_saved_container(
     path: Path | str,
     *,
@@ -2554,6 +2592,7 @@ def verify_saved_container(
     reloaded = CuratedContainer.load(path, load_dataset=True, load_test_data=has_test_dataset)
 
     results.extend(_checksum_results(reloaded))
+    results.extend(task_view_results(reloaded, path))
 
     if container is not None:
         if reloaded.uuid != container.uuid:

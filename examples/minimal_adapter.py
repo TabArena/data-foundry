@@ -1,8 +1,10 @@
 """The smallest benchmark adapter: load a container, fit on every fold, score by its metric.
 
 ``python examples/minimal_adapter.py [container folder]`` (default: the format-2 toy shipped with the package). The
-task view does the protocol: the folds within the row budget, the inputs, the training weight, the scorer and the
-error. ``benchmark_container.py`` adds the recommended encodings of dates, text and special features.
+task view does the protocol: the folds within the row budget, the inputs (``task.X`` leaves out a SMILES, which needs
+an encoding), the training weight, the scorer and the error. A model that stops early or tunes on an inner validation
+split takes it from ``task.validation_split(fold.train)``, which follows the regime. ``benchmark_container.py`` adds
+the recommended encodings of dates, text and special features.
 """
 
 from __future__ import annotations

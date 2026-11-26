@@ -298,8 +298,8 @@ class CuratedContainer:
         """How a grouped task is used (:class:`~data_foundry.schema.Grouping`), or None for an IID or temporal task.
 
         A format-1 container records just ``group_on`` / ``group_labels`` / ``group_time_on``, not the prediction
-        unit, the aggregation or the context, so it returns None (read ``task_metadata.group_on`` there), as the other
-        format-2 helpers do.
+        unit, the aggregation or the context, so it returns None, as the other format-2 helpers do; its group column
+        is ``task_metadata.group_on``, or ``task().split_roles.group`` in the task view.
         """
         return getattr(self.task_metadata, "grouping", None)
 
