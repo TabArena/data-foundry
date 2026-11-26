@@ -61,6 +61,9 @@
     all 21 tuned configurations beat 0.5 in 5 of 5 folds.
   On the `_1m` containers, which now hold every training row, the task probe loads the whole container before it
   caps the sides: 490 GB peak for maps_router_eta_1m and 634 GB for numerai_v5_2_1m, so they run one at a time.
+- The superseded containers were deleted from the local warehouse (Lennart, 2026-11-26): 276 of the working
+  copy's datasets, 80 GB, none a README's current build or a UUID pinned in the collections registry. The 103
+  containers in the folders of datasets outside the working copy were left alone.
 - Group probes re-run (`data-foundry probe group`, mean of three splits each) for the four definitions with a unit
   weight, whose runs before 2026-11-09 read the unit column as a feature (only boreal had been measured again):
   boreal_postfire_lichen_biomass R^2 0.408 on random folds against -0.035 on grouped ones (gap 0.443, as on
