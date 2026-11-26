@@ -15,7 +15,7 @@ Login is the remote's own: whoever can push to the repository can claim, whoever
 remote works; ``$DATA_FOUNDRY_CLAIMS_REMOTE`` and ``$DATA_FOUNDRY_CLAIMS_BRANCH`` pick another remote or branch.
 
 The curator is named by ``$DATA_FOUNDRY_CURATOR`` or ``git config data-foundry.curator`` and must be one of the
-people of the ``checked_by`` vocabulary in ``vocabularies.yaml``. Each fetch caches the board in the git directory
+people of the ``curators`` list in ``vocabularies.yaml``. Each fetch caches the board in the git directory
 (``data-foundry-claims.json``), so the warnings (``save_record``, the Claude Code hook, the dashboard) need no network.
 
 Claims are advisory: nothing refuses a write. A claim expires after ``ttl_days`` (7 by default) unless renewed; an
@@ -105,7 +105,7 @@ class Claim:
     name: str
     """The dataset's ``unique_name`` (the record's file stem and the v2 folder name)."""
     holder: str
-    """The curator, a person of the ``checked_by`` vocabulary."""
+    """The curator, a person of the ``curators`` list."""
     stage: str
     """One of :data:`STAGES`."""
     claimed_at: str
@@ -384,10 +384,10 @@ def configured_curator(repo: str | Path | None = None) -> str | None:
 
 
 def curators() -> list[str]:
-    """The people who may claim: the ``checked_by`` vocabulary without the AI reviewer."""
-    from data_foundry.curation.record import AI_REVIEWER, load_vocabularies  # noqa: PLC0415 - imports nothing from here
+    """The people who may claim: the ``curators`` list of ``vocabularies.yaml``."""
+    from data_foundry.curation.record import load_vocabularies  # noqa: PLC0415 - imports nothing from here
 
-    return [n for n in load_vocabularies().get("checked_by", []) if n != AI_REVIEWER]
+    return load_vocabularies().get("curators", [])
 
 
 def current_curator(repo: str | Path | None = None) -> str:
@@ -398,11 +398,11 @@ def current_curator(repo: str | Path | None = None) -> str:
     """
     allowed = curators()
     name = configured_curator(repo)
-    hint = f"one of: {', '.join(allowed)}" if allowed else "a name from vocabularies.yaml (checked_by)"
+    hint = f"one of: {', '.join(allowed)}" if allowed else "a name from vocabularies.yaml (curators)"
     if not name:
         raise ClaimsError(f"Name yourself first: `git config {CURATOR_GIT_KEY} <Name>` (or ${CURATOR_ENV}), {hint}.")
     if allowed and name not in allowed:
-        raise ClaimsError(f"Curator '{name}' is not in vocabularies.yaml (checked_by); use {hint}.")
+        raise ClaimsError(f"Curator '{name}' is not in vocabularies.yaml (curators); use {hint}.")
     return name
 
 

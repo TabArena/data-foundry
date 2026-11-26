@@ -55,7 +55,9 @@ def env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, Path]:
         repos[who] = repo
     root = repos["lennart"] / "curation"
     (root / "records").mkdir(parents=True)
-    (root / "vocabularies.yaml").write_text(yaml.safe_dump({"checked_by": ["Lennart", "Andrej", "AI (UNVERIFIED)"]}))
+    (root / "vocabularies.yaml").write_text(
+        yaml.safe_dump({"curators": ["Lennart", "Andrej"], "checked_by": ["Lennart", "Andrej", "AI (UNVERIFIED)"]})
+    )
     monkeypatch.setenv(DATA_FOUNDRY_CURATION_ENV, str(root))
     claims._CACHE_MEMO.clear()
     return {"remote": remote, "root": root, **repos}
@@ -192,7 +194,7 @@ def test_current_curator_needs_a_known_name(env: dict[str, Path], monkeypatch: p
         claims.current_curator(env["lennart"])
     git(env["lennart"], "config", claims.CURATOR_GIT_KEY, "Lennart")
     assert claims.current_curator(env["lennart"]) == "Lennart"
-    for name in ("Mallory", "AI (UNVERIFIED)"):  # the AI reviewer of checked_by never claims
+    for name in ("Mallory", "AI (UNVERIFIED)"):  # only the curators list claims
         monkeypatch.setenv(claims.CURATOR_ENV, name)
         with pytest.raises(claims.ClaimsError, match="not in vocabularies"):
             claims.current_curator(env["lennart"])

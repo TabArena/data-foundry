@@ -37,7 +37,7 @@ claimed; their conflicts are resolved when merging.
 ## Setup, once per curator
 
 ```bash
-git config data-foundry.curator <Name>     # a checked_by person of curation/vocabularies.yaml (not the AI)
+git config data-foundry.curator <Name>     # a name of the `curators` list in curation/vocabularies.yaml
 .venv/bin/python -m data_foundry.curation.cli claims list
 ```
 
