@@ -69,8 +69,7 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - task_time_on_few_unique
+  warnings: []
   infos:
   - dataset_conflicting_duplicate_rows
   - meta_time_horizon_unit
@@ -78,6 +77,9 @@ bundle_checks:
     splits_below_target: 'Four of the nine windows an IID split of 38,708 people would
       get (SPLIT-33): the release holds eight cycles, and a fifth window, 2005-2006,
       would train on 43.6% of the people, below the half-the-data floor (splits comment).'
+    task_time_on_few_unique: 'Accepted (Andrej, 2026-11-26): eight two-year survey
+      cycles, the release''s only time key (no exam dates are public); the cycle is
+      the time step, and each window tests one whole cycle.'
 decisions: []
 ---
 
@@ -364,15 +366,15 @@ Each test window against its train side, by statistics of the data, never of a m
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 2 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `task_time_on_few_unique`: `time_on='survey_cycle'` has only 8 distinct time points. (hint: Consumers derive inner validation folds by cutting the time axis into intervals; too few time points makes that degenerate.)
 - **info** `dataset_conflicting_duplicate_rows`: 2 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 - **info** `meta_time_horizon_unit`: `time_horizon_unit='years'` implies calendar time, but `time_on='survey_cycle'` has dtype int64, so the horizon cannot be cross-checked. (hint: Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use `time_horizon_unit='steps'` for a plain numeric time index.)
 
 Accepted on purpose:
 
 - `splits_below_target`: Four of the nine windows an IID split of 38,708 people would get (SPLIT-33): the release holds eight cycles, and a fifth window, 2005-2006, would train on 43.6% of the people, below the half-the-data floor (splits comment).
+- `task_time_on_few_unique`: Accepted (Andrej, 2026-11-26): eight two-year survey cycles, the release's only time key (no exam dates are public); the cycle is the time step, and each window tests one whole cycle.
 
 ## Data checks
 

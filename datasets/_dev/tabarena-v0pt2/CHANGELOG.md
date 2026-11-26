@@ -1,5 +1,14 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-26 (late), loose ends of the better-data work
+
+- ready_biodegradability_huang_zhang and aquatic_toxicity_lunghini_consensus: the notes name qsar_biodeg and
+  qsar_fish_toxicity as retired `Duplicate`s of these sets, not as siblings with an open decision.
+- nhanes_dxa_body_fat: `task_time_on_few_unique` accepted (eight survey cycles, the release's only time key).
+  Check 0 errors, 0 warnings.
+- sdss_dr17_star_galaxy_quasar: the DESI consistency question is closed as not pursued (record only).
+- seismic_bumps, lung_adenocarcinoma_metastasis: their metric precedent lists note heart_disease's move to log loss.
+
 ## 2026-11-23, every definition names its split-tree leaf; `RetrospectiveFillIn` and `Target: Fixed Delay` in use (no container built)
 ## 2026-11-26 (late), polish retired, fiat kept
 

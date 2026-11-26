@@ -284,6 +284,10 @@ class NhanesDxaBodyFat(AbstractCuratedDataset):
             "cycles, and a fifth window, 2005-2006, would train on 43.6% of the people, below the half-the-data floor "
             "(splits comment)."
         ),
+        "task_time_on_few_unique": (
+            "Accepted (Andrej, 2026-11-26): eight two-year survey cycles, the release's only time key (no exam "
+            "dates are public); the cycle is the time step, and each window tests one whole cycle."
+        ),
     }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

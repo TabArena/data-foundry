@@ -472,12 +472,12 @@ class ReadyBiodegradabilityHuangZhang(AbstractCuratedDataset):
           rate swings between a fifth and a half from one tenth of the file to the next without a trend (the rank
           correlation of the class with the position is -0.04 in each part). The rows are shuffled before the split
           and nothing of the order ships; the grouping holds out the series the order lines up.
-        - Note: this set covers the sibling qsar_biodeg, which carries Mansouri et al.'s 1,055 chemicals from Japan's
-          testing programme. 1,001 of those 1,055 (94.9%) are here as one compound, 972 of them (97.1%) with the same
-          class (measured 2026-11-25 on the key above). The two compilations end at different original sources, so
-          neither is a copy of the other (PROV-4); which of them ships is the curator's call on the pair, recorded in
-          the records. What the sibling is not is the same label on fewer chemicals: it is OECD 301 C alone, where
-          the pass rate is 27.2% against 33.8% here, while this label pools seven protocols.
+        - Note: this set covers qsar_biodeg, which carried Mansouri et al.'s 1,055 chemicals from Japan's testing
+          programme. 1,001 of those 1,055 (94.9%) are here as one compound, 972 of them (97.1%) with the same class
+          (measured 2026-11-25 on the key above). qsar_biodeg was retired on 2026-11-26 as a `Duplicate` of this set
+          (PROV-6, Andrej): its chemicals are a near-complete cut of the same registry data at the same classes. Its
+          label was not the same label on fewer chemicals: it was OECD 301 C alone, where the pass rate is 27.2%
+          against 33.8% here, while this label pools seven protocols.
         - Note on the rows themselves: 147 chemicals (2.57%) are substances of more than one organic component
           (rosin salts, hydrocarbon reaction masses, polyvalent metal resinates; 43 of three components or more, up
           to 368 heavy atoms), whose encoding sums the descriptors over the components, so for them the feature
