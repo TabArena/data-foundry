@@ -408,14 +408,13 @@ Neither changes a field.
 7. **Three measured numbers in the notes do not reproduce, or predate the drop.** (open)
 
    * **Problem:**
-     - `fit_reason` and the stereoisomer decision both state "a single measurement of this assay has an SD of about
-       0.11 (the 43 enantiomer pairs in the set, matching AstraZeneca's published 0.07 to 0.10)", and the claim is
-       what says the task is not noise-limited.
-     - Re-measured on the shipped data, no recipe gives 43 pairs: 31 pairs are true enantiomers (every tetrahedral
-       centre inverted), 64 2D-structure groups hold exactly two compounds, and 106 within-group pairs exist in all.
-     - The SD does not reproduce either. On the 31 enantiomer pairs it is 0.211, not 0.11. About 0.12 is reachable
-       only by dropping the one 1.55 pair, which this definition already calls a label error - defensible, but the
-       exclusion is not stated.
+     - The noise floor the notes claim twice - "a single measurement of this assay has an SD of about 0.11 (the 43
+       enantiomer pairs in the set, matching AstraZeneca's published 0.07 to 0.10)", in `fit_reason` and in the
+       stereoisomer decision - measures 0.211 on the shipped data, twice what the text says.
+     - Its count does not reproduce either, since no recipe gives 43 pairs: 31 pairs are true enantiomers (every
+       tetrahedral centre inverted), 64 2D-structure groups hold exactly two compounds, 106 within-group pairs in all.
+     - About 0.12 is reachable only by dropping the one 1.55 pair, which this definition already calls a label error,
+       which is defensible but is an exclusion the text does not state.
    * **Effect on the task:** nothing in the data, the split or the metric. It is a claim in the notes that a reader
      would use to judge whether the headline error is near the measurement floor, and at 0.211 the margin is half
      what the text implies.
