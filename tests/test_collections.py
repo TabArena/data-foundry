@@ -24,7 +24,7 @@ from data_foundry.collections._registry import BEYOND_ARENA_UUIDS
 from data_foundry.collections._sources import has_core_files
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
 from data_foundry.schema import PredictiveMLSplitsMetadata, RowBudget, TrainSampling
-from tests.test_bundle_checks import make_container, make_iid_splits
+from tests.helpers import make_container, make_iid_splits
 
 
 # --- CollectionEntry parsing ---

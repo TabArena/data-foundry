@@ -18,7 +18,7 @@ from sklearn.metrics import mean_squared_error, roc_auc_score
 from data_foundry.definition.dataset import metric_spec
 from data_foundry.metrics import METRICS, Metric, dummy_prediction, row_weight_column, score
 from data_foundry.schema import ScoringColumn
-from tests.test_bundle_checks import make_iid_frame, make_v2_container, metric_findings
+from tests.helpers import make_iid_frame, make_v2_container, metric_findings
 
 CUSTOM = sorted(name for name, d in METRICS.items() if d.kind == "custom")
 

@@ -18,7 +18,7 @@ from data_foundry.schema import (
 )
 from data_foundry.utils.checksum import encode_pydantic_metadata
 from data_foundry.v1 import DatasetMetadata, PredictiveMLTaskMetadata
-from tests.test_bundle_checks import make_spec
+from tests.helpers import make_spec
 
 
 @pytest.fixture

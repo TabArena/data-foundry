@@ -20,12 +20,7 @@ from data_foundry.definition.checks import NEWEST_PERIOD_RATIO, newest_period_ra
 from data_foundry.definition.cli import add_dataset_parser
 from data_foundry.definition.splits import TemporalSplits, temporal_window_splits, window_bounds
 from data_foundry.definition.windows import Window, candidate_windows, window_stats
-from tests.test_v2_dataset import (  # noqa: F401 - the fixture
-    TEMPORAL_BUDGET,
-    temporal_version_body,
-    warehouse,
-    write_version,
-)
+from tests.helpers import TEMPORAL_BUDGET, temporal_version_body, write_version
 
 
 def three_years(seed: int = 0) -> pd.DataFrame:
@@ -116,7 +111,7 @@ def test_a_numeric_time_column_shows_its_values() -> None:
     assert table["psi_max"].iloc[0] > 5  # a trend is all drift
 
 
-def test_a_definition_marks_its_own_windows(tmp_path: Path, warehouse: Path, capsys: pytest.CaptureFixture) -> None:  # noqa: F811
+def test_a_definition_marks_its_own_windows(tmp_path: Path, warehouse: Path, capsys: pytest.CaptureFixture) -> None:
     """A definition lists its candidates with its own windows marked; the CLI prints them."""
     del warehouse  # 30 days of 20 rows; the definition tests the newest 3 of 5 days
     write_version(tmp_path / "datasets", "toy_ds_0p19k", temporal_version_body(), TEMPORAL_BUDGET)
@@ -135,7 +130,7 @@ def test_a_definition_marks_its_own_windows(tmp_path: Path, warehouse: Path, cap
     assert "psi_max" in out
 
 
-def test_the_readme_describes_the_test_windows(tmp_path: Path, warehouse: Path) -> None:  # noqa: F811
+def test_the_readme_describes_the_test_windows(tmp_path: Path, warehouse: Path) -> None:
     """The README's splits section describes the chosen windows."""
     del warehouse
     write_version(tmp_path / "datasets", "toy_ds_0p19k", temporal_version_body(), TEMPORAL_BUDGET)
@@ -264,7 +259,7 @@ def test_candidate_windows_of_a_derived_length(unit: str) -> None:
     assert len(windows) > len(own)  # the candidates walk back to the 30% floor, past the declared 50%
 
 
-def test_a_definition_with_a_derived_window_lists_its_candidates(tmp_path: Path, warehouse: Path) -> None:  # noqa: F811
+def test_a_definition_with_a_derived_window_lists_its_candidates(tmp_path: Path, warehouse: Path) -> None:
     """A definition whose window is derived (`window=None`) lists candidates of the length its splits use."""
     del warehouse  # 30 days of 20 rows; 3 windows over the newest half of the axis: 5 days each
     # a derived window does not fix the horizon, so the definition declares it (the text closes `splits=...`)
@@ -277,7 +272,7 @@ def test_a_definition_with_a_derived_window_lists_its_candidates(tmp_path: Path,
     assert len(table) == 3
 
 
-def test_windows_between_cutoffs_ask_for_the_candidates_length(tmp_path: Path, warehouse: Path) -> None:  # noqa: F811
+def test_windows_between_cutoffs_ask_for_the_candidates_length(tmp_path: Path, warehouse: Path) -> None:
     """Windows that run from cutoff to cutoff (`window=None, cutoffs=...`) have no single length: `dataset windows`
     asks for the candidates' window and unit, and lists them with one given.
     """

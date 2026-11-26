@@ -14,7 +14,7 @@ import pytest
 from data_foundry.curation_container import CuratedContainer, feature_columns, split_columns
 from data_foundry.schema import Grouping, PredictiveMLSplitsMetadata, PredictiveMLTaskMetadataV2
 from data_foundry.utils.checksum import encode_pydantic_metadata
-from tests.test_bundle_checks import _unit_container, make_spec, make_v2_container
+from tests.helpers import grouped_toy, make_spec, make_v2_container, unit_container
 
 
 def _toy(df: pd.DataFrame, **task) -> CuratedContainer:
@@ -111,10 +111,8 @@ def test_an_unknown_task_or_split_field_is_refused(tmp_path, prefix):
 
 
 def test_an_unknown_format_1_task_or_split_field_is_refused(tmp_path):
-    from tests.test_curation_container import _grouped_toy
-
     for prefix in ("task_metadata", "experiment_metadata"):
-        path = _grouped_toy().save(save_dir=tmp_path / prefix)
+        path = grouped_toy().save(save_dir=tmp_path / prefix)
         _edit(path, prefix, lambda d: d.update(added_later=1))
         with pytest.raises(ValueError, match="newer data_foundry"):
             CuratedContainer.load(path)
@@ -167,7 +165,7 @@ def test_time_of_prediction_is_stored_unset_as_in_grouping():
 
 # --- split_columns --------------------------------------------------------------------------------------------------
 def test_split_columns_hold_the_unit_of_a_unit_weight():
-    container = _unit_container()
+    container = unit_container()
     assert "plot" in split_columns(container)
     assert "plot" not in feature_columns(container)
 
@@ -192,9 +190,7 @@ def test_split_columns_hold_the_order_inside_a_group_and_its_prediction_point():
 
 
 def test_a_format_1_container_has_no_grouping():
-    from tests.test_curation_container import _grouped_toy
-
-    assert _grouped_toy().grouping is None
+    assert grouped_toy().grouping is None
 
 
 def test_split_columns_without_a_grouping_or_unit_are_unchanged():

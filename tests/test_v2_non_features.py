@@ -19,7 +19,7 @@ from data_foundry.definition import (
     read_report,
 )
 from data_foundry.schema import DATA_FOUNDRY_WAREHOUSE_ENV, PredictiveMLTaskMetadataV2
-from tests.test_bundle_checks import make_container, make_spec
+from tests.helpers import make_container, make_spec
 
 SHOPS = """
 from __future__ import annotations
