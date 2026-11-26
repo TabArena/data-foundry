@@ -4,6 +4,7 @@
 
     data-foundry-curation dataset list  [--root DIR]                    # tasks and parents, with their state
     data-foundry-curation dataset check <name-or-folder> [--root DIR]   # full pipeline, no save, writes README.md
+    data-foundry-curation dataset check <name-or-folder> --no-report     # the same, README.md left as it is
     data-foundry-curation dataset build <name-or-folder> [--root DIR]   # check + save + verify (mints the UUID)
     data-foundry-curation dataset new   <name> [--root DIR]             # scaffold dataset.py
     data-foundry-curation dataset new   <parent>_<variant> --parent <parent> [--root DIR]   # scaffold a child
@@ -97,11 +98,12 @@ def _cmd_check(args: argparse.Namespace) -> int:
     try:
         cls = load_definition(_folder(args))
         ds = instance(cls)
-        result = ds.check()
+        result = ds.check(write_report=not args.no_report)
     except DatasetDefinitionError as error:  # a partial parent
         print(error, file=sys.stderr)
         return 1
-    print(f"Wrote {ds.report_path}")
+    if not args.no_report and ds.report_path is not None:
+        print(f"Wrote {ds.report_path}")
     _print_record_problems(cls)
     return 0 if result.ok else 1
 
@@ -168,7 +170,11 @@ def _cmd_windows(args: argparse.Namespace) -> int:
 
 
 def _cmd_build(args: argparse.Namespace) -> int:
-    ds = load_definition(_folder(args))()
+    try:
+        ds = instance(load_definition(_folder(args)))
+    except DatasetDefinitionError as error:  # a partial parent
+        print(error, file=sys.stderr)
+        return 1
     if not ds.is_task:
         print(f"{ds.unique_name} is a parent (no `target`): it is never built; build its children.", file=sys.stderr)
         return 1
@@ -331,6 +337,7 @@ def add_dataset_parser(sub: argparse._SubParsersAction) -> None:
 
     add("list", _cmd_list, "List the datasets under --root with their report state.", target=False)
     add("check", _cmd_check, "Run the pipeline and bundle checks without saving; write README.md.")
+    dsub.choices["check"].add_argument("--no-report", action="store_true", help="Check only: leave README.md as it is.")
     add("build", _cmd_build, "Check, save the container (new UUID), verify it and write README.md.")
     add("new", _cmd_new, "Scaffold a new dataset folder from the template and the curation record.")
     dsub.choices["new"].add_argument(

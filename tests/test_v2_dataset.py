@@ -11,6 +11,8 @@ import tempfile
 import time
 from pathlib import Path
 
+import data_foundry.v2.cli as cli_module
+import data_foundry.v2.dataset as dataset_module
 import numpy as np
 import pandas as pd
 import pytest
@@ -2154,3 +2156,133 @@ def test_an_unacceptable_finding_cannot_be_accepted() -> None:
     """Errors the rules allow no exception for cannot be listed in `accepted_check_warnings`."""
     with pytest.raises(Exception, match="cannot be accepted"):
         _define(accepted_check_warnings={"splits_train_under_floor": "a reason"})
+
+
+def test_an_in_place_edit_in_decisions_never_reaches_the_raw_cache(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    body = DEFINITION.format(name="toy_ds", comment="x") + (
+        "\n    def _decisions(self, raw, df):\n"
+        '        raw["x1"] = 0.0  # a careless in-place edit in an evidence hook\n'
+        "        return []\n"
+    )
+    write_definition(tmp_path / "datasets", body=body)
+    ds = get_dataset(tmp_path / "datasets", "toy_ds")
+    before = ds.raw["x1"].copy()
+    checksum = ds.check(write_report=False, verbose=False).container.checksum
+    assert ds.raw["x1"].equals(before)
+    assert ds.check(write_report=False, verbose=False).container.checksum == checksum
+
+
+def _half_file(warehouse: Path) -> None:
+    pd.read_csv(warehouse / "toy_ds" / "toy.csv").head(300).to_csv(warehouse / "toy_ds" / "half.csv", index=False)
+
+
+def test_reload_rereads_the_raw_data_after_a_constant_of_load_raw_changes(tmp_path: Path, warehouse: Path) -> None:
+    _half_file(warehouse)
+    body = (
+        DEFINITION.format(name="toy_ds", comment="x")
+        .replace("class Toy(", 'RAW_FILE = "toy.csv"\n\n\nclass Toy(')
+        .replace('raw_dir / "toy.csv"', "raw_dir / RAW_FILE")
+    )
+    folder = write_definition(tmp_path / "datasets", body=body)
+    ds = get_dataset(tmp_path / "datasets", "toy_ds")
+    raw = ds.raw
+    assert len(raw) == 600
+    path = folder / "dataset.py"
+    path.write_text(body.replace('curation_comments = "x"', 'curation_comments = "y"'))  # nothing `_load_raw` reads
+    assert ds.reload().raw is raw
+    path.write_text(body.replace('RAW_FILE = "toy.csv"', 'RAW_FILE = "half.csv"'))
+    assert len(ds.reload().raw) == 300
+
+
+def test_reload_rereads_the_raw_data_after_a_helper_of_load_raw_changes(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse  # the helper is written below the class, so it is not yet defined when the class is created
+    body = DEFINITION.format(name="toy_ds", comment="x").replace(
+        'return pd.read_csv(raw_dir / "toy.csv")', 'return _read(raw_dir / "toy.csv")'
+    ) + ("\n\ndef _read(path: Path) -> pd.DataFrame:\n    return pd.read_csv(path)\n")
+    folder = write_definition(tmp_path / "datasets", body=body)
+    ds = get_dataset(tmp_path / "datasets", "toy_ds")
+    assert len(ds.raw) == 600
+    (folder / "dataset.py").write_text(body.replace("return pd.read_csv(path)", "return pd.read_csv(path).head(300)"))
+    assert len(ds.reload().raw) == 300
+
+
+def test_no_state_of_an_earlier_run_survives_the_next(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    write_definition(tmp_path / "datasets")
+    ds = get_dataset(tmp_path / "datasets", "toy_ds")
+    # as left by an earlier version of the definition (a custom split step that floored the time, a `source_file`
+    # column, a dropped non-feature)
+    ds._time_changed_in_split = 5
+    ds._rows_per_file = {"old.csv": 3}
+    ds._dropped_non_features = ["stale"]
+    ds._unmatched_raw_files = ["old_*.csv"]
+    ds.reload()
+    result = ds.check(write_report=False, verbose=False)
+    slugs = {r.slug for r in result.bundle_report.results}
+    assert "definition_time_changed_in_split" not in slugs
+    assert "raw_files_missing" not in slugs
+    assert ds._rows_per_file is None
+    assert ds.dropped_non_features == []
+    assert ds._time_changed_in_split == 0
+
+
+def test_only_a_custom_split_step_is_checked_for_a_changed_frame(
+    tmp_path: Path, warehouse: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The default split of a version returns its own frame; only a custom `_make_splits` is compared."""
+    del warehouse
+    calls = []
+    monkeypatch.setattr(dataset_module, "_time_values_changed", lambda *args: calls.append(args) or 0)
+    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=temporal_version_body())
+    plan = get_dataset(tmp_path / "datasets", "toy_ds_0p19k").make_splits()
+    assert len(plan.df) == 560  # a frame of its own
+    assert calls == []
+
+
+def test_decode_refuses_codebook_keys_that_are_one_code() -> None:
+    df = pd.DataFrame({"job": ["1", "2"]})
+    with pytest.raises(ValueError, match=r"'job' that are one code: \[\['01', '1'\]\]"):
+        decode(df, {"job": {"01": "x", "1": "y", 2: "z"}})
+
+
+def _dataset_cli(root: Path, *argv: str) -> int:
+    parser = argparse.ArgumentParser()
+    add_dataset_parser(parser.add_subparsers(dest="command"))
+    args = parser.parse_args(["dataset", *argv, "--root", str(root)])
+    return args.func(args)
+
+
+def test_cli_check_without_report_leaves_readme_alone(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    folder = write_definition(tmp_path / "datasets")
+    assert _dataset_cli(tmp_path / "datasets", "check", "toy_ds", "--no-report") == 0
+    assert not (folder / "README.md").exists()
+    assert _dataset_cli(tmp_path / "datasets", "check", "toy_ds") == 0
+    assert (folder / "README.md").exists()
+
+
+def test_cli_build_makes_the_instance_as_the_other_commands_do(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    def refuse(cls: type) -> None:
+        raise DatasetDefinitionError(f"{cls.__name__} is a partial parent")
+
+    monkeypatch.setattr(cli_module, "instance", refuse)
+    write_definition(tmp_path / "datasets")
+    assert _dataset_cli(tmp_path / "datasets", "build", "toy_ds") == 1
+    assert "partial parent" in capsys.readouterr().err
+
+
+def test_the_data_checks_skip_the_duplicate_passes(
+    tmp_path: Path, warehouse: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Their results are printed only, never returned, and they read the full frame."""
+    del warehouse
+    seen = {}
+    real = dataset_module.run_all_checks
+    monkeypatch.setattr(dataset_module, "run_all_checks", lambda **kwargs: seen.update(kwargs) or real(**kwargs))
+    write_definition(tmp_path / "datasets")
+    tables = get_dataset(tmp_path / "datasets", "toy_ds").run_all_checks()
+    assert (seen["duplicate_row_check"], seen["duplicate_column_check"]) == (False, False)
+    assert set(tables) == {"head", "summary", "numeric_stats", "cat_stats", "target"}
