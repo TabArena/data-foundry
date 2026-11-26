@@ -59,18 +59,16 @@ All commands run from the repository root in the repository's environment (`.ven
    questions go into the record's `## Review`, ranked; its `cannot-verify` items are what a reviewer reads first.
 8. **Open a PR** with `dataset.py`, the generated `README.md` and the record. After review a curator runs
    `dataset build`, which saves the container with a new UUID and records it in the README; the working copy's
-   `CHANGELOG.md` and dataset table are updated in the same change.
+   `CHANGELOG.md` gets its entry in the same change.
 
 ## 3. What the base class does
 
 [`AbstractCuratedDataset`](src/data_foundry/definition/dataset.py) holds the conventions, so a definition does not repeat
 them: the dtype casts from `_feature_types`, the row order (the rows in the order of their content, then a
 shuffle with seed 42 or a stable sort by the time column), the split protocol (3 folds, or at least 3 temporal
-windows; no row budget unless the collection sets one: TabArena v0.2 sets `RowBudget(train=1_000_000, test=500_000)`
-in its `collection.py` and ships larger data as a `<name>_1m` version, whose test sides keep at most 500k rows and
-whose train sides keep every row, sub-sampled to 1M by the benchmark), standard NaNs, the metadata validation, the
-bundle checks and the
-verification of the saved container. Recipes for the recurring cases (every split regime, sub-sampling, leaks,
+windows; no row budget unless the collection sets one, as TabArena v0.2 does for its `<name>_1m` versions:
+[`split_protocol.md`](.claude/skills/knowledge-data-foundry/references/split_protocol.md)), standard NaNs, the
+metadata validation, the bundle checks and the verification of the saved container. Recipes for the recurring cases (every split regime, sub-sampling, leaks,
 dtypes, accepted warnings) are in [`definitions.md`](.claude/skills/knowledge-data-foundry/references/definitions.md).
 
 ## 4. Practices

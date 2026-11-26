@@ -34,6 +34,7 @@ Procedure, at every rank:
 | [evidence.md](references/evidence.md) | `EV` | weighing evidence, settling a disputed fact, reading a probe flag |
 | [verification.md](references/verification.md) | | the last step of every workflow: the checklist and which stage runs which check |
 | [writing.md](references/writing.md) | | writing anything the curator will read: comments, notes, issues, the judgment record, reports |
+| [style.md](references/style.md) | | writing any prose a person reads (docstrings, docs, commit messages, PR bodies, chat replies): the AI writing tropes to avoid |
 | [split_tree.md](references/split_tree.md) | | deciding or checking a split: the decision tree SPLIT-36 asks you to walk from the record's data collection type to a leaf |
 
 Domain guides, which add no rules but show how the rules above apply to one kind of data:

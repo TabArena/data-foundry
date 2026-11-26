@@ -10,26 +10,24 @@ records** and **adding datasets**, with a list of candidates to pick from.
 This folder is the working copy of its next version, **TabArena v0.2**: one folder per dataset, each a v2 definition
 (`dataset.py`) built as a curated container. It started from the datasets of
 [BeyondArena](https://huggingface.co/datasets/TabArena/BeyondArena), re-curated and audited, and new datasets join it
-here; [`README.md`](README.md) lists the current ones. The datasets come from three split regimes: random (IID), **temporal** (predict the future)
-and **grouped** (generalise to unseen entities such as patients or customers).
+here; each dataset's folder and its `README.md` say what it is. The datasets come from three split regimes: random
+(IID), **temporal** (predict the future) and **grouped** (generalise to unseen entities such as patients or customers).
 
 > [!TIP]
 > **Large datasets are a priority.** Real tasks with roughly 1M–10M usable training rows are rare in public
 > benchmarks, and most of them are non-IID. Candidates of that size carry the tag **`Review Prio 1 (Atlas)`** in
 > the curation log (the tag comes from the earlier Atlas plan for a large-data collection, now folded into
-> TabArena v0.2); pick from them first (section 7). Data Foundry itself sets no row budget; TabArena v0.2 tests on
-> at most 500k rows per split and trains on at most 1M: a dataset whose splits have a side over that ships as the
-> version `<name>_1m`, which gets the budget from the working copy's `collection.py`. Its container caps each test
-> side at 500k rows and keeps every training row; the benchmark draws the 1M it fits on (a random sample of the
-> newest year of a temporal side, by default). The whole path, as a decision tree:
-> [`split_protocol.md`](../../../.claude/skills/knowledge-data-foundry/references/split_protocol.md).
+> TabArena v0.2); pick from them first (section 7). TabArena v0.2 tests on at most 500k rows per split and trains on
+> at most 1M, so a larger dataset ships as a `<name>_1m` version with that row budget:
+> [`split_protocol.md`](../../../.claude/skills/knowledge-data-foundry/references/split_protocol.md) has the whole
+> path as a decision tree.
 
 The selection criteria (unique source, a real predictive task, no irreversible leakage, ethically unambiguous, not
 trivial) are the same for every dataset; the [**📖 Guidelines**](https://tabarena.github.io/data-foundry/guidelines.html)
 page of the curation log is the reference (it renders the two knowledge skills, `.claude/skills/knowledge-curation/`
 and `.claude/skills/knowledge-data-foundry/`).
 
-The recommended workflow (October 2026): Claude does the research and the writing, you make the decisions. The
+The recommended workflow: Claude does the research and the writing, you make the decisions. The
 commands are explained for people in [`.claude/skills/README.md`](../../../.claude/skills/README.md), which the
 dashboard also shows as "Start here".
 
@@ -72,7 +70,7 @@ data-foundry/
 ├── curation/records/            # one markdown record per candidate dataset (the curation log)
 ├── datasets/_dev/tabarena-v0pt2/  # this folder: one v2 folder per dataset
 ├── datasets/_template/          # the template `dataset new` copies
-├── .claude/skills/              # the Claude Code workflows (triage, check, add, verify, rebuild)
+├── .claude/skills/              # the Claude Code skills: the curation commands and the two knowledge skills
 └── local-data-warehouse/        # gitignored: raw downloads and saved containers
 ```
 
@@ -151,8 +149,9 @@ approximate). The steps are in [`CONTRIBUTING_DATASETS.md`](../../../CONTRIBUTIN
    `AI (UNVERIFIED)`" (only records you have checked).
    Per source one agent downloads the data, writes the definition, runs `dataset check` and the leak, task and group
    probes and the verification checklist; then a review panel of agents attacks the result (a claim auditor, column
-   and split auditors, a domain practitioner, a blind reviewer that sees none of our notes, a precedent checker, an
-   advocate and a critic, a mediator). Nothing is built. The open issues for you go, ranked and numbered, into the
+   and split auditors, a domain practitioner, a blind reviewer that sees none of our notes, a task gamer that tries
+   to beat the task as a participant would, a precedent checker, an advocate and a critic, a mediator, and a review
+   editor that reads the draft review as you would). Nothing is built. The open issues for you go, ranked and numbered, into the
    `## Review` section of each dataset's record, with the panel's reports below them.
 2. Run `/review-added-datasets`. It builds the review page from the records' reviews, a local HTML file or a Claude
    artifact you can share. Each dataset opens on its use case (the `task_summary`), then tabs for your decisions

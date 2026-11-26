@@ -1,5 +1,12 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-26, GETTING_STARTED.md brought up to date (no container built)
+
+- `GETTING_STARTED.md` no longer says the folder's `README.md` lists the datasets (it has no table), names the skills
+  folder by what it holds instead of retired skill names, drops the date from "the recommended workflow", lists the
+  task gamer and the review editor among the review panel, and explains the row budget in one sentence with a link to
+  `split_protocol.md`. No definition changed.
+
 ## 2026-11-26, the probes run as `data-foundry probe` (no container built)
 
 - The probes moved into the package (`data_foundry.probes`) and run as one command,

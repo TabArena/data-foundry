@@ -9,7 +9,7 @@ of ten PRs (#55 to #81) had stacked mostly unrelated retirements on top of each 
 [CL descriptions](https://google.github.io/eng-practices/review/developer/cl-descriptions.html) and GitHub's
 [stacked pull requests](https://docs.github.com/en/pull-requests/get-started/about-stacked-prs).
 
-The style rules of [AGENTS.md](../../../../AGENTS.md#ai-writing-tropes-to-avoid) apply to titles and bodies like any
+The style rules of [style.md](../../knowledge-curation/references/style.md) apply to titles and bodies like any
 other prose: no em dashes, no bold-first bullets, no inflated words.
 
 ## The title
