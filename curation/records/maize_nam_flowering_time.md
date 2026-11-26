@@ -29,7 +29,6 @@ source_links:
 - https://cornell.box.com/s/su1vodojjq5g8wg2aw8crimdx6328px6
 needs_review:
 - ai_unverified
-- wip_unclaimed
 type_adapter_id: curation-record-v1
 ---
 

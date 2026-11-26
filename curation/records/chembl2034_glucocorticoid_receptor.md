@@ -7,8 +7,9 @@ checked_by:
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Andrej
-suggestion: TBD -> 2nd Tier
-priority: 2
+suggestion: 'No'
+decision_markers:
+- Duplicate
 tags:
 - AI-Filled (Verify)
 - Many features
@@ -105,3 +106,10 @@ the entry date rather than the scaffold.
   task its own definition separates from fixed-target QSAR under PROV-7, on ChEMBL 34 against this cut's ChEMBL 37.
 - The priority line had called `qsar_tid_11` and the wider set covering "the task"; both are qualified now.
 - Verdict and priority unchanged.
+
+**Assessment (AI, 2026-11-26):** `No` (`Duplicate`, PROV-6): the overlap with the built wider set was measured, and the case for a third fixed-target cut of ChEMBL does not survive it.
+- What was measured, on 2026-11-26. The cut was rebuilt from the ChEMBL web service: exact, unflagged activities with a pChEMBL value on glucocorticoid receptor give 3,130 distinct parent molecules, against the 3,127 the benchmark ships, so the reconstruction is the same table. Papyrus2024.2's combined set was filtered to this target's accession (P04150): 6,410 rows, 2,652 of them high quality with an exact relation, carrying 1,725 distinct ChEMBL molecule ids.
+- The overlap: 1,382 of the cut's molecules (44.2%) are already in those rows, and 343 molecules are in them and not in the cut.
+- What the later releases add: of the 1,748 molecules the cut holds and the wider set does not, only 55 carry their earliest exact measurement in a document of 2024 or later. The rest are compounds the wider set's own standardization dropped, not entries three ChEMBL releases added, so the newer release is worth about 55 molecules here and not a dataset.
+- Why `Duplicate` and not a task argument: the wider set's definition separates its protein-conditioned task from fixed-target QSAR under PROV-7, and that stands. The reject is the other call, the one the curator already wrote on `qsar_tid_10980` ("Same as above, but different drug target. Should only include one of these datasets"): these are per-target cuts of one database (PROV-6), the collection already ships one as `qsar_tid_11` and has added the wide set, and a third and fourth cut buy half a table that is already there plus 55 molecules.
+- Not checked: whether some of the 1,748 are the same compounds under another id, since the wider set standardizes without stereochemistry while the cut takes a median per parent. That check can only lower the 1,748, never raise it, so it does not change the direction.
