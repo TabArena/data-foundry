@@ -249,9 +249,9 @@ and the editor) for a re-check after a small change. Say which tier ran.
    short, but not lost!)"). Never build: a build is the curator's call
    ([rebuild.md](../knowledge-data-foundry/references/rebuild.md)).
 6. Set the record's `priority` again from what was measured, so the review page puts the most important datasets
-   first ([selection.md](../knowledge-curation/references/selection.md), "Priority"): `priority_factors.py <name>`
-   (in `knowledge-data-foundry/scripts/`) gives the gap and the shape; judge the use case, the source and the risk
-   from the source and the open issues (the recommendation not to ship is a risk). End the assessment line with
+   first ([selection.md](../knowledge-curation/references/selection.md), "Priority"): `benchmark_coverage.py priority
+   <name>` (in `knowledge-data-foundry/scripts/`) gives the gap and the shape; judge the use case, the source and the
+   risk from the source and the open issues (the recommendation not to ship is a risk). End the assessment line with
    `Priority <n>: gap ±, use case ±, source ±, shape ±, risk ± (<the reason for each sign that is not obvious>).`
 
 Report: the folder and its outcome in one line; the panel's recommendation and the disputed points; the issues for the
