@@ -1361,13 +1361,17 @@ class AbstractCuratedDataset(ABC):
                 f"{type(self).__name__}: the splits are custom (`_make_splits`); give the candidates' window and unit."
             )
             raise DatasetDefinitionError(msg)
+        # A declared window of None is derived from `n_windows` and the declared train fraction: the candidates take
+        # the same length, and `min_train_fraction` stays the floor they are listed down to.
+        derived = window is None and declared is not None and declared.window is None
         candidates = TemporalSplits(
             window=window if window is not None else declared.window,
             unit=unit if unit is not None else declared.unit,
             gap=gap if gap is not None else (declared.gap if declared is not None else 0),
             gap_unit=gap_unit if gap_unit is not None else (declared.gap_unit if declared is not None else None),
             step=step if step is not None else (declared.step if declared is not None else None),
-            min_train_fraction=min_train_fraction,
+            n_windows=declared.n_windows if derived else None,
+            min_train_fraction=declared.min_train_fraction if derived else min_train_fraction,
         )
         df = self.df
         task = self.task_metadata

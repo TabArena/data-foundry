@@ -256,3 +256,16 @@ def test_candidate_windows_of_a_derived_length(unit: str) -> None:
     own = {(test[0], test[-1]) for folds in declared.splits(df, "t").values() for _, test in folds.values()}
     assert own <= {(w.test[0], w.test[-1]) for w in windows}
     assert len(windows) > len(own)  # the candidates walk back to the 30% floor, past the declared 50%
+
+
+def test_a_definition_with_a_derived_window_lists_its_candidates(tmp_path: Path, warehouse: Path) -> None:  # noqa: F811
+    """A definition whose window is derived (`window=None`) lists candidates of the length its splits use."""
+    del warehouse  # 30 days of 20 rows; 3 windows over the newest half of the axis: 5 days each
+    # a derived window does not fix the horizon, so the definition declares it (the text closes `splits=...`)
+    splits = 'TemporalSplits(window=None, unit="unique", n_windows=3, min_train_fraction=0.5)'
+    windows = f'{splits}, horizon=5, horizon_unit="days"'
+    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=temporal_version_body(windows=windows))
+    ds = get_dataset(tmp_path / "datasets", "toy_ds_0p19k")
+    table = ds.window_stats(min_train_fraction=0.5)
+    assert table["chosen"].sum() == 3
+    assert len(table) == 3
