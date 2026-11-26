@@ -28,6 +28,7 @@ source_links:
 - https://doi.org/10.1126/science.1174276
 - https://www.panzea.org/phenotypes
 - https://cornell.box.com/s/su1vodojjq5g8wg2aw8crimdx6328px6
+v2_path: datasets/_dev/tabarena-v0pt2/maize_nam_flowering_time/dataset.py
 needs_review:
 - ai_unverified
 type_adapter_id: curation-record-v1
@@ -104,3 +105,106 @@ the lines, with the families as a group key and the raw plot data shipped beside
 CC (2026-11-26, Andrej): accepted, go to `/add-dataset`.
 - The screening's verdict stands: 4,699 lines over 25 families, 1,106 markers, the target in days, and the raw plot values beside the line values.
 - Priority 4 kept. Nothing was built at screening.
+
+## Review
+
+**Outcome:** added as `maize_nam_flowering_time`: 4,699 recombinant inbred lines of the 25-family maize Nested
+Association Mapping population, days to anthesis in days from 1,106 imputed linkage-map markers, grouped on the
+family. The data is the project's own Buckler et al. 2009 release, and the target is the line value it publishes,
+a best linear unbiased prediction across eight environments, so no value is computed here. `dataset check` passes
+with 0 errors and 0 warnings over 28 checks and nothing is built. The leak, task, dtype, generated and
+hidden-group probes are clean: no test row has an exact feature copy in training, the 1-NN R^2 is negative, the
+best single marker is worth 0.050 on the declared metric against a random forest's 0.303, and no column is
+flagged. The review panel has not run; these three issues are what a build of this definition raises.
+
+**Main points:** which genotype the dataset ships on, which of the three flowering traits is the target, and
+whether the breeder's cross is new (which decides the split and the few-groups warning with it).
+
+**Record judgment:** the screening block holds up on the data. Two of its risks are settled in the definition
+rather than left open: the genotype table carries no line identifier, and the ids are recovered and asserted; and
+the marker columns are unnamed, and the released map's order is confirmed from the linkage structure, so the
+markers ship under their own names with chromosome and map position. Two facts the screening did not have: the
+line table holds 5,463 lines over 27 families against the genotype table's 4,699 over 25, so families 17 and 27
+have no genotype row at all and 764 lines have a value and no markers; and the between-family share of the
+target's variance is 69.3%, higher than the soy dataset's 55.7%.
+
+**Issues for Andrej:**
+
+1. **Ship the 1,106-marker linkage map, or the population's dense genotype?**
+
+   **Problem:**
+   - The definition ships the 2008 linkage map of 1,106 markers, which is what the 2009 release pairs with the
+     flowering values, while the same lines now have a genotype three orders of magnitude denser.
+   - The project publishes ZeaGBS v2.7, 955,690 SNPs over 17,280 public samples, and the page does not say how
+     many of those samples are these lines.
+   - A breeder today genotypes at the dense scale, so the coarse map is the part of this dataset that has aged.
+
+   **Effect on the task:** the features change entirely and the row set may shrink to the lines the dense release
+   covers; the target, the grouping and the metric are untouched either way.
+
+   **Experiments:** on the shipped map, over the nine grouped splits, a random forest scores 0.303 on the declared
+   metric and ridge 0.348, against 0 for a predictor given each family's true mean. Nothing is measured on the
+   dense genotype, which was not downloaded.
+
+   **Options:**
+
+   | | Option | What it does | Pro | Con |
+   |---|---|---|---|---|
+   | A | Keep the linkage map (implemented) | 4,699 lines x 1,106 markers, the release's own pairing | the genotype and the phenotype come from one release and one paper; nothing to join; a width tabular models handle | the markers are a 2008 linkage map, far coarser than a breeder genotypes at today |
+   | B | Rebuild on the dense genotype | the same lines against the GBS release | the features a breeder actually holds; far more signal to find | another download and join; the overlap with these lines is unmeasured; a width that needs the column budget |
+   | C | Ship both, as two versions | A now, B as a second folder | the comparison itself becomes measurable | two datasets of one population; the curator picks one anyway |
+
+   **Recommendation:** A now, and B as its own record later if the dense release turns out to cover these lines.
+   The coarse map is the release's own pairing and is honest about what it is; swapping the features is a new
+   dataset, not a fix to this one. **Decision:** A, B or C?
+
+2. **Which of the three flowering traits is the target?**
+
+   **Problem:**
+   - The genotype table carries three traits in the same columns, days to anthesis, days to silk and the interval
+     between them, and the definition takes the first and drops the other two.
+   - All three are measured on the same plants within days of each other, so none can be a feature for another.
+   - Days to silk is the trait a breeder reads for drought work, and the interval is the one the source's own
+     paper studies as a stress indicator.
+
+   **Effect on the task:** the target column changes; the rows, the markers, the grouping and the metric do not.
+
+   **Experiments:** on the shipped target the between-family share of the variance is 69.3% and the within-family
+   SD is 1.99 days; the other two were not scored.
+
+   **Options:**
+
+   | | Option | What it does | Pro | Con |
+   |---|---|---|---|---|
+   | A | Days to anthesis (implemented) | one dataset, the pollen-shed date | the trait the population is best known for; the one the paper's title names | the other two columns are discarded |
+   | B | Days to silk instead | the silking date | closer to what a drought breeder selects on | no reason to prefer it on this panel's own evidence |
+   | C | All three as separate datasets | three folders of one population | nothing is discarded | three cuts of one table with one task between them, which the provenance rules keep to one |
+
+   **Recommendation:** A. The three are the same measurement of the same plants days apart, so they are one task,
+   and the anthesis date is the one this population is known for. **Decision:** A, B or C?
+
+3. **Is the breeder's next cross a new one, or one already phenotyped?**
+
+   **Problem:**
+   - The definition holds out whole families, which is a breeder ranking the progeny of a cross nobody has grown.
+   - A breeder who has already phenotyped part of a cross and wants the rest ranked is a different and equally
+     real use case, and it is a random split over lines.
+   - The choice decides the few-groups warning with it, since 25 families give 8 or 9 per test fold.
+
+   **Effect on the task:** under a random split every test line has full siblings in training, and the scores rise
+   steeply; the declared per-family metric would then be scoring a much easier question.
+
+   **Experiments:** on the nine grouped splits a random forest beats the dummy on 100% of them by +0.3026 on the
+   declared metric (SE 0.0087), and the family-mean predictor scores exactly 0 within a family against a pooled
+   0.814, which is what the per-family metric is for.
+
+   **Options:**
+
+   | | Option | What it does | Pro | Con |
+   |---|---|---|---|---|
+   | A | Hold out whole families (implemented), accepting the few-groups warning | 3 x 3 splits over the 25 families, 8 or 9 per test fold | the harder and more useful question, and the one genomic selection is bought for; the warning is inherent to it and the signal across families is measured | 25 groups is few, and the repeats reuse them, so the spread over repeats is descriptive |
+   | B | Random split over lines | siblings of a test line are in training | more folds, no few-groups warning | a breeder ranking a new cross does not have its siblings' values; the score mostly measures family membership |
+   | C | Both, as two datasets | A and B as separate folders | both use cases served | two datasets of one table, and the easier one would read as the better result |
+
+   **Recommendation:** A, with the warning accepted as it is written in the definition. The use case the record
+   names is the new cross, and that is what the grouped split tests. **Decision:** A, B or C?

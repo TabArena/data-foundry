@@ -1,5 +1,40 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-26, maize_nam_flowering_time added: flowering time of the maize NAM population (no container built)
+
+- New folder. The maize Nested Association Mapping population as its own project released it for Buckler et al.
+  2009: 4,699 recombinant inbred lines of 25 families, each a cross of B73 with one other founder, 1,106 imputed
+  linkage-map markers, and days to anthesis as the published line value across eight environments, 66.02 to 91.23
+  days (mean 77.16, SD 3.68). Grouped 3x3 splits holding out whole families (8 or 9 per test fold, about 1,566
+  lines), leaf `L-EXP.kind`, `UnseenGroup`. The metric is `mean_group_pearsonr` on the family from context under
+  the per-group rule adopted earlier today: 69.3% of the target's variance lies between the 25 families, and a
+  predictor given each test family's true mean scores a pooled r of 0.814 against ridge's 0.211 and an untuned
+  LightGBM's 0.236, while scoring exactly 0 within a family. Per family the same two score 0.348 and 0.256.
+- Two facts were measured rather than assumed, and both are asserted in `_clean`. The genotype table's marker
+  columns are unnamed (`i0` to `i1105`); the released marker list's fourth column is the global index, a
+  permutation, and sorting on it gives linkage order, which the data confirms, since adjacent columns correlate at
+  a median |r| of 0.980 within a chromosome and 0.014 across the nine chromosome boundaries, against 0.035 under a
+  random reordering. The markers therefore ship under the source's own names with chromosome and map position. The
+  genotype table also carries no line identifier; within a family its rows are an in-order subsequence of the line
+  table's and hold its exact values, so a greedy in-order match names all 4,699, with 4,678 of the values already
+  unique inside their family. The id is recovered, checked and then dropped as an identifier.
+- What leaves and what is left out: days to silk and the anthesis-silking interval sit in the same three columns,
+  measured on the same plants within days of the target, so both go (LEAK-10). The archive's four per-plot tables
+  are not read, since the source publishes the line value itself. The line table holds 5,463 lines over 27
+  families against the genotype table's 4,699 over 25: families 17 and 27 have no genotype row at all, and within
+  the others 126 to 196 of each family's 190 to 200 lines are genotyped.
+- The calls are the source's imputation and cannot be checked from the release: no cell is missing and 1.44% carry
+  an intermediate dosage where that imputation is uncertain. No two lines share a marker profile.
+- Probes, all clean: no test row has an exact feature copy in training over 60 splits, the 1-NN R^2 is -0.756 for
+  the closest tenth and -1.009 over all, the best single marker is worth 0.050 on the declared metric against a
+  random forest's 0.303, a random forest beats the dummy on 100% of the splits by +0.3026 (SE 0.0087), no column
+  is flagged by the dtype probe, and the generated-data probe finds identity at 5.0% against 5.0% shuffled.
+- `accepted_check_warnings` carries `groups_test_groups_few` with that evidence: 25 families is few, and it is
+  inherent to the split the use case asks for.
+- `dataset check`: 0 errors, 0 warnings, 1 info over 28 checks; README generated. Nothing built. The record's
+  review carries three issues for the curator (the genotype to ship on, which flowering trait, and whether the
+  breeder's cross is new), and the review panel has not run.
+
 ## 2026-11-26, astrazeneca_chembl_logd74: every measured number re-run under one recipe (text only, nothing built)
 
 The notes quoted figures from three different measurements, two of them taken before the five merged compound
