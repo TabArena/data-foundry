@@ -586,11 +586,6 @@ class AlfaBattle20Task2(AbstractCuratedDataset):
     """
     split_leaf = "L-ORDER.exception"
     temporal = Temporal(on="issue_month", horizon=2, horizon_unit="months", time_unit="months")
-    accepted_check_warnings = {
-        "splits_rows_unused": "By design: these 219 products, all of months 0-17 and so on all three training sides, "
-        "belong to clients with a product in every test window, so the repeat-client filter removes them from every "
-        "training side (curation_comments, 'Repeat clients').",
-    }
 
     # The raw transactions (270M rows) are aggregated and linked once; `_load_raw` starts from the result.
     prepared_raw_files = (FEATURES_FILE, CALENDAR_FILE)

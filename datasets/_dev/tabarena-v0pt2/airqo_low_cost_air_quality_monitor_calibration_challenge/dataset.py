@@ -331,7 +331,7 @@ class AirqoLowCostAirQualityMonitorCalibrationChallenge(AbstractCuratedDataset):
             "Signed off (Lennart, 2026-11-11): August 2020 trains on 47.7% of the hours, beside "
             "the five months from October 2020 to February 2021 on 57.3% to 92.3%; kept as the curator's exception to SPLIT-14's half-data floor (Andrej, 2026-11-19)."
         ),
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Six of the nine windows an IID split of this size would get: September 2020 is out (Nakawa's hours have "
             "no history), and July 2020 and earlier train on under 47.7% of the hours, July scoring Makerere's first "
             "hours (Andrej, 2026-11-19)."

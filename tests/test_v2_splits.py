@@ -507,8 +507,9 @@ def test_protocol_checks_hold_the_container_to_its_row_budget(
     assert findings.get("splits_train_sampling_missing", "error") == "error"
 
 
-@pytest.mark.parametrize(("n_windows", "flagged"), [(1, True), (3, False)])
-def test_protocol_checks_want_three_temporal_windows(*, n_windows: int, flagged: bool) -> None:
+@pytest.mark.parametrize(("n_windows", "under_three"), [(1, True), (3, False)])
+def test_protocol_checks_want_three_temporal_windows(*, n_windows: int, under_three: bool) -> None:
+    """Fewer than three windows, and fewer than SPLIT-33's count (60 for 60 rows), are one finding."""
     df = make_iid_frame(60).assign(t=pd.date_range("2024-01-01", periods=60, freq="D"))
     windows = protocol.temporal_window_splits(df, time_on="t", window=5, unit="days", n_windows=n_windows)
     task = PredictiveMLTaskMetadataV2(
@@ -521,7 +522,8 @@ def test_protocol_checks_want_three_temporal_windows(*, n_windows: int, flagged:
             splits_comment="x", splits=windows, time_horizon=5, time_horizon_unit="days"
         ),
     )
-    assert ("splits_too_few" in slugs(container)) is flagged
+    (found,) = [r for r in protocol_checks(container) if r.slug == "splits_dimensions_off_protocol"]
+    assert ("at least 3" in found.message) is under_three
 
 
 def test_temporal_test_parts_that_share_a_training_side_count_once() -> None:
@@ -539,7 +541,8 @@ def test_temporal_test_parts_that_share_a_training_side_count_once() -> None:
             splits_comment="x", splits=shared, time_horizon=5, time_horizon_unit="days"
         ),
     )
-    assert "splits_too_few" in slugs(container)
+    (found,) = [r for r in protocol_checks(container) if r.slug == "splits_dimensions_off_protocol"]
+    assert found.message.startswith("1 test window(s) with their own training side (3 test parts)")
 
 
 def test_a_missing_build_dependency_names_the_extra() -> None:

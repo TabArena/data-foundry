@@ -555,7 +555,7 @@ It is stored in the container (`task_metadata.grouping`, read with `container.gr
 `group_time_on` are read-only views of it).
 
 * `labels`: `"per_group"` when every row of a group shares one label, `"per_sample"` when each row has its own.
-  Getting it wrong is a bundle-check error (`task_group_labels_per_group_violated`), and it changes the split sizes. It
+  Getting it wrong is a bundle-check finding (`task_group_labels_mismatch`), and it changes the split sizes. It
   does not decide the unit: micro_mass has one species per strain, yet identifies the species from one spectrum.
 * `prediction_unit` and `aggregation` come from what one real-world prediction is in the source: `mean` for replicate
   measurements of one label, `any` for multiple-instance data (musk: a molecule is a musk if any conformation is),
@@ -655,11 +655,12 @@ repeat per time window, always fold `0` (`splits_temporal_layout`); split 0 is t
 | Overlapping windows (ghana, now retired: 3 days moving by 2) | `TemporalSplits(window=3, unit="days", step=2, min_train_fraction=0.5)` |
 
 The number of windows aims at the splits an IID split of the data would get (`split_count`: 60, 30, 9 or 3 for two
-thirds of the scored units), never fewer than 3 (`splits_too_few`) and never a train side below half the data
+thirds of the scored units), never fewer than 3 and never a train side below half the data
 (`min_train_fraction=0.5`) unless the curator makes an exception down to 30%; every test window holds at least 33 scored
 units (SPLIT-14, SPLIT-15 and SPLIT-17 in [splits.md](../../knowledge-curation/references/splits.md)). The window
 length, the step and the gap come from the use case first (SPLIT-12, SPLIT-10); fewer windows than the target are
-accepted with the reason in the splits comment (`splits_below_target`). Calendar windows end on unit boundaries;
+accepted with the reason in the splits comment (`splits_dimensions_off_protocol`, which also flags fewer than 3).
+Calendar windows end on unit boundaries;
 `min_train_fraction` stops before a window whose train side is smaller than that share (of the distinct values for
 `"unique"`, of the rows otherwise) and, with `window=None` and `unit="unique"`, sizes the windows so they cover the
 newest `1 - min_train_fraction` of the values.
@@ -841,11 +842,9 @@ changed, appeared or went; `raw_files_missing` (error) a pattern that matches no
 |---|---|
 | `dataset_index_range` | handled by the base class |
 | `dataset_object_dtype` | name every non-numeric column in `_feature_types` |
-| `dataset_identifier_column` | drop uninformative identifiers (recipe step 3) |
-| `dataset_sequential_id_column` | an integer column numbered densely, one value per row (a running id): drop it, or declare it `NonFeature(column, "identifier")` |
+| `dataset_identifier_column` | drop uninformative identifiers (recipe step 3); an integer column numbered densely, one value per row (a running id): drop it, or declare it `NonFeature(column, "identifier")`; a group key with one group per row (an error) is no group |
 | `raw_files_missing`, `raw_files_changed` | a source's `files` pattern matches nothing; a raw file differs from the README's (the raw-file manifest) |
-| `dataset_constant_column`, `dataset_all_missing_column`, `dataset_duplicate_columns` | drop them (step 7) |
-| `dataset_feature_equals_target` | drop target components |
+| `dataset_constant_column`, `dataset_all_missing_column`, `dataset_duplicate_columns` | drop them (step 7); a copy of the target (a `dataset_duplicate_columns` error) is a target component |
 | `dataset_pure_feature_value` | a value (100 rows or more), or present against missing, that holds one class only: look the column up in the source's documentation; drop it if derived from or recorded after the outcome, else accept with the reason. On a target with a 94-98% base rate it is usually an ordinary category effect |
 | `dataset_missing_value_sentinel`, `dataset_missing_value_label` | convert proxy missing values (step 5) |
 | `dataset_unused_categories` | handled by the base class |
@@ -853,33 +852,31 @@ changed, appeared or went; `raw_files_missing` (error) a pattern that matches no
 | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` | decide and document |
 | `task_target_dtype`, `task_target_class_count` | a classification target is a `category` with the right class count |
 | `task_target_missing_values` | drop rows with a missing target |
-| `task_target_rare_class`, `splits_test_class_unseen_in_train` | a class too rare to stratify: keep a rare class of the source's labels when its rows carry about their share of the score, merge only by a convention of the field, and accept with the counts ([task_probes.md](../../knowledge-curation/references/task_probes.md), TP-7 and TP-8) |
+| `splits_class_missing` | a class missing from a fold (a multiclass test side without it, a train side without a class its test side holds, a fold that flips between binary and multiclass) or too rare to stratify: widen the windows, or, for a class too rare to stratify: keep a rare class of the source's labels when its rows carry about their share of the score, merge only by a convention of the field, and accept with the counts ([task_probes.md](../../knowledge-curation/references/task_probes.md), TP-7 and TP-8) |
 | `task_metric_*` | declare `metric` with its origin and reference, the canonical name and the params and inputs the metric takes; each input column a `ScoringColumn` (Field mapping, `metric`) |
 | `task_sample_weight_not_metric_weight`, `task_weight_invalid`, `task_rate_count_not_whole`, `task_feature_looks_like_exposure` | a count or amount over a realized amount at risk: build the rate in `_clean` (assert that target x weight rebuilds the count), ship the amount as the weight scoring column the metric reads and as `sample_weight`, never as a feature (MET-14, MET-15, LEAK-41); a feature named like an amount at risk that is known at the prediction point is accepted with that reason; a weight for training alone that the metric does not read is declared `used_by="training"` (MET-16) |
 | `task_stratify_*` | stratify on the target (classification) or a discrete feature |
 | `task_time_on_dtype`, `task_time_on_missing_values`, `task_time_on_not_sorted` | a datetime (`_feature_types`) or numeric time column without NaN; the base class sorts |
-| `task_group_labels_per_group_violated`, `task_group_on_unique_per_row` | pick `per_group` or `per_sample` correctly |
+| `task_group_labels_mismatch` | pick `per_group` or `per_sample` correctly: `per_group` with groups of several labels is an error; `per_sample` with at least 95% single-label groups is a warning: `per_group` if one label by construction, else accept with the count of mixed groups |
 | `splits_temporal_leakage`, `splits_temporal_order` | expanding train, newest window first |
-| `splits_rows_unused` | IID and grouped splits cover every row |
+| `splits_rows_unused` | IID and grouped splits cover every row (an error); on a temporal split it is an info (the gap, history no window trains on), said in the splits comment |
 | `splits_test_over_budget` | a test side over the container's `row_budget` (only a version with a budget is checked; a benchmark sub-samples the train sides): the splits of a custom `_make_splits` must keep to it ("Larger than the row budget") |
-| `splits_too_few` | a temporal task with fewer than 3 test windows: declare at least 3 |
 | `meta_time_horizon_missing` | a fixed-length window in `Temporal(splits=...)`, or `Temporal(horizon=..., horizon_unit=...)` |
 | `meta_time_gap_without_time_on` | a gap belongs to a temporal task |
-| `groups_test_groups_few` | fewer than 20 test groups in a fold: keep only with real signal across groups (`group_probes.py`) and more than a handful of groups of each class per fold (else `Too Small`), and accept with that evidence |
+| `groups_test_groups_few` | fewer than 20 test groups in a fold, or fewer than 10 groups in all: keep only with real signal across groups (`group_probes.py`) and more than a handful of groups of each class per fold (else `Too Small`), and accept with that evidence |
 | `groups_largest_share_high` | one group over 20% of the rows: check it is one entity, not a catch-all value |
-| `groups_labels_constant` | `per_sample` with at least 95% single-label groups: `per_group` if one label by construction, else accept with the count of mixed groups |
 | `groups_not_clustered` (info) | rows no closer to their group than chance: compare IID and grouped scores before keeping the grouping |
-| `splits_test_single_class`, `splits_test_target_constant` | a test fold whose metric is undefined: fewer, larger folds or windows, or the task is too small |
-| `splits_test_minority_few`, `splits_test_class_missing` | test folds with under 10 rows of the rarer class, or without some class: widen the windows, merge by convention, or accept with the counts |
+| `splits_test_single_class`, `splits_test_target_constant` | a test fold whose metric is undefined (or a single-class fold whose train side lacks its class): fewer, larger folds or windows, or the task is too small |
+| `splits_test_minority_few` | test folds with under 10 rows of the rarer class: widen the windows, merge by convention, or accept with the counts |
 | `splits_train_under_half`, `splits_train_under_floor` (error) | a window trains on less than half the curated frame's rows (under 30%, which no exception allows): raise an issue for the curator's exception with the windows and their shares and an option without them; accept the warning only with the curator's CC date, never on the AI's word |
 | `splits_test_too_small` (error) | a test window holds fewer than 33 scored units (SPLIT-14): widen the windows, or fewer of them |
-| `splits_below_target` | fewer windows than an IID split of the data would get (SPLIT-15): the splits comment names the target, the count reached and what stops more windows (the use case's horizon or gap, the training floor, the least test window); accept with that reason, and offer overlapping windows to the curator where the use case might admit them |
+| `splits_dimensions_off_protocol` | IID or grouped repeats and folds other than SPLIT-33's: record why in the splits comment and accept with it. A temporal split with fewer windows than an IID split of the data would get (SPLIT-15), never under 3: the splits comment names the target, the count reached and what stops more windows (the use case's horizon or gap, the training floor, the least test window); accept with that reason, and offer overlapping windows to the curator where the use case might admit them |
 | `splits_feature_missing_in_test` | a feature 95% or more missing on one side of a window and at most half missing on the other (read on up to 100k rows a side): a column that stops or starts being recorded within the history. Name it in `curation_comments` and raise it for the curator (drop it, keep it as the deployed model met it, or start the data at the change); accept only with the curator's decision |
 | `time_newest_period_short` | the newest 30 days of a date column hold under 60% of the median rows a day of the 30-day spans before: compare the newest period's target rate with earlier ones; a download or scrape cut before the outcomes were complete is cut off (LEAK-24), a seasonal low or a real decline is accepted with the numbers |
 | `task_target_value_dominant` | one value holds half of a regression target: name the cap, timeout, placeholder or zero inflation in `curation_comments`; keep or drop censored rows case by case (sat11_hand_algo_runtime keeps its timeouts at the recorded limit), or accept with the reason |
 | `meta_tags_*` | tags agree with the split regime |
 | `meta_bibtex_*` | balanced braces, keys defined, `&`, `%`, `_` escaped |
-| `meta_placeholder_left`, `definition_todo_left`, `definition_license_placeholder` | every TODO in the metadata (the licence included) and every `TODO(verify)` in `dataset.py` is resolved before `build` |
+| `meta_placeholder_left` | every TODO in the metadata (the licence included) and every `TODO(verify)` in `dataset.py` is resolved before `build` |
 | `definition_nondeterministic` | seed every random step, sort with `kind="stable"`, wrap `glob` / `iterdir` / `listdir` in `sorted(...)`, use `maintain_order=True` in a polars `group_by` (and sort what a polars join returns before writing it) |
 | `definition_summary_missing`, `definition_no_use_case`, `definition_summary_long` | the `task_summary` (In brief) |
 | `accepted_check_warnings_unused` (info) | an accepted slug that no longer fires: remove the entry, or fix the misspelled slug |

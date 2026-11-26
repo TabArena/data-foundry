@@ -147,17 +147,13 @@ class OnlineShoppersPurchasingIntentionDataset(AbstractCuratedDataset):
         Leave one month out (Andrej, 2026-11-19): seven splits, one repeat, each testing one month and training on the other six. The months and their visits, each with the train side's share of the 6,875 visits: June 288 (95.8%), July 432 (93.7%), August 433 (93.7%), September 448 (93.5%), October 549 (92.0%), November 2,998 (56.4%) and December 1,727 (74.9%). A split by time is out: only December can train on half the visits in time order, and the file order within a month is not the order of days. The month is the group column and no model input. Repeats would give the same seven splits.
     """
     accepted_check_warnings = {
-        "task_group_count_low": (
-            "Decided (Andrej, 2026-11-19): the seven months June to December are all the data holds; each is held out "
-            "once."
-        ),
         "splits_dimensions_off_protocol": (
             "Decided (Andrej, 2026-11-19): leave one month out gives exactly seven splits; repeats would give the same "
             "seven."
         ),
         "groups_test_groups_few": (
-            "Decided (Andrej, 2026-11-19): testing one unseen month at a time is the split; each fold still scores 288 "
-            "to 2,998 visits."
+            "Decided (Andrej, 2026-11-19): the seven months June to December are all the data holds, each held out "
+            "once; testing one unseen month at a time is the split, and each fold still scores 288 to 2,998 visits."
         ),
         "groups_largest_share_high": (
             "November is a real month, not a catch-all value: 2,998 of the 6,875 visits (44%) as published; when it is "

@@ -92,11 +92,11 @@ def test_the_registered_severities_are_those_the_code_emits(slug: str) -> None:
 
 def test_errors_are_acceptable_only_on_purpose() -> None:
     assert may_accept("dataset_constant_column", "warning")
-    assert may_accept("splits_rows_unused", "warning")
+    assert may_accept("splits_rows_unused", "info")
     assert not may_accept("splits_rows_unused", "error")
     assert may_accept("splits_test_too_small", "error")
     assert not CHECKS["splits_train_under_floor"].acceptable
-    assert CHECKS["splits_test_class_missing"].acceptable  # its warning
+    assert CHECKS["splits_class_missing"].acceptable  # its warning
     assert all(CHECKS[slug].accepted_error for slug in ACCEPTABLE_ERRORS)
 
 

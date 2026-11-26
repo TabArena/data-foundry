@@ -185,7 +185,7 @@ class Sdss17(AbstractCuratedDataset):
         (2026-11-12), and a 2011 window would train on 40.4% of the spectra (Andrej, 2026-11-19).
     """
     accepted_check_warnings = {
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Eight windows, against the 9 an IID split of 99,999 spectra would get: 2019 and 2020 form one window "
             "(2026-11-12), and a 2011 window would train on 40.4% of the spectra (Andrej, 2026-11-19)."
         ),

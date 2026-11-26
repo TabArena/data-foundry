@@ -159,7 +159,7 @@ class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
         (Andrej, 2026-11-19).
     """
     accepted_check_warnings = {
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Four of the nine windows an IID split of this size would get: one window is one cohort, and with the gap "
             "the label needs, the 2013 cohort would train on 43.9% of the students (Andrej, 2026-11-19)."
         ),

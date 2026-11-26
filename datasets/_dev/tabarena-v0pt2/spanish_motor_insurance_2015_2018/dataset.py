@@ -229,11 +229,7 @@ class SpanishMotorInsurance20152018(AbstractCuratedDataset):
         "task_target_value_dominant": (
             "65% zeros: policy-years without a claim cost (Andrej, 2026-11-03: zero-inflated targets are natural for these tasks and a core challenge)."
         ),
-        "splits_rows_unused": (
-            "The 12-month gap of every window: a year's claims are known only when it ends, so the 5,685 first years "
-            "that start from December 2016 to July 2017 are in no window (splits_comment)."
-        ),
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Five windows, against the 9 an IID split of 37,090 first years would get: with one-month windows and the "
             "twelve-month gap, July 2017 would train on 45.4% of the rows (Andrej, 2026-11-03 and 2026-11-19)."
         ),

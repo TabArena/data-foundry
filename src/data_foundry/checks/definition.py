@@ -5,18 +5,18 @@
 the definition accepts in ``accepted_check_warnings`` as the registry allows
 (:func:`data_foundry.checks.registry.may_accept`):
 
-* the definition file (:func:`definition_findings`, :func:`summary_findings`): scaffold markers, nondeterministic
-  code, a placeholder license, the task summary;
+* the definition file (:func:`definition_findings`, :func:`summary_findings`): scaffold markers (joined with the
+  bundle's placeholders in the metadata into one ``meta_placeholder_left``), nondeterministic code, the task summary;
 * the raw files (:func:`raw_file_findings`): a pattern that matches nothing, files changed since the README;
 * a temporal split (:func:`floor_findings`, :func:`window_size_findings`): SPLIT-14's training floor and least test
-  window, SPLIT-15's number of windows;
+  window (SPLIT-15's number of windows is a split-protocol check,
+  :func:`data_foundry.definition.splits.protocol_checks`);
 * the newest period of a temporal task (:func:`newest_period_findings`).
 """
 
 from __future__ import annotations
 
 import ast
-import re
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -28,7 +28,7 @@ from data_foundry.checks import (
 )
 from data_foundry.checks.bundle import run_bundle_checks
 from data_foundry.checks.registry import may_accept
-from data_foundry.checks.results import SEVERITY_ORDER, BundleCheckReport, CheckResult
+from data_foundry.checks.results import SEVERITY_ORDER, BundleCheckReport, CheckResult, merge_same_slug, run_guarded
 
 if TYPE_CHECKING:
     from data_foundry.curation_container import CuratedContainer
@@ -79,24 +79,20 @@ def run_definition_checks(
 ) -> BundleCheckReport:
     """Every check of ``ds``'s container, without the findings its ``accepted_check_warnings`` may silence."""
     accepted = tuple(ds.accepted_check_warnings)
-    report = run_bundle_checks(container, verbose=False)  # a format-2 container: the v2 protocol checks included
+    # a format-2 container: the v2 protocol checks included
+    report = run_bundle_checks(container, verbose=False, from_definition=True)
     shared = report.results
     own: list[CheckResult] = []
     for name, run in (
         ("definition", lambda: definition_findings(ds)),
-        ("group", lambda: group_checks.group_findings(container, group_stats)),
+        ("group", lambda: group_checks.group_findings(group_stats)),
         ("task", lambda: task_checks.task_findings(container)),
         ("raw files", lambda: raw_file_findings(ds, container.dataset_metadata.raw_files)),
         ("floor", lambda: floor_findings(ds, container)),
         ("newest period", lambda: newest_period_findings(ds)),
     ):
-        try:
-            own += run()
-        except Exception as error:  # noqa: BLE001 - a broken check is a finding, not a crash
-            own.append(
-                CheckResult("check_crashed", "error", f"the {name} checks crashed: {type(error).__name__}: {error}")
-            )
-    found = [*shared, *own]
+        own += run_guarded(f"{name} checks", run)
+    found = merge_same_slug([*shared, *own], "meta_placeholder_left")
     unused = [slug for slug in accepted if slug not in {r.slug for r in found}]
     if unused:
         found.append(
@@ -117,11 +113,10 @@ def run_definition_checks(
 
 
 def floor_findings(ds: AbstractCuratedDataset, container: CuratedContainer) -> list[CheckResult]:
-    """SPLIT-14 and SPLIT-15 on a temporal split: every window trains on at least half the rows; a window under
-    half is a curator's exception (a warning accepted once the record carries the curator's CC line), down to
-    30% and never below (an error); every test window holds at least ``MIN_TEST_UNITS`` scored units (an error);
-    fewer windows than an IID split of the dataset would get (SPLIT-33's count for two thirds of all scored
-    units) is a warning the splits comment answers.
+    """SPLIT-14 on a temporal split: every window trains on at least half the rows; a window under half is a
+    curator's exception (a warning accepted once the record carries the curator's CC line), down to 30% and never
+    below (an error); every test window holds at least ``MIN_TEST_UNITS`` scored units (an error). SPLIT-15's
+    number of windows is ``splits_dimensions_off_protocol``, a split-protocol check.
 
     The shares count every row of the curated frame: a `_1m` version's container keeps every training row but
     samples its test windows.
@@ -161,62 +156,36 @@ def floor_findings(ds: AbstractCuratedDataset, container: CuratedContainer) -> l
                 "(knowledge-curation splits.md, SPLIT-14).",
             )
         )
-    findings += window_size_findings(container, windows, n_rows)
+    findings += window_size_findings(container, windows)
     return findings
 
 
-def window_size_findings(container: CuratedContainer, windows: list, n_rows: int) -> list[CheckResult]:
-    """SPLIT-14's least test window and SPLIT-15's target number of windows, both in scored units (SPLIT-33).
+def window_size_findings(container: CuratedContainer, windows: list) -> list[CheckResult]:
+    """SPLIT-14's least test window, in scored units (SPLIT-33): ``splits_test_too_small``.
 
-    A scored unit counts only where no window cuts it across its training and test sides (an era inside one
-    window); a unit every window cuts (a taxon in every survey year) is scored on part of its rows in each, so
-    the rows count, as SPLIT-33 counts them.
+    The units are those of :func:`data_foundry.definition.splits.scored_units_of`: a scored unit no window cuts, else
+    the rows.
     """
     from data_foundry.definition import splits as protocol  # noqa: PLC0415 - the definition package imports this module
 
-    task = getattr(container, "task_metadata", None)
-    unit = protocol.scored_unit_column(task) if task is not None else None
-    frame = container.dataset
-    units = frame[unit] if unit is not None and hasattr(frame, "columns") and unit in frame.columns else None
-    if units is not None:
-        values = units.to_numpy()
-        for _repeat, train, test in windows:
-            if np.intersect1d(pd.unique(values[list(test)]), pd.unique(values[list(train)])).size:
-                units = None
-                break
+    units = protocol.scored_units_of(container, windows)
 
     def count(rows) -> int:
         return int(units.iloc[list(rows)].nunique(dropna=False)) if units is not None else len(rows)
 
-    findings = []
     small = sorted((repeat, n) for repeat, _train, test in windows if (n := count(test)) < MIN_TEST_UNITS)
-    if small:
-        findings.append(
-            CheckResult(
-                "splits_test_too_small",
-                "error",
-                f"Test window(s) with fewer than {MIN_TEST_UNITS} scored units: "
-                + ", ".join(f"window {r} with {n}" for r, n in small)
-                + ".",
-                hint="SPLIT-14: widen the windows (or fewer of them) until each holds 33 scored units.",
-            )
+    if not small:
+        return []
+    return [
+        CheckResult(
+            "splits_test_too_small",
+            "error",
+            f"Test window(s) with fewer than {MIN_TEST_UNITS} scored units: "
+            + ", ".join(f"window {r} with {n}" for r, n in small)
+            + ".",
+            hint="SPLIT-14: widen the windows (or fewer of them) until each holds 33 scored units.",
         )
-    total = int(units.nunique(dropna=False)) if units is not None else n_rows
-    target = protocol.split_count(total)
-    n_splits = protocol.training_sides(train for _repeat, train, _test in windows)  # SPLIT-15: by training side
-    if n_splits < target:
-        findings.append(
-            CheckResult(
-                "splits_below_target",
-                "warning",
-                f"{n_splits} window(s), against the {target} splits an IID split of {total:,} scored units "
-                "would get (SPLIT-33).",
-                hint="SPLIT-15 aims at that count and accepts fewer: the splits comment names the target, the "
-                "count reached and what stops more windows (the use case's horizon or gap, the training floor, "
-                "the least test window); then accept this warning with it.",
-            )
-        )
-    return findings
+    ]
 
 
 def newest_period_findings(ds: AbstractCuratedDataset) -> list[CheckResult]:
@@ -284,8 +253,8 @@ def summary_findings(ds: AbstractCuratedDataset) -> list[CheckResult]:
 
 
 def definition_findings(ds: AbstractCuratedDataset) -> list[CheckResult]:
-    """Findings about the definition file: scaffold markers, a placeholder license, nondeterministic code, and the
-    summary.
+    """Findings about the definition file: scaffold markers, nondeterministic code, and the summary. A placeholder
+    license is in the container's metadata, which the bundle's ``meta_placeholder_left`` reads.
     """
     from data_foundry.definition.dataset import (  # noqa: PLC0415 - dataset.py imports this module
         DEFINITION_FILENAME,
@@ -301,10 +270,10 @@ def definition_findings(ds: AbstractCuratedDataset) -> list[CheckResult]:
         if todo:
             findings.append(
                 CheckResult(
-                    "definition_todo_left",
+                    "meta_placeholder_left",
                     "error",
                     f"{DEFINITION_FILENAME} still has {len(todo)} `TODO(verify)` marker(s), on line(s) {todo[:20]}.",
-                    hint="Resolve each marker (check the data, then write the step or delete the stub).",
+                    hint="Resolve each `TODO(verify)` marker (check the data, then write the step or delete the stub).",
                 ),
             )
         unstable = nondeterministic_calls(ast.parse(text))
@@ -333,16 +302,6 @@ def definition_findings(ds: AbstractCuratedDataset) -> list[CheckResult]:
                 "by its values before that step, so within a coarsened period they keep the order of the finer "
                 "time (the minute of chicago_traffic_crashes, 2026-11-04).",
                 hint=f"Coarsen `{time_on}` in `_clean`; within a period the rows then follow the content order.",
-            ),
-        )
-    placeholders = [s.license for s in getattr(ds, "sources", ()) if re.search(r"\bTODO\b", str(s.license))]
-    if placeholders:
-        findings.append(
-            CheckResult(
-                "definition_license_placeholder",
-                "error",
-                f"`Source(license={placeholders[0]!r})` is a placeholder.",
-                hint="Write the license the source states, or None when it states none.",
             ),
         )
     return findings

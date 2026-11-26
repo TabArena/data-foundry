@@ -12,12 +12,14 @@ computes them for every grouped task:
 
 The findings (:func:`group_findings`):
 
-* ``groups_test_groups_few`` (warning): a fold tests on fewer than :data:`MIN_TEST_GROUPS` groups.
 * ``groups_largest_share_high`` (warning): one group holds more than :data:`MAX_GROUP_SHARE` of the rows.
-* ``groups_labels_constant`` (warning): ``labels="per_sample"``, yet at least :data:`CONSTANT_LABEL_SHARE` of the
-  groups have a single label.
 * ``groups_not_clustered`` (info): rows are no closer to their own group than chance and the group explains no more
   of the label than shuffled groups: the grouping may not be needed.
+
+The bundle checks hold the two findings that also apply to a container read from disk, with the thresholds here:
+``groups_test_groups_few`` (a test fold with fewer than :data:`MIN_TEST_GROUPS` groups, or fewer than 10 groups in
+all) and ``task_group_labels_mismatch`` (``per_sample`` labels with at least :data:`CONSTANT_LABEL_SHARE` of the groups
+of one label, or ``per_group`` labels that differ within a group).
 
 Model-based diagnostics (the IID vs grouped score gap, learnability across groups with a permutation test) are slow,
 so they run on demand: ``.claude/skills/knowledge-data-foundry/scripts/group_probes.py``.
@@ -117,25 +119,11 @@ def group_stats(container: CuratedContainer) -> GroupStats | None:
     )
 
 
-def group_findings(container: CuratedContainer, stats: GroupStats | None) -> list[CheckResult]:
+def group_findings(stats: GroupStats | None) -> list[CheckResult]:
     """The findings of :func:`group_stats` (see the module docstring)."""
     if stats is None:
         return []
-    grouping = container.grouping
     findings = []
-    low, high = stats.test_groups_per_fold
-    if low < MIN_TEST_GROUPS:
-        findings.append(
-            CheckResult(
-                "groups_test_groups_few",
-                "warning",
-                f"A test fold holds {low} groups ({low}-{high} per fold, {stats.n_groups} groups in all): a score per "
-                "group rests on few independent units, and a score per row on not many more.",
-                hint="Keep the dataset only if its signal across groups is real "
-                "(`.claude/skills/knowledge-data-foundry/scripts/group_probes.py`), and accept the warning with that "
-                "reason.",
-            ),
-        )
     if stats.largest_share > MAX_GROUP_SHARE:
         findings.append(
             CheckResult(
@@ -144,17 +132,6 @@ def group_findings(container: CuratedContainer, stats: GroupStats | None) -> lis
                 f"The largest group holds {stats.largest_share:.0%} of the rows; it dominates every score that counts "
                 "rows and the fold it lands in.",
                 hint="Check whether the group is real (one entity) or a catch-all value such as 'unknown'.",
-            ),
-        )
-    if grouping.labels == "per_sample" and stats.single_label_share >= CONSTANT_LABEL_SHARE:
-        findings.append(
-            CheckResult(
-                "groups_labels_constant",
-                "warning",
-                f"labels='per_sample', yet {stats.single_label_share:.1%} of the groups with two or more rows have a "
-                f"single label ({stats.mixed_label_groups:,} of {stats.multi_row_groups:,} have several).",
-                hint="If the label is one per group by construction, declare `labels='per_group'`; otherwise say in "
-                "the definition why it may differ within a group.",
             ),
         )
     if _near_chance(stats.neighbour_same_group, stats.neighbour_chance) and _near_chance(

@@ -951,8 +951,9 @@ def protocol_checks(container: CuratedContainer) -> list[CheckResult]:
       ``experiment_metadata.row_budget.test``. A container without a budget has no size limit; the train sides are
       sub-sampled by a benchmark, not in the container.
     * ``splits_train_sampling_missing`` (error): a container with a row budget records no ``train_sampling``.
-    * ``splits_dimensions_off_protocol`` (warning): IID or grouped splits other than :func:`recommended_dimensions`.
-    * ``splits_too_few`` (warning): a temporal task with fewer than :data:`MIN_TEMPORAL_SPLITS` test windows.
+    * ``splits_dimensions_off_protocol`` (warning): IID or grouped splits other than :func:`recommended_dimensions`;
+      or a temporal split with fewer windows (training sides) than SPLIT-33 gives an IID split of its scored units
+      (SPLIT-15), the minimum of :data:`MIN_TEMPORAL_SPLITS` included.
     """
     task = container.task_metadata
     splits = container.experiment_metadata.splits
@@ -961,20 +962,7 @@ def protocol_checks(container: CuratedContainer) -> list[CheckResult]:
     findings = _budget_findings(flat, meta.row_budget, getattr(meta, "train_sampling", None))
 
     if task.time_on is not None:
-        n_sides = training_sides(train for _r, _f, train, _test in flat)
-        if n_sides < MIN_TEMPORAL_SPLITS:
-            shared = f" ({len(flat)} test parts)" if n_sides < len(flat) else ""
-            findings.append(
-                CheckResult(
-                    "splits_too_few",
-                    "warning",
-                    f"{n_sides} test window(s) with their own training side{shared}; the v2 protocol wants at least "
-                    f"{MIN_TEMPORAL_SPLITS}.",
-                    hint="Declare more windows, e.g. `TemporalSplits(window=7, unit='days', n_windows=3)` or three "
-                    "`cutoffs`.",
-                ),
-            )
-        return findings
+        return findings + _window_count_findings(container, [(r, train, test) for r, _f, train, test in flat])
 
     folds_per_repeat = {len(folds) for folds in splits.values()}
     if not flat or len(folds_per_repeat) != 1:
@@ -997,6 +985,61 @@ def protocol_checks(container: CuratedContainer) -> list[CheckResult]:
             ),
         )
     return findings
+
+
+def scored_units_of(container: CuratedContainer, windows: list) -> pd.Series | None:
+    """The scored unit of every row of a temporal split (SPLIT-33), or None when the rows count.
+
+    A scored unit counts only where no window cuts it across its training and test sides (an era inside one
+    window); a unit every window cuts (a taxon in every survey year) is scored on part of its rows in each, so the
+    rows count, as SPLIT-33 counts them.
+
+    Args:
+        container: The container (its frame and task).
+        windows: ``(repeat, train positions, test positions)`` of every window.
+    """
+    task = getattr(container, "task_metadata", None)
+    unit = scored_unit_column(task) if task is not None else None
+    frame = container.dataset
+    if unit is None or not hasattr(frame, "columns") or unit not in frame.columns:
+        return None
+    units = frame[unit]
+    values = units.to_numpy()
+    for _repeat, train, test in windows:
+        if np.intersect1d(pd.unique(values[list(test)]), pd.unique(values[list(train)])).size:
+            return None
+    return units
+
+
+def _window_count_findings(container: CuratedContainer, windows: list) -> list[CheckResult]:
+    """SPLIT-15 on a temporal split: as many windows, counted by training side, as SPLIT-33 gives an IID split of
+    the scored units (:func:`scored_units_of`), never fewer than :data:`MIN_TEMPORAL_SPLITS`.
+    """
+    units = scored_units_of(container, windows)
+    total = int(units.nunique(dropna=False)) if units is not None else len(container.dataset)
+    target = split_count(total)
+    n_sides = training_sides(train for _r, train, _test in windows)
+    if n_sides >= target:
+        return []
+    shared = f" ({len(windows)} test parts)" if n_sides < len(windows) else ""
+    floor = f"; the v2 protocol wants at least {MIN_TEMPORAL_SPLITS}" if n_sides < MIN_TEMPORAL_SPLITS else ""
+    hint = (
+        "Declare more windows, e.g. `TemporalSplits(window=7, unit='days', n_windows=3)` or three `cutoffs`: fewer "
+        "than three are never accepted (SPLIT-15)."
+        if floor
+        else "SPLIT-15 aims at that count and accepts fewer: the splits comment names the target, the count reached "
+        "and what stops more windows (the use case's horizon or gap, the training floor, the least test window); "
+        "then accept this warning with it."
+    )
+    return [
+        CheckResult(
+            "splits_dimensions_off_protocol",
+            "warning",
+            f"{n_sides} test window(s) with their own training side{shared}, against the {target} splits an IID "
+            f"split of {total:,} scored units would get (SPLIT-33){floor}.",
+            hint=hint,
+        )
+    ]
 
 
 def _budget_findings(

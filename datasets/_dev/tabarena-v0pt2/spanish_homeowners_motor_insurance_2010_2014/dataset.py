@@ -191,7 +191,7 @@ class SpanishHomeownersMotorInsurance20102014(AbstractCuratedDataset):
             "Zero-inflated by nature: 98.2% of customer-years have no home claim cost, a real no-claim year and not a "
             "placeholder (Andrej, 2026-11-02)."
         ),
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Three windows, against the 9 an IID split of 122,935 customer-years would get: the release has five "
             "policy years, and a 2011 window would train on 2010 alone, 32.8% of the rows (Andrej, 2026-11-19)."
         ),

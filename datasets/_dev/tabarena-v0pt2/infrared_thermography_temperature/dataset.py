@@ -230,7 +230,7 @@ class InfraredThermographyTemperature(AbstractCuratedDataset):
         time_of="label",
     )
     accepted_check_warnings = {
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Three windows of the 30 splits an IID split of 1,001 subjects would get: two-month windows on half the "
             "subjects or more leave room for three. A table this small with three windows gets the stationary-relation "
             "test, and it reads Nov-Dec 2017 not flat, so the windows ship (Andrej, 2026-11-23)."

@@ -617,10 +617,10 @@ short for others, or a use case that only cares about the weeks after a refit. T
 an IID split of the dataset would get: SPLIT-33's count for two thirds of all its scored units (60, 30, 9 or 3). The use
 case comes first: the window length, the step and the gap follow SPLIT-12 and SPLIT-10 and are never shortened or
 dropped to reach the count; then SPLIT-14's floor and least test window; within them, as many windows as reach the
-target. Fewer are accepted, never fewer than 3: `dataset check` warns (`splits_below_target`), and the splits comment
-names the target, the count reached and what stops more windows. Splits are counted by their training sides: test
-parts that share one training side (a window cut into folds by group, say) are one split, and are never offered to reach
-the count or the minimum of 3. Windows do not overlap by default; where the target
+target. Fewer are accepted, never fewer than 3: `dataset check` warns (`splits_dimensions_off_protocol`), and the
+splits comment names the target, the count reached and what stops more windows. Splits are counted by their training
+sides: test parts that share one training side (a window cut into folds by group, say) are one split, and are never
+offered to reach the count or the minimum of 3. Windows do not overlap by default; where the target
 cannot be reached otherwise, the review offers overlapping windows (a step shorter than the window) as an option, and
 the curator judges whether the use case admits them. The splits comment names the windows, the reasons and the numbers
 they rest on. Why: on aeolus, climate_model and delivery_eta the newest three windows ranked a model pair the other way

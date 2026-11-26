@@ -5,7 +5,10 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
+
+if TYPE_CHECKING:
+    from collections.abc import Callable, Iterable
 
 Severity = Literal["error", "warning", "info"]
 
@@ -36,6 +39,37 @@ class CheckResult:
     def __str__(self) -> str:
         text = f"[{self.slug}] {self.message}"
         return f"{text}\n    -> {self.hint}" if self.hint else text
+
+
+def run_guarded(name: str, check: Callable[[], Iterable[CheckResult]]) -> list[CheckResult]:
+    """The findings of ``check``, or one ``check_crashed`` error that names it when it raises: a broken check must
+    not hide the findings of the others. The bundle's runner and the definition's both go through it.
+    """
+    try:
+        return list(check())
+    except Exception as error:  # noqa: BLE001 - a broken check is a finding, not a crash
+        return [
+            CheckResult(
+                "check_crashed",
+                "error",
+                f"Check `{name}` raised {type(error).__name__}: {error}",
+                hint="A bug in the check or an unexpected bundle shape: report it.",
+            )
+        ]
+
+
+def merge_same_slug(results: list[CheckResult], slug: str) -> list[CheckResult]:
+    """``results`` with the findings of ``slug`` joined into one, at the strongest severity, in the place of the
+    first: two check sites that see one cause (a placeholder in the metadata and in ``dataset.py``) report it once.
+    """
+    found = [r for r in results if r.slug == slug]
+    if len(found) < 2:
+        return results
+    severity = min((r.severity for r in found), key=SEVERITY_ORDER.__getitem__)
+    hints = list(dict.fromkeys(r.hint for r in found if r.hint))
+    joined = CheckResult(slug, severity, " ".join(r.message for r in found), hint=" ".join(hints) or None)
+    first = results.index(found[0])
+    return [*(r for r in results[:first]), joined, *(r for r in results[first:] if r.slug != slug)]
 
 
 @dataclass

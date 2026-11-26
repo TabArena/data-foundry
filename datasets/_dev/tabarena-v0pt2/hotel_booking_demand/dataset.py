@@ -168,8 +168,6 @@ class HotelBookingDemand(AbstractCuratedDataset):
     accepted_check_warnings = {
         "dataset_duplicate_rows": "Rows identical after dropping the post-outcome columns are separate bookings with "
         "the same attributes (e.g. several rooms of one group); exact source duplicates were already removed.",
-        "splits_rows_unused": "By design: each prediction point uses bookings made before it; rows outside every "
-        "window (e.g. bookings cancelled more than three months ahead) are in no split.",
         "splits_train_under_half": (
             "The curator's exception (Lennart, 2026-11-11; Andrej, 2026-11-19): 1 October 2016 "
             "trains on 48.3% of the bookings, beside eight dates on 52.7% to 79.3%; 1 September 2016 (44.0%) was "

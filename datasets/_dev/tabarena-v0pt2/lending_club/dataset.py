@@ -182,11 +182,6 @@ class LendingClub(AbstractCuratedDataset):
             "loans (45.7% after the repeat-borrower filter), beside October to December 2015 and April to June 2015 on 85.5% and 62.8%; kept as the curator's "
             "exception to the half-data floor (Andrej, 2026-11-20)."
         ),
-        "splits_rows_unused": (
-            "By design (Andrej, 2026-11-11): a loan whose borrower key matches a test loan in every window it could "
-            "train for, and is in no test window, is in no split (324 loans, 0.1%; the repeat-borrower filter in "
-            "`_make_splits`)."
-        ),
     }
 
     # Task

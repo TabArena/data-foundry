@@ -1264,11 +1264,15 @@ def test_a_grouped_definition_reports_its_group_structure(tmp_path: Path, wareho
 
 
 def test_a_placeholder_license_is_an_error(tmp_path: Path, warehouse: Path) -> None:
+    """A `TODO` license and a `TODO(verify)` marker are one finding: the scaffold's placeholders are left."""
     del warehouse
     body = DEFINITION.format(name="toy_ds", comment="x").replace('license="CC0"', 'license="TODO"')
-    write_definition(tmp_path / "datasets", body=body)
+    write_definition(tmp_path / "datasets", body=body + "\n# TODO(verify): the step\n")
     result = get_dataset(tmp_path / "datasets", "toy_ds").check(write_report=False, verbose=False)
-    assert "definition_license_placeholder" in {r.slug for r in result.bundle_report.errors}
+    found = [r for r in result.bundle_report.errors if r.slug == "meta_placeholder_left"]
+    assert len(found) == 1
+    assert "sources[0].license" in found[0].message
+    assert "TODO(verify)" in found[0].message
 
 
 def test_cli_list_fails_when_a_definition_does_not_import(tmp_path: Path) -> None:

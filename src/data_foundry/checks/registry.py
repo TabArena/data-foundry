@@ -74,7 +74,6 @@ ACCEPTABLE_ERRORS: dict[str, str] = {
 _TABLE: tuple[tuple[str, str, Stage, str], ...] = (
     # --- definition: the definition file and the curation rules that need its class -----------------------------
     ("accepted_check_warnings_unused", "info", "definition", "An accepted slug no longer fires, or is misspelled."),
-    ("definition_license_placeholder", "error", "definition", "A source's license is still a `TODO` placeholder."),
     ("definition_no_use_case", "error", "definition", "`TaskSummary(fit='none')`: the dataset simulates no decision."),
     (
         "definition_nondeterministic",
@@ -91,15 +90,8 @@ _TABLE: tuple[tuple[str, str, Stage, str], ...] = (
         "definition",
         "`_make_splits` changes the time column after the rows were ordered by it.",
     ),
-    ("definition_todo_left", "error", "definition", "`dataset.py` still holds `TODO(verify)` markers."),
     ("raw_files_changed", "warning", "definition", "The raw files differ from those the README was written from."),
     ("raw_files_missing", "error", "definition", "A `Source(files=...)` pattern matches no file in the raw folder."),
-    (
-        "splits_below_target",
-        "warning",
-        "definition",
-        "A temporal split has fewer windows than an IID split of its scored units would get (SPLIT-15, SPLIT-33).",
-    ),
     ("splits_test_too_small", "error", "definition", "A temporal test window holds fewer than 33 scored units."),
     ("splits_train_under_floor", "error", "definition", "A temporal window trains on less than 30% of the rows."),
     (
@@ -126,7 +118,12 @@ _TABLE: tuple[tuple[str, str, Stage, str], ...] = (
     ),
     ("dataset_constant_column", "warning", "frame", "A column holds a single non-missing value."),
     ("dataset_duplicate_column_names", "error", "frame", "Two columns have the same name."),
-    ("dataset_duplicate_columns", "warning", "frame", "Two columns hold the same values."),
+    (
+        "dataset_duplicate_columns",
+        "error/warning",
+        "frame",
+        "Two columns hold the same values (an error when one is a copy of the target).",
+    ),
     ("dataset_duplicate_rows", "warning/info", "frame", "Exact duplicate rows (a warning from 1% of the rows)."),
     (
         "dataset_duplicates_skipped",
@@ -135,8 +132,13 @@ _TABLE: tuple[tuple[str, str, Stage, str], ...] = (
         "The duplicate row and column checks were skipped: the frame is over the cell budget.",
     ),
     ("dataset_empty", "error", "frame", "The frame has no rows or no columns."),
-    ("dataset_feature_equals_target", "error", "frame", "A feature column is identical to the target."),
-    ("dataset_identifier_column", "warning", "frame", "A column has one distinct value per row, like an id."),
+    (
+        "dataset_identifier_column",
+        "error/warning",
+        "frame",
+        "A column identifies the row: one category or string value per row, or an integer numbered densely like a "
+        "running id; an error when it is the group key, one group per row.",
+    ),
     ("dataset_index_range", "error", "frame", "The frame's index is not `RangeIndex(0, n)`."),
     ("dataset_missing", "error", "frame", "The container has no frame loaded."),
     (
@@ -171,12 +173,6 @@ _TABLE: tuple[tuple[str, str, Stage, str], ...] = (
         "The target correlates with the row position: the frame looks ordered, not shuffled.",
     ),
     (
-        "dataset_sequential_id_column",
-        "warning",
-        "frame",
-        "An integer column holds one value per row, densely numbered like a running id.",
-    ),
-    (
         "dataset_smiles_column",
         "error/warning",
         "frame",
@@ -203,11 +199,15 @@ _TABLE: tuple[tuple[str, str, Stage, str], ...] = (
         "task",
         "A feature looks like an amount at risk (time insured, area swept), which is a weight, never a feature.",
     ),
-    ("task_group_count_low", "warning", "task", "`group_on` yields few groups."),
-    ("task_group_labels_per_group_violated", "error", "task", "`labels='per_group'`, but groups hold several labels."),
+    (
+        "task_group_labels_mismatch",
+        "error/warning",
+        "task",
+        "The declared `labels` contradict the data: `per_group` with groups of several labels (an error), or "
+        "`per_sample` with nearly every group of one label (a warning).",
+    ),
     ("task_group_on_missing_column", "error", "task", "`group_on` names a column that is not in the frame."),
     ("task_group_on_missing_values", "warning", "task", "Rows without a group value."),
-    ("task_group_on_unique_per_row", "error", "task", "`group_on` has one group per row."),
     ("task_group_time_on_constant", "error", "task", "The group time column has fewer than two distinct values."),
     ("task_group_time_on_dtype", "error", "task", "The group time column is not datetime, period or numeric."),
     ("task_group_time_on_few_unique", "warning", "task", "The group time column has fewer than 10 distinct values."),
@@ -338,7 +338,6 @@ _TABLE: tuple[tuple[str, str, Stage, str], ...] = (
     ("task_target_dtype", "error", "task", "A classification target is not `category`."),
     ("task_target_low_cardinality", "warning", "task", "A regression target has few distinct values."),
     ("task_target_missing_values", "error", "task", "The target has missing values."),
-    ("task_target_rare_class", "warning", "task", "A class has fewer rows than the folds can spread."),
     (
         "task_target_value_dominant",
         "warning",
@@ -370,12 +369,6 @@ _TABLE: tuple[tuple[str, str, Stage, str], ...] = (
         "A weight column is not a finite number >= 0 with weight on every split side.",
     ),
     # --- splits: the splits against the frame and the task -----------------------------------------------------
-    (
-        "groups_labels_constant",
-        "warning",
-        "splits",
-        "`labels='per_sample'`, yet almost every group has a single label.",
-    ),
     ("groups_largest_share_high", "warning", "splits", "One group holds more than 20% of the rows."),
     (
         "groups_not_clustered",
@@ -383,12 +376,27 @@ _TABLE: tuple[tuple[str, str, Stage, str], ...] = (
         "splits",
         "Rows are no closer to their own group than chance: the grouping may not be needed.",
     ),
-    ("groups_test_groups_few", "warning", "splits", "A test fold holds fewer than 20 groups."),
+    (
+        "groups_test_groups_few",
+        "warning",
+        "splits",
+        "A test fold holds fewer than 20 groups, or the data fewer than 10 in all.",
+    ),
+    (
+        "splits_class_missing",
+        "error/warning",
+        "splits",
+        "A class is missing from a fold or too rare to spread over the folds: a multiclass test fold lacks one, a "
+        "train side lacks a class its test side holds, or a fold flips between binary and multiclass (errors when a "
+        "model or the metric then breaks).",
+    ),
     (
         "splits_dimensions_off_protocol",
         "warning",
         "splits",
-        "The repeats and folds are not the v2 protocol's for the data's size.",
+        "The splits are not the v2 protocol's: IID or grouped repeats and folds other than SPLIT-33's for the data's "
+        "size, or a temporal split with fewer windows than an IID split of its scored units would get, or under 3 "
+        "(SPLIT-15).",
     ),
     ("splits_duplicate_indices", "error", "splits", "A split's index list repeats rows."),
     (
@@ -397,16 +405,15 @@ _TABLE: tuple[tuple[str, str, Stage, str], ...] = (
         "splits",
         "A feature is recorded on one side of a window and missing on the other.",
     ),
-    ("splits_fold_problem_type_differs", "error", "splits", "A fold flips between binary and multiclass."),
     ("splits_group_leakage", "error", "splits", "A group is on both sides of a fold."),
     ("splits_index_out_of_bounds", "error", "splits", "A split indexes outside the frame."),
     ("splits_rows_never_tested", "warning", "splits", "Rows that cross-validation never tests."),
     (
         "splits_rows_unused",
-        "error/warning",
+        "error/info",
         "splits",
-        "Rows in no train and no test set (a warning on a temporal split, where a gap or the earliest cut leaves "
-        "them out).",
+        "Rows in no train and no test set (an info on a temporal split, where a gap, history no window trains on or "
+        "a filter leaves them out).",
     ),
     (
         "splits_temporal_layout",
@@ -416,13 +423,6 @@ _TABLE: tuple[tuple[str, str, Stage, str], ...] = (
     ),
     ("splits_temporal_leakage", "error", "splits", "A fold trains on rows that are not older than its test rows."),
     ("splits_temporal_order", "warning", "splits", "Temporal folds are not ordered newest test window first."),
-    (
-        "splits_test_class_missing",
-        "error/warning",
-        "splits",
-        "A multiclass test fold lacks a class (an error when the metric is then undefined).",
-    ),
-    ("splits_test_class_unseen_in_train", "error", "splits", "A fold tests a class its train side never holds."),
     (
         "splits_test_minority_few",
         "warning",
@@ -439,15 +439,10 @@ _TABLE: tuple[tuple[str, str, Stage, str], ...] = (
         "splits_test_single_class",
         "error/warning",
         "splits",
-        "A classification test fold holds a single class (an error when the metric is then undefined).",
+        "A classification test fold holds a single class (an error when the metric is then undefined, when the train "
+        "side lacks that class or when the fold flips between binary and multiclass).",
     ),
     ("splits_test_target_constant", "error", "splits", "A regression test fold has a constant target."),
-    (
-        "splits_too_few",
-        "warning",
-        "splits",
-        "Fewer test windows with their own training side than the v2 protocol wants.",
-    ),
     (
         "splits_train_sampling_missing",
         "error",
@@ -479,7 +474,13 @@ _TABLE: tuple[tuple[str, str, Stage, str], ...] = (
         "`ForcedIIDFromGrouped` has no `Group basis:` line (SPLIT-35).",
     ),
     ("meta_license_unknown", "warning", "metadata", "A source's license is unknown."),
-    ("meta_placeholder_left", "error", "metadata", "Scaffolding placeholders (`TODO`, `<unique_name>`) are left."),
+    (
+        "meta_placeholder_left",
+        "error",
+        "metadata",
+        "Scaffolding placeholders are left: `TODO` or `<unique_name>` in the metadata (a source's license included), "
+        "`TODO(verify)` in `dataset.py`.",
+    ),
     ("meta_source_link", "warning", "metadata", "A source's link does not look like a URL or DOI."),
     ("meta_splits_comment_empty", "warning", "metadata", "`splits_comment` is empty."),
     ("meta_tags_contradict_regime", "warning", "metadata", "`data_tags` claim a non-IID regime on an IID split."),

@@ -176,15 +176,16 @@ class HeartDisease(AbstractCuratedDataset):
         Leave one hospital out: three splits, each training on two hospitals and testing on the third (Cleveland, Hungary, then Long Beach), one repeat, since repeating a split of three groups into three folds gives the same splits. The source built its model in Cleveland and applied it at the other hospitals; leaving each hospital out in turn generalises that design so that every hospital is tested once. With three hospitals the scores are three numbers and differ by hospital (Long Beach is the hardest). Unlike `covertype`'s three areas, the transfer is the source's design and no class drops out (curation notes).
     """
     accepted_check_warnings = {
-        "task_group_count_low": "Three hospitals by design: the source built its model at one hospital and applied it "
-        "at the others. The fourth hospital (Switzerland) is left out because its published file kept only 8 of its about "
-        "27 patients without disease.",
         "splits_dimensions_off_protocol": "Leave one hospital out gives exactly three splits. More repeats would split "
         "the same three hospitals the same way, so they would add copies, not information.",
-        "groups_test_groups_few": "Testing on one unseen hospital at a time is the task. Each fold still scores 199 to "
-        "303 patients one by one (smallest class: 51). The signal carries over to unseen hospitals: the linear model "
-        "beats the class shares at each of the three (task probes, ROC AUC 0.880, 0.898, 0.732). Most of the "
-        "variation between folds comes from Long Beach, the hardest hospital.",
+        "groups_test_groups_few": (
+            "Three hospitals by design: the source built its model at one hospital and applied it at the others. "
+            "The fourth hospital (Switzerland) is left out because its published file kept only 8 of its about 27 "
+            "patients without disease. Testing on one unseen hospital at a time is the task. Each fold still "
+            "scores 199 to 303 patients one by one (smallest class: 51). The signal carries over to unseen "
+            "hospitals: the linear model beats the class shares at each of the three (task probes, ROC AUC 0.880, "
+            "0.898, 0.732). Most of the variation between folds comes from Long Beach, the hardest hospital."
+        ),
         "groups_largest_share_high": "Cleveland is a real hospital, one of three, not a catch-all value. When it is the "
         "test hospital, the model trains on the other two (493 patients), where two of Cleveland's tests were rarely "
         "recorded (`ca` for 5, `thal` for 62).",
