@@ -36,7 +36,7 @@ git (`git show 04e6cfe:datasets/_template/_template.ipynb`).
 
 * The task metadata is `PredictiveMLTaskMetadata` (`predictive-ml-task-mold-v1`): the regime is the flat
   `time_on`, or `group_on` with `group_labels` and an optional `group_time_on`. There is no grouping block, so
-  `container.grouping` raises; `container.format_version` is 1, and `container_metadata.json` has no
+  `container.grouping` returns None; `container.format_version` is 1, and `container_metadata.json` has no
   `format_version` key.
 * The format-1 classes keep exactly the fields the shipped checksums encode. A field added later is left out of the
   checksum while unset (`_OMIT_WHEN_UNSET`), so every shipped container still verifies: `container.verify()`.

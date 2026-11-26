@@ -231,10 +231,24 @@ def test_find_cached_returns_none_when_cache_empty(tmp_path):
     assert src._find_cached(tmp_path, "name/uuid") is None
 
 
-def test_find_cached_picks_any_snapshot_when_no_revision(tmp_path):
+def test_find_cached_falls_back_to_a_snapshot_when_no_revision_and_no_ref(tmp_path):
     expected = _make_hf_snapshot(tmp_path, "org/repo", sha="abc123", relative="name/uuid")
     src = HuggingFaceSource(repo_id="org/repo")
     assert src._find_cached(tmp_path, "name/uuid") == expected
+
+
+def test_find_cached_reads_refs_main_when_no_revision(tmp_path):
+    _make_hf_snapshot(tmp_path, "org/repo", sha="aaa_stale", relative="name/uuid")  # sorts first
+    expected = _make_hf_snapshot(tmp_path, "org/repo", sha="zzz_main", relative="name/uuid", ref="main")
+    src = HuggingFaceSource(repo_id="org/repo")
+    assert src._find_cached(tmp_path, "name/uuid") == expected
+
+
+def test_find_cached_misses_when_refs_main_lacks_the_entry(tmp_path):
+    _make_hf_snapshot(tmp_path, "org/repo", sha="aaa_stale", relative="name/uuid")
+    _make_hf_snapshot(tmp_path, "org/repo", sha="zzz_main", relative="other/uuid", ref="main")
+    src = HuggingFaceSource(repo_id="org/repo")
+    assert src._find_cached(tmp_path, "name/uuid") is None  # a download fetches it from main
 
 
 def test_find_cached_skips_snapshots_missing_the_entry(tmp_path):

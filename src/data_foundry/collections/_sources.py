@@ -270,12 +270,14 @@ class HuggingFaceSource(DataSource):
         )
         return [Path(snapshot_path) / r for r in relatives]
 
-    def _find_cached(self, cache_dir: Path, relative: str) -> Path | None:
+    def _find_cached(self, cache_dir: Path, relative: str) -> Path | None:  # noqa: PLR0911
         """Return the cached container directory if present, else ``None``.
 
         Mirrors the on-disk layout used by ``huggingface_hub``:
         ``<cache_dir>/<repo_type>s--<org>--<name>/snapshots/<sha>/<relative>``,
-        with branch/tag names resolved via the sibling ``refs/`` directory.
+        with branch/tag names resolved via the sibling ``refs/`` directory. Without a pinned revision it reads the
+        snapshot ``refs/main`` points at; only a cache without that ref falls back to the first snapshot that holds
+        the entry.
         """
         repo_folder = f"{self.repo_type}s--{self.repo_id.replace('/', '--')}"
         repo_root = Path(cache_dir) / repo_folder
@@ -295,7 +297,11 @@ class HuggingFaceSource(DataSource):
                     return candidate
             return None
 
-        for snapshot in sorted(snapshots_dir.iterdir()):
+        main_ref = repo_root / "refs" / "main"  # no pinned revision: what a download would fetch
+        if main_ref.is_file():
+            candidate = snapshots_dir / main_ref.read_text().strip() / relative
+            return candidate if has_core_files(candidate) else None
+        for snapshot in sorted(snapshots_dir.iterdir()):  # a cache without the ref
             candidate = snapshot / relative
             if has_core_files(candidate):
                 return candidate

@@ -357,3 +357,36 @@ def test_the_family_example_checks_a_parent_and_its_tasks(tmp_path, capsys):
 def test_every_example_parses(path):
     """An example that does not run in the tests (it needs the network) must still be valid Python."""
     ast.parse(path.read_text(), filename=str(path))
+
+
+def _parity_containers() -> dict[str, CuratedContainer]:
+    """Format-2 toys whose non-features go beyond the target: a label time, a grouping with one, a unit weight."""
+    from data_foundry.schema import Grouping  # noqa: PLC0415
+
+    from tests.test_bundle_checks import _unit_container, make_v2_container  # noqa: PLC0415
+
+    n = 8
+    rows = np.arange(n)
+    halves = {0: {0: (rows[:4].tolist(), rows[4:].tolist())}}
+    target = pd.Categorical(["yes", "no"] * (n // 2))
+    frame = pd.DataFrame({"sold": rows, "listed": rows - 1, "x": rows * 1.0, "target": target})
+    temporal = make_v2_container(frame, time_on="sold", time_of="label", prediction_time="listed", splits=halves)
+    grouped_frame = frame.assign(g=np.repeat([1, 2, 3, 4], 2))
+    grouping = Grouping(on="g", labels="per_sample", time_on="sold", time_of="label", prediction_time="listed")
+    grouped = make_v2_container(
+        grouped_frame, grouping=grouping, splits={0: {0: (rows[:4].tolist(), rows[4:].tolist())}}
+    )
+    return {"label_time": temporal, "grouped": grouped, "unit_weight": _unit_container()}
+
+
+@pytest.mark.parametrize("kind", ["label_time", "grouped", "unit_weight"])
+def test_read_metric_without_data_foundry_takes_the_features_data_foundry_takes(tmp_path, kind):
+    """The plain-json example leaves out the same columns as `feature_columns`, a label time and a unit included."""
+    from data_foundry.curation_container import feature_columns  # noqa: PLC0415
+
+    container = _parity_containers()[kind]
+    folder = container.save(save_dir=tmp_path)
+    example = _example("read_metric_without_data_foundry")
+    excluded = example.non_feature_columns(example.read_json(folder, "task_metadata"))
+    columns = pd.read_parquet(folder / "dataset.parquet").columns
+    assert [c for c in columns if c not in excluded] == feature_columns(container)
