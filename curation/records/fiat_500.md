@@ -13,12 +13,13 @@ tags:
 - 'Samples: One Moment'
 - 'Entities: Recur'
 - Database Snapshot
+- Non-IID (Grouped)
 original_source: Kaggle
 year: '2020'
 collection_period: Unknown
 domain: business & marketing
 required_split:
-- Random (IID)
+- Grouped (NON-IID)
 problem_type: Regression
 source_links:
 - https://www.openml.org/search?type=data&id=43828
@@ -60,24 +61,33 @@ CC (2026-11-17, Andrej): the declared split (random, 10x3 folds, `Retrospective`
 
 CC (2026-11-26, Andrej): review issue 6, B: the split's time basis is a fill-in of one crawl, declared as `RetrospectiveFillIn` (the prototype the issue called `Snapshot`).
 
+CC (2026-11-26, Andrej): review issue 1, C ("I go with your recommendation"): the one-row-per-car key drops the owner count (trim, engine power, age and mileage), 1,420 rows (14 fewer than with the owner count); dealers disagree on the owner count, so 8 cars stayed twice under the old key.
+
+CC (2026-11-26, Andrej): review issue 2, A ("I keep that since it is a valid pattern in real data and not a leak"): the mileage 56,779 km stays as recorded in its 12 listings; the definition notes it.
+
+CC (2026-11-26, Andrej): review issue 3 ("a random split that still makes sure that no car ends up on the same side of train and test", read as: no car on both sides): random splits grouped by car, `car_id` on equal engine power, age and mileage, which also joins the 14 cars whose trim two dealers entered differently; the time basis stays `RetrospectiveFillIn` (issue 6), the split leaf is the fill-in by unit.
+
+**Assessment (AI, 2026-11-26):** on the Kaggle file in its order, the key without the owner count keeps 1,420 of 1,538 listings (mean price 8,576 before, 8,498 after; median 9,000 and 8,900). On those rows 1,406 cars: 1,392 of one row and 14 of two, all differing only in trim (one certain copy, 39,162 km listed as pop and as sport at the same two places and prices; 3 more with an odd mileage, 10 with a round one). Under random 3-fold splits (10 repeats) 1.3% of the test rows had such a twin in training (0.39% with an odd mileage); grouped by `car_id`, none.
+
 ## Review
 
 **Outcome:** added. Used Fiat 500s listed on the Italian site automobile.it, one crawl uploaded to Kaggle in 2020:
 trim, engine power, age in days, mileage, previous owners and the seller's location; the target is the asking price,
-scored by RMSE, with a random split. The definition keeps one row per car (Lennart, 2026-10-14): 1,434 of 1,538
-listings. The AI recommends shipping it after two small fixes to that clean-up (issues 1 and 2). Reviewed without a
-panel, from the gathered evidence (the record, the definition, model runs on the shipped BeyondArena data and
-the TabArena v0.1 copy, both the 1,538 listings) and two checks of the rows. Validity: the copies a model
-exploited (the same car listed by several dealers) are mostly gone in v0.2, but 8 cars still appear twice because
-two dealers entered different owner counts, while the key merges some different cars with a round mileage (issue 1);
-a placeholder mileage, 56,779 km at seven sellers, stands for an unknown reading (issue 2). Value: the benchmark methods
-separate (RMSE on the shipped data: LimiX-2 686, TabPFN-3.5 695, CatBoost 730, linear regression 764 to 791), and a
-leak-free depreciation model with dealer effects ranks 9th of 41. Quality: no other open point. Weighed: real listings
-with a use case anyone can name +; one crawl of unstated date and filter, a small table, and better data for the same
-task under screening (autoscout24_car_listings_2025, priority 1) -.
+scored by RMSE, with random splits grouped by car. The definition keeps one row per car on trim, engine power, age and
+mileage (Lennart, 2026-10-14; the owner count left the key on 2026-11-26): 1,420 of 1,538 listings, and groups the 14
+cars whose trim two dealers entered differently, so no car is on both sides (2026-11-26). The placeholder mileage
+56,779 km stays as recorded (2026-11-26). Reviewed without a panel, from the gathered evidence (the record, the
+definition, model runs on the shipped BeyondArena data and the TabArena v0.1 copy, both the 1,538 listings) and checks
+of the rows. Value: the benchmark methods separate (RMSE on the shipped data: LimiX-2 686, TabPFN-3.5 695, CatBoost
+730, linear regression 764 to 791), and a leak-free depreciation model with dealer effects ranks 9th of 41. Weighed:
+real listings with a use case anyone can name +; one crawl of unstated date and filter, a small table, and better data
+for the same task under screening -.
 
-**Main points:** The 4 issues parked on 2026-11-11 are open again (2026-11-25); issue 6 is settled (B, 2026-11-26: the time basis `RetrospectiveFillIn`, the issue's `Snapshot`). Better-data check (2026-11-25, issue 7): Keep fiat_500 until a Craigslist one-model record (Ford F-150, windows by scrape) replaces it, as the answer of 2026-11-05 recommended: no newer table meets the ask of one model, a time component and one or several sites, and the Craigslist pick holds once its placeholder prices and relisted trucks are handled (the later-market gap stays at 15% to 25%). Earlier: Parked (2026-11-11) on Andrej's note until it is decided whether better suited datasets replace this task: the one-row-per-car key (issue 1), the 56,779 km placeholder (issue 2), the split (issues 3 and 6) and the Craigslist replacement (issue 4) wait. The domain is settled (issue 5, 2026-11-05). The definition's split
-is random with the time basis `Retrospective` (CC 2026-11-17).
+**Main points:** Issues 1 to 3 are decided (2026-11-26): the one-row-per-car key without the owner count (1, C), the
+56,779 km mileage kept as recorded (2, A), and a random split grouped by car on engine power, age and mileage (3; the
+time basis stays `RetrospectiveFillIn`, issue 6, B). The domain is settled (issue 5, 2026-11-05). Open: the
+replacement by a dated used-car listing table (issue 4) and the better-data check of 2026-11-25 (issue 7): keep
+fiat_500 until a Craigslist one-model record (Ford F-150, windows by scrape) replaces it.
 
 **Record judgment:** valid, small, superseded soon. The crawl is real (the copies of one car at several dealers show a
 live market) and the use case is direct. The definition's domain, technology & internet, follows the site; the other
@@ -255,6 +265,10 @@ dated listing table (autoscout24_car_listings_2025), screened in its own record.
 
    **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 7 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
 
+   **Andrej (2026-11-26, change):** I go with your recommendation
+
+   **Resolved (2026-11-26, Andrej):** C, the key without the owner count. `_clean` drops duplicates on trim, engine power, age and mileage (`keep="first"`): 1,420 of 1,538 listings, the 14 listings the 2026-11-05 answer named go beyond the old key's 1,434, and no car with an odd mileage is left twice under the key. The curation note gives the 118 repeats, the owner counts that differ between the uploader's two files (25 of 41), the chance rates (82 odd-mileage repeats against 1.3 per draw, 36 round ones against 10.2) and the price before and after (mean 8,576 and 8,498, median 9,000 and 8,900); the task summary's `row` and `changes` say 1,420 cars and 118 repeats.
+
 2. **Treat the mileage 56,779 km as missing?**
 
    * **Problem:**
@@ -335,6 +349,10 @@ dated listing table (autoscout24_car_listings_2025), screened in its own record.
    **Andrej (2026-11-11, discuss):** Park it until we decide on checking in with better suited datasets for this task.
 
    **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 7 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
+
+   **Andrej (2026-11-26, change):** I keep that since it is a valid pattern in real data and not a leak
+
+   **Resolved (2026-11-26, Andrej):** A, kept as recorded (the implemented option): all 12 listings with 56,779 km stay with that mileage under issue 1's key. `dataset.py` changes only by a curation note that keeps the value and says what it likely stands for.
 
 3. **Which split instead of IID? Mark the random split as forced from temporal?**
 
@@ -455,6 +473,10 @@ dated listing table (autoscout24_car_listings_2025), screened in its own record.
    **Andrej (2026-11-11, discuss):** Park it until we decide on checking in with better suited datasets for this task.
 
    **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 7 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
+
+   **Andrej (2026-11-26, change):** I would say that what we need here would be a random split that still makes sure that no car ends up on the same side of train and test.
+
+   **Resolved (2026-11-26, Andrej):** a random split grouped by car, so no car is on both sides; the time basis stays `RetrospectiveFillIn` (issue 6). After issue 1's key, 14 cars still have two rows, all differing only in the trim a dealer entered: a car of 701 days and 39,162 km is listed as pop and as sport at the same two places and prices, and 13 more pairs share engine power, age and mileage (3 odd mileages, one of them 56,779 km, and 10 round ones). So the plain random split did not satisfy the note: 1.3% of its test rows had such a twin in training (0.39% with an odd mileage). `_clean` adds `car_id`, the group number of engine power, age and mileage (1,406 cars: 1,392 of one row, 14 of two), declared as `grouping` (per-row labels and predictions, no model input) with a `splits_comment`; `split_leaf` moves from the random fill-in to the fill-in by unit; the record's `required_split` is `Grouped (NON-IID)` with the tag `Non-IID (Grouped)`. `dataset check`: 0 errors, 0 warnings, 1 info (the grouping is not clustered: the car pairs are too few to show, which is expected when 14 of 1,406 cars have two rows); 1,420 rows, 1,406 groups, 3 folds x 10 repeats, 468 to 478 test rows (468 or 469 cars) per fold.
 
 4. **Better data for the same task: keep fiat_500 until a used-car listing table replaces it?**
 

@@ -8,10 +8,10 @@ data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
 - BeyondArena
-- WIP (DF)
-claimed_by: Andrej
-suggestion: 'Yes'
-priority: 2
+suggestion: No (Retired)
+decision_markers:
+- Class-dependent Recording
+- Not Representative
 tags:
 - Non-IID (Grouped)
 - 'Samples: Over Time'
@@ -27,7 +27,6 @@ problem_type: Binary Classification
 source_links:
 - https://doi.org/10.24432/C5F88Q
 notebook_path: datasets/beyond_iid/old_iid/online_shoppers_purchasing_intention_dataset/online_shoppers_purchasing_intention_dataset.ipynb
-v2_path: datasets/_dev/tabarena-v0pt2/online_shoppers_purchasing_intention_dataset/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -77,6 +76,12 @@ CC (2026-11-19, Andrej): leave one month out, `ForcedGroupedFromTemporal` (Revie
 
 CC (2026-11-20, Andrej): the finished-visit rows stay as an approximate stand-in for the in-visit decision (Review issue 3, A). This answers the first triage note ("it is meaningless to predict a purchase after it already happened"): on the kept months no count, duration, bounce or exit rate marks the buyers (ROC AUC 0.55 to 0.68 each; LightGBM 0.739 without `PageValues`), and `fit_reason` names the gap: each row summarises the finished visit, while the shop acts during it.
 
+CC (2026-11-26, Andrej): verdict dont: "Retire online_shoppers as replaced by ga_merchandise_store_sessions (shipped 2026-11-26): No (Retired). Markers: Class-dependent Recording (February–May page values credited by the buyers' own purchases; the cut to June–December is not proven clean) and Not Representative (every row sums up the finished visit, purchase included; on GA360 the final totals lift LightGBM from 0.874 to 0.977, a gap that can't be measured here). In the CC line, name both leak findings and the replacement. Remove the folder and release the claim. Issues 1–6 close as moot." Applied (Review issue 7, decided by the verdict):
+- `No (Retired)` with two markers, one per leak finding: `Class-dependent Recording`: in February, March and May every buyer has `PageValues` above zero (the shop's page values are credited by the buyers' own purchases; that column alone gives ROC AUC 0.974 there), and the cut to June to December (27% of buyers at 0, 0.814 alone) cannot be proven clean; `Not Representative`: every row sums up the finished visit, purchase included, and on Google's GA360 export of the Merchandise Store the visits' final totals lift untuned LightGBM from ROC AUC 0.874 at an in-visit cut to 0.977, a gap this table cannot measure, since it holds only finished visits;
+- the replacement is `ga_merchandise_store_sessions` (verdict ship 2026-11-26): the same use case (show an offer during a visit) on the GA360 visits cut at the 3rd pageview, before any checkout step, so its features end at a prediction point inside the visit, 305,819 visits as shipped (306,997 at the screening, 45 times the 6,875 here) over 12 months, with forward monthly windows;
+- issues 1 to 6 were decided before; the decisions lapse with the retirement (moot);
+- the folder leaves the working copy and `v2_path` is cleared; the definition stays in the git history; the claim is released.
+
 **Assessment (AI, 2026-11-23):** does leave one month out flatter the score by training on later months? No. For each
 test month from August to December, two training sides of equal size (90% of the visits before the test month) score
 all of that month's visits: one drawn from the earlier months only, as a forward deployment has, and one drawn from all
@@ -97,7 +102,7 @@ now says the test months are unseen, not later, and gives this result.
 
 ## Review
 
-**Outcome:** added. The AI recommends shipping it as defined; all issues are settled (the 40 repeated visits kept,
+**Outcome:** added, then retired on 2026-11-26 (verdict dont, issue 7) as `Class-dependent Recording` and `Not Representative`, replaced by `ga_merchandise_store_sessions`; the folder removed. As added: the AI recommended shipping it as defined; all issues were settled (the 40 repeated visits kept,
 issue 1). Reviewed on 2026-11-04 without a panel, from the evidence already gathered (the record, the
 leak audit of 2026-10-01, model runs on the TabArena v0.1 task of the same source, which hold all 12,330
 visits) and one check on the v0.2 rows. The data are Sakar et al.'s (2019) Google Analytics visits to one online shop
@@ -115,10 +120,7 @@ model's error, no action. Weighed: a documented source and a real decision +, me
 rests on a cut that cannot be proven -, a summary of the finished visit -, better data found
 (`ga_merchandise_store_sessions`, not screened yet) -.
 
-**Main points:** Better-data check (2026-11-25, issue 7): Keep online_shoppers until a session record built from Google's GA360 sample of the Merchandise Store replaces it: that sample is readable here, has 45 times the usable visits over 12 months, and its hits let each visit be cut at a prediction point inside it, which removes the finished-visit gap of issue 3 and allows a forward split by month; the other event logs checked are weaker. Earlier: issue 1 settled on 2026-11-11 (repeats kept with a note); issue 4 on 2026-11-13 (`Target: Later`);
-issue 6 on 2026-11-19 (leave one month out, `ForcedGroupedFromTemporal`, `Month` the group and no input), which
-replaces the random split forced from temporal of issue 2 (2026-11-11); issue 3 on 2026-11-20 (the finished-visit
-rows stay as an approximate stand-in, the gap named in `fit_reason`). Nothing open.
+**Main points:** Nothing open. Retired (2026-11-26, verdict dont, issue 7) as replaced by `ga_merchandise_store_sessions` (shipped 2026-11-26: Google's GA360 visits cut at the 3rd pageview, 305,819 visits over 12 months). Markers: `Class-dependent Recording` (in February to May the page values are credited by the buyers' own purchases; the cut to June to December is not proven clean) and `Not Representative` (every row sums up the finished visit, purchase included; on GA360 the final totals lift LightGBM from 0.874 to 0.977, a gap that cannot be measured here). Issues 1 to 6, decided earlier, are moot with the retirement.
 
 **Record judgment:** valid, ship. The cut of February to May, the IID split and the dropped `SpecialDay` are
 Lennart's decisions of 2026-10-01; the open point the Assessment of 2026-10-19 left for "the next pass" is issue 1.
@@ -422,6 +424,10 @@ a mark.
    [^better]: Pattern "Small or dated, and the task is still done today": a larger or newer public dataset with the same target and use case is its own record; the old record is not rejected automatically and keeps the verdict its own data earn until the curator decides.
    [^valid]: Keep two questions apart (TP-6): is the task valid, and is it the best version? A valid task stays.
    [^entity]: SPLIT-13: an entity that recurs across the cutoff is part of the task when the model predicts for known entities, and a question when the use case is a new entity.
+
+   **Andrej (2026-11-26, verdict dont):** Retire online_shoppers as replaced by ga_merchandise_store_sessions (shipped 2026-11-26): No (Retired). Markers: Class-dependent Recording (February–May page values credited by the buyers' own purchases; the cut to June–December is not proven clean) and Not Representative (every row sums up the finished visit, purchase included; on GA360 the final totals lift LightGBM from 0.874 to 0.977, a gap that can't be measured here). In the CC line, name both leak findings and the replacement. Remove the folder and release the claim. Issues 1–6 close as moot.
+
+   **Resolved (2026-11-26, Andrej):** retired as replaced: `ga_merchandise_store_sessions` is added and shipped (2026-11-26), so B's condition is met. `No (Retired)` with `Class-dependent Recording` and `Not Representative`; the folder is removed, `v2_path` cleared and the claim released. Issues 1 to 6 are moot.
 
 ## Reference
 

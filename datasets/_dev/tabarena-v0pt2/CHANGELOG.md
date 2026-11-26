@@ -1,6 +1,35 @@
 # Changelog: TabArena v0.2 working copy
 
 ## 2026-11-23, every definition names its split-tree leaf; `RetrospectiveFillIn` and `Target: Fixed Delay` in use (no container built)
+## 2026-11-26 (evening), retirements for better data, and fiat and polish decisions
+
+Retired (verdict dont), folders removed, `v2_path` cleared:
+- body_density_prediction (`No (Retired)`, no new marker): replaced by `nhanes_dxa_body_fat` (38,708 people with a
+  measured DXA scan against 252 men of 1985; the target is DXA percent fat instead of density by underwater weighing).
+- qsar_biodeg (`No (Retired)`, `Duplicate`): `ready_biodegradability_huang_zhang` holds 1,011 of its 1,055 chemicals and
+  gives 976 the same class, with 5.8 times the chemistry.
+- qsar_fish_toxicity (`No (Retired)`, `Duplicate`): `aquatic_toxicity_lunghini_consensus` holds 808 of its 908
+  compounds at the same values and adds 1,392 more.
+- sdss_17 (`No (Retired)`, `Duplicate`): a 100,000-row cut of the DR17 query `sdss_dr17_star_galaxy_quasar_1m` builds
+  in full.
+- mic (`No (Retired)`, `Class-dependent Recording`): blank fields follow the outcome through how the file was filed
+  (blanks alone 0.78 ROC AUC on death); `gusto_i_mi_mortality` ships in its place (its issue 2, B).
+- online_shoppers_purchasing_intention_dataset (`No (Retired)`, `Class-dependent Recording`, `Not Representative`):
+  page values credited by the buyers' own purchases in February-May, and rows that sum up the finished visit;
+  replaced by `ga_merchandise_store_sessions`.
+- website_phishing (`No (Retired)`, `Data Quality Issue`, `Selection Bias`): `phreshphish_phishing_pages` carries the
+  phishing task.
+- web_page_phishing_detection (`No`, `Selection Bias`, `Class-dependent Recording`): removed before shipping.
+
+Changed:
+- fiat_500: one row per car on trim, engine power, age and mileage (1,420 rows); the 56,779 km mileage kept as
+  recorded; the split is random grouped by car (`car_id`, 1,406 cars), leaf `L-FILL.unit`. Check 0 errors, 0 warnings.
+- polish_companies_bankruptcy: the bankrupt and operating companies came from separate extraction runs whose
+  conventions models recognised (10 label-free run flags alone ROC AUC 0.964); 27 ratios are rebuilt from one set of
+  amounts per statement by one label-free rule, the other 37 dropped, values rounded to 4 significant digits; ROC AUC
+  0.797 / 0.811 (LightGBM / logistic regression). `Class-dependent Recording` added. Check 0 errors, 0 warnings.
+- phreshphish_phishing_pages and gusto_i_mi_mortality: verdict ship, nothing open.
+
 ## 2026-11-26 (evening), PhreshPhish metric and the new-metric rule
 
 - phreshphish_phishing_pages: the metric is `average_precision_at_base_rate` with `base_rate` 0.01, new in the metric

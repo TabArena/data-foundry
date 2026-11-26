@@ -5,7 +5,12 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary, TimeBasis
+
+# one car: the trim, engine power, age and mileage of a listing (the owner count differs between dealers)
+CAR_KEY = ["model", "engine_power", "age_in_days", "km"]
+# the group: a car whose trim two dealers entered differently is still one car
+GROUP_KEY = ["engine_power", "age_in_days", "km"]
 
 
 class Fiat500(AbstractCuratedDataset):
@@ -16,7 +21,7 @@ class Fiat500(AbstractCuratedDataset):
             "listing is overpriced, by comparison with current listings."
         ),
         row=(
-            "One used Fiat 500 listed on the Italian site automobile.it (1,434 cars from 1,538 listings, uploaded to "
+            "One used Fiat 500 listed on the Italian site automobile.it (1,420 cars from 1,538 listings, uploaded to "
             "Kaggle in 2020; the date of the crawl is not stated)."
         ),
         predicted="The listed price, from 2,500 to 11,100; the currency is not stated.",
@@ -24,10 +29,13 @@ class Fiat500(AbstractCuratedDataset):
             "The trim (lounge, pop or sport), engine power, age in days, mileage, number of previous owners, and the "
             "location as latitude and longitude."
         ),
-        split="Random cars of the same crawl, standing for new listings in the same market.",
+        split=(
+            "Random cars of the same crawl, standing for new listings in the same market, grouped by car: a car "
+            "whose trim two dealers entered differently stays on one side."
+        ),
         changes=(
-            "We keep one row per car: 104 listings repeat the trim, engine power, age, mileage and owners of another, "
-            "the same car scraped twice or listed at several places."
+            "We keep one row per car: 118 listings repeat the trim, engine power, age and mileage of another, the same "
+            "car scraped twice or listed at several places."
         ),
         fit="direct",
         fit_reason=(
@@ -67,11 +75,14 @@ class Fiat500(AbstractCuratedDataset):
         - Currency: not stated.
         - Crawl date: not stated. The file was uploaded on 2020-04-07, and age_in_days counts "from the time the dataset has been created" (data card).
         - Filter: not stated. The file name ends in "_filtered", but neither the data card nor the author's notebooks say what was removed.
-        - We keep one row per car, its first listing (1,434 rows): 104 rows repeat the model, engine power, age, mileage and owners of another. 18 are exact copies, most 12-14 rows after the first (the crawler saw the listing on two result pages), and one car with an odd mileage such as 9,248 km appears at up to 9 places a median 396 km apart, mostly at one price (Lennart, 2026-10-14).
+        - We keep one row per car, its first listing (1,420 rows): 118 rows repeat the model, engine power, age and mileage of another (Lennart, 2026-10-14; the owner count left the key on 2026-11-26, Andrej). 18 are exact copies, most 12-14 rows after the first (the crawler saw the listing on two result pages), and one car with an odd mileage such as 9,248 km appears at up to 9 places a median 396 km apart, mostly at one price. The owner count is no part of the key: the uploader's second file of the same crawl (Kaggle, "Small dataset about used Fiat 500 sold in Italy") holds 41 of these listings and gives another owner count for 25 of them, so 8 cars stayed twice under a key with it.
+        - The copies are not chance: with mileages shuffled among cars of the same trim, power and half-year of age (one row per key, 1,000 draws), distinct cars share trim, power, month and an odd mileage 1.3 times per draw against 82 repeats in the file, and a round mileage 10.2 times against 36, so about 10 of the round-mileage merges are likely different cars (under 1% of the rows). Price before and after: mean 8,576 over all listings, 8,498 kept; median 9,000 and 8,900.
+        - Mileage 56,779 km: kept as recorded (2026-11-26, Andrej: "a valid pattern in real data and not a leak"). Twelve listings at seven places give exactly this mileage for cars of 1.2 to 12.8 years, all kept; it likely stands for a reading the advert did not give.
         - Partial order, left unordered (2026-11-01, CLEAN-14): `model`: pop is the base trim; lounge and sport are both
           above it but not ranked against each other.
+        - Split by car (2026-11-26, Andrej): a random split that keeps every car on one side. `car_id` numbers the rows of equal engine power, age and mileage (1,406 cars); it is no model input. After the one-row-per-car key 14 cars still have two rows, because two dealers entered another trim: a car of 701 days and 39,162 km is listed as pop and as sport at the same two places at the same prices. The other 13 pairs are 3 with an odd mileage (one at 56,779 km) and 10 with a round one, which may be different cars and cost nothing on one side. Under random 3-fold splits 1.3% of the test rows had such a twin in training.
     """
-    split_leaf = "L-FILL.random"
+    split_leaf = "L-FILL.unit"
     time_basis = TimeBasis(
         "RetrospectiveFillIn",
         """
@@ -89,20 +100,37 @@ class Fiat500(AbstractCuratedDataset):
             "algorithms', no metric named"
         ),
     )
+    grouping = Grouping(
+        on="car_id",
+        labels="per_sample",
+        prediction_unit="row",
+        context="none",
+        definition="""
+            One group is a car: the listings that agree in engine power, age in days and mileage (1,406 cars from the 1,420 rows; 14 with two rows, whose trim two dealers entered differently). The use case prices a car newly listed, so a test car is new to the model with all its listings and cannot be priced off its own listing at another dealer. Each row is one prediction, made from its listing.
+        """,
+    )
+
+    # Splits
+    splits_comment = """
+        Random splits grouped by car: every listing of a car stays on one side, so a model prices cars it has not seen. The cars are one crawl, so the split fills in prices of the same market and does not test a later one.
+    """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/automobile_dot_it_used_fiat_500_in_Italy_dataset_filtered.csv")
         return df
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
-        # One row per car: the same model, power, age, mileage and owners again is the same car listed again
-        return raw.drop_duplicates(
-            subset=["model", "engine_power", "age_in_days", "km", "previous_owners"], keep="first"
-        )
+        # One row per car: the same model, power, age and mileage again is the same car listed again; dealers
+        # disagree on the owner count, so it is no part of the key
+        df = raw.drop_duplicates(subset=CAR_KEY, keep="first").copy()
+        # a car whose trim two dealers entered differently keeps two rows: group them so both stay on one side
+        df["car_id"] = df.groupby(GROUP_KEY, sort=False).ngroup().map("car_{:04d}".format)
+        return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
             categorical=[
                 "model",
+                "car_id",
             ],
         )

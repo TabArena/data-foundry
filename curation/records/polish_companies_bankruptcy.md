@@ -11,6 +11,7 @@ data_foundry_status:
 suggestion: 'Yes'
 decision_markers:
 - Selection Bias
+- Class-dependent Recording
 tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
@@ -51,11 +52,17 @@ CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTe
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. The class/period confounding is explicit in the source, and bankruptcy-ratio relations are documented as non-stationary across economic periods.
 
+CC (2026-11-26, Andrej): issue 5, D ("Yes, implement D"): the task keeps all 5,790 statements and rebuilds 27 of the 64 ratios from one set of amounts per statement, by the same label-free rule for every row (sales from the ratios over sales, liabilities as total assets minus equity, one inventory figure); the other 37 ratios (multi-year items, copied or zero-coded items, items defined by record format) are dropped and every column is rounded to 4 significant digits. `Class-dependent Recording` is added, `Selection Bias` stays: the bankrupt and the operating companies were extracted in separate runs, and their periods still differ.
+
+CC (2026-11-26, Andrej): issue 6, A, as implemented: the task keeps the fifth-year file (bankruptcy one year after the statement); `curation_comments` now say that the five files are one panel of the same companies (97% of 5year statements found in 4year), that the other files are longer horizons with less signal after the rebuild, and that pooling them needs a company key the source does not give.
+
+**Assessment (AI, 2026-11-26):** on the rebuilt definition (5,790 rows, 406 bankrupt, 27 columns), the 9 shipped splits: ROC AUC 0.797 LightGBM and 0.811 logistic regression, against 0.955 and 0.924 for the published 64 ratios, 0.964 and 0.967 for the 10 label-free run flags and 0.729 and 0.777 for the two size columns alone. Within one class (out-of-fold, 5 folds x 3 seeds, LightGBM / logistic): operating reference format against the zero-coded format 0.53 / 0.57, bankrupt with against without history 0.53 / 0.54, reference against the larger-company format 0.84 / 0.84 (0.64 / 0.62 without the size columns; size alone 0.81); as published 0.98-1.00. Bankrupt companies without history score as the other bankrupt ones (0.54 / 0.52; as published 0.96 / 0.87). Largest difference by format or class in the rate of a two- or three-column identity: 0.084. The rebuild makes 42 sets of statements identical (84 rows, one set with both labels), source rows that differ only in dropped ratios.
+
 ## Review
 
-**Outcome:** added. Stationarity reasoning of 2026-11-18: the forced tag stays (issue 1, A, Andrej).
+**Outcome:** added; on 2026-11-26 (Andrej) the task keeps the 5year file (issue 6, A) and rebuilds 27 of the 64 ratios from one set of amounts per statement, so models no longer score the extraction run (issue 5, D: ROC AUC 0.797 / 0.811 against 0.955 / 0.924 as published). Stationarity reasoning of 2026-11-18: the forced tag stays (issue 1, A, Andrej).
 
-**Main points:** The BeyondArena v0.2 review's issues are in this review from 2026-11-25 as 5, 6, 7; the parked ones are open again. Better-data check (2026-11-25, issue 4): Add american_companies_bankruptcy (US listed firms 1999-2018, raw statement items, one extraction for both classes, a dated temporal split) and then retire polish as replaced, which also closes its parked issues 5 and 6; v4finbench is not a replacement, since its label is a ratio rule that its own three ratios predict as well as all 131 features. Earlier: Nothing open: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation` (issue 1 resolved on 2026-11-18).
+**Main points:** Open: whether american_companies_bankruptcy replaces this dataset (issue 4, better-data check of 2026-11-25), and the time basis (issue 7, whose recommended forced tag the definition already declares since issue 1). Settled on 2026-11-26: the extraction runs are undone by the 27-ratio rebuild, with `Class-dependent Recording` added and the class periods still different (`Selection Bias`); the one-year file stays. Earlier: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation` (issue 1, 2026-11-18).
 
 **Issues for Andrej:**
 
@@ -394,6 +401,25 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
 
    **Note (AI, 2026-11-25):** the BeyondArena v0.2 review's issue 1, parked there on 2026-11-11 and never written into this record; it is kept here under its new number.
 
+   **Andrej (2026-11-26, note):** Yes, implement D
+
+   **Resolved (2026-11-26, Andrej):** D, the rebuild: `_clean` drops the duplicate statements on the source's 64 ratios as before, then rebuilds 27 ratios from one set of amounts per statement by the rules of the notes (format F2 by the implied sales figures or total sales over total costs; sales the median of the usable implied figures, the sales ratio where none is usable outside F2; liabilities as total assets minus equity; current assets, inventory, receivables and cash from their ratios; working capital in absolute units from working capital over assets and log total assets), drops the other 37, turns infinities into missing values and rounds every column to 4 significant digits. 5,790 rows (406 bankrupt), 27 features. `task_summary` (`known`, `changes`, `fit_reason`) and `curation_comments` are rewritten; the record gets `Class-dependent Recording` next to `Selection Bias`. The table matches the answer's rebuilt table except the last digit of three ratios taken as stored (current ratio, inventory days, receivables days) instead of recomputed. Measured again on the definition (2026-11-26; LightGBM / logistic regression; TabPFN 3.5 not re-run, 0.839 on 2026-11-05):
+
+   | Test | Rebuilt | As published (64 ratios) |
+   |---|---|---|
+   | label, 9 shipped splits | 0.797 / 0.811 | 0.955 / 0.924 |
+   | 10 label-free run flags alone, 9 splits | - | 0.964 / 0.967 |
+   | the two size columns alone, 9 splits | 0.729 / 0.777 | - |
+   | operating: F1 against F2 (5 folds x 3 seeds) | 0.841 / 0.837; without size 0.635 / 0.617; size alone 0.812 | 0.999 / 0.997 |
+   | operating: F1 against F3 | 0.526 / 0.570 | 0.988 / 0.980 |
+   | operating: F2 against F3 | 0.811 / 0.816; without size 0.599 / 0.612 | 0.999 / 0.998 |
+   | bankrupt F1: with against without history | 0.526 / 0.541 | 1.000 / 1.000 |
+   | bankrupt: F1 against F2 (without history) | 0.712 / 0.772; without size 0.556 / 0.542 | 0.999 / 1.000 |
+   | label scores: bankrupt without history against the other bankrupt | 0.538 / 0.524 | 0.963 / 0.872 |
+   | label scores: bankrupt F1 against operating F3 / F1 | 0.774 / 0.787 (LightGBM) | 0.950 / 0.898 |
+
+   Identity scan: no relation between two or three columns holds at rates that differ by format or class by more than 0.084 (inventory days as the combined days minus receivables days, the rounding), apart from working capital in absolute units, whose values are large enough to pass the scan's relative tolerance against themselves plus 1. The rebuild makes 42 sets of statements identical (84 rows, one set with both labels: source rows that differ only in dropped ratios, mostly cost items); they stay, and the check reports them as information. `dataset check`: 0 errors, 0 warnings, 2 infos (41 exact duplicate rows, 1 conflicting).
+
 6. **Which of the source's five yearly files should the task use?**
 
    * **Problem:**
@@ -504,6 +530,10 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
 
    **Note (AI, 2026-11-25):** the BeyondArena v0.2 review's issue 2, parked there on 2026-11-11 and never written into this record; it is kept here under its new number.
 
+   **Andrej (2026-11-26, ok):** As implemented (A).
+
+   **Resolved (2026-11-26, Andrej):** A, as implemented: the task keeps 5year (bankruptcy one year after the statement; 5,790 rows, 406 bankrupt) and `_load_raw` is unchanged. `curation_comments` now say that the five files are one panel of the same companies a year apart without a company id (sales over sales growth link a statement to one of the previous file; 5,603 of the 5,790 5year statements, 97%, are found in 4year), that the other files are longer horizons with less signal once the extraction runs are removed (rebuilt ROC AUC 0.61-0.75 against 0.79-0.84 for 5year, measured 2026-11-05), and that pooling them needs a company key the source does not give. Nothing re-measured for this issue. `dataset check` as in issue 5: 0 errors, 0 warnings, 2 infos.
+
 7. **Time basis: tag the random split as forced from temporal?**
 
    * **Problem:**
@@ -546,6 +576,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
    **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 4 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
 
    **Note (AI, 2026-11-25):** the BeyondArena v0.2 review's issue 3, parked there on 2026-11-11 and never written into this record; it is kept here under its new number.
+
 ## Reference
 
 Ensemble boosted trees with synthetic features generation in application to bankruptcy prediction

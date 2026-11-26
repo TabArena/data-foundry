@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: polish_companies_bankruptcy
 container_format: 2
-checksum: v2:6a225e613d9560724efa97427e56db6c585b00dea9f9e31a3bb3a67c63aa0fff
+checksum: v2:f2e3c075809e426e4614d23e835e1d6aba1c24cae61e2d13191e9096730314c1
 build:
   uuid: 01a111fc-ea70-7bb1-9ee9-8875a112b674
   checksum: v2:e805deec0030e15c329f9a454287c23219ecc355db0b7647cea809dc23c09407
@@ -20,10 +20,10 @@ build:
 build_stale: true
 data:
   n_rows: 5790
-  n_features: 64
+  n_features: 27
   dtypes:
     category: 1
-    float64: 64
+    float64: 27
   n_test_dataset_rows: null
 task:
   target: company_bankrupt
@@ -56,7 +56,9 @@ bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos: []
+  infos:
+  - dataset_duplicate_rows
+  - dataset_conflicting_duplicate_rows
   accepted: {}
 decisions: []
 ---
@@ -65,9 +67,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `company_bankrupt`, scored with `roc_auc` on IID splits. 5,790 rows and 64 features. Source: UCI (2016).
+Binary classification of `company_bankrupt`, scored with `roc_auc` on IID splits. 5,790 rows and 27 features. Source: UCI (2016).
 
-Built as `01a111fc-ea70-7bb1-9ee9-8875a112b674` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6a225e613d9560724efa97427e56db6c585b00dea9f9e31a3bb3a67c63aa0fff`, so the build is stale. See [Build](#build).
+Built as `01a111fc-ea70-7bb1-9ee9-8875a112b674` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f2e3c075809e426e4614d23e835e1d6aba1c24cae61e2d13191e9096730314c1`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -79,13 +81,13 @@ Built as `01a111fc-ea70-7bb1-9ee9-8875a112b674` on 2026-10-06, but `dataset.py` 
 
 **Predicted.** Whether the company is bankrupt one year after the statement (7.0% are).
 
-**Known at prediction time.** 64 financial ratios computed from the statement: profitability, debt, liquidity, turnover, working capital, size and sales growth.
+**Known at prediction time.** 27 financial ratios of the statement, rebuilt from one set of amounts by the same rule for every statement: debt, equity, liquidity, working capital, gross profit, turnover and size.
 
 **What the test data stands for.** Random statements; the file has no dates.
 
-**Our changes to the source.** We use only the source's fifth-year file, whose label is bankruptcy one year later, and drop duplicate rows.
+**Our changes to the source.** We use only the source's fifth-year file (bankruptcy one year later) and drop duplicate rows. The bankrupt and the operating companies were extracted in separate runs that recorded some items differently, so we rebuild 27 of the 64 ratios from one set of amounts for every statement, drop the other 37 and round every value to 4 significant digits.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The ratios come from the statement and the label follows a year later, as in use. But the bankrupt and the surviving companies were taken from different periods (2000-2012 against 2007-2013) and the file has no dates, so part of the signal may be the period rather than the company.
+> **Use case fit: approximate (a stand-in with a known gap).** The ratios come from the statement and the label follows a year later, as in use, and the rebuilt ratios no longer show which extraction run a statement came from, except through company size. But the bankrupt and the surviving companies were taken from different periods (2000-2012 against 2007-2013) and the file has no dates, so part of the signal may be the period rather than the company.
 
 ## Files in this folder
 
@@ -127,7 +129,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | IID, ForcedIIDFromTemporal |
 | reference | zikeba2016ensemble |
-| rows x columns | 5,790 x 65 |
+| rows x columns | 5,790 x 28 |
 | task.target | company_bankrupt |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -172,26 +174,28 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 5,790 rows of the final frame (random rows: the frame is shuffled); 12 of 65 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 5,790 rows of the final frame (random rows: the frame is shuffled); 12 of 28 columns, the target first. Cells are cut at 40 characters.
 
-| company_bankrupt | net_profit_to_total_assets | total_liabilities_to_total_assets | working_capital_to_total_assets | current_assets_to_short_term_liabilities | liquidity_days_ratio | retained_earnings_to_total_assets | ebit_to_total_assets | book_value_equity_to_total_liabilities | sales_to_total_assets | equity_to_total_assets | extended_profit_to_total_assets |
+| company_bankrupt | total_liabilities_to_total_assets | working_capital_to_total_assets | current_assets_to_short_term_liabilities | book_value_equity_to_total_liabilities | sales_to_total_assets | equity_to_total_assets | gross_profit_to_short_term_liabilities | total_assets_to_total_liabilities | gross_profit_to_total_assets | gross_profit_to_sales | inventory_days_ratio |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | 0.068348 | 0.1013 | 0.37423 | 4.8196 | 269.19 | -2.8e-05 | 0.081922 | 8.8717 | 0.48418 | 0.8987 | 0.082519 |
-| No | 0.074725 | 0.43472 | 0.42782 | 2.1356 | 14.908 | 0 | 0.093487 | 1.3003 | 1.912 | 0.56528 | 0.12464 |
-| No | 0.091115 | 0.43706 | 0.1591 | 2.2079 | 17.2 | 0 | 0.091115 | 1.288 | 1.7796 | 0.56294 | 0.099924 |
-| No | 0.048309 | 0.41474 | 0.52334 | 2.3043 | 29.256 | 0.029109 | 0.048309 | 1.4111 | 4.0698 | 0.58526 | 0.048309 |
-| No | 0.22417 | 0.64469 | 0.33407 | 1.5182 | 34.726 | 0 | 0.27696 | 0.55114 | 3.1186 | 0.35531 | 0.27696 |
+| No | 0.1508 | 0.1071 | 2.402 | 5.63 | 0.7893 | 0.8492 | 1.001 | 6.63 | 0.07643 | 0.09683 | 17.93 |
+| No | 0.3578 | 0.07611 | 1.213 | 1.795 | 1.707 | 0.6422 | 0.9006 | 2.795 | 0.3223 | 0.1888 | 3.898 |
+| No | 0.5008 | 0.2011 | 1.487 | 0.9968 | 1.769 | 0.4992 | 0.206 | 1.997 | 0.08499 | 0.04806 | 71.2 |
+| No | 0.5427 | -0.02504 | 0.9539 | 0.8427 | 3.31 | 0.4573 | 0.1723 | 1.843 | 0.0935 | 0.02825 | 13.88 |
+| No | 0.2568 | 0.2194 | 2.003 | 2.893 | 1.587 | 0.7432 | 1.599 | 3.893 | 0.3498 | 0.2204 | 16.05 |
 
 ## Curation notes
 
-- We only use data from year 5 (5year.arff), because it is the newest data and the target is bankruptcy status after only 1 year.
+- We only use the fifth-year file (5year.arff): its label is bankruptcy one year after the statement, the horizon a lender decides on (Andrej, 2026-11-26). The five yearly files are one panel of the same companies a year apart, without a company id: a statement's sales over its sales growth equal the sales of one statement of the previous file, and 5,603 of the 5,790 statements of 5year (97%) have the same company's statement in 4year. The other files are longer horizons (two to five years) with less signal once the extraction runs below are removed (ROC AUC 0.61-0.75 against 0.79-0.84 for 5year on the rebuilt ratios, measured 2026-11-05), and pooling them would need a company key the source does not give.
+- We removed duplicate statements (every copy of a statement whose 64 ratios repeat).
+- Extraction runs (Andrej, 2026-11-26): the source collected the bankrupt companies (2000-2012) and the operating ones (2007-2013) in separate runs over EMIS, and each run wrote some items by its own conventions: multi-year items copied from one year or missing, total sales or total costs in place of sales, liabilities without a third item, operating profit coded 0, items copied into others, working capital in whole units. On the published 64 ratios, 10 label-free flags of these conventions alone reach ROC AUC 0.964 (LightGBM, the 9 shipped splits) against 0.955 for the ratios.
+- We therefore rebuild every kept ratio from one set of amounts per statement, by the same label-free rule for every row, in units of total assets: sales from the ratios over sales (the median of four implied figures; the source's sales-to-assets ratio holds total sales over total costs in one record format), liabilities as total assets minus equity, current assets from the current ratio and short-term liabilities, inventory and receivables from their day ratios, cash from the net-liabilities ratio, working capital in absolute units as working capital over assets times total assets. 27 ratios stay under their source names; 37 are dropped: the multi-year items (retained earnings, sales growth, three-year gross profit), total sales and total costs over sales, the long-term liability ratios, operating profit and its ratios, profit on sales, extended profit, equity minus share capital, and the ratios on net profit, operating expenses, cost of sales and depreciation, and two whose definition cannot be reproduced from the other columns. Every column is rounded to 4 significant digits, since rebuilt values carry more digits than the source's 5; infinities are missing.
+- Result (2026-11-26): within one class, a model no longer tells the record formats or the missing history apart beyond company size (out-of-fold ROC AUC, LightGBM / logistic regression: operating companies of the reference format against the zero-coded one 0.53 / 0.57, bankrupt companies with against without history 0.53 / 0.54; the reference format against the larger-company format 0.84 / 0.84 with the two size columns, 0.64 / 0.62 without; as published 0.98-1.00 each). On the 9 shipped splits the rebuilt table scores ROC AUC 0.797 (LightGBM) and 0.811 (logistic regression), against 0.955 and 0.924 for the published ratios and 0.729 and 0.777 for the two size columns alone; the bankrupt companies without history score as the others (0.54 / 0.52, as published 0.96 / 0.87). No relation between two or three columns holds at rates that differ by format or class by more than 0.084.
+- The rebuild makes 42 sets of statements identical (84 rows, one set with both labels): their source rows differ only in dropped ratios, mostly the cost items.
+- The bankrupt and the operating companies still come from different periods (the Selection Bias marker), and the file has no dates.
 - We created semantically meaningful feature names.
-- We removed duplicates.
-- Anomaly: the data contains a lot of features created by feature engineering.
-- Time basis: ForcedIIDFromTemporal: the statements come from several years, and the file has no dates, so the
-  time is lost and part of the signal may be the period. A dated release would test statements later than those
-  used for training. Not taken as stationary (Andrej, 2026-11-18): The class/period confounding is explicit in
-  the source, and bankruptcy-ratio relations are documented as non-stationary across economic periods.
+- Anomaly: every feature is a ratio the source engineered from the statement; the raw amounts are not published.
+- Time basis: ForcedIIDFromTemporal: the statements come from several years, and the file has no dates, so the time is lost and part of the signal may be the period. A dated release would test statements later than those used for training. Not taken as stationary (Andrej, 2026-11-18): The class/period confounding is explicit in the source, and bankruptcy-ratio relations are documented as non-stationary across economic periods.
 
 ## Splits
 
@@ -213,80 +217,48 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
+- **info** `dataset_duplicate_rows`: 41 exact duplicate row(s) (0.7% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
+- **info** `dataset_conflicting_duplicate_rows`: 1 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (65 rows)</summary>
+<summary>Show the table (28 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | company_bankrupt | category | 0 | 0 | 2 | No, Yes |
-| current_assets_minus_inventories_to_long_term_liabilities | float64 | 2502 | 43.21 | 3225 | 2.7727, 4.1023, 87.275, 1351.8, 11.397, 12.005, 254.14, 1.8215, 2.7602, 2.2021 |
-| operating_profit_to_financial_expenses | float64 | 389 | 6.72 | 4935 | 0.0, 1.397, 2.6295, 1.3454, 1.8854, 0.6994, 0.7874, 8.6599, 40.592, 1.3295 |
-| net_profit_to_inventory | float64 | 264 | 4.56 | 5367 | 0.0, 0.132, 0.161, 1.5193, 0.0222, 0.2244, 0.3196, 0.6753, 0.513, -1.4719 |
-| inventory_turnover_ratio | float64 | 264 | 4.56 | 5319 | 11.257, 12.364, 17.114, 5.2512, 11.045, 10.34, 12.16, 11.052, 14.228, 2.4727 |
-| three_year_gross_profit_to_total_assets | float64 | 135 | 2.33 | 5496 | 0.0, 0.1304, 0.735, 0.2073, 1.4774, 0.1345, 0.5821, 0.4073, 0.1511, 1.0669 |
-| working_capital_to_fixed_assets | float64 | 105 | 1.81 | 5555 | 1.0404, 1.2599, 0.3481, -0.5639, -0.164, 1.0429, 1.073, 10.419, 1.1876, 1.5473 |
-| equity_to_fixed_assets | float64 | 105 | 1.81 | 5415 | 2.2499, 1.0391, 1.3602, 2.3016, 1.3816, 1.5962, 1.0107, 1.8225, 1.2216, 1.2624 |
-| constant_capital_to_fixed_assets | float64 | 105 | 1.81 | 5298 | 1.0371, 2.2499, 1.6298, 1.1296, 1.3294, 1.2642, 1.001, 1.0246, 1.1313, 1.2271 |
-| sales_to_fixed_assets | float64 | 105 | 1.81 | 5493 | 1.6959, 2.682, 1.8704, 6.7586, 16.589, 0.6372, 1.7235, 3.6726, 2.3811, 1.3991 |
-| sales_growth_ratio | float64 | 103 | 1.78 | 4386 | 1.121, 1.0022, 1.1086, 1.1148, 1.1906, 1.0637, 1.071, 1.3353, 1.0942, 1.0536 |
-| liabilities_to_adjusted_operating_profit | float64 | 84 | 1.45 | 5540 | 0.0, 0.2925, 0.1128, 0.1093, 0.2253, 0.015, 0.0519, 0.4355, 0.0692, 0.1507 |
-| current_liabilities_days_ratio | float64 | 46 | 0.79 | 5458 | 0.0, 57.341, 134.12, 101.1, 100.83, 62.32, 124.9, 109.97, 135.24, 48.78 |
-| short_term_liabilities_days_cost_ratio | float64 | 36 | 0.62 | 5449 | 0.0, 0.1571, 0.2324, 0.15, 0.3059, 0.3013, 0.2708, 0.1933, 0.1707, 0.1055 |
-| inventory_days_cost_ratio | float64 | 35 | 0.6 | 5340 | 0.0, 33.904, 140.3, 126.64, 45.975, 26.621, 15.301, 65.362, 41.329, 64.783 |
-| current_assets_to_short_term_liabilities | float64 | 21 | 0.36 | 5416 | 1.0475, 1.1072, 1.029, 1.1534, 1.5428, 1.0472, 1.4348, 1.7944, 1.3905, 1.7692 |
-| gross_profit_to_short_term_liabilities | float64 | 21 | 0.36 | 5630 | 0.2061, 0.465, 0.1001, 0.1275, -0.2297, 0.1632, 0.3482, 1.2349, 0.2657, 0.0026 |
-| operating_expenses_to_short_term_liabilities | float64 | 21 | 0.36 | 5539 | 0.0, 2.0725, 3.2695, 5.1785, 5.1719, 4.7075, 3.2552, 4.6917, 2.6097, 3.3725 |
-| liquid_assets_to_short_term_liabilities | float64 | 21 | 0.36 | 5643 | 0.0, 0.3246, 1.2077, 2.2917, 0.1231, 0.1031, 0.3777, 0.0492, 0.3498, 0.1837 |
-| current_assets_minus_inventory_to_short_term_liabilities | float64 | 21 | 0.36 | 5494 | 1.6191, 1.3217, 1.1262, 1.0586, 1.2142, 1.1699, 1.0492, 0.3202, 1.1234, 1.6204 |
-| sales_to_short_term_liabilities | float64 | 21 | 0.36 | 5523 | 3.6796, 2.3307, 5.6358, 14.691, 4.2731, 2.5748, 2.1269, 18.202, 3.7401, 10.526 |
-| book_value_equity_to_total_liabilities | float64 | 18 | 0.31 | 5581 | 1.1634, 1.2376, 1.9198, 1.0819, 1.3062, 0.3363, 1.8245, 2.9632, 0.7327, 2.1171 |
-| gross_profit_plus_depreciation_to_total_liabilities | float64 | 18 | 0.31 | 5642 | 0.1764, 1.195, 1.0101, 1.4644, 0.3115, 0.1407, 0.0266, 0.7082, 2.2454, 1.0255 |
-| total_assets_to_total_liabilities | float64 | 18 | 0.31 | 5398 | 1.3363, 1.9046, 1.2871, 1.8418, 1.5152, 1.3152, 1.7327, 1.309, 1.5508, 1.1 |
-| net_profit_plus_depreciation_to_total_liabilities | float64 | 18 | 0.31 | 5613 | 0.0, 0.1932, 0.2509, 1.0898, 0.5512, 0.1939, 0.2482, 0.1697, 0.132, 1.2913 |
-| operating_expenses_to_total_liabilities | float64 | 18 | 0.31 | 5630 | 0.0, 3.5357, 3.5849, 1.1295, 2.0447, 1.6163, 3.6064, 6.5941, 2.615, 14.23 |
-| current_assets_to_total_liabilities | float64 | 18 | 0.31 | 5453 | 1.0454, 1.7137, 1.2839, 1.2161, 1.0433, 1.0375, 1.4316, 0.8195, 1.7068, 1.2581 |
-| receivables_turnover_ratio | float64 | 15 | 0.26 | 5555 | 10.096, 9.4409, 5.695, 16.789, 5.9772, 13.983, 12.352, 6.7081, 7.2732, 11.183 |
-| liquidity_days_ratio | float64 | 11 | 0.19 | 5718 | 33.352, 0.0, -48.828, 15.209, -18.84, -12.677, 54.833, 132.03, -138.98, 31.597 |
-| liabilities_days_ratio | float64 | 6 | 0.1 | 5635 | 0.0, 1302.2, 2069.4, 305.44, 361.35, 325.23, 345.95, 1171.9, 1091.3, 1600.6 |
-| net_profit_to_total_assets | float64 | 3 | 0.05 | 5570 | 0.0, 0.146, 0.1535, 0.2229, 0.0462, 0.1508, -0.0405, 0.1197, -0.1204, 0.1436 |
-| total_liabilities_to_total_assets | float64 | 3 | 0.05 | 5566 | 0.0, 0.3853, 1.0208, 0.66, 0.6158, 0.402, 0.2523, 0.172, 0.5772, 0.7195 |
-| working_capital_to_total_assets | float64 | 3 | 0.05 | 5597 | 1.0, 0.2003, -0.1201, 0.3828, 0.2604, 0.2953, 0.147, 0.1824, 0.6171, 0.3712 |
-| retained_earnings_to_total_assets | float64 | 3 | 0.05 | 3498 | 0.0, 0.1352, 0.0009, 0.0053, 0.1469, 0.3378, 0.1958, -0.0055, 0.334, 0.0347 |
-| ebit_to_total_assets | float64 | 3 | 0.05 | 5600 | 0.0, 0.2044, 0.2314, 0.1438, 0.2443, 0.1442, 0.0322, 0.118, 0.1087, 0.1953 |
-| equity_to_total_assets | float64 | 3 | 0.05 | 5558 | 1.0, 0.4229, 0.5374, 0.3497, 0.2406, 0.7477, 0.6575, 0.3198, 0.6292, 0.8337 |
-| extended_profit_to_total_assets | float64 | 3 | 0.05 | 5609 | 0.0, 0.1482, 0.1341, 0.1426, 0.0931, 0.1668, 0.1647, 0.115, 0.1053, 0.2571 |
-| gross_profit_plus_interest_to_total_assets | float64 | 3 | 0.05 | 5600 | 0.0, 0.2044, 0.2314, 0.1438, 0.2443, 0.1442, 0.0322, 0.118, 0.1087, 0.1953 |
-| gross_profit_to_total_assets | float64 | 3 | 0.05 | 5600 | 0.0, 0.2044, 0.2314, 0.1438, 0.2443, 0.1442, 0.0322, 0.118, 0.1087, 0.1953 |
-| operating_profit_to_total_assets | float64 | 3 | 0.05 | 5096 | 0.0, 0.1437, 0.1706, 0.0353, 0.1637, 0.1396, 0.1445, 0.1033, 0.0355, 0.078 |
-| equity_minus_share_capital_to_total_assets | float64 | 3 | 0.05 | 5609 | 0.7256, 0.0, 0.5942, 0.5262, 0.3994, 0.6417, 0.5013, 0.5189, 0.5469, 0.4653 |
-| log_total_assets | float64 | 3 | 0.05 | 5170 | 4.1709, 4.1917, 4.225, 3.6421, 3.4531, 3.8214, 4.2604, 3.5293, 4.402, 4.1152 |
-| sales_profit_to_total_assets | float64 | 3 | 0.05 | 5593 | 0.0, 0.0126, 0.0, 0.0, 0.1463, 0.1018, 0.136, 0.0425, 0.3297, 0.1745 |
-| total_sales_to_total_assets | float64 | 3 | 0.05 | 5364 | 1.3215, 1.2038, 1.3512, 1.0431, 1.5483, 2.0519, 1.601, 1.5127, 2.0805, 1.1461 |
-| constant_capital_to_total_assets | float64 | 3 | 0.05 | 5522 | 1.0, 0.6994, 0.7477, 0.3497, 0.6602, 0.7472, 0.4965, 0.6142, 0.443, 0.759 |
-| ebitda_to_total_assets | float64 | 3 | 0.05 | 5556 | 0.0, -0.0038, 0.221, 0.1887, 0.0373, 0.0, 0.1501, 0.1195, -0.3741, -0.0708 |
-| short_term_liabilities_to_total_assets | float64 | 3 | 0.05 | 5524 | 0.0, 0.172, 0.2391, 0.2277, 0.7195, 0.3019, 0.3624, 0.1642, 0.2665, 0.3575 |
-| adjusted_liquidity_ratio | float64 | 3 | 0.05 | 5519 | 0.0, 0.3068, 0.1594, 0.1034, 0.1581, 0.1209, 0.3622, 0.1122, 0.1864, 0.1914 |
-| long_term_liabilities_to_equity | float64 | 3 | 0.05 | 3220 | 0.0, 0.0571, 0.0143, 0.1929, 0.2243, 0.0064, 0.0001, 0.1432, 0.1426, 0.0053 |
-| sales_to_total_assets | float64 | 1 | 0.02 | 4782 | 1.0277, 1.0117, 1.0376, 1.0335, 1.0227, 1.0066, 1.0482, 1.0488, 1.081, 1.023 |
-| gross_profit_plus_depreciation_to_sales | float64 | 0 | 0 | 5608 | 0.0, 0.162, 0.0801, 0.1892, 0.009, 0.1082, 0.1099, 0.1744, 0.1537, 0.1043 |
-| gross_profit_to_sales | float64 | 0 | 0 | 5620 | 0.0, 0.1394, 0.0378, 0.0898, 0.1081, 0.0931, 0.0233, 0.0473, 0.0073, 0.0048 |
-| inventory_days_ratio | float64 | 0 | 0 | 5342 | 0.0, 69.508, 100.19, 11.005, 89.545, 44.56, 86.357, 60.958, 64.359, 8.1848 |
-| net_profit_to_sales | float64 | 0 | 0 | 5595 | 0.0, 0.0008, 0.1914, 0.0145, 0.0211, 0.1194, 0.0343, 0.0099, 0.127, -0.0256 |
-| net_liabilities_to_sales | float64 | 0 | 0 | 5572 | 0.2568, 0.2003, 0.6125, 0.2685, 0.2823, 0.61, 0.0, -0.0433, 0.1227, 0.3006 |
-| gross_profit_plus_interest_to_sales | float64 | 0 | 0 | 5643 | 0.0, 0.0173, 0.1128, 0.0738, 0.0371, 0.0086, 0.292, 0.1319, 0.0932, 0.0214 |
-| sales_profit_to_sales | float64 | 0 | 0 | 5597 | 0.0, 0.0, 0.0144, 0.1036, 0.1247, 0.002, 0.0, 0.0486, 0.1398, 0.0213 |
-| operating_profit_to_sales | float64 | 0 | 0 | 5110 | 0.0, -0.1247, 0.0288, 0.0742, 0.049, 0.0, 0.0099, 0.1052, 0.0095, 0.2694 |
-| receivables_plus_inventory_turnover_days | float64 | 0 | 0 | 5299 | 0.0, 111.2, 117.68, 134.82, 105.27, 150.06, 127.19, 105.4, 113.77, 107.27 |
-| receivables_days_ratio | float64 | 0 | 0 | 5560 | 0.0, 54.412, 21.74, 103.3, 50.184, 41.469, 109.6, 67.206, 43.343, 86.386 |
-
-(5 more rows not shown)
+| inventory_turnover_ratio | float64 | 266 | 4.59 | 4262 | 11.26, 11.22, 12.16, 10.3, 13.69, 10.25, 10.76, 15.06, 14.95, 10.34 |
+| working_capital_to_total_assets | float64 | 22 | 0.38 | 4723 | 0.3332, 0.4181, 0.1284, 0.2594, 0.2585, 0.1429, 0.1966, 0.4165, 0.1962, 0.3445 |
+| gross_profit_to_short_term_liabilities | float64 | 22 | 0.38 | 5037 | 0.1044, 0.1339, 0.284, 0.1001, 1.021, 0.1319, 0.1245, 0.1137, 0.2248, 0.202 |
+| working_capital_to_fixed_assets | float64 | 22 | 0.38 | 5067 | 2.099, 1.054, 1.259, 1.04, 1.044, 1.445, 1.094, 1.073, 1.01, 1.367 |
+| liquid_assets_to_short_term_liabilities | float64 | 22 | 0.38 | 4921 | 0.1206, 1.144, 0.1092, 0.1138, 0.1311, 1.208, 1.098, 0.2348, 0.1839, 1.039 |
+| current_assets_minus_inventory_to_short_term_liabilities | float64 | 22 | 0.38 | 4308 | 1.455, 1.21, 1.022, 1.13, 1.385, 1.049, 1.12, 1.358, 1.287, 1.047 |
+| current_assets_to_total_liabilities | float64 | 22 | 0.38 | 4033 | 1.006, 1.058, 1.019, 1.24, 1.155, 1.069, 1.281, 1.073, 1.051, 1.104 |
+| equity_to_fixed_assets | float64 | 22 | 0.38 | 4251 | 1.013, 1.26, 1.011, 1.361, 1.009, 1.018, 1.111, 1.764, 1.216, 1.05 |
+| working_capital_absolute | float64 | 22 | 0.38 | 5089 | 2444.0, 13590.0, 12640.0, 1212.0, 10820.0, 11380.0, 11230.0, 15890.0, 10580.0, … |
+| sales_to_short_term_liabilities | float64 | 22 | 0.38 | 4274 | 10.64, 3.507, 10.54, 11.16, 5.732, 3.996, 12.28, 3.68, 10.7, 10.23 |
+| sales_to_fixed_assets | float64 | 22 | 0.38 | 4623 | 1.523, 2.381, 2.682, 1.255, 1.87, 1.825, 2.136, 2.473, 4.662, 2.452 |
+| current_assets_to_short_term_liabilities | float64 | 21 | 0.36 | 3704 | 1.714, 1.034, 1.285, 1.543, 1.041, 1.02, 1.2, 1.384, 1.252, 1.73 |
+| receivables_turnover_ratio | float64 | 16 | 0.28 | 4345 | 10.15, 10.1, 10.55, 3.936, 5.695, 6.43, 2.85, 7.653, 11.13, 11.09 |
+| book_value_equity_to_total_liabilities | float64 | 12 | 0.21 | 4655 | 1.342, 1.063, 1.132, 1.114, 1.92, 1.085, 1.082, 2.601, 1.253, 1.664 |
+| total_assets_to_total_liabilities | float64 | 12 | 0.21 | 3408 | 1.262, 1.583, 1.184, 1.195, 1.535, 1.225, 1.616, 1.291, 1.338, 1.287 |
+| total_liabilities_to_total_assets | float64 | 3 | 0.05 | 4365 | 0.0, 0.3425, 0.4057, 0.4803, 0.1558, 0.6409, 0.2141, 0.3278, 0.5098, 0.6684 |
+| sales_to_total_assets | float64 | 3 | 0.05 | 3343 | 1.677, 1.226, 1.051, 1.321, 1.178, 1.406, 1.331, 1.513, 1.7, 1.576 |
+| equity_to_total_assets | float64 | 3 | 0.05 | 4387 | 1.0, 0.6575, 0.3316, 0.6722, 0.5943, 0.8442, 0.7223, 0.3591, 0.4902, 0.7859 |
+| gross_profit_to_total_assets | float64 | 3 | 0.05 | 4790 | 0.1087, 0.1178, 0.1139, 0.1344, 0.1622, 0.1033, 0.1323, 0.1442, 0.0, 0.2044 |
+| gross_profit_to_sales | float64 | 3 | 0.05 | 4925 | 0.118, 0.1081, 0.1241, 0.1305, 0.1303, 0.1406, 0.1022, 0.0, 0.0329, 0.0219 |
+| log_total_assets | float64 | 3 | 0.05 | 2648 | 4.174, 4.115, 4.192, 4.402, 4.282, 4.044, 4.609, 4.31, 4.096, 3.8 |
+| net_liabilities_to_sales | float64 | 3 | 0.05 | 4513 | 0.2656, 0.3376, 0.1956, 0.1224, 0.1198, 0.1024, 0.3049, 0.2746, 0.159, 0.1881 |
+| receivables_plus_inventory_turnover_days | float64 | 3 | 0.05 | 3580 | 103.8, 116.5, 105.4, 108.2, 110.2, 101.8, 101.7, 141.7, 100.9, 0.0 |
+| short_term_liabilities_to_total_assets | float64 | 3 | 0.05 | 4186 | 0.0, 0.242, 0.2681, 0.1798, 0.3507, 0.1805, 0.2689, 0.1963, 0.1513, 0.3394 |
+| short_term_liabilities_days_ratio | float64 | 3 | 0.05 | 4258 | 0.0, 107.2, 102.9, 102.6, 111.4, 107.8, 111.1, 103.3, 107.0, 109.0 |
+| inventory_days_ratio | float64 | 0 | 0 | 4307 | 0.0, 39.46, 101.5, 42.02, 110.0, 39.3, 30.02, 21.02, 10.6, 13.84 |
+| receivables_days_ratio | float64 | 0 | 0 | 4357 | 0.0, 36.15, 109.0, 128.1, 138.8, 107.0, 109.6, 60.76, 47.6, 51.35 |
 
 </details>
 
@@ -300,72 +272,37 @@ Default splits.
 ### Numeric features
 
 <details>
-<summary>Show the table (64 rows)</summary>
+<summary>Show the table (27 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| net_profit_to_total_assets | 5787 | -0.0242608 | 6.22719 | -463.89 | 87.459 |
-| total_liabilities_to_total_assets | 5787 | 0.466893 | 5.81048 | -430.87 | 72.416 |
-| working_capital_to_total_assets | 5787 | 0.187873 | 1.18921 | -72.067 | 28.336 |
-| current_assets_to_short_term_liabilities | 5769 | 4.90849 | 92.3709 | -0.40311 | 6845.8 |
-| liquidity_days_ratio | 5779 | 19.5688 | 21751.7 | -1.0764e+06 | 1.2501e+06 |
-| retained_earnings_to_total_assets | 5787 | 0.021568 | 10.0951 | -463.89 | 543.25 |
-| ebit_to_total_assets | 5787 | -0.115911 | 9.1505 | -517.48 | 5.53 |
-| book_value_equity_to_total_liabilities | 5772 | 5.73947 | 103.401 | -3.7351 | 6868.5 |
-| sales_to_total_assets | 5789 | 1.59641 | 1.56171 | -3.496 | 65.607 |
-| equity_to_total_assets | 5787 | 0.544601 | 5.82308 | -71.444 | 339.85 |
-| extended_profit_to_total_assets | 5787 | -0.0121759 | 6.12556 | -463.89 | 6.388 |
-| gross_profit_to_short_term_liabilities | 5769 | 1.06438 | 35.6371 | -231.85 | 2470.3 |
-| gross_profit_plus_depreciation_to_sales | 5790 | 0.359682 | 31.2376 | -310.34 | 2340.2 |
-| gross_profit_plus_interest_to_total_assets | 5787 | -0.115885 | 9.1505 | -517.48 | 5.53 |
-| liabilities_days_ratio | 5784 | 1047.37 | 131468 | -9.6324e+06 | 1.3417e+06 |
-| gross_profit_plus_depreciation_to_total_liabilities | 5772 | 1.16671 | 37.674 | -221.33 | 2837.4 |
-| total_assets_to_total_liabilities | 5772 | 6.83539 | 103.407 | -0.002321 | 6869.5 |
-| gross_profit_to_total_assets | 5787 | -0.106386 | 9.17927 | -517.48 | 55.125 |
-| gross_profit_to_sales | 5790 | -0.0933149 | 5.50097 | -310.8 | 77.244 |
-| inventory_days_ratio | 5790 | 56.8587 | 169.747 | -29.34 | 9928.5 |
-| sales_growth_ratio | 5687 | 2.48732 | 101.608 | -135.15 | 7661.5 |
-| operating_profit_to_total_assets | 5787 | -0.00613102 | 5.69066 | -431.59 | 15.541 |
-| net_profit_to_sales | 5790 | -0.0998856 | 5.47419 | -310.89 | 77.244 |
-| three_year_gross_profit_to_total_assets | 5655 | 0.137464 | 7.4417 | -463.89 | 252.34 |
-| equity_minus_share_capital_to_total_assets | 5787 | 0.371925 | 4.17778 | -71.444 | 266.86 |
-| net_profit_plus_depreciation_to_total_liabilities | 5772 | 1.07115 | 35.7269 | -221.33 | 2689.1 |
-| operating_profit_to_financial_expenses | 5401 | 473.343 | 10331.5 | -158130 | 565940 |
-| working_capital_to_fixed_assets | 5685 | 10.3557 | 305.39 | -1089.7 | 21701 |
-| log_total_assets | 5787 | 4.14316 | 0.834145 | 0.006359 | 9.6983 |
-| net_liabilities_to_sales | 5790 | 0.860296 | 19.274 | -23.06 | 1236.7 |
-| gross_profit_plus_interest_to_sales | 5790 | -0.068556 | 5.31249 | -310.8 | 77.244 |
-| current_liabilities_days_ratio | 5744 | 663.462 | 31237 | -255.1 | 2.3405e+06 |
-| operating_expenses_to_short_term_liabilities | 5769 | 8.39243 | 103.436 | -1.4334 | 7590.5 |
-| operating_expenses_to_total_liabilities | 5772 | 5.06849 | 101.269 | -16.015 | 7590.5 |
-| sales_profit_to_total_assets | 5787 | -0.00952529 | 5.6866 | -431.59 | 15.541 |
-| total_sales_to_total_assets | 5787 | 2.06172 | 12.9068 | 0.000191 | 965.66 |
-| current_assets_minus_inventories_to_long_term_liabilities | 3288 | 116.036 | 1614.86 | -4.3258 | 67922 |
-| constant_capital_to_total_assets | 5787 | 0.652346 | 7.18838 | -71.444 | 467.77 |
-| sales_profit_to_sales | 5790 | 0.0160323 | 0.716849 | -47.047 | 2.9011 |
-| liquid_assets_to_short_term_liabilities | 5769 | 2.20936 | 58.3013 | -9.0686 | 4303.2 |
-| liabilities_to_adjusted_operating_profit | 5706 | 2.2314 | 83.9557 | -269.99 | 5043.3 |
-| operating_profit_to_sales | 5790 | -0.0165171 | 2.46243 | -143.52 | 40.386 |
-| receivables_plus_inventory_turnover_days | 5790 | 156.204 | 790.635 | -3975.6 | 40515 |
-| receivables_days_ratio | 5790 | 99.3457 | 727.227 | -3946.2 | 40515 |
-| net_profit_to_inventory | 5526 | 68.023 | 4924.28 | -3037.3 | 366030 |
-| current_assets_minus_inventory_to_short_term_liabilities | 5769 | 4.02159 | 92.215 | -9.049 | 6845.8 |
-| inventory_days_cost_ratio | 5755 | 137.702 | 3310.27 | -18.658 | 185610 |
-| ebitda_to_total_assets | 5787 | -0.0920815 | 7.15166 | -542.56 | 15.541 |
-| ebitda_to_sales | 5790 | -0.072699 | 2.4815 | -144.8 | 16.866 |
-| current_assets_to_total_liabilities | 5772 | 4.17693 | 91.8771 | -0.012175 | 6845.8 |
-| short_term_liabilities_to_total_assets | 5787 | 0.428809 | 1.1026 | -0.18661 | 72.416 |
-| short_term_liabilities_days_cost_ratio | 5754 | 0.737896 | 12.9904 | -0.69764 | 666.11 |
-| equity_to_fixed_assets | 5685 | 11.3243 | 317.637 | -1088.7 | 21702 |
-| constant_capital_to_fixed_assets | 5685 | 12.2522 | 323.889 | -1088.7 | 21702 |
-| working_capital_absolute | 5790 | 10655 | 79955.4 | -1.1185e+06 | 4.2122e+06 |
-| gross_margin | 5790 | 0.0555606 | 0.704598 | -46.788 | 1.651 |
-| adjusted_liquidity_ratio | 5787 | -0.268223 | 18.6145 | -1236.3 | 87.981 |
-| total_costs_to_total_sales | 5790 | 0.958268 | 0.865608 | -0.16439 | 47.788 |
-| long_term_liabilities_to_equity | 5787 | 0.269451 | 5.88505 | -184.98 | 308.15 |
-| inventory_turnover_ratio | 5526 | 929.801 | 64824.5 | -12.44 | 4.8187e+06 |
-
-(4 more rows not shown)
+| total_liabilities_to_total_assets | 5787 | 0.4554 | 5.82288 | -338.8 | 72.44 |
+| working_capital_to_total_assets | 5768 | 0.178302 | 1.10788 | -72.07 | 0.9993 |
+| current_assets_to_short_term_liabilities | 5769 | 4.90852 | 92.3736 | -0.4031 | 6846 |
+| book_value_equity_to_total_liabilities | 5778 | 5.45365 | 101.048 | -1.32 | 6666 |
+| sales_to_total_assets | 5787 | 1.99767 | 12.3286 | -3.496 | 931.3 |
+| equity_to_total_assets | 5787 | 0.5446 | 5.82288 | -71.44 | 339.8 |
+| gross_profit_to_short_term_liabilities | 5768 | 1.08266 | 35.5847 | -231.9 | 2463 |
+| total_assets_to_total_liabilities | 5778 | 6.45366 | 101.048 | -0.3196 | 6667 |
+| gross_profit_to_total_assets | 5787 | -0.106391 | 9.17955 | -517.5 | 55.12 |
+| gross_profit_to_sales | 5787 | -0.0865382 | 5.52854 | -310.8 | 77.24 |
+| inventory_days_ratio | 5790 | 56.8584 | 169.739 | -29.34 | 9928 |
+| working_capital_to_fixed_assets | 5768 | 615.139 | 80898.9 | -2.155e+06 | 4.583e+06 |
+| log_total_assets | 5787 | 4.14316 | 0.834143 | 0.006359 | 9.698 |
+| net_liabilities_to_sales | 5787 | 0.900401 | 19.509 | -22.93 | 1237 |
+| liquid_assets_to_short_term_liabilities | 5768 | 2.21131 | 58.4062 | -9.069 | 4311 |
+| receivables_plus_inventory_turnover_days | 5787 | 155.717 | 789.839 | -3976 | 40520 |
+| receivables_days_ratio | 5790 | 99.3459 | 727.254 | -3946 | 40520 |
+| current_assets_minus_inventory_to_short_term_liabilities | 5768 | 4.04943 | 92.2722 | -9.049 | 6846 |
+| current_assets_to_total_liabilities | 5768 | 3.96889 | 89.5353 | -0.01548 | 6663 |
+| short_term_liabilities_to_total_assets | 5787 | 0.428809 | 1.10263 | -0.1866 | 72.42 |
+| equity_to_fixed_assets | 5768 | 2157.49 | 148670 | -2.155e+06 | 9.934e+06 |
+| working_capital_absolute | 5768 | 54232 | 2.90816e+06 | -1.119e+06 | 2.202e+08 |
+| inventory_turnover_ratio | 5524 | 928.662 | 64625.1 | -12.44 | 4.803e+06 |
+| receivables_turnover_ratio | 5774 | 11.1144 | 42.5519 | -0.09249 | 1309 |
+| short_term_liabilities_days_ratio | 5787 | 240.97 | 6278.8 | -236.5 | 451400 |
+| sales_to_short_term_liabilities | 5768 | 9.12874 | 103.834 | -1.543 | 7619 |
+| sales_to_fixed_assets | 5768 | -4107.43 | 185865 | -8.736e+06 | 4.386e+06 |
 
 </details>
 
@@ -387,4 +324,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6a225e613d9560724efa97427e56db6c585b00dea9f9e31a3bb3a67c63aa0fff` |
+| stale | yes: the definition now gives checksum `v2:f2e3c075809e426e4614d23e835e1d6aba1c24cae61e2d13191e9096730314c1` |

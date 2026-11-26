@@ -8,7 +8,9 @@ data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
 - BeyondArena
-suggestion: 'Yes'
+suggestion: No (Retired)
+decision_markers:
+- Class-dependent Recording
 tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
@@ -24,7 +26,6 @@ source_links:
 - https://www.openml.org/search?type=data&id=45648
 - https://doi.org/10.24432/C53P5M
 notebook_path: datasets/beyond_iid/old_iid/mic/mic.ipynb
-v2_path: datasets/_dev/tabarena-v0pt2/mic/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -69,11 +70,18 @@ CC (2026-11-17, Andrej): the declared split (random, 10x3 folds, `ForcedIIDFromT
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Care drifts measurably within the file and has changed since; both are facts against.
 
+CC (2026-11-26, Andrej): Review issue 5, C (gusto_i_mi_mortality's issue 2: "Option B: In place of mic."): `gusto_i_mi_mortality` carries death after a heart attack in mic's place: the GUSTO-I trial's 40,826 patients from 15 countries (death by day 30, held out by whole region, log loss), 24 times mic's 1,700, with no blank pattern that follows the outcome; mic's multiclass outcome (causes of death and complications) leaves the benchmark with it. Issue 9 closes with it (its C).
+
+CC (2026-11-26, Andrej): verdict dont; issue 6: "No (Retired) with the Class-dependent Recording marker." (on the answer of 2026-11-10, option A). Applied:
+- `No (Retired)` with `Class-dependent Recording`: the blanks follow the outcome through how the file was put together (deaths filed as one block); blanks alone predict death at ROC AUC 0.78, still 0.74 after dropping the 60 patients with a blank history, and no remedy short of cutting the task to 35 columns (death AUC 0.75) removes them;
+- the replacement is `gusto_i_mi_mortality` (CC line above);
+- the folder leaves the working copy and `v2_path` is cleared; the definition stays in the git history.
+
 ## Review
 
-**Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below (issue 1, A, 2026-11-18).
+**Outcome:** added, then retired on 2026-11-26 (verdict dont) as `Class-dependent Recording` (issue 6, A): the blanks follow death through how the file was filed, and no remedy short of cutting the task removes them; `gusto_i_mi_mortality` carries death after a heart attack in its place (issue 5, C); the folder removed. As added: stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below (issue 1, A, 2026-11-18).
 
-**Main points:** The BeyondArena v0.2 review's issues are in this review from 2026-11-25 as 6, 7, 8, 9; the parked ones are open again. Better-data check (2026-11-25, issue 5): Add GUSTO-I (gusto_i_mi_mortality) next to mic and let issue 6 decide mic on its own data: GUSTO-I is the clean, 24-times-larger death task, but it does not separate methods (LightGBM 0.826 against logistic regression 0.826 ROC AUC, splines best on 15 of 15 folds), so it cannot stand in for mic's multiclass task. Earlier: `ForcedIIDFromTemporal` stays (issue 1, A, 2026-11-18). Nothing is left open.
+**Main points:** Nothing open. Retired (2026-11-26, verdict dont) with `Class-dependent Recording` (issue 6, A): the blank fields follow the outcome through how the file was put together (blanks alone give death ROC AUC 0.78, 0.74 after dropping the 60 patients with a blank history), and every remedy tested either leaves the signal or cuts the task to 35 columns. `gusto_i_mi_mortality` (40,826 GUSTO-I patients, death by day 30, held out by region) carries the death task in mic's place (issue 5, C, with gusto's issue 2, B; issue 9 closes with it); mic's multiclass outcome leaves the benchmark. Earlier: `ForcedIIDFromTemporal` stays (issue 1, A, 2026-11-18); random split forced from temporal (issues 7 and 8, 2026-11-10).
 
 **Issues for Andrej:**
 
@@ -167,6 +175,10 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
    **Notes for the AI:** on B or C: move gusto_i_mi_mortality to Yes with a CC (<date>, Andrej): line and Andrej in checked_by; add https://hbiostat.org/data/repo/gusto.rda and the hbiostat permission text (https://hbiostat.org/data) to source_links and the record; /add-dataset from that file: target `day30`; drop `tpa` (blank for the SK+tPA arm, redundant with `tx`) and keep `tx` (randomised, known at admission); `sho`, `hig`, `dia`, `hyp`, `hrt`, `ttr` are derived flags of the paper's model (check against Lee et al. before keeping them next to their sources); 4 duplicate rows; split random or grouped by `regl` (16 regions; site group `grps` gave the same scores); note 40,830 of 41,021 enrolled; tags Samples: Over Time, Time: Lost, Clinical Study; the thrombolysis-era cohort as an Outdated question for the reviewer. On C also retire mic through issue 6 (record No (Retired), Class-dependent Recording, CC line, folder removed, CHANGELOG). On D, issue 6's retirement only. On A, nothing here. Evidence: the run's evidence folder (scripts/gusto_spread.py, scripts/mic_spread.py, spread_1411436.log, mic_spread.out, gusto.csv read from dl_gusto/gusto.rda); earlier: the run's evidence folder, the run's evidence folder Sources: Lee et al. 1995 https://doi.org/10.1161/01.cir.91.6.1659.
 
    [^better]: Selection pattern "Small or dated, and the task is still done today" with PROV-4 (Must): a better dataset from another source is its own record, not a duplicate, and the old one keeps the verdict its own data earn until the curator decides.
+
+   **Andrej (2026-11-26, change):** on gusto_i_mi_mortality's issue 2: "Option B: In place of mic."
+
+   **Resolved (2026-11-26, Andrej):** C: `gusto_i_mi_mortality` ships in mic's place (its issue 2, B; verdict ship), and mic is retired through issue 6 (`No (Retired)`, `Class-dependent Recording`, folder removed). The causes of death and complications leave the benchmark with mic.
 
 6. **Drop the 60 patients whose medical history is blank, 90% of them dead?**
 
@@ -413,6 +425,10 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
 
    **Note (AI, 2026-11-25):** the BeyondArena v0.2 review's issue 1, parked there on 2026-11-11 and never written into this record; it is kept here under its new number.
 
+   **Andrej (2026-11-26, verdict dont):** No (Retired) with the Class-dependent Recording marker.
+
+   **Resolved (2026-11-26, Andrej):** A, retire: `No (Retired)` with `Class-dependent Recording`; the folder is removed and `v2_path` cleared. The record had no claim to release.
+
 7. **Keep random splits, or split by time?**
 
    * **Problem:**
@@ -589,6 +605,8 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
    **Deferred (2026-11-11):** parked on Andrej's note ("Park this until we decide whether we use another dataset for this task").
 
    **Note (AI, 2026-11-25):** the question moved to issue 5 of this review, which restates it with the candidates checked on their files on 2026-11-25; this issue stays parked and that one carries the decision.
+
+   **Resolved (2026-11-26, Andrej):** C, through issue 5: `gusto_i_mi_mortality` is built and ships as mic's replacement, and mic is retired in issue 6.
 
 ## Reference
 

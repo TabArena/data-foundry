@@ -3,13 +3,14 @@ unique_name: web_page_phishing_detection
 name: Web page phishing detection (Hannousse and Yahiouche)
 checked_by:
 - AI (UNVERIFIED)
+- Andrej
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Andrej
-suggestion: TBD -> Yes
-priority: 2
+suggestion: 'No'
 decision_markers:
 - Selection Bias
+- Class-dependent Recording
 tags:
 - AI-Filled (Verify)
 - Database Snapshot
@@ -29,7 +30,6 @@ source_links:
 - https://doi.org/10.1016/j.engappai.2021.104347
 - https://data.mendeley.com/datasets/c2gw7fy2j4/3
 - https://arxiv.org/abs/2010.12847
-v2_path: datasets/_dev/tabarena-v0pt2/web_page_phishing_detection/dataset.py
 needs_review:
 - ai_unverified
 type_adapter_id: curation-record-v1
@@ -72,11 +72,17 @@ type_adapter_id: curation-record-v1
 - Why: Same task as website_phishing: a site labelled phishing or legitimate from URL, page and third-party signals; the old record's nine signals (SFH, pop-ups, SSL, request and anchor URLs, web traffic, URL length, domain age, IP address) are features of the same kinds
 - Adds: About 9x the sites (11,430 vs about 1,250 binary rows), raw feature values instead of the donors' 3-level codes, newer pages, URLs and scripts to recompute. Caveat: phishing and legitimate pages come from separate lists and are balanced by design; PhiUSIIL was rejected for this kind of class-wise collection (Data ...
 
+CC (2026-11-26, Andrej): verdict dont: "Retire as No, with the markers Selection Bias and Class-dependent Recording". It never shipped, so `No`, with two markers:
+- `Selection Bias` (already on the record): the legitimate side is Alexa's top 500 domains and an older Yandex list (Sahingoz et al., collected before 2019), not the pages a filter meets;
+- `Class-dependent Recording`: the phishing pages were read after their report (the crawl ran in late July to early August 2020), so the takedown pages are nearly all phishing (482 of the 493 the templates locate) and, on the phishing pages whose state can be traced, the status look-ups move with the report (`page_rank` 0 on 59% of the pages crawled after their takedown against 29% of the live ones; `google_index` 1 on 0.98 against 0.88);
+- `phreshphish_phishing_pages` carries the phishing task (verdict ship 2026-11-26): 348,287 dated web pages of 2024 and 2025, held out in forward four-week windows;
+- Review issues 1 to 4 are moot; the folder leaves the working copy and `v2_path` is cleared; the definition stays in the git history.
+
 ## Review
 
-**Outcome:** added; the AI recommends shipping it after the changes of issues 1 and 2. 11,430 web pages of Hannousse and Yahiouche's Mendeley release (dataset B), half phishing from the PhishTank and OpenPhish lists, half legitimate from Alexa's top 500 domains and an older Yandex list; 81 features read off the URL, the page's HTML and seven look-ups (WHOIS, domain age, Alexa rank, DNS, Google index, Open PageRank); target `is_phishing`, ROC AUC as the fallback, since the paper reports accuracy and macro F1 side by side. Split: a forced split grouped by registered domain (6,634 domains, 3 repeats of 3 folds), since the release keeps no date. Validity: no URL or format shortcut (best fixed URL rule 0.78, format-only model 0.899 reads page content), no exploit beyond noise, and no look-up tells the two legitimate lists apart (ROC AUC 0.50 to 0.52); but the pages and look-ups were read in late July to early August 2020, after the phishing reports, on the phishing pages whose state can be traced the status look-ups move with that state, and 12 to 16% of the phishing pages of dataset A were crawled as takedown pages. Value: real signal, near the ceiling (untuned 0.981 to 0.989 ROC AUC with all features, 0.982 under issue 1's fix), and the benchmark's only phishing task once `website_phishing` retires. Applied without a decision: the collection dates, the group sizes, the meanings of the look-up codes and feature names, shares over an empty set as missing values, the number-format test and the takedown and hosting-platform pages in the notes, and the operating point in the metric reason. `dataset check`: 0 errors, 3 warnings (proposed for acceptance, not accepted).
+**Outcome:** added, then retired before shipping on 2026-11-26 (verdict dont): `No`, with `Selection Bias` and `Class-dependent Recording` (the legitimate side from Alexa's top domains and an older Yandex list; the phishing pages read after their report); `phreshphish_phishing_pages` carries the phishing task; the folder removed. As added, the AI recommended shipping it after the changes of issues 1 and 2. 11,430 web pages of Hannousse and Yahiouche's Mendeley release (dataset B), half phishing from the PhishTank and OpenPhish lists, half legitimate from Alexa's top 500 domains and an older Yandex list; 81 features read off the URL, the page's HTML and seven look-ups (WHOIS, domain age, Alexa rank, DNS, Google index, Open PageRank); target `is_phishing`, ROC AUC as the fallback, since the paper reports accuracy and macro F1 side by side. Split: a forced split grouped by registered domain (6,634 domains, 3 repeats of 3 folds), since the release keeps no date. Validity: no URL or format shortcut (best fixed URL rule 0.78, format-only model 0.899 reads page content), no exploit beyond noise, and no look-up tells the two legitimate lists apart (ROC AUC 0.50 to 0.52); but the pages and look-ups were read in late July to early August 2020, after the phishing reports, on the phishing pages whose state can be traced the status look-ups move with that state, and 12 to 16% of the phishing pages of dataset A were crawled as takedown pages. Value: real signal, near the ceiling (untuned 0.981 to 0.989 ROC AUC with all features, 0.982 under issue 1's fix), and the benchmark's only phishing task once `website_phishing` retires. Applied without a decision: the collection dates, the group sizes, the meanings of the look-up codes and feature names, shares over an empty set as missing values, the number-format test and the takedown and hosting-platform pages in the notes, and the operating point in the metric reason. `dataset check`: 0 errors, 3 warnings (proposed for acceptance, not accepted).
 
-**Main points:** Drop the five status look-ups and `statistical_report` (issue 1), drop the 493 takedown pages (issue 2), accept the untested time risk of the forced split (issue 3), keep grouping hosting platforms by registered domain (issue 4); the verdict also answers option B of `website_phishing`'s replacement item, still open.
+**Main points:** Nothing open. Retired before shipping (2026-11-26, verdict dont): `No` with `Selection Bias` (legitimate pages from Alexa's top 500 domains and an older Yandex list) and `Class-dependent Recording` (the phishing pages were read after their report: 482 of the 493 takedown pages are phishing, and the status look-ups move with the report). `phreshphish_phishing_pages` carries the phishing task. Issues 1 to 4 are moot. It also decides `website_phishing`'s issue 5 (this dataset as its replacement): not taken.
 
 **Record judgment:** the panel's judgment record (mediator):
 
@@ -157,6 +163,8 @@ For the curator: issues 1-4 (the look-ups, the takedown rows, the forced-split r
    [^l10]: **LEAK-10** (Must), the second of its three clauses, each a case-by-case judgment of the curator (amended 2026-10-26 and 2026-11-08, Lennart): "A value read at a later pull goes where its late cells can be located: they are blanked (zillow_prize, melbourne_housing_market, aeolus_1m's weather after departure); where they cannot be located row by row, the values go when they may carry a gain (distribution_transformers_at_cauca_department) and stay with a note only when the part that can be traced shows none (onlinenewspopularity's keyword and self-reference counts, 'go with (a)')."
    [^l11]: **LEAK-11** (Should; narrows LEAK-10): "A value measured after the outcome that weakens the signal stays, with a note."
 
+   **Resolved (2026-11-26, Andrej):** moot: the dataset is retired (verdict dont).
+
 2. **Drop the 493 pages that were crawled after their takedown?**
 
    - **Problem:**
@@ -197,6 +205,8 @@ For the curator: issues 1-4 (the look-ups, the takedown rows, the forced-split r
    [^l10b]: **LEAK-10** (Must): late cells of a later pull that can be located are blanked; among what the rule keeps out is "missingness that encodes the outcome".
    [^u7]: **USE-7** (Must): "A row that lacks the input the prediction acts on is no task row: drop it rather than keep it as missing." A takedown page lacks the page a filter rates.
 
+   **Resolved (2026-11-26, Andrej):** moot: the dataset is retired (verdict dont).
+
 3. **Accept that the forced split cannot test the step forward in time?**
 
    - **Problem:**
@@ -229,6 +239,8 @@ For the curator: issues 1-4 (the look-ups, the takedown rows, the forced-split r
 
    [^s8]: **SPLIT-8** (Must): a task temporal by its use case whose release cannot give the windows ships in the closest regime that keeps the rows, tagged as forced from temporal. **SPLIT-32** and **SPLIT-36** (Should): the split tree's risk question for a forced split is a person's to answer; the agent answers no.
 
+   **Resolved (2026-11-26, Andrej):** moot: the dataset is retired (verdict dont).
+
 4. **Keep hosting platforms as one group each?**
 
    - **Problem:**
@@ -259,6 +271,8 @@ For the curator: issues 1-4 (the look-ups, the takedown rows, the forced-split r
    **Notes for the AI:** B or C: regenerate `registered_domains.csv` (host to group) with tldextract 5.4.0 (`include_psl_private_domains=True` for C; the host itself for B), update the `REGISTERED_DOMAINS` docstring, `grouping.definition`, the group bullet of the notes and the decision table, and re-run `dataset check`, the group and hidden-group probes.
 
    [^g24]: **LEAK-17** (Must): repeated entities in different rows leak the target across the split even when the rows differ, so group. **SPLIT-24** (Must): group on a true group id or one constructed from the data.
+
+   **Resolved (2026-11-26, Andrej):** moot: the dataset is retired (verdict dont).
 
 **Review panel:** ship after changes (mediator). Full tier: claim, column and split auditors, domain practitioner, blind reviewer, task gamer, precedent checker, advocate and critic with one rebuttal each, mediator. Claim audit: 17 claims, 12 hold, 4 refuted (the takedown pages, the group sizes, two code meanings; the text is fixed, the takedown pages are issue 2), 1 untested (the lag after each report). Blind review: include with changes; main concerns the popular legitimate class and the ceiling. Task gamer: nothing beyond noise. Debate: agreed on the text and cleaning fixes, the split, the metric and, after the mediator's experiment, dropping the takedown rows (issue 2); disputed: keeping the look-ups with a note, settled for dropping when the advocate conceded (issue 1); the time risk is left for a person (issue 3).
 

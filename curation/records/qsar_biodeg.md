@@ -10,8 +10,9 @@ data_foundry_status:
 - BeyondArena
 - WIP (DF)
 claimed_by: Andrej
-suggestion: 'Yes'
-priority: 2
+suggestion: No (Retired)
+decision_markers:
+- Duplicate
 tags:
 - Non-IID (Grouped)
 - 'Samples: Over Time'
@@ -28,7 +29,6 @@ source_links:
 - https://www.openml.org/search?type=data&id=1494
 - https://doi.org/10.24432/C5H60M
 notebook_path: datasets/beyond_iid/old_iid/qsar_biodeg/qsar_biodeg.ipynb
-v2_path: datasets/_dev/tabarena-v0pt2/qsar_biodeg/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -89,15 +89,35 @@ CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of no prototype tag (2
 
 CC (2026-11-17, Andrej): the declared split (grouped on `scaffold`, 10x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-26, Andrej): verdict dont: "retire, replaced by ready_biodegradability_huang_zhang. Huang-Zhang
+contains 1,011 of its 1,055 chemicals and gives 976 of them the same class. It has 5.8× the chemistry and separates
+methods three times as far. " Applied (Review issue 5, C), which is the condition the decision of 2026-11-12 set
+(issue 1, B: measure the overlap when the larger set is added "and retire this one if the larger set holds most of
+its chemicals with the same class"):
+- `No (Retired)` with the marker `Duplicate`, on the curator's reading that each set is a cut of the same underlying
+  registry data as the other (PROV-6);
+- the replacement is `ready_biodegradability_huang_zhang`, added and accepted: the same question, whether a chemical
+  is readily biodegradable in an OECD screening test, on 6,139 chemicals against these 1,055 and 1,308 Bemis-Murcko
+  scaffolds against 209, with the same single feature (the structure as a SMILES), the same scaffold-grouped split
+  and the same `roc_auc` fallback. Measured on 2026-11-25: it holds 1,011 of these 1,055 chemicals (95.8%, matched on
+  canonical SMILES or CAS-RN) and gives 976 of them the same class; untuned LightGBM beats a linear model on it by
+  0.076 ROC AUC (0.890 against 0.814) against 0.025 here (0.935 against 0.911), and a model trained on its other
+  5,183 chemicals scores 0.938 on these 1,055, as high as one trained here under this dataset's own split;
+- the folder leaves the TabArena v0.2 working copy and `v2_path` is cleared; the definition stays in the git history.
+
 ## Review
 
-**Outcome:** added. Ready biodegradability of 1,055 chemicals from the Japanese NITE/MITI database, curated by
+**Outcome:** added, then retired on 2026-11-26 (verdict dont, issue 5, C): replaced by
+`ready_biodegradability_huang_zhang`, the same question on 6,139 chemicals against these 1,055, which holds 1,011 of
+them (95.8%) with 976 at the same class and separates methods three times as far; marker `Duplicate`, the folder
+removed. As added: ready biodegradability of 1,055 chemicals from the Japanese NITE/MITI database, curated by
 Mansouri et al. (2013, J. Chem. Inf. Model. 53(4):867-878, https://doi.org/10.1021/ci4000213): whether a chemical
 reaches 60% of its biochemical oxygen demand in the OECD 301C test (33.7% do). Since 2026-11-01 the structure ships as a
 SMILES from the paper's supporting information (the same rows in the same order, linked without a key) in place of
-the authors' 41 Dragon descriptors; since 2026-11-11 the split is by the year of the MITI test (four windows,
-1,050 chemicals dated through NITE), in place of the scaffold-grouped split (issue 2); the metric is the ROC AUC
-fallback. The AI recommends shipping it. Reviewed on 2026-11-04 without a panel, from the gathered
+the authors' 41 Dragon descriptors; whole chemical series are held out on the Bemis-Murcko scaffold (209 groups), the
+split the source's scope asks for, restored on 2026-11-12 after the split by the year of the MITI test that had
+replaced it the day before (issues 2 and 4); the metric is the ROC AUC fallback.
+Reviewed on 2026-11-04 without a panel, from the gathered
 evidence (the record, Andrej's review of 2026-10-15, the CHANGELOG, model runs on the shipped data and on
 TabArena v0.1's copy); Andrej disputes Lennart's `Yes` (issue 1). Validity: a measured outcome of a standard test and a
 regulator's screening question; the leak, separation and duplicate objections of 2026-10-15 failed when tested, and the
@@ -109,8 +129,13 @@ no licence (Lennart, 2026-11-02: noted, not blocking; to regularise before shipp
 regulator's real screening task with the structures +, held-out series +, labels cleaned of ambiguous chemicals -, a
 six-times larger set for the same question screened -.
 
-**Main points:** Better-data check (2026-11-25, issue 5): Keep qsar_biodeg until ready_biodegradability_huang_zhang is added, then retire it as replaced: matched on canonical SMILES or CAS-RN, the 6,139-chemical set holds 1,011 of these 1,055 chemicals (95.8%) and gives 976 of them the same class, which is the condition the decision of 2026-11-12 set for retiring this one, and it carries the same question on 5.8 times the chemistry while separating methods three times as far (untuned LightGBM over a linear model +0.076 ROC AUC against +0.025 here). Earlier: Settled 2026-11-12: kept, the pair with `ready_biodegradability_huang_zhang` settled when that set
-is added (issue 1, B); whole chemical series are held out again, on the source's scope (issue 4, replacing the split
+**Main points:** Nothing open. Retired (2026-11-26, verdict dont, issue 5, C) as replaced by
+`ready_biodegradability_huang_zhang`, which is added and accepted: matched on canonical SMILES or CAS-RN, that
+6,139-chemical set holds 1,011 of these 1,055 chemicals (95.8%) and gives 976 of them the same class, which is the
+condition the decision of 2026-11-12 set for retiring this one (issue 1, B), and it carries the same question on 5.8
+times the chemistry while separating methods three times as far (untuned LightGBM over a linear model +0.076 ROC AUC
+against +0.025 here); marker `Duplicate`, the folder removed. Settled before, on 2026-11-12: kept until that set was
+added (issue 1, B); whole chemical series are held out again, on the source's scope (issue 4, replacing the split
 by test year of issue 2), so the time-column question (issue 3) is moot. Time basis `UnseenGroup` since 2026-11-13.
 
 **Record judgment:** valid. The record carries the v0.2 changes (CC and Assessment of 2026-11-01 and 2026-11-02);
@@ -458,6 +483,22 @@ Andrej's dispute of 2026-10-15 is not on the record.
    [^better]: selection.md, pattern "Small or dated, and the task is still done today": a larger or newer public dataset with the same target and use case, and features of the same kind, is its own record and not a `Duplicate`; the old record is not rejected automatically and keeps the verdict its own data earn until the curator decides. PROV-4 (Must): two records are duplicates only when they end at the same original source - this one ends at NITE/MITI through Mansouri et al., the candidate at REACH dossiers and the literature, so on C this record retires as replaced, not as a `Duplicate`. PROV-6 (Must): versions or cuts of one underlying dataset are duplicates when neither adds a distinct task, which is why Körner's curated files are a choice inside the candidate's record rather than records of their own.
    [^valid]: TP-6 (Must): keep two questions apart, is the task valid and is it the best version; a valid task stays until the better version is actually there.
    [^smiles]: CLEAN-24 (Should, as amended): a molecule's structure ships as a SMILES column marked as a structure, never pre-encoded; the recommended encoding is RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts. SPLIT-31 (Should, as amended): a molecule dataset whose rows carry exact structures groups on the Bemis-Murcko scaffold, since a new chemical under assessment often comes from a series not yet measured.
+
+   **Andrej (2026-11-26, verdict dont):** retire, replaced by ready_biodegradability_huang_zhang. Huang-Zhang contains
+   1,011 of its 1,055 chemicals and gives 976 of them the same class. It has 5.8× the chemistry and separates methods
+   three times as far.
+
+   **Resolved (2026-11-26, Andrej):** C, its condition met: `ready_biodegradability_huang_zhang` is added and
+   accepted, and the measurement the decision of 2026-11-12 asked for (issue 1, B) came out as that decision's
+   condition named it - the larger set holds 1,011 of these 1,055 chemicals (95.8% on canonical SMILES or CAS-RN) and
+   gives 976 of them the same class. So this dataset is retired as replaced: `suggestion: No (Retired)`, marker
+   `Duplicate` (the curator's reading that each set is a cut of the same underlying registry data as the other,
+   PROV-6, where this issue's footnote had read PROV-4 the other way), priority removed, the folder removed from the
+   working copy and `v2_path` cleared; `data_foundry_status`, the claim and this review stay. The replacement carries
+   the same question, use case, single feature (the structure as a SMILES), scaffold-grouped split and `roc_auc`
+   fallback on 6,139 chemicals and 1,308 scaffolds against 1,055 and 209, keeps the ambiguous chemicals Mansouri's
+   curation removed, and separates methods three times as far (untuned LightGBM over a linear model +0.076 ROC AUC
+   against +0.025 here); a model trained on its other 5,183 chemicals already scores 0.938 on these 1,055.
 
 ## Reference
 

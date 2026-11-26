@@ -90,13 +90,15 @@ CC (2026-11-25, Andrej): the declared metric (log loss, from context; the case s
 
 CC (2026-11-26, Andrej): the declared split (whole regions in one round of 8-fold grouped cross-validation, two of the 16 regions per test fold) is checked, as implemented.
 
-CC (2026-11-26, Andrej): verdict ship. Open in the review: issue 2, whether the dataset joins next to `mic` or takes its place (one call with `mic`'s issue 5); the verdict leaves out only issue 2's option C. The build is stale until rebuilt.
+CC (2026-11-26, Andrej): verdict ship. Open in the review: issue 2, whether the dataset joins next to `mic` or takes its place (one call with `mic`'s issue 5); the verdict leaves out only issue 2's option C. The build is stale until rebuilt. Issue 2 was decided the same day (B, in place of `mic`; CC line below), so nothing stays open in the review.
+
+CC (2026-11-26, Andrej): review issue 2, B: "Option B: In place of mic." This dataset ships in `mic`'s place: one heart-attack death task, the GUSTO-I trial's 40,826 patients from 15 countries, against mic's 1,700 Krasnoyarsk patients whose blank fields follow the outcome. `mic` is retired the same day (`No (Retired)`, `Class-dependent Recording`, its issues 5, C, and 6, A), and its multiclass outcome (causes of death and complications) leaves the benchmark. The suggestion stays `Yes` (verdict ship).
 
 **Assessment (AI, 2026-11-25):** issue 3 (b) applied. `dataset.py`: `Metric.from_context("log_loss", ...)` replaces the roc_auc fallback; the reason quotes the case study's sentence on the c statistic, names the c statistic as the original, and gives the absolute-risk decision and the regions' death rates (5.3% to 8.4%); the probe note gives the log-loss figures. Check: 0 errors, 0 warnings (2 accepted), 3 info; metric `log_loss` (origin context). Task probe on the 8 region folds, log loss: linear 0.2006, random forest 0.2039, LightGBM 0.2044, age alone 0.2322, class shares 0.2547 (linear beats the class shares on every split, by 21.2% of their loss); no flag. heart_disease changed in the same round (its own record).
 
 ## Review
 
-**Outcome:** added. The GUSTO-I trial's 40,826 patients with an ST-elevation heart attack, death by day 30 from what is known at presentation, held out by whole region (16 regions, two per test fold in one round of 8 folds, Andrej 2026-11-25); the review panel recommends shipping after changes, which are applied; the three ages of 108 to 110 stay with a note, and the task is scored by log loss (Andrej). Judgment record:
+**Outcome:** added; the curator's verdict is ship (2026-11-26), in place of `mic` (issue 2, B), nothing open. The GUSTO-I trial's 40,826 patients with an ST-elevation heart attack, death by day 30 from what is known at presentation, held out by whole region (16 regions, two per test fold in one round of 8 folds, Andrej 2026-11-25); the review panel recommends shipping after changes, which are applied; the three ages of 108 to 110 stay with a note, and the task is scored by log loss (Andrej). Judgment record:
 
 ```text
 Verdict: ship after changes (applied).
@@ -114,11 +116,11 @@ Value: tuned methods separate (+0.003 to +0.004 ROC AUC over a plain logistic re
 Quality: the five flags of the source's simplified models kept as released (none is an exact copy); 7 impossible
   pulse and pressure values set to missing.
 Weighed: size +, source +, era -, small spread -.
-Decided: issue 1 (1 x 8 folds), issue 3 (log loss, from context, with heart_disease), issue 4 (ages kept). Open:
-  issue 2 (next to mic or in its place).
+Decided: issue 1 (1 x 8 folds), issue 3 (log loss, from context, with heart_disease), issue 4 (ages kept),
+  issue 2 (in place of mic, which is retired). Verdict ship (2026-11-26). Nothing open.
 ```
 
-**Main points:** Andrej chose one round of 8 folds of 2 regions (issue 1) and kept the three ages of 108 to 110 with a note (issue 4), and chose log loss from context for this dataset and heart_disease together (issue 3: the source scores calibration next to the c statistic and argues the c statistic misses it; heart_disease's source scored calibration and accuracy, never ROC AUC). Verdict ship and the split checked (2026-11-26). One call stays open, not a validity question: whether the dataset joins next to `mic` or replaces it (one call with `mic`'s issue 5). Applied without a decision: `height` dropped (its fills leak the outcome), the five flags kept as released (the builder had dropped them), impossible pulse and pressure values set to missing, `groups_test_groups_few` accepted with its reason, and the wording of the use case, fit and split. The record now carries `Outdated` and `Class-dependent Recording` (the height fills), both for the curator to confirm.
+**Main points:** Andrej chose one round of 8 folds of 2 regions (issue 1) and kept the three ages of 108 to 110 with a note (issue 4), and chose log loss from context for this dataset and heart_disease together (issue 3: the source scores calibration next to the c statistic and argues the c statistic misses it; heart_disease's source scored calibration and accuracy, never ROC AUC). Verdict ship and the split checked (2026-11-26). It ships in place of `mic` (issue 2, B, 2026-11-26), which is retired the same day with `Class-dependent Recording`; nothing stays open. Applied without a decision: `height` dropped (its fills leak the outcome), the five flags kept as released (the builder had dropped them), impossible pulse and pressure values set to missing, `groups_test_groups_few` accepted with its reason, and the wording of the use case, fit and split. The record now carries `Outdated` and `Class-dependent Recording` (the height fills), both for the curator to confirm.
 
 **Issues for the curator:**
 
@@ -178,6 +180,10 @@ Decided: issue 1 (1 x 8 folds), issue 3 (log loss, from context, with heart_dise
    **Notes for the AI:** whatever is decided, record it in `mic`'s issue 5 as well (a `Resolved` turn there) and add the CC line to both records; on A or B set this record's `suggestion` to `Yes` with Andrej in `checked_by`; on B retire `mic` as its issue 5 option C says; on C remove the folder and set `No` with the reason.
 
    [^2a]: **PROV-4** (Must): a dataset enters once; two records that end at the same original source are duplicates. `mic` and GUSTO-I end at different sources.
+
+   **Andrej (2026-11-26, change):** Option B: In place of mic.
+
+   **Resolved (2026-11-26, Andrej):** B: this dataset ships in `mic`'s place (`suggestion` `Yes`, verdict ship); `mic` is retired through its issues 5 (C) and 6 (A), `No (Retired)` with `Class-dependent Recording`, its folder removed. The CC line is in both records. This folder is unchanged.
 
 3. **Score by ROC AUC or by log loss?**
 

@@ -10,10 +10,10 @@ data_foundry_status:
 - BeyondArena
 - WIP (DF)
 claimed_by: Andrej
-suggestion: 'Yes'
-priority: 3
+suggestion: No (Retired)
 decision_markers:
 - Selection Bias
+- Duplicate
 tags:
 - Non-IID (Temporal)
 - 'Samples: Over Time'
@@ -30,7 +30,6 @@ problem_type: Multiclass Classification
 source_links:
 - https://www.kaggle.com/datasets/fedesoriano/stellar-classification-dataset-sdss17
 notebook_path: datasets/beyond_iid/old_iid/sdss_17/sdss_17.ipynb
-v2_path: datasets/_dev/tabarena-v0pt2/sdss_17/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -93,9 +92,14 @@ CC (2026-11-17, Andrej): the declared split (temporal on `date`, horizon 1 year,
 
 CC (2026-11-19, Andrej): windows below the target count kept (Review issue 9, A as implemented): eight windows (2019 and 2020 as one); a 2011 window would train on 40.4%; the reason is in the splits comment.
 
+CC (2026-11-26, Andrej): verdict dont: "retire as a Duplicate of sdss_dr17_star_galaxy_quasar. It's a 100,000-row Kaggle cut of the same DR17 query, and the full release has 4.25M objects and three era windows." Applied (Review issue 10, decided by the verdict):
+- `No (Retired)` with `Duplicate` (PROV-6), next to the `Selection Bias` it carried: this file is the Kaggle cut of DR17's `SpecObj` joined to `PhotoObj`, 99,999 objects all found again in the release with the same 18 columns;
+- the replacement is `sdss_dr17_star_galaxy_quasar`, built as `sdss_dr17_star_galaxy_quasar_1m`: the same query from the source's own release, 4,249,921 objects with an unflagged class (February 2000 to March 2020), the same target, the date no input, three test windows, one per targeting era;
+- the folder leaves the working copy and `v2_path` is cleared; the definition stays in the git history.
+
 ## Review
 
-**Outcome:** added. A 100,000-object sample of the Sloan Digital Sky Survey's Data Release 17 (shared on Kaggle):
+**Outcome:** added, then retired on 2026-11-26 (verdict dont, issue 10) as a `Duplicate` of `sdss_dr17_star_galaxy_quasar` (built as `sdss_dr17_star_galaxy_quasar_1m`: the same DR17 query, 4.25M objects, three era windows); the folder removed. As added: a 100,000-object sample of the Sloan Digital Sky Survey's Data Release 17 (shared on Kaggle):
 whether an object is a galaxy, a star or a quasar, as the survey's spectroscopic pipeline classified it, predicted from
 its sky position, its brightness in the five colour bands of the survey's images and the camera column; split by the
 year of the spectrum, 2019 and 2020 in one window (issues 2 and 7; added with random splits). The AI recommends shipping
@@ -112,7 +116,7 @@ it does not carry over. Quality: non-detections are stored as the asinh magnitud
 22.8269), which are real values of the survey's magnitude system and stay; the one -9999 sentinel is set to missing.
 Weighed: a public survey with documented classes and a real cataloguing use (+), the spectroscopic selection (-).
 
-**Main points:** Better-data check (2026-11-25, issue 10): Keep sdss_17 until DR17's full set is built as sdss_dr17_star_galaxy_quasar_1m, then retire the cut as its Duplicate (B, issue 8's recommendation restated): the same task from the source's own release, 46 times the rows, re-verified today, and better models under today's row budget; DESI DR1 is not better for this task (far easier, no time structure, 9% of rows without its imaging photometry, mostly stars). Earlier: Nothing open: ship (issue 1, A, resolved 2026-11-12; split and metric `ok`). Settled 2026-11-12: the date of the spectrum orders the split but is no model input (issue 6, A; new framework capability); 2019 and 2020 form one last window, eight windows (issue 7, B); the Kaggle cut stays for now, and DR17's full set (4.6M objects) has its own record, `sdss_dr17_star_galaxy_quasar`, to be considered (issue 8). Settled 2026-11-11: split by the year of the spectrum (issue 2), the photometric task kept, not spectra (issue 3), no time-basis tag (issue 4), the record's facts corrected (issue 5). Settled 2026-11-19: eight windows kept below the target count of nine, the reason in the splits comment (issue 9, A).
+**Main points:** Nothing open. Retired (2026-11-26, verdict dont, issue 10) as a `Duplicate` of `sdss_dr17_star_galaxy_quasar`: this file is a 100,000-row Kaggle cut of the same DR17 query, and the full release, built as `sdss_dr17_star_galaxy_quasar_1m`, has 4,249,921 objects with an unflagged class and three test windows, one per targeting era. `Selection Bias` stays on the record. Earlier: ship (issue 1, 2026-11-12); the year split, the photometric task, the date no input and the eight windows (issues 2 to 9) are settled and lapse with the retirement.
 
 **Record judgment:** valid. Andrej's early question on the licence is answered by the survey: "All SDSS data released
 in our public data releases are considered in the public domain" ([SDSS image and data use
@@ -998,6 +1002,10 @@ carries the footprint of the targeting programmes, part of the selection the mar
    [^prov6]: **PROV-6** (Must): different versions or cuts of one underlying dataset are duplicates too when neither adds a distinct task: a swapped target, another slice of the same cohort, added or dropped rows or columns.
    [^better]: selection.md, "Small or dated, and the task is still done today": a hit from another source is its own record, not a `Duplicate` (PROV-4); a newer release of the same source is a version (PROV-6), and the curator decides which one enters; the old record keeps the verdict its own data earns.
    [^tp6]: **TP-6** (Must): a valid task stays; a better version the source itself defines replaces the current one, a fix of our own invention is not a better version.
+
+   **Andrej (2026-11-26, verdict dont):** retire as a Duplicate of sdss_dr17_star_galaxy_quasar. It's a 100,000-row Kaggle cut of the same DR17 query, and the full release has 4.25M objects and three era windows.
+
+   **Resolved (2026-11-26, Andrej):** B, its condition met: `sdss_dr17_star_galaxy_quasar` is built as `sdss_dr17_star_galaxy_quasar_1m` (4,249,921 objects, three era windows), so this cut is retired as its `Duplicate`: `No (Retired)`, the folder removed and `v2_path` cleared.
 
 ## Reference
 

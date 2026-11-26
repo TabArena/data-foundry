@@ -8,9 +8,10 @@ data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
 - BeyondArena
-suggestion: 'Yes'
+suggestion: No (Retired)
 decision_markers:
 - Selection Bias
+- Data Quality Issue
 tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
@@ -24,7 +25,6 @@ problem_type: Binary Classification
 source_links:
 - https://doi.org/10.24432/C5B301
 notebook_path: datasets/beyond_iid/old_iid/website_phishing/website_phishing.ipynb
-v2_path: datasets/_dev/tabarena-v0pt2/website_phishing/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -62,11 +62,16 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
 
 CC (2026-11-25, Andrej): Review issue 10, B: "Add PhreshPhish as a dated phishing task", next to web_page_phishing_detection; record `phreshphish_phishing_pages`.
 
+CC (2026-11-26, Andrej): verdict dont; Review issue 6, "Option C: Retire."; issue 9: "This should be retired for sure due to too many issues." Applied:
+- `No (Retired)` with the markers issue 6's option C names: `Data Quality Issue` (the release's codebook and data disagree: under the documented coding only `web_traffic` points the documented way, and with the label swapped eight of the nine signals do, so the target or eight signals are stored the reverse of the documentation) and `Selection Bias` (already on the record: phishing sites from the PhishTank archive, legitimate ones from Yahoo and directories);
+- `phreshphish_phishing_pages` (issue 10, B, 2026-11-25; verdict ship 2026-11-26) is the phishing task now: 348,287 dated web pages of 2024 and 2025, held out in forward four-week windows; issue 5's candidate `web_page_phishing_detection` is retired the same day before shipping (`No`, `Selection Bias` and `Class-dependent Recording`), so issue 5 closes without that replacement;
+- issues 5 and 9 close with the retirement; the folder leaves the working copy and `v2_path` is cleared; the definition stays in the git history.
+
 ## Review
 
-**Outcome:** added. A question on `CrossSectional` (2026-11-13) was withdrawn when the prototype was dropped.
+**Outcome:** added, then retired on 2026-11-26 (verdict dont; issue 6, C) with `Data Quality Issue` and `Selection Bias`: the codebook is contradicted by the data and the label is list membership; `phreshphish_phishing_pages` is the phishing task now (issue 10, B); the folder removed. As added: a question on `CrossSectional` (2026-11-13) was withdrawn when the prototype was dropped.
 
-**Main points:** New 2026-11-25 (issue 10): a dated phishing table, PhreshPhish, for a real temporal split. The BeyondArena v0.2 review's issues are in this review from 2026-11-25 as 6, 7, 8, 9; the parked ones are open again. Better-data check (2026-11-25, issue 5): Replace it with web_page_phishing_detection (Hannousse and Yahiouche 2021), split grouped by registered domain: the check left open on 2026-11-09 passes, since its URL-only features separate the classes far less than PhiUSIIL's (best fixed rule on the URL 0.78 ROC AUC, against 0.9998), and the task still separates methods (LightGBM 0.989 against logistic regression 0.980). Earlier: Nothing open: issue 1 was withdrawn on 2026-11-13. Issue 2 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
+**Main points:** Nothing open. Retired (2026-11-26, verdict dont; issue 6, C; issue 9: "retired for sure due to too many issues") with `Data Quality Issue` (the codebook and the data disagree on the direction of the label or of eight of the nine signals) and `Selection Bias` (two lists collected apart). `phreshphish_phishing_pages` (issue 10, B, decided 2026-11-25; shipped 2026-11-26) is the phishing task now; issue 5's candidate `web_page_phishing_detection` was retired before shipping (`No`), so issue 5 closes without it. Earlier: issue 1 withdrawn (2026-11-13); issue 2, `ForcedIIDFromTemporal` stays (2026-11-18); issues 7 and 8 settled (2026-11-09).
 
 **Issues for Andrej:**
 
@@ -182,6 +187,8 @@ CC (2026-11-25, Andrej): Review issue 10, B: "Add PhreshPhish as a dated phishin
    [^sel]: The Selection Bias marker: rows not drawn from the population the use case predicts for; the verdict usually stays Yes (Andrej, 2026-10-20; Lennart, 2026-10-27).
    [^form]: LEAK-13 to LEAK-15 (Must): classes recorded in different forms or from different sources are checked for a shortcut that separates them, and such a dataset is not shipped.
 
+   **Resolved (2026-11-26, Andrej):** decided by `web_page_phishing_detection`'s verdict dont of 2026-11-26 ("Retire as No, with the markers Selection Bias and Class-dependent Recording"): option B is not taken, since that candidate is retired before shipping; website_phishing is retired (issue 6, C) and `phreshphish_phishing_pages` (issue 10, B) carries the phishing task, so in effect E for this list of candidates.
+
 6. **Retire website_phishing, or keep it?**
 
    * **Problem:**
@@ -293,6 +300,10 @@ CC (2026-11-25, Andrej): Review issue 10, B: "Add PhreshPhish as a dated phishin
    **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 5 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
 
    **Note (AI, 2026-11-25):** the BeyondArena v0.2 review's issue 1, parked there on 2026-11-11 and never written into this record; it is kept here under its new number.
+
+   **Andrej (2026-11-26, change):** Option C: Retire.
+
+   **Resolved (2026-11-26, Andrej):** C: `No (Retired)` with `Data Quality Issue` and `Selection Bias`; the folder is removed and `v2_path` cleared. The replacement question of the 2026-11-09 answer is settled by issue 10 (PhreshPhish, B) and issue 5.
 
 7. **Time basis: tag the random split as forced from temporal?**
 
@@ -427,6 +438,10 @@ CC (2026-11-25, Andrej): Review issue 10, B: "Add PhreshPhish as a dated phishin
    **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 5 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
 
    **Note (AI, 2026-11-25):** the BeyondArena v0.2 review's issue 4, parked there on 2026-11-11 and never written into this record; it is kept here under its new number.
+
+   **Andrej (2026-11-26, discuss):** This should be retired for sure due to too many issues. 
+
+   **Resolved (2026-11-26, Andrej):** moot: the dataset is retired (issue 6, C; verdict dont), so the "if kept" question of the repeated sites falls away.
 
 10. **Add PhreshPhish as a dated phishing task, next to Hannousse or in its place?**
 

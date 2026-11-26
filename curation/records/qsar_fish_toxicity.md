@@ -10,8 +10,9 @@ data_foundry_status:
 - BeyondArena
 - WIP (DF)
 claimed_by: Andrej
-suggestion: 'Yes'
-priority: 2
+suggestion: No (Retired)
+decision_markers:
+- Duplicate
 tags:
 - Non-IID (Grouped)
 - 'Samples: Over Time'
@@ -28,7 +29,6 @@ source_links:
 - https://www.openml.org/search?type=data&id=44970
 - https://doi.org/10.24432/C5JG7B
 notebook_path: datasets/beyond_iid/old_iid/qsar_fish_toxicity/qsar_fish_toxicity.ipynb
-v2_path: datasets/_dev/tabarena-v0pt2/qsar_fish_toxicity/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -89,9 +89,31 @@ CC (2026-11-13, Andrej): time basis `UnseenGroup` instead of `Timeless`:
 
 CC (2026-11-17, Andrej): the declared split (grouped on `scaffold`, 10x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-26, Andrej): verdict dont: "Retire because aquatic_toxicity_lunghini_consensus holds 808 of its
+908 compounds at the same values and adds 1,392 more, under CC BY 4.0" Applied (Review issue 5, B), which is the
+test the decision of 2026-11-12 set (issue 1, B): when a larger fish set is added, match its fathead-minnow 96-hour
+entries on canonical SMILES and CAS-RN, and let the share it holds and the agreement of the LC50 decide whether this
+dataset stays:
+- `No (Retired)` with the marker `Duplicate`, on the curator's reading that each set is a cut of the same underlying
+  registry data as the other (PROV-6);
+- the replacement is `aquatic_toxicity_lunghini_consensus`, added and given the verdict ship on 2026-11-26: the same
+  use case (an assessor estimates the acute fish toxicity of an untested substance from its structure), the same
+  single feature (the structure as a SMILES), the same scaffold-grouped split and the same `rmse` on the same
+  -log10(mol/L) scale. The counts above are the deposit's 2,200 fish compounds, measured on 2026-11-25; on the 2,186
+  rows that ship it holds 807 of these 908 chemicals (88.9% on the canonical structure, 785 by CAS-RN) at the same
+  values (r 0.995, median absolute difference 0.0009) and adds 1,379. Its target is a fish 96-hour LC50 pooled over
+  fish species rather than the fathead minnow's, which its own record states, and untuned LightGBM reaches RMSE
+  0.718 on it against 0.877 here. It is one download under CC BY 4.0, where the structures here come from a workbook
+  that is freeware with proper reference, fetched through a public link rather than the authors' notification form
+  (Lennart, 2026-11-02);
+- the folder leaves the TabArena v0.2 working copy and `v2_path` is cleared; the definition stays in the git history.
+
 ## Review
 
-**Outcome:** added. The 96-hour LC50 (the concentration that kills half the fish, as minus the log of mol/L) of 908
+**Outcome:** added, then retired on 2026-11-26 (verdict dont, issue 5, B): replaced by
+`aquatic_toxicity_lunghini_consensus`, the same task on 2,186 chemicals, which holds 807 of these 908 at the same
+values and adds 1,379, under CC BY 4.0; marker `Duplicate`, the folder removed. As added: the 96-hour LC50 (the
+concentration that kills half the fish, as minus the log of mol/L) of 908
 chemicals for the fathead minnow, compiled by Cassotti et al. (2015, SAR and QSAR in Environmental Research
 26(3):217-243, https://doi.org/10.1080/1062936X.2015.1018938; UCI https://doi.org/10.24432/C5JG7B). Since 2026-11-01
 the structure ships as a SMILES from the authors' own workbook (the same rows in the same order) in place of their six
@@ -108,7 +130,12 @@ earlier check had TabPFN 3.5 ahead of extra trees on 30 of 30 splits. Quality: n
 regulator's real task with structures and held-out series +, methods separate +, a near-sibling in the benchmark
 (qsar_aquatic_toxicity) and larger fish sets screened -.
 
-**Main points:** Better-data check (2026-11-25, issue 5): Keep qsar_fish_toxicity until aquatic_toxicity_lunghini_consensus is added, then retire it as replaced: its fish subset is the same task with 2,200 compounds in place of 908, it holds 808 of these 908 at the same values and adds 1,392 more, and it ships structures under CC BY 4.0 as a direct download; ADORE is not a replacement, because its fathead-minnow 96-hour cut is 911 chemicals against 908 and scores the same, and what it adds is a cross-species per-test task of its own. Earlier: Nothing open. Settled 2026-11-12: kept next to qsar_aquatic_toxicity, to be settled against ADORE or
+**Main points:** Nothing open. Retired (2026-11-26, verdict dont, issue 5, B) as replaced by
+`aquatic_toxicity_lunghini_consensus`, which is added and shipped: its fish endpoint is the same task on 2,186
+chemicals in place of these 908, it holds 807 of them at the same values (r 0.995) and adds 1,379, and it is a direct
+download under CC BY 4.0; ADORE is not a replacement, because its fathead-minnow 96-hour cut is 911 chemicals against
+908 and scores the same, and what it adds is a cross-species per-test task of its own. Marker `Duplicate`, the folder
+removed. Settled before: kept next to qsar_aquatic_toxicity on 2026-11-12, to be settled against ADORE or
 the Lunghini set once one is added (issue 1, B); the fit stays direct (issue 2, A), the scaffold split's time basis is `Timeless`
 with the ECOTOX dating written down (issue 3, a; `UnseenGroup` in its place since 2026-11-13, CC line), collection facts `Samples: Over Time`, `Time: Dated` (issue 4), and
 the record's `problem_type` is `Regression`.
@@ -443,6 +470,22 @@ before shipping outside the group.
    [^valid]: Keep two questions apart (**TP-6**): is the task valid, and is it the best version? A valid task stays.
    [^source]: **SPLIT-5** (Must): the split a paper or a dataset page prescribes is a claim to check against the task design, not a fact; check the claim against the data as well.
    [^scaffold]: **SPLIT-31** (Should): a molecule dataset whose rows carry exact structures groups on the Bemis-Murcko scaffold, a molecule without a ring being a group of its own, and so is each molecule of a scaffold holding more than a tenth of the set.
+
+   **Andrej (2026-11-26, verdict dont):** Retire because aquatic_toxicity_lunghini_consensus holds 808 of its 908
+   compounds at the same values and adds 1,392 more, under CC BY 4.0
+
+   **Resolved (2026-11-26, Andrej):** B, its condition met: `aquatic_toxicity_lunghini_consensus` is added and has
+   the verdict ship (2026-11-26), and it passes the test the decision of 2026-11-12 set (issue 1, B) - on the 2,186
+   rows it ships it holds 807 of these 908 chemicals (88.9% on the canonical structure, 785 by CAS-RN) at the same
+   values (r 0.995, median absolute difference 0.0009) and adds 1,379; the counts in the note above are the deposit's
+   2,200 fish compounds as measured on 2026-11-25, before the three repaired duplicate substances. So this dataset is
+   retired as replaced: `suggestion: No (Retired)`, marker `Duplicate` (the curator's reading that each set is a cut
+   of the same underlying registry data as the other, PROV-6), priority removed, the folder removed from the working
+   copy and `v2_path` cleared; `data_foundry_status`, the claim and this review stay. The replacement carries the
+   same use case, the same single feature and the same scaffold-grouped split and `rmse` on the same -log10(mol/L)
+   scale, with the target a fish 96-hour LC50 pooled over fish species instead of the fathead minnow's, and it is one
+   download under CC BY 4.0. ADORE (`adore_aquatic_toxicity`) stays a record of its own, for the cross-species
+   per-test task, and `qsar_aquatic_toxicity`, the Daphnia sibling, keeps its own decision.
 
 ## Reference
 

@@ -9,8 +9,7 @@ data_foundry_status:
 - BeyondArena
 - WIP (DF)
 claimed_by: Andrej
-suggestion: Yes (Disagreement)
-priority: 2
+suggestion: No (Retired)
 decision_markers:
 - Outdated
 - Not Representative
@@ -33,7 +32,6 @@ source_links:
 - https://www.openml.org/d/560
 - https://www.kaggle.com/datasets/fedesoriano/body-fat-prediction-dataset
 notebook_path: datasets/beyond_iid/new_iid/body_density_prediction/body_density_prediction.ipynb
-v2_path: datasets/_dev/tabarena-v0pt2/body_density_prediction/dataset.py
 source_row: 750
 type_adapter_id: curation-record-v1
 ---
@@ -69,9 +67,14 @@ CC (2026-11-18, Andrej): collection type stays `Experimental Results` (Review is
 - the type rules call volunteers measured by a study protocol experimental results;
 - the split is random under either type.
 
+CC (2026-11-26, Andrej): verdict dont: "We retire it in favor of nhanes_dxa_body_fat, which is a better version of the exact same task". Applied (Review issue 6, decided by the verdict; issues 1 and 2 close with it):
+- `No (Retired)` with no new decision marker: no marker in the vocabulary names a replacement from another source; the markers of the original import (`Outdated`, `Not Representative`, `Too Small`) stay.
+- the replacement is `nhanes_dxa_body_fat`, the same use case (body fat from a tape and a scale instead of a lab test) on 38,708 people of both sexes with a measured whole-body DXA scan, against the 252 men of 1985 here; the target moves from body density by underwater weighing to DXA percent fat, so the two scores are not comparable;
+- the folder leaves the working copy and `v2_path` is cleared; the definition stays in the git history.
+
 ## Review
 
-**Outcome:** added. Johnson's StatLib bodyfat file of the 252 men of Penrose et al. 1985: body density measured by
+**Outcome:** added, then retired on 2026-11-26 (verdict dont, issue 6): replaced by `nhanes_dxa_body_fat`, the same use case on 38,708 people with a measured DXA scan, its target DXA percent fat instead of body density by underwater weighing; no new decision marker, the folder removed. As added: Johnson's StatLib bodyfat file of the 252 men of Penrose et al. 1985: body density measured by
 underwater weighing, predicted from age, weight, height and ten tape measurements; the body-fat percentage, computed
 from the density, is dropped. Reviewed without a panel, from the gathered evidence: the record, the replacement
 candidate's record, model runs on the shipped BeyondArena data (the same rows) and a check of 2026-11-04.
@@ -84,7 +87,7 @@ one density implies negative body fat (issue 2); `Outdated`, `Not Representative
 none tested. Weighed: a direct, still common use case against a small, dated sample with a much larger public one in
 triage.
 
-**Main points:** The 1 issues parked on 2026-11-11 are open again (2026-11-25). Better-data check (2026-11-25, issue 6): Keep body density until nhanes_dxa_body_fat is added, then retire it as replaced: NHANES holds 39,691 people with a measured whole-body DXA scan and tape-and-scale measures (verified), predicts the same body fat from the same kind of measurements and separates tree models from linear ones, while the 252 men of 1985 do not; it reframes the target from density by underwater weighing to DXA percent fat, which the new record must state. Earlier: Parked (2026-11-11) on Andrej's note until it is decided whether better suited datasets replace this task: `nhanes_dxa_body_fat` as replacement (issue 1) and the impossible height (issue 2) wait. The `Timeless` split is settled (issue 3), and the type stays `Experimental Results` (issues 4 and 5, 2026-11-18).
+**Main points:** Nothing open. Retired (2026-11-26, verdict dont, issue 6) in favour of `nhanes_dxa_body_fat`, a better version of the same task: 38,708 people of both sexes with a measured whole-body DXA scan against the 252 men of 1985, the target moving from body density by underwater weighing to DXA percent fat; no new decision marker (none names a replacement from another source; the import's markers stay). Issue 1 is superseded by issue 6 and issue 2 (the impossible height) is moot; the `Timeless` split (issue 3) and the type `Experimental Results` (issues 4 and 5) were settled before.
 
 **Record judgment:** valid task, better data available. The Discussion calls the task valid but limited, since much
 more data could be collected; Andrej's CC of 2026-10-15 names the replacement, and the data-scouting run of
@@ -137,6 +140,8 @@ more data could be collected; Andrej's CC of 2026-10-15 names the replacement, a
 
    **Note (AI, 2026-11-25):** the question moved to issue 6 of this review, which restates it with the candidates checked on their files on 2026-11-25; this issue stays parked and that one carries the decision.
 
+   **Resolved (2026-11-26, Andrej):** superseded by issue 6: the dataset is retired in favour of `nhanes_dxa_body_fat` (verdict dont).
+
 2. **Only if kept: set the impossible height to missing?**
 
    * **Problem:**
@@ -173,6 +178,8 @@ more data could be collected; Andrej's CC of 2026-10-15 names the replacement, a
    **Andrej (2026-11-11, discuss):** Park it until we decide on checking in with better suited datasets for this task.
 
    **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 6 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
+
+   **Resolved (2026-11-26, Andrej):** moot: the dataset is retired (verdict dont).
 
 3. **Only if kept: name the random split `Timeless`, or `StationaryRelation`, for one measurement session per man?**
 
@@ -364,6 +371,10 @@ more data could be collected; Andrej's CC of 2026-10-15 names the replacement, a
 
    [^better]: Pattern "Small or dated, and the task is still done today": a larger or newer public dataset with the same target and use case, and features of the same kind, is its own record; the old record is not rejected automatically and keeps the verdict its own data earn until the curator decides. Cases: body_density_prediction and NHANES DXA body fat.
    [^valid]: Keep two questions apart (TP-6): is the task valid, and is it the best version? A valid task stays.
+
+   **Andrej (2026-11-26, verdict dont):** We retire it in favor of nhanes_dxa_body_fat, which is a better version of the exact same task
+
+   **Resolved (2026-11-26, Andrej):** B, its condition met: `nhanes_dxa_body_fat` is added and its verdict is ship (2026-11-26), so the dataset is retired as replaced: `No (Retired)`, no new decision marker, the folder removed and `v2_path` cleared. `nhanes_dxa_body_fat` carries the task: 38,708 people with a measured DXA scan against 252 men of 1985, the target DXA percent fat in place of body density by underwater weighing.
 
 ## Reference
 
