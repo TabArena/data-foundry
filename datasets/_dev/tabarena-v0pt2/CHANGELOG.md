@@ -40,8 +40,6 @@
   accept (duplicate and conflicting genotype rows, c.235delC homozygous all patients).
 - split_tree.md: L-PLACE.random names the three as its examples.
 
-## 2026-11-25 (evening), fugaku_hpc_job_failure_1m: every source row prepared (no container built)
-
 ## 2026-11-23, every definition names its split-tree leaf; `RetrospectiveFillIn` and `Target: Fixed Delay` in use (no container built)
 
 - `split_leaf` in all 174 definitions: the leaf of `split_tree.md` the split comes from. Where the tree names the
