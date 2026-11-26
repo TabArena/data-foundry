@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: nhanes_dxa_body_fat
 container_format: 2
-checksum: v2:e7d4078db33c01a200b043427d0d6e30f7262b38a0c191f74bbe44ad5067ad63
+checksum: v2:4364cca3df0a596b50d0b4ebc5659d43e0bc6007a25695d0c2749509c0aa0caa
 build: null
 build_stale: false
 raw_files:
@@ -87,7 +87,7 @@ decisions: []
 
 Regression of `percent_body_fat`, scored with `rmse` on temporal splits by `survey_cycle` (one step is a year). 38,708 rows and 11 features. Source: GOV Website (2008).
 
-Not built yet. The current definition gives checksum `v2:e7d4078db33c01a200b043427d0d6e30f7262b38a0c191f74bbe44ad5067ad63`.
+Not built yet. The current definition gives checksum `v2:4364cca3df0a596b50d0b4ebc5659d43e0bc6007a25695d0c2749509c0aa0caa`.
 
 ## In brief
 
@@ -335,6 +335,11 @@ window, 2005-2006, would train on 43.6% of the people, below the floor of half t
 they are examined. The 2011-2018 values as released are CDC's re-analysis with the Apex software (every
 2011-2018 DXX file: "First Published: March 2020"); the gap rests on the same-day scan, not on release dates.
 The test cycles hold ages 8-59 only (DXA eligibility from 2011); the 60-85-year-olds of 1999-2006 train only.
+The stationary-relation test (2026-11-26, five seeds, a forward model on the earlier cycles against a
+contemporaneous one on as many rows) reads the relation flat on the three newest cycles for LightGBM and
+TabPFN v3.5: pooled gaps of +0.018 and +0.016 RMSE points against floors of about 0.05, under 1% of the RMSE.
+It reads not flat across the change of scanner: the 2011-2012 window costs +0.077 (LightGBM) and +0.104
+(TabPFN v3.5) against floors of 0.053 and 0.054, the shift that window is kept to test.
 
 4 repeat(s) x 1 fold(s) with seed 4267; train 21,768 to 35,414 rows, test 3,294 to 4,908 rows. Prediction horizon: 2 years.
 

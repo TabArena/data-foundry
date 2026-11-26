@@ -1,6 +1,17 @@
 # Changelog: TabArena v0.2 working copy
 
 ## 2026-11-23, every definition names its split-tree leaf; `RetrospectiveFillIn` and `Target: Fixed Delay` in use (no container built)
+## 2026-11-26 (afternoon), curator's third round of marks on the better-data datasets
+
+- phreshphish_phishing_pages: the page's HTML `<title>` ships as a text column (`title`), read the same way from both
+  classes in the definition's own pass over the HTML, with no brand list (issue 3, e); missing for 2.4% of benign and
+  4.0% of phishing pages. Untuned LightGBM's partial ROC AUC up to a 1% false-positive rate rises from 0.832 / 0.798 /
+  0.843 to 0.848 / 0.799 / 0.858. The metric (issue 1) stays open with a recommendation. Check 0 errors, 0 warnings.
+- nhanes_dxa_body_fat: the four one-cycle windows kept after the stationary-relation test (issue 5, a);
+  `splits_comment` notes it (flat on the three newest cycles, not flat across the 2011 scanner change). The split is
+  checked and nothing is open. Check 0 errors, 1 warning.
+- craigslist_used_vehicles_f150: the declared metric (rmsle) and split (five scrape windows) checked; record only.
+
 ## 2026-11-26 (later), curator's second round of marks on the better-data datasets
 
 - craigslist_used_vehicles_f150: no test truck in training any more: a truck relisted in a later scrape, linked by

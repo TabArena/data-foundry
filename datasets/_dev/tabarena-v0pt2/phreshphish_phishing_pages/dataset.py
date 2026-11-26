@@ -6,6 +6,7 @@ import math
 import os
 import re
 from collections import Counter
+from html import unescape
 from pathlib import Path
 
 import numpy as np
@@ -87,6 +88,9 @@ class over time (`curation_comments`)."""
 TAG_RX = {k: re.compile(v, re.I) for k, v in TAG_PATTERNS.items()}
 HREF_RX = re.compile(r"<a\b[^>]*href\s*=\s*[\"']([^\"']*)", re.I)
 TITLE_RX = re.compile(r"<title[^>]*>(.*?)</title>", re.I | re.S)
+MAX_TITLE_LENGTH = 1000
+"""A `<title>` over 1,000 characters is an unclosed or embedded tag, not the page's title: its text and length are set
+to missing."""
 NULL_HREFS = ("", "#", "#!", "javascript:void(0)", "javascript:;")
 
 
@@ -153,9 +157,17 @@ def url_features(url: str) -> dict[str, float]:
     }
 
 
-def html_features(html: str, host: str) -> dict[str, float]:
-    """Tag and word counts of a page, its links to other hosts and its title's length."""
-    f: dict[str, float] = {k: len(rx.findall(html)) for k, rx in TAG_RX.items()}
+def page_title(html: str) -> str:
+    """The text of the page's first `<title>` tag, entities decoded and white space collapsed ("" when there is none);
+    read the same way from every page, whatever its class or month.
+    """
+    m = TITLE_RX.search(html)
+    return " ".join(unescape(m.group(1)).split()) if m else ""
+
+
+def html_features(html: str, host: str) -> dict[str, float | str]:
+    """Tag and word counts of a page, its links to other hosts, its title's length and its title as text."""
+    f: dict[str, float | str] = {k: len(rx.findall(html)) for k, rx in TAG_RX.items()}
     hrefs = HREF_RX.findall(html)
     external = 0
     for h in hrefs:
@@ -166,6 +178,7 @@ def html_features(html: str, host: str) -> dict[str, float]:
     f["external_link_share"] = external / len(hrefs) if hrefs else np.nan
     m = TITLE_RX.search(html)
     f["title_length"] = len(m.group(1).strip()) if m else 0
+    f["title"] = page_title(html)
     return f
 
 
@@ -214,7 +227,7 @@ class PhreshphishPhishingPages(AbstractCuratedDataset):
         known=(
             "The URL without its scheme and query (as text and as counts: host length, dots, digits, path depth, "
             "keywords), counts of tags and words in the page (forms, password fields, links to other hosts, scripts, "
-            "frames), the title's length and the page's language."
+            "frames), the title's length, the title itself as text and the page's language."
         ),
         split=(
             "The next four weeks: three four-week test windows, 16 June to 7 September 2025, each trained on every "
@@ -230,8 +243,8 @@ class PhreshphishPhishingPages(AbstractCuratedDataset):
         fit_reason=(
             "Pages real users opened and pages reported as phishing, rendered by one crawler, as a filter meets them. "
             "Three gaps: the URL lacks its query and scheme, which a filter sees (removed for the recording by "
-            "class); the 50 features are ours, not the page a product reads; and the class mix follows the "
-            "collection, not the web (benign pages missing on many days)."
+            "class); the 50 counts are ours, not the page a product reads; and "
+            "the class mix follows the collection, not the web (benign pages missing on many days)."
         ),
     )
 
@@ -282,7 +295,8 @@ class PhreshphishPhishingPages(AbstractCuratedDataset):
           card's benchmarks), no new rows. The release's README is read for the field list.
         - Features are ours: the release has no table. `_prepare_raw_files` writes `phreshphish_features.parquet`
           (one pass over the HTML): the URL features of `url_features` and the counts of `html_features` (19 tag and
-          word counts, links to other hosts, empty links, the title's length; `TAG_PATTERNS`).
+          word counts, links to other hosts, empty links, the title's length; `TAG_PATTERNS`) and the page's title as
+          text (`page_title`).
         - Class-dependent recording (LEAK-13), removed from the URL: the release removed the query from benign URLs
           only (68 of 367,989 benign URLs keep one, against 11.7% of phishing URLs; Appendix A.2, where the removal of
           personal data "focused on the benign class only"), recorded 5,741 benign URLs without a scheme (no phishing
@@ -337,6 +351,22 @@ class PhreshphishPhishingPages(AbstractCuratedDataset):
           -1 where it gives no language (1.0% of benign, 4.2% of phishing pages), set to missing. Six 0/1 flags of ours (`host_is_ip`, `host_punycode`, `host_www`, `host_port`,
           `path_is_root`, `path_page_extension`) are categories. A `title_length` over 1,000 characters (an unclosed
           or embedded `<title>`, 25 pages) is set to missing.
+        - Title (`title`, text): the page's first `<title>` tag, entities decoded and white space collapsed
+          (`page_title`), read the same way from every page; missing where the page has none, an empty one or one
+          over 1,000 characters (2.4% of benign, 4.0% of phishing pages; 275,877 distinct titles). It carries the
+          brand a page names, which none of the counts does, and is encoded like `url`, by the framework's text
+          encodings (`tfidf-svd` fitted on each training side). Checked against the recordings by class above:
+          within benign pages the share without a title (2.1% to 2.7%), the median length (46 to 47 characters) and
+          the share written with HTML entities (9.3% to 10.1%) hold in every month, and the title does not tell
+          2025 from 2024 benign pages (ROC AUC 0.503, 5-fold). By page size the classes lack a title alike above the
+          floor: 9.8% of benign and 12.1% of phishing pages of 10,000 to 20,000 characters, 1.6% and 1.8% of those
+          over 50,000. The phishing titles move with the campaigns: 15.1% of June 2025 phishing pages have none (342
+          of the 410 of 18 June), and "One moment..." heads 2,786 phishing pages of July and August 2025 and no
+          benign one. Untuned, with every other column and the URL encoded the same way, the title (`tfidf-svd`)
+          moves LightGBM's ROC AUC from 0.986, 0.913 and 0.989 (newest window first) to 0.988, 0.921 and 0.988 and
+          its partial ROC AUC up to a 1% false-positive rate from 0.832, 0.798 and 0.843 to 0.848, 0.799 and 0.858;
+          logistic regression's ROC AUC moves from 0.918, 0.885 and 0.968 to 0.936, 0.881 and 0.971. The title's
+          `e5-small-v2` embedding gives LightGBM 0.989, 0.925 and 0.991.
         - Note: registered domains recur across every window (hosting platforms such as gitbook.io, webflow.io and
           pages.dev for phishing, wikipedia.org for benign); a filter meets known domains, so the split keeps them
           (SPLIT-13). No canonical URL repeats across a cut (one row per URL). On the earlier monthly windows, a
@@ -472,8 +502,10 @@ class PhreshphishPhishingPages(AbstractCuratedDataset):
         df = df[df["html_length"] >= MIN_HTML_LENGTH]
         # `lang_score` is -1 exactly where the release gives no language: missing, as `lang` is.
         df["lang_score"] = df["lang_score"].where(df["lang"].notna())
-        # A "title" over 1,000 characters is an unclosed or embedded <title> tag, not the page's title.
-        df["title_length"] = df["title_length"].where(df["title_length"] <= 1000)
+        # A "title" over 1,000 characters is an unclosed or embedded <title> tag, not the page's title; an empty one is none.
+        whole_title = df["title_length"] <= MAX_TITLE_LENGTH
+        df["title_length"] = df["title_length"].where(whole_title)
+        df["title"] = df["title"].where(whole_title & (df["title"] != ""))
         df = df.rename(columns={"label": self.target})
         df = decode(df, {self.target: {"benign": "No", "phish": "Yes"}})
         return drop_columns(df, ["sha256", "source_split", "html_length"])
@@ -489,6 +521,6 @@ class PhreshphishPhishingPages(AbstractCuratedDataset):
                 "path_is_root",
                 "path_page_extension",
             ],
-            string=["url"],
+            string=["url", "title"],
             datetime={"date": "%Y-%m-%d"},
         )

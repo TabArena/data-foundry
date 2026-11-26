@@ -272,6 +272,11 @@ class NhanesDxaBodyFat(AbstractCuratedDataset):
         they are examined. The 2011-2018 values as released are CDC's re-analysis with the Apex software (every
         2011-2018 DXX file: "First Published: March 2020"); the gap rests on the same-day scan, not on release dates.
         The test cycles hold ages 8-59 only (DXA eligibility from 2011); the 60-85-year-olds of 1999-2006 train only.
+        The stationary-relation test (2026-11-26, five seeds, a forward model on the earlier cycles against a
+        contemporaneous one on as many rows) reads the relation flat on the three newest cycles for LightGBM and
+        TabPFN v3.5: pooled gaps of +0.018 and +0.016 RMSE points against floors of about 0.05, under 1% of the RMSE.
+        It reads not flat across the change of scanner: the 2011-2012 window costs +0.077 (LightGBM) and +0.104
+        (TabPFN v3.5) against floors of 0.053 and 0.054, the shift that window is kept to test.
     """
     accepted_check_warnings = {
         "splits_below_target": (

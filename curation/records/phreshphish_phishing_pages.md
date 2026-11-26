@@ -67,11 +67,15 @@ CC (2026-11-26, Andrej): issue 2, as implemented (A): the canonical URL stays a 
 
 **Assessment (AI, 2026-11-26):** the horizon and issue 2 applied: `accepted_check_warnings` takes `dataset_identifier_column`, `splits_below_target`, `task_label_time_gap` and `dataset_pure_feature_value` with their reasons and the date. Windows as declared: 11 August, 14 July and 16 June 2025, 50,120, 35,257 and 42,194 test pages (9,899, 13,397 and 5,701 phishing), trained on 85.5%, 74.8% and 63.3% of 348,287 rows. `dataset check`: 0 errors, 0 warnings, 4 accepted. Open, with answers in the review: the metric (issue 1; average precision reweighted to 1% phishing equals the mean of the source's kind of subsets to within 0.005 and is independent of our windows' 13.5% to 38.0% share, but needs a new registry entry) and the brand feature (issue 3; a listed brand in the title on another host marks 1.4% to 1.5% of benign and 17% to 36% of phishing pages and lifts untuned LightGBM by +0.002 to +0.028 ROC AUC).
 
+CC (2026-11-26, Andrej): issue 3, e: "The page title as a text column": the page's `<title>` ships as the text column `title`, read from the HTML for both classes alike and encoded by the framework's text encodings; no brand list of ours.
+
+**Assessment (AI, 2026-11-26):** issue 3 applied: `title` is the first `<title>` tag of each page, entities decoded and white space collapsed, missing where a page has none, an empty one or one over 1,000 characters (2.4% of benign, 4.0% of phishing pages; 275,877 distinct titles). It follows none of the recordings by class: within benign pages the share without a title (2.1% to 2.7%), the median length (46 to 47 characters) and the share written with HTML entities (9.3% to 10.1%) hold in every month, the title does not tell 2025 from 2024 benign pages (ROC AUC 0.503), and pages of 10,000 to 20,000 characters lack a title in 9.8% (benign) and 12.1% (phishing). Untuned, next to every other column with the URL encoded too, the title (`tfidf-svd` per training side) moves LightGBM's ROC AUC from 0.986 / 0.913 / 0.989 to 0.988 / 0.921 / 0.988 (newest window first) and its partial ROC AUC (FPR <= 1%) from 0.832 / 0.798 / 0.843 to 0.848 / 0.799 / 0.858. `dataset check`: 0 errors, 0 warnings, 4 accepted. Issue 1 (the metric) stays open with a new answer: on seven untuned models, the partial ROC AUC and average precision at 1% phishing rank them alike across the windows (Kendall tau 0.94), ROC AUC does not (0.75).
+
 ## Review
 
-**Outcome:** added; the AI recommends shipping. Task: PhreshPhish v1.0.1 (Dalton et al. 2025, Hugging Face, CC BY 4.0) as a dated phishing task, 348,287 web pages of August to October 2024 and 1 June to 7 September 2025, 21% phishing, each read from its URL and HTML as 50 counts of ours, the page's language and the URL as text, scored by ROC AUC in three four-week windows (16 June to 7 September 2025) with a one-day gap. Validity: the release recorded the two classes differently in four ways, and each is now removed for both classes: the URL's form (query, scheme, host case, default port, some characters); the copies (one row per URL); the HTML capture form of October and November 2025 (dropped); and a minimum page size (10,000 characters, now applied to both classes). The data end on 7 September 2025, the last day before the source's own test split, from which the source removed pages that repeat earlier ones; the date orders the split and is no input. Applied after the panel: that end date, the size floor, the URL fixes, the one-day gap, fit `approximate`, the `Selection Bias` and `Class-dependent Recording` markers, a protocol line against reading other test rows, the metric's reason and original, six 0/1 flags as categories and corrected numbers. Value: in the task probe on the new windows, untuned models score ROC AUC 0.967 (random forest) and 0.964 (LightGBM), a linear model 0.927, the URL text alone 0.896 and a depth-2 tree 0.809; no flag. Decided 2026-11-26: the horizon (three four-week windows with a one-day gap, as implemented) and the URL as a text input (issue 2, A); the four warnings they bring (`url` one value per row; 3 windows against 9, the gap on a date that dates the label, a day with phishing pages only) are accepted. `dataset check`: 0 errors, 0 warnings, 4 accepted.
+**Outcome:** added; the AI recommends shipping. Task: PhreshPhish v1.0.1 (Dalton et al. 2025, Hugging Face, CC BY 4.0) as a dated phishing task, 348,287 web pages of August to October 2024 and 1 June to 7 September 2025, 21% phishing, each read from its URL and HTML as 50 counts of ours, the page's language, and the URL and the page's title as text, scored by ROC AUC in three four-week windows (16 June to 7 September 2025) with a one-day gap. Validity: the release recorded the two classes differently in four ways, and each is now removed for both classes: the URL's form (query, scheme, host case, default port, some characters); the copies (one row per URL); the HTML capture form of October and November 2025 (dropped); and a minimum page size (10,000 characters, now applied to both classes). The data end on 7 September 2025, the last day before the source's own test split, from which the source removed pages that repeat earlier ones; the date orders the split and is no input. Applied after the panel: that end date, the size floor, the URL fixes, the one-day gap, fit `approximate`, the `Selection Bias` and `Class-dependent Recording` markers, a protocol line against reading other test rows, the metric's reason and original, six 0/1 flags as categories and corrected numbers. Value: in the task probe on the new windows (before the title), untuned models score ROC AUC 0.967 (random forest) and 0.964 (LightGBM), a linear model 0.927, the URL text alone 0.896 and a depth-2 tree 0.809; no flag. Decided 2026-11-26: the horizon (three four-week windows with a one-day gap, as implemented) and the URL as a text input (issue 2, A); the four warnings they bring (`url` one value per row; 3 windows against 9, the gap on a date that dates the label, a day with phishing pages only) are accepted; and the brand signal (issue 3, e): the page's title ships as a text column, read alike for both classes, with no brand list of ours (untuned LightGBM, URL encoded too: ROC AUC 0.986 / 0.913 / 0.989 to 0.988 / 0.921 / 0.988, partial ROC AUC 0.832 / 0.798 / 0.843 to 0.848 / 0.799 / 0.858). `dataset check`: 0 errors, 0 warnings, 4 accepted.
 
-**Main points:** Open: the metric (issue 1): ROC AUC, the partial ROC AUC up to a 1% false-positive rate, or, closest to the source, its average precision at a fixed 1% phishing rate (needs a new registry entry); and the brand feature (issue 3). The hand list's gain is one brand of the test windows' campaigns (Robinhood), and lists fixed before the windows add little. The AI recommends the page title as a text column, encoded on each training side.
+**Main points:** Open: the metric (issue 1). On seven untuned models the partial ROC AUC up to a 1% false-positive rate and the source's average precision at a fixed 1% phishing rate rank the models alike across the windows (Kendall tau 0.94), ROC AUC does not (0.75); the AI recommends average precision at 1% (new registry entry), the partial ROC AUC if the operating region should name the metric. Decided: the page title as a text column (issue 3, e).
 
 **Horizon:**
 
@@ -197,6 +201,51 @@ CC (2026-11-26, Andrej): issue 2, as implemented (A): the canonical URL stays a 
    This does not affect only this dataset but is a more general observation: You seem reluctant to implementing new metrics and often list that as a con. However, the opposite behavior should be the case. A new metric that tests something different and has no close equivalent in our implemented metrics should be encouraged for benchmark diversity. Open up an across dataset issue for a potential rule change that could help with that.
 
    **Answer (AI, 2026-11-26):** the general point is now a cross-dataset item (the review's "Count a new metric as a gain for the collection, not as a cost"), which proposes rule wording so that a new metric's implementation counts against no option; read that way, the options above lose "no new code" as a pro of a and d and "needs a new entry" as a con of b, c and e, and the recommendation stays c, average precision at a 1% phishing rate. The note opens with "Two things" and names one; the issue stays open for the second and for the decision.
+
+   **Andrej (2026-11-26, discuss):** All aspects traded off, what the source does and which metric is the most informative to separate models for the actual task at hand, what would you recommend?
+
+   **Answer (AI, 2026-11-26):** average precision at a fixed 1% phishing rate (c): it is the source's own metric at a base rate inside the source's range, it is decided where a filter works (at a 1% base rate a 1% false-positive rate already halves precision), and on seven untuned models it ranks them as consistently across the windows as the partial ROC AUC, while ROC AUC does not.
+
+   * **Problem:**
+     - Across the three windows, the metrics of the low false-positive region rank seven untuned models almost alike (Kendall tau 0.94 for the partial ROC AUC, average precision at 1% and the mean over 0.1%, 1% and 5%), raw average precision less (0.87) and ROC AUC least (0.75). ROC AUC puts CatBoost third in the July window, where every other metric puts it first, and ranks logistic regression above k-NN in every window, while the partial ROC AUC ranks k-NN above it in every window.
+     - Within a window, every candidate orders most pairs the same way in 96% to 100% of the bootstrap draws. ROC AUC and raw average precision space neighbouring models widest (median 4 to 14 SE), since they average the whole curve. The partial ROC AUC leaves 1 of 18 neighbouring pairs under 2 SE, average precision at 1% 3, ROC AUC and raw average precision 2, and the mean over three rates 4: its 0.1% term rests on 22 to 40 benign pages per window.
+     - The source scores average precision on subsets at 0.05% to 5% phishing; at 1% the reweighted score equals the mean of its kind of subsets (within 0.005, answer above). The partial ROC AUC names the filter's operating region but is no metric of the source; raw average precision is the source's name, but on each window's own phishing share (13.5% to 38.0%).
+     - Implementation is no cost here (the cross-dataset item "Count a new metric as a gain for the collection, not as a cost"); b, c and d each need one new registry entry[^m3].
+   * **Experiments:** the definition with `title`, the three shipped windows (newest first), every column in, `url` and `title` encoded by `tfidf-svd` on each training side; seven models with library defaults; 200 stratified bootstrap draws of each test window. Scores:
+
+     | Model | ROC AUC | Partial ROC AUC, FPR ≤ 1% | Average precision at 1% | Average precision, mean of 0.1/1/5% | Average precision, raw |
+     |---|---|---|---|---|---|
+     | CatBoost | 0.991 / 0.919 / 0.993 | 0.882 / 0.825 / 0.885 | 0.801 / 0.679 / 0.816 | 0.743 / 0.652 / 0.768 | 0.973 / 0.918 / 0.967 |
+     | XGBoost | 0.989 / 0.921 / 0.991 | 0.862 / 0.809 / 0.875 | 0.763 / 0.637 / 0.791 | 0.707 / 0.598 / 0.743 | 0.965 / 0.916 / 0.958 |
+     | LightGBM | 0.988 / 0.921 / 0.988 | 0.848 / 0.799 / 0.858 | 0.748 / 0.626 / 0.760 | 0.701 / 0.596 / 0.716 | 0.963 / 0.916 / 0.945 |
+     | Random forest | 0.985 / 0.914 / 0.988 | 0.825 / 0.799 / 0.851 | 0.689 / 0.620 / 0.742 | 0.639 / 0.586 / 0.690 | 0.949 / 0.902 / 0.946 |
+     | Logistic regression | 0.936 / 0.881 / 0.971 | 0.697 / 0.675 / 0.741 | 0.394 / 0.408 / 0.525 | 0.381 / 0.399 / 0.493 | 0.837 / 0.875 / 0.876 |
+     | k-NN | 0.909 / 0.805 / 0.924 | 0.756 / 0.693 / 0.777 | 0.460 / 0.325 / 0.521 | 0.423 / 0.307 / 0.470 | 0.827 / 0.755 / 0.829 |
+     | Naive Bayes | 0.830 / 0.813 / 0.867 | 0.527 / 0.531 / 0.536 | 0.064 / 0.078 / 0.096 | 0.107 / 0.124 / 0.150 | 0.573 / 0.764 / 0.582 |
+
+     How each metric separates them ("gap": the difference between neighbouring models in a window's ranking over the bootstrap SD of that difference):
+
+     | Metric | First in each window | Kendall tau across windows, mean (min) | Pairs ordered as the point estimate, share of draws | Neighbours under 2 SE, of 18 | Median gap between neighbours (SE) |
+     |---|---|---|---|---|---|
+     | ROC AUC | CatBoost / XGBoost / CatBoost | 0.75 (0.62) | 100% / 98.3% / 99.9% | 2 | 13.4 / 4.3 / 11.9 |
+     | Partial ROC AUC, FPR ≤ 1% | CatBoost in all | 0.94 (0.90) | 100% / 97.5% / 99.9% | 1 | 8.2 / 4.8 / 5.7 |
+     | Average precision at 1% | CatBoost in all | 0.94 (0.90) | 99.95% / 98.6% / 97.8% | 3 | 6.2 / 5.3 / 4.8 |
+     | Average precision, mean of 0.1/1/5% | CatBoost in all | 0.94 (0.90) | 98.3% / 96.4% / 99.6% | 4 | 4.2 / 4.7 / 3.1 |
+     | Average precision, raw | CatBoost in all | 0.87 (0.81) | 100% / 99.2% / 98.9% | 2 | 14.2 / 11.5 / 10.3 |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | ROC AUC, the fallback (implemented) | `roc_auc` on each window | widest gaps between neighbours | ranks least alike across windows (tau 0.75); weighs the whole curve, while a filter works below 1% false positives |
+     | b | Partial ROC AUC up to 1% FPR | a new `partial_roc_auc` entry (McClish), origin `context` | the filter's region by name; ranks alike across windows (0.94); fewest neighbours unresolved (1 of 18) | no metric of the source |
+     | c | Average precision at 1% phishing | a new entry (benign rows reweighted to a 1% share), origin `stand_in`, original average precision | the source's metric at a rate in its range; ranks alike across windows (0.94); decided at low false-positive rates | 3 of 18 neighbours under 2 SE |
+     | d | Average precision, mean of 0.1%, 1% and 5% | the same entry with a list of rates | closest to the source's averaging over rates | the noisiest (4 of 18 under 2 SE): the 0.1% term rests on a few dozen benign pages |
+     | e | Raw average precision | `Metric.source("average_precision")` | the source's name | scores each window's phishing share (13.5% to 38.0%), not the source's rates; ranks less alike (0.87) |
+
+   * **Recommendation:** c: it ties b on the informativeness that matters here (the same ranking across windows), and is the source's own metric at a rate the source uses; b if the use case's operating region should name the metric rather than the source (one fewer unresolved pair of 18); decide web_page_phishing_detection the same way. **Decision:** a, b, c, d or e?
+
+   [^m3]: **MET-11** (Must): a `stand_in` is the closest computable metric when the source's own cannot be computed on our data; `context` is for a task that makes one metric obvious. **MET-1** (Must): the declared metric scores the decision of the use case. **MET-13** (Must): a custom metric ships in the shared metric library in the same change, with its tests.
 
 2. **Keep the canonical URL as a text input, and accept its identifier warning?**
 
@@ -345,6 +394,33 @@ CC (2026-11-26, Andrej): issue 2, as implemented (A): the canonical URL stays a 
      | f | Option c with this morning's hand list | as recommended this morning | the largest gain | the gain is Robinhood, which knowledge of the test windows put on the list |
 
    * **Recommendation:** e: it is the per-training-side design you ask for, and the framework already has it. a if you would rather not add a text input. b only if a brand flag must ship regardless, since it brings no measurable gain. f no longer. **Decision:** a, b, c, d, e or f?
+
+   **Andrej (2026-11-26, reply (e)):** The page title as a text column
+
+   **Resolved (2026-11-26, Andrej):** e: the page title ships as the text column `title`; no brand list of ours. `dataset.py`: `page_title` reads the first `<title>` tag of every page the same way (entities decoded, white space collapsed) in the one pass `_prepare_raw_files` makes over the HTML; `_clean` sets it missing where a page has none, an empty one or one over 1,000 characters (2.4% of benign, 4.0% of phishing pages; 275,877 distinct titles); `FeatureTypes(string=["url", "title"])`, so the framework's text encodings (`tfidf-svd` fitted on each training side, `e5-small-v2`) encode it; `task_summary.known`, `fit_reason` and the curation notes say so. It follows none of the recordings by class the record lists (the size floor applies before; the months with the changed HTML capture are out). By month, measured on the shipped rows:
+
+     | Month | Benign: no title / median length / HTML entities | Phishing: no title / median length / HTML entities |
+     |---|---|---|
+     | Aug 2024 | 2.3% / 46 / 9.3% | 2.9% / 26 / 6.4% |
+     | Sep 2024 | 2.2% / 46 / 9.4% | 2.8% / 29 / 7.3% |
+     | Oct 2024 | 2.1% / 47 / 9.7% | 2.5% / 23 / 5.7% |
+     | Jun 2025 | 2.6% / 47 / 10.1% | 15.1% / 27 / 5.6% |
+     | Jul 2025 | 2.6% / 46 / 10.0% | 4.0% / 25 / 3.4% |
+     | Aug 2025 | 2.7% / 46 / 9.9% | 4.4% / 23 / 4.0% |
+     | 1-7 Sep 2025 | 2.6% / 46 / 9.9% | 5.4% / 34 / 8.4% |
+
+     The benign column is flat, and the title does not tell 2025 from 2024 benign pages (ROC AUC 0.503, 5-fold; the 50 counts 0.532). Within phishing it does (0.807; the counts 0.832): the campaigns. June 2025's phishing pages without a title are one burst (342 of the 410 of 18 June), and "One moment..." heads 2,786 phishing pages of July and August 2025 and no benign one. By page size the classes lack a title alike: 9.8% of benign and 12.1% of phishing pages of 10,000 to 20,000 characters, 1.6% and 1.8% over 50,000. Scores on the shipped windows, untuned, newest first, every other column in (the URL as the framework encodes it, `tfidf-svd`):
+
+     | Model | Columns | ROC AUC | Partial ROC AUC, FPR ≤ 1% | Average precision at 1% phishing |
+     |---|---|---|---|---|
+     | LightGBM | without `title` | 0.986 / 0.913 / 0.989 | 0.832 / 0.798 / 0.843 | 0.714 / 0.624 / 0.736 |
+     | LightGBM | with `title` (`tfidf-svd`) | 0.988 / 0.921 / 0.988 | 0.848 / 0.799 / 0.858 | 0.748 / 0.626 / 0.760 |
+     | LightGBM | with `title` (`e5-small-v2`) | 0.989 / 0.925 / 0.991 | 0.876 / 0.811 / 0.857 | 0.787 / 0.649 / 0.768 |
+     | Logistic regression | without `title` | 0.918 / 0.885 / 0.968 | 0.667 / 0.692 / 0.705 | 0.324 / 0.391 / 0.430 |
+     | Logistic regression | with `title` (`tfidf-svd`) | 0.936 / 0.881 / 0.971 | 0.697 / 0.675 / 0.741 | 0.394 / 0.408 / 0.525 |
+     | Logistic regression | with `title` (`e5-small-v2`) | 0.968 / 0.906 / 0.981 | 0.757 / 0.685 / 0.768 | 0.548 / 0.417 / 0.589 |
+
+     CC line in the comments. `dataset check`: 0 errors, 0 warnings, 4 accepted.
 
 **Review panel:** ship after changes (mediator). The panel reviewed the definition before these changes (monthly windows July to September 2025 on 404,979 pages); its numbers refer to that frame. Claim audit: 23 claims, 4 refuted and 2 partly refuted, all fixed (the benign count, the share of tiny pages, URL characters stripped from benign pages only, the metric's reason, and the near-duplicate verdict, false for 8-30 September). Column audit: a minimum page size the release applied to benign pages only, carried by the tag counts (fixed). Split audit: the leaf, floors and count hold; the newest window was mostly the source's pruned test split (fixed by ending the data). Domain practitioner: fit approximate; ROC AUC misses the region a filter works in (issue 1). Precedent check: two departures, no gap and no `Selection Bias` marker (both applied). Blind review: would include with changes; drop or declare `url` (issue 2). Task gamer: same-day burst counts over test rows gain up to +0.045 (protocol line). Debate: agreed on every fix; disputed: the window layout after the cut (H) and the metric (issue 1).
 

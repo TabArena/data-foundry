@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: phreshphish_phishing_pages
 container_format: 2
-checksum: v2:07a5c610d6e9e6c28dc3dc449e0567d23304de0bdad1bcfe63070a5357c7fcd8
+checksum: v2:f6d81c80ccc6f0f83708c363b7c0db3bfbe887925722bb5f7a5082b3c8f27609
 build: null
 build_stale: false
 raw_files:
@@ -85,14 +85,14 @@ raw_files:
   data/train-055.parquet: 205a7e1cf4fb11032683e90fdbd1c13ddc9d9dd86109658d13e69929b53b31d0
 data:
   n_rows: 348287
-  n_features: 53
+  n_features: 54
   dtypes:
     category: 8
     datetime64[ns]: 1
     float32: 1
     float64: 6
     int64: 38
-    string: 1
+    string: 2
   n_test_dataset_rows: null
 task:
   target: is_phishing
@@ -149,9 +149,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `is_phishing`, scored with `roc_auc` on temporal splits by `date`. 348,287 rows and 53 features. Source: HuggingFace (2025).
+Binary classification of `is_phishing`, scored with `roc_auc` on temporal splits by `date`. 348,287 rows and 54 features. Source: HuggingFace (2025).
 
-Not built yet. The current definition gives checksum `v2:07a5c610d6e9e6c28dc3dc449e0567d23304de0bdad1bcfe63070a5357c7fcd8`.
+Not built yet. The current definition gives checksum `v2:f6d81c80ccc6f0f83708c363b7c0db3bfbe887925722bb5f7a5082b3c8f27609`.
 
 ## In brief
 
@@ -163,13 +163,13 @@ Not built yet. The current definition gives checksum `v2:07a5c610d6e9e6c28dc3dc4
 
 **Predicted.** Whether the page is phishing (21% of the pages; 12% to 50% by month).
 
-**Known at prediction time.** The URL without its scheme and query (as text and as counts: host length, dots, digits, path depth, keywords), counts of tags and words in the page (forms, password fields, links to other hosts, scripts, frames), the title's length and the page's language.
+**Known at prediction time.** The URL without its scheme and query (as text and as counts: host length, dots, digits, path depth, keywords), counts of tags and words in the page (forms, password fields, links to other hosts, scripts, frames), the title's length, the title itself as text and the page's language.
 
 **What the test data stands for.** The next four weeks: three four-week test windows, 16 June to 7 September 2025, each trained on every page collected up to one day before it (August to October 2024, then June 2025 on).
 
 **Our changes to the source.** We build the features from the URLs and HTML. The release recorded the classes differently, so for both we write the URL in one form, keep each URL's first collection and pages of 10,000 characters or more, and read nothing from how a page was written down. We keep months with both classes, up to 7 September 2025, before the source's pruned test split; the date orders the split.
 
-> **Use case fit: approximate (a stand-in with a known gap).** Pages real users opened and pages reported as phishing, rendered by one crawler, as a filter meets them. Three gaps: the URL lacks its query and scheme, which a filter sees (removed for the recording by class); the 50 features are ours, not the page a product reads; and the class mix follows the collection, not the web (benign pages missing on many days).
+> **Use case fit: approximate (a stand-in with a known gap).** Pages real users opened and pages reported as phishing, rendered by one crawler, as a filter meets them. Three gaps: the URL lacks its query and scheme, which a filter sees (removed for the recording by class); the 50 counts are ours, not the page a product reads; and the class mix follows the collection, not the web (benign pages missing on many days).
 
 ## Files in this folder
 
@@ -285,7 +285,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | Non-IID, Temporal |
 | reference | dalton2025phreshphish |
-| rows x columns | 348,287 x 55 |
+| rows x columns | 348,287 x 56 |
 | task.target | is_phishing |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -306,10 +306,10 @@ Only curators run `build`, when the dataset ships.
 | reason | The paper scores average precision and precision at recall 0.9, argued from the cost of a false positive ("Users ... are typically highly sensitive to false positives", Sec. 5.1), on subsets of its test split at fixed phishing base rates of 0.05% to 5% (the card's benchmarks). Our test windows hold 13.5% to 38.0% phishing, so average precision here would measure something else (MET-2, MET-9), and precision at recall 0.9 needs a threshold (MET-6): the fallback roc_auc, which does not depend on the class share, here set by the collection. It scores the whole curve, while a filter sets its threshold at a false-positive rate of 1% or less: on the earlier monthly windows the best of four untuned models was the same under every score, but among the three weaker ones ROC AUC ranked the URL-only LightGBM last, and the partial ROC AUC up to a 1% false-positive rate, the true-positive rate at 0.1% and the average precision at 1% phishing ranked it first. |
 
 <details>
-<summary>Feature types: 8 categorical, 1 string, 1 datetime</summary>
+<summary>Feature types: 8 categorical, 2 string, 1 datetime</summary>
 
 - categorical (8): `lang`, `host_is_ip`, `host_punycode`, `host_www`, `host_port`, `path_is_root`, `path_page_extension`, `is_phishing`
-- string (1): `url`
+- string (2): `url`, `title`
 - datetime (1): `date (%Y-%m-%d)`
 
 </details>
@@ -331,15 +331,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 348,287 rows of the final frame (the oldest rows: the frame is sorted by `date`); 12 of 55 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 348,287 rows of the final frame (the oldest rows: the frame is sorted by `date`); 12 of 56 columns, the target first. Cells are cut at 40 characters.
 
 | is_phishing | date | lang | lang_score | url | host_length | host_dots | host_hyphens | host_digits | host_digit_share | host_labels | host_longest_label |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | 2024-08-01 00:00:00 | en | 0.619766 | www.kooimaag.com/products/clockwise-cro… | 12 | 1 | 0 | 0 | 0 | 2 | 8 |
-| No | 2024-08-01 00:00:00 | it | 0.773316 | app.nonnobruno.com/ | 18 | 2 | 0 | 0 | 0 | 3 | 10 |
-| No | 2024-08-01 00:00:00 | en | 0.886648 | www.sendible.com/insights/social-media-… | 12 | 1 | 0 | 0 | 0 | 2 | 8 |
-| No | 2024-08-01 00:00:00 | en | 0.939492 | www.hourly.io/post/2022-biweekly-payrol… | 9 | 1 | 0 | 0 | 0 | 2 | 6 |
-| No | 2024-08-01 00:00:00 | en | 0.897854 | www.pcmag.com/how-to/how-to-fly-a-drone | 9 | 1 | 0 | 0 | 0 | 2 | 5 |
+| No | 2024-08-01 00:00:00 | en | 0.853278 | www.propper.com/military-uniforms.html | 11 | 1 | 0 | 0 | 0 | 2 | 7 |
+| No | 2024-08-01 00:00:00 | en | 0.82647 | www.westvalleymall.com/store/Best-Buy/2… | 18 | 1 | 0 | 0 | 0 | 2 | 14 |
+| No | 2024-08-01 00:00:00 | en | 0.654313 | www.usdermatologypartners.com/request-a… | 25 | 1 | 0 | 0 | 0 | 2 | 21 |
+| No | 2024-08-01 00:00:00 | en | 0.951258 | en.wikipedia.org/wiki/Glossary_of_poker… | 16 | 2 | 0 | 0 | 0 | 3 | 9 |
+| No | 2024-08-01 00:00:00 | en | 0.852884 | www.maine.gov/revenue/taxes/property-ta… | 9 | 1 | 0 | 0 | 0 | 2 | 5 |
 
 ## Curation notes
 
@@ -360,7 +360,8 @@ research" (CC BY 4.0).
   card's benchmarks), no new rows. The release's README is read for the field list.
 - Features are ours: the release has no table. `_prepare_raw_files` writes `phreshphish_features.parquet`
   (one pass over the HTML): the URL features of `url_features` and the counts of `html_features` (19 tag and
-  word counts, links to other hosts, empty links, the title's length; `TAG_PATTERNS`).
+  word counts, links to other hosts, empty links, the title's length; `TAG_PATTERNS`) and the page's title as
+  text (`page_title`).
 - Class-dependent recording (LEAK-13), removed from the URL: the release removed the query from benign URLs
   only (68 of 367,989 benign URLs keep one, against 11.7% of phishing URLs; Appendix A.2, where the removal of
   personal data "focused on the benign class only"), recorded 5,741 benign URLs without a scheme (no phishing
@@ -411,11 +412,26 @@ research" (CC BY 4.0).
 - Dropped: `sha256` (an id), `target` (the brand a phishing page imitates; empty on every benign page), the
   raw URL (replaced by the canonical one) and the release's split (`source_split`, a cut on the date).
 - Kept: the canonical URL as text (`url`; the filter's input, not an id, so its identifier warning is
-  accepted), `lang`, the language the release detected, and `lang_score`, its
-  confidence; the release writes -1 where it gives no language (1.0% of benign, 4.2% of phishing pages),
-  set to missing. Six 0/1 flags of ours (`host_is_ip`, `host_punycode`, `host_www`, `host_port`,
+  accepted), `lang`, the language the release detected, and `lang_score`, its confidence; the release writes
+  -1 where it gives no language (1.0% of benign, 4.2% of phishing pages), set to missing. Six 0/1 flags of ours (`host_is_ip`, `host_punycode`, `host_www`, `host_port`,
   `path_is_root`, `path_page_extension`) are categories. A `title_length` over 1,000 characters (an unclosed
   or embedded `<title>`, 25 pages) is set to missing.
+- Title (`title`, text): the page's first `<title>` tag, entities decoded and white space collapsed
+  (`page_title`), read the same way from every page; missing where the page has none, an empty one or one
+  over 1,000 characters (2.4% of benign, 4.0% of phishing pages; 275,877 distinct titles). It carries the
+  brand a page names, which none of the counts does, and is encoded like `url`, by the framework's text
+  encodings (`tfidf-svd` fitted on each training side). Checked against the recordings by class above:
+  within benign pages the share without a title (2.1% to 2.7%), the median length (46 to 47 characters) and
+  the share written with HTML entities (9.3% to 10.1%) hold in every month, and the title does not tell
+  2025 from 2024 benign pages (ROC AUC 0.503, 5-fold). By page size the classes lack a title alike above the
+  floor: 9.8% of benign and 12.1% of phishing pages of 10,000 to 20,000 characters, 1.6% and 1.8% of those
+  over 50,000. The phishing titles move with the campaigns: 15.1% of June 2025 phishing pages have none (342
+  of the 410 of 18 June), and "One moment..." heads 2,786 phishing pages of July and August 2025 and no
+  benign one. Untuned, with every other column and the URL encoded the same way, the title (`tfidf-svd`)
+  moves LightGBM's ROC AUC from 0.986, 0.913 and 0.989 (newest window first) to 0.988, 0.921 and 0.988 and
+  its partial ROC AUC up to a 1% false-positive rate from 0.832, 0.798 and 0.843 to 0.848, 0.799 and 0.858;
+  logistic regression's ROC AUC moves from 0.918, 0.885 and 0.968 to 0.936, 0.881 and 0.971. The title's
+  `e5-small-v2` embedding gives LightGBM 0.989, 0.925 and 0.991.
 - Note: registered domains recur across every window (hosting platforms such as gitbook.io, webflow.io and
   pages.dev for phishing, wikipedia.org for benign); a filter meets known domains, so the split keeps them
   (SPLIT-13). No canonical URL repeats across a cut (one row per URL). On the earlier monthly windows, a
@@ -466,9 +482,9 @@ Each test window against its train side, by statistics of the data, never of a m
 
 | window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
 |---|---|---|---|---|---|---|---|---|
-| 0 | Aug 2025 - Sep 2025 | 50120 | 0.855 | Yes 19.7% (about 9,886) | Yes 21.3% (about 63,329) | 0.038 | lang (0.04), n_meta (0.02), n_stylesheets (0.02) | 0.0001 |
-| 1 | Jul 2025 - Aug 2025 | 35257 | 0.748 | Yes 38.2% (about 13,470) | Yes 19.0% (about 49,562) | 0.119 | external_link_share (0.12), n_scripts (0.11), n_images (0.09) | 0 |
-| 2 | Jun 2025 - Jul 2025 | 42194 | 0.633 | Yes 13.6% (about 5,749) | Yes 19.8% (about 43,778) | 0.048 | n_images (0.05), n_external_links (0.04), n_buttons (0.04) | 0.0001 |
+| 0 | Aug 2025 - Sep 2025 | 50120 | 0.855 | Yes 20.0% (about 10,019) | Yes 21.2% (about 63,136) | 0.049 | lang (0.05), n_buttons (0.02), n_meta (0.02) | 0 |
+| 1 | Jul 2025 - Aug 2025 | 35257 | 0.748 | Yes 38.1% (about 13,447) | Yes 19.1% (about 49,614) | 0.12 | external_link_share (0.12), n_scripts (0.11), n_stylesheets (0.09) | 0.0001 |
+| 2 | Jun 2025 - Jul 2025 | 42194 | 0.633 | Yes 13.6% (about 5,732) | Yes 20.0% (about 44,098) | 0.055 | n_images (0.06), n_external_links (0.04), n_stylesheets (0.04) | 0.0001 |
 
 ## Bundle checks
 
@@ -487,7 +503,7 @@ Accepted on purpose:
 ### Feature summary
 
 <details>
-<summary>Show the table (55 rows)</summary>
+<summary>Show the table (56 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -514,7 +530,7 @@ Accepted on purpose:
 | host_labels | int64 | 0 | 0 | 10 | 2, 3, 4, 5, 6, 7, 8, 9, 10, 1 |
 | host_longest_label | int64 | 0 | 0 | 62 | 9, 6, 7, 10, 8, 11, 12, 4, 5, 13 |
 | tld_length | int64 | 0 | 0 | 13 | 3, 2, 4, 5, 6, 7, 8, 9, 10, 1 |
-| url_length | int64 | 0 | 0 | 432 | 29, 32, 30, 35, 28, 34, 33, 31, 37, 41 |
+| url_length | int64 | 0 | 0 | 432 | 29, 32, 30, 35, 28, 34, 33, 37, 31, 41 |
 | url_at_signs | int64 | 0 | 0 | 4 | 0, 1, 2, 4 |
 | url_percent_signs | int64 | 0 | 0 | 99 | 0, 1, 2, 3, 6, 4, 12, 9, 5, 15 |
 | url_tildes | int64 | 0 | 0 | 7 | 0, 1, 2, 3, 4, 5, 9 |
@@ -545,7 +561,8 @@ Accepted on purpose:
 | n_word_copyright | int64 | 0 | 0 | 304 | 0, 2, 1, 3, 4, 5, 6, 7, 8, 10 |
 | n_external_links | int64 | 0 | 0 | 1059 | 0, 2, 1, 3, 4, 5, 6, 9, 7, 14 |
 | n_empty_links | int64 | 0 | 0 | 675 | 0, 1, 2, 3, 4, 5, 6, 7, 11, 9 |
-| url | string | 0 | 0 | 348287 | www.kooimaag.com/products/clockwise-crop-lifter-kit, app.nonnobruno.com/, www.s… |
+| title | string | 9431 | 2.71 | 275877 | One moment..., Meta for Business - Page Appeal, Meta \| Facebook, Sign in to you… |
+| url | string | 0 | 0 | 348287 | www.propper.com/military-uniforms.html, www.westvalleymall.com/store/Best-Buy/2… |
 
 </details>
 
@@ -614,7 +631,7 @@ Accepted on purpose:
 ### Categorical features
 
 <details>
-<summary>Show the table (29 rows)</summary>
+<summary>Show the table (34 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -642,11 +659,16 @@ Accepted on purpose:
 | path_is_root | 2 | 1 | 46474 | 13.34 |
 | path_page_extension | 1 | 0 | 307333 | 88.24 |
 | path_page_extension | 2 | 1 | 40954 | 11.76 |
-| url | 1 | www.kooimaag.com/products/clockwise-crop-lifter-kit | 1 | 0 |
-| url | 2 | app.nonnobruno.com/ | 1 | 0 |
-| url | 3 | www.sendible.com/insights/social-media-icons | 1 | 0 |
-| url | 4 | www.hourly.io/post/2022-biweekly-payroll-calendar-template | 1 | 0 |
-| url | 5 | www.pcmag.com/how-to/how-to-fly-a-drone | 1 | 0 |
+| title | 1 | &lt;NA> | 9431 | 2.71 |
+| title | 2 | One moment... | 2786 | 0.8 |
+| title | 3 | Meta for Business - Page Appeal | 1847 | 0.53 |
+| title | 4 | Meta \| Facebook | 1527 | 0.44 |
+| title | 5 | Sign in to your account | 1337 | 0.38 |
+| url | 1 | www.propper.com/military-uniforms.html | 1 | 0 |
+| url | 2 | www.westvalleymall.com/store/Best-Buy/2138964981/ | 1 | 0 |
+| url | 3 | www.usdermatologypartners.com/request-an-appointment/ | 1 | 0 |
+| url | 4 | en.wikipedia.org/wiki/Glossary_of_poker_terms | 1 | 0 |
+| url | 5 | www.maine.gov/revenue/taxes/property-tax/unorganized-territory | 1 | 0 |
 
 </details>
 
