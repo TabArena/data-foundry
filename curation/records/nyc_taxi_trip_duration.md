@@ -115,6 +115,10 @@ CC (2026-11-27, Andrej): rebuilt from the TLC's open-data release (NYC Open Data
   3. **Problem:** trips faster than 120 km/h in a straight line have an impossible target. **Change:** dropped (644), as in the two sibling taxi datasets.
 - **Not changed:** the filters, the target, the metric, the one-day gap and the weekly window length.
 
+CC (2026-11-27, Andrej): the declared metric (RMSLE on trip duration in seconds, the competition's, after the inverse of the `log1p` target) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27), as rebuilt from the TLC open-data release (issue 4, C).
+
 ## Review
 
 **Outcome:** added as `nyc_taxi_trip_duration_1m`. Verdict ship on 2026-10-22; under the rule on test windows

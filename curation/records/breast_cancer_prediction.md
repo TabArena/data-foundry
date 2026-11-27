@@ -71,6 +71,10 @@ CC (2026-11-27, Andrej): the task as defined is not a forecast but the radiologi
 
 CC (2026-11-27, Andrej): review issue 2, B: the radiologist's BI-RADS assessment is dropped; the task is the risk at the screening visit, before the read (fit approximate: the one-year label and this exam's density stand in for the longer horizon and prior density of the decisions). It is the same question as `bcsc_risk_estimation` on other data (2005-2008, 36,714 women, other inputs), kept as a second dataset of that task.
 
+CC (2026-11-27, Andrej): the declared metric (ROC AUC of the predicted probability of a cancer within a year, the binary fallback; the BCSC page names none) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27), as the risk task before the read (issue 2, B).
+
 ## Review
 
 **Outcome:** added, changed: the radiologist's assessment is dropped, so the task is the breast cancer risk at the screening visit, before the read (issue 2, B, 2026-11-27). Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below (issue 1, A, 2026-11-18).
