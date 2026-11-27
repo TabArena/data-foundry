@@ -1,5 +1,19 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-27, the curator's second round on the Raman definitions (no container built)
+
+- `raman_adenine_interlaboratory`: the substrate and the laser leave the inputs (the curator's decision on the
+  review's issue 4). Each substrate was prepared with its own concentration series, so the pair bounded the answer
+  before a band was read. Re-measured on the new definition: a random forest at RMSE 2.196 against the mean
+  predictor's 2.794 on 30 of 30 splits, R2 0.281 across held-out laboratories where the full input set gave 0.488,
+  no single band above the mean predictor, no flag. The record's verdict becomes `Yes`.
+- `raman_ecoli_fermentation`: the four check warnings are accepted in `dataset.py` with the group probe's numbers
+  and the censored target's reason. Nothing open; the verdict becomes `Yes`.
+- `raman_fuel_benchtop`: nothing in the definition changes; the verdict becomes `Yes`. The shipped splits were
+  checked for the curator: 20 repeats of 3 folds, all 60 test sides and all 60 training sides distinct.
+- `raman_mlrod`: a note added on the reference library's integration times, which the split assessment measured
+  (holding out the only 0.15-second map of a mineral costs most of the score, where both slabs are 0.15 s).
+
 ## 2026-11-27, the curator's decisions on the three new Raman definitions (no container built)
 
 - `raman_adenine_colloidal_gold` is renamed `raman_adenine_interlaboratory`: the folder, the class, the record, its

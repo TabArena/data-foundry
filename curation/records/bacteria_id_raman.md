@@ -42,6 +42,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
+CC (2026-11-27, Andrej): Review issue 3, `ok`: the 5 reference isolates of the three library-only groups stay in training with the note, as the source pre-trains on all eight groups. Issues 2 and 4 are still open.
 CC (2026-11-25, Andrej): Review issue 1, `ok`: one prediction per patient, from all of its spectra, as implemented.
 
 CC (2026-11-25, Andrej): the collection type becomes `Experimental Results` in place of `Clinical Study` (Review issue 5). The rows are laboratory measurements of cultured isolates, a closed set of specimens measured by one laboratory, not a clinical study of patients; the spectra are of cultures, not of people. The walk was redone from the new type and now reaches the split the definition already ships, so the departure the issue raised is gone.
@@ -240,7 +241,9 @@ log loss on 2026-10-21). Priority 4 becomes 3 (the fit is approximate).
 
    The three groups with no patient (Ciprofloxacin, Ceftriaxone, Caspofungin; 5 isolates, 11,000 spectra) are a consequence: a model may put probability on them and is never rewarded for it, which is the level shift issue 3 is really asking about.
 
-   This issue stays open: the question was asked, not decided.
+   **Resolved (2026-11-27, Andrej):** `ok`, A as implemented: all 30 reference isolates train in every split and
+   none is tested, as the source pre-trains on the eight groups. The level the three untested groups cost stays
+   named in the review, and the warning for rows that are never tested is issue 4's to accept.
 
    **Notes for the AI:** B: in `_clean`, drop the reference rows whose group is ciprofloxacin, ceftriaxone or caspofungin (`REFERENCE_ISOLATES` 0, 1, 19, 23 and 24: groups 7, 1 and 4); update the row counts in `task_summary.row`, the library bullet and splits_comment; drop the `splits_test_class_missing` acceptance; re-run `dataset check` and the task probe. Either way, the across-datasets item on a reference library that trains and is never tested gets one Cases row with raman_mlrod.
 

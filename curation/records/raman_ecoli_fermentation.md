@@ -5,12 +5,11 @@ checked_by:
 - AI (UNVERIFIED)
 - Andrej
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Andrej
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 2
-decision_markers:
-- TBD
+decision_markers: []
 tags:
 - AI-Filled (Verify)
 - Multi-target
@@ -43,6 +42,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
+CC (2026-11-27, Andrej): Review issues 1, 2 and 3 all `ok`, so nothing is open. Glucose ships with its floor; the three group warnings and the dominant-value warning are accepted in `dataset.py` with the group probe's numbers; the Hugging Face release is confirmed as the data.
 CC (2026-11-27, Andrej): Review issue 1 stays open, with the question answered. The benchmark makes one task per target and runs both of this release's: glucose (TabPFN v2 at R2 0.971) and acetate (0.491), so the shipped target is its first and its stronger one. The `Multi-target` tag stays on the record although the folder ships one target, to keep the second visible until the benchmark can take a two-target regression.
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from the source's pages and papers (and, where the block says so, a preview of the files), NOT from building the data. A human must verify everything before relying on it.**
@@ -107,7 +107,10 @@ data confirms each. Its open point, which copy to read, is settled in issue 3.
 
    * **Recommendation:** C if the benchmark takes a two-target regression, otherwise A with the floor named in the notes, as it is. The use case is glucose, and dropping it to escape a censored target would ship a task the source does not have. **Decision:** A, B or C?
 
-   **Answer (2026-11-27, open):** "We currently don't have multi-target in the benchmark, but you could add the
+   **Resolved (2026-11-27, Andrej):** `ok`, A as implemented: glucose ships, with the floor named in the notes and
+   now in the accepted warnings. The `Multi-target` tag stays on the record so the second target is not lost.
+
+   **Answer (2026-11-27):** "We currently don't have multi-target in the benchmark, but you could add the
    appropriate tag for that. What target did RamanBench use?"
 
    Both, and glucose first. The benchmark does not choose between the targets of a release: it makes one prediction
@@ -122,7 +125,6 @@ data confirms each. Its open point, which copy to read, is settled in issue 3.
    two-regime marker is for a lowest value independent of the rest of the distribution, and a reporting floor was
    ruled out as a second regime when the tag was written.
 
-   The decision between A, B and C is still yours and the issue stays open.
 
    [^e18]: **CLEAN-18**: a release with several targets ships one and names the rest; the tag goes when the dataset
    predicts one target.
@@ -152,6 +154,10 @@ data confirms each. Its open point, which copy to read, is settled in issue 3.
 
    * **Recommendation:** A, and B as a note worth sending anyway. **Decision:** A or B?
 
+   **Resolved (2026-11-27, Andrej):** `ok`, A as implemented: the three warnings are accepted in `dataset.py`,
+   each with the group probe's numbers. The ask to the authors for the cultivation ids is worth sending and does
+   not hold the record.
+
    **Notes for the AI:** on A, add `accepted_check_warnings` for `task_group_count_low`, `groups_test_groups_few` and `groups_largest_share_high`, each citing the group probe's numbers; re-run `dataset check`.
 
 3. **Confirm that the release, not the paper's repository, is the data.**
@@ -171,6 +177,9 @@ data confirms each. Its open point, which copy to read, is settled in issue 3.
      | B | The repository file | the paper's training matrix | reproduces the paper's own model exactly | mixes in 2,261 spectra of another record and a cross-instrument grid |
 
    * **Recommendation:** A. **Decision:** confirm A, or B?
+
+   **Resolved (2026-11-27, Andrej):** `ok`, A confirmed: the Hugging Face release is the data, and the paper's
+   repository file stays declared as what it is, the model-training matrix of another record's spectra.
 
    [^e8b]: **PROV-8**: the copy that is the measurement is the data.
 

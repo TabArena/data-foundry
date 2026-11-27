@@ -5,12 +5,11 @@ checked_by:
 - AI (UNVERIFIED)
 - Andrej
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Andrej
-suggestion: TBD -> 2nd Tier
+suggestion: 'Yes'
 priority: 2
 decision_markers:
-- TBD
 - Not Representative
 tags:
 - AI-Filled (Verify)
@@ -39,6 +38,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
+CC (2026-11-27, Andrej): Review issues 1 and 4 decided, so nothing is open and the verdict becomes `Yes` (`Not Representative` stays). Issue 4 `change` B: the substrate and the laser leave the inputs because each substrate was given its own concentration series. On the rebuilt definition the probes give a random forest at RMSE 2.196 against 2.794 for the mean predictor, 30 of 30 splits, spread over the linear model +0.128 (paired SE 0.031), no flag; across held-out laboratories R2 0.281 against 0.773 on a random split. The task is smaller than it looked and is now about the spectrum.
 CC (2026-11-27, Andrej): the probes ran after the review was written and their numbers are in it. They raise a new Review issue 4: each substrate was prepared with its own concentration series (cAu to 0.90, cAg to 1.82, sAu to 4.50, sAg to 9.00), so the three bench columns alone score R2 0.341 on the shipped splits where the 534 bands alone score 0.272 and both 0.456. The spectrum inside one substrate, one laboratory held out at a time, reaches 0.19 at best. What the task measures is open until that is decided.
 CC (2026-11-27, Andrej): renamed from `raman_adenine_colloidal_gold` to `raman_adenine_interlaboratory` (Review issue 3, `change` B). The record was screened as the 225-spectrum colloidal-gold cut; the definition is the whole European interlaboratory study over all four substrates, which the record itself proposes. The folder, the class, the warehouse folder, the two sibling records that named it and the claim moved with it.
 CC (2026-11-27, Andrej): Review issue 2, `ok`: the whole 534-band axis ships with its gaps, where two laboratories' instruments did not reach every band.
@@ -65,30 +65,32 @@ CC (2026-11-27, Andrej): Review issue 2, `ok`: the whole 534-band axis ships wit
 **Outcome:** added, on the reframing you asked for. The European interlaboratory SERS study (Fornasaro et al. 2020)
 as one dataset over its own Zenodo table: 3,512 spectra from 15 laboratories, 4 substrates and 2 lasers, predicting
 the adenine concentration of a centrally prepared solution, with whole laboratories held out. `dataset check` gives 0
-errors and 2 warnings. The probes have run since and their numbers are below; they raise a fourth issue, which is
-now the one that matters. The axis and the name are settled: the whole axis ships with its gaps, and the record was
-renamed from `raman_adenine_colloidal_gold`.
+errors and 2 warnings. Nothing is open: the transfer framing carries it, the whole axis ships with its gaps, the
+record was renamed from `raman_adenine_colloidal_gold`, and the substrate and the laser are dropped, which is what the
+probes turned up and what the numbers below are measured on.
 Validity: USE-1 is the open question (issue 1). SPLIT-1 holds: the split is the study's own question, whole
 laboratories held out, the tree's Place step[^a1]. LEAK-14 avoided: the solution id, which has the same concentration
 in every laboratory, is dropped, as is the blank/calibration/test label[^a14]. LEAK-19: four spectra filed twice are
 deduplicated.
-Value: measured. LightGBM beats the mean predictor on 30 of 30 shipped splits, by 30.5% of its loss (RMSE 1.943
-against 2.794, skill +0.513 with a standard error of 0.093), and the families spread: LightGBM over the linear model
-by +0.111 with a paired standard error of 0.031, no flag. The transfer costs what the study said it would: a held-out
-laboratory scores R2 0.488 (SE 0.070) where a random split scores 0.803 (SE 0.007), a gap of 0.315, and across
-held-out laboratories a random forest reaches 0.515 and LightGBM 0.487 against a baseline of 0, which answers the
+Value: measured on the shipped definition, after the substrate and the laser were dropped (issue 4). A random
+forest beats the mean predictor on 30 of 30 splits, by 21.4% of its loss (RMSE 2.196 against 2.794, skill +0.376 with
+a standard error of 0.112), and the families spread: the random forest over the linear model by +0.128 with a paired
+standard error of 0.031, no flag. No single band carries it: the best one alone scores -0.196, worse than the mean,
+and nine different bands are picked across the 30 splits. The transfer costs what the study said it would: a held-out
+laboratory scores R2 0.281 (SE 0.091) where a random split scores 0.773 (SE 0.017), a gap of 0.492, and across
+held-out laboratories LightGBM reaches 0.279 and a random forest 0.273 against a baseline of 0, which answers the
 few-groups warning. No test row has an exact copy in training on any of the 30 splits, and the nearest-neighbour fit
-is negative. The catch is which column carries the signal, which is issue 4.
+is negative. With the two bench columns in, the same probes gave 0.456 and a single column, the substrate, picked on
+30 of 30 splits; what ships is the smaller, honest number.
 Quality: the spectrum ships as published and is declared, state `raw`; 179 rows have bands their laboratory did not
 cover (issue 2).
 Weighed: source + (paper, Zenodo with the full metadata), use case - (a method study; the transfer framing is what
 carries it), gap 0, shape + (3,512 spectra, 15 groups), risk - (a model analyte).
-For the curator: issue 4 (the substrate, measured after the rest was written) and issue 1 (the use case, which
-decides whether it ships). Issues 2 and 3 are settled.
+For the curator: nothing open. All four issues are settled, and the verdict is `Yes`.
 
-**Main points:** Issue 4 came out of the probes and should be read first: the substrate column fixes the range of the
-answer, and the bench columns alone score better than the whole spectrum. Issue 1 is still the one that decides it,
-and issue 4 changes the number it is decided on. Issues 2 and 3 are settled.
+**Main points:** all four issues are settled. The one with consequences was issue 4: the substrate and the laser
+bounded the answer's range, and dropping them took the task from R2 0.456 to 0.281 across held-out laboratories, which
+is what the dataset is actually worth.
 
 **Record judgment:** the record is valid but its name is not. It was screened as the smallest of four substrate cuts
 (225 spectra) and says the other three are aliases of it; this definition is the one dataset over all four that the
@@ -114,6 +116,10 @@ concentration. Priority rises from 2 to 3: the shape factor turns plus (3,512 sp
      | B | Don't ship, marker `No Good Target / Scientific Discovery` | the record returns to `2nd Tier` or `No` | the strictest reading of the screening's objection | discards the only interlaboratory design in the collection |
 
    * **Recommendation:** A, which is the reframing you asked for; the fit is `approximate` and says why. **Decision:** A or B?
+
+   **Resolved (2026-11-27, Andrej):** `ok`, A as implemented: it ships on the transfer framing, and the record's
+   verdict becomes `Yes`. The `Not Representative` marker stays: adenine in buffer is still a model analyte, which
+   is what the approximate fit records.
 
    **Notes for the AI:** on B, `suggestion` `No`, the marker, a CC line, and the folder removed.
 
@@ -190,6 +196,13 @@ concentration. Priority rises from 2 to 3: the shape factor turns plus (3,512 sp
      | C | Ship the sAg cut alone | 1,851 spectra, 10 laboratories, one series | one concentration range and one method, so the transfer question stands on its own | the thinnest version: R2 about 0.19 across held-out laboratories, negative on 4 of 10, and three substrates leave |
 
    * **Recommendation:** B. The use case is a laboratory reading an unknown sample, which the substrate does not bound, and the measured value of the task drops from 0.456 to 0.272 when that stand-in goes, which is the number worth knowing before issue 1 is decided. C is the cleanest question and the weakest dataset. **Decision:** A, B or C?
+
+   **Resolved (2026-11-27, Andrej):** `change`, B: the substrate and the laser are dropped in `_clean`, and the
+   substrate batch stays as the one bench column a laboratory holds that carries no concentration range. Re-run on
+   the new definition, the probes give what the option promised: a random forest at RMSE 2.196 against the mean
+   predictor's 2.794 on 30 of 30 splits, R2 0.281 across held-out laboratories where the whole set of inputs gave
+   0.488, and no single band above the mean predictor. `dataset check` still gives 0 errors and the same two
+   warnings.
 
    [^a4]: **LEAK-14** reaches a column that carries the target through the collection's design, not only a copy of it; the solution id was dropped here for that reason.
 

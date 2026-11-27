@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: raman_adenine_interlaboratory
 container_format: 2
-checksum: v2:85e062e5b34a98d84ba21fcf4cb04885223c7f18fcff3a2820efcd9946079789
+checksum: v2:9a44e8519b525266affb80a85aeab8ae79dd610a0b70a1c71980423f71e943c3
 build: null
 build_stale: false
 data:
   n_rows: 3512
-  n_features: 537
+  n_features: 535
   dtypes:
-    category: 4
+    category: 2
     float64: 181
     int64: 354
   n_test_dataset_rows: null
@@ -65,9 +65,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `conc`, scored with `rmse` on grouped splits by `labcode`. 3,512 rows and 537 features. Source: Other (2019).
+Regression of `conc`, scored with `rmse` on grouped splits by `labcode`. 3,512 rows and 535 features. Source: Other (2019).
 
-Not built yet. The current definition gives checksum `v2:85e062e5b34a98d84ba21fcf4cb04885223c7f18fcff3a2820efcd9946079789`.
+Not built yet. The current definition gives checksum `v2:9a44e8519b525266affb80a85aeab8ae79dd610a0b70a1c71980423f71e943c3`.
 
 ## In brief
 
@@ -79,11 +79,11 @@ Not built yet. The current definition gives checksum `v2:85e062e5b34a98d84ba21fc
 
 **Predicted.** The adenine concentration of the solution, in the units the study prepared it to.
 
-**Known at prediction time.** The spectrum, and what the measuring laboratory knows about its own bench: the substrate, the laser wavelength and which of the three substrate batches it used.
+**Known at prediction time.** The spectrum, and which of the three substrate batches the laboratory used. Not the substrate or the laser: each substrate was given its own concentration series, so the pair would bound the answer.
 
 **What the test data stands for.** A laboratory that did not take part in building the model.
 
-**Our changes to the source.** All four substrate cuts are read as one dataset, over the source's own table rather than the benchmark's per-substrate files. The solution's identity, the blank/calibration/test label and the method string are dropped: each would hand over the concentration or copy another column.
+**Our changes to the source.** All four substrate cuts are read as one dataset, over the source's own table rather than the benchmark's per-substrate files. The solution's identity, the blank/calibration/test label and the method string are dropped: each would hand over the concentration or copy another column. The substrate and the laser are dropped too, because the study gave each substrate its own concentration series and the pair would stand in for the answer's range.
 
 > **Use case fit: approximate (a stand-in with a known gap).** Adenine in buffer is a model analyte, so nobody acts on the number itself; what is real is the transfer question the study was built to ask, and the split puts it to the test by holding out whole laboratories. The study calibrated each laboratory on its own samples, where this task asks a model to reach a laboratory it has not seen.
 
@@ -130,7 +130,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | Non-IID, Grouped, UnseenGroup |
 | reference | fornasaro2020sers |
-| rows x columns | 3,512 x 539 |
+| rows x columns | 3,512 x 537 |
 | task.target | conc |
 | task.problem_type | regression |
 | task.metric | rmse |
@@ -148,9 +148,9 @@ Only curators run `build`, when the dataset ships.
 | reason | The study reports no one score for a model. It fits a linear calibration per laboratory and reads it out as the slope, the intercept and the recovery of the test solutions, which judge a bench and not a prediction (MET-6). The Zenodo record names no metric and the benchmark scores the four files by its own convention, which is no choice of this source (EV-4). So the regression fallback. |
 
 <details>
-<summary>Feature types: 4 categorical, 0 string, 0 datetime, spectrum `raman_spectrum`</summary>
+<summary>Feature types: 2 categorical, 0 string, 0 datetime, spectrum `raman_spectrum`</summary>
 
-- categorical (4): `labcode`, `substrate`, `laser`, `batch`
+- categorical (2): `labcode`, `batch`
 - string (0): none
 - datetime (0): none
 - special feature `raman_spectrum`: spectrum, a group of 534 columns (raman, raw, cm-1 400 to 1999); numbers a model can read; recommended encoding spectrum-as-is-r1; columns `raman_400` to `raman_1999`
@@ -175,15 +175,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 3,512 rows of the final frame (random rows: the frame is shuffled); 12 of 539 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 3,512 rows of the final frame (random rows: the frame is shuffled); 12 of 537 columns, the target first. Cells are cut at 40 characters.
 
-| conc | labcode | substrate | laser | batch | raman_400 | raman_403 | raman_406 | raman_409 | raman_412 | raman_415 | raman_418 |
+| conc | labcode | batch | raman_400 | raman_403 | raman_406 | raman_409 | raman_412 | raman_415 | raman_418 | raman_421 | raman_424 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | P06 | sAu | 785 | 1 | 1158 | 1155 | 1153 | 1150 | 1147 | 1143 | 1140 |
-| 4 | P15 | sAg | 532 | 2 | 14425 | 14490 | 14548 | 14604 | 14658 | 14706 | 14786 |
-| 0 | P14 | sAg | 532 | 2 | 1845 | 1866 | 1881 | 1894 | 1906 | 1921 | 1934 |
-| 3.27 | P10 | sAu | 785 | 3 | 32873 | 32641 | 32400 | 32148 | 31882 | 31567 | 31149 |
-| 7 | P18 | sAg | 532 | 1 | 5584 | 5604 | 5623 | 5641 | 5656 | 5670 | 5682 |
+| 5.13 | P15 | 1 | nan | nan | nan | nan | nan | nan | nan | nan | nan |
+| 0.93 | P01 | 3 | 363 | 358 | 357 | 356 | 358 | 360 | 354 | 346 | 352 |
+| 0 | P18 | 3 | 13585 | 13576 | 13566 | 13554 | 13541 | 13527 | 13496 | 13459 | 13428 |
+| 0 | P01 | 1 | 6024 | 5989 | 5978 | 5989 | 5952 | 5872 | 5857 | 5851 | 5830 |
+| 6 | P15 | 1 | 4739 | 4775 | 4799 | 4814 | 4822 | 4779 | 4735 | 4720 | 4743 |
 
 ## Curation notes
 
@@ -210,9 +210,9 @@ solution, type, concentration, batch and replicate of each.
   the centrally prepared solution (C0 to C9, X1 to X5), and a solution has the same concentration in every
   laboratory, so it is a lookup table for the target. `type` separates blanks, which are always 0, from
   calibration and test solutions. `method` is the substrate and the laser joined with an `@`.
-- What stays as an input beside the spectrum: the substrate (cAg, cAu, sAg, sAu), the laser (532 or 785
-  nm) and the substrate batch (1, 2 or 3). A laboratory knows all three about its own bench before it
-  measures. The replicate letter stays out: it names the repeat, not a property of the measurement.
+- What stays as an input beside the spectrum: the substrate batch (1, 2 or 3), which a laboratory knows
+  about its own bench and which carries no concentration range. The replicate letter stays out: it names
+  the repeat, not a property of the measurement. The substrate and the laser are dropped (below).
 - The spectrum ships as the study published it and is declared as one (`special_features`, CLEAN-26),
   state `raw`. Bands a laboratory's instrument did not cover are missing in the source's table, and they
   stay missing: 180 of the 3,516 rows (5.1%) have a gap, almost all of them in two laboratories (P15 at
@@ -225,10 +225,13 @@ solution, type, concentration, batch and replicate of each.
   two substrate batches. The copy is dropped and the first row kept (LEAK-19), which leaves 3,512. Both
   rows of every pair sit in one laboratory, so no split could have separated them.
 - 3,512 spectra over 15 laboratories, 43 distinct concentrations from 0 to 9, 234 of them blanks.
-- Each substrate has its own concentration series, which the curator has an open issue on: cAu runs from
-  0 to 0.90, cAg to 1.82, sAu to 4.50 and sAg to 9.00, so the substrate column bounds the answer before a
-  band is read. On the shipped splits the three bench columns alone reach R2 0.341 against 0.272 for the
-  534 bands alone and 0.456 for both, so most of the score is which series a spectrum belongs to.
+- The substrate and the laser are dropped because each substrate was given its own concentration series:
+  cAu runs from 0 to 0.90, cAg to 1.82, sAu to 4.50 and sAg to 9.00, so the pair bounds the answer before a
+  band is read. Measured on the shipped splits before the drop, the three bench columns alone reached R2
+  0.341 where the 534 bands alone reached 0.272 and both together 0.456, so most of the score was which
+  series a spectrum belonged to and not what the spectrum showed. A laboratory measuring an unknown sample
+  knows its substrate but not that the substrate bounds the concentration, so the pair is a property of the
+  study's design and not of the prediction point (the curator's decision, 2026-11-27).
 - Time basis: UnseenGroup: the use case is a laboratory that did not take part in building the model, which is a group the data does not contain, so whole laboratories are held out with all their spectra, batches and replicates. The concentration of a prepared solution does not change with time and no row carries a date; the three substrate batches are a bench property, not a calendar. The split cannot test a substrate or a laser the study did not cover.
 
 ## Splits
@@ -314,72 +317,72 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 ### Feature summary
 
 <details>
-<summary>Show the table (539 rows)</summary>
+<summary>Show the table (537 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | labcode | category | 0 | 0 | 15 | P01, P04, P08, P18, P15, P09, P06, P16, P13, P14 |
-| substrate | category | 0 | 0 | 4 | sAg, sAu, cAg, cAu |
-| laser | category | 0 | 0 | 2 | 785, 532 |
 | batch | category | 0 | 0 | 3 | 1, 2, 3 |
-| raman_1801 | float64 | 179 | 5.1 | 2956 | 975.0, 971.0, 980.0, 964.0, 992.0, 968.0, 969.0, 1002.0, 977.0, 997.0 |
-| raman_1804 | float64 | 179 | 5.1 | 2950 | 968.0, 987.0, 964.0, 974.0, 975.0, 992.0, 982.0, 977.0, 961.0, 970.0 |
-| raman_1807 | float64 | 179 | 5.1 | 2987 | 968.0, 974.0, 979.0, 982.0, 987.0, 991.0, 1499.0, 971.0, 986.0, 976.0 |
-| raman_1810 | float64 | 179 | 5.1 | 2961 | 974.0, 975.0, 1028.0, 968.0, 982.0, 970.0, 1000.0, 1477.0, 977.0, 1461.0 |
-| raman_1813 | float64 | 179 | 5.1 | 2927 | 982.0, 973.0, 975.0, 974.0, 987.0, 1149.0, 978.0, 964.0, 981.0, 968.0 |
-| raman_1816 | float64 | 179 | 5.1 | 2922 | 973.0, 967.0, 975.0, 971.0, 981.0, 968.0, 991.0, 974.0, 977.0, 960.0 |
-| raman_1819 | float64 | 179 | 5.1 | 2970 | 973.0, 980.0, 964.0, 974.0, 968.0, 977.0, 3183.0, 960.0, 970.0, 975.0 |
-| raman_1822 | float64 | 179 | 5.1 | 2941 | 974.0, 970.0, 990.0, 973.0, 967.0, 977.0, 972.0, 960.0, 2688.0, 969.0 |
-| raman_1825 | float64 | 179 | 5.1 | 2929 | 977.0, 973.0, 974.0, 963.0, 970.0, 967.0, 990.0, 1146.0, 1471.0, 968.0 |
-| raman_1828 | float64 | 179 | 5.1 | 2938 | 967.0, 978.0, 966.0, 973.0, 958.0, 961.0, 974.0, 989.0, 1484.0, 970.0 |
-| raman_1831 | float64 | 179 | 5.1 | 2944 | 974.0, 976.0, 967.0, 961.0, 989.0, 963.0, 1177.0, 972.0, 966.0, 982.0 |
-| raman_1834 | float64 | 179 | 5.1 | 2944 | 966.0, 974.0, 1492.0, 977.0, 973.0, 976.0, 972.0, 988.0, 982.0, 968.0 |
-| raman_1837 | float64 | 179 | 5.1 | 2930 | 977.0, 966.0, 973.0, 988.0, 960.0, 975.0, 982.0, 1551.0, 1175.0, 969.0 |
-| raman_1840 | float64 | 179 | 5.1 | 2939 | 972.0, 973.0, 977.0, 965.0, 966.0, 987.0, 6189.0, 959.0, 971.0, 968.0 |
-| raman_1843 | float64 | 179 | 5.1 | 2961 | 973.0, 972.0, 966.0, 961.0, 965.0, 968.0, 983.0, 1525.0, 981.0, 969.0 |
-| raman_1846 | float64 | 179 | 5.1 | 2935 | 972.0, 971.0, 981.0, 973.0, 961.0, 1191.0, 967.0, 987.0, 965.0, 1499.0 |
-| raman_1849 | float64 | 179 | 5.1 | 2954 | 972.0, 975.0, 997.0, 971.0, 973.0, 966.0, 965.0, 962.0, 978.0, 968.0 |
-| raman_1852 | float64 | 179 | 5.1 | 2903 | 971.0, 973.0, 968.0, 972.0, 975.0, 964.0, 978.0, 1195.0, 987.0, 961.0 |
-| raman_1855 | float64 | 179 | 5.1 | 2921 | 971.0, 972.0, 962.0, 964.0, 967.0, 1434.0, 977.0, 961.0, 975.0, 974.0 |
-| raman_1858 | float64 | 179 | 5.1 | 2942 | 971.0, 964.0, 967.0, 966.0, 975.0, 987.0, 962.0, 973.0, 972.0, 1171.0 |
-| raman_1861 | float64 | 179 | 5.1 | 2938 | 973.0, 972.0, 971.0, 968.0, 967.0, 964.0, 962.0, 965.0, 987.0, 966.0 |
-| raman_1864 | float64 | 179 | 5.1 | 2925 | 965.0, 974.0, 967.0, 972.0, 1187.0, 973.0, 960.0, 970.0, 968.0, 971.0 |
-| raman_1867 | float64 | 179 | 5.1 | 2922 | 967.0, 965.0, 964.0, 973.0, 974.0, 960.0, 971.0, 969.0, 985.0, 981.0 |
-| raman_1870 | float64 | 179 | 5.1 | 2931 | 967.0, 971.0, 974.0, 965.0, 973.0, 978.0, 964.0, 989.0, 969.0, 961.0 |
-| raman_1873 | float64 | 179 | 5.1 | 2944 | 961.0, 967.0, 971.0, 964.0, 973.0, 965.0, 975.0, 969.0, 989.0, 979.0 |
-| raman_1876 | float64 | 179 | 5.1 | 2941 | 969.0, 961.0, 965.0, 2534.0, 967.0, 971.0, 981.0, 983.0, 970.0, 962.0 |
-| raman_1879 | float64 | 179 | 5.1 | 2927 | 965.0, 967.0, 971.0, 969.0, 961.0, 976.0, 970.0, 983.0, 964.0, 1484.0 |
-| raman_1882 | float64 | 179 | 5.1 | 2940 | 971.0, 967.0, 964.0, 975.0, 961.0, 969.0, 974.0, 2050.0, 959.0, 1195.0 |
-| raman_1885 | float64 | 179 | 5.1 | 2920 | 970.0, 967.0, 987.0, 5399.0, 975.0, 973.0, 1306.0, 983.0, 3376.0, 969.0 |
-| raman_1888 | float64 | 179 | 5.1 | 2946 | 970.0, 964.0, 977.0, 975.0, 973.0, 967.0, 966.0, 986.0, 965.0, 972.0 |
-| raman_1891 | float64 | 179 | 5.1 | 2911 | 970.0, 987.0, 972.0, 965.0, 975.0, 963.0, 1967.0, 1184.0, 966.0, 981.0 |
-| raman_1894 | float64 | 179 | 5.1 | 2914 | 972.0, 965.0, 1020.0, 974.0, 968.0, 958.0, 1430.0, 997.0, 986.0, 969.0 |
-| raman_1897 | float64 | 179 | 5.1 | 2915 | 972.0, 965.0, 958.0, 966.0, 980.0, 970.0, 997.0, 982.0, 986.0, 975.0 |
-| raman_1900 | float64 | 179 | 5.1 | 2942 | 966.0, 970.0, 972.0, 960.0, 976.0, 974.0, 986.0, 964.0, 961.0, 982.0 |
-| raman_1903 | float64 | 179 | 5.1 | 2930 | 972.0, 974.0, 968.0, 970.0, 960.0, 964.0, 961.0, 966.0, 967.0, 977.0 |
-| raman_1906 | float64 | 179 | 5.1 | 2940 | 964.0, 961.0, 968.0, 972.0, 970.0, 971.0, 983.0, 986.0, 975.0, 966.0 |
-| raman_1909 | float64 | 179 | 5.1 | 2921 | 964.0, 966.0, 971.0, 967.0, 975.0, 972.0, 961.0, 984.0, 976.0, 968.0 |
-| raman_1912 | float64 | 179 | 5.1 | 2930 | 971.0, 964.0, 970.0, 968.0, 985.0, 987.0, 981.0, 976.0, 967.0, 996.0 |
-| raman_1915 | float64 | 179 | 5.1 | 2903 | 970.0, 971.0, 987.0, 976.0, 963.0, 980.0, 973.0, 2256.0, 985.0, 964.0 |
-| raman_1918 | float64 | 179 | 5.1 | 2911 | 970.0, 969.0, 971.0, 963.0, 957.0, 984.0, 987.0, 964.0, 980.0, 962.0 |
-| raman_1921 | float64 | 179 | 5.1 | 2905 | 971.0, 984.0, 969.0, 975.0, 963.0, 965.0, 962.0, 960.0, 972.0, 970.0 |
-| raman_1924 | float64 | 179 | 5.1 | 2922 | 969.0, 971.0, 964.0, 984.0, 965.0, 1005.0, 960.0, 963.0, 962.0, 986.0 |
-| raman_1927 | float64 | 179 | 5.1 | 2934 | 971.0, 972.0, 965.0, 969.0, 976.0, 963.0, 960.0, 964.0, 968.0, 984.0 |
-| raman_1930 | float64 | 179 | 5.1 | 2934 | 963.0, 965.0, 984.0, 971.0, 960.0, 966.0, 972.0, 958.0, 969.0, 968.0 |
-| raman_1933 | float64 | 179 | 5.1 | 2929 | 963.0, 968.0, 972.0, 965.0, 975.0, 971.0, 984.0, 979.0, 969.0, 967.0 |
-| raman_1936 | float64 | 179 | 5.1 | 2920 | 984.0, 965.0, 963.0, 972.0, 968.0, 954.0, 969.0, 967.0, 979.0, 959.0 |
-| raman_1939 | float64 | 179 | 5.1 | 2916 | 967.0, 974.0, 969.0, 979.0, 963.0, 959.0, 972.0, 968.0, 1192.0, 970.0 |
-| raman_1942 | float64 | 179 | 5.1 | 2906 | 969.0, 964.0, 972.0, 1157.0, 967.0, 978.0, 981.0, 3311.0, 968.0, 1118.0 |
-| raman_1945 | float64 | 179 | 5.1 | 2919 | 969.0, 971.0, 979.0, 963.0, 974.0, 964.0, 978.0, 973.0, 967.0, 968.0 |
-| raman_1948 | float64 | 179 | 5.1 | 2917 | 969.0, 967.0, 973.0, 963.0, 959.0, 962.0, 980.0, 960.0, 979.0, 982.0 |
-| raman_1951 | float64 | 179 | 5.1 | 2906 | 967.0, 968.0, 969.0, 979.0, 973.0, 963.0, 1199.0, 962.0, 959.0, 3108.0 |
-| raman_1954 | float64 | 179 | 5.1 | 2905 | 969.0, 971.0, 968.0, 967.0, 973.0, 972.0, 983.0, 993.0, 963.0, 961.0 |
-| raman_1957 | float64 | 179 | 5.1 | 2922 | 973.0, 967.0, 971.0, 969.0, 963.0, 983.0, 959.0, 965.0, 968.0, 972.0 |
-| raman_1960 | float64 | 179 | 5.1 | 2911 | 969.0, 982.0, 958.0, 963.0, 961.0, 966.0, 971.0, 968.0, 967.0, 973.0 |
-| raman_1963 | float64 | 179 | 5.1 | 2924 | 966.0, 969.0, 962.0, 968.0, 973.0, 982.0, 967.0, 972.0, 970.0, 1392.0 |
-| raman_1966 | float64 | 179 | 5.1 | 2891 | 968.0, 970.0, 2546.0, 962.0, 958.0, 973.0, 967.0, 960.0, 966.0, 1180.0 |
+| raman_1801 | float64 | 179 | 5.1 | 2956 | 975.0, 971.0, 992.0, 964.0, 968.0, 980.0, 976.0, 969.0, 997.0, 989.0 |
+| raman_1804 | float64 | 179 | 5.1 | 2950 | 968.0, 964.0, 975.0, 974.0, 982.0, 987.0, 992.0, 961.0, 962.0, 978.0 |
+| raman_1807 | float64 | 179 | 5.1 | 2987 | 968.0, 974.0, 979.0, 982.0, 1499.0, 976.0, 971.0, 991.0, 987.0, 986.0 |
+| raman_1810 | float64 | 179 | 5.1 | 2961 | 974.0, 975.0, 1028.0, 970.0, 968.0, 982.0, 977.0, 965.0, 1000.0, 1477.0 |
+| raman_1813 | float64 | 179 | 5.1 | 2927 | 982.0, 975.0, 973.0, 974.0, 1149.0, 978.0, 987.0, 964.0, 2298.0, 985.0 |
+| raman_1816 | float64 | 179 | 5.1 | 2922 | 973.0, 967.0, 975.0, 981.0, 968.0, 971.0, 974.0, 999.0, 978.0, 980.0 |
+| raman_1819 | float64 | 179 | 5.1 | 2970 | 973.0, 974.0, 964.0, 980.0, 968.0, 970.0, 960.0, 979.0, 3183.0, 969.0 |
+| raman_1822 | float64 | 179 | 5.1 | 2941 | 974.0, 970.0, 973.0, 990.0, 967.0, 977.0, 960.0, 983.0, 2688.0, 978.0 |
+| raman_1825 | float64 | 179 | 5.1 | 2929 | 974.0, 973.0, 977.0, 1146.0, 990.0, 967.0, 1471.0, 963.0, 970.0, 968.0 |
+| raman_1828 | float64 | 179 | 5.1 | 2938 | 978.0, 967.0, 966.0, 989.0, 961.0, 958.0, 973.0, 974.0, 982.0, 4884.0 |
+| raman_1831 | float64 | 179 | 5.1 | 2944 | 974.0, 976.0, 967.0, 963.0, 966.0, 989.0, 972.0, 1177.0, 961.0, 6840.0 |
+| raman_1834 | float64 | 179 | 5.1 | 2944 | 966.0, 976.0, 973.0, 1492.0, 974.0, 977.0, 960.0, 985.0, 982.0, 970.0 |
+| raman_1837 | float64 | 179 | 5.1 | 2930 | 966.0, 977.0, 973.0, 988.0, 971.0, 969.0, 3240.0, 1551.0, 982.0, 989.0 |
+| raman_1840 | float64 | 179 | 5.1 | 2939 | 972.0, 973.0, 977.0, 965.0, 966.0, 959.0, 960.0, 6189.0, 968.0, 971.0 |
+| raman_1843 | float64 | 179 | 5.1 | 2961 | 973.0, 966.0, 972.0, 983.0, 961.0, 968.0, 965.0, 987.0, 967.0, 960.0 |
+| raman_1846 | float64 | 179 | 5.1 | 2935 | 971.0, 972.0, 981.0, 973.0, 987.0, 965.0, 1191.0, 967.0, 961.0, 968.0 |
+| raman_1849 | float64 | 179 | 5.1 | 2954 | 972.0, 971.0, 975.0, 997.0, 973.0, 966.0, 965.0, 962.0, 967.0, 961.0 |
+| raman_1852 | float64 | 179 | 5.1 | 2903 | 968.0, 971.0, 972.0, 973.0, 964.0, 1195.0, 987.0, 978.0, 966.0, 961.0 |
+| raman_1855 | float64 | 179 | 5.1 | 2921 | 972.0, 971.0, 964.0, 962.0, 974.0, 1434.0, 977.0, 967.0, 1501.0, 961.0 |
+| raman_1858 | float64 | 179 | 5.1 | 2942 | 971.0, 964.0, 967.0, 966.0, 962.0, 987.0, 975.0, 972.0, 973.0, 961.0 |
+| raman_1861 | float64 | 179 | 5.1 | 2938 | 973.0, 971.0, 968.0, 972.0, 962.0, 964.0, 967.0, 966.0, 958.0, 965.0 |
+| raman_1864 | float64 | 179 | 5.1 | 2925 | 965.0, 974.0, 967.0, 973.0, 960.0, 970.0, 972.0, 1187.0, 968.0, 971.0 |
+| raman_1867 | float64 | 179 | 5.1 | 2922 | 967.0, 965.0, 964.0, 960.0, 985.0, 973.0, 974.0, 971.0, 969.0, 1096.0 |
+| raman_1870 | float64 | 179 | 5.1 | 2931 | 967.0, 974.0, 971.0, 964.0, 969.0, 961.0, 973.0, 978.0, 989.0, 965.0 |
+| raman_1873 | float64 | 179 | 5.1 | 2944 | 961.0, 967.0, 964.0, 965.0, 971.0, 973.0, 975.0, 989.0, 969.0, 979.0 |
+| raman_1876 | float64 | 179 | 5.1 | 2941 | 969.0, 961.0, 965.0, 981.0, 2534.0, 971.0, 967.0, 986.0, 976.0, 970.0 |
+| raman_1879 | float64 | 179 | 5.1 | 2927 | 965.0, 967.0, 971.0, 976.0, 970.0, 961.0, 969.0, 1170.0, 981.0, 974.0 |
+| raman_1882 | float64 | 179 | 5.1 | 2940 | 971.0, 967.0, 964.0, 969.0, 975.0, 961.0, 987.0, 2050.0, 5754.0, 981.0 |
+| raman_1885 | float64 | 179 | 5.1 | 2920 | 970.0, 967.0, 5399.0, 973.0, 987.0, 1306.0, 975.0, 959.0, 977.0, 988.0 |
+| raman_1888 | float64 | 179 | 5.1 | 2946 | 970.0, 975.0, 964.0, 977.0, 973.0, 4824.0, 1442.0, 967.0, 991.0, 961.0 |
+| raman_1891 | float64 | 179 | 5.1 | 2911 | 970.0, 972.0, 987.0, 965.0, 975.0, 956.0, 1184.0, 981.0, 968.0, 974.0 |
+| raman_1894 | float64 | 179 | 5.1 | 2914 | 972.0, 965.0, 1020.0, 974.0, 970.0, 1164.0, 1138.0, 982.0, 958.0, 969.0 |
+| raman_1897 | float64 | 179 | 5.1 | 2915 | 972.0, 958.0, 965.0, 966.0, 982.0, 986.0, 970.0, 997.0, 980.0, 2416.0 |
+| raman_1900 | float64 | 179 | 5.1 | 2942 | 970.0, 966.0, 972.0, 960.0, 976.0, 961.0, 982.0, 974.0, 986.0, 964.0 |
+| raman_1903 | float64 | 179 | 5.1 | 2930 | 974.0, 972.0, 964.0, 960.0, 961.0, 966.0, 967.0, 970.0, 968.0, 971.0 |
+| raman_1906 | float64 | 179 | 5.1 | 2940 | 964.0, 972.0, 961.0, 968.0, 975.0, 986.0, 966.0, 970.0, 983.0, 971.0 |
+| raman_1909 | float64 | 179 | 5.1 | 2921 | 971.0, 964.0, 966.0, 967.0, 961.0, 975.0, 972.0, 968.0, 1490.0, 970.0 |
+| raman_1912 | float64 | 179 | 5.1 | 2930 | 971.0, 970.0, 964.0, 987.0, 967.0, 981.0, 985.0, 968.0, 976.0, 1204.0 |
+| raman_1915 | float64 | 179 | 5.1 | 2903 | 970.0, 971.0, 976.0, 963.0, 987.0, 980.0, 973.0, 985.0, 2256.0, 964.0 |
+| raman_1918 | float64 | 179 | 5.1 | 2911 | 969.0, 970.0, 971.0, 957.0, 963.0, 980.0, 962.0, 987.0, 964.0, 984.0 |
+| raman_1921 | float64 | 179 | 5.1 | 2905 | 971.0, 984.0, 969.0, 963.0, 975.0, 960.0, 962.0, 970.0, 965.0, 972.0 |
+| raman_1924 | float64 | 179 | 5.1 | 2922 | 969.0, 971.0, 964.0, 984.0, 962.0, 960.0, 965.0, 986.0, 1005.0, 963.0 |
+| raman_1927 | float64 | 179 | 5.1 | 2934 | 972.0, 971.0, 965.0, 969.0, 963.0, 976.0, 968.0, 964.0, 960.0, 984.0 |
+| raman_1930 | float64 | 179 | 5.1 | 2934 | 963.0, 965.0, 971.0, 984.0, 960.0, 972.0, 966.0, 969.0, 958.0, 968.0 |
+| raman_1933 | float64 | 179 | 5.1 | 2929 | 963.0, 968.0, 972.0, 965.0, 969.0, 979.0, 971.0, 984.0, 975.0, 966.0 |
+| raman_1936 | float64 | 179 | 5.1 | 2920 | 984.0, 963.0, 965.0, 972.0, 968.0, 979.0, 1287.0, 967.0, 959.0, 954.0 |
+| raman_1939 | float64 | 179 | 5.1 | 2916 | 974.0, 969.0, 967.0, 959.0, 972.0, 968.0, 963.0, 979.0, 981.0, 970.0 |
+| raman_1942 | float64 | 179 | 5.1 | 2906 | 969.0, 972.0, 964.0, 978.0, 967.0, 1157.0, 968.0, 974.0, 2090.0, 962.0 |
+| raman_1945 | float64 | 179 | 5.1 | 2919 | 969.0, 978.0, 964.0, 967.0, 971.0, 974.0, 963.0, 968.0, 973.0, 979.0 |
+| raman_1948 | float64 | 179 | 5.1 | 2917 | 969.0, 967.0, 963.0, 973.0, 959.0, 962.0, 1981.0, 966.0, 1465.0, 971.0 |
+| raman_1951 | float64 | 179 | 5.1 | 2906 | 968.0, 967.0, 979.0, 969.0, 963.0, 959.0, 973.0, 1199.0, 962.0, 993.0 |
+| raman_1954 | float64 | 179 | 5.1 | 2905 | 969.0, 967.0, 971.0, 968.0, 993.0, 963.0, 973.0, 972.0, 983.0, 961.0 |
+| raman_1957 | float64 | 179 | 5.1 | 2922 | 973.0, 967.0, 971.0, 969.0, 983.0, 963.0, 965.0, 959.0, 968.0, 976.0 |
+| raman_1960 | float64 | 179 | 5.1 | 2911 | 969.0, 982.0, 961.0, 963.0, 958.0, 959.0, 966.0, 967.0, 971.0, 968.0 |
+| raman_1963 | float64 | 179 | 5.1 | 2924 | 966.0, 968.0, 969.0, 973.0, 962.0, 958.0, 982.0, 970.0, 972.0, 1392.0 |
+| raman_1966 | float64 | 179 | 5.1 | 2891 | 968.0, 2546.0, 970.0, 962.0, 967.0, 973.0, 958.0, 966.0, 975.0, 1270.0 |
+| raman_1969 | float64 | 179 | 5.1 | 2929 | 962.0, 967.0, 968.0, 960.0, 973.0, 958.0, 1174.0, 966.0, 981.0, 970.0 |
+| raman_1972 | float64 | 179 | 5.1 | 2906 | 966.0, 968.0, 962.0, 967.0, 980.0, 961.0, 958.0, 956.0, 965.0, 970.0 |
 
-(479 more rows not shown)
+(477 more rows not shown)
 
 </details>
 
@@ -463,9 +466,6 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ### Categorical features
 
-<details>
-<summary>Show the table (14 rows)</summary>
-
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | batch | 1 | 1 | 1185 | 33.74 |
@@ -476,14 +476,6 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | labcode | 3 | P08 | 315 | 8.97 |
 | labcode | 4 | P18 | 314 | 8.94 |
 | labcode | 5 | P15 | 269 | 7.66 |
-| laser | 1 | 785 | 2202 | 62.7 |
-| laser | 2 | 532 | 1310 | 37.3 |
-| substrate | 1 | sAg | 1849 | 52.65 |
-| substrate | 2 | sAu | 810 | 23.06 |
-| substrate | 3 | cAg | 629 | 17.91 |
-| substrate | 4 | cAu | 224 | 6.38 |
-
-</details>
 
 ## Build
 

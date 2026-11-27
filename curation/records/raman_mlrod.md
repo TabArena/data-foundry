@@ -9,8 +9,7 @@ data_foundry_status:
 claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
-decision_markers:
-- TBD
+decision_markers: []
 tags:
 - AI-Filled (Verify)
 - Non-IID (Grouped)
@@ -39,6 +38,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
+CC (2026-11-27, Andrej): Review issues 1, 2, 3, 4 and 7 all `ok`, so the record leaves `TBD` (issue 4's run is still owed and comes back as its own item when its table exists). Issue 5 stays open with the assessment you asked for: the data holds two test units and no third can be made, varying the training library is refuted by measurement (log loss 0.95 to 4.83 over three leave-one-map-out draws, driven by which integration time survives), writing the fold as two or four cells is bookkeeping on one training side, and more rocks is the only real answer.
 CC (2026-11-27, Andrej): Review issue 1 rewritten after Andrej asked what is most correct for the task. The mirror stays the read path: ODR needs a browser for every file, so a definition that read it could not be rebuilt by anyone, and three of its files match byte for byte, the one with the spreadsheet damage included, which a re-upload would not reproduce. The unchecked fourth file ships 5,183 of 34,857 test spectra, so its checksum is a provenance note and no longer holds the verdict. ODR's file list is the one check that can still change something, and the answer to a longer list is a new candidate record (new option D), not re-scoping this one: the task is the paper's, bounded by its Table 1.
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from the source's pages and papers (and, where the block says so, a preview of the files), NOT from building the data. A human must verify everything before relying on it.**
 
@@ -155,6 +155,11 @@ for byte (issue 1 for the rest).
 
    * **Recommendation:** A, with D if ODR lists more than 41 maps. The mirror is proven equal where it was checked, and the copy rule asks for no more; B costs reproducibility and buys bytes we already have; C would redefine the task the record was accepted for. B only if the fourth file mismatches, and then for that file. **Decision:** confirm A (and D if the list is longer), or C?
 
+   **Resolved (2026-11-27, Andrej):** `ok`, A confirmed: the mirror stays the read path, with ODR declared as the
+   publication. The record leaves `TBD`. The file list is still worth reading in a browser, and a longer list
+   makes a new candidate record (option D), which does not change this one; the fourth file's checksum stays a
+   provenance note for whenever it is convenient.
+
    **Notes for the AI:**
    - A: a `CC` line with the date and the file count; `download_description` names the ODR check; the record leaves `TBD` (issue 4 does not hold it).
    - B: put the ODR files under `local-data-warehouse/raman_mlrod/odr/`, point `_load_raw` there, write the sums into `download_description`; the fill mask stays; re-run `dataset check` and the probes.
@@ -184,6 +189,9 @@ for byte (issue 1 for the rest).
 
    * **Recommendation:** A: the labels are by hand. **Decision:** confirm A?
 
+   **Resolved (2026-11-27, Andrej):** `ok`, A confirmed: both rocks stay in the test fold, and the notes keep what
+   the paper says about the labelling and the pass against the source's own model.
+
    **Notes for the AI:** B (only if you disagree): drop the rows whose `specimen` is `granite slab` from the split, update `task_summary`, `splits_comment` and the notes, re-run `dataset check` and the probes.
 
    [^use5]: **USE-5** (Must): the target is what the actor acts on; a label another model produced is no ground truth. An undocumented construction is allowed with a note. The remedy for a part that fails is the mildest one that works: filter those rows out, not exclude the dataset.
@@ -211,6 +219,9 @@ for byte (issue 1 for the rest).
      | B | Join the slab's group | the map moves to that slab's test side | none left: the paper places them on other specimens | removes a separate specimen from training for no reason |
 
    * **Recommendation:** A: the paper names separate specimens. **Decision:** confirm A?
+
+   **Resolved (2026-11-27, Andrej):** `ok`, A confirmed: the augite and muscovite maps are separate specimens by
+   the paper's locality table and stay as reference maps in training.
 
    [^split24]: **SPLIT-24** (Must): the groups follow the units the data names (a specimen, a map), never a cluster of similar rows. **LEAK-17** (Must): no unit on both sides of a split. **EV-6**: similarity is circumstantial evidence, not proof of a mechanism.
 
@@ -249,6 +260,11 @@ for byte (issue 1 for the rest).
 
    * **Recommendation:** A until the run; then B only if the CNN is clearly ahead of the best tuned tabular model and TabPFN v3.5 on both rocks, clean and dusty. **Decision:** after the run, keep or exclude?
 
+   **Resolved (2026-11-27, Andrej):** `ok`, A as implemented: the dataset ships as defined and the run stays owed.
+   The keep-or-exclude call is not made here; when the table exists it comes back as its own issue, with the
+   source's own model against tuned tabular models and TabPFN v3.5 on the shipped split, read apart for the clean
+   and the dusty slabs and for each rock.
+
    **Notes for the AI:** the TODO run, on GPU via SkyPilot (never local SLURM or CPU), TabPFN v3.5 (never v2):
    - models: the source's Spec-CNN (`cnnmodel_raw` of Spec-CNN, Zenodo 10.5281/zenodo.7036374, on the 950 bands as its input layer takes them), tuned LightGBM, CatBoost, RealMLP and logistic regression, and TabPFN v3.5;
    - the shipped split (train on the reference and powder maps, test both slabs), the declared log loss and the accuracy of the most likely class;
@@ -275,6 +291,66 @@ for byte (issue 1 for the rest).
      | B | One fold per rock | two folds, the other rock in training; needs a recorded exception | a lab's use of every labelled rock; a fold score per rock | the training rock tells the test rock's class set; an honest model scores worse; needs an exception with a fact the panel did not find |
 
    * **Recommendation:** A, the source's split. **Decision:** A or B?
+
+   **Answer (2026-11-27, open):** "One split only is not an option. Assess what we can do otherwise."
+
+   What the data can carry. The test side holds two independent units, the gabbro slab and the granite slab, and
+   nothing in the release adds a third. The 35 reference maps are not units: the paper's Table 1 gives one hand
+   sample per mineral, so the 3 albite, 6 quartz, 4 hornblende and 3 biotite maps are the same specimen measured
+   again at another integration time, which our own rule holds together in one group; and anorthite, enstatite,
+   muscovite and the forsterite-albite mixture have a single map each, so holding one out would empty its class.
+   A slab cannot be cut either: two halves of one slab are the same rock, and the half in training would tell the
+   half in test which minerals the rock holds, which is the exploit the panel removed.
+
+   So the ways out are: vary the training side, relabel the one fold as several, or get more rocks.
+
+   **Varying the training side does not work here, and the measurement says why.** Holding out one reference map
+   per mineral that has more than one (11 maps of 34, every class still present) and scoring on the slabs, with
+   logistic regression on 100 principal components:
+
+   | Training library | Spectra | Log loss, raw | Accuracy, raw | Log loss, row-normalised | Accuracy, row-normalised |
+   |---|---|---|---|---|---|
+   | all 34 maps | 90,387 | 1.016 | 0.780 | 1.315 | 0.798 |
+   | draw 0 | 72,759 | 4.829 | 0.427 | 2.587 | 0.606 |
+   | draw 1 | 53,213 | 0.946 | 0.765 | 1.587 | 0.791 |
+   | draw 2 | 69,589 | 4.586 | 0.427 | 2.214 | 0.629 |
+
+   The spread is not noise around the task, it is which map was dropped: draws 0 and 2 drop the only 0.15-second
+   map of microcline (`mc_train_015s_3243`) and of forsterite, and draw 0 also hornblende's, where both slabs were
+   measured at 0.15 s; draw 1 keeps every 0.15-second map and loses almost nothing although it drops the most
+   spectra. Repeats built this way would measure the draw, not the model. The same table on row-normalised spectra
+   halves the collapse, which says most of it is the intensity scale that the integration time sets: worth knowing
+   about the task, and no reason to ship a normalisation the source did not publish.
+
+   **Relabelling is available and is bookkeeping.** The one fold can be written as two (one rock each) or four
+   (each rock, clean and dusty), all trained on the same reference maps, which is exactly the score per rock the
+   definition already asks for. It would clear the 1x1 warning and cost a repeated fit of the same model, but our
+   own rule is that folds sharing one training side are one split, so it would not add a measurement and the
+   accepted-warning text would have to say so.
+
+   **More rocks is the only real answer.** ODR may hold maps the mirror lacks, which is issue 1's open browser
+   check, and the authors can be asked for further slabs; either would give a third and a fourth test rock and
+   with them a split worth repeating.
+
+   * **Options, re-stated after the measurement:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | The source's split, scored per rock (implemented) | one fold, the two rocks read apart | honest about what the data holds; no exploit, no artefact | one fold, and the 1x1 warning to accept |
+     | B | One fold per rock, the other rock in training | two folds | a fold score per rock | the training rock tells the test rock's class set: the best honest model's log loss falls 0.666 to 0.477 with no test row seen |
+     | C | The same fold written as two or four cells | 1x2 or 1x4, same training side | the per-rock and per-dust scores become first class and the 1x1 warning clears | one split written in parts: the folds share a training side, so the spread between them is not a repeat measurement, and the same model is fitted two or four times |
+     | D | Repeats that vary the library | n draws of the reference maps | a spread over the training side | refuted above: log loss 0.95 to 4.83 over three draws, driven by which integration time survives |
+     | E | More rocks, then a real split | a third and a fourth test rock from ODR or the authors | the only way to more than one split | not in this release; depends on issue 1's file list or an ask to the authors |
+
+   * **Recommendation:** A as it stands and E pursued, with C if you want the folds visible on the page and accept
+     that they are one split in parts. B and D are refuted by the numbers above, not by preference. **Decision:**
+     A with E, C with E, or B?
+
+   **Notes for the AI:** on C, `_make_splits` returns one repeat with two folds (`specimen` is the rock) or four
+   (rock and dust level from the file names), the `splits_dimensions_off_protocol` text says they share one
+   training side, `splits_comment` and `task_summary.split` follow, and `dataset check` and the probes re-run. On
+   E, the ask goes to the authors with the file-list check of issue 1, and a longer deposit becomes its own record
+   first.
 
    **Notes for the AI:** B: restore the two folds in `_make_splits` (reference maps plus the other rock train), write an "Exception to SPLIT-19" with the fact and the task gamer's exploit in `splits_comment`, re-run `dataset check` and the probes.
 
@@ -327,6 +403,9 @@ for byte (issue 1 for the rest).
      | B | Another type or basis | the walk is redone from a different reading of the use case | | the reference maps and the slabs are one laboratory's designed campaign; no other type fits them |
 
    * **Recommendation:** A. **Decision:** confirm A, or name the reading you prefer?
+
+   **Resolved (2026-11-27, Andrej):** `ok`, A confirmed: `Experimental Results`, the leaf for a new item of known
+   kinds, and `Timeless`, as the definition and the record carry them.
 
    [^m32]: **SPLIT-32** (Must): a definition whose split is not temporal declares why. **SPLIT-34** (Must): the record names one collection type, and the tree starts from it.
 

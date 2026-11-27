@@ -24,6 +24,11 @@ PREFIX = "raman_"
 # `type` separates the blanks (always 0) from the calibration and test solutions. None of the three is an input.
 COPIED_OR_LEAKING = ("method", "sample", "type")
 
+# The substrate and the laser are dropped although a laboratory knows both about its own bench: each substrate was
+# prepared with its own concentration series (cAu to 0.90, cAg to 1.82, sAu to 4.50, sAg to 9.00), so the pair bounds
+# the answer before a band is read, and no laboratory holds that about an unknown sample (the curator's decision).
+SERIES_BOUNDING = ("substrate", "laser")
+
 
 class RamanAdenineInterlaboratory(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -41,15 +46,17 @@ class RamanAdenineInterlaboratory(AbstractCuratedDataset):
         row="One spectrum of one prepared adenine solution, measured in one laboratory on one substrate batch.",
         predicted="The adenine concentration of the solution, in the units the study prepared it to.",
         known=(
-            "The spectrum, and what the measuring laboratory knows about its own bench: the substrate, the laser "
-            "wavelength and which of the three substrate batches it used."
+            "The spectrum, and which of the three substrate batches the laboratory used. Not the substrate or the "
+            "laser: each substrate was given its own concentration series, so the pair would bound the answer."
         ),
         known_at_scoring="",
         split="A laboratory that did not take part in building the model.",
         changes=(
             "All four substrate cuts are read as one dataset, over the source's own table rather than the "
             "benchmark's per-substrate files. The solution's identity, the blank/calibration/test label and the "
-            "method string are dropped: each would hand over the concentration or copy another column."
+            "method string are dropped: each would hand over the concentration or copy another column. The "
+            "substrate and the laser are dropped too, because the study gave each substrate its own concentration "
+            "series and the pair would stand in for the answer's range."
         ),
         fit="approximate",
         fit_reason=(
@@ -126,9 +133,9 @@ class RamanAdenineInterlaboratory(AbstractCuratedDataset):
           the centrally prepared solution (C0 to C9, X1 to X5), and a solution has the same concentration in every
           laboratory, so it is a lookup table for the target. `type` separates blanks, which are always 0, from
           calibration and test solutions. `method` is the substrate and the laser joined with an `@`.
-        - What stays as an input beside the spectrum: the substrate (cAg, cAu, sAg, sAu), the laser (532 or 785
-          nm) and the substrate batch (1, 2 or 3). A laboratory knows all three about its own bench before it
-          measures. The replicate letter stays out: it names the repeat, not a property of the measurement.
+        - What stays as an input beside the spectrum: the substrate batch (1, 2 or 3), which a laboratory knows
+          about its own bench and which carries no concentration range. The replicate letter stays out: it names
+          the repeat, not a property of the measurement. The substrate and the laser are dropped (below).
         - The spectrum ships as the study published it and is declared as one (`special_features`, CLEAN-26),
           state `raw`. Bands a laboratory's instrument did not cover are missing in the source's table, and they
           stay missing: 180 of the 3,516 rows (5.1%) have a gap, almost all of them in two laboratories (P15 at
@@ -141,10 +148,13 @@ class RamanAdenineInterlaboratory(AbstractCuratedDataset):
           two substrate batches. The copy is dropped and the first row kept (LEAK-19), which leaves 3,512. Both
           rows of every pair sit in one laboratory, so no split could have separated them.
         - 3,512 spectra over 15 laboratories, 43 distinct concentrations from 0 to 9, 234 of them blanks.
-        - Each substrate has its own concentration series, which the curator has an open issue on: cAu runs from
-          0 to 0.90, cAg to 1.82, sAu to 4.50 and sAg to 9.00, so the substrate column bounds the answer before a
-          band is read. On the shipped splits the three bench columns alone reach R2 0.341 against 0.272 for the
-          534 bands alone and 0.456 for both, so most of the score is which series a spectrum belongs to.
+        - The substrate and the laser are dropped because each substrate was given its own concentration series:
+          cAu runs from 0 to 0.90, cAg to 1.82, sAu to 4.50 and sAg to 9.00, so the pair bounds the answer before a
+          band is read. Measured on the shipped splits before the drop, the three bench columns alone reached R2
+          0.341 where the 534 bands alone reached 0.272 and both together 0.456, so most of the score was which
+          series a spectrum belonged to and not what the spectrum showed. A laboratory measuring an unknown sample
+          knows its substrate but not that the substrate bounds the concentration, so the pair is a property of the
+          study's design and not of the prediction point (the curator's decision, 2026-11-27).
     """
 
     # Task
@@ -181,27 +191,26 @@ class RamanAdenineInterlaboratory(AbstractCuratedDataset):
         # The solution's identity, the blank/calibration/test label and the method string (curation notes).
         df = drop_columns(df, list(COPIED_OR_LEAKING))
 
+        # The substrate and the laser bound the answer through the study's design (curation notes).
+        df = drop_columns(df, list(SERIES_BOUNDING))
+
         # The replicate letter names the repeat, not a property of the measurement.
         df = drop_columns(df, ["replica"])
 
         # Four spectra appear twice, each filed under two batch or replicate labels in one laboratory: one
         # measurement recorded twice, not two measurements (curation notes). The copy is dropped (LEAK-19).
-        bands = [column for column in df.columns if column not in ("labcode", "substrate", "laser", "conc", "batch")]
+        bands = [column for column in df.columns if column not in ("labcode", "conc", "batch")]
         df = df.drop_duplicates(subset=bands, keep="first").reset_index(drop=True)
 
         # The bands are named by their wavenumber alone; the prefix lets the build read the axis from the names.
-        kept = ("labcode", "substrate", "laser", "conc", "batch")
+        kept = ("labcode", "conc", "batch")
         df = df.rename(columns={column: f"{PREFIX}{column}" for column in df.columns if column not in kept})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # The spectrum is declared in `special_features` and stays out of the dtypes (CLEAN-26). The laser is a
-        # wavelength with two values and the batch a label, so both are categorical, not numbers to interpolate.
-        return FeatureTypes(
-            categorical=["labcode", "substrate", "laser", "batch"],
-            string=[],
-            datetime={},
-        )
+        # The spectrum is declared in `special_features` and stays out of the dtypes (CLEAN-26). The batch is a
+        # label, not a number to interpolate, so it is categorical.
+        return FeatureTypes(categorical=["labcode", "batch"], string=[], datetime={})
 
     special_features = (
         Spectrum(

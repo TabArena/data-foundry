@@ -5,12 +5,11 @@ checked_by:
 - AI (UNVERIFIED)
 - Andrej
 data_foundry_status:
-- WIP (Triage)
+- WIP (DF)
 claimed_by: Andrej
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 2
-decision_markers:
-- TBD
+decision_markers: []
 tags:
 - AI-Filled (Verify)
 - Tiny Data
@@ -41,6 +40,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
+CC (2026-11-27, Andrej): the metric mark is `ok`: the regression fallback stands, since the source names two criteria and neither as the one that decides. The split mark asks "Are all splits unique?" - yes. The plan is 20 repeats of 3 folds over the 178 sample groups, 60 folds in all; all 60 test sets are distinct and so are all 60 training sides, each repeat partitions the 179 rows, and the folds hold 59 to 61 rows. Two folds of different repeats overlap on at most 30 of about 61 test rows, so the repeats re-use rows and their scores are correlated: 60 folds are not 60 independent measurements, which is why the review reads the spread rather than the count.
 CC (2026-11-27, Andrej): Review issue 1, `ok`: ships as defined. Untuned families sitting 0.028 apart is a question for a tuned run, not a reason to drop a dataset and not a `Trivial` verdict ("variance is normal ... this does not mean at all that the task is trivial"); the option that offered one should not have been written, and the source's own benchmark, which applies TabArena's trivial rule to its 171 keys, does not exclude either gasoline key.
 CC (2026-11-27, Andrej): Review issue 2, `change` B: the ethanol content, measured on 164 of the 179 samples, is named in the definition's notes as a companion task for a later round. Nothing in the data changes.
 

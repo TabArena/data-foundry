@@ -53,14 +53,31 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - task_group_count_low
-  - groups_test_groups_few
-  - groups_largest_share_high
-  - task_target_value_dominant
+  warnings: []
   infos:
   - groups_not_clustered
-  accepted: {}
+  accepted:
+    task_group_count_low: 'Three groups is what the release allows: the 24 cultivations
+      were divided into three random groups of eight and no cultivation id ships in
+      either copy, so the file a sample comes from is the finest cut there is. The
+      signal across groups is real: LightGBM scores R2 0.696 (SE 0.040) with a group
+      held out against 0.738 (SE 0.069) on a random split, a gap of 0.042 over 3 repeats
+      of 3 folds.'
+    groups_test_groups_few: 'One group per test fold, for the same reason: three is
+      the finest cut the release allows. Across held-out groups ridge reaches R2 0.780,
+      LightGBM 0.696 and a 5-nearest-neighbour 0.585 against a baseline of 0, so a
+      cultivation the model has not seen is not a different problem. The spread over
+      three folds understates how much a new cultivation could differ; read the score
+      with that.'
+    groups_largest_share_high: The largest of the three groups holds 37% of the 373
+      rows, which is what eight of 24 cultivations sampled at different rates come
+      to. The groups are the source's own random draw, not a catch-all value, and
+      the glucose floor sits in all three alike (49.1%, 50.8%, 54.0%).
+    task_target_value_dominant: 'The 192 zeros (51.5%) are the analyser''s limit of
+      quantification, not a placeholder: the next values are 0.0279, 0.0660 and 0.0742
+      g/L, a gap rather than a tail, and a glucose-limited fed-batch spends half its
+      samples at the floor by design. The rows stay because the floor is a real state
+      of the culture and the quantity the feeding strategy acts on (curation notes).'
 decisions: []
 ---
 
@@ -348,13 +365,16 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 4 warning(s), 1 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `task_group_count_low`: `group_on='experiment_group'` yields only 3 groups. (hint: Few groups make grouped CV coarse and high-variance.)
-- **warning** `groups_test_groups_few`: A test fold holds 1 groups (1-1 per fold, 3 groups in all): a score per group rests on few independent units, and a score per row on not many more. (hint: Keep the dataset only if its signal across groups is real (`.claude/skills/knowledge-data-foundry/scripts/group_probes.py`), and accept the warning with that reason.)
-- **warning** `groups_largest_share_high`: The largest group holds 37% of the rows; it dominates every score that counts rows and the fold it lands in. (hint: Check whether the group is real (one entity) or a catch-all value such as 'unknown'.)
-- **warning** `task_target_value_dominant`: The target value 0 holds 51% of the rows. (hint: A cap (a censored value), a placeholder for missing, or a zero-inflated target: say which in `curation_comments`, drop censored or placeholder rows, or accept it with the reason.)
 - **info** `groups_not_clustered`: Rows are no closer to their own group than chance (46.4% of nearest neighbours vs 33.4%), and the group explains no more of the label than shuffled groups (0.00 vs 0.02). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.)
+
+Accepted on purpose:
+
+- `task_group_count_low`: Three groups is what the release allows: the 24 cultivations were divided into three random groups of eight and no cultivation id ships in either copy, so the file a sample comes from is the finest cut there is. The signal across groups is real: LightGBM scores R2 0.696 (SE 0.040) with a group held out against 0.738 (SE 0.069) on a random split, a gap of 0.042 over 3 repeats of 3 folds.
+- `groups_test_groups_few`: One group per test fold, for the same reason: three is the finest cut the release allows. Across held-out groups ridge reaches R2 0.780, LightGBM 0.696 and a 5-nearest-neighbour 0.585 against a baseline of 0, so a cultivation the model has not seen is not a different problem. The spread over three folds understates how much a new cultivation could differ; read the score with that.
+- `groups_largest_share_high`: The largest of the three groups holds 37% of the 373 rows, which is what eight of 24 cultivations sampled at different rates come to. The groups are the source's own random draw, not a catch-all value, and the glucose floor sits in all three alike (49.1%, 50.8%, 54.0%).
+- `task_target_value_dominant`: The 192 zeros (51.5%) are the analyser's limit of quantification, not a placeholder: the next values are 0.0279, 0.0660 and 0.0742 g/L, a gap rather than a tail, and a glucose-limited fed-batch spends half its samples at the floor by design. The rows stay because the floor is a real state of the culture and the quantity the feeding strategy acts on (curation notes).
 
 ## Data checks
 

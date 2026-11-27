@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: raman_mlrod
 container_format: 2
-checksum: v2:293c6c8aae896d25f3727f540dcb0fbb4dcedfe7c340c457d1759d0757d593e7
+checksum: v2:c94132f273ab5bddc0019ce4ca8ed056c5e86452477b43936ae1262c4e75397b
 build: null
 build_stale: false
 data:
@@ -74,7 +74,7 @@ decisions:
 
 Multiclass classification of `mineral`, scored with `log_loss` on grouped splits by `specimen`. 125,244 rows and 950 features. Source: Other (2022).
 
-Not built yet. The current definition gives checksum `v2:293c6c8aae896d25f3727f540dcb0fbb4dcedfe7c340c457d1759d0757d593e7`.
+Not built yet. The current definition gives checksum `v2:c94132f273ab5bddc0019ce4ca8ed056c5e86452477b43936ae1262c4e75397b`.
 
 ## In brief
 
@@ -232,6 +232,13 @@ We start with the 41 map files of the ML Raman Open Dataset (Berlanga, Williams 
 - Potential leak, kept on purpose (LEAK-9, an evaluation leak): the test spectra of one rock cluster by mineral (a test spectrum's nearest test spectrum has the same label 96% of the time in the gabbro, 97% in the granite), so averaging each prediction over its 50 nearest test spectra helps: measured on one rock per fold, an untuned LightGBM's log loss fell by 0.99 and 1.69, the best honest model's by 0.06 and 0.09; a prior of the test rock's classes estimated from the test rows, self-training on them and weights from a train-against-test classifier help one rock and hurt the other (review panel, 2026-11-09). A deployed model sees one spectrum at a time. The split cannot block this; the protocol line in the splits comment does. Revisit if the benchmark scores test rows in batches it controls.
 - Rare classes weigh more in the loss than in the rows: on the test rows the quartz-albite mix is 0.81% of the rows and 6.42% of a logistic regression's loss, biotite 1.28% and 4.51% (review panel, 2026-11-09); every point is scored on its own.
 - Encodings (2026-11-09, the shipped split, the reference maps training and both slabs tested, untuned; log loss on the gabbro and the granite): a logistic regression on 100 principal components of the standardised bands scores 0.919 and 1.121 on the spectrum as it is, 1.528 and 0.493 with ALS and SNV, 1.584 and 0.992 with SNV, 1.355 and 0.978 with the Savitzky-Golay first derivative; LightGBM (200 trees, 30% of the bands per tree, 40,000 training rows) 2.099 and 2.370 as it is, 0.571 and 0.398 with ALS and SNV, 1.079 and 1.091 with SNV, 0.946 and 0.688 with the derivative. Every candidate helps LightGBM on both rocks, none helps the logistic regression on the gabbro. The recommended encoding stays the spectrum as it is, the field's default for a raw spectrum (CLEAN-26), not a choice fitted on the test rocks; a model is free to apply ALS and SNV itself.
+- The reference library's integration times matter as much as its minerals. Both slabs were measured at
+  0.15 s, and holding out the only 0.15-second map of a mineral costs most of the score: logistic
+  regression on 100 principal components falls from log loss 1.016 and accuracy 0.780 on the slabs to
+  4.829 and 0.427 when microcline's, forsterite's and hornblende's 0.15-second maps go, while a draw that
+  keeps every 0.15-second map and drops more spectra stays at 0.946 and 0.765. On row-normalised spectra
+  the same draws fall only to 2.587 and 0.606, so much of it is the intensity scale the exposure sets.
+  The spectra ship as published all the same; the normalisation is the modeller's to choose.
 - Time basis: Timeless: a closed set of specimens measured once by a laboratory: the mineral a point shows is a property of the grain, not of when the map was taken, and every class the test rocks carry is in the reference maps. The model meets a new rock of the known minerals, so whole specimens are held out with all their map points (the item). The split cannot test another instrument, another laboratory or a mineral the reference maps do not carry.
 
 ## Splits
