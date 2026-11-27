@@ -99,7 +99,7 @@ for 20,499, window sizes 649 to 1,534 for 643 to 1,518, and 9,498 test sales for
 test, which compares three files where only the sales-warnings file guards the 2014-2015 records it names; and the
 metric's reason, which does not say that the OpenML copy's task defaults to RMSE on the raw price. One issue is open.
 
-**Main points:** One for you: whether the note on the sale-condition column says more than the files show about when
+**Main points:** Task gamer (blind, 2026-11-27): nothing gamed. Untuned LightGBM RMSLE 0.1666 (0.157 to 0.178 over 9 windows; a random column moves it by up to 0.004 per split); the last training sale of the same house (1.6% of test rows) does worse (0.1741), `sale_condition` adds 0.002 and is declared at sale, and the kept July-2015 neighbour sizes add 0.0007, inside noise (the known kept leak). Training on the last 120 days only scores worse (0.1733). One for you: whether the note on the sale-condition column says more than the files show about when
 each code is set (1). This dataset is the precedent `ames_housing` cites, and it holds on measurement.
 
 **Issues for Andrej:**

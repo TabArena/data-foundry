@@ -63,7 +63,7 @@ single summer for a reason the window rule does not accept (2). Needing no decis
 not the day's observation but the station's calendar-day potential radiation, identical every year, which is why it
 drifts in every window; and 9 of 25 stations lack the day's minimum on 2017-06-30.
 
-**Main points:** Two for you: say that a station's next-day row in the same window carries the label (1), and spread
+**Main points:** Task gamer (blind, 2026-11-27): found issue 1's leak on its own and at the same size: the same station's next-day `Present_Tmin` cuts RMSE from 0.816 to 0.432 (a bare rule on it 0.517, persistence 1.439), more than the random-column noise (up to 0.05) on 8 of 9 windows. It also proposes dropping `Present_Tmin` and `Present_Tmax` to close the channel; that removes the observation of the evening itself, which a deployed model has, and its cost was not measured, so issue 1's options stay as they are. Nothing else found (formats, the summer-only gaps between windows). Two for you: say that a station's next-day row in the same window carries the label (1), and spread
 the test windows over two summers with a reason from the data (2).
 
 **Issues for Andrej:**

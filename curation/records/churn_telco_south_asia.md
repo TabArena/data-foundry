@@ -76,7 +76,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
 
 **Outcome:** added. The record gained `Target: Later` on 2026-11-13.
 
-**Main points:** Re-audited 2026-11-27 against the Kaggle file (sha256 matches): the record's numbers reproduce (random forest ROC AUC 0.815, 0.805 above 5 calls), no copies, no flagged dtypes, `roc_auc` computable on all 30 folds. Open: issue 3 (the September columns). Earlier: nothing open: issue 1 resolved on 2026-11-13 (`Target: Later` recorded). Issue 2 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
+**Main points:** Task gamer (blind, 2026-11-27): nothing gamed. Untuned LightGBM ROC AUC 0.818 (0.786 to 0.849 over 30 splits; a random column moves it by about 0.004); value counts over all rows, number formats, row position and derived usage ratios add nothing; no duplicate rows. On its own it names `sep_fav_a` as the strongest category (ufone 35% churn against 68% to 76%) and asks when the churn was observed relative to September, the open question of issue 3. Re-audited 2026-11-27 against the Kaggle file (sha256 matches): the record's numbers reproduce (random forest ROC AUC 0.815, 0.805 above 5 calls), no copies, no flagged dtypes, `roc_auc` computable on all 30 folds. Open: issue 3 (the September columns). Earlier: nothing open: issue 1 resolved on 2026-11-13 (`Target: Later` recorded). Issue 2 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
 
 **Issues for Andrej and Lennart:**
 
