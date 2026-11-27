@@ -53,6 +53,39 @@ CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the o
 
 CC (2026-11-17, Andrej): the declared split (temporal on `order_purchase_timestamp`, horizon 1 month, 5 windows, gap 1 month) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+## Review
+
+**Outcome:** added as `brazilian_ecommerce`; re-audited 2026-11-27 against a fresh Kaggle v2 download (all 9 CSVs byte-identical, archive md5 matches): 88,721 rows, LightGBM RMSLE 0.483 against 0.642 for the dummy on all 5 monthly windows.
+
+**Main points:** One decision: issue 1 (the gap's length). The split's leaf, the floor (56% to 87%) and the 33-unit minimum hold; the newest orders are not censored (undelivered share 1.2% to 2.9% by month, flat). Text fixes for the next edit: accept the new `splits_below_target` warning (5 windows against 9; the use case is a monthly refit, and 15-day windows would give 11); one sentence in `curation_comments` on the July cut (239 delivered July orders, 3.9%, promised after 2018-08-24 are dropped, median 11.3 days against 7.4 kept); `task_summary.predicted` says a median of 7.5 to 9 days, measured 7.4 to 9.2; the split bullet's "gap costs 0.04 to 0.06 R^2" measures about 0.03.
+
+**Issues for Andrej and Lennart:**
+
+1. **Shorten the gap from one month to 15 days?**
+
+   * **Problem:**
+     - Train ends one month before each test window; a delivery is known within 10.7 days at the median, 23.8 at p90 and 30.1 at p95, so the month covers p95.
+     - Without a gap, a model that reads the purchase time as a number collapses (R^2 -0.036), so a gap is needed, but 15 days scores higher than the month.
+   * **Effect on the task:** The month trains on older orders than a refit would have; it costs 0.03 to 0.06 R^2 against 15 days.
+   * **Experiments:** untuned LightGBM, 300 trees, mean of the 5 windows.
+
+     | Gap | R^2 with time as a feature | R^2 without |
+     |---|---|---|
+     | 0 days | -0.036 | 0.349 |
+     | 15 days | 0.416 | 0.339 |
+     | 30 days (now) | 0.354 | 0.315 |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | One month (implemented) | nothing changes | covers p95 of the label delay | older training data than the delay needs |
+     | B | 15 days | `gap=15, gap_unit="days"` | covers p75 to p90, scores higher | about 10% of the last training orders are still in transit at a refit; rebuild and its own PR |
+
+   * **Recommendation:** A: the gap stands for the labels a refit has, and only the month covers nearly all of them; the score is not a reason to shorten it. **Decision:** A or B?
+
+   **Notes for the AI:** full audit and the horizon options in `local-data-warehouse/_runs/2026-11-26_review33/brazilian_ecommerce/findings_audit.md`. Unchecked: whether Olist revised a promise after purchase (one date per order).
+
 ## Reference
 
 ?
