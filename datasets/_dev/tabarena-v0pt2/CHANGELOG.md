@@ -1,5 +1,13 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-27, breast_cancer_prediction: the radiologist's assessment dropped (task change; container not rebuilt)
+
+- `breast_cancer_prediction` drops `birads_assessment`, Andrej's decision (review issue 2, B): the assessment is the
+  follow-up decision through which most cancers are found (women read 0, 4 or 5 hold 87% of them), so as a feature it
+  made the score the read's accuracy (ROC AUC 0.93). The task is now the risk at the screening visit, before the read,
+  as in `bcsc_risk_estimation` on other exams; fit approximate. Untuned task probe: linear ROC AUC 0.580, ahead of the
+  dummy on every split. README regenerated.
+
 ## 2026-11-27, review of the 33 unreviewed datasets: Andrej's second marks (containers not rebuilt)
 
 - `aeolus_rebuilt_1m` gains nine airport-traffic inputs known at the prediction point: flights scheduled at the

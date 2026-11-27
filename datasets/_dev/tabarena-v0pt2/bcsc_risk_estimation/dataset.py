@@ -130,7 +130,7 @@ class BcscRiskEstimation(AbstractCuratedDataset):
         changes=(
             "We expand the source's aggregated cells by their count, drop `invasive` (part of the target) and the "
             "source's `training` flag (a prescribed random split), and set the code for unknown to missing, except "
-            "in the age group, where it is the band 75-79; premenopausal women get a level \"not menopausal\" in "
+            'in the age group, where it is the band 75-79; premenopausal women get a level "not menopausal" in '
             "surgical menopause and hormone therapy."
         ),
         fit="approximate",

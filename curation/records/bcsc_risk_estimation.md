@@ -61,6 +61,10 @@ CC (2026-11-27, Andrej): review issues decided.
 - Issue 2, B: `Outdated` as a note: the risk-factor relation still holds, but the era's hormone therapy use, density scale and imaging differ; it does not keep the dataset out (as for cirrhosis_patient_survival_prediction and hepatitis_survival_prediction).
 - Issue 3, B: the BibTeX note carries both the documentation page's acknowledgement and the main page's required citation sentence, with the download date.
 
+CC (2026-11-27, Andrej): the declared metric (ROC AUC on cancer within one year, the paper's c statistic) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): the declared split (random, 1 x 3 folds over the women, `ForcedIIDFromTemporal`) is checked and stays as declared. Ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added. The BCSC Risk Estimation Dataset, one exam per woman: 1,007,660 women, 7,319 cancers within a year (0.73%), twelve risk factors known at the screening visit, before the radiologist assesses the mammogram; the risk task `breast_cancer_prediction` cannot carry (its review issue 2, open). The full review panel recommends shipping after changes, all applied: the age band 75-79 restored (it had been set to missing), the fit set to approximate, a "not menopausal" level, and corrected notes. Logistic regression and regularised LightGBM beat age alone by 0.04 to 0.05 ROC AUC on every fold, and nothing leaks: the 91.2% of test women whose exact profile is in training gain nothing from those women's outcomes.

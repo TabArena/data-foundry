@@ -69,11 +69,13 @@ CC (2026-11-27, Andrej): the task as defined is not a forecast but the radiologi
 - So the score measures the read's accuracy, which the dataset was made to teach: ROC AUC 0.914 for the read alone, 0.93 for the models. Without the radiologist's readings logistic regression reaches 0.58; the BCSC's published risk model at the screening visit, before the read, reaches a c statistic (ROC AUC) of 0.62-0.63 (Barlow WE, White E, Ballard-Barbash R, Vacek PM, Titus-Ernstoff L, Carney PA, Tice JA, Buist DSM, Geller BM, Rosenberg R, Yankaskas BC, Kerlikowske K. Prospective breast cancer risk prediction model for women undergoing screening mammography. J Natl Cancer Inst. 2006;98(17):1204-1214. doi:10.1093/jnci/djj331).
 - Lennart's 2026-10-15 argument for the readings cites the BCSC Risk Calculator, which takes the density reading, not the assessment.
 
+CC (2026-11-27, Andrej): review issue 2, B: the radiologist's BI-RADS assessment is dropped; the task is the risk at the screening visit, before the read (fit approximate: the one-year label and this exam's density stand in for the longer horizon and prior density of the decisions). It is the same question as `bcsc_risk_estimation` on other data (2005-2008, 36,714 women, other inputs), kept as a second dataset of that task.
+
 ## Review
 
-**Outcome:** added; recommended `No` (`No Good Target / Scientific Discovery`): the main feature is the radiologist's follow-up decision, the label is found through that decision, and the source is a teaching set; the risk task before the read goes to `bcsc_risk_estimation` (issue 2). Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below (issue 1, A, 2026-11-18).
+**Outcome:** added, changed: the radiologist's assessment is dropped, so the task is the breast cancer risk at the screening visit, before the read (issue 2, B, 2026-11-27). Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below (issue 1, A, 2026-11-18).
 
-**Main points:** Retire it for `bcsc_risk_estimation`, or keep one of the tasks this file can still carry (issue 2)? The read alone gives ROC AUC 0.903-0.914 and the models 0.93; before the read the file gives 0.61, beside the BCSC's published 0.62-0.63. Blind task gamer (2026-11-27): nothing gamed beyond the read; its missing value is BI-RADS 0, a recall, set missing by `_clean`. Text fixes that need no decision: the bullet calling the assessment categorical predates the ordinal coding of 2026-10-31; the decision table shows assessment 0 as empty, though that group holds 185 of the 239 cancers; the models beat the assessment alone by 0.006 to 0.013, not "about 0.015". Earlier: `ForcedIIDFromTemporal` stays (issue 1, A, 2026-11-18).
+**Main points:** Nothing is left open: the forced tag stays (issue 1, A, 2026-11-18) and the task is the risk before the read (issue 2, B, 2026-11-27). Without the assessment the signal is modest (logistic regression ROC AUC 0.606 on one exam per woman), the same question as `bcsc_risk_estimation` on later exams and other inputs.
 
 **Issues for Andrej:**
 
@@ -168,6 +170,10 @@ CC (2026-11-27, Andrej): the task as defined is not a forecast but the radiologi
    * What the difference changes: option B is the later, digital-era sample, which speaks against the age concern that `bcsc_risk_estimation` carries (`Outdated` as a note). Against it: its signal is weak and unstable (about 80 cancers per test fold, LightGBM below logistic regression), and its source asks not to be used for research.
    * **Options:** unchanged (A retire, B risk before the read, C recalled women, D interval cancers, E keep as implemented); option B's con now reads "the same question as `bcsc_risk_estimation` on a later, much smaller teaching sample".
    * **Recommendation:** A still, now with medium confidence: B is a defensible second dataset of the risk task, worth it if a later sample matters more to you than size and the teaching-only terms. **Decision:** A or B (or C, D, E)?
+
+   **Andrej (2026-11-27, change):** Option B: Risk before the read.
+
+   **Resolved (2026-11-27, Andrej):** B: `birads_assessment` dropped in `_clean`; task summary, notes and decision table rewritten for the risk before the read; fit approximate.
 
 ## Reference
 
