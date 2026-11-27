@@ -5,10 +5,10 @@ checked_by:
 - AI (UNVERIFIED)
 - Andrej
 data_foundry_status:
-- WIP (DF)
+- WIP (Triage)
 claimed_by: Andrej
-suggestion: 'Yes'
-priority: 4
+suggestion: TBD -> 2nd Tier
+priority: 1
 tags:
 - AI-Filled (Verify)
 - Many features
@@ -28,7 +28,6 @@ source_links:
 - https://doi.org/10.1126/science.1174276
 - https://www.panzea.org/phenotypes
 - https://cornell.box.com/s/su1vodojjq5g8wg2aw8crimdx6328px6
-v2_path: datasets/_dev/tabarena-v0pt2/maize_nam_flowering_time/dataset.py
 needs_review:
 - ai_unverified
 type_adapter_id: curation-record-v1
@@ -106,9 +105,14 @@ CC (2026-11-26, Andrej): accepted, go to `/add-dataset`.
 - The screening's verdict stands: 4,699 lines over 25 families, 1,106 markers, the target in days, and the raw plot values beside the line values.
 - Priority 4 kept. Nothing was built at screening.
 
+CC (2026-11-27, Andrej): back to `2nd Tier`, priority 1; the v2 folder leaves the working copy.
+- The reason is worth, not validity. A full review panel found no leak, no copy across a split, no artefact in the target and no feature from after the prediction point, and the reading that the task has no signal across its groups was refuted by re-running it with models specified for the problem.
+- What decided it: the honest unit is 25 crosses rather than 4,699 lines, the pooled headroom over a constant is about 2%, 1,106 correlated markers carry some 40 to 80 effective components, and the task is a narrow genomic-prediction problem rather than a heterogeneous tabular one.
+- Nothing is lost. The definition that passed `dataset check` is in the working copy's log with the date of its removal, and every measurement the panel made is in this record's review, which keeps all five issues with their resolutions. `genomic_prediction_maize_flowering_time` keeps pointing here as its better data.
+
 ## Review
 
-**Outcome:** added as `maize_nam_flowering_time`: 4,699 recombinant inbred lines of the 25-family maize Nested
+**Outcome:** added, then recommended out of the working copy and set to `2nd Tier` on the curator's decision of 2026-11-27: the task is real and clean but too narrow to spend a benchmark slot on. The definition and the panel's evidence stay in this record and in the working copy's log, so a later round can pick it up without repeating any of it. What was added: 4,699 recombinant inbred lines of the 25-family maize Nested
 Association Mapping population, days to anthesis in days from 1,106 imputed linkage-map markers, grouped on the
 family, scored by the within-family correlation. The data is the project's own Buckler et al. 2009 release and the
 target is the line value it publishes, so no value is computed here. `dataset check` passes with 0 errors and 0
@@ -164,6 +168,11 @@ block below.
    reviewer agree on the facts and split on the conclusion: density is saturated, so A loses nothing to the map's
    age, while B is the only route to a learnable between-family component. **Decision:** A, B or C?
 
+
+   **Andrej (2026-11-27):** The dataset is not worth a slot; back to 2nd Tier.
+
+   **Resolved (2026-11-27, Andrej):** not taken. The dataset does not ship, so this question is closed without a choice between its options; the evidence under it stands for whoever picks the record up again.
+
 2. **Which of the three flowering traits is the target?**
 
    **Problem:**
@@ -194,6 +203,11 @@ block below.
    **Recommendation:** A. Silk is the same trait days later; the interval is a genuinely different one but these
    are unstressed summer nurseries, where the panel's practitioner says it carries little of what makes it worth
    selecting on. **Decision:** A, B or C?
+
+
+   **Andrej (2026-11-27):** The dataset is not worth a slot; back to 2nd Tier.
+
+   **Resolved (2026-11-27, Andrej):** not taken. The dataset does not ship, so this question is closed without a choice between its options; the evidence under it stands for whoever picks the record up again.
 
 3. **Is the breeder's next cross a new one, or one already phenotyped?**
 
@@ -231,6 +245,11 @@ block below.
    **Recommendation:** A, with the warning accepted as the definition writes it. The split auditor ran the
    alternatives and found none better; the practitioner, playing the breeder, calls A their own decision.
    **Decision:** A, B or C?
+
+
+   **Andrej (2026-11-27):** The dataset is not worth a slot; back to 2nd Tier.
+
+   **Resolved (2026-11-27, Andrej):** not taken. The dataset does not ship, so this question is closed without a choice between its options; the evidence under it stands for whoever picks the record up again.
 
 4. **Is the headroom this task offers worth a benchmark slot?**
 
@@ -286,6 +305,11 @@ block below.
        `genomic_prediction_soy_yield` computes its line value from the plots and files an exception for it,
        while this dataset ships the published line value and needs none.
 
+
+   **Andrej (2026-11-27, C):** Honestly, I think the dataset sucks. Put it back to 2nd Tier.
+
+   **Resolved (2026-11-27, Andrej):** C. The dataset does not ship. Nothing in the panel's validity findings drove this: no leak, no copy across a split, no artefact in the target, no feature from after the prediction point, and the no-signal reading was refuted. The decision is the one this issue asks, whether the headroom is worth a benchmark slot, and the answer is no: the honest unit is 25 crosses rather than 4,699 lines, the pooled headroom over a constant is about 2%, the effective width is some 40 to 80 components of 1,106 correlated markers, and the task is a narrow genomic-prediction problem rather than a heterogeneous tabular one. The record goes to `2nd Tier` at priority 1 and the v2 folder leaves the working copy; the definition stays in the log of that copy, and the panel's measurements stay here.
+
 5. **Does the benchmark have to enforce the per-split refit, and record the public lookup?**
 
    **Problem:**
@@ -314,6 +338,11 @@ block below.
    **Recommendation:** B. The lookup is the same question you settled on 2026-11-26 for a public derived copy, and
    the answer there was that the collection fits its own models; what is new here is the refit, which is cheap to
    state and would be cheap to enforce later. **Decision:** A, B or C?
+
+
+   **Andrej (2026-11-27):** The dataset is not worth a slot; back to 2nd Tier.
+
+   **Resolved (2026-11-27, Andrej):** not taken. The dataset does not ship, so this question is closed without a choice between its options; the evidence under it stands for whoever picks the record up again.
 
 **Review panel:** full tier, seven evidence roles, run 2026-11-27 on the definition as committed that morning. Two
 caveats on how it ran: the roles were not available as registered agent types, so each read its own role definition

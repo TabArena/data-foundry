@@ -1,5 +1,27 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-27, maize_nam_flowering_time removed: back to 2nd Tier on the curator's decision (nothing was built)
+
+- Andrej, 2026-11-27: "the dataset is not worth a slot; back to 2nd Tier." The folder added on 2026-11-26 leaves
+  the working copy and the record goes to `TBD -> 2nd Tier` at priority 1. No container was ever built, so nothing
+  downstream changes.
+- The reason is worth, not validity. The full review panel of 2026-11-27 found no leak, no copy across a split, no
+  artefact in the target and no feature from after the prediction point, and the reading that the task has no
+  signal across its groups was refuted the same day. What decided it: the honest unit is 25 crosses rather than
+  4,699 lines, the pooled headroom over a constant is about 2%, 1,106 correlated markers carry some 40 to 80
+  effective components, and the task is a narrow genomic-prediction problem rather than a heterogeneous tabular
+  one.
+- Where the work lives now. The definition that passed `dataset check` with 0 errors and 0 warnings is in this
+  log's history, at the commit that added it and the two that corrected it. Every measurement the panel made is in
+  `curation/records/maize_nam_flowering_time.md`, whose review keeps all five issues with their resolutions and
+  the panel block. `genomic_prediction_maize_flowering_time` still names this record as its better data, so a
+  later round finds it.
+- Two findings outlive the dataset and are in this directory's `REVIEW.md` as cross-dataset items: whether the
+  no-signal rule should require a properly specified model before it fires, since on this dataset it fired on an
+  under-regularised ridge and every model chosen for the problem beat the baseline; and whether the blind
+  reviewer's clean room should carry the task's metric, since without it that reviewer judged on a pooled score
+  and reached the opposite verdict from the one the declared metric supports.
+
 ## 2026-11-27, maize_nam_flowering_time: the review panel, and a dozen corrections to its notes (nothing built)
 
 - A full panel ran on the definition as committed: claim auditor, column auditor, split auditor, domain

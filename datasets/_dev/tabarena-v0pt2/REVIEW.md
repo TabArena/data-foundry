@@ -828,3 +828,66 @@
   `problem_type`, `cic_malmem_2022` and `fusionai_gene_fusion_ntv2`, carry the marker for a binary framing, benign
   against malware and fusion-positive against pseudo-negative), so none of them changes meaning. Whether
   `genomic_prediction_soy_yield` itself now carries the marker is open for its own review.
+
+### From the maize NAM review panel of 2026-11-27
+
+- **Should the no-signal rule require a properly specified model before it fires?** The rule retires a grouped
+  regression whose models all score below the training mean on unseen groups. On `maize_nam_flowering_time` it
+  fired, and the dataset was within one decision of being retired on it; re-run with models chosen for the problem,
+  every one of them beat the baseline and the trigger was never met. The dataset itself has since gone to
+  `2nd Tier` for unrelated reasons, which is why this belongs here rather than in its record.
+  * **Problem:** the rule's trigger is a statement about the models someone happened to fit, so an
+    under-regularised baseline can retire a dataset that has signal.
+  * **Background:** the figures that fired it came from a ridge at the probe's default penalty and from the group
+    probe's defaults, and they climb monotonically toward zero as the penalty rises, which is the signature of
+    mis-specification rather than of absent signal.
+  * **Statistics:** pooled R^2 on unseen families over 21 shipped splits of that dataset.
+
+    | Model | pooled R^2 | folds above 0 |
+    |---|---|---|
+    | the probe's defaults and an under-regularised ridge | -0.84 to -0.136 | 0 |
+    | ridge, penalty by inner cross-validation | +0.044 | 20 of 21 |
+    | shrunk LightGBM | +0.056 | 19 of 21 |
+    | random forest, 300 trees | +0.047 | 19 of 21 |
+    | ridge on markers centred inside each group | +0.057 | 21 of 21 |
+
+  * **Options:**
+
+    | | Option | What it does | Pro | Con |
+    |---|---|---|---|---|
+    | A | Leave the rule as written (implemented) | the trigger stays "every model scored" | nothing to change; a careful reviewer re-runs it anyway | the one case we have would have been retired wrongly, and the next reviewer may not re-run it |
+    | B | Add a clause: the trigger needs at least one model whose capacity or penalty was chosen on the training side | a sentence in the rule and a line in the probe's output | the rule then tests the task rather than the baseline | a tuned model per probe run costs time |
+    | C | B, plus the probe tunes a penalty by inner cross-validation itself | a framework change to the learnability probe | the number the probe prints is the one the rule needs | more work in a probe that runs on every grouped dataset |
+
+  * **Recommendation:** B. The rule is a Must and it fired on a dataset that had signal; a clause costs one
+    sentence, where C costs a probe change for a case that may be rare.
+  * **Decision:** A, B or C?
+
+  **Notes for the AI:** on B, the clause goes beside the rule in the split rules, with this dataset as its Cases
+  entry and the table above as the evidence; the probe's hint line gains "a model whose penalty was chosen on the
+  training side" as the check to run before reading the flag.
+
+- **Should the blind reviewer's clean room carry the task's metric?** The clean room gives `data.parquet` and a
+  `task.md` naming the target, the problem type, the size, the regime and the source links, and no metric. On
+  `maize_nam_flowering_time` the blind reviewer therefore judged on a pooled R^2 and concluded it would not
+  benchmark on the dataset, while the declared per-group metric separates models from 0.05 to 0.42 on the same
+  rows; its report named the missing metric itself. Every panel run hits this, so it is not that dataset's issue.
+  * **Problem:** a reviewer told nothing about how a task is scored will score it the obvious way, which for a
+    grouped task is usually the wrong way.
+  * **Background:** the point of the role is a view free of our framing, and a metric is arguably part of that
+    framing; but a metric is also part of the task, and the reviewer is asked whether the task is worth
+    benchmarking.
+  * **Options:**
+
+    | | Option | What it does | Pro | Con |
+    |---|---|---|---|---|
+    | A | Leave the clean room as it is (implemented) | the reviewer sees no metric | the view stays free of our choices, including the one we may have got wrong | the reviewer scores on a default that can contradict the task, and its verdict is then about our default, not the dataset |
+    | B | Name the metric in `task.md`, without the reason | one line in the clean-room writer | the reviewer judges the task we actually declare | it is handed one of our judgments |
+    | C | Name the metric and ask the reviewer to report under both it and a default | one line, and a sentence in the role | the disagreement between the two becomes the finding rather than an accident | a longer report |
+
+  * **Recommendation:** C. On this dataset the gap between the two readings was the most useful thing the panel
+    produced, and it surfaced by luck rather than by design.
+  * **Decision:** A, B or C?
+
+  **Notes for the AI:** on B or C, the line goes into `clean_room.py`'s `task.md` writer beside the regime; on C,
+  the blind reviewer's role file gains the sentence asking for both readings.
