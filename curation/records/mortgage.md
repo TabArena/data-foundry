@@ -3,6 +3,7 @@ unique_name: mortgage
 name: Mortgage
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -69,18 +70,27 @@ CC (2026-11-11, Lennart): the declared horizon (one quarter, no gap, windows sta
 
 CC (2026-11-17, Andrej): the declared split (temporal on `time`, windows of 1 value, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-27, Andrej): issue 17, as implemented (D): the later quarters stay in the frame. It is not a leak of the split: a model fit on a split's sides cannot see later quarters, and a test quarter holds one row per loan.
+
+CC (2026-11-27, Andrej): issue 18, "Option A: Forward-fill all of them within the loan from the first recorded value, and take the loan's first property type.": each row takes the loan's first recorded value of the interest rate, the maturity, the credit score and the LTV at origination and the loan's first property type.
+
+**Assessment (AI, 2026-11-27):** applied issue 18 (A). Count definition: rows whose recorded (non-missing) value differs from the loan's first recorded one. Before: 33,457 of 621,653 rows (3,084 loans; 3,450 of 33,356 test rows) for the five fields; interest rate 24,190 rows (2,313 loans; 2,520 test rows), `mat_time` 8,988 (807 loans), credit score 4,248 (366), LTV 297 (18), property type 766 (54). The rate was missing on 89,929 rows, with 1,397 loans both missing and recorded. After: 0 differing rows in each field, one value per loan, the rate missing on 80,749 rows (loans that never record it), no loan with both.
+
+CC (2026-11-27, Andrej): the declared metric (log loss, the mean of -log p of the true class over the three status classes, on each test window's rows) is checked and stays as declared.
+
 ## Review
 
 **Outcome:** added. You shipped it on 2026-10-26; on 2026-11-11 you chose 2015 Q1, 2012 Q2 and 2009 Q3 as the test
 quarters (issue 16, B) and kept the one-quarter horizon (H, ok); both are applied and nothing is left open.
 
 Re-reviewed on 2026-11-26 (focused panel): ship after changes. The standing objection on
-the task probes no longer holds, since on the windows shipped on 2026-11-11 the probes raise no flag at all; two
-issues are open, one of them a validity question about the container rather than the task (17, the later rows of a
-test loan; 18, the origination fields).
+the task probes no longer holds, since on the windows shipped on 2026-11-11 the probes raise no flag at all. Both
+issues of the panel are settled on 2026-11-27: the later rows of a test loan stay as they are (17, D: not a leak of
+the split) and the origination fields hold each loan's first recorded value (18, A); nothing is left open.
 
 **Main points:** Settled on 2026-11-11: one test quarter in each regime the book went through, the calm years, the
-recovery and the crisis, with the one-quarter horizon checked.
+recovery and the crisis, with the one-quarter horizon checked. Settled on 2026-11-27: the origination fields hold
+each loan's first recorded value, and the later quarters in the frame stay as shipped.
 
 **Horizon:**
 
@@ -244,6 +254,10 @@ has the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regen
    * That makes A a protocol line rather than a leak note: "features may use only the rows of the split's own sides". D stays defensible, since the plain fit path is clean. The frame-per-split question (B) stays with the cross-dataset item.
    * **Recommendation:** A, worded as the protocol line above. **Decision:** A, B, C or D?
 
+   **Andrej (2026-11-27, ok):** As implemented (D).
+
+   **Resolved (2026-11-27, Andrej):** D, nothing changes. The later quarters stay in the frame, and the mechanism is not a leak of the split: a model fit on a split's sides cannot see later quarters, and a test quarter holds one row per loan, as the answer says. `dataset.py` and the notes are unchanged.
+
 18. **Freeze the origination fields within each loan, or keep them as recorded?**
 
    * **Problem:**
@@ -281,6 +295,10 @@ has the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regen
    * By size it is nothing: freezing changes log loss by -0.0003 to -0.0006, slightly better.
    * The rule on values known at the prediction point decides on timing when the late cells can be found row by row, as here, and asks for the fix then. Read as cleaning instead (a field named for origination should hold the origination value), the answer is the same.
    * **Recommendation:** A either way: it costs no score and makes the columns mean what their names say. **Decision:** A, B or C?
+
+   **Andrej (2026-11-27, change):** Option A: Forward-fill all of them within the loan from the first recorded value, and take the loan's first property type.
+
+   **Resolved (2026-11-27, Andrej):** A. In `_clean`, each row takes its loan's first recorded (non-missing) value of `Interest_Rate_orig_time`, `mat_time`, `FICO_orig_time` and `LTV_orig_time`, and the loan's first property type (the three flags of its first row); the interest rate has no separate missing flag, its zeros are the missing values, so a loan's rate is missing on all its rows or none (1,397 loans had both before). One count definition, written in the notes: rows whose recorded value differs from the loan's first recorded one. Before the change: 33,457 of 621,653 rows (3,084 loans; 3,450 of 33,356 test rows) for the five fields, 24,190 rows (2,313 loans; 2,520 test rows) for the interest rate alone, 8,988 for `mat_time`, 4,248 for the credit score, 297 for the LTV and 766 for the property type. After: 0 in every field. `task_summary.changes` and the notes (the kept-as-recorded bullet and its log loss claim) are rewritten, and the LightGBM figures are marked as measured before the change. `dataset check`: 0 errors, 0 warnings.
 
 **Review panel:** ship after changes (mediator, focused tier: claim auditor, column auditor, split auditor, task gamer). Claims: the calendar anchor, the macro lags, the market rate, the target's absorbing form, the dedup and the LEAK-20 exception all survive tests designed to refute them. Refuted: the standing objection on the probes is stale and the dataset is better than its notes claim; "a closed book that ages" describes the wrong panel. Agreed: the one-quarter windows without a gap, and that entity leakage through earlier rows is null. Disputed: the later rows (issue 17) and the origination fields (issue 18).
 
