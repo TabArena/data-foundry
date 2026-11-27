@@ -133,6 +133,7 @@ class Apistox(AbstractCuratedDataset):
         ),
     )
 
+    split_leaf = "L-CAT.entry-date"
     # Splits: four ten-year windows of first publication years (every year from 1950 on is in the data, so ten
     # distinct years are ten calendar years).
     temporal = Temporal(

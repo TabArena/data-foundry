@@ -230,13 +230,13 @@ A metric input known at the prediction point (a weight that is a function of the
   the container and the README carry. The tag is a use-case prototype, `"Timeless"` (the target is a fixed property of
   the item, and the data has no time dimension, or its time changes only which items are held, as in a catalogue whose
   entry date does not decide the split), `"RetrospectiveFillIn"` (the data is one snapshot of a moment or period, and
-  the use case fills in what is missing for that time, not a later one; the old name `"Retrospective"` is still read,
-  with a note, until every definition uses the new one), `"StationaryRelation"` (the use case scores later
-  units, too few periods give the windows SPLIT-14 asks for, and the stationary-relation test over the periods held,
-  dated or a rebuilt order, reads the relation flat; it replaces a forced tag) or `"UnseenGroup"` (the use case aims at
-  groups the data does not hold, a site, a well, a protein or a chemical family, not at a later period; it needs a
-  `grouping` on the group); or a forced tag, `"ForcedIIDFromTemporal"` when a forward use case has no usable time or
-  too few periods and ships IID (a definition that declares a `grouping` or `temporal` refuses it),
+  the use case fills in what is missing for that time, not a later one; a definition refuses the old name
+  `"Retrospective"`, which containers built before 2026-11-23 carry and are read with), `"StationaryRelation"` (the
+  use case scores later units, too few periods give the windows SPLIT-14 asks for, and the stationary-relation test
+  over the periods held, dated or a rebuilt order, reads the relation flat; it replaces a forced tag) or `"UnseenGroup"`
+  (the use case aims at groups the data does not hold, a site, a well, a protein or a chemical family, not at a later
+  period; it needs a `grouping` on the group); or a forced tag, `"ForcedIIDFromTemporal"` when a forward use case has no
+  usable time or too few periods and ships IID (a definition that declares a `grouping` or `temporal` refuses it),
   `"ForcedGroupedFromTemporal"` when such a task ships grouped (it needs a `grouping`; SPLIT-8).
   `"AssumedStationaryRelation"` replaces a forced tag where a person judged earlier and later samples interchangeable
   for a reason from the dataset's domain or use case and nothing can be measured (no comparison over time is possible,
@@ -262,8 +262,9 @@ A metric input known at the prediction point (a weight that is a function of the
   refuses a malformed declaration, a prototype on a temporal split, a regime the tag contradicts, a human-set tag
   without a person, a date and a reason of eight words or more, and a time-basis tag or line written by hand beside
   `time_basis` (`data_foundry.time_basis` holds the rules, which `dataset check` applies to a built container too).
-  Definitions written before `TimeBasis` (a forced tag in `data_tags` and a free-text line) still load while
-  `data_foundry.time_basis.ALLOW_UNSTRUCTURED` holds; `dataset check` notes them (`meta_time_basis_unstructured`).
+  The old way, a forced tag in `data_tags` and a free-text line, is refused since every definition moved
+  (`data_foundry.time_basis.ALLOW_UNSTRUCTURED` is false); `dataset check` still notes it on an old container
+  (`meta_time_basis_unstructured`).
   `dataset check` also notes a split that is not temporal and says nothing about why, and date columns in the data of
   such a split unless the basis is `RetrospectiveFillIn` or a forced tag's line gives the reason; it prints where the
   curation record's collection type and facts contradict the definition (`data_foundry.curation.consistency`).

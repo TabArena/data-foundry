@@ -15,11 +15,14 @@ decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 tags:
 - Tiny Data
+- 'Samples: One Moment'
+- Database Snapshot
 collections:
 - New (BeyondArena)
 - TabSTAR
 original_source: Kaggle
 year: '2021'
+collection_period: Not applicable (generated)
 domain: business & marketing
 required_split:
 - Random (IID)
@@ -47,20 +50,20 @@ CC (2026-10-21, Lennart): an upload whose first platform cannot be traced is kep
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — bare Kaggle upload with no competition, paper or stated metric.
 
 **Assessment (AI, 2026-10-27):** The open questions for the curator are in the record's Review (review of the Tiny Data datasets, written from the earlier findings, no review panel); the AI recommends shipping it after changes. Priority 1: gap -, use case - (a generic churn use), source - (a bare Kaggle upload), shape -, risk - (marks of generated data, 53% duplicate rows).
-**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `AnnualIncomeClass` (the README lists their levels).
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `AnnualIncomeClass` (the README lists their levels).
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Retire as generated data (AHDS): the hand-found marks (empty income x frequent-flyer cells, no age 32) and a label-linked one (repeated profiles share one label, z 7.3) all fall far outside a real customer table of the same size, and the Kaggle source is a hackathon/exam file. Priority 1: gap 0, use case 0, source 0, shape 0, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Retire as generated data (AHDS): the hand-found marks (empty income x frequent-flyer cells, no age 32) and a label-linked one (repeated profiles share one label, z 7.3) all fall far outside a real customer table of the same size, and the Kaggle source is a hackathon/exam file. Priority 1: gap 0, use case 0, source 0, shape 0, risk -1.
 
-CC (2026-11-05, Andrej): retired as generated data (`No (Retired)`, `AHDS`, `Missing source information`; confirmed on the review page 2026-11-06). The table is a Kaggle upload of 954 "customers" whose page calls it "Private Hackathon/Examination Data" and names no company, period or churn window.
+CC (2026-11-05, Andrej): retired as generated data (`No (Retired)`, `AHDS`, `Missing source information`; confirmed 2026-11-06). The table is a Kaggle upload of 954 "customers" whose page calls it "Private Hackathon/Examination Data" and names no company, period or churn window.
 - **How it was generated:** a short program over the row number k (0 to 953, the order of the Kaggle file): every column but age is a rule of the kind "every n-th row" (frequent flyer "Yes" when k mod 4 = 1, "No Record" when k mod 11 = 1, else "No"; income, services, social media and hotel the same with periods 3 to 15), age is the only random draw (27 to 38, never 32), and churn is a rule too (k mod 12 = 9, or k mod 6 = 1 with a synced account, or any odd row at ages 27-28, plus two rules for ages 33 and over). These 22 rules give every one of the 5,724 cells besides age, all 954 labels included, without an exception.
 - **The generator's optimal model vs the methods:** knowing the program, a customer's churn probability is the share of churning rows among the row numbers the program maps to that customer's features and age; on the 30 shipped splits it scores 1 - ROC AUC 0.0210 and beats all 40 benchmark methods on every split (best 0.0317, TabPFN-3.5 0.0360, median 0.0406), so the task ranks methods by how close they get to a row-number formula.
 - **Other marks agree:** the six empty cells, the missing age 32, the 53% repeated rows and the repeated profiles that share one label (z 7.3, none of them in a real customer table of the same size) all follow from the rules, and 200 samples with the ages redrawn reproduce them (the same six empty cells, 54% repeats, z 7.7).
 - **Why the keep of 2026-10-21 no longer holds:** it rested on the data looking sound because the automated generated-data probe raised no flag; that probe never looks at the file's row order, where every column but age is a formula of the row number.
 
 CC (2026-11-06, Andrej): the 507 repeated rows (53.1%; 419 distinct profiles, 28 with both labels) stay with a note in the definition (issue 2, B); they follow from the generator's row-number rules over six coarse columns.
-To do: the v2 folder leaves the working copy once its Review is committed.
+To do: the v2 folder leaves the working copy once its Review is committed (done: removed in PR #97).
 
 ## Review
 

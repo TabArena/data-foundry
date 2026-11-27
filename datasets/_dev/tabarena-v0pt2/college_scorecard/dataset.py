@@ -268,7 +268,7 @@ class CollegeScorecard(AbstractCuratedDataset):
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing
           (CLEAN-10).
-        - Columns recorded on one side of a window only (cross-dataset item of 2026-11-11, Lennart): `DISTANCEONLY` is recorded from the 2011 cohort on, so the 2015 and 2016 windows, whose train sides end at 2009 and 2010, train on cohorts without it and test on cohorts that all have it. Kept: a model fit then met the column the same way.
+        - Columns recorded on one side of a window only (Lennart, 2026-11-11): `DISTANCEONLY` is recorded from the 2011 cohort on, so the 2015 and 2016 windows, whose train sides end at 2009 and 2010, train on cohorts without it and test on cohorts that all have it. Kept: a model fit then met the column the same way.
     """
 
     # Task
@@ -285,6 +285,7 @@ class CollegeScorecard(AbstractCuratedDataset):
     splits_comment = """
         Expanding-window temporal splits by entering cohort: 4 test windows of one cohort each (the falls of 2018, 2017, 2016 and 2015), newest first. Train is every cohort that entered at least six years before the test cohort (a gap of five cohort years): a cohort's 150% completion rate is published six Scorecard files after it entered, in the file that also publishes the entry data of the cohort being predicted, so the five cohorts in between have no label yet at the prediction point. The windows roll back from the newest cohort while train keeps at least half of the 18 cohorts, which allows 4 windows instead of the 9 an IID task of this size would get. The cohorts of 2013 and 2014 are in no split: they sit in the gap of every window and before the oldest test window. Without the gap, untuned LightGBM reaches R² 0.86 instead of 0.81 (mean of the 4 windows): training on cohorts whose rate is not yet published overstates the scores.
     """
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="cohort_year",
         splits=TemporalSplits(window=1, unit="unique", n_windows=9, gap=YEARS_TO_RATE - 1, min_train_fraction=0.5),
@@ -299,7 +300,7 @@ class CollegeScorecard(AbstractCuratedDataset):
         "every window (the newest window trains on 2001-2012) and before the oldest test window (2015, the last one "
         "whose train side keeps half of the cohorts).",
         "splits_feature_missing_in_test": (
-            "Decided (Lennart, 2026-11-11, cross-dataset item): `DISTANCEONLY` is recorded from the 2011 cohort on, so "
+            "Decided (Lennart, 2026-11-11): `DISTANCEONLY` is recorded from the 2011 cohort on, so "
             "the 2015 and 2016 windows train on cohorts without it (curation_comments)."
         ),
     }

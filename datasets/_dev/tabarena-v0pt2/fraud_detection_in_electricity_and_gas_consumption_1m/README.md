@@ -85,7 +85,7 @@ Not built yet. The current definition gives checksum `v2:da6f8add48f9cffb1d03b00
 
 **What the test data stands for.** Whole clients are held out in three folds, so the test data stands for other clients over the same years, as in the challenge.
 
-**Our changes to the source.** We cut the history at 2013-01-01, as later invoices carry traces of the inspections that set the labels, keep the clients billed before that date and still billed from 2015 on, so that every client was followed long enough for a finding, and sample 1.5M invoices by whole clients.
+**Our changes to the source.** We cut the history at 2013-01-01, as later invoices carry traces of the inspections that set the labels, and keep the clients billed before that date and still billed from 2015 on, so that every client was followed long enough for a finding.
 
 > **Use case fit: approximate (a stand-in with a known gap).** The labels are findings of 2013-2019 without a date or a stated horizon, so the model learns from clients inspected over the same years, not from earlier campaigns: a screen of the uninspected clients rather than a forecast made in 2013. The cut date is read off the data, not documented by STEG or Zindi.
 
@@ -234,7 +234,7 @@ We start with client_train.csv and invoice_train.csv of the Zindi challenge, fro
 - We drop `counter_number`, the meter's serial number: it carries no meaning as a number or a code (the fraud
   rate is 7.3-9.5% across its deciles, in no order; Spearman -0.04 with the account creation year).
   Serials repeat across clients, but clients that share a serial do not share labels (ROC AUC 0.50-0.51 for
-  the other clients' label), so the serial does not link clients across the split either. Without it, 57
+  the other clients' label), so the serial does not link clients across the split either. Without it, 61
   rows of the shipped frame repeat another row of the same client (two meters with the same invoice); we
   keep them.
 - Shifted rows: 15 invoices of 2 clients carry `reading_remarque` codes outside the documented 6-9 (203, 5)
@@ -261,13 +261,17 @@ We start with client_train.csv and invoice_train.csv of the Zindi challenge, fro
   reading (Zindi: "If the counter shows something wrong, the agent gives a bad score"); the codes 6-9 are not
   described and their use changes over time (7 only up to 1995, 8 and 9 from 1996, 9 replacing 6 from 2012), so
   which end is bad is unknown.
-
-Version of `fraud_detection_in_electricity_and_gas_consumption`: We sub-sample the frame (1,862,650 invoices of 81,531 clients, all before 2013) to 1.5M rows by whole clients (stratified on the target) and use grouped 3-fold cross-validation, so every fold trains on about 1M and tests on about 500k rows (v2 split protocol).
+- The row budget (1M train, 500k test rows): We keep the whole frame (1,862,650 invoices of 81,531 clients, all before 2013) and use grouped 3-fold cross-validation over it (v2 split protocol). Each fold tests on at most 500k rows, whole clients drawn from its third and stratified on the target, and trains on every other row (about 1.36M). The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M rows with `subsample_train`, whose default draws whole clients at random, stratified on the target.
+- Time basis: RetrospectiveFillIn: the use case screens the clients STEG did not inspect in 2013-2019 from their
+  invoices before the cut, filling in the period the findings cover rather than forecasting from 2013; the fraud
+  rate by last-invoice year is flat for the kept clients (7.1-9.3%, 2015-2019). It cannot test a forecast made
+  at the cut or a later campaign.
 
 ## Splits
 
-Default grouped 3-fold cross-validation by client, on the frame sub-sampled to 1.5M rows by whole clients;
-every split trains on at most 1M and tests on at most 500k rows. The grouped cross-section stands in for a
+Default grouped 3-fold cross-validation by client over the full frame (1,862,650 invoices): each fold tests on
+at most 500k rows, whole clients drawn from its third, and trains on every other row (about 1.36M), which a
+benchmark sub-samples to 1M rows by whole clients (`subsample_train`). The grouped cross-section stands in for a
 deployment over time, in which STEG would train on the findings of earlier campaigns and score its clients
 forward: the labels are undated findings of 2013-2019, one per client, so no test window or gap can be set,
 and train and test clients share the same years, as in the challenge.

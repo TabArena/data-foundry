@@ -481,6 +481,106 @@ saved and no field, split or metric changed.
   written exception for the averaging, the collection facts, whether to repair the four re-pointed rows, and a cases
   row in the metric rules), the assessment line, and `priority` 3 to 2.
 
+||||||| 5963723b
+
+## 2026-11-23, every definition names its split-tree leaf; `RetrospectiveFillIn` and `Target: Fixed Delay` in use (no container built)
+
+- `split_leaf` in all 174 definitions: the leaf of `split_tree.md` the split comes from. Where the tree names the
+  definition as an example, that leaf (51); else the one leaf that the walk from the record's collection type reaches
+  and whose split and tag the definition ships (55); else, of two or more, the one its own text gives (68): windows
+  with a person's exception (`L-ORDER.exception`) only where three windows need it, eleven definitions (a window
+  under half the data, a gap shorter than the label delay, or one-day windows under 33 units); whole periods
+  measured not flat (`L-FORCED.periods`) only where the time basis gives that reading, else `L-FORCED.groups`; never a
+  leaf the tree calls unreached. The tests check that every definition names one, that it lies on the walk from the
+  record's type, and that an example names its own leaf.
+- The 13 definitions that wrote `TimeBasis("Retrospective", ...)` write `RetrospectiveFillIn`; their READMEs'
+  `data_tags` row and `Time basis:` line say so (edited, not regenerated), and fiat_500's rename note is gone. A
+  definition now refuses the old name; a container built before still reads with it.
+- `Target: Later` is `Target: Fixed Delay`, beside `Target: Varying Delay`: the vocabulary, the 55 records that carry
+  it, SPLIT-35, records.md, churn_telco_south_asia and porto_seguro. Dated notes in the records keep the old name, as
+  SPLIT-35 says.
+- blood_transfusion's `dataset.py` formatted (`ruff format`), which the lint step asks.
+
+## 2026-11-23, the curator's dataset review decisions of 2026-11-04 to 11-13, carried onto the split work (no container built)
+
+Andrej's decisions from his review of the v0.2 datasets that had not reached a definition, applied onto the newest
+version of each (the splits and time bases of the split work kept). Each record's `## Review` gains the issues with
+their Resolved lines and the CC lines; decisions a later one replaced are marked so and not applied.
+- Columns dropped: student_portuguese_performance `absences`; amazon_employee_access `ROLE_CODE` (copy of
+  `ROLE_TITLE`); credit_approval `A4` (relabelled copy of `A5`); hr_analytics `training_hours`;
+  in_vehicle_coupon_recommendation `direction_opp` (1 - `direction_same`); hotel_booking_demand `DepositType`;
+  heloc `MSinceMostRecentInqexcl7days`; blood_transfusion `TotalBloodDonated` (250 x `NumberOfDonations`);
+  bank_marketing `contact`; lending_club the 14 credit-report fields first reported in December 2015;
+  ecoli_proteins `aac`; gallstone_disease `Hyperlipidemia`. Restored: mercedes_benz_greener_manufacturing `X3`,
+  `X6`, `X8`.
+- Rows and values: heloc 588 empty credit reports dropped (9,871 rows); hepatitis_c_prediction 7 duplicated donor
+  panels dropped (601 rows); mercari_price_suggestion 874 listings priced $0 dropped; gallstone_disease the 77 rows
+  of the second recording route dropped (242 rows) and five lab columns at their measured precision;
+  heart_failure_followup_survival death within 60 days (291 rows) and 91 source-filled lab values missing again;
+  give_me_some_credit codes 96/98 and an age of 0 missing; dementia_prediction eTIV and ASF at one precision.
+- Targets and features: gallstone_disease decoded with 1 = gallstones; hepatitis_survival_prediction `histology`
+  renamed `physician_prognosis`, source and coding corrected; rossmann_store_sales 32 calendar day counters (47
+  features) and competitor fields blanked before the competitor opened; lending_club training sides leave out loans
+  of borrowers who borrow again in the test quarter (rebuilt borrower key).
+- Markers and fit: `Class-dependent Recording` on gallstone_disease, heart_failure_followup_survival, heloc and
+  dementia_prediction; kickstarter `Selection Bias` and fit approximate; gallstone_disease fit approximate;
+  ecoli_proteins `Outdated`; student_portuguese_performance loses `No Good Target / Scientific Discovery`;
+  fiat_500 and amazon_employee_access domain business & marketing; dementia_prediction suggestion `Yes`.
+- Notes and documentation: credit_g (UCI 573, period, sample), anes_voting_2026 (label arrival, panel links),
+  ieee_fraud_detection (gap from the chargeback delay), sberbank_housing_market_forecasting (neighbourhood values
+  kept), hotel_booking_demand (90-day rule and `ADR` measured), mercedes_benz_greener_manufacturing (bench time),
+  kickstarter (funded share by launch year), protein_model_quality_rf_pcp (60-split scores),
+  asp_potassco_classification (value study kept; baseline numbers open), dementia_prediction (OASIS licence).
+- Rule: LEAK-27 (fitted scores) amended: drop such a column and keep the task when the rest is still a real one;
+  yeast's record gets a re-check question.
+
+## 2026-11-23, split departures decided and small tables with three windows tested (Andrej's decisions, no container built)
+
+Six definitions shipped a split other than the one the split tree gives. Each record's `## Review` gains the
+decision with its Resolved and CC lines; the departures table of `split_tree.md` is now empty.
+- infrared_thermography_temperature: temporal split, three two-month windows on the visit date from 15 March 2018,
+  15 January 2018 and 15 November 2017 (89%, 60% and 53% train; 108, 291 and 75 test subjects), no gap; the visit
+  date comes from the subject id and orders the split only (`time_of="label"`). The stationary-relation test reads
+  Nov-Dec 2017 not flat (Kumo-Tabular +0.010 +/- 0.003 RMSE, floor 0.001), at the change of camera set-up between
+  the study years. Was 10 x 3 random folds, `StationaryRelation`.
+- ecoli_proteins: 20 x 3 folds grouped by protein family, `UnseenGroup`. `protein_families.csv` maps the 327
+  proteins to 219 families (UniProt protein family 270, Pfam domains 39, the protein alone for 18 unresolved
+  entries). Entry-year windows would need a 37% exception, so the catalogue's family key decides; holding out
+  families costs +0.012 to +0.015 log loss for TabPFN and logistic regression, ranking unchanged. Was 20 x 3
+  random folds, `StationaryRelation`.
+- horse_colic_survival: unchanged (grouped by case, `StationaryRelation`); no longer a departure under the rule below.
+- cirrhosis_patient_survival_prediction: the random folds tagged `StationaryRelation` instead of
+  `ForcedIIDFromTemporal`, under the rule below (no period not flat, Kumo-Tabular flat pooled).
+- eryhemato_squamous_disease: the random split stays `ForcedIIDFromTemporal`; its time basis no longer reads the
+  file's two parts as periods, since the source does not say whether they are periods, examiners or a series
+  extended by diagnosis.
+- framingham_heart_study_fhs: the random folds tagged `AssumedStationaryRelation` on the curator's reason (one
+  baseline exam ships; the measured shift is one model family's once age is matched) instead of
+  `ForcedIIDFromTemporal`.
+- Rule: a small table, in SPLIT-33's 20- or 10-repeat tier, whose order gives only three windows also gets the
+  stationary-relation test over them; a flat reading that a person signs off as `StationaryRelation` goes on to the
+  forced step (a catalogue to its family-key step), otherwise the windows stay (SPLIT-32; the tree's
+  `[ORDER.small]` and `[CAT.small]`, both questions a person answers). The tree test allows an empty departures table.
+
+## 2026-11-23, ai4d_lab_tanzania_tourism_classification_challenge retired as `Too Small` (Andrej's decision of 2026-11-20, no container built)
+
+- The release is three dated survey waves (2012, 2013, 2014), recovered by matching its rows to the statistics
+  bureau's per-year files. The relation is not flat forward in time (trained on 2012-2013 and tested on 2014, log loss
+  +0.058 for LightGBM and +0.045 for Kumo-Tabular over training on 2014 itself; 2012 to 2013, +0.079 and +0.072).
+  Three waves give neither three windows on half the data nor the four whole periods a grouped split needs.
+- The record is `No (Retired)` with `Too Small`, a CC line and the decision in its `## Review`; `v2_path` cleared.
+  The folder is removed. It can come back if per-row years are published for four or more waves.
+
+## 2026-11-23, open_university_learning_analytics_dataset retired as `Too Small` (Andrej's decision of 2026-11-20, no container built)
+
+- The relation is measured not flat across the four start dates (2013B, 2013J, 2014B, 2014J): each date held out is
+  taught worse by the other three than by its own rows (log loss, LightGBM +0.011 to +0.040, Kumo-Tabular +0.014 to
+  +0.095, 5 seeds). A presentation runs longer than the gap between start dates, so with training limited to cohorts
+  finished before the test cohort starts, only one forward split exists (2014J on 66.5%); every other layout trains
+  on later, unfinished or concurrent cohorts.
+- The record is `No (Retired)` with `Too Small`, a CC line and the decision in its `## Review`; `v2_path` cleared.
+  The folder is removed. `DF: Yes` and the other tags stay.
+
 ## 2026-11-23, huesken_sirna_efficacy: 20 x 3 splits over the target genes (Andrej's decision, no container built)
 
 - The score averages one per-gene correlation and every fold holds out whole target genes, so the split rule counts
@@ -488,6 +588,243 @@ saved and no field, split or metric changed.
   container was built with 10 x 3. The definition is unchanged, as the protocol derives the count; the README's split
   block reads 20 repeats. Not rebuilt: the raw supplement is not in the local warehouse.
 - The record: issue 10 resolved (B) and a CC line.
+
+## 2026-11-23, split rules: window size, the running-id check and rebuilt orders (no container built)
+
+Changes to the split rules and checks after the split-rules review; no definition changes:
+- Window size: a scored unit that a test window cuts across its training and test sides is scored on part of its
+  rows, so the window counts rows, not the unit (SPLIT-14 as SPLIT-33 counts). noaa_afsc_bottom_trawl_survey_cpue,
+  whose metric averages an RMSE per taxon, counted 11 units in every window before; eras inside one window (numerai)
+  still count as units.
+- The running-id check (`dataset_sequential_id_column`) skips the time column of a split declared with
+  `time_of="label"`: a rebuilt order is a running id by construction, orders and splits the rows and is no model
+  input. A prediction-time column is still flagged.
+- A rebuilt order is checked against something independent of it, dated where anything is (SPLIT-22 and the split
+  tree), no longer "something dated": a second dated column, a linked release, outside facts, or a quantity that
+  counts calendar time; where nothing dated exists, evidence only a time order explains, named in `splits_comment`.
+
+## 2026-11-22, the split-rules review: the time basis as one declaration (no container built)
+
+Lennart's review of the split rules, applied across the definitions of the split work:
+- Every definition with a time basis declares it as `time_basis = TimeBasis(tag, reason, set_by=..., on=..., note=...)`
+  (109 definitions) and, where the use case holds out a group the data cannot key, `group_basis = GroupBasis(reason)`
+  (2). The tag left `data_tags` and the hand-written `- Time basis:` / `- Group basis:` bullet left `curation_comments`;
+  the build renders the same bullet, so a container carries what it did. The reasons, people, dates and notes are kept
+  word for word; a rule id in the brackets (`SPLIT-8`, `SPLIT-32`) was dropped.
+- bad_customer_detection: its `StationaryRelation` names the person and date of the change that set it (Andrej,
+  2026-11-20), since only a person sets that tag.
+- ai4d_lab_tanzania_tourism_classification_challenge: its `ForcedIIDFromTemporal` takes its reason from its own splits
+  comment (no date or order documented, a forward use case, a dated survey wave would test drift).
+- The old way is refused from here on (`ALLOW_UNSTRUCTURED` false), and every definition record names one collection
+  type (`STRICT_COLLECTION_TYPES` true).
+
+## 2026-11-19, split check marks of the evening (no container built)
+
+Andrej's decisions on the split check page, applied in the definitions (each with its record's Resolved turn and CC line):
+- Windows under half the data kept as the curator's exception: airqo, anes_voting_2026, ashrae (1m), cooking_time (1m),
+  wisconsin, g_research (1m, the crash window); hotel_booking_demand cut to nine dates (1 September 2016 dropped,
+  1 October 2016 at 48.3% the exception). garments_worker_productivity keeps its one-day windows under 33 rows as the
+  curator's exception (SPLIT-14 now allows one where the use case's own period holds fewer units).
+- New windows: ieee_fraud_detection three-week windows with the one-month gap; sberbank nine one-month windows;
+  mercedes nine windows of 233 cars; qsar_tid_11 nine one-year windows; california nine windows of 2,165 sales;
+  consumer_complaints (1m) a one-month gap; 2_month_survival_rate_prediction three half-year windows on the rebuilt
+  entry date with a 60-day gap.
+- Grouped forced splits: sendy_logistics_challenge 3 x 3 folds over month classes; online_shoppers leave one month out
+  (`ForcedGroupedFromTemporal`, `Month` no input).
+- Tags: regensburg and spanish_motor_insurance_coverage_level_2022_2024 `StationaryRelation` (measured flat);
+  cirrhosis `ForcedIIDFromTemporal` (the curator's call over three windows, listed as a departure).
+- Fewer windows than the target, kept with the reason in the splits comment and `splits_below_target` accepted:
+  wisconsin, airqo, predict_students, sdss_17, spanish_homeowners, spanish_motor_2015_2018, african_credit (its reason
+  corrected to the 37-day settlement), miami_housing, acquire_valued_shoppers_challenge.
+- seismic_bumps (added today): the review panel's changes without a decision (the test-row protocol line,
+  `shift_order` no input, the notes' numbers, the proxy target in `fit_reason`).
+Opened or answered for a decision: the window layouts of 17 definitions below the target, bank_marketing's campaign
+windows, open_university (one presentation held out with its start date), infrared, ecoli and framingham (tests run),
+tanzania (the waves are 2012, 2013 and 2014; forward test not flat), cardiotocography (not flat), seismic_bumps
+(metric, signal, window length).
+
+## 2026-11-19, split check v2: documentation that no decision needs (no container built)
+
+A second full-information check of the 175 definitions against the tree and rules of 2026-11-19 (163 consistent,
+the rest already open or listed on the split check page). Applied here, as facts:
+- split_tree.md: acquire_valued_shoppers_challenge listed under the label-delay-gap leaf (it ships a 5-day gap),
+  in_vehicle_coupon_recommendation under the forced grouped leaf (`ForcedGroupedFromTemporal` since 2026-11-18),
+  distribution_transformers_at_cauca_department under Random · `AssumedStationaryRelation` (since 2026-11-18); the
+  measured-not-flat question asks for a positive per period only under a ranking metric (SPLIT-16).
+- `Time basis:` lines: frempl_french_motor_personal_line and pricing_game_2016_french_fleet give their inconclusive
+  stationary-relation test; bemtpl97 gets the line its issue 4 decision (2026-11-18) names.
+- splits comments: thyroid_discordant_archive no longer gives few positives as the reason for three windows;
+  noaa_afsc_bottom_trawl_survey_cpue's nine windows are more than the target of three, not "as many".
+- distribution_transformers_at_cauca_department's prediction-point note and SPLIT-8 case row name
+  `AssumedStationaryRelation`.
+- split_tree.md: ai4d_lab_tanzania_tourism_classification_challenge moves from the `Temporal · round` examples to
+  the survey branch's ForcedFromTemporal step (two rebuilt batches give no three windows).
+Opened for a decision (review issues, no definition changed): open_university_learning_analytics_dataset issue 1
+(whole start dates instead of module-presentations: the relation is measured not flat), regensburg_pediatric_appendicitis
+issue 6 (`StationaryRelation`: measured flat), ai4d_lab_tanzania_tourism_classification_challenge issue 11 (`Too Small`
+or a kept exception: measured not flat over two batches), and one cross-dataset item on 17 temporal splits below
+SPLIT-15's window count without a stated reason.
+
+## 2026-11-19, temporal splits: train floor, least test window and the target number of windows (no container built)
+
+- SPLIT-14: every window trains on at least half the data; a window under half is the curator's exception down to 30%,
+  never below (`splits_train_under_floor` is now an error; the core rule of two windows at half and the error
+  `splits_floor_core` are gone). The windows under half signed off before stand as recorded exceptions. Every test
+  window holds at least 33 scored units, counted as SPLIT-33 counts them (new error `splits_test_too_small`).
+- SPLIT-15: the number of windows aims at the splits an IID split of the data would get (SPLIT-33's count for two thirds
+  of all scored units), after the use case's window length, step and gap and SPLIT-14's limits; fewer are accepted,
+  never under three (new warning `splits_below_target`, answered in the splits comment). Windows do not overlap by
+  default; where the target cannot be reached otherwise, overlapping windows are offered to the curator.
+- SPLIT-12 lists what the definition derives from the use case and the source (horizon, refit cadence, planning gap
+  and label delay, time unit) and asks the splits comment to name each; SPLIT-17 widens noisy windows, never under 33.
+- `split_count` in `data_foundry.v2.splits`; the tree's windows questions, definitions.md, the add-dataset and review
+  skills and the split auditor follow.
+- split_tree.md: the temporal-leaf bullet names what the use case sets (time unit, window length, step, gap); a shared
+  answer "The windows" gives the target, the floor and the overlap option; each windows question ends with when it
+  answers no. The Split Decisions Atlas follows (v123).
+- split_tree.md: a shared windows step (③): each temporal branch asks "Can the <time key> hold at least three test
+  windows of the use case's size?"; a no first asks whether a person allows an exception (windows down to 30% training,
+  wider windows, or no gap), and only that no reaches the forced step. Too few positives in a window is part of the
+  task. The Atlas follows (v124: nine empty leaves "Temporal · with a person's exception").
+- SPLIT-16 and TP-9: few positives in a test window are part of the task; only a window without a positive under a
+  ranking metric (ROC AUC, average precision, a Gini) is widened or its cut moved. `splits_test_single_class` is an
+  error only under a ranking metric (`RANKING_METRICS`), a warning otherwise. seismic_bumps' `Too Small` (2026-09-30)
+  rested on the earlier TP-9 wording.
+
+## 2026-11-18, the blind split review: the cross-dataset decisions (no container built)
+
+- sat11_hand_algo_runtime and asp_potassco_classification are both split by problem family (Andrej: "Do both by
+  family"). A family is the generator an instance comes from, read off the instance path before it is hashed into
+  `instance_id`, which stays the scoring column for PAR10 and is never a feature. Folders that split one generator are
+  merged.
+  - sat11_hand_algo_runtime: grouped on the new `problem_family` (48 folders, 32 families; Anton's 2003 SAT/UNSAT,
+    rbsat's forced/unforced folders, QG6/7/7a/8, two Van der Waerden folders and six more merged) instead of on
+    `instance_id`; `UnseenGroup` instead of `Timeless`; 20 x 3 folds, 22-100 of the 184 instances per test fold. The 88
+    instances new in 2011 all came from generators no earlier competition used; the instance folds put 91% of the test
+    instances' families in training. A split by competition gives one window with half of the rows in training.
+  - asp_potassco_classification: grouped on `problem_family` (75 families), which replaces `task_id` (96 class
+    folders: the 15 problems of the 2007 competition were stored twice, partly as the same files; HamiltonClumpy's
+    five folders, RLP-150/200 and plain/verbose searchTest merged); 25 families per test fold, 10 x 3. On the class
+    folders 19% of the test instances (4-45% per fold) had their generator in training. This replaces the split line
+    "grouped 3-fold CV over `task_id`" of the next section.
+  - `definitions.md` (algorithm selection) and `splits.md` (a `Timeless` example, a SPLIT-33 case) no longer cite
+    sat11_hand_algo_runtime as grouped by instance.
+- The split tree's gap questions name the step (B): "the time column's smallest recorded step (a date: one day; a
+  timestamp: its resolution)" in the event-log and panel questions and in the shared gap answer, "the time column's
+  smallest recorded step" in their notes and leaves (`split_tree.md`; the atlas tree, v115, the same). No definition
+  changes; cooking_time (issue 3) and medical_facility_operational_data (issue 15) keep their gaps, as implemented.
+- The ten catalogue definitions the tree agrees with are confirmed: drug_induced_autoimmunity_prediction,
+  nci_aids_antiviral_screen, protein_model_quality_rf_pcp, qsar_aquatic_toxicity, qsar_bioconcentration, qsar_biodeg,
+  qsar_fish_toxicity, qsar_oral_toxicity, qsar_tid_11 and splice each carry a "declared split ... is checked" CC line.
+
+## 2026-11-18, stationarity reasoning: framingham and pricing_game_2017 (no container built)
+
+- framingham_heart_study_fhs: `ForcedIIDFromTemporal` stays, now measured: the stationary-relation test on the parent
+  teaching file's three exams (the cohort rebuilt at each exam) reads not flat; the `Time basis:` line gives it.
+- pricing_game_2017_french_mtpl: `ForcedGroupedFromTemporal` stays as implemented; the multi-year AIcrowd copy needs an
+  account, so it is not measured.
+
+## 2026-11-18, the blind split review: further marks (no container built)
+
+- dementia_prediction: time basis `UnseenGroup` instead of `ForcedGroupedFromTemporal` (`WrongDomain` stays): the use
+  case is a person's first visit at a memory clinic, so whole people are held out. Split unchanged (stratified 3-fold
+  CV over `Subject ID`, 20 repeats).
+- asp_potassco_classification: time basis `UnseenGroup` instead of `Timeless`: the use case is a kind of problem not
+  seen before, so whole problem classes are held out. Split unchanged (grouped 3-fold CV over `task_id`);
+  ASlib's instance folds not followed (as implemented).
+- As implemented, with the declared split checked and verdict ship: acquire_valued_shoppers_challenge (the 5-day gap
+  and the four windows on `offerdate`; Kaggle's files not followed), lung_adenocarcinoma_metastasis (collection type
+  `Experimental Results` kept), bioresponse (`ForcedIIDFromGrouped` kept).
+- force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition: the two split issues (windows on
+  the completion year; the competition's wells) merged into one, left open.
+- coffee_rating_prediction: a one-month gap before each two-month window (`gap=1`): the roaster predicts at
+  submission, before Coffee Review publishes the score in its review month; the delay is not stated, one month is the
+  smallest gap the monthly dates allow. Window count and train shares to be re-checked by `dataset check`.
+- As implemented, with the declared split checked and verdict ship: bad_customer_detection (random folds,
+  `StationaryRelation`), california_house_prices_2020 (three windows in sale order, no gap).
+
+## 2026-11-18, the stationary-relation test as a probe (no container built)
+
+- SPLIT-32 says what a relation measured flat is: on each of the newest three periods, a forward model (trained
+  before the period) against a contemporaneous one of the same size that holds the period's other half, both scored on
+  the same random half of the period over five seeds, with LightGBM and a tabular foundation model. A period is not
+  flat when the forward model's loss exceeds two SDs and a floor (1% of the distance from the contemporaneous model
+  to a constant), flat when two SDs stay within ten floors and the model has skill, inconclusive otherwise; a class
+  share that moves by a factor of two (p < 0.01) is not flat. The relation is flat when, for a model with skill in
+  every period, the gap averaged over the periods has two SDs within ten mean floors and no period is not flat
+  (pooled, so a small set gets the evidence of all its periods; Andrej). Inconclusive counts as unmeasured: the forced tag stays
+  unless a person gives `AssumedStationaryRelation` a reason.
+- `leak_probes.py --stationary-relation` runs it (`curation_probes/stationarity.py`; Kumo-Tabular with
+  `--foundation kumo`, from the optional package `structured-data-models`); `checks_and_probes.md` describes the
+  procedure ("The stationary-relation test"); `tests/test_stationary_relation.py` covers flat, drifting, recording
+  change, no signal, unordered periods and units.
+
+## 2026-11-17, the blind split review: Andrej's first marks (no container built)
+
+Every v0.2 definition was walked through the split decision tree without its current split; the review page asks
+where the leaf differs from what ships or from a credible source split.
+
+- airfoil_self_noise, electric_motor_temperature_prediction, huesken_sirna_efficacy: time basis `UnseenGroup`
+  instead of `Timeless`. Each use case meets a group the data does not hold (an untested airfoil size and angle; a
+  driving session not yet run; a gene without efficacy measurements), and each split already holds that group out.
+  Splits unchanged; the `Time basis:` lines say so; the READMEs and containers need a rebuild for the metadata.
+  `split_tree.md`: electric_motor_temperature_prediction moves to the panel's "new units" leaf.
+- 5g_energy_consumption and video_transcoding_time_prediction: the declared split stays; the source's split is not
+  followed.
+- homesite_quote_conversion: label completeness at the release end measured (the last 7, 28 and 56 days convert at
+  18.5%, 19.0% and 18.8%, against 15.3-20.3% per month since 2014); it gives the shipped split, no gap.
+- The declared split is checked on 97 records: the 93 where the tree, walked blind, reaches the split that ships,
+  and 5g_energy_consumption, electric_motor_temperature_prediction, huesken_sirna_efficacy and
+  video_transcoding_time_prediction (split marks).
+- infrared_thermography_temperature: collection type `Dated Event Log` instead of `Experimental Results` (subjects
+  screened one by one at a health centre, each visit dated); SPLIT-34's case list (rule 3 and the counts) and
+  `split_tree.md` (its example and departure row) follow. Its split stays open (windows on the visit date).
+- As implemented, with the declared split checked: aeolus_rebuilt,
+  airqo_low_cost_air_quality_monitor_calibration_challenge, anes_voting_2026, apistox, caracas_cervical_cancer, maps_router_eta, onlinenewspopularity (the source's split or
+  the record's type not followed). Verdict ship: 5g_energy_consumption, airfoil_self_noise, airqo, anes_voting_2026,
+  apistox, caracas_cervical_cancer, maps_router_eta.
+- Review issues written and left open, nothing changed in the definitions: body_density_prediction and sarcoma (their
+  collection type against the rule on undated people data), superconductivity (windows by first report year against
+  the source's stated scope), ai4d_lab_tanzania_tourism_classification_challenge (what the two folds group on) and
+  horse_colic_survival (how many windows its 344 admissions allow).
+
+## 2026-11-17, the split workflow in the agent processes, and missing time basis lines (no container built)
+
+- Screening: the screening block gets a `Split:` line (the leaf of the decision tree, the answers, the open
+  questions) next to the collection type; `/review-screened-candidates` shows the curator the type and the leaf.
+- `/add-dataset`: a collection fact or type the data contradicts is corrected on the record, with the evidence; Step 8
+  keeps the tree's examples and its table of departures current. `/review-added-datasets`: a `change` mark on a split
+  walks the tree and keeps the tree current. The precedent checker reads the definitions under the same leaf. The
+  review page shows the record's collection type and takes its tag lists from `data_foundry.schema`, which now holds
+  the seven collection types.
+- `Time basis:` lines for eleven forced definitions that had none (`dataset check` warned): account_debt_south_africa,
+  allstate_claim_prediction_challenge_1m, australian_vehicle_insurance_2004_2005, frempl_french_motor_personal_line,
+  huntprohibited_1m, liberty_mutual_fire_peril_loss_cost, numerai28_6, open_university_learning_analytics_dataset,
+  pricing_game_2016_french_fleet, regensburg_pediatric_appendicitis and
+  spanish_motor_insurance_coverage_level_2022_2024. Four existing split bullets became the line; the others restate
+  the reason their notes give. Splits unchanged; metadata only.
+
+## 2026-11-17, gossis_icu_hospital_mortality and regensburg_pediatric_appendicitis (Andrej's decisions, no container built)
+
+- gossis_icu_hospital_mortality: `UnseenGroup` instead of `ForcedGroupedFromTemporal`. It holds out hospitals because a
+  severity score is used at hospitals its developers never saw; the stays carry no date, so a later period at a known
+  hospital stays untested. Split unchanged; needs a rebuild for the metadata.
+- regensburg_pediatric_appendicitis: record facts `Time: Inferred` instead of `Time: Dated`, and `Clinical Study`
+  instead of `Dated Event Log`: the release has no dates, only two periods told apart by the ultrasound case numbers.
+
+## 2026-11-17, the split decision tree from the collection type, final (no container built)
+
+- `split_tree.md` (SPLIT-36) is regenerated from the final tree: use-case questions first under every collection type;
+  shared steps written once (the catalogue's family-key step; the ForcedFromTemporal step, which first asks whether the
+  arrival order can be reconstructed, then whether too few positives make the task `Too Small`, then for a measured or
+  a person's reason, then periods, new units and rows); windows questions that follow SPLIT-14, SPLIT-15 and SPLIT-17;
+  the pricing period folded into the scoring date; ten definitions listed that ship another split than their leaf.
+- SPLIT-8: whole periods held out before the entity, the entity only where the use case meets new entities, a
+  measured flat relation or a person's reason in place of the forced tag. SPLIT-32: `StationaryRelation` only where
+  the windows cannot be built; `Timeless` also for a catalogue whose time changes only which items are held;
+  `AssumedStationaryRelation` also at one moment. SPLIT-37: a catalogue without a family key is `Timeless`, random or
+  grouped by the item, without `ForcedIIDFromGrouped` (SPLIT-35 names catalogues as outside it). definitions.md follows.
+- No definition changes; the departures are for a reviewer.
 
 ## 2026-11-16, wine_world_cost: the use case kept as a merchant's listing decision (Lennart's decision, no container built)
 
@@ -639,6 +976,127 @@ to be decided on its own with the grouped datasets it changes.
   and the forest the other way round; ten repeats separate them in one block of ten, not the other; twenty separate
   all three pairs. Huesken not measured. 20 x 3 recommended for both.
 
+## 2026-11-13, 23 datasets kept after review: the time basis named (no container built)
+
+Andrej's decisions on the reviews of 2026-11-04 to 2026-11-12, for datasets whose data, split and metric stay as they
+were. Each definition that is not temporal names its time basis in `data_tags` with its `Time basis:` line (SPLIT-32):
+`Timeless` (airfoil_self_noise, electric_motor_temperature_prediction, musk,
+otto_group_product_classification_challenge, pancreatic_cancer_mouse_detection, video_transcoding_time_prediction),
+`Retrospective` (5g_energy_consumption, covertype, houses, jm1, santander_customer_satisfaction), a forced tag for one
+shared scoring moment (credit_card_clients_default, porto_seguro; see 2026-11-16), `StationaryRelation`
+(bad_customer_detection, cirrhosis_patient_survival_prediction), or a forced tag (allstate_claims_severity,
+eryhemato_squamous_disease, ljubljana_primary_tumor, online_shoppers_purchasing_intention_dataset,
+taiwanese_bankruptcy_prediction: `ForcedIIDFromTemporal`; emscad: `ForcedGroupedFromTemporal`).
+garments_worker_productivity and sf_permit_time stay temporal, with the arrival facts in their notes.
+
+- Notes from the reviews in `curation_comments` (the facts behind each time basis, what each split cannot test, the
+  measured cost of forced splits); santander_customer_satisfaction gains a column dictionary of the masked names;
+  pancreatic_cancer_mouse_detection states the source page's terms in place of an unknown licence; eryhemato and
+  taiwanese citations gain their DOI.
+- The reviews move into the records' `## Review`; the records take the decisions as CC lines and `priority`.
+- The checksums change (tags and notes); every one of these containers needs a rebuild.
+
+## 2026-11-17, lung_cancer_epithelial_genexp: grouped by scan period on the recovered sample number (Andrej's decisions, no container built)
+
+- Split: the GEO titles' sample number is the scan order (scan dates of 31 arrays, April 2003 to January 2006,
+  Spearman 0.997). Three forward windows of 27 arrays cannot be scored, so six scan periods (sixths of the number's
+  rank, `scan_period`, never an input; the number itself not shipped) are held out whole, `ForcedGroupedFromTemporal`
+  with its `Time basis:` line. Random folds let a model read a period's scan signature and cancer share: held-out
+  periods score 0.05 to 0.14 ROC AUC lower (2026-11-12).
+- Rows: the 24 arrays without GEO clinical characteristics, most likely the 23 the authors filtered for quality, are
+  dropped (163 arrays; 19 of the 24 were cancer, all from one submission) (2026-11-13).
+- Features: the 8 clinical findings known at the bronchoscopy (Beane et al. 2008's clinical model) join the
+  expression; the bronchoscopy's own result and the study's later risk rating stay out. Logistic regression on the
+  grouped splits: clinical 0.819, expression 0.744, both 0.834 ROC AUC (2026-11-13).
+- Record: the split markers, year 2006 and the GEO source, and a CC line per decision. Needs a rebuild.
+
+## 2026-11-13, temporal windows on a recovered order: five datasets (Andrej's decisions, no container built)
+
+The release has no usable date, so the split runs on an order rebuilt from the data; where that order arrives with
+the target, it orders and splits the rows but is no model input (`Temporal(..., time_of="label")`).
+
+- `california_house_prices_2020`: three windows in sale order (`time_index`, no model input), no planning gap; 14
+  sales of one price booked on several homes, the descriptions that state the price and the sales scraped twice
+  dropped (38,986 sales).
+- `coffee_rating_prediction`: the two-month review windows keep the review month out of the inputs; the reviewer's
+  blind assessment and bottom line dropped (written with the score, LEAK-35 exception); the New Taiwan dollar prices
+  converted.
+- `diabetes_130_us`: every stay of a patient, not only the first, in nine windows of encounter order (`time_index`,
+  a calendar over 1999-2008); readmission within 30 days against the rest, `problem_type` Binary Classification.
+- `labour_inspection_compliance`: three windows of the export's row order (`file_row`, no model input) in place of
+  the forced random split; the 497 exact copies and the organisation's account figures kept with notes.
+- `wine_quality`: nine windows by position in each colour's file (`file_position`, no model input), taken as the
+  order of entry; 49 near-copies dropped (5,271 wines); density's two precisions and the pairs analysed twice kept.
+- `leak_checks.md`: the LEAK-35 case and its exception row for coffee's review text.
+
+## 2026-11-13, five temporal splits on a dated column (Andrej's decisions of 2026-11-10 to 2026-11-12, no container built)
+
+- `acquire_valued_shoppers_challenge`: four five-day test windows (11 to 30 April 2013) with a five-day gap, since the
+  five days before a window carry its offer wave's outcome; the split comment states when the repeat label arrives.
+- `cardiotocography`: split by exam date (`exam_date`, from the source's `Date`) in three nine-month windows, newest
+  first; it was grouped by exam file.
+- `kick`: nine 35-day windows of purchase dates with a 14-day gap, the time until a kick is known (the auction's
+  10-day arbitration plus recording); the four MMR prices "as of current day" are dropped, looked up after the
+  purchases (28 to 24 features).
+- `miami_housing`: five monthly windows (August to December 2016) by sale month instead of random folds; record
+  `domain` business & marketing.
+- `predict_students_dropout_and_academic_success`: four enrolment-cohort windows (2014 to 2017), training only on
+  cohorts whose normal course length had ended (a gap of one cohort, two for Nursing); `Tuition_fees_up_to_date` and
+  `Debtor` dropped, their recording date unknown and their pattern that of one late extract (37 to 35 features).
+- Each review moves into its record's `## Review`; READMEs regenerated by `dataset check`. All five need a rebuild.
+
+## 2026-11-13, entity leakage: ten datasets decided on the new rules (Andrej's decisions, no container rebuilt)
+
+Repeats of a unit the data does not record (LEAK-42 to LEAK-44, SPLIT-24's calibrated link), decided per dataset:
+
+- `aps_failure`: one row per copied read-out (63,937 of 76,000 rows), then grouped by truck (61,466 trucks linked
+  at 60 equal counters); `ForcedGroupedFromTemporal` in place of the IID tag. Test rows with a linked row in training
+  fall from 25% to 0.05%.
+- `concrete_compressive_strength`: the 92 re-entries of rows 721 to 935 dropped (938 rows, 338 mixes); the mix split
+  stays, named `Timeless`; the source is "compiled from 17 published studies".
+- `forensic_glass_identification`: Id 68, Id 67 entered again, dropped (212 rows); the random split stays as our
+  decision, named `Timeless`.
+- `immoscout_german_house_prices`: one listing per house (10,203 rows); the random split named `Retrospective`, the
+  14 July 2020 scrape.
+- `diamonds`: split by stone (43,000 stones; 40% of the rows are one stone in two price lists); `Retrospective`, the
+  February 2007 scrape.
+- `santander_transaction_value`: grouped by customer, built from exact shifted-lag links and confirmed sparse
+  matches; `ForcedGroupedFromTemporal`.
+- `home_credit_default_risk`: each client's latest application is tested, the client's earlier applications train
+  only (2.6% of rows never tested); forced from temporal with its `Time basis:` line.
+- `indian_liver_patient_dataset`: the 13 repeated records dropped, 11 impossible values set to missing; the random
+  split stays, forced from temporal.
+- `coil_2000`: the identical rows stay, the reason written down; the random split stays, `ForcedIIDFromTemporal`:
+  one undated extract, and the use case looks forward to purchases after a mailing.
+- `early_learning_predictors`: split by facility (`id_facility` numbered per study, noted); every child and column
+  stay with the use case reworded; three free-text answers typed as strings, four multi-select lists that copy their
+  yes/no columns dropped.
+
+Each dataset's review is in its record's `## Review`.
+
+## 2026-11-16, 13 definitions scored at one shared moment: a forced tag or a measurement (Andrej; no container built)
+
+- A random split is valid within one scoring moment when every row shares it and a target window closed for all of
+  them, but no further: one moment is one period, too few for three windows, and the next moment, which the use case
+  asks for, stays untested, as for any forced split (SPLIT-8).
+- `ForcedIIDFromTemporal`: blood_transfusion, churn_telco_south_asia, credit_card_clients_default,
+  expresso_churn_prediction_1m, framingham_heart_study_fhs, kdd_cup_09_appetency, mobile_churn, porto_seguro,
+  pva_revenue_prediction_kddcup98, student_portuguese_performance. `ForcedGroupedFromTemporal` (they ship grouped):
+  amex_non_iid_1m, pricing_game_2017_french_mtpl. `StationaryRelation`: distribution_transformers_at_cauca_department,
+  whose two label years give one forward window (trained on 2019, tested on 2020: LightGBM ROC AUC 0.648 against
+  0.639 on the random folds).
+- Each `Time basis:` line keeps its facts (the scoring date, the target window) and now names the reason, one period,
+  and what later scoring dates would allow. Splits unchanged; the metadata changes, so the 13 need a rebuild. Each
+  record gets a CC line.
+
+## 2026-11-16, bioresponse and covertype: `ForcedIIDFromGrouped` beside the time basis (Andrej; no container built)
+
+- New tag (SPLIT-35): the use case holds out a group of distinct items the data cannot key, so the split stays random.
+  bioresponse: no structure or compound id, so no chemical series (keeps `Timeless`). covertype: no stand id or
+  coordinates, four wilderness areas too few groups (keeps `Retrospective`). Each definition gains a `Group basis:`
+  line naming the group, why it cannot be keyed and the overlap left. Splits unchanged; the metadata changes, so both
+  need a rebuild.
+
 ## 2026-11-12, early_stage_diabetes_risk_prediction: the reason for its retirement restated (no container built)
 
 - Retired because no testing decision is made from a symptom questionnaire (USE-2; the fit None, USE-8). Its hospital
@@ -738,6 +1196,252 @@ text and a script worth keeping into the repository (knowledge-data-foundry, hou
 - `drug_induced_autoimmunity_prediction`: two notes of `curation_comments` lose their pointer (text only, the data are
   unchanged; the text is part of the checksum, so its README has a new one). Its build was stale before.
 
+## 2026-11-12 (evening), seven catalogue datasets: the last split questions decided (not rebuilt)
+
+- qsar_tid_11 and apistox: the year orders and splits the rows but is no model input (`Temporal(..., feature=False)`);
+  it arrives with the target, and the user screens a compound before it is published.
+- sdss_17: eight test windows, 2019 and 2020 merged into one (1,076 spectra; the 2020 window alone held 141 spectra of
+  one programme); shipped.
+- open_soil_spectral_library: whole survey projects held out (1,548) instead of pedon keys: the source aims at scans
+  from other instruments and sites, and a whole survey is the part of that one instrument's data can test.
+- protein_model_quality_rf_pcp: the split stays by protein; the twenty repeats decided for it (the score counts
+  proteins) come with the split count in scored units. qsar_fish_toxicity: the fit stays direct, the scaffold split gets `Timeless`.
+- splice: the duplicate windows go and the split holds out GenBank entry components (`gene_group`), `Timeless` kept;
+  the entries were dated (94%, 1974-1990) and the entry year carries no wave.
+- Every split change above needs a rebuild.
+
+## 2026-11-12, superconductivity and qsar_biodeg: the family key again, on the source's scope (not rebuilt)
+
+- The split rule for growing catalogues gains a step: the source's stated aim and scope set which items the test set
+  stands for, before an entry date is weighed. Both sources keep their models to items like those they were built from.
+- superconductivity: whole compositions are held out again (the split of 2026-10-06), with each composition counted
+  once in the RMSE. Hamidieh (2018) warns "We should not expect good predictions for completely new superconductors",
+  and the windows by first report year tested exactly those later families. `first_year` goes, and the 100 undated rows
+  return (21,263 rows); the NIMS dating and the drift between eras stay in a `Time basis:` line.
+- qsar_biodeg: whole chemical series are held out again (the scaffold split of 2026-11-01), with all 1,055 chemicals.
+  Mansouri et al. (2013) build a REACH screen validated on chemicals from other sources, so the order in which Japan's
+  programme tested its existing chemicals is not the source's question. `test_year`, the NITE download and the J-CHECK
+  constant go; the dating and the move from 14-day to 28-day tests stay in a `Time basis:` line as facts about the labels.
+
+## 2026-11-12, sdss_17: the date of the spectrum orders the split but is no model input (not rebuilt)
+
+- v2 framework: `Temporal(..., feature=False)` declares a time column that orders and splits the rows but is no
+  model input, because it arrives with the target. The container stores it as the task metadata's
+  `time_is_feature`, left out of the checksum and the saved JSON while True, so every container built before keeps
+  verifying; `feature_columns(container)` leaves the column out, and the README states it under Splits. Only a
+  temporal task can set it. `BENCHMARK_CHANGES_TODO.md` gains the matching entry for the harness.
+- sdss_17: the date of the spectrum is no model input any more (`feature=False`): an object is classified once it is
+  imaged and before it is observed spectroscopically, and the date of its spectrum arrives with its class. 8
+  features, the same nine yearly windows. The notes also say that u to z are the SDSS model magnitudes and that the
+  spectra, which set the label, stay out, so the task remains photometric.
+
+## 2026-11-12, split keys of growing catalogues: eighteen decided reviews in one copy (qsar_biodeg needs a rebuild)
+
+- qsar_biodeg: split by the year of the MITI test, four expanding windows (2003-08, 2000-02, 1994-98, 1990-93), in
+  place of the scaffold groups (the curator's decision of 2026-11-11): the test moved from 14-day to 28-day tests over
+  the span, a change in how the label was measured. 1,050 chemicals are dated through NITE's CSCL biodegradation
+  workbook by CAS-RN, 44 more by J-CHECK's bulletin year; the 5 undated chemicals leave. A new split, so a rebuild.
+- `Timeless` enters `data_tags` for qsar_aquatic_toxicity, qsar_bioconcentration, micro_mass and
+  biogeographical_ancestry_prediction, whose `Time basis:` lines were decided to wait for the time-basis rule, and for
+  nci_aids_antiviral_screen with a new `Time basis:` line: the NSC order is registration, not entry into the screen,
+  and a forward split on it leaves 8.4% of the test compounds a close training analog against 9.8% at random.
+- Notes decided on the review page and carried into the definitions: the time-basis lines with their dating
+  (qsar_oral_toxicity, qsar_aquatic_toxicity, qsar_bioconcentration, micro_mass, biogeographical_ancestry_prediction),
+  the measured release order of the wells (force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition),
+  the checked entry into TCGA (sarcoma), the analogue overlap of the random split (bioresponse). qsar_oral_toxicity's
+  `fit_reason` keeps the 11.0% close-analog share of the untested chemicals, which the re-measurement on the 38,598
+  not in the dataset confirmed (11.2%). nci_aids_antiviral_screen keeps its registration-order table once, in
+  `splits_comment`. superconductivity's note on the per-composition score points to its renumbered review issue.
+- Apart from qsar_biodeg no row, column, split, target or metric changes.
+- `dataset check` passes on the ten changed definitions it can run; qsar_oral_toxicity's README keeps its earlier
+  notes until its next check, as the curator's copy of its source file is not on this machine.
+
+## 2026-11-11 (evening), bioresponse: the fit is approximate, the random split answered (nothing rebuilt)
+
+- `fit="approximate"` with the `fit_reason` the curator approved: the source names neither the response nor its
+  assay, so what a positive means cannot be checked, and without structures the split cannot hold out a chemical
+  series. No row, column, split, target or metric changes, and the summary is not stored in the container.
+- The `Timeless` tag and its `Time basis:` bullet, decided on 2026-11-06 to enter once the time-basis rule was in
+  the working copy, are now in the definition; `dataset check` asked for them and passes with them.
+- Was Kaggle's own split random? The competition never says - not on its description, data description or rules
+  page, and in none of its 20 forum topics; the organisers' write-up (Bentzien et al., Drug Discovery Today 18
+  (2013) 472-478) is subscription-only and its abstract does not name it. The released files are indistinguishable
+  from a random draw (a model telling test from train: ROC AUC 0.485, against 0.484-0.497 for a random third of
+  training), and a participant called the test data "an exactly comparable random sample".
+- What the random split leaves on the training side, measured on the 3,751 shipped rows (LightGBM, 10-fold, three
+  seeds): 3.6% of test rows have a training molecule within 0.5 of them and 42.3% within 3; the closest tenth of
+  distances scores log loss 0.331 and ROC AUC 0.932 against 0.586 and 0.822 for the farthest; holding out every
+  neighbour within 3 (single-linkage components, measurement only) costs 0.03 log loss and 0.02 ROC AUC. The
+  review's third issue stays open with the answer and three options.
+
+## 2026-11-11 (evening), nci_aids_antiviral_screen: the registration-order split measured and not taken
+
+- The scaffold-grouped split stays (the curator's decision on the first review issue). `splits_comment` now carries
+  the measurement as a table beside the existing note on neighbouring NSC numbers: four windows from the highest
+  numbers down, each trained on every lower number, give ROC AUC 0.749 (LightGBM) and 0.774 (random forest) with
+  8.4% of test compounds keeping a close training analog and a third of their scaffolds in training, against 0.717
+  and 0.739 with 4.3% scaffold-disjoint, 0.762 and 0.770 with 9.8% at random, and 0.786 and 0.796 with 15.4% for
+  the shipped folds.
+- Why the order is not an arrival: the NSC numbers run from 48 to 706,805 and about a quarter of the compounds sit
+  below 609,000, registered into the NCI repository long before the screen began; no public table maps them to
+  dates, and the newest window has nothing registered after it to compare against.
+- The record's `Time: Dated` was corrected to `Time: Inferred` (the second issue), since only an order survives and
+  no calendar; `Samples: Over Time` stays. Both issues now carry their resolution, so the review reads as settled.
+
+## 2026-11-11 (evening), qsar_oral_toxicity: the scaffold split named `Timeless` after dating (nothing rebuilt)
+
+- The chemicals were dated first, as the curator asked: 7,927 of 11,116 (71.3%) carry the publication year of the
+  report their LD50 came from, from the RTECS citations EPA's ToxValDB keeps per ChemIDplus record (1932-2023,
+  median about 1979). The label is the ChemIDplus value (93.8% agree within 2%).
+- A split by that year holds out less chemistry than the scaffold split: forward, 12.4% of test chemicals keep a
+  close training analog, against 13.1% for a random draw of the same size and 8.6% scaffold-disjoint, and 31.5% of
+  them share a scaffold with training; ROC AUC is 0.770 either way. The report year records when a test was run,
+  not which chemistry a screener has not met.
+- So `data_tags = ("Timeless",)` with a `Time basis:` bullet giving the coverage, the comparison and what the split
+  cannot test: a chemical class that enters the inventory later.
+- Correction carried into `fit_reason`, the fit bullet and the USE-8 cases row of the curation rules: the project's
+  48,137 untested chemicals were cited at 11.0% close analogs as the screening population, but 9,588 of them
+  (19.9%) share a QSAR-ready InChIKey with a chemical here, 22.4% match one exactly on the fingerprint and 31.4%
+  have a close analog, so a fifth of that set is not untested and the 11.0% holds only once those are set aside.
+- `dataset check` could not be run: the Milano package `vt_data.mat` is a copy the curator provided and is not in
+  this clone's warehouse. The definition's class-level validation passes (the prototype tag with its `Time basis:`
+  line, regime `Non-IID` / `Grouped` / `Timeless`), and the change touches no column, row or split.
+
+## 2026-11-11 (evening), the twelve reviews of this round move into their records (nothing rebuilt)
+
+- The reviews written today as folder `REVIEW.md` files follow the convention of 2026-11-11: each one is now the
+  `## Review` section of its record, between `## Comments` and `## Reference`, and the file is gone. The twelve:
+  apistox, nci_aids_antiviral_screen, qsar_oral_toxicity, qsar_bioconcentration, qsar_biodeg, qsar_fish_toxicity,
+  qsar_aquatic_toxicity, drug_induced_autoimmunity_prediction, sdss_17, superconductivity,
+  protein_model_quality_rf_pcp and qsar_tid_11.
+- superconductivity and protein_model_quality_rf_pcp already had a review in their record from the earlier round, so
+  the two sides were merged by hand: superconductivity keeps Lennart's per-composition scoring issue of 2026-11-08
+  under the number this round gave it (3, with the round named in its title) next to today's issues 1 and 2; protein
+  keeps issue 10 from the earlier round and adds 11 and 12.
+- The pointers that named a review file are rewritten in the records and in `qsar_tid_11/dataset.py`
+  ("Review issue 2" for "REVIEW.md issue 2"). No definition, row, split or score changes.
+
+## 2026-11-11 (evening), superconductivity: a temporal split by first report year (nothing rebuilt)
+
+- Issue 2, a (Andrej): the grouped split on the composition becomes three expanding windows by the year a
+  composition was first reported. The UCI release carries no year, so the definition joins one from the parent
+  database's own export, the MDR SuperCon Datasheet Ver.240322 (NIMS, doi:10.48505/nims.4487, CC BY 4.0, which asks
+  to be cited; `download_description` names it and the download command).
+- The join (`first_report_year` in `dataset.py`, about 4 seconds in `_load_raw`): a datasheet entry belongs to a
+  composition when it holds the same elements and its element shares lie within 0.003 (L1) of the composition's,
+  with a variable oxygen read as its number (`O7-z` as 7) and a second time as a single oxygen, since UCI writes some
+  cuprates as `...Cu3O`. `first_year` is the earliest year of a composition's matched entries. It dates 21,163 of the
+  21,263 rows (99.5%) and 15,065 of the 15,164 compositions, against 92% for an earlier match on the formula string.
+  Checks: 99.9% of the dated rows have a matched entry within 0.01 K of their own critical temperature (0.9% with the
+  compositions shuffled); restricting the match to entries above 0 K, or dropping the oxygen variant, moves the year
+  of 2.7% and 0.9% of the rows.
+- The 100 undated rows leave (0.5%; 63 cuprates, median critical temperature 22.1 K, 99 compositions): a row without
+  a year belongs to no window. Nothing else is dropped and nothing is deduplicated; the entries of a composition all
+  carry its first year, so a composition is never split, and no test row shares its 81 features with a training row.
+- Windows (`_make_splits`, the eras the review proposed, newest first): 2009-2019 trained on 18,654 rows (88%) and
+  tested on 2,509; 2002-2008 on 16,488 (78%) and 2,166; 1996-2001 on 13,180 (62%) and 3,308. They are 6, 7 and 11
+  calendar years long, so `Temporal(on="first_year", horizon=7, horizon_unit="years")` declares the middle one and
+  `splits_comment` says so. Reason: untuned LightGBM scores RMSE 18.2 / 14.9 / 12.6 K trained on the earlier years
+  against 14.2 / 10.0 / 8.6 K trained on as many rows from all eras with no test composition (a random half of each
+  window's compositions, 3 seeds, Slurm job 1377613); the old split's ease came from other dopings of the test
+  composition's element set (79-86% of test compositions had one, against 23-51% by year).
+- The `composition` key no longer groups the split, but it stays in the frame: it is the unit the score counts
+  once (`unit_weight`, issue 1 of 2026-11-08), so `composition_weight` is built from it after the undated rows
+  leave, and neither column is a model input. `first_year` is the 82nd input; inside a window every value lies
+  after the newest training year, so it carries no information about the test era, and the 81 features stay
+  formula-only. The weighting carries over to the new regime untouched: every entry of a composition carries that
+  composition's first year, so no window splits a composition's one vote.
+- `task_summary` (`known`, `split`, `changes`, `fit_reason`), `splits_comment`, the curation comments and the two
+  `Decision` blocks restated, the metric and its scoring column unchanged. 21,163 rows, 82 features, checksum
+  `v2:768e2913...`; `dataset check` 0 errors, 1 warning (`dataset_conflicting_duplicate_rows`, 6,026 rows, as before
+  the change), 2 info, README regenerated; the build stays stale (unchanged since 2026-10-06).
+- Record: `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time Dimension`, `required_split` Temporal
+  (NON-IID), tag `Non-IID (Temporal)`, and a CC line of 2026-11-11 for the decision.
+
+## 2026-11-11 (evening), qsar_tid_11: split by first publication year (Andrej's marks, nothing rebuilt)
+
+- Issue 2, C: the scaffold-grouped split is replaced by a temporal one on `first_year`, the earliest year among the
+  documents of a compound's human thrombin (CHEMBL204) activity records in ChEMBL 17. The years are a one-off extract
+  from the release's sqlite dump (EBI FTP), shipped as `chembl_17_first_year.csv` next to `dataset.py`; the build no
+  longer needs the 2 GB dump. All 5,704 compounds have a CHEMBL204 record there, 5,186 in a dated document; the other
+  518 appear only in the undated PubChem BioAssay deposit CHEMBL1201862 and take 2011, the year ChEMBL 9 loaded it.
+  `Temporal(on="first_year", splits=TemporalSplits(window=None, unit="unique", n_windows=5, min_train_fraction=0.5),
+  horizon=2, horizon_unit="years")` builds five windows of two years: 2012-13 (159 compounds), 2010-11 (744), 2008-09
+  (290), 2006-07 (598) and 2004-05 (633), trained on 5,545, 4,801, 4,511, 3,913 and 3,280 earlier compounds (97% to
+  57% of the rows). `grouping` and the `scaffold` column are gone, the scaffold numbers stay as background. The reason
+  measured on these windows and all 5,704 compounds (Slurm jobs 1378119 and 1378141): under the scaffold split 58% of
+  test compounds keep a close training analog and 71-93% of those were first published in the same year, and untuned
+  LightGBM's RMSE is 0.80-1.04 by scaffold against 0.89-1.50 by year. At an equal training size drawn from all years
+  the forward split costs about 0.2 RMSE on the oldest window and within 0.08 on the rest, where few compounds are
+  published after the window: the scaffold split's advantage is the same-year siblings, not the later papers.
+  `first_year` is a feature as well as the time column, as in apistox. `dataset check` 0 errors, 0 warnings, 1 info
+  (`meta_time_horizon_unit`: the integer years cannot be cross-checked against a calendar horizon), README
+  regenerated. Probes re-run on the new windows: task probes no flag (LightGBM R^2 0.350, skill +0.419, ahead of the
+  dummy on all five), leak probes no exact feature copy across the split and no single feature near the all-feature
+  R^2 (probe 13 reads the known mild potency drift at the end, z -3.7), `hidden_groups` 0 hits of 61 candidates,
+  `group_probes` no longer applies.
+- Issue 1, B: the 654 targets at round assay limits (11.5%; pXC50 4.30: 348, 5.00: 204, 4.00: 81, 4.70: 21) stay as
+  exact values with a note naming the limits, their counts and the bound reading (LEAK-26: documented). 306 of them
+  (47%) belong to the PubChem deposit, where 59% of the 518 compounds sit at a limit against 6.7% of the rest.
+- Issue 3, B: the record's collection facts are `Samples: Over Time` and `Time: Dated` in place of `Samples: No Time
+  Dimension`, no `Target: Revised Later` (5.1% of the compounds have a later-year record); `required_split` Temporal
+  (NON-IID), tag Non-IID (Temporal) in place of Non-IID (Grouped).
+
+## 2026-11-11 (evening), qsar_fish_toxicity and qsar_aquatic_toxicity: the overlap counted, the chemicals dated (nothing rebuilt)
+
+- qsar_aquatic_toxicity issue 1, B (Andrej): the two sets are kept side by side and the overlap is written into both
+  definitions. Counted on the canonical SMILES of the authors' two workbooks with the stereo set aside, 237 chemicals
+  are in both (43.4% of the Daphnia set, 26.1% of the fish set; 225 under the same CAS-RN) and their LC50s correlate
+  at r = 0.81, the Daphnia values 0.37 log units more toxic. This replaces the earlier estimate of 145 to 165 shared
+  chemicals from matching MLOGP values, which was all the UCI files allowed.
+- Both workbooks were obtained from the authors' own pages (the Google Apps Script behind the notification form
+  exposes the Drive file id), and their sha256 match the definitions' `download_description`.
+- The chemicals were dated through the EPA's ECOTOX bulk release on the curator's instruction: 850 of 908 fish
+  chemicals (93.6%) and 394 of 546 Daphnia chemicals (72.2% strict, 88.1% on the species-only join). The join is
+  validated against ECOTOX's own LC50 values (r = 0.92 and 0.90, median difference 0.02 and 0.06 log units).
+- Measured against the shipped scaffold folds, a forward split by first test year is not the stricter one: it leaves
+  12 to 25% of test chemicals a scaffold the model has seen, which the scaffold split removes. The answers and the
+  tables are in each record's Review; the time basis is still open.
+- `dataset check` passes for both (27 checks, 0 errors); the generated READMEs were rewritten.
+
+## 2026-11-11 (evening), drug_induced_autoimmunity_prediction: Andrej's marks (nothing rebuilt)
+
+- Issue 2, B: the fit is `approximate`, `fit_reason` naming the undocumented negatives (a negative most likely means
+  no autoimmune reaction was reported, as in Wu et al. 2021) and the label's reporting window; a curation bullet gives
+  the gap in full. No row, split or score changes.
+- Issue 3, B: the scaffold split stays, with a `Time basis:` line and no prototype tag: the label accrues with a drug's
+  time on the market (ChEMBL dates 496 of the 587 drugs, 1940-2020), so a forward split would test the reporting delay
+  rather than the chemistry (forward cuts lose 0.03-0.13 ROC AUC up to 2000 against random folds of the same training
+  size, Slurm job 1366251). `splits_comment` says why the forward split was not taken.
+- Issue 4, B: all 587 drugs kept, the era gradient written down instead (positive share 0.058 for the 52 drugs
+  approved from 2010 on against 0.259 earlier, binomial p 0.0002; molecular weight alone separates that block at ROC
+  AUC 0.693).
+- The metric's `reason` now dates InterDIA 2025, as its BibTeX and the record do.
+- `dataset check` 0 errors, 0 warnings, README regenerated; the build stays stale (unchanged since 2026-10-14).
+- Record (issue 5, C): `Samples: No Time Dimension` replaced by `Samples: Over Time`, plus `Time: Dated` and
+  `Target: Revised Later`; CC line of 2026-11-11 for the four decisions.
+
+## 2026-11-11 (evening), sdss_17: Andrej's marks (nothing rebuilt)
+
+- Issue 2, D: split by the year of the spectrum instead of at random. The raw `MJD` becomes the time column `date`
+  in `_clean` (it stays out of the features as an id, and `plate` and `fiber_ID` stay dropped);
+  `Temporal(on="date", splits=TemporalSplits(window=1, unit="years", n_windows=9, min_train_fraction=0.5))` gives
+  nine calendar-year windows, 2012 to 2020, each trained on every earlier spectrum: 51,256 to 99,858 training and
+  141 to 11,044 test spectra (51.3% to 99.9% of the 99,999 objects). No gap. Reason: every row is a spectrum taken
+  on a dated night through a plate drilled for one targeting programme, and the programmes changed what they
+  observed (quasars 3-11% of each year's spectra in 2000-2009, 31-46% from 2014 on), while a classifier in use has
+  neither the test object's plate-mates nor the later programmes. Untuned LightGBM log loss 0.331 random, 0.338 by
+  plate, 0.354 by sky cell, 0.506 by year (0.391 against 0.506 on the same 48,743 spectra of 2012-2020); under the
+  year split TabPFN 3.5 0.439, logistic regression 0.755. The 2019 and 2020 windows hold 935 and 141 spectra, above
+  the 50 test rows below which windows are widened; 0 to 5 plates per window were also observed before it, at most
+  90 test rows. `task_summary` (`known`, `split`, `changes`, `fit_reason`), `splits_comment` and the curation
+  comments restated; `meta_time_horizon_mismatch` accepted (DR17 ends on 2020-03-24, so the newest calendar-year
+  window spans 38 days). 9 features, checksum `v2:1707eaa4...`; `dataset check` 0 errors, 0 warnings (1 accepted),
+  README regenerated.
+- Issue 4, B: a temporal split carries no time-basis tag, so `data_tags` stays empty. Issue 5, C: record tags
+  `Samples: Over Time`, `Time: Dated` and `Target: Varying Delay` in place of `Samples: No Time Dimension`,
+  `required_split` Temporal (NON-IID), tag `Non-IID (Temporal)`. Issues 1 and 3 stay open.
+
 ## 2026-11-11 (night), lung_adenocarcinoma_metastasis: the curator's marks on a second review panel (no container built)
 
 - A second full review panel (at Lennart's ask on PR #75; its reports are in the record's `## Review`): ship after
@@ -759,6 +1463,36 @@ text and a script worth keeping into the repository (knowledge-data-foundry, hou
   PROV-14. lung_cancer's record gets a CC line correcting its "not a rule change".
 - `dataset check` 0 errors, 0 warnings; task probe no flag (random forest 0.878, selected linear 0.865, logistic
   regression 0.849, LightGBM 0.819); leak probe: no copies across the split, the missing pack-years indicator 0.50.
+
+## 2026-11-11, body_density_prediction: time basis and review, parked (no container built)
+
+- The definition's notes gain a `Time basis: Timeless` line (Andrej, 2026-11-06): each man was measured once, in one
+  study session, so the density and the features describe the same body at one time; the random split is unchanged.
+- The dataset's review is in its record. Its two open questions, whether `nhanes_dxa_body_fat` replaces this dataset
+  and whether the impossible 29.5-inch height is set to missing, are parked (Andrej, 2026-11-11) until better suited
+  datasets for the task are checked; the data are unchanged.
+
+## 2026-11-11, homesite_quote_conversion: split by quote date, status-like fields dropped (no container built)
+
+Andrej's review of the dataset (record, Review issues 1 to 7):
+
+- Split by quote date instead of at random: `Temporal(on="Original_Quote_Date")`, nine windows of one month back from
+  May 2015 (the last to the 18th), each trained on every earlier quote (184,261 to 254,663 training quotes, 6,090 to
+  12,241 test quotes), no gap (purchases are recorded within days; a 7-day gap moves the mean ROC AUC by 0.0003).
+  Record `required_split` Temporal (NON-IID), tag `Non-IID (Temporal)` in place of `Larger IID Data`; `year`
+  2015.
+- Seven anonymised fields dropped as a status recorded after the quote (LEAK-10 through LEAK-38's new near-certainty
+  clause): `PropertyField37` and `PersonalField12` (with `Y`, codes 1-3 99.3-99.8% bought, code 5 0.14%),
+  `PersonalField9` and `PersonalField10A/B` (the same code-5 quotes), then `PersonalField2` and `PersonalField13`
+  (98.0% and 97.8% buyer groups), the fewest fields that leave no group of 300 quotes at 95% bought. Mean ROC AUC over
+  the nine windows (untuned LightGBM) 0.956 with every field, 0.898 without the seven. The near-zero side stays.
+- `SalesField5`, the strongest remaining field (graded), kept with a `Potential leak, kept on purpose:` note.
+- `PropertyField6` (constant) dropped, the blank level of `GeographicField63` set to missing, twelve presence flags
+  accepted under `dataset_constant_column`.
+- `split`, `changes` and `fit_reason` restated. 287 features, checksum `v2:e2ad1ad...`; `dataset check` 0 errors, 0
+  warnings, README regenerated.
+- Guidelines: LEAK-38 gains the near-certainty clause with its stopping point, and a LEAK-10 mechanisms row; the
+  USE-8 cases in `use_case.md` note that homesite's kept leak was dropped.
 
 ## 2026-11-11, each dataset's review moves into its curation record (no container built)
 

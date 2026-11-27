@@ -10,12 +10,18 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
+- Panel Data
 collections:
 - TabArena Reject
 - TabRed
 - tabular-dl-more-data
 original_source: Kaggle
 year: '2024'
+collection_period: Jul 2022 - Jul 2023
 domain: environmental science & climate
 required_split:
 - Temporal (NON-IID)

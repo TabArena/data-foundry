@@ -40,7 +40,7 @@ Screen verification: real administrative data and traceable institutional source
 
 **Assessment (AI, 2026-11-02):** measured on the workbook's pivot cache (the `Report` sheet's 32,354 rows are its layout, not the data): 197,290 rows in three overlapping sources; `All Companies` holds 71,928 rows, 2,522 ZIPs x 7 policy types x 2018-2023, about 12,000 rows a year, 3,507-4,379 a year with a fire or smoke loss. Test windows 2021 / 2022 / 2023 would train on 75% / 80% / 83% of the rows (2020 / 2021 / 2022 without the immature 2023 losses: 67% / 75% / 80%), so SPLIT-14 holds. The loss is concentrated in wildfire years: the 10 largest rows hold 74.5% of 2018's loss (88% catastrophic) and 41.5% of 2020's, against 4.4-20.4% in the other years.
 
-CC (2026-11-02, Andrej): `TBD -> 2nd Tier` with `Not Representative`, priority 2: the rows are ZIP x policy type aggregates, not policies; the same call as `swedish_motorcycle_insurance_wasa` and `brazilian_vehicle_insurance_autoseg_2011` (screening review page of the Wisconsin alternatives; a `Yes` was considered and withdrawn after the precedent prompt).
+CC (2026-11-02, Andrej): `TBD -> 2nd Tier` with `Not Representative`, priority 2: the rows are ZIP x policy type aggregates, not policies; the same call as `swedish_motorcycle_insurance_wasa` and `brazilian_vehicle_insurance_autoseg_2011` (screening of the Wisconsin alternatives; a `Yes` was considered and withdrawn after the precedent prompt).
 
 ## Reference
 

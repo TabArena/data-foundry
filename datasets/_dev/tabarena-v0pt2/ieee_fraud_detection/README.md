@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ieee_fraud_detection
 container_format: 2
-checksum: v2:faf93305ad55d4507f91008df92c55ea7a09a1d49980daa046a7e744ec15b969
+checksum: v2:46614f2b3aa9d97d2870f319a0bc686d1fadc9ced69efaaf3efdffa9412d3bc2
 build:
   uuid: 01a111fa-fc65-735f-bcbe-b5845dbfe917
   checksum: v2:9563bb404c2115312e17c44aec93b0679d2f1857f10d18b3fa052c3cbaadcd7e
@@ -70,7 +70,7 @@ decisions: []
 
 Binary classification of `isFraud`, scored with `roc_auc` on temporal splits by `Transaction_date`. 590,540 rows and 434 features. Source: Kaggle (2019).
 
-Built as `01a111fa-fc65-735f-bcbe-b5845dbfe917` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:faf93305ad55d4507f91008df92c55ea7a09a1d49980daa046a7e744ec15b969`, so the build is stale. See [Build](#build).
+Built as `01a111fa-fc65-735f-bcbe-b5845dbfe917` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:46614f2b3aa9d97d2870f319a0bc686d1fadc9ced69efaaf3efdffa9412d3bc2`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -84,9 +84,9 @@ Built as `01a111fa-fc65-735f-bcbe-b5845dbfe917` on 2026-10-06, but `dataset.py` 
 
 **Known at prediction time.** The amount and product, card and address details, email domains, device and browser data, counts and time gaps from the processor's records (mostly anonymized), and a client key rebuilt by the competition's winners.
 
-**What the test data stands for.** Three back-to-back test windows of three weeks, 30 March to 31 May 2018, each trained on all payments up to one month before it, the competition's gap; every window trains on 53% to 76% of the payments.
+**What the test data stands for.** Three back-to-back test windows of three weeks, 30 March to 31 May 2018, each trained on all payments up to one month before it, a gap for the chargeback delay as long as the competition's own; every window trains on 53% to 76% of the payments.
 
-**Our changes to the source.** We split into three-week windows with a one-month gap and add the client key of the first-place solution, which links the payments of one client.
+**Our changes to the source.** We split into three-week windows with a one-month gap for the chargeback delay and add the client key of the first-place solution, which links the payments of one client.
 
 > **Use case fit: direct (the rows, features and split mirror the use case).** The features describe the payment and its history, and later months stand for the payments to come. The calendar rests on an assumed start day, and the anonymized features cannot be checked one by one.
 
@@ -199,7 +199,14 @@ The first 5 of 590,540 rows of the final frame (the oldest rows: the frame is so
 - We normalize the D-columns, since they correspond to days since a certain event, we can normalize them by the transaction date to get the actual day of the event. This is also what the first place solution on Kaggle did.
 - We add a uid feature used by the first place solution on Kaggle to identify unique users. Note that this feature is not perfect and just an approximation by the Kaggle users. Moreover, due to missing values, for ~15% of the samples no uid could be reconstructed.
 - Test windows of three weeks (Andrej, 2026-11-19): neither Vesta nor the competition states a refit cadence, and the month of the first-place solution's validation ("GroupKFold training validation data splitting, with ordered months as non-overlapping groups") is a validation scheme; with the one-month gap only about ten weeks of windows train on half the payments, room for three windows of three weeks but not of a month (splits comment).
-- A gap of one month, the competition's: its labelled payments end on 31 May 2018 and its unlabelled test payments start on 1 July 2018.
+- Gap (2026-11-09, Andrej): one month, for the label's delay. A payment counts as fraud once its card is
+  charged back, which Visa allows up to 120 days after the processing date for card-absent fraud
+  (https://chargebacks911.com/chargeback-reason-codes/visa/10-4-card-absent-environment/), and the host then
+  also marks the client's later linked payments. The release holds the final labels (fraud 3.1% to 4.0% a week
+  in May 2018, as in earlier months), so only a gap keeps out the labels a refit could not have known. Its
+  length is the competition's own: its labelled payments end on 31 May 2018 and its unlabelled test payments
+  start on 1 July 2018. The release has no report dates, so the delay cannot be measured; the host's 30 days
+  are the best supported length.
 - Anomaly: Missing values.
 - Anomaly: Several features might allow to approximate to the uid and can lead to overfitting.
 - Anomaly: Grouped data with members of a group often sharing the same label, depending on whether fraud occurred previously or not.
@@ -211,7 +218,7 @@ The first 5 of 590,540 rows of the final frame (the oldest rows: the frame is so
 
 ## Splits
 
-Each test window is three weeks (Andrej, 2026-11-19). No source fixes the length: Vesta decides on each payment as it arrives and states no refit cadence, the competition scores one model on six months (July to December 2018), and the month the first-place team validated on ("GroupKFold training validation data splitting, with ordered months as non-overlapping groups", https://developer.nvidia.com/blog/leveraging-machine-learning-to-detect-fraud-tips-to-developing-a-winning-kaggle-solution) is a validation scheme. The gap is one month, the competition's: its labelled payments end on 31 May 2018 and its test payments start on 1 July 2018. A fraud label waits for the cardholder's chargeback, which Visa accepts up to 120 days after a card-absent payment, so the gap is shorter than the longest delay. The payments run from 1 December 2017 to 31 May 2018 (dated from the assumed start day of 30 November 2017); half of them lie before 22 February 2018, so with the gap only windows from about 22 March on train on half the payments, about ten weeks, which hold three windows of three weeks but only two of a month (one-month windows put March on 38.9%). The test windows are back to back, newest first: 11-31 May, 20 April-10 May and 30 March-19 April 2018, with 58,731, 59,803 and 61,405 payments (fraud 3.8%, 3.1% and 3.5%). Train is every payment before the gap, up to 10 April, 19 March and 27 February: 447,995, 380,100 and 312,574 payments (75.9%, 64.4% and 52.9%).
+Each test window is three weeks (Andrej, 2026-11-19). No source fixes the length: Vesta decides on each payment as it arrives and states no refit cadence, the competition scores one model on six months (July to December 2018), and the month the first-place team validated on ("GroupKFold training validation data splitting, with ordered months as non-overlapping groups", https://developer.nvidia.com/blog/leveraging-machine-learning-to-detect-fraud-tips-to-developing-a-winning-kaggle-solution) is a validation scheme. The gap is one month, for the chargeback delay (Andrej, 2026-11-09): a fraud label waits for the cardholder's chargeback, which Visa accepts up to 120 days after a card-absent payment, and the release holds the final labels, so a refit at a window's start must not train on the newest payments, whose frauds were not yet reported. Its length is the competition's own (its labelled payments end on 31 May 2018 and its test payments start on 1 July 2018), shorter than the longest delay. The payments run from 1 December 2017 to 31 May 2018 (dated from the assumed start day of 30 November 2017); half of them lie before 22 February 2018, so with the gap only windows from about 22 March on train on half the payments, about ten weeks, which hold three windows of three weeks but only two of a month (one-month windows put March on 38.9%). The test windows are back to back, newest first: 11-31 May, 20 April-10 May and 30 March-19 April 2018, with 58,731, 59,803 and 61,405 payments (fraud 3.8%, 3.1% and 3.5%). Train is every payment before the gap, up to 10 April, 19 March and 27 February: 447,995, 380,100 and 312,574 payments (75.9%, 64.4% and 52.9%).
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 312,574 to 447,995 rows, test 58,731 to 61,405 rows. Prediction horizon: 21 days. Gap between train and test: 1 months.
 
@@ -475,4 +482,4 @@ Each test window against its train side, by statistics of the data, never of a m
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:faf93305ad55d4507f91008df92c55ea7a09a1d49980daa046a7e744ec15b969` |
+| stale | yes: the definition now gives checksum `v2:46614f2b3aa9d97d2870f319a0bc686d1fadc9ced69efaaf3efdffa9412d3bc2` |

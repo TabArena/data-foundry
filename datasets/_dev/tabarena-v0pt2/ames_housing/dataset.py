@@ -681,6 +681,7 @@ class AmesHousing(AbstractCuratedDataset):
         definition="RMSE on log_SalePrice (= RMSE of log predicted vs log observed SalePrice, RMSLE-like on the raw price).",
     )
 
+    split_leaf = "L-ORDER.windows"
     # Splits: two-month calendar windows down to half of the rows for training (13 windows of 46-191 sales).
     temporal = Temporal(on="Month Sold", splits=TemporalSplits(window=2, unit="months", min_train_fraction=0.5))
     splits_comment = """

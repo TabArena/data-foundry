@@ -192,8 +192,8 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         fit_reason=(
             "The flat's and district's figures are known at the sale, and later months stand for the sales to come; "
             "the use case ties no window length, so the one-month windows are ours. The economic statistics are "
-            "lagged by one period because their release dates are not given; a monthly figure may still come out a "
-            "few days after a sale early in the month."
+            "lagged one period, as their release dates are not given; a monthly figure may still come out days after "
+            "a sale. The neighbourhood figures are one read of unknown date, kept."
         ),
     )
 
@@ -258,6 +258,12 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
           on more than half the sales, in place of three seven-month windows (Lennart, 2026-11-11) whose oldest,
           October 2013 to April 2014, trained on 35.4%; the use case ties no length, and no source gives Sberbank's
           refit cadence (splits comment).
+        - Potential leak, kept on purpose (Andrej, 2026-11-11): the district statistics and the neighbourhood features
+          (distances, counts of facilities nearby) are one read of a date the source does not give: none of 145
+          districts and none of 2,991 buildings sold in more than one year changes in them over 2011-2015, while the
+          city opened new metro stations (2014-2015) and other facilities. Older sales may carry facilities that came
+          after them. They stay: the read cannot be dated row by row and the data owner released it for its
+          competition. Revisit if dated district statistics are found.
         - Columns recorded on one side of a window only (Lennart, 2026-11-11): the macro file gives `provision_retail_space_sqm` for 2011 and 2012 only and the two education shares (`modern_education_share`, `old_education_build_share`) from 2013 on, so their one-year lags are recorded in 2012-2013 and from 2014: the newest windows test without the first, and the oldest trains without the other two. Kept: the data as published.
     """
 
@@ -292,6 +298,7 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         No gap: a sale's price is known when it is signed, and the economic statistics are already read one period
         back for their release delay.
     """
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="timestamp",
         splits=TemporalSplits(

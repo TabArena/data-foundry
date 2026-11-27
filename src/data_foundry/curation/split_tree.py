@@ -135,6 +135,26 @@ class SplitTree:
         """The section a link names, matched without case."""
         return next((s for s in self.sections.values() if s.name.lower() == name.lower()), None)
 
+    def leaves_from(self, section: str) -> list[Leaf]:
+        """The leaves a walk from ``section`` can end at: its own and those of the sections its links lead to."""
+        seen: set[str] = set()
+        out: list[Leaf] = []
+
+        def visit(name: str) -> None:
+            if name in seen:
+                return
+            seen.add(name)
+            for node in self.nodes():
+                if node.section != name:
+                    continue
+                if isinstance(node, Leaf):
+                    out.append(node)
+                elif isinstance(node, Link) and (target := self.section_named(node.target)) is not None:
+                    visit(target.name)
+
+        visit(section)
+        return out
+
 
 def tree_path() -> Path:
     """Where the repository keeps the tree."""

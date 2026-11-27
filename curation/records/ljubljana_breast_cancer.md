@@ -13,11 +13,14 @@ decision_markers:
 - Outdated
 tags:
 - Tiny Data
+- 'Samples: Over Time'
+- 'Time: Lost'
 collections:
 - New (BeyondArena)
 - TabSTAR
 original_source: UCI
 year: '1988'
+collection_period: Unknown
 domain: medical & healthcare
 required_split:
 - Random (IID)
@@ -39,9 +42,9 @@ looks good
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Every 1986-1988 paper on the data (Michalski et al., Clark & Niblett, Cestnik et al.) reports accuracy only, without costs or a threshold; 30% recurrence on 286 rows. Original rejected: accuracy. roc_auc is the binary fallback.
 
-**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): ordinal scales shipped as numbers, left as numbers for the curator's review: `tumor-size`, `inv-nodes`, `deg-malig`.
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels): ordinal scales shipped as numbers, left as numbers for the curator's review: `tumor-size`, `inv-nodes`, `deg-malig`.
 
-CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 3 ordinal scales shipped as numbers are ordered categories (point 3).
+CC (2026-10-31, Lennart): decided in the dtype review of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 3 ordinal scales shipped as numbers are ordered categories (point 3).
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `metabric_breast_cancer_clinical` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
@@ -61,7 +64,7 @@ amended on 2026-11-12: compared paired per split; a match the curator drops is `
   0.721 for TabDPT-1.3, the strongest method run: paired -0.004 (sd 0.028), TabDPT-1.3 ahead on 55% of the splits.
   On BeyondArena's 60 folds it reaches 0.726, at or above all 37 methods on average; TabDPT-1.3 and LimiX-2 are level
   with it (-0.004, each ahead on half of their 34 folds). The methods learn nothing measurably better than the index,
-  and the curator retires the dataset (Andrej's mark of 2026-11-10).
+  and the curator retires the dataset (Andrej, 2026-11-10).
 - **Why not the 3-item score:** its cut at more than 2 involved nodes has no recorded source and is the best of the
   cuts the bins allow (no node item 0.695, more than 5 nodes 0.698, more than 2 nodes 0.710), and TabDPT-1.3 beats it
   paired (+0.011, sd 0.025, ahead on 65% of the splits).

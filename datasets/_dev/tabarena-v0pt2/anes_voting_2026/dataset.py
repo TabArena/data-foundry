@@ -12245,7 +12245,7 @@ class AnesVoting2026(AbstractCuratedDataset):
         - Note: Ideally, we would select different feature sets per data split, depending on feature availability. However, for simplicity, we just keep all features.
         - Note: We considered keeping the unique respondent identifier in the data, because otherwise models that are able to reconstruct this information would unfairly benefit. However, for now we drop the identifier since it is not a desirable predictive feature for the given task, because the goal is generalization to the population, not memorizing individual behavior.
         - Metric: the fallback ROC AUC, not TableShift's accuracy (Lennart, 2026-10-21; metric spec).
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 65 columns are
+        - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 65 columns are
           ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`); 65 of them decoded from the
           source's codes into its words (`CODE_LABELS`, 2026-11-01); 4 hold a state outside the scale, placed by the
           curator's rule (missing when the column has no other missing value, else the lowest level; a state that is
@@ -12274,7 +12274,7 @@ class AnesVoting2026(AbstractCuratedDataset):
           don't know (splitting it needs each count's filter, a few hundred rows each).
         - The target (2026-11-01, CLEAN-25): `VCF0702` ships its classes as words (2 means voted (ANES codebook)).
           Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
-        - Columns recorded on one side of a window only (cross-dataset item of 2026-11-11, Lennart): 95 questions are asked in some election years only, so a test election misses the questions its questionnaire left out while its train side holds them (VCF0401 to VCF0411 last asked in 2004, VCF0358 to VCF0373 in 2016, VCF0113 in 2020). Kept: a model fit before that election met the same questionnaire, as the column choices above.
+        - Columns recorded on one side of a window only (Lennart, 2026-11-11): 95 questions are asked in some election years only, so a test election misses the questions its questionnaire left out while its train side holds them (VCF0401 to VCF0411 last asked in 2004, VCF0358 to VCF0373 in 2016, VCF0113 in 2020). Kept: a model fit before that election met the same questionnaire, as the column choices above.
     """
 
     # Task
@@ -12292,8 +12292,9 @@ class AnesVoting2026(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Each test window is one study, that is one election: a pollster builds a likely-voter screen from the elections already studied and applies it at the next one, the test Pew's likely-voter study names for such a model ("Applying these models to other elections will reveal how well they can be generalized"). ANES sets no prediction task and TableShift splits its voting task by region, so no source sets the length. The studies are four years apart from 2004 on (two years between 2000, 2002 and 2004), so a window's model is up to four years old, as a pollster's would be. The test windows are the nine newest studies (CC 2026-11-11), newest first: 2024, 2020, 2016, 2012, 2008, 2004, 2002 (the data's only midterm study with both interviews), 2000 and 1996; nine is also the count a random split of this many respondents gets (3 x 3 folds). They hold 4,954, 7,442, 3,648, 5,488, 2,102, 1,066, 1,344, 1,554 and 1,534 respondents (29,132). Train is every earlier study: 43,633, 36,191, 32,543, 27,055, 24,953, 23,887, 22,543, 20,989 and 19,455 respondents (89.8%, 74.5%, 67.0%, 55.7%, 51.4%, 49.2%, 46.4%, 43.2% and 40.0%). Four windows train on less than half the respondents: 2004 (49.2%), 2002 (46.4%), 2000 (43.2%) and 1996 (40.0%), as the studies from 2012 on hold 3,648 to 7,442 respondents against 1,066 to 2,102 before; the five newest train on half or more, so no more windows are under half than above it, and the four add the only midterm and three more presidential elections (5,498 test respondents). No gap is needed: a study's labels come from its post-election interview, held after the election and years before the next study's pre-election interview.
+        Each test window is one study, that is one election: a pollster builds a likely-voter screen from the elections already studied and applies it at the next one, the test Pew's likely-voter study names for such a model ("Applying these models to other elections will reveal how well they can be generalized"). ANES sets no prediction task and TableShift splits its voting task by region, so no source sets the length. The studies are four years apart from 2004 on (two years between 2000, 2002 and 2004), so a window's model is up to four years old, as a pollster's would be. The test windows are the nine newest studies (CC 2026-11-11), newest first: 2024, 2020, 2016, 2012, 2008, 2004, 2002 (the data's only midterm study with both interviews), 2000 and 1996; nine is also the count a random split of this many respondents gets (3 x 3 folds). They hold 4,954, 7,442, 3,648, 5,488, 2,102, 1,066, 1,344, 1,554 and 1,534 respondents (29,132). Train is every earlier study: 43,633, 36,191, 32,543, 27,055, 24,953, 23,887, 22,543, 20,989 and 19,455 respondents (89.8%, 74.5%, 67.0%, 55.7%, 51.4%, 49.2%, 46.4%, 43.2% and 40.0%). Four windows train on less than half the respondents: 2004 (49.2%), 2002 (46.4%), 2000 (43.2%) and 1996 (40.0%), as the studies from 2012 on hold 3,648 to 7,442 respondents against 1,066 to 2,102 before; the five newest train on half or more, so no more windows are under half than above it, and the four add the only midterm and three more presidential elections (5,498 test respondents). No gap is needed: a study's labels come from its post-election interview, held after the election and years before the next study's pre-election interview. How the data arrive (Andrej, 2026-11-11): a study's respondents answer in the weeks before one election day and report their vote in the post-election interview within about two months, while the next study comes two to four years later, so every training label is in before a window starts. The cross-year id (dropped from the features) links 2,917 respondents across studies, all in the panels of 1956-1960, 1972-1976, 1992-1996 and 2000-2002; of the nine test windows, two hold re-interviewed respondents whose earlier row is on the training side, 1996 (545 of 1,534, all from 1992) and 2002 (991 of 1,344, all from 2000), and the other seven hold none. Turnout travels with the respondent: of the 1996 repeats, 87.8% of those who said they voted in 1992 say so again, against 35.3% of those who did not (2002: 84.7% against 19.9%).
     """
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="VCF0004",
         splits=TemporalSplits(window=1, unit="unique", n_windows=9),
@@ -12303,12 +12304,12 @@ class AnesVoting2026(AbstractCuratedDataset):
     )
     accepted_check_warnings = {
         "splits_train_under_half": (
-            "Signed off (Lennart, 2026-11-11, review issue 1, A): the four oldest elections train on 49.2%, "
-            "46.4%, 43.2% and 40.0% of the respondents, beside five on 51.4% to 89.8%; SPLIT-14's two tiers admit "
-            "them."
+            "Signed off (Lennart, 2026-11-11): the four oldest elections train on 49.2%, "
+            "46.4%, 43.2% and 40.0% of the respondents, beside five on 51.4% to 89.8%; kept as the curator's "
+            "exception to SPLIT-14's half-data floor (Andrej, 2026-11-19)."
         ),
         "splits_feature_missing_in_test": (
-            "Decided (Lennart, 2026-11-11, cross-dataset item): 95 questions asked in some election years only, missing "
+            "Decided (Lennart, 2026-11-11): 95 questions asked in some election years only, missing "
             "in the test elections whose questionnaire left them out; a model fit before the election met the same "
             "questionnaire (curation_comments)."
         ),

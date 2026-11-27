@@ -6,7 +6,17 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Metric,
+    Source,
+    Splits,
+    TaskSummary,
+    Temporal,
+    drop_columns,
+)
 
 # Columns of support2.csv that are not features at the prediction point (study day 3), with the reason.
 DROPPED_COLUMNS = {
@@ -192,6 +202,53 @@ def _phase_1(raw: pd.DataFrame) -> pd.Series:
     return phase_1
 
 
+END_OF_FOLLOW_UP = pd.Timestamp("1994-12-31")
+"""support2 follows every patient to the end of 1994: a survivor entered on this date minus d.time."""
+
+TEST_HALF_YEARS = ("1993-07-01", "1993-01-01", "1992-07-01")
+"""The starts of the three test windows, newest first; the newest runs to the last entry (January 1994)."""
+
+LABEL_DELAY_DAYS = 60
+"""The label, death within 60 days of study entry, is known 60 days after entry: each window trains on the patients
+who entered at least this many days before it starts."""
+
+
+def _entry_dates(support2: pd.DataFrame) -> pd.Series:
+    """The rebuilt study-entry date of each support2 row (the file has no entry date).
+
+    Within each of the file's ten blocks (`_phase_1` runs) the rows are in entry order: a survivor entered on
+    `END_OF_FOLLOW_UP` minus d.time, and these dates rise with the file position (Spearman 1.000 in every block).
+    A patient who died is dated by linear interpolation on the file position between the neighbouring survivors of
+    the block, held at the nearest survivor's date at a block's ends.
+    """
+    phase_1 = _phase_1(support2).to_numpy()
+    block = np.r_[0, np.cumsum(phase_1[1:] != phase_1[:-1])]
+    position = np.arange(len(support2))
+    survivor = support2["death"].eq(0).to_numpy()
+    day = (END_OF_FOLLOW_UP - pd.to_timedelta(support2["d.time"], unit="D")).to_numpy()
+    day = day.astype("datetime64[D]").astype(np.int64)
+    entry = np.empty(len(support2), dtype=float)
+    for b in np.unique(block):
+        rows = block == b
+        dated = rows & survivor
+        entry[rows] = np.interp(position[rows], position[dated], day[dated])
+    return pd.Series(pd.to_datetime(np.round(entry).astype(np.int64), unit="D"), index=support2.index)
+
+
+def _half_year_windows(entry: pd.Series) -> Splits:
+    """The test windows of `TEST_HALF_YEARS` on the entry date (sorted), each training on the patients who entered
+    `LABEL_DELAY_DAYS` or more before the window starts.
+    """
+    starts = [pd.Timestamp(start) for start in TEST_HALF_YEARS]
+    ends = [None, *starts[:-1]]
+    splits = {}
+    for i, (start, end) in enumerate(zip(starts, ends, strict=True)):
+        test = entry.ge(start) & (entry.lt(end) if end is not None else True)
+        train = entry.lt(start - pd.Timedelta(days=LABEL_DELAY_DAYS))
+        splits[i] = {0: (np.flatnonzero(train).tolist(), np.flatnonzero(test).tolist())}
+    return splits
+
+
 def _alive_after_day_3(df: pd.DataFrame) -> pd.Series:
     """Patients alive at the prediction point, the end of study day 3."""
     return ~(df["death"].eq(1) & df["d.time"].le(3))
@@ -220,9 +277,13 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
         predicted="Whether the patient dies within 60 days of study entry (33% do).",
         known=(
             "Age, sex, race, diagnosis, other illnesses, days in hospital before study entry, and the day-3 vital signs "
-            "and lab values."
+            "and lab values; the rebuilt entry date orders the split but is no model input."
         ),
-        split=("Random patients, so the test data stands for new patients of the same hospitals and years."),
+        split=(
+            "Three half-year windows of study entry, from the second half of 1992 to January 1994, each trained on "
+            "the patients who entered at least 60 days earlier, when their outcome was known. The file has no entry "
+            "date; it is rebuilt from the file order and the survivors' follow-up."
+        ),
         changes=(
             "In the public file the day-3 measurements of most phase II patients belong to other patients; we moved "
             "them back to their own rows with the study's archive. We drop the earlier models' scores and, since the "
@@ -232,7 +293,8 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
         fit="direct",
         fit_reason=(
             "Everything the model sees is recorded by day 3 and the outcome follows within two months, as when the "
-            "model is used. The care is that of 1989-1994."
+            "model is used, and each window trains only on outcomes known when it starts. The care is that of "
+            "1989-1994, and the entry date is rebuilt, not recorded."
         ),
     )
 
@@ -277,18 +339,39 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
         Two downloads. Every value of the dataset comes from the first; the second only tells where each patient's physiology sits in it.
 
         1. support2.csv (all 9,105 SUPPORT patients, 47 variables) from the Vanderbilt Biostatistics data repository (https://hbiostat.org/data, "SUPPORT study datasets"), which released this extract of the SUPPORT study data. The file is not versioned: ours is dated 2003-06-23 inside the zip and has SHA-256 79621945edf2a5c8dc36359684ff356d3c6025e773ba4fefac26f865f7894c78. UCI dataset 880 (SUPPORT2, https://archive.ics.uci.edu/static/public/880/data.csv) serves the same table, with the same misplaced phase II physiology (see the curation notes); it differs only in the rounding of prg6m, which we drop.
-        2. The full study data, ICPSR 2957 V2 (https://doi.org/10.3886/ICPSR02957.v2, Knaus and Lynn, released 2020-02-20): the public-use parts 9 ("Physiology Data, SUPPORT Phases I and II and HELP") and 10 ("Key Common Analytical Variables, SUPPORT Phases I and II and HELP"), as ASCII data with their data maps. ICPSR asks for a free login and the acceptance of its terms of use, so there is no download command: log in at https://www.icpsr.umich.edu/web/ICPSR/studies/2957, download DS9 and DS10 (each a zip with the folder ICPSR_02957) and unzip both into local-data-warehouse/2_month_survival_rate_prediction/icpsr_2957/. Ours: 02957-0009-Data.txt SHA-256 96859cd2860862d670379def714badcd314c90ea3445c6f6da38d1c32ad56b7d, 02957-0010-Data.txt SHA-256 1a9a41ba78ba13db60d9e4ce9347922f5f2fad77f386ef02ac802d9a7bb4fd86. ICPSR's terms forbid passing these files on.
+        2. The full study data, ICPSR 2957 V2 (https://doi.org/10.3886/ICPSR02957.v2, Knaus and Lynn, released 2020-02-20): the public-use parts 9 ("Physiology Data, SUPPORT Phases I and II and HELP") and 10 ("Key Common Analytical Variables, SUPPORT Phases I and II and HELP"), as ASCII data with their data maps. ICPSR asks for a free login and the acceptance of its terms of use, so there is no download command: log in at https://www.icpsr.umich.edu/web/ICPSR/studies/2957, download DS9 and DS10 (each a zip with the folder ICPSR_02957) and unzip both into local-data-warehouse/2_month_survival_rate_prediction/icpsr_2957/. The study-level download gives the same parts in one zip (ICPSR_02957-V2.zip, every part under ICPSR_02957/DSxxxx), from which the two parts can be taken alone. Ours: 02957-0009-Data.txt SHA-256 96859cd2860862d670379def714badcd314c90ea3445c6f6da38d1c32ad56b7d, 02957-0010-Data.txt SHA-256 1a9a41ba78ba13db60d9e4ce9347922f5f2fad77f386ef02ac802d9a7bb4fd86. ICPSR's terms forbid passing these files on.
 
         mkdir -p local-data-warehouse/2_month_survival_rate_prediction && cd local-data-warehouse/2_month_survival_rate_prediction && wget https://hbiostat.org/data/repo/support2csv.zip && unzip support2csv.zip && rm support2csv.zip
-        # after downloading DS9 and DS10 from ICPSR (login), in the same folder:
+        # after downloading from ICPSR (login), in the same folder, either the two parts:
         unzip -o <DS9 zip> -d icpsr_2957 && unzip -o <DS10 zip> -d icpsr_2957
+        # or the two parts out of the whole-study zip:
+        unzip -o <study zip> "ICPSR_02957/DS0009/*" "ICPSR_02957/DS0010/*" -d icpsr_2957
     """
     curation_comments = """
         We start with support2.csv from the Vanderbilt Biostatistics data repository (hbiostat.org/data): the 9,105 patients of SUPPORT phases I (1989-1991) and II (1992-1994), seriously ill adults at five US teaching hospitals. We keep the 8,967 patients alive after study day 3.
 
         - Prediction point: the end of study day 3, as in the SUPPORT model ("11 physiologic measures recorded on day 3 after study entry", Knaus et al. 1995, abstract).
         - Physiology restored. In most phase II rows the day-3 physiology block (meanbp to urine, 14 columns) belongs to another patient: crea against aps, the APACHE III score of the same values, has Spearman 0.52 in phase I and 0.05 in phase II. The study data, ICPSR 2957 V2 parts 9 and 10, show where each block is. `_link` matches each row to its ICPSR patient on ten columns both files hold on the patient's row (all 9,105 match once, and the 6,201 deaths agree to the day). `_source_rows` finds the block that holds the patient's ICPSR day-3 values, with ICPSR's normal-value fills set missing as in support2: phase I rows hold their own and 431 of the 4,804 phase II rows do; for 4,102 others the block sits 1 to 90 rows further down, for 181 further still (up to 1,094 rows) and for 90 above. `_restored` moves each block back. Every value comes from support2.csv; ICPSR only decides the row and is not shipped. Restored, phase II matches phase I (crea against aps 0.49).
-        - Both phases, IID split over patients: the use case is new patients of the same hospitals and years. The phase II intervention "failed to improve care or patient outcomes" (SUPPORT Principal Investigators 1995, JAMA, abstract). The entry date can be recovered (a survivor entered on 31 Dec 1994 minus d.time, and within each of the file's ten blocks the rows are in entry order, Spearman 1.000), but it changes no score (LightGBM ROC AUC, review panel 2026-10-20): IID 0.818 (9 splits), three temporal windows over phase II 0.824, phase I to phase II 0.820. The ten blocks form five phase I / phase II pairs, probably the hospitals (the public ICPSR file blanks the site); leaving one pair out scores 0.815 (0.793-0.831), so we do not group by them.
+        - Both phases, split by the rebuilt entry date (Andrej, 2026-11-19, decision B; it replaces the IID split over
+          patients and its `ForcedIIDFromTemporal` tag). The use case is new patients after those the model learned
+          from; the phase II intervention "failed to improve care or patient outcomes" (SUPPORT Principal
+          Investigators 1995, JAMA, abstract), so both phases are one population. The ten blocks of the file form five
+          phase I / phase II pairs, probably the hospitals (the public ICPSR file blanks the site); leaving one pair
+          out scored ROC AUC 0.815 (0.793-0.831) against 0.818 for random patients (LightGBM, review panel
+          2026-10-20), so we do not group by them.
+        - `entry_date`, the study-entry date rebuilt by `_entry_dates` (exact for survivors, end of follow-up minus days followed; deaths placed between them; the file holds no date).
+          Rebuilt order: file position within each of the ten blocks, Spearman 1.000 with the survivors' entry dates
+          (31 Dec 1994 minus d.time: support2 follows every patient to the end of 1994); deaths placed between
+          neighbouring survivors (the two survivors either side a median 4 days apart). Eight half-years, 934 to 1,284 patients each (the first holds
+          June 1989, the last January 1994), from 1989-06-11 to 1994-01-21; patients entering in the 60 days before a
+          test period are left out of its training. It orders and splits the rows and is no model input
+          (`Temporal(..., time_of="label")`): the date is our reconstruction, not a field of the release.
+        - What the windows cost, measured (stationary-relation test, 2026-11-19): Kumo-Tabular is flat on every
+          half-year; pooled over the newest three, forward training scores +0.0002 ± 0.0011 ROC AUC against training
+          on contemporaneous patients (two SD 0.87 of the noise floor), LightGBM +0.0024 ± 0.0030. The test ran on
+          the shipped features without the 11 physiology columns (the ICPSR files that restore phase II were not at
+          hand); on phase I's three half-years with physiology it is flat as well. The relation does not drift, so
+          the windows cost little against random patients while testing the use case's order.
         - Target `death_within_2_months`: `death` = 1 and `d.time` < 60, the cut-off of the source's sfdm2 level 5. Survivors were followed at least 344 days, so no label is censored. 2,993 of 8,967 (33.4%).
         - We drop the 138 patients who died on day 3: they are dead at the prediction point, and their values include values at death (heart rate 0 in 38% of them).
         - Dropped: the outputs of earlier models, sps, surv2m, surv6m and aps (supportdesc also advises against them).
@@ -315,6 +398,54 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
         reference="Knaus et al. 1995, Ann Intern Med 122(3):191-203, The SUPPORT prognostic model",
         definition="Area under the ROC curve of the predicted probability of death within 2 months",
     )
+    accepted_check_warnings = {
+        "task_label_time_gap": (
+            "The 60-day gap is the label's own delay: death within 60 days of entry is known 60 days later, so each "
+            "window trains only on patients whose outcome was known when it starts (SPLIT-10). `entry_date` is "
+            'declared `time_of="label"` because it is our reconstruction of the entry order and no field of the '
+            "release, so no actor holds it at the prediction point and it must stay out of the inputs; it dates the "
+            "entry, not the moment the label became known, and the gap is not redundant with it "
+            "(Andrej, 2026-11-19)."
+        ),
+        "splits_below_target": (
+            "Three windows against the nine an IID split of 8,967 patients would get (SPLIT-33). A fourth window, "
+            "the first half of 1992, would train only on phase I (4,232 patients, 47%), below the floor of half the "
+            "data, and the study enrolled no one from mid-1991 to January 1992. The splits comment names the target, "
+            "the count reached and what stops more (SPLIT-15)."
+        ),
+    }
+
+    # Splits
+    splits_comment = """
+        Three test windows of study entry, newest first: the second half of 1993 with January 1994 (1,216 patients),
+        the first half of 1993 (1,247) and the second half of 1992 (1,099). Each trains on every patient who entered
+        60 days or more before the window starts: 82%, 69% and 56% of the 8,967 patients (Andrej, 2026-11-19,
+        decision B).
+        The file has no entry date. Within each of its ten blocks the rows are in entry order: the survivors' entry
+        dates (31 Dec 1994 minus d.time) rise with the file position, Spearman 1.000 in every block, and each death is
+        dated between its neighbouring survivors (the two survivors either side a median 4 days apart). The eight half-years hold 934 to 1,284
+        patients each.
+        Gap: the label, death within 60 days of entry, is known 60 days after entry, so the patients who entered in
+        the 60 days before a window are in neither side of it (325 to 382 per window): training holds only outcomes
+        known when the window starts.
+        Three windows against the nine splits that 8,967 patients would get at random (SPLIT-33): a fourth, the first
+        half of 1992, would train only on phase I (4,232 patients, 47%), below the floor of half the data, and the
+        study enrolled no one from mid-1991 to January 1992.
+        Until 2026-11-19 the split was random patients (`ForcedIIDFromTemporal`).
+    """
+    split_leaf = "L-ORDER.windows"
+    temporal = Temporal(
+        on="entry_date",
+        horizon=6,
+        horizon_unit="months",
+        gap=LABEL_DELAY_DAYS,
+        gap_unit="days",
+        time_of="label",  # a rebuilt date that orders and splits the rows: no model input (2026-11-19, Andrej)
+    )
+
+    def _make_splits(self, df: pd.DataFrame) -> Splits:
+        """Three half-year windows on the rebuilt entry date with a 60-day gap (`TEST_HALF_YEARS`)."""
+        return _half_year_windows(df["entry_date"])
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         return {
@@ -330,6 +461,8 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
         # belongs to another patient. The ICPSR files only say which row that is; every value comes from support2.csv
         source = _source_rows(support2, raw["icpsr_day_3"], _link(support2, raw["icpsr_key"]))
         df = _restored(support2, source)
+        # the rebuilt study-entry date: orders and splits the patients, no model input (time_of="label")
+        df["entry_date"] = _entry_dates(support2)
         # serum albumin above 6 g/dL is impossible (4 patients; 29.0 reads as g/L)
         df["alb"] = df["alb"].mask(df["alb"].gt(6))
         # a PaO2/FiO2 ratio above 713 is impossible at sea level (9 patients; likely a mis-recorded FiO2)
@@ -486,6 +619,24 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
             }
         )
         targets["share"] = (targets["positives"] / len(cohort)).round(3)
+
+        # 7. the test windows on the rebuilt entry date
+        entry = df["entry_date"].sort_values(kind="stable").reset_index(drop=True)
+        starts = [pd.Timestamp(start) for start in TEST_HALF_YEARS]
+        in_gap = [entry.ge(start - pd.Timedelta(days=LABEL_DELAY_DAYS)) & entry.lt(start) for start in starts]
+        rows = []
+        for i, folds in _half_year_windows(entry).items():
+            train, test = folds[0]
+            rows.append(
+                {
+                    "test window": f"{entry.iloc[test].min():%Y-%m-%d} to {entry.iloc[test].max():%Y-%m-%d}",
+                    "test patients": len(test),
+                    "train patients": len(train),
+                    "train share": f"{len(train) / len(entry):.1%}",
+                    "left out by the gap": int(in_gap[i].sum()),
+                }
+            )
+        windows = pd.DataFrame(rows).set_index("test window")
         return [
             Decision(
                 "Phase II physiology restored: published in other patients' rows",
@@ -542,5 +693,14 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
                 "the cut-off of the source's own outcome sfdm2. Every survivor was followed for more than 6 months, "
                 f"so both are known for every patient. Counts on the cohort of {len(cohort):,} patients.",
                 targets,
+            ),
+            Decision(
+                "Three half-year windows on the rebuilt entry date, with a 60-day gap",
+                "The file has no entry date. Within each of its ten blocks the rows are in entry order, so a "
+                "survivor's entry date (31 Dec 1994 minus d.time) dates its neighbours: a patient who died is placed "
+                "between the neighbouring survivors of the block. The windows test the second half of 1992, the first "
+                "half of 1993 and the second half of 1993 with January 1994; each trains on the patients who entered 60 "
+                "days or more before it starts, whose 2-month outcome is known by then. Newest window first.",
+                windows,
             ),
         ]

@@ -15,6 +15,7 @@ from data_foundry.v2 import (
     Source,
     SplitPlan,
     TaskSummary,
+    TimeBasis,
 )
 
 COLUMNS = [
@@ -142,9 +143,18 @@ class HeartDisease(AbstractCuratedDataset):
         - Codes get their labels from UCI's `heart-disease.names`: `sex`; `cp` typical angina, atypical angina, non-anginal pain, asymptomatic; `restecg` normal, ST-T wave abnormality, left ventricular hypertrophy; `slope` of the peak-exercise ST segment upsloping, flat, downsloping; `thal` normal, fixed defect, reversible defect. `fbs` (fasting blood sugar over 120 mg/dl) and `exang` (angina on exercise) stay 0/1 flags. `oldpeak` is the ST depression on exercise relative to rest; one Long Beach value is negative.
         - Anomaly: the Hungarian file keeps 294 of the paper's 425 patients (36% diseased against 38%); the paper took all catheterizations of 1983 to 1987 without prior infarction or valve disease (p. 306), and how the 294 were chosen is not stated.
         - Duplicates: the Long Beach pair of equal rows is one patient entered twice (the raw file gives both the same exercise and angiogram dates and the same ten vessel readings, which no other Long Beach pair shares), so one is dropped. The Hungarian pair is two patients (exams in March and May 1986) and stays.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
+        - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
     """
+    split_leaf = "L-PLACE.groups"
+    time_basis = TimeBasis(
+        "UnseenGroup",
+        """
+        the source's question is whether a model carries over to another hospital (Detrano et al.
+        built it on the Cleveland patients and applied it to Budapest and Long Beach), so the split holds out each
+        hospital and does not weigh the patients' dates. It cannot test a later period at a hospital the model knows.
+        """,
+    )
 
     # Task
     target = "heart_disease_diagnosis"

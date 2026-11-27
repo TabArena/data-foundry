@@ -241,6 +241,7 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
         target_transform="log1p",
     )
 
+    split_leaf = "L-ORDER.exception"
     # Splits: three 4-month windows tile 2017, the competition's public test year.
     temporal = Temporal(
         on="timestamp",
@@ -248,8 +249,8 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
     )
     accepted_check_warnings = {
         "splits_train_under_half": (
-            "Signed off (Lennart, 2026-11-10, review issue 1, A): January-April 2017 trains on 49.47% of the "
-            "readings, beside 66.0% and 83.0%; SPLIT-14's two tiers admit it."
+            "Signed off (Lennart, 2026-11-10): January-April 2017 trains on 49.47% of the "
+            "readings, beside 66.0% and 83.0%; kept as the curator's exception to SPLIT-14's half-data floor (Andrej, 2026-11-19)."
         ),
     }
     splits_comment = """

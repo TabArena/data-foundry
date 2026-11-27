@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+    drop_columns,
+)
 
 SCREENING_TESTS = ["Hinselmann", "Schiller", "Citology"]
 """The three screening results besides the biopsy: outcomes of the same work-up, not features."""
@@ -150,6 +159,16 @@ class CaracasCervicalCancer(AbstractCuratedDataset):
         - Impossible answers become missing: 2 first intercourses after the patient's current age and 2 STD diagnoses longer ago than her age (the age is the clinic's record).
         - Anomaly: other answers contradict each other without being impossible and stay as recorded: 5 patients have a `dx_*` flag set while `dx` is 0, and 7 report an STD with no STD diagnosis counted (the questions may count different things).
     """
+    split_leaf = "L-FORCED.random"
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        the patients came to the service over time, and the file carries no visit
+        date, so the time is lost. A dated release would test patients later than those used for training. Not taken
+        as stationary (Andrej, 2026-11-18): A behavioural questionnaire under changing screening and vaccination
+        policy gives no mechanism that time leaves unchanged.
+        """,
+    )
 
     # Task
     target = "biopsy"

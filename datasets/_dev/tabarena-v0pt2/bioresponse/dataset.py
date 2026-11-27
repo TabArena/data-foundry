@@ -73,6 +73,7 @@ class Bioresponse(AbstractCuratedDataset):
           ROC AUC 0.485, against 0.484-0.497 for a random third of train; nearest-training distances match), and
           scoring new analogues of series already in testing is the lead-optimisation use case the competition framed.
     """
+    split_leaf = "L-EXP.no-kind-key"
     time_basis = TimeBasis(
         "Timeless",
         """

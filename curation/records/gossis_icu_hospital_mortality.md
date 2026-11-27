@@ -12,9 +12,13 @@ suggestion: 'Yes'
 priority: 2
 tags:
 - AI-Filled (Verify)
+- 'Samples: Over Time'
+- 'Time: Lost'
+- Clinical Study
 - Non-IID (Grouped)
 original_source: Kaggle
 year: '2020'
+collection_period: Unknown
 domain: medical & healthcare
 required_split:
 - Grouped (NON-IID)
@@ -55,11 +59,17 @@ type_adapter_id: curation-record-v1
 
 **Assessment (AI, 2026-10-31):** cleanup flag of the data-scouting run: the same WiDS Datathon 2020 competition (`wids_icu_hospital_death`; PROV-4). The curator keeps one, or both as distinct tasks.
 
-CC (2026-11-11, Andrej): built as the v2 dataset that replaces wids_diabetes_mellitus (BeyondArena v0.2 review page, wids_diabetes_mellitus issue 1, c: "Replace the target by in-hospital death"): WiDS 2020's training_v2.csv, 91,713 ICU stays at 147 hospitals, `hospital_death` (8.6%), split by hospital (its issue 5 answer), ROC AUC. APACHE IVa's two death probabilities dropped (another model's prediction, CLEAN-6; ROC AUC 0.861 alone, LightGBM 0.902 with or without them); identifiers, `icu_id`, the constant `readmission_status` and three duplicate columns dropped. Carried over from the diabetes marks where they apply: no clipped flags are built; no age 0 occurs; the 1,756 BMI mismatches all sit at GOSSIS's clipping bounds, so BMI ships as published (Review issue 2). Licence: Kaggle Competition Rules (rules tab not readable without acceptance); the PhysioNet copy (https://doi.org/10.13026/vc0e-th79) is credentialed under the PhysioNet Restricted Health Data License 1.5.0.
+CC (2026-11-11, Andrej): built as the v2 dataset that replaces wids_diabetes_mellitus (wids_diabetes_mellitus's Review issue 1, c: "Replace the target by in-hospital death"): WiDS 2020's training_v2.csv, 91,713 ICU stays at 147 hospitals, `hospital_death` (8.6%), split by hospital (its issue 5 answer), ROC AUC. APACHE IVa's two death probabilities dropped (another model's prediction, CLEAN-6; ROC AUC 0.861 alone, LightGBM 0.902 with or without them); identifiers, `icu_id`, the constant `readmission_status` and three duplicate columns dropped. Carried over from the diabetes marks where they apply: no clipped flags are built; no age 0 occurs; the 1,756 BMI mismatches all sit at GOSSIS's clipping bounds, so BMI ships as published (Review issue 2). Licence: Kaggle Competition Rules (rules tab not readable without acceptance); the PhysioNet copy (https://doi.org/10.13026/vc0e-th79) is credentialed under the PhysioNet Restricted Health Data License 1.5.0.
 
 **Assessment (AI, 2026-11-11):** review panel (small: claim auditor, split auditor, critic; no mediator): ship after changes (the critic; the repeat-patient note reworded and one wording fix applied); disputed: none; for the curator: issues 1-3 (time-basis tag `ForcedGroupedFromTemporal` per SPLIT-8, BMI at clipping bounds kept per CLEAN-11, negative pre-ICU days kept). Checks 0 errors, 0 warnings; probes flag nothing; LightGBM 0.898-0.902 against linear 0.881-0.884, APACHE IVa 0.861; grouped 0.901 vs random 0.903. Priority 2: gap 0, use case + (the source states the prediction point; the APACHE use is established), source + (PhysioNet page with authors, data dictionary), shape + (91,713 rows, 147 hospitals), risk - (licence terms unread on Kaggle; a duplicate record and the eICU parent to settle).
 
-CC (2026-11-11, Andrej): BeyondArena v0.2 review page: issue 1 "Option B: ForcedGroupedFromTemporal." — the hospital split is tagged `ForcedGroupedFromTemporal` (SPLIT-8; one undated year, a later period untested) with a `Time basis:` line in `curation_comments`. Issues 2 and 3 `ok`: BMI at GOSSIS's clipping bounds and the 778 negative `pre_icu_los_days` (a registration lag) ship as published, with notes.
+CC (2026-11-11, Andrej): Review issue 1, "Option B: ForcedGroupedFromTemporal." — the hospital split is tagged `ForcedGroupedFromTemporal` (SPLIT-8; one undated year, a later period untested) with a `Time basis:` line in `curation_comments`. Issues 2 and 3 `ok`: BMI at GOSSIS's clipping bounds and the 778 negative `pre_icu_los_days` (a registration lag) ship as published, with notes.
+
+CC (2026-11-17, Andrej): time basis `UnseenGroup` instead of `ForcedGroupedFromTemporal`:
+- The split holds out hospitals because the use case is a hospital the score was not developed at (the definition's group text); that is `UnseenGroup` (SPLIT-32), not a split forced by lost time.
+- The stays carry no date or order, so a later period at a known hospital stays untested; the split is unchanged.
+
+CC (2026-11-17, Andrej): the declared split (grouped on `hospital_id`, 3x3 folds, `UnseenGroup`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk).
 
 ## Review
 
@@ -73,8 +83,8 @@ APACHE IVa's two death probabilities are dropped (another model's prediction; wi
 copy is credentialed (PhysioNet Restricted Health Data License 1.5.0): a release-checklist item, not a verdict reason.
 Weighed: an established task with a clinical baseline, many hospitals +; a time basis to name, two cleaning calls -.
 
-**Main points:** All issues resolved (2026-11-11): the hospital split is tagged `ForcedGroupedFromTemporal` (issue
-1); BMI at the clipping bounds (issue 2) and the negative pre-ICU days (issue 3) ship as published.
+**Main points:** All issues resolved (2026-11-11): the hospital split was tagged `ForcedGroupedFromTemporal` (issue
+1), and since 2026-11-17 `UnseenGroup` (CC of that day; the split is unchanged); BMI at the clipping bounds (issue 2) and the negative pre-ICU days (issue 3) ship as published.
 
 **Record judgment:** valid source and target. The record's screening holds on the data (claim audit: nothing refuted).
 The duplicate record `wids_icu_hospital_death` (the same competition) and the eICU parent

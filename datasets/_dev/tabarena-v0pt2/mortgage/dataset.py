@@ -231,6 +231,7 @@ class Mortgage(AbstractCuratedDataset):
         as for a lender scoring the loans it holds. The status of a quarter is known when the next one starts, so
         every training label is known at the cutoff and there is no gap.
     """
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="time",
         splits=TemporalSplits(window=1, unit="unique", cutoffs=(60, 49, 38)),

@@ -15,7 +15,7 @@ tags:
 - Non-IID (Temporal)
 - 'Samples: Over Time'
 - 'Time: Inferred'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - Database Snapshot
 collections:
 - TabArena Reject
@@ -57,30 +57,38 @@ CC (2026-10-21, Lennart): "no it also bind to what experts did by default, so ag
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `bosch_production_line_performance` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-06, Andrej): the arrival facts of the temporal split accepted (Review issue 1, B, through the cross-dataset item on arrival notes of temporal splits) and written into `splits_comment`; the split is unchanged. The bench time is known minutes after the car's configuration is fixed, so the ID-order windows need no gap.
+
 **Assessment (AI, 2026-11-10):** priority for the review of the test windows and horizons, which this record never had. Priority 3: gap 0, use case 0, source + (Mercedes-Benz's competition), shape +, risk 0 (the open issue is the window size and the floor).
 
-CC (2026-11-11, Lennart): REVIEW issue 1 (which windows of cars to test), as implemented (A): the nine windows of 320 cars in ID order, from ID 2,628 on, stay, in place of the AI's nine windows of 233 cars over the newest half; SPLIT-14 as amended on 2026-11-11 admits the three oldest, which train on 46.7%, 39.1% and 31.5% of the cars (three windows under half, six at or above it).
+CC (2026-11-11, Lennart): REVIEW issue 4 (which windows of cars to test), as implemented (A): the nine windows of 320 cars in ID order, from ID 2,628 on, stay, in place of the AI's nine windows of 233 cars over the newest half; SPLIT-14 as amended on 2026-11-11 admits the three oldest, which train on 46.7%, 39.1% and 31.5% of the cars (three windows under half, six at or above it).
 
 CC (2026-11-11, Lennart): the declared horizon (320 cars, no gap, windows starting at the newest nine runs of 320 cars, IDs 7,801, 7,140, 6,487, 5,875, 5,223, 4,581, 3,920, 3,308 and 2,628) is checked, as the amended floor admits nine windows of 320, which test 2,880 cars against 2,097 at 233, and no source gives either length.
 
 **Assessment (AI, 2026-11-11):** applied in dataset.py: `temporal` unchanged (`window=320, unit="rows", n_windows=9`); test 320 cars each, train 3,884, 3,564, 3,244, 2,924, 2,604, 2,284, 1,964, 1,644 and 1,324 (92.4%, 84.8%, 77.2%, 69.6%, 61.9%, 54.3%, 46.7%, 39.1%, 31.5% of 4,204). `task_summary.split` no longer says the first 1,000 cars are always in training (the oldest window trains on 1,324); `splits_comment` replaces the `TimeSeriesSplit` description with the windows by car ID, the train sides, the three under half with their shares, the length's origin (the first curation's `TimeSeriesSplit` arithmetic) and the reason it is kept, and the absent gap; the outlier bullet no longer names the first 1,000 cars. `dataset check`: 0 errors, 2 warnings that predate this change (11 constant and 45 duplicated option columns; README not regenerated).
 
+CC (2026-11-11, Andrej): "Option B: Restore X3, X6 and X8." (Review issue 3): `X3`, `X6`, `X8` restored as categorical; only `X5` (time marker), `X4` (near constant, with its 4 unusual rows) and the constant `X11` stay dropped. Check of 2026-11-06: no time pattern (Cramér's V with the ID decile 0.06 to 0.18, like the kept `X0` to `X2`; `X5` 0.93), R² +0.0015 (SE 0.0039) with them. Repeated configurations with the six codes kept: 29% of cars (336 configurations, was 43% and 377), 15% to 27% of each window's test cars. "Option C: 9 windows of 233 cars in the newest half." (Review issue 2): replaced the same day by Lennart's 320-car windows (Review issue 4), then set again on 2026-11-19 (Review issue 6).
+
 CC (2026-11-17, Andrej): the declared split (temporal on `time_index`, windows of 320 rows, 9 windows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
-CC (2026-11-19, Andrej): `time_index` stays a model input (Review issue 2, A as implemented): the car's ID exists before its bench test, so the planner holds it at prediction time.
+CC (2026-11-19, Andrej): `time_index` stays a model input (Review issue 5, A as implemented): the car's ID exists before its bench test, so the planner holds it at prediction time.
 
-CC (2026-11-19, Andrej): nine windows of 233 cars, all training on half the cars or more (320 rows was leftover arithmetic) (Review issue 3).
+CC (2026-11-19, Andrej): nine windows of 233 cars, all training on half the cars or more (320 rows was leftover arithmetic) (Review issue 6).
 
 ## Review
 
-**Outcome:** added. On 2026-11-11 you kept the nine windows of 320 cars from ID 2,628 on (issue 1 and the horizon,
-A), which the amended floor admitted with the three oldest training on 46.7%, 39.1% and 31.5% of the cars. On
-2026-11-19 Andrej replaced them by nine windows of 233 cars, every one training on half the cars or more (issue 3, C),
-and kept `time_index` as a model input (issue 2, A).
+**Outcome:** added. On 2026-11-06 Andrej accepted the text on how the bench time arrives (issue 1, B). On 2026-11-11
+he chose nine windows of 233 cars in the newest half (issue 2, C) and restored `X3`, `X6` and `X8`, which show no time
+pattern and no effect (issue 3, B); the same day Lennart kept the nine windows of 320 cars from ID 2,628 on (issue 4
+and the horizon, A), which the amended floor admitted with the three oldest training on 46.7%, 39.1% and 31.5% of the
+cars. On 2026-11-19 Andrej replaced them by nine windows of 233 cars, every one training on half the cars or more
+(issue 6, C), and kept `time_index` as a model input (issue 5, A).
 
 **Main points:** Settled on 2026-11-19: nine windows of 233 cars in ID order, training on 50.1% to 94.5%, no gap
-(issue 3, C), in place of the nine windows of 320 cars kept on 2026-11-11 (issue 1, A); `time_index` stays a model
-input, as the planner holds a car's ID before its bench test (issue 2, A). Nothing is left to decide.
+(issue 6, C), in place of the nine windows of 320 cars kept on 2026-11-11 (issue 4, A); `time_index` stays a model
+input, as the planner holds a car's ID before its bench test (issue 5, A). Settled on 2026-11-11: `X3`, `X6` and `X8`
+restored (issue 3, B). Settled on 2026-11-06: `splits_comment` says how the bench time arrives and why no gap is needed
+(issue 1, B). Nothing is left to decide.
 
 **Horizon:**
 
@@ -119,9 +127,176 @@ horizon, and why it is kept, and that no gap is needed (a car's time is known wh
 unchanged. The record has the horizon CC line. `dataset check`: 0 errors; its 2 warnings (11 constant and 45
 duplicated option columns) are about the data, not the windows, and are not settled here (README not regenerated).
 
-**Issues for Lennart:**
+**Issues:**
 
-1. **Which windows of cars should the test use?**
+1. **Time basis: keep the ID-order windows with no gap, and write in `splits_comment` how the bench time arrives?**
+
+   * **Problem:**
+     - The bench time exists minutes after the car's configuration is fixed, the release has no dates, and time lives
+       only in the ID order, which the dropped code `X5` backs: its 29 levels form 31 contiguous runs of IDs, about
+       200 cars each, likely production periods.
+     - The record's collection facts (`Samples: Over Time`, `Time: Dated`, `Target: Later`) fit, and a temporal split
+       needs no time-basis tag[^1b], but `splits_comment` explains only the 1,000 cars always in training, not what the ID
+       stands for or why there is no gap.
+     - Write the time facts down with the split unchanged (B), keep the text (A), or cut the windows at the `X5`
+       block bounds (C)?
+   * **Background:**
+     - A configuration tested again is the car's known history: 29% to 38% of each shipped window's test cars have
+       their configuration among the training cars, as a model in use would have them too[^1a].
+     - Kaggle's IDs run from 0 to 8,417 and this file holds every other one on average (half of the steps are 1):
+       the competition's test cars are interleaved with these, a random split of the same period; the temporal
+       reading of the IDs was decided earlier (approximate fit).
+   * **Experiments:** today's check on the competition's file, as the definition cleans it (4,204 cars), no model:
+     - The `X5` block explains 1.0% of the bench time's variance (blocks of 20 cars or more; block means 96.1 to
+       102.6 s, standard deviation 1.5 s, against 12.4 s between cars) and 2.5% of what is left within repeated
+       configurations.
+     - Pairs of tests of one configuration differ by 7.9 s on average within a block (1,078 pairs) and 7.4 s across
+       blocks (8,719 pairs): the period lends a car no outcome of its own.
+     - The mean bench time drifts little with the ID (deciles 98.9 to 102.2 s), and neighbouring IDs are not alike
+       (autocorrelation -0.10 at one step).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | ID-order windows, no gap, text as is (implemented) | windows as issue 2 decides; `splits_comment` unchanged | no change | the reason for no gap and the evidence for the ID as time stay unwritten; a later reader may doubt the ID or ask for a gap |
+     | B | The same split, with its time facts in `splits_comment` | as A; the text states the delay of minutes, the ID as the testing order with the `X5` blocks, no gap, and repeated configurations as history | the split's reasons and today's numbers written where the benchmark user reads them | none found |
+     | C | Windows cut at the `X5` block bounds | each test window holds whole blocks; `X5` places the cuts and stays out of the features | no test car shares its period with a training car | rests on an anonymised code whose meaning is guessed; the block carries about 1% of the variance, so the change buys nothing measured; windows of unequal size |
+
+   * **Recommendation:** B: the split already mirrors a refit before the next cars, and the facts that justify it are
+     measured but not written down. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B (and with whatever issue 2 decides), append to `splits_comment`: "How the data arrives:
+   the bench time is known when the car leaves the bench, minutes after its configuration is fixed, so the windows
+   need no gap: a model refit at a window's start knows every earlier car. The ID is taken as the testing order; the
+   dropped code X5 forms 29 levels in 31 contiguous runs of IDs, about 200 cars each in this file, likely production
+   periods. A window's first cars share their block with the newest training cars, but the block explains about 1% of
+   the variance of the bench time (block means 96.1 to 102.6 s). A configuration tested again (29% to 38% of a
+   window's test cars) is the car's known history, not a leak." No `data_tags` change (temporal split, no time-basis
+   tag), no record change. On C,
+   compute the block bounds in `_clean` from `X5` runs before the drop and pass them as `cutoffs`; re-run
+   `dataset check`.
+
+   [^1a]: **LEAK-34** (Must): an entity's own history under a temporal split is legitimate, also when it carries
+     labels forward (a known entity). **SPLIT-13** (Should): an entity that recurs across the cutoff is part of the
+     task when the model predicts for known entities.
+   [^1b]: **SPLIT-32** (Should): the record carries the source's collection facts; a temporal split needs no
+     time-basis tag. **SPLIT-22** (Should): the raw file order can be the time order without a timestamp; keep it.
+     **SPLIT-10** (Should): a gap of about the label's delay; none needed where the collection covers what it guards
+     against (here a delay of minutes against windows of hundreds of cars).
+
+   **Resolved (2026-11-06, Andrej):** B, accepted through the cross-dataset item "Accept the arrival notes on temporal
+   splits with one mark?" The text on how the bench time arrives (no gap, the ID as the testing order with the `X5`
+   blocks, a configuration tested again as known history) is appended to `splits_comment`; it holds with whatever issue
+   2 decides. The split, its gap and `data_tags` are unchanged; a temporal split takes no time-basis tag.
+
+   **Applied (2026-11-23):** the text is appended to issue 6's `splits_comment`, with the share of repeated
+   configurations counted with the six coded categories of issue 3.
+
+2. **Move the test windows into the newest half of the cars?**
+
+   * **Problem:**
+     - The 9 windows of 320 cars walk back from the newest car while the first 1,000 cars always train, so the three
+       oldest windows train on 46.7%, 39.1% and 31.5% of the cars.
+     - A temporal task's windows each train on at least half of the data, as a model in use would[^2a].
+     - Keep the 9 windows of 320, keep only the 6 that meet the floor, or cut 9 smaller windows from the newest half?
+   * **Experiments:** today's check, untuned LightGBM (3 seeds) on the competition's file rebuilt as the definition
+     does: mean R² 0.570 over the 9 shipped windows, 0.567 over the 6 newest, 0.580 over 9 windows of 233 cars in the
+     newest half; the scores do not decide between them.
+   * **Consistency:** california_house_prices_2020 moved its floor from 25% to 50% of the rows on 2026-10-21 for the
+     same rule[^2b].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 9 windows of 320 cars (implemented) | train sides of 1,324 to 3,884 cars; 2,880 test cars | the most test cars | three windows train on less than half the cars |
+     | B | The 6 newest windows of 320 | train sides of 2,284 to 3,884 cars; 1,920 test cars | windows unchanged in size | fewer windows than the protocol gives a dataset of this size |
+     | C | 9 windows of 233 cars in the newest half | `min_train_fraction=0.5`; train sides of 2,107 to 3,971 cars; 2,097 test cars | meets the floor with the usual 9 windows | smaller test windows (233 cars) |
+
+   * **Recommendation:** C: it meets the floor and keeps nine windows of a size that still scores R² stably.
+     **Decision:** keep (A), the 6 newest (B), or 9 windows in the newest half (C)?
+
+   **Notes for the AI:** on C, `temporal = Temporal(on="time_index", splits=TemporalSplits(window=None, unit="rows",
+   n_windows=9, min_train_fraction=0.5))` as in california_house_prices_2020; rewrite `splits_comment` and the task
+   summary's `split` (the first 1,000 cars no longer frame the windows), re-run `dataset check`.
+
+   [^2a]: **SPLIT-14** (Must): a temporal task has at least 3 windows, and no window's train side holds less than 50%
+     of the data; a task that cannot meet it ships under the forced-split rule.
+   [^2b]: california_house_prices_2020: `min_train_fraction` 0.25 to 0.5 (CHANGELOG, 2026-10-21, Lennart's marks on
+     the cross-dataset items).
+
+   **Answer (AI, 2026-11-06):** the time framing does not change the recommendation (C); it adds three facts about
+   the windows, from today's check on the competition's file[^2c].
+
+   * **The ID is a production order:** the dropped code `X5` has 29 levels that form 31 runs in ID order, each a
+     block of about 200 cars of this file (about 400 IDs; the IDs in between went to Kaggle's test file). The blocks
+     look like production periods and back the reading of the ID as time.
+   * **A window cuts through a block, and that lends the test nothing:** a window of 320 cars spans about 1.6 blocks
+     (C's 233 cars about 1.2), so 5% to 60% of a window's test cars share their block with the newest training cars.
+     But the block carries about 1% of the bench time's variance (block means 96.1 to 102.6 s, against a spread of
+     12.4 s between cars), and two tests of one configuration differ no less across blocks than within one (7.4 s
+     against 7.9 s on average).
+   * **No option needs a gap:** the bench time is known when the car leaves the bench, minutes after its
+     configuration is fixed, so a model refit at a window's start knows every earlier car. Issue 1 asks how to write
+     this down.
+
+   [^2c]: **SPLIT-32** (Should): how the data was collected is information for the split. **SPLIT-10** (Should): a gap
+     of about the label's delay where labels arrive late; none where the collection covers what it guards against.
+
+   **Resolved (2026-11-11, Andrej):** C: `TemporalSplits(window=None, unit="rows", n_windows=9,
+   min_train_fraction=0.5)`: 9 windows of 233 cars in ID order, train sides 2,107 to 3,971 cars, 2,097 test cars.
+   `splits_comment` and the task summary's `split` rewritten (the first 1,000 cars no longer frame the windows); the
+   outlier note now places car 883 inside the oldest 2,107 cars; `dataset check` re-run.
+
+   **Superseded:** on 2026-11-11 Lennart kept the nine windows of 320 cars (issue 4); on 2026-11-19 Andrej set nine
+   windows of 233 cars, `TemporalSplits(window=233, unit="rows", n_windows=9)` (issue 6), the same windows as C here.
+   The definition ships issue 6's declaration.
+
+3. **Restore `X3`, `X6` and `X8`?**
+
+   * **Problem:**
+     - Of the eight coded categories the definition keeps `X0`, `X1` and `X2`, drops `X5` as a time marker and `X4` as
+       near constant, and drops `X3`, `X6` and `X8` "to be safe", as nothing is known about them and `X8` "seems" drawn
+       from all rows.
+     - Today's check finds no time pattern in the three and no gain or loss from them.
+     - Keep them dropped, or restore them?
+   * **Background:** columns leave for what they are (a leak, an identifier, a copy, the measurement that defines the
+     label), and a fix rests on a test, not an argument; what has no such reason stays, with a note[^3a].
+   * **Experiments:** today's check on the competition's file:
+     - Strength of the link between each code and the ID decile (Cramér's V, 0 none, 1 complete; shuffled IDs in
+       brackets): `X5` 0.928 (0.080), and each of its 24 levels with five or more cars lies within 20% of the ID range;
+       `X3` 0.176 (0.047), `X6` 0.055 (0.050), `X8` 0.086 (0.076), close to the kept `X0` to `X2` (0.108 to 0.138
+       against 0.078 to 0.106); no level of `X3`, `X6` or `X8` is confined to a part of the ID range, and each `X8`
+       level spans the IDs from the first to the last hundred.
+     - R² on the 9 shipped windows (untuned LightGBM, 3 seeds): adding `X3`, `X6` and `X8` changes it by +0.0015
+       (standard error 0.0039, better in 6 of 9); adding `X5` by -0.012 (standard error 0.006, better in 2 of 9), the
+       drop the definition makes for a reason.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep them dropped (implemented) | five coded categories dropped | no change | three columns of the car's configuration leave without a reason found |
+     | B | Restore `X3`, `X6` and `X8` | three categorical columns back; `X4` and `X5` stay dropped | the source's columns where no reason to drop them is found; the test is written into the notes | three anonymised codes nobody can explain |
+
+   * **Recommendation:** B: the check finds neither a time marker nor a leak in them. **Decision:** keep dropped (A)
+     or restore (B)?
+
+   **Notes for the AI:** on B, remove `X3`, `X6`, `X8` from the drop list in `_clean` (they are categorical through
+   `_feature_types`), replace the notes' bullet on them with the check's numbers, re-run `dataset check`.
+
+   [^3a]: **CLEAN-22** (Must): columns leave for what they are (a leak, an identifier, a copy, the measurement that
+     defines the label), never for how many there are. The curator's standing preference (Andrej): fix what lets a
+     model tell the outcome for reasons other than the task, tested, not argued; keep and document the rest.
+
+   **Resolved (2026-11-11, Andrej):** B: `X3`, `X6` and `X8` removed from the drop list in `_clean` (categorical
+   through `_feature_types`); only `X4`, `X5` and `X11` stay dropped. The notes' bullet on them now gives the check's
+   numbers; the task summary says six coded categories and no longer names "other coded categories of unknown meaning".
+   With the six codes, 29% of the cars repeat a configuration (336 configurations, was 43% and 377), 15% to 27% of a
+   window's test cars (was 29% to 38%; `splits_comment` updated). `dataset check` re-run.
+
+   **Applied (2026-11-23):** on issue 6's windows (the same nine windows of 233 cars as issue 2's C): `X3`, `X6` and
+   `X8` restored, the notes' bullet gives the check, the task summary says six coded categories.
+
+4. **Which windows of cars should the test use?**
 
    * **Problem:**
      - The nine test windows of 320 cars in ID order reach back to the 1,325th car, and the three oldest train on
@@ -220,7 +395,7 @@ duplicated option columns) are about the data, not the windows, and are not sett
    horizon CC lines. `dataset check`: 0 errors; its 2 warnings (constant and duplicated option columns) are about the
    data and not settled here (README not regenerated).
 
-2. **Keep `time_index`, a reconstructed order, as a model input?**
+5. **Keep `time_index`, a reconstructed order, as a model input?**
 
    * **Problem:**
      - `time_index` is the car's ID read as its place in the testing sequence; it orders the temporal split and is a model input by default.
@@ -243,11 +418,11 @@ duplicated option columns) are about the data, not the windows, and are not sett
 
    [^lk-2]: **LEAK-10** (Must): every feature has to have existed, and be held by the actor, at the prediction time of its row; a time column that only orders the split is declared no input.
 
-3. **Train floor: keep the windows under half the data as the curator's exception, or drop them?**
+6. **Train floor: keep the windows under half the data as the curator's exception, or drop them?**
 
    * **Problem:**
      - The three oldest windows train on 46.7%, 39.1% and 31.5% of the cars, beside six on 54.3% to 92.4%.
-     - Since 2026-11-19, every window trains on at least half the data, and a window under half is the curator's exception for the dataset, down to 30%[^split14]; the sign-off (Lennart, 2026-11-11, review issue 1, A) was given under the earlier rule, which admitted such windows beside two at half or more.
+     - Since 2026-11-19, every window trains on at least half the data, and a window under half is the curator's exception for the dataset, down to 30%[^split14]; the sign-off (Lennart, 2026-11-11, review issue 4, A) was given under the earlier rule, which admitted such windows beside two at half or more.
      - The definition has 9 windows; the target an IID split would get[^split33] for 4,204 rows is 9; without the windows under half it keeps 6.
    * **Options:**
 
@@ -287,7 +462,7 @@ duplicated option columns) are about the data, not the windows, and are not sett
      | B: 320 cars, drop the three (the issue's B) | 4,581-8,417 in six runs | 6 x 320 = 1,920 | 54.3% to 92.4% |
      | C: 233 cars | 4,230-8,417 in nine runs (oldest 4,230-4,699) | 9 x 233 = 2,097 | 50.1%, 55.7%, 61.2%, 66.8%, 72.3%, 77.8%, 83.4%, 88.9%, 94.5% |
 
-     - C is issue 1's B of 2026-11-11, recounted on today's definition (same windows). 280 cars would give seven windows above half (53.4% to 93.3%).
+     - C is issue 4's B of 2026-11-11, recounted on today's definition (same windows). 280 cars would give seven windows above half (53.4% to 93.3%).
 
    **Recommendation:** C: no source ties the length, and 233 cars give the nine windows a task of this size aims at, all above half, at 783 fewer test cars than today. **Decision:** A, B or C?
 

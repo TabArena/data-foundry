@@ -329,8 +329,11 @@ objects picked for measurement and the cases without a marker were added on the 
 
 A feature that is the output of a supervised transform fit on the whole dataset (a discriminant-analysis score, a
 target or mean encoding, a model's own prediction) bakes label information into every row and cannot be recomputed
-per split: `Data Quality Issue`, `No` (LEAK-27, [leak_checks.md](leak_checks.md)). `yeast` ships a "Score of
-discriminant analysis of the amino acid content of vacuolar and extracellular proteins", fit on the full dataset.
+per split: such a feature is dropped and the task kept when the other columns still make a real one; `Data Quality
+Issue`, `No` when the transform runs through the columns the task needs or the task rests on it (LEAK-27,
+[leak_checks.md](leak_checks.md)). `yeast` ships a "Score of discriminant analysis of the amino acid content of
+vacuolar and extracellular proteins", fit on the full dataset (`No`, to be re-checked); ecoli_proteins dropped `aac`,
+the same kind of score, and kept its five sequence scores.
 
 An unsupervised transform over all rows (z-scores, min-max, a quantile transform, RMA, PCA, batch correction) is a
 weak leak and no reason for `No` on its own, unless a strong leak is suspected (Lennart, 2026-10-19): rebuild or note
@@ -484,7 +487,8 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SEL-18 | first_order_theorem_proving | `No` on `Outdated` alone (2026-07-27), while ASlib siblings ship; whether it has other reasons is its open consistency check of 2026-10-19 | proposed |
 | EV-4 | lucas_topsoil | JRC's terms forbid redistribution; the record is still triaged on what the survey measures | applied |
 | EV-5 | us_accidents | its published "78% accuracy" settled nothing | applied |
-| LEAK-27 ([leak_checks.md](leak_checks.md)) | yeast | a discriminant-analysis score fit on the full dataset: `Data Quality Issue`, `No` | applied |
+| LEAK-27 ([leak_checks.md](leak_checks.md)) | yeast | a discriminant-analysis score fit on the full dataset: `Data Quality Issue`, `No` (under the earlier wording; to be re-checked) | applied |
+| LEAK-27 ([leak_checks.md](leak_checks.md)) | ecoli_proteins | `aac`, a discriminant score fit on the authors' earlier database: dropped, the task on the five sequence scores kept | applied |
 | LEAK-30 ([leak_checks.md](leak_checks.md)), PROV-13 | coad_colon_adenocarcinoma | values scaled over all rows: retired for a rebuild from the GDC | applied |
 
 The cases of the former SEL-17 are under PROV-1 and PROV-2 in [provenance.md](provenance.md), Cases.

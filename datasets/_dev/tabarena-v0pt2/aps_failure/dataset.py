@@ -161,6 +161,7 @@ class ApsFailure(AbstractCuratedDataset):
             row 1.145), 5.1% with one row per copied read-out and random folds (1.530), 0.05% split by truck (1.625;
             1.539 with each truck counted once).
     """
+    split_leaf = "L-FORCED.groups"
     time_basis = TimeBasis(
         "ForcedGroupedFromTemporal",
         """

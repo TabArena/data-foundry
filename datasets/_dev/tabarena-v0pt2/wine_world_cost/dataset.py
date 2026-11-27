@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary, TimeBasis
 
 # The producer of each wine, the group of the split. The data have no producer column: the rule reads it from the
 # title, and the two tables below fix what the rule gets wrong. Every one of the 1,279 titles was checked by hand
@@ -502,10 +502,16 @@ class WineWorldCost(AbstractCuratedDataset):
           Alamos and Catena). The shop's own-label ranges are one group each, although some of their copy names the
           maker (Definition Fleurie by Pardon et Fils): the shop prices the range, and the maker is not named for all.
           615 producers, 1 to 35 wines (Definition), 250 with more than one wine.
-        - Time basis: Snapshot: one scrape of a UK online wine shop's range (most likely Majestic Wine) in 2023; the
-          shelf prices, sales copy and catalogue attributes of that moment; the vintage is a wine attribute, not a
-          time. Not tested: prices after 2023.
     """
+    split_leaf = "L-FILL.whole"
+    time_basis = TimeBasis(
+        "RetrospectiveFillIn",
+        """
+        one scrape of a UK online wine shop's range (most likely Majestic Wine) in 2023; the
+        shelf prices, sales copy and catalogue attributes of that moment; the vintage is a wine attribute, not a
+        time. Not tested: prices after 2023.
+        """,
+    )
 
     # Task
     target = "Price"

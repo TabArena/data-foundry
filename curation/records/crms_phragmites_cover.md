@@ -64,8 +64,7 @@ These are per dataset judgement calls and if a dataset is useful for a predictiv
 collected for something else, then this is fine"), as SEL-2 already reads the scope rules: this record is judged on its
 own use case. The verdict and priority stay.
 
-CC (2026-10-30, Andrej): `Yes`, priority 4 (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening
-review page).
+CC (2026-10-30, Andrej): `Yes`, priority 4 (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening).
 
 Louisiana's Coastwide Reference Monitoring System (CPRA with USGS): vegetation of 4 m2 marsh plots. Downloaded the
 full export on 2026-10-19 (10 MB zip, 250 MB long CSV, one row per species per plot visit): 594,288 rows, 75,418
@@ -82,9 +81,9 @@ plot) carry no cover. Workbook pushback: the table is downloadable, and no zero-
 
 **Assessment (AI, 2026-11-01):** added as `datasets/_dev/tabarena-v0pt2/crms_phragmites_cover/` by /add-dataset with the full review panel; the open questions are in its Review. Recommend `No` (`Time-series (Forecasting)`) under TP-10 as written, after first testing CRMS site hydrology as inputs, unless you amend TP-10: against forecasts fitted on the station series the random forest is only 1.0-1.1% better (its issue 1). Changes after the panel: soil lagged three seasons and joined per variable, a dense-stand flag and estimate, the use case reworded to next-season cover forecasting. Corrections to the screening above: absence from habitat inside the range, not "mostly at sites outside its range"; 4,488 rows, not 4,476. Two CIMS source files are added to the links. The marker `No Good Target / Scientific Discovery` stays until your mark (decided with the other four `Yes` records). Priority 2: gap 0, use case 0, source + (CPRA), shape +, risk - (recommendation not to ship).
 
-CC (2026-11-02, Andrej): TP-10 stays as written (issue 1, (b)): the model must clearly beat the forecasts built from each station's series, fitted ones included, and the random forest comes within 1.1% of a three-number shrinkage of the last value (0.9 standard errors over the windows), so the task is forecasting: `No` (`Time-series (Forecasting)`). The folder leaves the working copy with the dataset's verdict on the review page.
+CC (2026-11-02, Andrej): TP-10 stays as written (issue 1, (b)): the model must clearly beat the forecasts built from each station's series, fitted ones included, and the random forest comes within 1.1% of a three-number shrinkage of the last value (0.9 standard errors over the windows), so the task is forecasting: `No` (`Time-series (Forecasting)`). The folder leaves the working copy with the dataset's verdict.
 
-CC (2026-11-02, Andrej): the update is correct (review page verdict): `No` (`Time-series (Forecasting)`) under TP-10 as written; the record takes the definition's `year` (2026, the CIMS download the definition pins) and `required_split` (`Temporal (NON-IID)`). The paper: https://esajournals.onlinelibrary.wiley.com/doi/10.1002/eap.70246.
+CC (2026-11-02, Andrej): the update is correct: `No` (`Time-series (Forecasting)`) under TP-10 as written; the record takes the definition's `year` (2026, the CIMS download the definition pins) and `required_split` (`Temporal (NON-IID)`). The paper: https://esajournals.onlinelibrary.wiley.com/doi/10.1002/eap.70246.
 
 **Assessment (AI, 2026-11-02):** the paper's page still answers 403 (third attempt), so its claims stay marked as read from the USGS abstract only; with the `No` the question is moot. The folder leaves the working copy (last committed in 902011b3 and before), `v2_path` cleared, the claim released.
 

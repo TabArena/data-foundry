@@ -177,6 +177,7 @@ class Pkdd15TaxiTripTimePredictionIi1m(AbstractCuratedDataset):
         target_transform="log1p",
     )
 
+    split_leaf = "L-ORDER.windows"
     # Splits
     temporal = Temporal(
         on="start_time",

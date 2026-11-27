@@ -64,7 +64,7 @@ window and the code is from 2002-2004.
   window, files overlapping across releases).
 
 CC (2026-10-30, Andrej): `TBD -> Yes`, priority 3 (the AI screening had `TBD -> 2nd Tier`, priority 3; zero-inflated
-screening review page).
+screening).
 
 Eclipse Bug Data of Zimmermann, Premraj and Zeller (Saarland University, release 2.0a of 2007-12-28): for each file
 and package of Eclipse 2.0, 2.1 and 3.0, the non-trivial defects reported in the six months before (`pre`) and after

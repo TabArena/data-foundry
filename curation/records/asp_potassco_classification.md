@@ -13,10 +13,14 @@ suggestion: 'Yes'
 priority: 4
 tags:
 - Non-IID (Grouped)
+- 'Samples: No Time Dimension'
+- 'Entities: Recur'
+- Experimental Results
 collections:
 - TabArena Reject
 original_source: ASlib
 year: '2014'
+collection_period: Unknown
 domain: technology & internet
 required_split:
 - Grouped (NON-IID)
@@ -49,19 +53,19 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: stand_in log_loss — stands in for PAR10 (penalized average runtime, timeouts counted as 10 x cutoff) of the selected algorithm (ASlib): ASlib scores PAR10 of the selected configuration, which needs the 11 runtimes per instance; they are not shipped (only the fastest configuration's label), and instances no configuration solved are dropped. Log loss on the fastest-configuration label is the closest computable score. (Bischl et al. 2016, ASlib: A benchmark library for algorithm selection, Artificial Intelligence 237; https://github.com/coseal/aslib_data/tree/master/ASP-POTASSCO (cutoff 600 s)).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship; a valid ASlib algorithm-selection task with a modest real signal, but score the chosen configuration's runtime (the source's PAR10, inputs published) instead of log loss on a near-tie-ridden fastest label. Priority 4: gap 1, use case 0, source 1, shape 1, risk -0.
+**Assessment (AI, 2026-11-04):** reviewed without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship; a valid ASlib algorithm-selection task with a modest real signal, but score the chosen configuration's runtime (the source's PAR10, inputs published) instead of log loss on a near-tie-ridden fastest label. Priority 4: gap 1, use case 0, source 1, shape 1, risk -0.
 
-CC (2026-11-04, Andrej): the task is now runtime regression scored by PAR10 (option B of the review page), as sat11_hand_algo_runtime.
+CC (2026-11-04, Andrej): the task is now runtime regression scored by PAR10 (Review issue 1, option B), as sat11_hand_algo_runtime.
 - What the task is: one row per instance and clasp configuration (1,212 instances x 11 = 13,332 runs); the model predicts each run's time (log seconds, a run stopped at the 600 s limit counts as 600); per instance the configuration predicted fastest is picked, and the score is PAR10, the mean time of the picks with a timeout counted as 6,000 s. Problem classes are still held out.
 - Why: a selector in use learns from the full table of runs, every configuration on every training instance, timeouts included; the fastest-configuration label hid that table from the models. The user loses time mostly to timeouts (96% of the single best configuration's PAR10 comes from them), and log loss scored a pick 0.05 s slower as wrong as a timeout.
 - The bar: always running the configuration most often fastest in training gives 611 s, the best possible pick per instance 21 s (30 splits of the earlier definition); a model has to close part of that gap on problem classes it has not seen.
-- ASlib's feature costs are left out (the same whichever configuration is picked). To do: rename the dataset (it is no longer a classification) once the review page is done; its marks are stored under this name.
+- ASlib's feature costs are left out (the same whichever configuration is picked). To do: rename the dataset (it is no longer a classification).
 
 **Assessment (AI, 2026-11-04):** implemented B in dataset.py: target `runtime` (log), `algorithm` categorical, anonymised `instance_id` a scoring column (role group) of `par_k` (cutoff 600, k 10, `Metric.source`), Grouping on `task_id`; 1,963 timeouts (15% of runs, on 38% of instances) kept at 600 s. `dataset check`: 0 errors, 1 warning (the two constant columns `Removed_Nogoods-1/-2`, already known); par_k computable on every split. The split protocol now gives 3 x 3 splits (13,332 rows) instead of 10 x 3, 32 problem classes per test fold. On the 9 new splits, PAR10 in seconds: untuned LightGBM 699, always the configuration most often fastest in training 754, single best by training PAR10 1,045, best possible 22; LightGBM beats the most-often-fastest rule on 6 of 9 splits, and splits range from 124 to 1,281 s, set by a few problem classes. Task probes (R^2 per row, 5 of 9 splits): random forest 0.57, LightGBM 0.56, linear -0.44, best single feature 0.17, no flags. Leak probes: no single feature above 0.28; 2.0% of test rows have an exact feature copy in train (the instances with repeated features). Group probes: IID R^2 0.90 against grouped 0.53, so the class split matters.
 
 CC (2026-11-05, Andrej): the task summary now says 32 of the 96 problem classes per test fold (it said 27 to 36, a count from the classification splits).
 
-CC (2026-11-06, Andrej): the target stays on the log scale (review page issue 4), and a timed-out run stays at the recorded 600 s (issue 3): the target is the runtime as ASlib records it and how to treat a censored run is left to the models, unless a change clearly benefits all models equally, which counting timeouts at the 6,000 s PAR10 charge does not here (within noise, mixed across models). The scoring stays ASlib's PAR10. Metric and split checked.
+CC (2026-11-06, Andrej): the target stays on the log scale (Review issue 4), and a timed-out run stays at the recorded 600 s (issue 3): the target is the runtime as ASlib records it and how to treat a censored run is left to the models, unless a change clearly benefits all models equally, which counting timeouts at the 6,000 s PAR10 charge does not here (within noise, mixed across models). The scoring stays ASlib's PAR10. Metric and split checked.
 
 CC (2026-11-12, Lennart): the split count in scored units (the review's issue 2, rule SPLIT-33) moves out of this
 PR into its own, to be decided with the other grouped datasets and reopened there; it is removed from this record
@@ -72,6 +76,19 @@ for now. Until then the protocol counts the 13,332 rows: 3 x 3 splits.
 CC (2026-11-08, Lennart): issue 5, B: scored per instance, with a note. Each instance is a decision of the selector (MET-17); the notes say that the largest 10% of the 96 problem classes hold 51% of the instances and that counting each class once ranks 8 untuned models at Kendall tau 0.86 per split.
 
 CC (2026-11-08, Lennart): the declared metric (log_loss) is checked.
+
+CC (2026-11-12, Andrej): kept after the value study (Review issues 6 A, 7 A); verdict ship, the split and the metric as declared. Measured on the 10 x 3 problem-class splits of that date, which the problem-family split of 2026-11-18 replaced.
+- Kept (issue 6): on those splits tuned selectors beat the rule "always run the configuration most often fastest in training" by 180 to 200 s of PAR10 (880 s against 679 to 698 s, about 4 standard errors), and LightGBM fitted per configuration beats the rule on all 11 split sets tried; tuned methods spread from 679 to 884 s.
+- Form kept (issue 7): one row per run stays. Against classification of the fastest configuration the picks are mixed by learner (the random forest picks better on the table, TabPFN as classification), and only the table gives a method the runtimes.
+- Notes (issue 8): Andrej chose to replace the Task note's baseline numbers (611 s and 646 s, from the classification definition's splits) with the problem-class splits' numbers (rule 880 s, single best solver 996 s, best pick 22 s); not applied, as those splits were replaced on 2026-11-18. Open until re-measured on the family splits.
+
+CC (2026-11-18, Andrej): time basis `UnseenGroup` in place of `Timeless` (Review issue 9, B): the use case picks a configuration for a kind of problem not seen before, so whole problem classes (`task_id`, 96 classes) are held out and each instance's 11 runs stay together. The split is unchanged (grouped 3-fold CV over `task_id`).
+
+CC (2026-11-18, Andrej): Review issue 10, A, as implemented: Grouped 3-fold CV, over whole problem classes (`task_id`, 96 classes of 1 to 134 instances; 7,634-9,658 train / 3,674-5,698 test runs).
+
+CC (2026-11-18, Andrej): "Do both by family" (blind split walk, cross-dataset item on the two algorithm-selection sets, b): the split holds out whole problem families instead of class folders: `problem_family` replaces `task_id`, the class folder with the folders of one generator merged (the 15 problems of the 2007 competition stored twice, HamiltonClumpy's five folders, RLP-150/200, plain and verbose searchTest): 96 folders, 75 families, 25 per test fold, 10 x 3. Why: grouped on the folders, 19% of the test instances (4-45% per fold) had their generator in training. The `UnseenGroup` tag and the grouped 3-fold CV of review issues 9 and 10 stay, now over families. Not built yet.
+
+CC (2026-11-23, Andrej): Review issue 2, B: 10 x 3 splits, counted in the instances PAR10 scores. The split count in scored units (SPLIT-33) is on main (#95), and the protocol reaches it from the data: one runtime per run, so the families do not count; PAR10 scores per instance; each instance's 11 runs sit inside one family. The 1,212 instances leave 694-878 on the train side, below 2,500, so 10 x 3 (the 13,332 runs would give 3 x 3, the 75 families 20 x 3). Supersedes the row count of the CC of 2026-11-12. Not built yet.
 
 ## Review
 
@@ -92,8 +109,13 @@ another label. Weighed: a documented algorithm-selection benchmark and a strict 
 class shares (-), a label that scores a pick 0.05 s slower as wrong as a timeout (-), which issue 1 can fix.
 
 **Main points:** Resolved: runtime regression scored by PAR10 (1), timeouts at the recorded 600 s (3), the log
-scale (4); scored per instance, with a note on the large problem classes (5, Lennart, 2026-11-08). The split count
-(2) is open again, settled with rule SPLIT-33. The rename (no longer `_classification`) waits until the page is done.
+scale (4); scored per instance, with a note on the large problem classes (5, Lennart, 2026-11-08). Splits in scored
+units, 10 x 3, counted in instances (2, 2026-11-06; confirmed under SPLIT-33 on 2026-11-23). Kept after the value study, since tuned selectors beat
+the "most often fastest" rule on every split set tried (6, 2026-11-12), and the table's form kept (7); the notes'
+baseline numbers (8) stay open: the numbers chosen on 2026-11-12 were measured on the problem-class splits and need
+re-measuring on the family splits. Tagged `UnseenGroup` (9); the class-grouped split kept over ASlib's instance
+folds (10), then grouped by problem family, 75 families, 10 x 3 (2026-11-18, not built). The rename (no longer
+`_classification`) is still to do.
 
 **Record judgment:** valid. An algorithm-selection scenario of the ASlib library, built from claspfolio 2's Potassco
 set; the runs and features are the library's own files, so the source is strong. The curator kept it twice after the
@@ -215,7 +237,7 @@ call, and its reason ("the 11 runtimes are not shipped") describes our choice, n
    ASlib adds feature costs (`feature_costs.arff`) to the selected runtime; they are the same whichever configuration
    is picked, so leave them out and say so in the metric's definition. `metric` becomes `Metric.source`, `fit_reason`
    drops the near-tie sentence, the record's `problem_type` goes back to Regression, and the name ends in
-   `_classification`: a rename waits until the review page is done (its marks are stored under the name). Re-run
+   `_classification`: a rename is left to do. Re-run
    `dataset check` and the task probes.
 
    **Andrej (2026-11-04, discuss):** We go with B. Also add an explanation to the record.
@@ -225,15 +247,15 @@ call, and its reason ("the 11 runtimes are not shipped") describes our choice, n
    the anonymised `instance_id` a scoring column; PAR10 (`par_k`, cutoff 600, k 10) of the configuration predicted
    fastest per instance, the source's metric; feature costs left out and said so; problem classes still held out. The
    record has a CC line explaining the task and why, `problem_type` Regression. The split protocol now gives 3 x 3
-   splits (13,332 rows) instead of 10 x 3. The rename (no longer `_classification`) waits until the review page is
-   done, as a To do in the record and the curation notes.
+   splits (13,332 rows) instead of 10 x 3. The rename (no longer `_classification`) is left as a To do in the record
+   and the curation notes.
 
    [^1c]: **MET-1** (Must): the declared metric scores the decision of the use case, at the unit the actor acts on.
 
 2. **Keep 3 x 3 splits now that the table has one row per run, or go back to 10 x 3?**
 
-   Deferred on 2026-11-12, when Lennart moved the split count in scored units (rule SPLIT-33) out of #79; open again
-   in the PR on that rule, and settled with it.
+   Deferred on 2026-11-12, when Lennart moved the split count in scored units (rule SPLIT-33) out of #79 into its own
+   PR; the rule landed on main with #95, so Andrej's decision of 2026-11-06 (B) applies.
 
    * **Problem:**
      - The table has one row per instance and configuration (13,332 rows for 1,212 instances), and the protocol on
@@ -250,6 +272,17 @@ call, and its reason ("the 11 runtimes are not shipped") describes our choice, n
 
    * **Recommendation:** B, with the rule; Andrej chose it on 2026-11-06, before the count left #79. **Decision:** A
      or B?
+
+   **Andrej (2026-11-06, change):** Reply (B): Count the scored groups everywhere
+
+   **Resolved (2026-11-06, Andrej):** B everywhere: the split protocol counts the units the metric scores (SPLIT-33).
+   Deferred with the rule on 2026-11-12 and in effect since SPLIT-33 landed (#95): the 1,212 instances PAR10 scores
+   give 10 x 3 splits.
+
+   **Resolved (2026-11-23, Andrej):** B, 10 x 3, counted in instances. SPLIT-33 is on main (#95) and decides it from
+   the data: the runtime is per run, so the families do not count; PAR10 scores per instance, and each instance's runs
+   sit inside one of the 75 families, so the instances count. 1,212 instances leave 694-878 on the train side, below
+   2,500. Not built yet.
 
 3. **Count a timed-out run as the 600 s limit in the target, or as the 6,000 s that PAR10 charges for it?**
 
@@ -524,9 +557,6 @@ call, and its reason ("the 11 runtimes are not shipped") describes our choice, n
      by case. Its exception, pricing_game_2017_french_mtpl: the claim cost ships in euros because its metric, the mean
      Tweedie deviance, scores the predicted cost's level, where a Gini scores only the order (2026-11-03, Andrej).
 
-   **Andrej (2026-11-06, discuss):** Why does a timeout count as 600s and why log scale? I feel like we need to
-   discuss the options here separately. Open a new discussion point for that.
-
    **Resolved (2026-11-06, Andrej):** the log scale kept (A), in this dataset and in sat11_hand_algo_runtime; the
    target ships on the log scale and PAR10 scores the pick after the inverse.
 
@@ -595,6 +625,221 @@ call, and its reason ("the 11 runtimes are not shipped") describes our choice, n
    **Resolved (2026-11-08, Lennart):** B, per instance with a note. The score is unchanged; a dated bullet in the
    notes says that each instance is a decision of the selector, that the largest 10% of the problem classes hold 51%
    of the instances, and that counting each class once ranks 8 untuned models at Kendall tau 0.86 per split.
+
+6. **Keep the dataset: do the models beat a simple rule on problem classes not seen in training?**
+
+   Measured on the 10 x 3 splits over the 96 problem-class folders of 2026-11-12 ("the shipped splits" in issues 6 to
+   8); since 2026-11-18 the split holds out the 75 problem families (CC of 2026-11-18), on which these numbers were
+   not re-measured.
+
+   * **Problem:**
+     - Tuned selectors beat the rule "always run the configuration most often fastest in training" by 180 to 200 s on
+       the shipped splits (about 4 standard errors, on 22 to 25 of 30 splits), and a LightGBM per configuration beats
+       it on all 11 split sets tried.
+     - Issue 1's answer left this open: on the 30 splits of the classification definition no untuned model reliably
+       beat that rule (611 s), and whether the dataset stays could come back to you.
+     - The rule is a stronger bar than ASlib's usual baseline, the single best solver (the configuration with the
+       lowest mean PAR10 in training): 880 against 996 s on the shipped splits.
+   * **Background:** both rules run one configuration on every instance and need no features. On a split by problem
+     class the single best solver follows the timeouts of a few training classes, which the test classes do not share,
+     so it times out more (16% of the test instances against 14%). Under a random split of instances both pick the
+     same configuration (534 s, issue 3).
+   * **Experiments:** PAR10 in seconds on the 30 shipped splits, lower is better. Each method's hyperparameters are
+     picked per split from a small grid by an inner 3-fold split by problem class on the training side; seeded models
+     are fitted with 3 seeds. Classification fits one row per instance with the fastest configuration as label;
+     regression fits the log runtime with a timeout at 600 s, either on the shipped table (one model, the
+     configuration a feature) or with one model per configuration. Difference to the rule paired by split.
+
+     | Method | Perspective | PAR10 | Against the rule (SE) | Splits better than the rule |
+     |---|---|---|---|---|
+     | Random forest, one per configuration | Regression | 679 | -201 (54) | 24 of 30 |
+     | LightGBM, one per configuration | Regression | 688 | -192 (46) | 25 of 30 |
+     | LightGBM, weighted by the cost of a wrong pick | Classification | 698 | -182 (53) | 22 of 30 |
+     | Random forest, weighted by the cost of a wrong pick | Classification | 699 | -181 (50) | 25 of 30 |
+     | Random forest on the shipped table | Regression | 714 | -166 (43) | 24 of 30 |
+     | TabPFN 3.5, one per configuration | Regression | 715 | -165 (48) | 24 of 30 |
+     | Random forests per pair of configurations, weighted votes (AutoFolio's default) | Classification | 718 | -162 (49) | 21 of 30 |
+     | k-nearest neighbours | Classification | 732 | -147 (49) | 20 of 30 |
+     | TabPFN 3.5 | Classification | 754 | -126 (39) | 25 of 30 |
+     | LightGBM on the shipped table | Regression | 787 | -93 (35) | 21 of 30 |
+     | LightGBM | Classification | 790 | -90 (48) | 21 of 30 |
+     | TabPFN 3.5 on the shipped table | Regression | 838 | -42 (42) | 20 of 30 |
+     | Ridge, one per configuration | Regression | 863 | -17 (56) | 16 of 30 |
+     | Logistic regression | Classification | 884 | +5 (47) | 20 of 30 |
+     | Rule: the configuration most often fastest in training | none | 880 | | |
+     | ASlib's single best solver | none | 996 | +117 (39) | 1 of 30 |
+     | Best possible pick per instance | none | 22 | | |
+
+     The same comparison on 10 further 10 x 3 split sets drawn like the shipped one (problem classes held out), with
+     fixed hyperparameters and one seed; the rule costs 673 to 788 s on them and 880 s on the shipped set:
+
+     | Method (fixed settings) | Mean difference to the rule over the 11 sets | Sets where it beats the rule |
+     |---|---|---|
+     | LightGBM, one per configuration | -143 | 11 of 11 |
+     | Random forest, one per configuration | -97 | 10 of 11 |
+     | k-nearest neighbours, classification | -79 | 11 of 11 |
+     | Random forests per pair of configurations | -41 | 7 of 11 |
+     | Random forest on the shipped table | -29 | 8 of 11 |
+     | Random forest, cost-weighted classification | -27 | 7 of 11 |
+     | LightGBM, cost-weighted classification | -9 | 6 of 11 |
+     | Random forest, classification | +11 | 5 of 11 |
+     | LightGBM on the shipped table | +13 | 6 of 11 |
+     | LightGBM, classification | +32 | 3 of 11 |
+     | Ridge, one per configuration | +75 | 1 of 11 |
+
+     - The signal is real and not one class: without the two classes that move the comparison most (89 and 57
+       instances), the best selectors still beat the rule by 115 to 133 s per test instance.
+     - The shipped split set is the hardest of the 11 for the rule. One class of 89 instances is solved fastest by
+       one configuration on 85 of them in about 10 s, while most others time out there. When that class is held out,
+       the rule loses those 85 wins and switches to a configuration that times out on it: in all 10 such folds of the
+       shipped set, in 67 of 100 elsewhere. The shipped splits therefore show a margin over the rule about 100 s
+       larger than a typical draw, for every method alike.
+     - Computing the features costs 1.4 s per instance on average (ASlib's `feature_costs.arff`), which the rule saves
+       and the models spend; it changes none of the comparisons.
+   * **Consistency:** the task probes kept the dataset twice on log loss (2026-10-06, 2026-10-12). Tuned methods
+     spread from 679 to 884 s here[^6a].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep (implemented) | as now | tuned methods spread and the best beat the rule on every split set tried | the margin over the rule depends on the split set; LightGBM on the shipped table only matches it on a typical draw (+13 s, 6 of 11 sets), and TabPFN on the shipped table beats it by 42 s (SE 42) even on the shipped splits (issue 7) |
+     | B | Retire as `No Signal` | `No (Retired)` | none found | the rule is beaten by about 4 standard errors on the shipped splits |
+
+   * **Recommendation:** A: the methods spread, and the best of them beat even the stronger rule on every split set.
+     **Decision:** keep (A) or retire (B)?
+
+   **Notes for the AI:** none on A.
+
+   [^6a]: **TP-3** (Must): if tuned methods spread, keep the dataset.
+
+   **Resolved (2026-11-12, Andrej):** kept (A): the tuned methods spread, and the best beat the "most often fastest"
+   rule on every split set tried. Nothing in the definition changes; the record has a CC line.
+
+7. **With the tuned results, does the table's form (one row per run, issue 1 B) still stand?**
+
+   * **Problem:**
+     - Issue 1 chose runtime regression on one row per instance and configuration over classification of the fastest
+       configuration, on untuned picks that favoured neither.
+     - Tuned, the best selectors are ones a benchmark method does not build by itself on either form: one model per
+       configuration, or a classifier weighted by the cost of a wrong pick; a benchmark method fits the shipped table
+       as one model with the configuration as a feature.
+     - Should the form change?
+   * **Experiments:** the tuned runs of issue 6, PAR10 in seconds on the shipped splits. "Shipped table" is what a
+     benchmark method fits now; "classification" is what it would fit on issue 1's option C (one row per instance, the
+     runtimes in scoring columns that it never sees).
+
+     | Learner | Shipped table (regression, one model) | Classification | One model per configuration | Classification weighted by the cost of a wrong pick |
+     |---|---|---|---|---|
+     | LightGBM | 787 | 790 | 688 | 698 |
+     | Random forest | 714 | 807 | 679 | 699 |
+     | Extra trees | 807 | 782 | 765 | 762 |
+     | TabPFN 3.5 | 838 | 754 | 715 | not run (no sample weights) |
+     | Linear | not run (picks one configuration for every instance) | 884 | 863 | 776 |
+
+     - Between the two forms a benchmark method would fit, the evidence is mixed: the random forest picks better on
+       the shipped table (by 93 s), TabPFN as classification (by 84 s), LightGBM and extra trees about the same.
+     - Both better selectors need the runtimes: one model per configuration is open to a method on the shipped table
+       (the configuration is a column), and a cost weight is open to neither form, since a method on option C never
+       sees the runtimes.
+     - Per learner, one model per configuration picks better than one model on the shipped table (by 35 to 123 s):
+       the shipped form tests whether a method learns that the features act differently per configuration.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | One row per run (implemented) | as issue 1 B | a method sees every run, and can fit per configuration | fitted as one model, LightGBM only matches the rule on a typical split set and TabPFN beats it by 42 s (SE 42) on the shipped one (issue 6) |
+     | B | Classification, runtimes as scoring columns | issue 1 C | TabPFN picks better than on the shipped table | the random forest picks worse; methods never see a runtime or a timeout; a new metric |
+
+   * **Recommendation:** A: no form is better for every learner, and only the shipped table gives a method what the
+     best selectors use. **Decision:** keep the form (A) or go back to classification (B)?
+
+   **Notes for the AI:** none on A.
+
+   **Resolved (2026-11-12, Andrej):** the form stays (A), one row per instance and configuration, scored by PAR10;
+   issue 1's decision stands. Nothing in the definition changes; the record has a CC line.
+
+8. **Update the notes' baseline numbers to the shipped splits?**
+
+   * **Problem:**
+     - The Task bullet of `curation_comments` gives the numbers of the classification definition's splits: the rule
+       at 611 s and untuned LightGBM at 646 s, which read alone say that a model loses to the rule.
+     - On the shipped splits the rule costs 880 s, the best tuned selector 679 s and LightGBM fitted on the table as
+       shipped 787 s (issue 6).
+     - Keep the old sentence, or give the shipped splits' numbers?
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Leave the sentence (implemented) | as now | none found | numbers of splits the dataset no longer ships, which suggest no model beats the rule |
+     | B | Replace it with the shipped-split numbers | the sentence names both rules, the best pick and the range of tuned selectors on the shipped splits, and that the rule's cost varies with the split set | a user gets the bar to beat on the splits they use | none found |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   **Notes for the AI:** on B, the Task bullet of `curation_comments` gets the bar to beat on the shipped splits: both
+   rules, the best pick per instance and the tuned selectors; `dataset check`.
+
+   **Andrej (2026-11-12, change):** Option B: Replace it with the shipped-split numbers.
+
+   **Note (AI, 2026-11-23):** not applied. The numbers of option B (the rule 880 s, ASlib's single best solver 996 s,
+   the best pick 22 s, a tuned random forest per configuration 679 s, tuned LightGBM on the table 787 s) were measured
+   on the problem-class splits that the problem-family split of 2026-11-18 replaced (CC of that date), so they are not the
+   shipped splits' numbers any more. The Task bullet still gives the classification definition's 611 s and 646 s.
+   Open until the baselines are re-measured on the 75-family splits.
+
+9. **Time basis: tag the class-grouped folds `UnseenGroup` instead of `Timeless`?**
+
+   * **Problem:**
+     - The tree's leaf for repeated measurements says that where the use case holds out a wider group (a problem class), the split groups on it and is tagged `UnseenGroup`; the definition groups on the problem class `task_id` but is tagged `Timeless`.
+     - The use case asks for a configuration 'for a kind of problem not seen before', and the folds hold out whole classes (96 classes of 1 to 134 instances).
+     - Only the tag and the opening of the `Time basis:` line differ; the grouping and the folds stay.
+   * **Background:** Runs of a designed benchmark, 11 per instance, with no arrival order. The stated use is a kind of problem not seen before, so whole problem classes (task_id) are held out with all their instances and runs. Confidence of the blind walk: high.
+   * **Walk:** the questions as answered without the current split[^tree]:
+     - Is there an order to how samples arrive in the use case? (use case): no. Evidence: Benchmark runs of 11 clasp configurations on fixed instances; no run dates (dossier collection_period: 'no run dates are given'). Algorithm selection treats each instance as a property-of-item query.
+     - Was the experiment repeated, producing several rows for the same measurement? (data): yes. Evidence: Each instance has 11 rows, one per configuration (13,332 = 1,212 x 11; instance_id is a scoring column used by the metric to pick per instance).
+     - Does the model meet new items, or further measurements of items it has measured? (use case): new items, and a wider group: a new problem class. Evidence: Use case: 'predicts the runtime of each configuration on a new problem instance ... here for a kind of problem not seen before'. The problem class (task_id, 96 classes from the instance path) is computed from the data, so group on it and tag UnseenGroup; instances nest in classes, so each instance's 11 runs stay together.
+   * **What the blind dossier lacked, and what it changes:** none. The definition ships whole problem classes held out (task_id, 96 classes of 1 to 134 instances, 32 per test fold), the same leaf. The definition also notes that only ASP-Comp-2007/-2009/-2011 class paths name a year, so no time split is possible, which confirms the 'no order' answer.
+   * **What changes:** `data_tags = ("UnseenGroup",)` in `dataset.py`; the `Time basis:` bullet in `curation_comments` opens with `UnseenGroup` (whole problem classes held out) and keeps that no split by time is possible; a CC line in the record.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: split_tree.md lists asp_potassco_classification as an example under 'Grouped · Timeless (the measurement)'; ignored as evidence.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Grouped 3-fold CV, 3 repeats, over whole problem classes (`task_id`, about 32 classes per test fold; 7,634-9,658 train / 3,674-5,698 test runs of 13,332), `Timeless` (implemented) | No change. | The tag says the runs have no time dimension: one campaign on one machine, only three class paths name a year. | The tag does not name what the folds test, a problem class not seen in training, which the tree's rule asks the tag to say. |
+     | B | The same class-grouped folds, tagged `UnseenGroup` | `data_tags` Timeless becomes UnseenGroup; the `Time basis:` line opens with the held-out classes and keeps that no time split is possible; the folds do not change. | Names the transfer to a new problem class, the use case and the tree's rule for a wider group. | A tag-only change still rebuilds the container, as `data_tags` ship in it. |
+
+   * **Recommendation:** B, because the tree's leaf tags a split on a wider group the use case names (a problem class) `UnseenGroup`.. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: set `data_tags` to `UnseenGroup` in `dataset.py`, change the opening of the `Time basis:` bullet and add a CC line; rebuild. No change to the split declaration.
+
+   [^tree]: **SPLIT-36** (Should): walk the decision tree from the record's collection type, answering each question as if no split had been decided; a split the source prescribes is evidence, not an answer.
+
+   **Andrej (2026-11-18, change):** Option B: The same class-grouped folds, tagged UnseenGroup.
+
+   **Resolved (2026-11-18, Andrej):** B. `data_tags` names `UnseenGroup` in place of `Timeless`, and the `Time basis:` line opens with `UnseenGroup (Andrej, 2026-11-18; Timeless before)`: the use case picks a configuration for a kind of problem not seen before, so whole problem classes (`task_id`, 96 classes) are held out and each instance's 11 runs stay together; it keeps that no split by time is possible. The folds (grouped 3-fold CV over `task_id`) are unchanged.
+
+10. **Split: ASlib's 10-fold CV over random instances (cv.arff) instead of 3-fold CV over whole problem classes?**
+
+   * **Problem:**
+     - ASlib's cv.arff draws instances at random into 10 folds (one repetition), keeping an instance's 11 configuration runs together, so 90 of the 96 problem classes have instances on both sides.
+     - The use case asks for a kind of problem not seen before, which only folds over whole classes test.
+     - The source split can be rebuilt: cv.arff in the same ASlib folder gives each instance's fold (not in our download yet).
+   * **Source split:** yes, ASlib scenario ASP-POTASSCO (cv.arff); claspfolio 2 paper (random halves): 10-fold CV over instances, random; all 11 configuration runs of an instance in one fold; 90 of 96 problem classes span several folds (counted on cv.arff) ("cv.arff: instance_id, repetition, fold (10 folds, 1 repetition)") https://github.com/coseal/aslib_data/tree/master/ASP-POTASSCO. Credible: partly, Keeping an instance's runs together follows the selector's use (a new instance); the random draw over instances is a benchmark convention for comparability, with no stated reason to let classes cross folds.. Against the tree's leaf: partly, ASlib's 10-fold CV keeps an instance's 11 runs together (the measurement level of the leaf) but draws instances at random so classes cross folds; the blind leaf holds out whole classes because the use case names a kind of problem not seen before.
+   * **Why it counts as chosen, not conventional:** Keeping an instance's runs together follows the selector's use (a new instance); the random draw over instances is a benchmark convention for comparability, with no stated reason to let classes cross folds.
+   * **What changes on B:** the definition's split declaration is replaced by the source's own construction (its files, periods or groups), and the `splits_comment` records that the tree's leaf was not followed. The rows, features, target and metric do not change; the folds do, so the container is rebuilt.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Grouped 3-fold CV, 3 repeats, over whole problem classes (`task_id`, 96 classes of 1 to 134 instances; 7,634-9,658 train / 3,674-5,698 test runs) (implemented) | No change; `splits_comment` names ASlib's instance folds as the source's split. | Tests a configuration on a problem class absent from training, the stated use. | Not comparable to ASlib or claspfolio 2 results; fold sizes vary with class size (3,674 to 5,698 test runs). |
+     | B | ASlib's split: 10 folds over instances from cv.arff (about 121 instances, 1,333 runs per test fold), one repetition, each instance's 11 runs in one fold | `download_description` adds cv.arff; `grouping` on `instance_id` with ASlib's fold ids replaces the class grouping. | Comparable to ASlib's published results; tests a new instance of a known class. | 90 of 96 classes sit on both sides, so a new kind of problem is not tested; one repetition. |
+
+   * **Recommendation:** A, because the use case is a problem class not seen before, and ASlib's random instance folds let 90 of 96 classes into training.. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: replace the split declaration with the source's construction (name the files or periods it uses) and say in `splits_comment` why the tree's leaf is not followed; on A: name the source's split in `splits_comment` as a departure.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: Grouped 3-fold CV, over whole problem classes (`task_id`, 96 classes of 1 to 134 instances; 7,634-9,658 train / 3,674-5,698 test runs).
 
 ## Reference
 
