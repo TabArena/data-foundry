@@ -52,3 +52,7 @@ type_adapter_id: curation-record-v1
 - Notes: Azodi et al. 2019 compiled 18 traits of 6 species (Dryad, mirrored on Zenodo 4980429, CC0); the underlying line panels have their own earlier publications, cited in Azodi et al.
 
 **Assessment (AI, 2026-11-26):** the better data named in the screening now has a record, `maize_nam_flowering_time`, screened from the archive's own files rather than from a page: 4,699 lines x 1,106 markers, the target in days and not standardized, and 25 families to group on. This record's verdict and priority are unchanged; what it adds is that the alternative is now checked and no longer a lead.
+
+**Assessment (AI, 2026-11-27):** the per-group metric rule was walked over the collection today, and this record carries its shape.
+- The screening declares the source's pooled Pearson's r. Under the rule as it now reads, a task whose actor ranks inside one group and never between groups takes the metric per group, and overruling a metric the source chose deliberately, which Azodi et al. do, needs the extra condition: a predictor knowing only each group's mean must beat a model whose penalty or capacity was chosen on the training side.
+- Nothing changes here, because there is no definition to change. The measurement belongs at `/add-dataset` if this record is ever taken up, and it is named so that it is not missed.

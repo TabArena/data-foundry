@@ -50,3 +50,7 @@ type_adapter_id: curation-record-v1
 - as published: 514 x 217,150; target: HT.
 - Why: Plant height of switchgrass lines from SNP genotypes
 - Notes: Same Azodi et al. release.
+
+**Assessment (AI, 2026-11-27):** the per-group metric rule was walked over the collection today, and this record carries its shape.
+- The screening declares the source's pooled Pearson's r. Under the rule as it now reads, a task whose actor ranks inside one group and never between groups takes the metric per group, and overruling a metric the source chose deliberately, which Azodi et al. do, needs the extra condition: a predictor knowing only each group's mean must beat a model whose penalty or capacity was chosen on the training side.
+- Nothing changes here, because there is no definition to change. The measurement belongs at `/add-dataset` if this record is ever taken up, and it is named so that it is not missed.

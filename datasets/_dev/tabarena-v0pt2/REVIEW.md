@@ -549,6 +549,23 @@
   register was not re-walked, and the three records' own lines are left to the datasets' own reviews
   (`genomic_prediction_soy_yield`'s issue 6 records this case).
 
+  **Walked (2026-11-27, Andrej):** done, after the rule was reworded, split and hardened the same day. All 51
+  grouped datasets of the working copy were read for the shape, which is the actor working inside one group rather
+  than choosing between groups.
+
+  | Outcome | Datasets |
+  |---|---|
+  | already an application, now a Cases row | `wadden_sea_sibes_macoma_abundance`: per-group metric declared from context on 2026-11-10, sixteen days before the rule, for its reason exactly; its source names no metric, so conditions 1 and 2 settle it |
+  | the shape, but nothing to narrow | `asp_potassco_classification`, `sat11_hand_algo_runtime`: the actor is handed one problem instance and ranks the solvers for it, but the source's own PAR-k already scores the selected algorithm per instance, with the instance as a scoring column |
+  | not the shape | the other 46: grouped to keep a leak out (a scaffold, a customer, a patient, a well, a scan period), with the actor working across the groups rather than inside one |
+
+  Three records outside the working copy carry the shape but have no definition yet, so there is nothing to change:
+  `genomic_prediction_maize_flowering_time`, `genomic_prediction_rice_flowering_time` and
+  `genomic_prediction_switchgrass_height`, all `2nd Tier` cuts of the Azodi compilation screened with a pooled
+  Pearson's r before the rule existed. Each would meet condition 3 at `/add-dataset`, since Azodi et al. name that
+  metric deliberately, and each would have to measure it against a model whose penalty was set on the training
+  side. A line saying so is in each record's screening block.
+
 - **How do we record a public derived copy of a rebuilt dataset's target?** When we rebuild a dataset from its origin
   because a benchmark's derived cut destroyed something (a scale, an aggregation), that cut usually stays public, and
   it holds a copy of the target for the same rows. Our leak rules govern the shipped table and the split, and the

@@ -21,10 +21,20 @@
   at the penalty used against 0.2255 at ten times it, while the family-mean oracle's margin over it is six times
   that whole range; the metric reason now says so and names the untuned LightGBM beside it. `dataset check`: 0
   errors, 0 warnings, 1 info over 28 checks; README regenerated. No value, split or metric changed.
-- Still not done, as option C was not taken when the rule was adopted: the grouped-ranking register has not been
-  re-walked. With condition 3 now gated on a deliberate source metric and on a specified model, a walk could move
-  cases either way; `genomic_prediction_switchgrass_height` was screened with a pooled metric before the rule
-  existed.
+- The walk option C asked for was then done, on the curator's ask. All 51 grouped datasets of the working copy
+  were read for the shape, which is the actor working inside one group rather than choosing between groups. One
+  was already an application and becomes the rule's fourth Cases row:
+  `wadden_sea_sibes_macoma_abundance`, whose per-group metric was declared from context on 2026-11-10, sixteen
+  days before the rule, for its reason exactly, and whose source names no metric, so conditions 1 and 2 settle it
+  without the third. Two have the shape and need no change: `asp_potassco_classification` and
+  `sat11_hand_algo_runtime` hand the actor one problem instance to rank solvers for, but the source's own PAR-k
+  already scores the selected algorithm per instance, with the instance as a scoring column, so there is nothing
+  to narrow. The other 46 are grouped to keep a leak out, with the actor working across the groups.
+- Three records outside the working copy carry the shape with no definition to change:
+  `genomic_prediction_maize_flowering_time`, `genomic_prediction_rice_flowering_time` and
+  `genomic_prediction_switchgrass_height`, all `2nd Tier` cuts of the Azodi compilation screened with a pooled
+  Pearson's r before the rule existed. Each would need condition 3 at `/add-dataset`, since that metric is a
+  deliberate choice of the source, and each record now says so.
 
 ## 2026-11-27, gse40279_methylation_age: the deferred check ran, and its README is current again (nothing built)
 
