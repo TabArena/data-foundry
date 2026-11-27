@@ -60,7 +60,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 3, A; stationarity r
 
 **Outcome:** added. A question on `CrossSectional` (2026-11-13) was withdrawn when the prototype was dropped.
 
-**Main points:** Nothing open: issue 1 was withdrawn on 2026-11-13; the collection type stays `Survey` with the same
+**Main points:** Re-audited on 2026-11-27: nothing to decide. The three other screening results, near-copies of the biopsy target (Schiller correlates 0.73), are dropped and absent from the frame. The drop of the 108 patients who skipped the contraceptive question holds even adjusted for their younger age: 7.4 positive biopsies expected among them against 0 observed. The missingness left in the kept 750 rows carries no label signal (a random forest scores 0.669 on values alone and 0.665 with missing flags added), because the drop already removed its strong part. The STD time columns are filled only for women who report an STD, as self-reported history would be; whether any of those diagnoses were made at the screening visit itself cannot be told without a timestamp. Earlier: Nothing open: issue 1 was withdrawn on 2026-11-13; the collection type stays `Survey` with the same
 random folds (issue 2, A, 2026-11-17); `ForcedIIDFromTemporal` stays (issue 3, A, 2026-11-18).
 
 **Issues for Andrej:**

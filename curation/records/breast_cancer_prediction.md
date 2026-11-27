@@ -66,7 +66,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
 
 **Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below (issue 1, A, 2026-11-18).
 
-**Main points:** `ForcedIIDFromTemporal` stays (issue 1, A, 2026-11-18). Nothing is left open.
+**Main points:** Re-audited on 2026-11-27: nothing to decide. The BI-RADS assessment, which carries the signal (without it LightGBM falls to 0.574), is read at the exam before the biopsy that defines the label, and is not the criterion itself (assessments 1 and 2 hold 27 cancers); `CaTypeO` is dropped. Exact feature profiles shared across the split give a target lookup nothing (+0.0005, SE 0.0007). Text fixes need no decision: the bullet calling the assessment categorical predates the ordinal coding of 2026-10-31; the decision table shows assessment 0 as empty, though that group holds 185 of the 239 cancers; and the models beat the assessment alone by 0.006 to 0.013, not "about 0.015". Not tested: the file holds 40,000 exams of 36,714 women, 3,133 of them with two to four exams, so under random folds one woman's exams can fall on both sides of a split; a check grouped by woman was not run. Earlier: `ForcedIIDFromTemporal` stays (issue 1, A, 2026-11-18). Nothing is left open.
 
 **Issues for Andrej:**
 

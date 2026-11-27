@@ -73,7 +73,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 3, A; stationarity r
 
 **Outcome:** added. The record gained `Target: Later` on 2026-11-13.
 
-**Main points:** Nothing open: issue 1 resolved on 2026-11-13 (`Target: Later` recorded). Issue 3 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
+**Main points:** Re-audited on 2026-11-27: nothing to decide. No era can be read off the rows: no feature varies across file-order blocks (0 of 21 at p < 0.01), the row mean is unimodal, and the clusters k-means finds come from the features' correlation and are unrelated to row order, which agrees with the forced tag. Two text fixes need no decision: the note that every feature draws on one global set of 1,000 values is wrong, since each feature has its own (20,981 distinct values across the 21, only one shared by all), though the conclusion that no week fingerprint is exploitable still holds; and the record's tags carry `Target: Fixed Delay` where its CC lines of 2026-11-13 record `Target: Later`, the better supported of the two since the target's horizon is undisclosed. The raw file has no recorded checksum. Earlier: Nothing open: issue 1 resolved on 2026-11-13 (`Target: Later` recorded). Issue 3 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
 
 **Issues for Andrej:**
 
