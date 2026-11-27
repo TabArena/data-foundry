@@ -1,5 +1,18 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-27, raman_mlrod not shipped either (no container built)
+
+- The curator's call on the review's open question about the field's own model, taken without waiting for the run:
+  the source's spectrum CNN reaches 1.00 accuracy on the clean slabs where untuned tabular models reach 0.93, so a
+  spectrum dataset where the field's tool is far ahead does not belong. The record goes to `No` with
+  `Wrong Domain / Source Modality` and the folder leaves the working copy.
+- Recorded against the decision, for a later round: the CNN's 1.00 is partly self-confirming, because the slab
+  labels were set by hand in three passes and revised wherever a person and that CNN disagreed. The dataset's own
+  resolution is also coarse: a fold is one rock, the gabbro's score rests on 12 mineral blocks, and a per-row
+  standard error understates a fold's noise 4 to 13 times.
+- The working copy keeps the three Raman definitions that ship: `raman_fuel_benchtop`, `raman_ecoli_fermentation`
+  and `raman_adenine_interlaboratory`.
+
 ## 2026-11-27, bacteria_id_raman retired (`Too Small`), raman_mlrod's split settled
 
 - `bacteria_id_raman` is removed from the working copy. The curator's call on the review's size question: the task

@@ -4,12 +4,9 @@ name: ML Raman Open Dataset (MLROD)
 checked_by:
 - Lennart
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
-suggestion: 'Yes'
-priority: 3
-decision_markers: []
+suggestion: 'No'
+decision_markers:
+- Wrong Domain / Source Modality
 tags:
 - AI-Filled (Verify)
 - Non-IID (Grouped)
@@ -23,21 +20,21 @@ collections:
 - RamanBench
 original_source: Other
 year: '2022'
+collection_period: Unknown
 domain: chemistry & material science
 required_split:
 - Grouped (NON-IID)
-collection_period: Unknown
 problem_type: Multiclass Classification
 source_links:
 - https://doi.org/10.1029/2021EA002125
 - https://odr.io/MLROD
 - https://arxiv.org/abs/2605.02003
-v2_path: datasets/_dev/tabarena-v0pt2/raman_mlrod/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
 
+CC (2026-11-27, Andrej): not shipped. `No` with `Wrong Domain / Source Modality` (Review issue 4, option B), taken without the GPU run: the source's own spectrum CNN reaches 1.00 accuracy on the clean slabs where untuned tabular models reach 0.93, and the dataset's resolution is coarse (a fold is one rock; the gabbro's score rests on 12 mineral blocks, where a per-row standard error understates the noise 4 to 13 times). Recorded against the decision: the CNN's 1.00 is partly self-confirming, because the slab labels were revised in three passes wherever a person and that CNN disagreed. The folder leaves the working copy; the record keeps the definition's design, the panel's report and every measured number. Review issue 6, the warning texts, is left as it stands: there is no `dataset.py` left to write them into.
 CC (2026-11-27, Andrej): Review issue 5 settled on (a), the split that now ships: five repeats of two folds, a rock slab per fold and a fifth of every reference map held out of each training side. Issue 6, the warning texts rewritten for that split, is the only item left open.
 CC (2026-11-27, Andrej): Review issue 5, the split is rebuilt. The shipped plan is five repeats of two folds: a fold tests one rock slab with the other never in its training side, and a repeat holds a different fifth of every reference map out of the training side, drawn inside the map so every mineral and every integration time stays in. Both sides now vary. Measured on three such draws, the spread is about 0.04 of log loss on the gabbro and 0.16 on the granite, against 0.95 to 4.83 when whole maps are dropped, which is why the earlier assessment was wrong to stop at the source's single fold.
 CC (2026-11-27, Andrej): Review issues 1, 2, 3, 4 and 7 all `ok`, so the record leaves `TBD` (issue 4's run is still owed and comes back as its own item when its table exists). Issue 5 stays open with the assessment you asked for: the data holds two test units and no third can be made, varying the training library is refuted by measurement (log loss 0.95 to 4.83 over three leave-one-map-out draws, driven by which integration time survives), writing the fold as two or four cells is bookkeeping on one training side, and more rocks is the only real answer.
@@ -263,6 +260,19 @@ for byte (issue 1 for the rest).
      | B | Exclude after the run | the record gets `No` (`Wrong Domain / Source Modality`) if the CNN is clearly ahead of the tuned tabular models on both rocks | keeps a spectrum task where tabular models are not the tool out | loses the only mineral Raman task |
 
    * **Recommendation:** A until the run; then B only if the CNN is clearly ahead of the best tuned tabular model and TabPFN v3.5 on both rocks, clean and dusty. **Decision:** after the run, keep or exclude?
+
+   **Resolved (2026-11-27, Andrej):** B, without waiting for the run: the dataset does not ship. The record goes to
+   `No` with `Wrong Domain / Source Modality`, and the folder leaves the working copy.
+
+   Two things are worth recording for whoever comes back to this. The source's 1.00 accuracy on the clean slabs is
+   not an arms-length number: the slab labels were set by hand in three passes and "with each pass, the test set
+   was run through the CNN and the misclassified spectra often identified human mineral classification errors"
+   (paper, Sec. 4.2), so the labels were revised where a person and that CNN disagreed. A model scored on those
+   labels is scored against a standard the CNN helped define, and no comparison against it is clean. And the
+   dataset's own resolution is coarse: a fold is one rock, the gabbro's score rests on 12 mineral blocks, and a
+   per-row standard error understates a fold's noise 4 to 13 times (0.019 by rows against 0.242 by blocks), so
+   only 4 of 10 model pairs separate on the gabbro when counted by its blocks. Either of those would have been a
+   reason to look harder before adding it; together they are why the run was not worth waiting for.
 
    **Resolved (2026-11-27, Andrej):** `ok`, A as implemented: the dataset ships as defined and the run stays owed.
    The keep-or-exclude call is not made here; when the table exists it comes back as its own issue, with the
