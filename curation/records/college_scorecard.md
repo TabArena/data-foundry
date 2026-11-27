@@ -115,7 +115,7 @@ CC (2026-11-27, Andrej): the declared metric (RMSE on the 150% completion rate, 
 
    * **Recommendation:** B, as a text change. **Decision:** A, B or C?
 
-   **Notes for the AI:** the column-by-column period table and the horizon options are in `local-data-warehouse/_runs/2026-11-26_review33/college_scorecard/findings_audit.md`.
+   **Notes for the AI:** the column-by-column period table and the horizon options are in the run's local evidence.
 
    **Andrej (2026-11-27, change):** Option B: Narrow the wording.
 

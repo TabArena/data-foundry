@@ -88,7 +88,7 @@ CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
 
    * **Recommendation:** A: the gap stands for the labels a refit has, and only the month covers nearly all of them; the score is not a reason to shorten it. **Decision:** A or B?
 
-   **Notes for the AI:** full audit and the horizon options in `local-data-warehouse/_runs/2026-11-26_review33/brazilian_ecommerce/findings_audit.md`. Unchecked: whether Olist revised a promise after purchase (one date per order).
+   **Notes for the AI:** the full audit and the horizon options are in the run's local evidence. Unchecked: whether Olist revised a promise after purchase (one date per order).
 
    **Andrej (2026-11-27, ok):** As implemented (A).
 

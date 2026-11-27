@@ -174,7 +174,7 @@ CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
 
    * **Recommendation:** C: the gap is equally consistent with a pre-churn signal, and B removes little while the totals keep the exposure. **Decision:** A, B or C?
 
-   **Notes for the AI:** with B or C, also change "near-inactive subscribers are almost all churners" to four in five (124 of 157 at 5 calls or fewer). Untested: the "six short runs, 54 rows" claim (another segmentation). Full audit: `local-data-warehouse/_runs/2026-11-26_review33/churn_telco_south_asia/findings_audit.md`.
+   **Notes for the AI:** with B or C, also change "near-inactive subscribers are almost all churners" to four in five (124 of 157 at 5 calls or fewer). Untested: the "six short runs, 54 rows" claim (another segmentation).
 
    **Andrej (2026-11-27, change):** Option C: Keep all columns, rewrite the Decision.
 

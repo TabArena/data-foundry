@@ -282,7 +282,7 @@ May 2014, the newest window's gap day, lie in no split. The record has the horiz
 
    * **Recommendation:** B, the same answer as nyc_taxi_trip_duration's, as a text change. **Decision:** A, B or C?
 
-   **Notes for the AI:** text fixes to make with B, measured 2026-11-27: `taxi_id` adds 0.005 to 0.016 R^2 on the shipped windows (notes say 0.008 to 0.014); `changes` says the challenge asked for the "remaining time", while the record's Comments say it scored the total travel time from a partial trajectory (source behind a Kaggle login, unverified); 1,962 kept trips imply more than 80 km/h in a straight line (probably missing GPS points), not tested. Full audit: `local-data-warehouse/_runs/2026-11-26_review33/pkdd_15_taxi_trip_time_prediction_ii/`.
+   **Notes for the AI:** text fixes to make with B, measured 2026-11-27: `taxi_id` adds 0.005 to 0.016 R^2 on the shipped windows (notes say 0.008 to 0.014); `changes` says the challenge asked for the "remaining time", while the record's Comments say it scored the total travel time from a partial trajectory (source behind a Kaggle login, unverified); 1,962 kept trips imply more than 80 km/h in a straight line (probably missing GPS points), not tested.
 
    **Andrej (2026-11-27, change):** Option B: Keep the day, restate the reason.
 
