@@ -110,7 +110,11 @@ CC (2026-11-05, Lennart): ship. Every issue of the second-pass review is settled
 
 CC (2026-11-17, Andrej): Review issue 15, A, as implemented (Day boundary as the gap: nine 14-day windows on `arrival_order`, train on every visit that arrived and began its exam before the window's first day, 41,048-77,557 of 82,001 (50.1-94.6%)), settled by the cross-dataset item on the tree's gap questions (B: the step is the time column's smallest recorded step).
 
-CC (2026-11-27, Andrej): Review issue 17, B ("Option B: Add a note to the splits comment."): the splits comment states that the mean wait of the test visits falls from 10.01 minutes in the oldest window to 2.99 in the newest, because patients check in about eight minutes earlier while the time from arrival to start stays flat, and that the score stays flat.
+CC (2026-11-27, Andrej): Review issue 17, B ("Option B: Add a note to the splits comment."): the splits comment states that the mean wait of the test visits falls from 10.01 minutes in the oldest window to 2.99 in the newest, because patients check in about eight minutes earlier while the time from arrival to start stays flat, and that the score stays flat. (Updated 2026-11-27 after issue 16 moved the newest window to the last 14 days: its mean wait is 1.32 minutes, not 2.99.)
+
+CC (2026-11-27, Andrej): Review issue 16, B ("Option B: Anchor the newest window to the last 14 days."): the newest window covers the last 14 days, ending at the last arrival day; the other eight starts, the count (nine), the 14-day length and the training floor stay. The declared split (temporal on `arrival_order`, nine 14-day windows from fixed days, train on every visit that arrived and began its exam before the window's first day) is checked and changed in its newest window only.
+
+**Assessment (AI, 2026-11-27):** `dataset check`: 0 errors, 0 warnings, and the accepted `splits_rows_unused` is gone: no visit is left out of every split. The nine windows hold 12,435 test visits (1,140 to 1,550 per window; the newest 1,550, 144 visits on its last day), and train on 41,048 to 80,451 of 82,001 visits (50.1% to 98.1%). The newest window starts 72 days after the eighth (the first eight start 43 to 51 days apart). The mean `Wait` of the newest window's test visits is 1.32 minutes (2.99 before; 10.01 in the oldest window), patients check in 35.1 minutes early on average (34.6 before) and the time from arrival to start is 36.4 minutes (flat from 36.9 in the oldest). LightGBM MAE and bias figures of the notes were measured with the newest window ending 28 days before the last arrival and are dated in the definition, not measured again.
 
 ## Review
 
@@ -125,12 +129,12 @@ summary that claimed this patient's appointment as an input; the summary now nam
 patient's own offset is issue 6. The licence is CC0 1.0 from the Dataverse deposit. Value: LightGBM MAE 15.28 against
 21.54 for the training median; MET-2/3/4/5 hold; the MET-11 wording is fixed. Quality: the empty-set zeros
 (CLEAN-10) are noted (issue 10). Weighed: the source's patient-agnostic framing against the front desk's quote to
-this patient (issue 6). For Lennart: issues 6 to 11, all settled on 2026-11-05; issue 15 on 2026-11-17.
+this patient (issue 6). For Lennart: issues 6 to 11, all settled on 2026-11-05; issue 15 on 2026-11-17; issue 16 on 2026-11-27.
 
 **Main points:** Re-audited on 2026-11-26: `minutes_early`, the strongest input, is known at check-in (it comes from the
 row's own arrival and booked slot, and no start precedes its arrival), and it does not carry the task alone, since the
 other 87 features together reach R2 0.571. Every queue statistic is cumulative to the arrival, not a whole-day total.
-One issue is open, about the newest data: the last 28 days sit in no test window (16). Settled on 2026-11-27 (Andrej): the fall of the target by two thirds across
+Settled on 2026-11-27 (Andrej): the newest window is anchored to the last 14 days (16, B); the fall of the target by two thirds across
 the windows is stated in the splits comment (17, B). Earlier, nothing open. Settled on 2026-11-05 (Lennart): `minutes_early` added (issue 6, A); the protocol line
 that each test visit is predicted on its own stays (7, A); the source's two-week test windows replace the 42-53-day
 ones (8, B); the expected-delay table stays under LEAK-38 as amended (9, D); the empty-set summaries set to missing
@@ -548,6 +552,10 @@ history.
    * On 2026-11-05 the windows were shortened to the source's two weeks by keeping the first 14 days of each old window (the CC of that day: "each from the first whole day at or after the start of one of the nine equal-count windows shipped before"), so the folds stayed nine and the training floor held. The newest old window lost its last 28 days with that, and the accepted warning calls it "by design" with no reason beyond the construction.
    * So the tail is a by-product of reusing the old starts, not a choice about those visits. Nothing in the data argues against testing them: the model trained on everything earlier scores MAE 13.46 on the tail, in line with the shipped windows.
    * **Recommendation:** B, as before: anchor the newest window to the last 14 days and keep the other starts, count, length and floor. **Decision:** A, B or C?
+
+   **Andrej (2026-11-27, change):** Option B: Anchor the newest window to the last 14 days.
+
+   **Resolved (2026-11-27, Andrej):** B. The newest window now covers the last 14 days, ending at the last arrival day; the other eight starts, the count (nine), the 14-day length and the floor are unchanged. The nine windows hold 12,435 test visits (1,140 to 1,550 each) and train on 41,048 to 80,451 of 82,001 visits (50.1% to 98.1%); no visit is in no split, so the accepted `splits_rows_unused` warning is removed. `splits_comment` states the new placement and the new newest-window figures (mean wait 1.32 minutes, arrival to start 36.4, early check-in 35.1), and dates the model figures measured on the old window. `dataset check`: 0 errors, 0 warnings.
 
 17. **Say that the waiting time a model must hit falls by two thirds across the test windows, and why?**
 
