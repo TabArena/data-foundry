@@ -124,7 +124,13 @@ Weighed: the model leads the coin's mean in every window and by about 4.3 standa
 correlation is positive on 75-77 of 91 days (+), against the oldest window's interval including 0 and its R² below 0
 (-). Issue 8 settled on 2026-11-08: the test still holds.
 
-**Main points:** Settled on 2026-11-11: the test windows on the longer history are the newest from 25 October 2021,
+**Main points:** Re-audited on 2026-11-26: no look-ahead in any feature (each trailing return and trailing mean
+recomputed for Bitcoin over 132,477 minutes matches to rounding error), the weight is a scoring column and not a
+feature, and the gap is exact, with each training side's last label completing at the first test minute. The probe's
+fall in rows a day over the newest periods is the 500,000-row test cap and not censoring. Two issues are open: the
+model figures, which turn out stronger than the probe suggests (12), and the split's leaf label (13). Needing no
+decision: the committed README is stale by two definition changes, the training shares should name their base, and
+the raw files carry no declared checksums, for which the three recorded hashes can be added. Earlier, settled on 2026-11-11: the test windows on the longer history are the newest from 25 October 2021,
 the 2021 bull run from 22 December 2020 and the 2020 crash from 28 February 2020, the last on 48.25% of the rows
 (issue 9, a); the supplemental file is added (issue 10, B) and the 91 days with a 15-minute gap hold (H, A). Settled
 earlier: the model still clearly beats each coin's naive forecast, ahead in every window and with the interval read
@@ -171,7 +177,7 @@ every frozen model, and a 15-minute gap, the target's own horizon. `splits_comme
 CC line says the horizon is checked. With the supplemental file (issue 10) the newest window runs from 25 October 2021
 to 23 January 2022; which other windows to test is issue 9. `dataset check`: 0 errors, 0 warnings.
 
-**Issues for Lennart:**
+**Issues for Andrej and Lennart:**
 
 8. **Does the model still clearly beat each coin's naive forecast, now that the oldest window's lead includes 0?**
 
@@ -562,6 +568,55 @@ to 23 January 2022; which other windows to test is issue 9. `dataset check`: 0 e
    [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
 
    [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count.
+
+12. **Replace the quoted model figures with the ones measured on the shipped windows?**
+
+   * **Problem:**
+     - The notes answer the three probe flags with figures measured on the windows that ended on 20 September 2021, and say they are "to be measured again on the windows chosen on 2026-11-11, which has not been run yet".
+     - The probe's own numbers on the shipped windows look weak and put the linear model ahead, but that is the probe's setup: it trains on the newest 200,000 rows, about ten days, with 300 unregularised trees, where the benchmark draws a million whole minutes from the newest year.
+     - Measured at the benchmark's own sampling, the signal is real in every window, which closes the measurement the note still owes.
+   * **Effect on the task:** In the dataset's favour. A reader of the note today sees an answer to the probe flags that rests on windows no longer shipped.
+   * **Experiments:** weighted Pearson on the three shipped windows; the ensemble is early-stopped LightGBM, three seeds, a million whole minutes of the newest year.
+
+     | Model | Newest | 2021 bull run | 2020 crash | Mean |
+     |---|---|---|---|---|
+     | the probe's LightGBM, newest 200k rows | +0.005 | -0.010 | +0.036 | +0.010 |
+     | the probe's ridge, same rows | +0.016 | +0.001 | +0.067 | +0.028 |
+     | early-stopped ensemble, benchmark sampling | +0.042 | +0.039 | +0.080 | +0.054 |
+     | ridge, benchmark sampling | +0.002 | +0.034 | +0.064 | +0.033 |
+     | each coin's training mean | -0.000 | +0.003 | -0.005 | -0.001 |
+
+     | Ensemble, 95% day-block interval | Newest | Bull run | Crash |
+     |---|---|---|---|
+     | interval | +0.017 to +0.065 | +0.019 to +0.056 | +0.068 to +0.087 |
+
+     Every interval excludes zero. Ridge scores 0.002 in the newest window, so the signal there is non-linear. The ensemble's R2 stays near 0.001 to 0.005, so the R2-based no-signal flag stands on R2 alone, which the note already says.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the quoted figures (implemented) | the old numbers stay, dated to the windows to 20 September 2021 | no work | the answer to the flags rests on windows no longer shipped |
+     | B | Replace them with the shipped-window measurement | the note says what the probe fits and gives the figures at the benchmark's sampling, with their intervals | closes the measurement the note owes; honest about why the probe reads low | three seeds rather than the original twelve, and untuned, so the intervals are a floor |
+     | C | B, plus a twelve-seed rerun | as B with the original recipe | matches the original evidence exactly | costs another set of fits for a conclusion B already reaches |
+
+   * **Recommendation:** B. The intervals already exclude zero in every window, so a twelve-seed rerun could only tighten them. **Decision:** A, B or C?
+
+13. **Name the split's leaf as the windows it ships rather than as an exception?**
+
+   * **Problem:**
+     - The definition declares its split-tree leaf as the exception leaf, which the tree keeps for when windows cannot be built at all.
+     - Walked from the record's collection type, the tree reaches the ordinary windows leaf: the order is recorded and seven 91-day windows clear the training floor.
+     - What ships agrees with the walk and only the label disagrees, since the crash window under half the training rows is your choice of window with the floor warning accepted, not a case where windows could not be built.
+   * **Effect on the task:** None on the data or the scores. The leaf the definition names is read by the decision tree's own bookkeeping, so a wrong label makes this dataset look like an exception the tree does not have.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the exception label (implemented) | nothing changes | no work | the label claims windows could not be built, which the walk refutes |
+     | B | Declare the windows leaf and keep the crash window as a window choice | the label follows the walk; the accepted floor warning stays | the bookkeeping matches what ships | none |
+     | C | Move the oldest window to 27 April 2020 (52.1%) and drop the crash | every window clears the floor with no warning | no exception of any kind | loses the March 2020 crash you chose to test |
+
+   * **Recommendation:** B; C only if you no longer want the crash tested. **Decision:** A, B or C?
 
 **Review panel:** ship after changes, text only (mediator). Tier focused, a re-review of 2026-11-06 under LEAK-41 and
 MET-14 to MET-16: the claim auditor, then the mediator. Claims: 21; 15 hold (one with a wording caveat, fixed), 4

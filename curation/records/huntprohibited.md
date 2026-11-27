@@ -71,6 +71,17 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
 **Outcome:** added as `huntprohibited_1m`. Stationarity reasoning of 2026-11-18: the forced tag stays (issue 2, A, Andrej).
 
 **Main points:** Nothing open: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation` (issue 2 resolved on 2026-11-18).
+Re-audited on 2026-11-26 on the shipped 3,963,488-row frame: no validity problem and nothing that changes a decision.
+The four figures the notes give two ways resolve on measurement: the blocked share at a price of 1 is 18.66%, so the
+18.7% is right and the 19.0% is a stale history line; the description overlap of 1.39% and 1.4-4.9% were both taken
+on the earlier one-million-row training side, and the shipped frame gives 3.0% per fold; and the 901,011 and 1,149,136
+real-estate counts are not a contradiction, the first being the subset holding an address. The metric holds: k of
+12,500 is 2.5% of the 500,000-row test side, the same ratio the competition used, and 36.4% of a fold's positives,
+so it is computable on every fold, and the library's implementation matches an independent one exactly. The strongest
+text tokens are deliberate evasions of the filter, Latin letters inside Cyrillic words, which are posting-time
+content and support the reasoning behind the forced tag. Three wordings are corrected at the next edit: the
+near-copy evidence and the real-estate counts restated on the shipped frame, and "3-fold over its third" replaced by
+three disjoint random 500,000-row test samples, whose training sides share 71% of their rows.
 
 **Issues for Andrej:**
 

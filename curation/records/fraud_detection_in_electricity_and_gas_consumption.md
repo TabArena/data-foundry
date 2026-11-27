@@ -84,6 +84,30 @@ CC (2026-10-26, Lennart): verdict ship.
 
 CC (2026-10-31, Lennart): marks on the review board of PR #37: reading_remarque left unordered with a note (codes 6-9 undocumented, used as a changing code list).
 
+## Review
+
+**Outcome:** added as `fraud_detection_in_electricity_and_gas_consumption_1m`. Re-audited on 2026-11-26: nothing
+needs a decision. The signal across clients is real, and the test that was left unfinished at the preparation stage
+is now closed with a properly powered one: over all 81,531 clients, per-client aggregates and 100 label permutations
+place the observed score about 40 null standard deviations above chance, where an earlier cut of 2,601 clients had
+given p = 0.143 with no power to see it. `region` is a real geographic signal the actor holds rather than a proxy for
+how the sample was drawn: its fraud rate runs from 4.6% to 14.2%, it splits within a single district, and its
+ordering persists across account cohorts; its large gap in the hidden-group probe is an artefact of its being constant
+per client. Four facts are added to the notes and need no decision: 7,548 invoices predate their client's account
+creation, across 6.0% of clients, with no link to the label; clients opened on the same day in the same region share
+a mild fraud link, which is spatial structure and not a leak; the metric page says "Area Under the Curve" and the
+reading over clients comes from the one-probability-per-client submission format; and the source links now redirect
+to a new domain. The committed README is stale by a row-budget revision and is regenerated at the next build. The
+download instruction names a Kaggle upload of a private Zindi competition, which is raised across datasets rather
+than here, since the licence rule makes it a note on the record.
+
+**Main points:** Nothing open; it ships by default.
+
+**Review panel:** ship (audit against the source and a client-level permutation test; no separate mediator).
+Claims: the fraud rate, client count and row count match. Columns: no date in any column reaches past 2012-12-28, and
+the seven flagged codes are unordered and correctly categorical. Split: the tree reaches the leaf that ships, grouped
+by client with no client on both sides of any fold. Agreed: the signal across clients is real. Disputed: nothing.
+
 ## Reference
 
 Zindi main source
