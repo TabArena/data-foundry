@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: raman_fuel_benchtop
 container_format: 2
-checksum: v2:1612a1453aaf5df55ee74434716fe3efa3218160406807d8dd35fed65a277288
+checksum: v2:e02df0fd4cfbd5e06a33f0b5c12322d8d20b3e244e52f5b66303d76a26f276b6
 build: null
 build_stale: false
 raw_files:
@@ -71,7 +71,7 @@ decisions: []
 
 Regression of `research_octane_number`, scored with `rmse` on grouped splits by `sample`. 179 rows and 2,861 features. Source: HuggingFace (2025).
 
-Not built yet. The current definition gives checksum `v2:1612a1453aaf5df55ee74434716fe3efa3218160406807d8dd35fed65a277288`.
+Not built yet. The current definition gives checksum `v2:e02df0fd4cfbd5e06a33f0b5c12322d8d20b3e244e52f5b66303d76a26f276b6`.
 
 ## In brief
 
@@ -253,6 +253,10 @@ a benchtop FT-Raman spectrometer (961 bands, 98 to 3,801 cm-1, 1,064 nm) and on 
   of the 179 rows are a group of their own, so there is nothing for the probe to see. The one group of two
   is what the key exists for.
 - 179 samples is a tiny table (TP-9), and the octane numbers span 89.4 to 104.8 with a mean of 97.8.
+- A companion task on the same rows, named and not shipped: the ethanol content, measured on 164 of the
+  179 samples. It is the property a field instrument is asked for after the octane number, and the benchmark
+  this dataset comes from scores all twelve properties as twelve tasks. A later round can take it; here it
+  is a laboratory measurement of the sample, so it is neither a second target nor an input (CLEAN-18).
 - Time basis: Timeless: a closed set of commercial gasolines measured once by one laboratory: the octane number is a property of the fuel, not of when it was measured, and no row carries a date. The model meets a new gasoline of the kind the data holds, and one sample was measured twice, so whole samples are held out with both of their measurements. The split cannot test another spectrometer, another laboratory or a fuel outside the source's range.
 
 ## Splits

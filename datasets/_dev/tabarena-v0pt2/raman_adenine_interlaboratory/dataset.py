@@ -1,4 +1,4 @@
-"""Curated dataset definition for `raman_adenine_colloidal_gold` (data-foundry v2). Evidence: README.md."""
+"""Curated dataset definition for `raman_adenine_interlaboratory` (data-foundry v2). Evidence: README.md."""
 
 from __future__ import annotations
 
@@ -25,7 +25,7 @@ PREFIX = "raman_"
 COPIED_OR_LEAKING = ("method", "sample", "type")
 
 
-class RamanAdenineColloidalGold(AbstractCuratedDataset):
+class RamanAdenineInterlaboratory(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question=(
             "How much adenine is in a solution, from its surface-enhanced Raman spectrum measured in a "
@@ -61,7 +61,7 @@ class RamanAdenineColloidalGold(AbstractCuratedDataset):
     )
 
     # Dataset
-    unique_name = "raman_adenine_colloidal_gold"
+    unique_name = "raman_adenine_interlaboratory"
     domain = "chemistry & material science"
     sources = (
         Source(
@@ -98,8 +98,8 @@ class RamanAdenineColloidalGold(AbstractCuratedDataset):
         The study's own table is on Zenodo, "isSupplementTo" the paper, as one CSV of every spectrum with its
         laboratory, substrate, laser, solution, batch and replicate.
 
-        mkdir -p local-data-warehouse/raman_adenine_colloidal_gold/zenodo
-        cd local-data-warehouse/raman_adenine_colloidal_gold/zenodo
+        mkdir -p local-data-warehouse/raman_adenine_interlaboratory/zenodo
+        cd local-data-warehouse/raman_adenine_interlaboratory/zenodo
         curl -L -o ILSdata.csv "https://zenodo.org/api/records/3572359/files/ILSdata.csv/content"
     """
     curation_comments = """
@@ -141,6 +141,10 @@ class RamanAdenineColloidalGold(AbstractCuratedDataset):
           two substrate batches. The copy is dropped and the first row kept (LEAK-19), which leaves 3,512. Both
           rows of every pair sit in one laboratory, so no split could have separated them.
         - 3,512 spectra over 15 laboratories, 43 distinct concentrations from 0 to 9, 234 of them blanks.
+        - Each substrate has its own concentration series, which the curator has an open issue on: cAu runs from
+          0 to 0.90, cAg to 1.82, sAu to 4.50 and sAg to 9.00, so the substrate column bounds the answer before a
+          band is read. On the shipped splits the three bench columns alone reach R2 0.341 against 0.272 for the
+          534 bands alone and 0.456 for both, so most of the score is which series a spectrum belongs to.
     """
 
     # Task

@@ -3,6 +3,7 @@ unique_name: raman_fuel_benchtop
 name: Gasoline Properties (Benchtop)
 checked_by:
 - AI (UNVERIFIED)
+- Andrej
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Andrej
@@ -39,6 +40,9 @@ type_adapter_id: curation-record-v1
 ---
 
 ## Comments
+
+CC (2026-11-27, Andrej): Review issue 1, `ok`: ships as defined. Untuned families sitting 0.028 apart is a question for a tuned run, not a reason to drop a dataset and not a `Trivial` verdict ("variance is normal ... this does not mean at all that the task is trivial"); the option that offered one should not have been written, and the source's own benchmark, which applies TabArena's trivial rule to its 171 keys, does not exclude either gasoline key.
+CC (2026-11-27, Andrej): Review issue 2, `change` B: the ethanol content, measured on 164 of the 179 samples, is named in the definition's notes as a companion task for a later round. Nothing in the data changes.
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from the source's pages and papers (and, where the block says so, a preview of the files), NOT from building the data. A human must verify everything before relying on it.**
 
@@ -103,6 +107,31 @@ target tuples that may be repeat measurements") is confirmed and fixed.
 
    * **Recommendation:** B, and A if the tuned run separates them. The flag is about ranking methods, and only a tuned run answers it; C misreads a narrow task as a trivial one. **Decision:** A, B or C?
 
+   **Resolved (2026-11-27, Andrej):** `ok`, A as implemented: it ships as defined, and the question itself was
+   wrongly put. "Why is methods not separating even a criterion? This shouldn't be the case since variance is normal.
+   Also this does not mean at all that the task is trivial."
+
+   The objection holds and the options table should not have offered C. The rules say the same three things: a probe
+   flag is a question and not a verdict, and is checked against tuned methods before anything follows from it[^f1];
+   the rule the flag cites keeps a dataset when tuned methods spread and asks for nothing when they do not[^f3];
+   and a `Trivial` verdict needs proof, which is a raw feature or a rule the field publishes matching the methods,
+   never a small gap between two fitted models[^f4]. Every record where this flag has come up was kept on that
+   reading: gallstone_disease, indian_liver_patient_dataset, naticusdroid_android_permissions_dataset, amex_non_iid,
+   acquire_valued_shoppers_challenge, hr_analytics and 2024_lusaka_mobility_prediction_hackathon.
+
+   The source's own benchmark says it too. It applies TabArena's trivial rule post hoc to its 171 dataset-and-target
+   keys, as one model perfect on every seed or two or more tied to four decimals on every seed, and excludes eight;
+   neither gasoline key is among them, nor among the seventeen it drops for not beating a mean predictor. Its own
+   result on this dataset is a real score, not a tie.
+
+   What the untuned numbers do say stays in the review's Value line: 0.028 between the random forest and the
+   selected linear model with a paired standard error of 0.016, and every family far above the dummy. A tuned
+   comparison is still the thing that would settle how well the dataset ranks methods, and it is worth running when
+   the collection is next scored, but it decides nothing about shipping.
+
+   [^f1]: **TP-1** (Must): a flag is a question, not a verdict; check it against tuned methods before acting on it.
+   [^f4]: **TP-4** (Must): `Trivial` needs proof, in two steps of which only the first is a test.
+
    **Notes for the AI:** on B, run the tuned comparison on the shipped splits and record the spread in the review before the verdict; on C, `suggestion` `No`, marker and a CC line.
 
    [^f3]: **TP-3**: a dataset that does not separate model families adds little to a benchmark; the flag is weighed, not decisive.
@@ -125,6 +154,9 @@ target tuples that may be repeat measurements") is confirmed and fixed.
      | B | Name ethanol content as a companion | one line in the notes | ethanol is the property a field instrument is most often asked for, on 164 samples | a promise nobody may pick up |
 
    * **Recommendation:** B, as a note only. **Decision:** A or B?
+
+   **Resolved (2026-11-27, Andrej):** `change`, B: the ethanol content is named as a companion in the notes, on 164
+   of the 179 samples. Nothing in the data changes.
 
    [^f18]: **CLEAN-18**: a release with several targets ships one and names the rest.
 

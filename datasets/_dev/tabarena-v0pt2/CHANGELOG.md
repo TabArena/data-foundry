@@ -1,5 +1,15 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-27, the curator's decisions on the three new Raman definitions (no container built)
+
+- `raman_adenine_colloidal_gold` is renamed `raman_adenine_interlaboratory`: the folder, the class, the record, its
+  `v2_path` and the warehouse folder. The old name was the 225-spectrum colloidal-gold cut it was screened as; the
+  definition is the whole study over all four substrates and 15 laboratories.
+- `raman_fuel_benchtop`: one bullet added to the notes, naming the ethanol content on 164 of the 179 samples as a
+  companion task for a later round. No change to the data.
+- `raman_ecoli_fermentation`: unchanged; the question on its censored target is still open, with the benchmark's own
+  two targets (glucose and acetate) written into the review.
+
 ## 2026-11-25, three RamanBench definitions added: fuel, E. coli fermentation and the adenine interlaboratory study (no container built)
 
 - `raman_fuel_benchtop`: 179 commercial gasolines, the research octane number from two Raman spectra of the same
@@ -10,7 +20,7 @@
   spectrum. Built from the authors' Hugging Face release, not from the paper's repository file, which is the
   model-training matrix: harmonised onto an eight-instrument grid and padded with 2,261 spectra of another
   dataset. The source's three random groups of eight cultivations are the split.
-- `raman_adenine_colloidal_gold`: the whole European interlaboratory SERS study from its own Zenodo table, 3,512
+- `raman_adenine_interlaboratory`: the whole European interlaboratory SERS study from its own Zenodo table, 3,512
   spectra over 15 laboratories, with whole laboratories held out. The benchmark's four per-substrate files carry
   only the concentration, so the study's own question cannot be built from them. The record's name is now
   historical and a rename is an issue for the curator.

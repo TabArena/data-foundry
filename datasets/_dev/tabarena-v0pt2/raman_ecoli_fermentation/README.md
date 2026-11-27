@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: raman_ecoli_fermentation
 container_format: 2
-checksum: v2:ad922980e24dbef9e84ed465e23d9383c41290096c0ec60fd5520ae026164cfb
+checksum: v2:2b07306ce438049ccbf87bbe116f70c379bcf2fab9be2138ee012ba693718596
 build: null
 build_stale: false
 data:
@@ -70,7 +70,7 @@ decisions: []
 
 Regression of `glucose_g_per_l`, scored with `mae` on grouped splits by `experiment_group`. 373 rows and 1,870 features. Source: Other (2025).
 
-Not built yet. The current definition gives checksum `v2:ad922980e24dbef9e84ed465e23d9383c41290096c0ec60fd5520ae026164cfb`.
+Not built yet. The current definition gives checksum `v2:2b07306ce438049ccbf87bbe116f70c379bcf2fab9be2138ee012ba693718596`.
 
 ## In brief
 
@@ -230,6 +230,11 @@ Cedex Bio HT analyser's glucose and acetate. Every file is read.
   from the bare wavenumber to `raman_<cm-1>` so the build reads the axis from the names; no value changes.
 - The experiment group is the grouping key and never a model input. It carries no information about the
   sample beyond which eight cultivations it came from.
+- The signal across the three groups is real, which is what the few-groups warning asks for. Holding a
+  group out costs little: LightGBM scores R2 0.696 (SE 0.040) grouped against 0.738 (SE 0.069) on a
+  random split, a gap of 0.042 over 3 repeats of 3 folds, and across held-out groups ridge reaches 0.780,
+  LightGBM 0.696 and a 5-nearest-neighbour 0.585 against a baseline of 0. A cultivation the model has not
+  seen is therefore not a different problem, which is why three groups still carry a score.
 - Half the target is a floor, and it is censored, not zero-inflated. 192 of the 373 glucose values are
   exactly 0.0 (51.5%), spread evenly over the three groups (49.1%, 50.8%, 54.0%), and the next smallest
   values are 0.0279, 0.0660 and 0.0742 g/L: a gap, not a continuum. The analyser reports a concentration

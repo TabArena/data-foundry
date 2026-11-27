@@ -5,7 +5,6 @@ checked_by:
 - AI (UNVERIFIED)
 - Andrej
 suggestion: 'No'
-priority: 2
 decision_markers:
 - No Good Target (yet)
 tags:

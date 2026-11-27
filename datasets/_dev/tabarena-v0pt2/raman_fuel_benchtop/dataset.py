@@ -174,6 +174,10 @@ class RamanFuelBenchtop(AbstractCuratedDataset):
           of the 179 rows are a group of their own, so there is nothing for the probe to see. The one group of two
           is what the key exists for.
         - 179 samples is a tiny table (TP-9), and the octane numbers span 89.4 to 104.8 with a mean of 97.8.
+        - A companion task on the same rows, named and not shipped: the ethanol content, measured on 164 of the
+          179 samples. It is the property a field instrument is asked for after the octane number, and the benchmark
+          this dataset comes from scores all twelve properties as twelve tasks. A later round can take it; here it
+          is a laboratory measurement of the sample, so it is neither a second target nor an input (CLEAN-18).
     """
 
     # Task

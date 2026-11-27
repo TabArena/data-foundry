@@ -3,6 +3,7 @@ unique_name: raman_ecoli_fermentation
 name: E. coli Fermentation
 checked_by:
 - AI (UNVERIFIED)
+- Andrej
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Andrej
@@ -41,6 +42,8 @@ type_adapter_id: curation-record-v1
 ---
 
 ## Comments
+
+CC (2026-11-27, Andrej): Review issue 1 stays open, with the question answered. The benchmark makes one task per target and runs both of this release's: glucose (TabPFN v2 at R2 0.971) and acetate (0.491), so the shipped target is its first and its stronger one. The `Multi-target` tag stays on the record although the folder ships one target, to keep the second visible until the benchmark can take a two-target regression.
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from the source's pages and papers (and, where the block says so, a preview of the files), NOT from building the data. A human must verify everything before relying on it.**
 
@@ -104,6 +107,26 @@ data confirms each. Its open point, which copy to read, is settled in issue 3.
 
    * **Recommendation:** C if the benchmark takes a two-target regression, otherwise A with the floor named in the notes, as it is. The use case is glucose, and dropping it to escape a censored target would ship a task the source does not have. **Decision:** A, B or C?
 
+   **Answer (2026-11-27, open):** "We currently don't have multi-target in the benchmark, but you could add the
+   appropriate tag for that. What target did RamanBench use?"
+
+   Both, and glucose first. The benchmark does not choose between the targets of a release: it makes one prediction
+   task per target, 163 of them over its 53 regression datasets, and this dataset gives it two. Its own table reports
+   "E. Coli Fermentation - Glucose" with TabPFN v2 at R2 0.971 and "- Acetate" with the same model at 0.491. So the
+   target we ship is its first one, and the one it reads best; acetate is the weaker of the two there, which is an
+   argument against option B that was not in the table above.
+
+   The tag is already on this record: it carries `Multi-target` from the screening, and it stays, by your decision,
+   although the folder ships one target and the rule would otherwise strip it[^e18]. That keeps the second target
+   visible for a round where the benchmark can take one. The floor is a separate matter and earns no tag: the
+   two-regime marker is for a lowest value independent of the rest of the distribution, and a reporting floor was
+   ruled out as a second regime when the tag was written.
+
+   The decision between A, B and C is still yours and the issue stays open.
+
+   [^e18]: **CLEAN-18**: a release with several targets ships one and names the rest; the tag goes when the dataset
+   predicts one target.
+
    **Notes for the AI:** on B, `target = "acetate_g_per_l"`, keep acetate in `_clean` and drop glucose, rewrite `task_summary` and the first notes bullet, re-run the checks and the probes. On C, declare both and say in `metric` which target the score averages.
 
    [^e1]: **CLEAN-11**: a value that is unusual but not shown impossible stays; the zeros are the analyser's floor, a real state of the culture, not missing data.
@@ -139,7 +162,7 @@ data confirms each. Its open point, which copy to read, is settled in issue 3.
      - The difference of 2,261 rows is exactly the extra spectra from eight spectrometers the paper adds to its training set, which our records carry as their own dataset.
    * **Effect on the task:** reading the repository file would train the task on another dataset's spectra without saying so and would put every spectrum on a grid shared across instruments rather than the one the fermentation was measured on.
    * **Experiments:** the two copies' validation and test targets are the same multisets, row order aside (118 and 122 rows); the training counts are 2,400 against 139, and 2,400 - 139 = 2,261.
-   * **Consistency:** the provenance rule prefers the copy that is the measurement[^e8b]; the same reading sent raman_mlrod to its deposit and raman_adenine_colloidal_gold to its study's own table.
+   * **Consistency:** the provenance rule prefers the copy that is the measurement[^e8b]; the same reading sent raman_mlrod to its deposit and raman_adenine_interlaboratory to its study's own table.
    * **Options:**
 
      | | Option | What it does | Pro | Con |
