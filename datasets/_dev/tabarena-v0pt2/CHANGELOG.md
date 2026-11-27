@@ -1,5 +1,11 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-27, nyc_taxi_trip_duration: the one-day gap's reason (no data change)
+
+- `nyc_taxi_trip_duration_1m`'s `splits_comment` gives the latency of a weekly refit as the reason for the one-day
+  gap, and says the label delay alone (trips of at most 3 hours) would need a gap of 3 hours. The gap, the windows and
+  the frame are unchanged; README not regenerated.
+
 ## 2026-11-23, every definition names its split-tree leaf; `RetrospectiveFillIn` and `Target: Fixed Delay` in use (no container built)
 
 - `split_leaf` in all 174 definitions: the leaf of `split_tree.md` the split comes from. Where the tree names the

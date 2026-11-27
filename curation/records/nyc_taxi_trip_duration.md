@@ -3,6 +3,7 @@ unique_name: nyc_taxi_trip_duration
 name: NYC Taxi Trip Duration
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -113,8 +114,8 @@ CC (2026-11-17, Andrej): the declared split (temporal on `pickup_datetime`, wind
 rewritten on 2026-11-10 you chose B (issue 1): the test windows are the newest June week, the Memorial Day week and a
 week in April, and the 7-day length stays with a new reason. Re-reviewed on 2026-11-26 (focused panel): the split,
 the metric, the provenance and the absence of leakage all hold on re-measurement, and the recommendation is to ship
-after changes, all of them to the text. Three issues are open: the speed filter (2), the gap's stated reason (3) and
-the choice of copy (4).
+after changes, all of them to the text. Settled on 2026-11-27: the gap keeps its day with an operational reason (3,
+A). Open: the speed filter (2) and the choice of copy (4).
 
 **Main points:** Settled on 2026-11-10: the test weeks are 24-30 June, 27 May-2 June and 8-14 April 2016 (issue 1,
 B), and the declared horizon is checked. Open for you: whether the 46 trips above 100 km/h are filtered as the two
@@ -274,6 +275,10 @@ sense and is justifiable keep it and resolve them"); the record's CC line says t
 
    * **Recommendation:** A, because the honest fix is the sentence rather than the split: the day is already safe, and B buys 0.56% of the rows at the cost of a rebuild and a divergence from the sibling. **Decision:** A or B?
 
+   **Andrej (2026-11-27, ok):** As implemented (A).
+
+   **Resolved (2026-11-27, Andrej):** A. The gap stays one day; `splits_comment` now gives the refit's latency as its reason (a weekly refit collects the week's trips, fits, checks and deploys the model, so the model serving a week was trained on the trips up to a day before it) and says that the label delay alone needs less: without a gap 77, 112 and 100 train trips per window end after the window start, with a gap of 3 hours none. No data change. pkdd_15_taxi_trip_time_prediction_ii_1m states the label-delay reason for its own one-day gap and is not changed here. README not regenerated.
+
 4. **Say that the Kaggle sample's eleven columns define the task, with `ratecodeid` left to a rebuild?**
 
    * **Problem:**
@@ -289,5 +294,21 @@ sense and is justifiable keep it and resolve them"); the record's CC line says t
      | B | Rebuild from the open-data release | adds `ratecodeid` and whatever else is known at pickup | a fuller task | a new dataset rather than a fix, with its own provenance and checks |
 
    * **Recommendation:** A, since B is a new dataset rather than a correction and the Kaggle sample is the published task. **Decision:** A or B?
+
+   **Andrej (2026-11-27, discuss):** I tend towards B, but wouldn't that also mean having millions of samples then?
+
+   **Reply (2026-11-27):** No: B can keep the same 1,458,644 trips and only add `ratecodeid` to them.
+     - The open-data release ("2016 Yellow Taxi Trip Data") holds 69,406,520 trips from January to June 2016, so the Kaggle sample is about 2.1% of it. A rebuild from the full release would have about 69M rows, and the 1M-row budget would sub-sample each train side again.
+     - The trips can be matched one to one instead. Measured on one hour (12 April 2016, 08:00-08:59): all 503 Kaggle trips of that hour match an open-data trip on vendor, pickup time, drop-off time and the four coordinates (23,540 open-data trips that hour; 9 keys occur twice, one of them a Kaggle trip whose two open-data records, a charge and a dispute, carry the same `ratecodeid`). The row count, the split and the windows stay as they are.
+     - What the column adds is small. `ratecodeid`, the fare rule the driver sets when the meter starts, is 1 (standard) for 97.3% of the half-year's trips, 2 (the JFK flat fare) for 2.1%, and 3 (Newark), 4 (Nassau or Westchester), 5 (negotiated) or 6 (group ride) for the rest. In the matched hour, 493 of 503 were standard. The JFK and Newark trips are already visible from the coordinates, so the new information is mainly the 0.3% of negotiated, out-of-city and group fares. Its effect on a score was not measured.
+     - Cost: the join needs the key columns of the 69M open-data trips (a download of several GB), and a second source to cite. The Kaggle rules forbid passing their file on, and that does not change. Adding a feature changes the task, so it would get its own pull request.
+
+     | | Option | Rows | What it adds | Cost |
+     |---|---|---|---|---|
+     | A | Say the Kaggle sample defines the task (implemented) | 1,442,651 after cleaning | a half-sentence naming the choice of copy | none |
+     | B1 | Join `ratecodeid` onto the same trips | unchanged | the fare rule set at pickup (2.7% of trips not standard) | several-GB download and a join; a second source; its own pull request |
+     | B2 | Rebuild from the full open-data release | about 69M, sub-sampled to 1M per train side | `ratecodeid`, a longer pool to draw from | a new dataset, with its own provenance, checks and review |
+
+     Recommendation: B1 if the column is worth having, as it keeps every decision made so far. A otherwise: most of what `ratecodeid` says is already in the coordinates. **Decision:** A, B1 or B2?
 
 **Review panel:** ship after changes (mediator, focused tier: claim auditor, column auditor, split auditor; the task gamer was still running when the mediator settled, so a participant-style shortcut is not covered, though the leak probe finds no exact feature copy across the split and no column reaching the target). Claims: 53 tested, 44 hold, 5 refuted on wording, 4 untestable. Split: right with notes, the blind tree walk reaches the leaf that ships. Agreed: the metric, the provenance, the absence of leakage. Disputed: the speed filter (issue 2).
