@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-27 16:02 UTC: 238 claim(s) (Andrej 207, Lennart 12, Myunghwan 19).
+As of 2026-11-27 16:52 UTC: 237 claim(s) (Andrej 206, Lennart 12, Myunghwan 19).
 
 ## Andrej
 
@@ -25,7 +25,6 @@ As of 2026-11-27 16:02 UTC: 238 claim(s) (Andrej 207, Lennart 12, Myunghwan 19).
 | `audiology_diagnosis` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `australian_vehicle_insurance_2004_2005` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `bacteremia_vienna` | add | 2026-11-27 | 2026-12-04 | add-dataset (gap batch 2026-11-27, full panel) |
-| `bacteria_id_raman` | review | 2026-11-25 | 2026-12-02 | Curator review of the two RamanBench definitions; taken over from Lennart by agreement |
 | `bad_customer_detection` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `bank_customer_churn` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `bank_marketing` | review | 2026-11-12 | 2026-11-19 (expired) | BeyondArena v0.2 review page (Andrej) |
