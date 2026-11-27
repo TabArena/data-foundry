@@ -142,7 +142,10 @@ issue here; the panel's two open questions concern weighted tables in general an
 (working copy REVIEW.md, 'From PR #47'). Like every container with a `sample_weight`, it enters no run before the
 collection's training-weight gate (`BENCHMARK_CHANGES_TODO.md`, "Training weights", "The gate").
 
-**Main points:** No open issue, so it ships by default: issues 1-3 are resolved, and the re-review of 2026-11-06 adds
+**Main points:** Re-audited on 2026-11-26: nothing invalidates the dataset. The metric's reference does define the
+Poisson deviance scored against exposure, the exposure is the scoring weight and not a feature, and the split tree's
+leaf matches what ships. One issue is open, a note on where the skill is earned (5). Earlier: no open issue, so it
+shipped by default: issues 1-3 are resolved, and the re-review of 2026-11-06 adds
 none on this dataset (its two questions are the cross-dataset items X1 and X2). Issue 4 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
 
 **Record judgment:** valid; a documented Belgian motor-insurance portfolio and the source's own frequency task, now the
@@ -154,7 +157,7 @@ are on the count target shipped until then. The CC's +0.0043 is the exposure stu
 (+0.00425, fitted with early stopping), not on the rate scale as the mediator and the claim auditor read it. On the
 weighted rate deviance the same comparison gives +0.0048. A dated AI line next to the CC in the notes says so.
 
-**Issues for Lennart:**
+**Issues for Andrej and Lennart:**
 
 1. **Make `expo` a scoring column instead of a feature?**
 
@@ -387,6 +390,40 @@ weighted rate deviance the same comparison gives +0.0048. A dated AI line next t
 
    **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (A one-year 1997 study used today, with a rating rule (the legal bonus-malus scale) that the source country abolished in 2004; the span and the rule change both stand against ASR.)
 
+
+5. **Say that about half the measured skill is earned on the part-year policies?**
+
+   * **Problem:**
+     - 77.3% of the rows insure a full year; the rest are part-year, and their claim rate per year insured is about twice the full-year rate.
+     - The record already says a policy is often surrendered after a claim, so for part-year rows the outcome shortens the exposure, and the portfolio carries no dates to tell a surrender from a policy that started late.
+     - The record names that mechanism and its 1.4 times figure, but not how much of the benchmark's skill sits on those rows.
+   * **Effect on the task:** About 55% of the gain over a constant is earned on part-year rows that hold 13% of the exposure, so a reader comparing methods is comparing them largely on rows whose length the outcome helped decide. The level of the target is also about 10% higher than on full-year rows alone.
+   * **Experiments:** untuned LightGBM, two repeats of three folds, weighted by exposure.
+
+     | Trained on | Scored on | Gain over a constant |
+     |---|---|---|
+     | all rows | all rows | 0.0154 |
+     | all rows | full-year rows | 0.0081 |
+     | full-year rows | full-year rows | 0.0089 |
+     | full-year rows | all rows | 0.0135 |
+
+     | Rows | Claims per year insured |
+     |---|---|
+     | full-year | 0.126 |
+     | part-year | 0.20 to 0.39 |
+     | all, weighted | 0.1393 |
+
+   * **Consistency:** The weight-proxy probe stays consistent with this, since it asks whether a feature's gain runs through the exposure, which it does not; this asks where the gain is earned.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep all rows weighted by exposure (implemented) | matches the source's offset model | equals the source's metric; your decision of 2026-11-06 | half the skill is earned on rows the outcome shortened, unstated |
+     | B | Keep A and add one line giving the split | names where the skill sits | honest; no change to data, split or metric | text only |
+     | C | Train and score on full-year rows only | drops 23% of the rows | removes the shortened exposures | survivorship then runs the other way; changes the task; departs from the source |
+     | D | Weight every row by one | equal weight per row | less weight on short rows | breaks the offset equivalence, and short rows count far beyond their exposure |
+
+   * **Recommendation:** B. The data, split and metric are right as decided on 2026-11-06; what is missing is a sentence telling a reader where the score comes from. **Decision:** A, B, C or D?
 
 **Review panel:** ship after changes (mediator). Tier full, re-review of 2026-11-06 under LEAK-41, MET-14 to MET-16,
 after issue 1 was resolved as the rate weighted by `expo`. Claim audit: 31 claims, 20 hold (2 with a caveat), 2 refuted

@@ -94,7 +94,11 @@ CC (2026-11-17, Andrej): the declared split (temporal on `Date`, windows of 14 d
 and nothing is left open. The review file of October (issues 2 to 6, settled on 2026-10-26) was removed then and stays
 in git; this file numbers on from it.
 
-**Main points:** Settled on 2026-11-11: 26 fortnights spread over the eight years open, so the score meets the dry and
+**Main points:** Re-audited on 2026-11-26: the prediction point is clean (every previous-day column equals the raw
+value of the day before in all rows, and `RISK_MM`, the best-known leak in this dataset's history, is dropped and
+absent from the 166 shipped columns). Two issues are open: a station's next-day row carrying the label inside the
+same test window (8), and the stations that stop reporting (9). The committed README still describes the windows
+before 2026-11-11 and is regenerated at the next build. Earlier, settled on 2026-11-11: 26 fortnights spread over the eight years open, so the score meets the dry and
 the wet years, with the test rows of the 26 fortnights of the last year kept.
 
 **Horizon:**
@@ -132,7 +136,7 @@ this block: no source names a refit cadence (rattle's file is a sample dataset a
 the one or two weeks set for weather; the no-gap sentence stays. The record has the horizon CC line. `dataset check`:
 0 errors, 0 warnings (README not regenerated).
 
-**Issues for Lennart:**
+**Issues for Andrej and Lennart:**
 
 7. **Which fortnights should the 26 test windows be?**
 
@@ -224,6 +228,49 @@ the one or two weeks set for weather; the no-gap sentence stays. The record has 
    the shipped spread and, as its own row, the 26 back-to-back fortnights of 2026-10-26; the standard errors of the
    CC of 2026-10-26 and the AUC figures of the notes are dated to the windows they were measured on. The record has the
    decision CC line. `dataset check`: 0 errors, 0 warnings.
+
+8. **Say that a station's next-day row in the same test window carries the label?**
+
+   * **Problem:**
+     - The label is whether it rains tomorrow, and it equals "the station's next-day row records more than 1 mm of rainfall" in all 261,914 rows.
+     - For 92.1% of the 16,484 test rows, that next-day row sits inside the same test window, so it is in the frame a participant is handed.
+     - Neither the definition nor the record says that a method may not look at other test rows, which is the line four other datasets carry for the same mechanism.
+   * **Effect on the task:** A model that reads each row on its own gains nothing, so the shipped 0.849 is honest. A method that looks a station up on the next date, or a nearest-neighbour method over the test rows, reads about 92% of the labels directly.
+   * **Consistency:** bank_marketing, loan_default_prediction_imperial_college, frempl_french_motor_personal_line and santander_customer_satisfaction carry a protocol line for the same kind of channel. The mechanism is also the one raised across datasets for the rows after a test window, here inside the window rather than after it.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Leave it as it is (implemented) | ships unchanged | no work | the channel is open and nowhere written down |
+     | B | A protocol line in the splits comment and the record | says no step may use the other test rows | the mildest remedy; matches the four precedents | not enforced by the data |
+     | C | Drop the rainfall and rain-today columns | the echo of the next day's label goes | removes the channel at its source | loses the last observation the task-value rule approved, and the same signal re-enters through other columns |
+
+   * **Recommendation:** B, the precedent and the mildest remedy. **Decision:** A, B or C?
+
+9. **Name the three stations that stop reporting inside the evaluation period?**
+
+   * **Problem:**
+     - The accepted warning about features missing in test gives the right count but an incomplete mechanism: whole stations end, not only instruments.
+     - Katherine stops on 2019-03-22, Adelaide on 2020-07-30 and Newcastle on 2021-04-15, so the stations reporting each year fall from 49 to 46.
+     - Ten further neighbour columns from these stations are entirely missing in test but stay under the check's threshold, so the warning does not name them.
+   * **Effect on the task:** None on the score. The accepted text describes the gaps as instruments dropping out when part of it is stations closing, which a reader comparing windows would want to know.
+   * **Experiments:**
+
+     | Measure | Accepted text | Recomputed on the 26 shipped windows |
+     |---|---|---|
+     | columns the check's rule names | 12 | 12 |
+     | their training coverage | 50 to 93% | 59 to 93% |
+     | further columns empty in test, under the threshold | not named | 10 (training coverage 7 to 26%) |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the accepted text (implemented) | nothing changes | you accepted it; the count is exact | omits the stations that end |
+     | B | Add one sentence naming the three stations and their end dates | text only | accurate | edits accepted text, so it needs your line on the record |
+     | C | Drop the ended stations' neighbour columns | fewer columns that go empty | cleaner | cuts information kept on purpose |
+
+   * **Recommendation:** B, at low priority; it changes nothing but the account. **Decision:** A, B or C?
 
 ## Reference
 

@@ -86,6 +86,58 @@ CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words w
 
 CC (2026-11-17, Andrej): the declared split (temporal on `date`, windows of 3 weeks, up to 9 windows while training keeps 50% of the rows (9 in the build), gap 1 week) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+## Review
+
+**Outcome:** added. Re-audited on 2026-11-26 against a King County extract six weeks newer than the one the
+definition was written against: nothing changes in the data, the split or the verdict. The strongest result of the
+round's reproducibility checks is this dataset's: `dataset check` regenerated its README byte-identical to the
+committed page, from the newer extract, with the same 20,499 rows and the same container checksum. Every rebuilt
+column is as of the sale, the split tree's leaf matches what ships, and the one-week gap does its job (median six days
+from deed to recording, and under 1% of training rows recorded after their window starts). Four things need no
+decision and are corrected in the text: three counts left over from the related-party drop of 2026-10-26 (20,607 sales
+for 20,499, window sizes 649 to 1,534 for 643 to 1,518, and 9,498 test sales for 9,439); the definition's checksum
+test, which compares three files where only the sales-warnings file guards the 2014-2015 records it names; and the
+metric's reason, which does not say that the OpenML copy's task defaults to RMSE on the raw price. One issue is open.
+
+**Main points:** One for you: whether the note on the sale-condition column says more than the files show about when
+each code is set (1). This dataset is the precedent `ames_housing` cites, and it holds on measurement.
+
+**Issues for Andrej:**
+
+1. **Soften the claim that the sale-condition codes are declared by the parties?**
+
+   * **Problem:**
+     - The use case says the sale's condition is "declared by the parties", while the same note says the county sets its sale warnings after the deed is recorded.
+     - The extract carries no timestamp or setter for any code, so when each one is set cannot be shown from the files.
+     - The claim matters beyond this dataset, because `ames_housing` cites this one as the precedent for keeping a sale's condition as a feature.
+   * **Effect on the task:** None on the data. The column is worth keeping on measurement; what is overstated is the reason given for its timing.
+   * **Experiments:** shipped splits, untuned LightGBM, mean residual on the log price with and without the column.
+
+     | Level | Scored rows | Without the column | With it |
+     |---|---|---|---|
+     | short sale | 57 | -0.218 | -0.028 |
+     | no market exposure | 278 | -0.073 | +0.016 |
+     | estate | 21 | -0.011 | +0.102 |
+     | other pre-price code | 20 | -0.082 | +0.107 |
+
+     Pooled RMSE on the log price is 0.1697 without the column and 0.1673 with it, better in 9 of 9 windows. Coded rows are 4% of the scored rows, and the two smallest levels hold about 20 rows each, so their signs are noise. The share coded does not fall toward the newest months, so there is no sign of codes arriving late.
+   * **Consistency:** The precedent holds, but for a different reason than `ames_housing`'s review gives. Here the codes are county warnings set after recording with no timestamp; there the condition sits in the source's own file for the same sale. So a citation of this dataset should rest on the measured gain and on the one-sided test that justified dropping the appraiser's codes (none of that group above +0.3, 29% below -0.3), not on the two having the same mechanism.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the wording (implemented) | "declared by the parties" stays | the column's gain is measured | the note claims more than the files show |
+     | B | Keep the column, soften the wording | the note says the codes are county sale warnings naming facts the parties know, and that when each was set is not in the extract | honest; no data change | one sentence |
+     | C | Keep only the short-sale, bankruptcy and estate levels | drops the no-market-exposure level and the minor codes | the fewest doubtful codes | loses 471 rows' level and reopens a settled call |
+
+   * **Recommendation:** B. The column earns its place on measurement, so only the account of its timing needs to change. **Decision:** A, B or C?
+
+**Review panel:** ship (audit against the source, the newer extract and the recording dates; no separate mediator).
+Claims: every count but three reproduces, and the three are left over from a drop applied on 2026-10-26. Columns:
+every rebuilt column is as of the sale, and the one flagged code is already typed correctly. Split: the tree reaches
+the leaf that ships, with nine windows on the target and every training side different. Agreed: nothing changes in
+the data. Disputed: nothing.
+
 ## Reference
 
 https://www.kaggle.com/datasets/harlfoxem/housesalesprediction

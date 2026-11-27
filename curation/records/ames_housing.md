@@ -141,7 +141,7 @@ exception, which is the only access to 2007 and the market's turn (3).
 
    * **Recommendation:** A, with the sentence about the standard struck whichever way you decide, since it is wrong in both directions. **Decision:** A, B or C?
 
-   **Notes for the AI:** under B the consistency check is owed against house_sales (2026-10-22 and 10-26, same mechanism), and the departure needs the fact that sets this case apart or house_sales reopened.
+   **Notes for the AI:** under B the consistency check is owed against house_sales (2026-10-22 and 10-26), and the departure needs the fact that sets this case apart or house_sales reopened. The two do not share a mechanism: there the codes are county warnings set after recording, here the condition is in the source's own file. Cite house_sales for its measured gain and its one-sided test, not for the mechanism (house_sales re-audit, 2026-11-26).
 
 2. **Bring back the 12 adjoining-owner sales?**
 
