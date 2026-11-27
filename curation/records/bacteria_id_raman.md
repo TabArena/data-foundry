@@ -42,6 +42,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
+CC (2026-11-27, Andrej): corrected in Review issue 3's answer: the paper does not say where the 30 reference isolates came from, so calling them ATCC type strains was an inference from a variable name in the source's code. What holds is that they are the source's labelled library, grown from stock, and that no patient of the 50 is one of them by the separation measured in the panel's provenance check.
 CC (2026-11-27, Andrej): Review issue 3, `ok`: the 5 reference isolates of the three library-only groups stay in training with the note, as the source pre-trains on all eight groups. Issues 2 and 4 are still open.
 CC (2026-11-25, Andrej): Review issue 1, `ok`: one prediction per patient, from all of its spectra, as implemented.
 
@@ -235,7 +236,9 @@ log loss on 2026-10-21). Priority 4 becomes 3 (the fit is approximate).
 
    * **Recommendation:** A: the source pre-trains on all eight groups, and dropping them mostly shifts the level. **Decision:** A or B?
 
-   **Answer (2026-11-25):** because they are not patients. The 30 reference isolates are type strains from a culture collection (ATCC), ordered and grown on purpose, and a hospital laboratory already knows what each one is: putting one in a test fold would score the model on naming an organism that came out of a labelled freezer stock, not on the clinical decision. The task's test unit is a patient's isolate, where the species and the treatment are what nobody knows yet.
+   **Answer (2026-11-25, corrected 2026-11-27):** because they are not patients of this study. The 30 reference isolates are the source's own library: a fixed, labelled set grown from stock on blood agar before each measurement, where the laboratory already knows what every one of them is. Putting one in a test fold would score the model on naming an organism it was handed with its name, not on the clinical decision. The test unit is a patient's isolate, where the species and the treatment are what nobody knows yet.
+
+   Where the strains came from, the paper does not say. Methods names only "30 bacterial and yeast isolates, including multiple isolates of Gram-negative and Gram-positive bacteria, as well as Candida species" and points at a supplementary table whose pages are images; it says they "represent over 94% of the most common infections seen at Stanford Hospital in the years 2016-17", which is coverage and not origin, and that "unique isolates are available from the authors upon reasonable request". The source's code names its mapping `ATCC_GROUPINGS`, which points at a culture collection, but that is a variable name and not a statement. An earlier version of this answer called them ATCC type strains as though the paper said so; it does not. What is measured here, not assumed, is that no patient of the 50 is one of the 30: each patient's closest reference isolate separates from it at ROC AUC 0.83 to 1.00 (median 0.998), where two cultures of one reference strain separate at a median of 0.81.
 
    They stay in training because that is what the source does and what a laboratory has: Ho et al. pre-train on the 30 reference isolates for all eight treatment groups and then fine-tune on patients, and a hospital's own reference library is exactly this kind of collection. So the 66,000 reference spectra sit in every training side and in no test fold, which is the `splits_rows_never_tested` warning of issue 4.
 
