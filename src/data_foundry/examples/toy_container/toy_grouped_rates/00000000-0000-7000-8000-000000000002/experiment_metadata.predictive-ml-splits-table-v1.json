@@ -1,0 +1,12 @@
+{
+  "splits_comment": "3 folds over a single repeat, each customer on one side (for demonstration).",
+  "time_horizon": null,
+  "time_horizon_unit": null,
+  "splits_file": "rows.parquet",
+  "split_columns": [
+    "split_r0_f0",
+    "split_r0_f1",
+    "split_r0_f2"
+  ],
+  "type_adapter_id": "predictive-ml-splits-table-v1"
+}

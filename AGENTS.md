@@ -29,8 +29,8 @@ Data Foundry is the data-layer toolkit behind
   collection next;
 * the **v2 dataset format** (`definition/`): one `dataset.py` class per dataset, its split protocol, checks and
   generated README, on top of the exploratory data checks (`dataset_checks.py`) and the post-hoc bundle integrity
-  checks (`bundle_checks.py`). The consumer side (`metrics.py`, `sampling.py`, `special/`, `encodings.py`) loads none
-  of it;
+  checks (`bundle_checks.py`). The consumer side (`task.py`, the task view; `metrics.py`, `sampling.py`, `special/`,
+  `encodings.py`) loads none of it;
 * a git-native **curation backlog** (`src/data_foundry/curation/`) that replaces
   the legacy curation Google Sheet. The source of truth is **one markdown record
   per candidate dataset** (YAML front-matter for the structured/dropdown fields +
@@ -202,7 +202,7 @@ bump versions or publish without explicit human authorization.
 | Add a dataset: its v2 folder, checks, probes and the review panel ("is X ready?" too) | [`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md) · [`src/data_foundry/definition/`](src/data_foundry/definition/) |
 | Review a batch of added datasets (the review page) | [`.claude/skills/review-added-datasets/SKILL.md`](.claude/skills/review-added-datasets/SKILL.md) |
 | Rebuild the TabArena v0.2 working copy and verify the build | [`rebuild.md`](.claude/skills/knowledge-data-foundry/references/rebuild.md) |
-| Load / browse / benchmark shipped datasets (format 2: score by `objective_metric` with `data_foundry.metrics.scorer`, inputs from `feature_columns`, which drops the scoring columns; a task with a training weight names it, `sample_weight(container)`, and every model is fitted with it as the row weight, never as a feature; a weight column's test-row values are for the scorer only, never read when predicting; a container with a row budget, a `_1m` version, keeps every training row and a model fits on `subsample_train(container, repeat, fold)`; format 1: `objective_metric_name`) | [`CLAUDE.md`](CLAUDE.md) (*Using shipped datasets*) · [`examples/`](examples) · [`src/data_foundry/metrics.py`](src/data_foundry/metrics.py) |
+| Load / browse / benchmark shipped datasets (both formats: `container.task()` gives the folds within the row budget, the inputs, the weights, the scorer and the error) | [`docs/benchmark_integration.md`](docs/benchmark_integration.md) · [`CLAUDE.md`](CLAUDE.md) (*Using shipped datasets*) · [`examples/`](examples) · [`src/data_foundry/task.py`](src/data_foundry/task.py) |
 | Pull requests: the body, one PR per independent change, stacked PRs with `gh stack` | [`pull_requests.md`](.claude/skills/knowledge-data-foundry/references/pull_requests.md) |
 | Dataset template | [`datasets/_template/`](datasets/_template/) |
 | Examples (use-case anchors) | [`examples/`](examples) · [`examples/README.md`](examples/README.md) |

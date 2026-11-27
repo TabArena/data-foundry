@@ -337,6 +337,18 @@ def test_both_examples_weight_a_rate_by_its_training_weight(tmp_path, capsys):
     assert "Training weight: Exposure" in capsys.readouterr().out
 
 
+@pytest.mark.parametrize("format_version", [1, 2])
+def test_minimal_adapter_fits_and_scores_every_fold_of_both_toys(format_version, capsys):
+    """The minimal adapter runs on both toys: one finite error per fold, as the task view scores it."""
+    example = _example("minimal_adapter")
+    path = get_toy_container_path(format_version)
+    errors = example.main(path)
+    container = CuratedContainer.load(path)
+    assert len(errors) == sum(len(folds) for folds in container.experiment_metadata.splits.values())
+    assert all(np.isfinite(e) and e >= 0 for e in errors)
+    assert container.dataset_metadata.unique_name in capsys.readouterr().out
+
+
 @pytest.mark.parametrize("path", sorted(EXAMPLES.rglob("*.py")), ids=lambda p: p.relative_to(EXAMPLES).as_posix())
 def test_every_example_parses(path):
     """An example that does not run in the tests (it needs the network) must still be valid Python."""
@@ -364,12 +376,14 @@ def _parity_containers() -> dict[str, CuratedContainer]:
 
 @pytest.mark.parametrize("kind", ["label_time", "grouped", "unit_weight"])
 def test_read_metric_without_data_foundry_takes_the_features_data_foundry_takes(tmp_path, kind):
-    """The plain-json example leaves out the same columns as `feature_columns`, a label time and a unit included."""
+    """The plain-json example reads the same features as `feature_columns` from the saved task view, a label time and a
+    unit included.
+    """
     from data_foundry.curation_container import feature_columns
 
     container = _parity_containers()[kind]
     folder = container.save(save_dir=tmp_path)
     example = _example("read_metric_without_data_foundry")
-    excluded = example.non_feature_columns(example.read_json(folder, "task_metadata"))
-    columns = pd.read_parquet(folder / "dataset.parquet").columns
-    assert [c for c in columns if c not in excluded] == feature_columns(container)
+    columns = list(pd.read_parquet(folder / "dataset.parquet").columns)
+    task = example.read_json(folder, "task_metadata")
+    assert example.feature_list(folder, task, columns) == feature_columns(container)

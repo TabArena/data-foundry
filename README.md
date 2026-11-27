@@ -59,23 +59,19 @@ Full inspection script (every metadata field printed): [`examples/load_curated_c
 <details>
 <summary><b>📦 Use one dataset</b> — IID and non-IID variants</summary>
 
-Download a single BeyondArena container by name (or UUID) and iterate its outer CV splits. The collection resolves the container against your local cache; subsequent runs hit disk, not the network.
+Download a single BeyondArena container by name (or UUID) and fit on its outer CV splits through the task view. The collection resolves the container against your local cache; subsequent runs hit disk, not the network.
 
 ```python
 from data_foundry.collections import BEYOND_ARENA
-from data_foundry.curation_container import feature_columns
 
-container = BEYOND_ARENA.get_dataset("airfoil_self_noise")
-df = container.dataset
-target = container.task_metadata.target_column_name
-features = feature_columns(container)  # every column but the target, group and scoring columns
-
-for repeat_id, folds in container.experiment_metadata.splits.items():
-    for fold_id, (train_idx, test_idx) in folds.items():
-        X_train, y_train = df.iloc[train_idx][features], df.iloc[train_idx][target]
-        X_test,  y_test  = df.iloc[test_idx][features],  df.iloc[test_idx][target]
-        # ... fit, evaluate ...
+task = BEYOND_ARENA.get_dataset("airfoil_self_noise").task()
+for fold in task.folds():  # the shipped splits; fold.train stays within a row budget
+    model.fit(task.X(fold.train), task.y(fold.train), sample_weight=task.train_weight(fold.train))
+    score = task.score(task.y(fold.test), model.predict(task.X(fold.test)), fold.test)
+    print(task.metric.name, score, task.error(score))  # the error: lower is better, 0 at the metric's best value
 ```
+
+`task.X` holds only the model inputs (no target, group, scoring or unit column, no time column that dates the label), `task.train_weight` is the training weight or `None`, and `task.score` scores by the container's metric spec. [docs/benchmark_integration.md](docs/benchmark_integration.md) is the page for connecting a benchmark harness: the task view, the row budget, the inputs, the weights, scoring and errors. A minimal adapter is [`examples/minimal_adapter.py`](examples/minimal_adapter.py).
 
 Full worked example (Random Forest, RMSE per fold, full metadata via `container.describe()`): [`examples/benchmark_on_beyond_arena.py`](examples/benchmark_on_beyond_arena.py).
 
@@ -90,7 +86,9 @@ Full worked example (Random Forest, RMSE per fold, full metadata via `container.
 **Container formats.** `container.format_version` is `2` for a container built by a `dataset.py` definition (the
 TabArena v0.2 working copy and every new dataset) and `1` for the shipped BeyondArena containers, which were built
 with Data Foundry v1 ([DATA_FOUNDRY_V1.md](DATA_FOUNDRY_V1.md)); a format-2 container also states it in
-`container_metadata.json`. The collections API and `CuratedContainer.load` read both. Both read the same through `task_metadata.time_on`,
+`container_metadata.json`. The collections API, `CuratedContainer.load` and the task view (`container.task()`) read both:
+format 1 gets its metric name as a spec and no weights; format 2 also saves the task view as `benchmark_task.json` next to
+its metadata (derived, outside the checksum), for readers without Data Foundry. Both read the same through `task_metadata.time_on`,
 `group_on`, `group_labels` and `group_time_on`. Format 2 stores the group fields once, in a `Grouping`
 (`data_foundry.schema.Grouping`), and `container.grouping` returns it: the prediction unit (a row, or one prediction
 per group with an aggregation such as `mean` or `any`), what a model may know about a group when predicting, and the
@@ -106,7 +104,8 @@ of the `experiment_metadata.row_budget` a `_1m` version records: no size limit w
 
 **Row budget.** A format-2 container with a `row_budget` (a `<name>_1m` version) tests on at most `row_budget.test`
 rows per split, and its train sides keep every row they may use (all earlier rows of a temporal window). A benchmark
-fits on at most `row_budget.train` of them: `subsample_train(container, repeat, fold)` (`data_foundry.sampling`) draws them
+fits on at most `row_budget.train` of them: `fold.train` of `container.task().folds()`, which
+`subsample_train(container, repeat, fold)` (`data_foundry.sampling`) draws
 by the default sampler the container records in `experiment_metadata.train_sampling` (for a temporal side the newest
 year, extended back in time until it holds that many rows, sampled at random; whole groups of a grouped one,
 stratified rows otherwise), and returns the train side whole for a container without a budget. A numeric time column
@@ -268,8 +267,9 @@ Loading, browsing and benchmarking shipped datasets needs no command; `CLAUDE.md
 <summary><b>📦 From PyPI</b> — use Data Foundry as a library</summary>
 
 ```bash
-pip install data-foundry            # load and use curated datasets
-pip install "data-foundry[build]"   # also build datasets from their definitions
+pip install data-foundry                # load and use curated datasets
+pip install "data-foundry[benchmark]"   # also score them (scikit-learn, scipy)
+pip install "data-foundry[build]"       # also build datasets from their definitions
 ```
 
 </details>
@@ -296,7 +296,8 @@ pytest                                 # run the test suite
 uvx ruff@0.15.15 check . && uvx ruff@0.15.15 format --check .  # lint + format, as CI does
 ```
 
-Loading and using a container needs only the core install. The `build` extra adds what building a dataset from its
+Loading and using a container needs only the core install; the `benchmark` extra adds scikit-learn and scipy, which
+the metrics import when they score. The `build` extra adds what building a dataset from its
 definition needs: `scikit-learn` for the splits, `scipy` for the checks, and the readers the definitions use
 (`liac-arff`, `openml`, `polars`, the Excel engines, `matplotlib`). `tests` adds `build` and `pytest`; `dev` adds
 both plus the curation tools (`autogluon`, `kaggle`, `seaborn`, `ruff`, …). pandas 2.3 and 3 build and load the same

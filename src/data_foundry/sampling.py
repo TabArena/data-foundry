@@ -245,12 +245,24 @@ def subsample_train(
                 train = subsample_train(container, repeat, fold)
                 model.fit(X.iloc[train], y.iloc[train])
     """
+    return train_positions(container, repeat, fold, n_rows, random_state=random_state).tolist()
+
+
+def train_positions(
+    container: CuratedContainer,
+    repeat: int,
+    fold: int,
+    n_rows: int | None = None,
+    *,
+    random_state: int = SPLIT_RANDOM_STATE,
+) -> np.ndarray:
+    """:func:`subsample_train` as an ``int64`` array, without the round trip through a Python list."""
     meta = container.experiment_metadata
     train, _test = meta.splits[repeat][fold]
     budget = getattr(meta, "row_budget", None)
     n_rows = n_rows if n_rows is not None else (budget.train if budget is not None else None)
     if n_rows is None or len(train) <= n_rows:
-        return list(train)
+        return np.asarray(train, dtype=np.int64)
     task = container.task_metadata
     sampling = getattr(meta, "train_sampling", None)
     time_on = getattr(task, "time_on", None)
@@ -266,4 +278,4 @@ def subsample_train(
         whole_values_of=time_on if unit == "time_values" else None,
         random_state=random_state,
     )
-    return kept.tolist()
+    return np.asarray(kept, dtype=np.int64)

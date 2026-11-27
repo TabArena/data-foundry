@@ -75,6 +75,13 @@ build = [
     # releases
     "rdkit==2026.3.6",
 ]
+# What a benchmark needs to score and sub-sample a container (`data_foundry.metrics`, `data_foundry.sampling` and the
+# task view `container.task()`), without the build readers and RDKit. scikit-learn and scipy are imported when a metric
+# is computed; scikit-learn within the pin of `build`.
+benchmark = [
+    "scikit-learn>=1.6,<1.8",
+    "scipy",
+]
 # The recommended encodings of date and text columns (`data_foundry.encodings`): skrub's DatetimeEncoder, and the
 # e5 sentence embeddings (sentence-transformers pulls in torch).
 encodings = [
