@@ -168,6 +168,9 @@ class BcscRiskEstimation(AbstractCuratedDataset):
                   doi = {10.1093/jnci/djj331},
                   note = {Data collection and sharing was supported by the National Cancer Institute-funded Breast Cancer
                     Surveillance Consortium (HHSN261201100031C). You can learn more about the BCSC at:
+                    \\url{http://www.bcsc-research.org/}. The Breast Cancer Surveillance Consortium and its data
+                    collection and sharing activities are funded by the National Cancer Institute (P01CA154292).
+                    Downloaded 11/27/2026 from the Breast Cancer Surveillance Consortium Web site -
                     \\url{http://www.bcsc-research.org/}.}
                 }
             """,
@@ -224,7 +227,8 @@ class BcscRiskEstimation(AbstractCuratedDataset):
         """
         the screening exams were collected from 1996 to 2002, and the file carries no
         dates ("do not include any dates"), so the time is lost. A dated release would test exams later than those
-        used for training.
+        used for training. Not taken as stationary (Andrej, 2026-11-27): hormone therapy use, the density
+        scale and the imaging changed after 2002, and nothing dated can measure it.
         """,
     )
 

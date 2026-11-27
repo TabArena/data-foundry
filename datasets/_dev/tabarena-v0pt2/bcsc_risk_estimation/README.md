@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bcsc_risk_estimation
 container_format: 2
-checksum: v2:64fba948f8b93b8f0d96ce29b2adccd311eac2b67d25e0fafe4d7a7fc9f45b92
+checksum: v2:1fd0c6709619d135933fbd98a008cf5d39b0c3513f4e8672956e11f476ede45b
 build: null
 build_stale: false
 data:
@@ -63,7 +63,7 @@ decisions:
 
 Binary classification of `cancer_within_one_year`, scored with `roc_auc` on IID splits. 1,007,660 rows and 12 features. Source: GOV Website (2006).
 
-Not built yet. The current definition gives checksum `v2:64fba948f8b93b8f0d96ce29b2adccd311eac2b67d25e0fafe4d7a7fc9f45b92`.
+Not built yet. The current definition gives checksum `v2:1fd0c6709619d135933fbd98a008cf5d39b0c3513f4e8672956e11f476ede45b`.
 
 ## In brief
 
@@ -180,6 +180,9 @@ Only curators run `build`, when the dataset ships.
   doi = {10.1093/jnci/djj331},
   note = {Data collection and sharing was supported by the National Cancer Institute-funded Breast Cancer
     Surveillance Consortium (HHSN261201100031C). You can learn more about the BCSC at:
+    \url{http://www.bcsc-research.org/}. The Breast Cancer Surveillance Consortium and its data
+    collection and sharing activities are funded by the National Cancer Institute (P01CA154292).
+    Downloaded 11/27/2026 from the Breast Cancer Surveillance Consortium Web site -
     \url{http://www.bcsc-research.org/}.}
 }
 ```
@@ -213,7 +216,7 @@ We start with the BCSC Risk Estimation Dataset, the data of the BCSC's published
 - Codes carry the codebook's words (CLEAN-12); age group, density, BMI group and the number of relatives are ordered (CLEAN-14).
 - Repeated feature vectors: every row of a cell is a copy of the others (181,903 cells for 1,007,660 women), as the twelve features are coarse categories; they are different women with independent outcomes.
 - Size: 3 folds give 671,773 training and 335,887 test rows, under the collection's 1M / 500k row budget, so the dataset ships whole (no `_1m` version).
-- Time basis: ForcedIIDFromTemporal: the screening exams were collected from 1996 to 2002, and the file carries no dates ("do not include any dates"), so the time is lost. A dated release would test exams later than those used for training.
+- Time basis: ForcedIIDFromTemporal: the screening exams were collected from 1996 to 2002, and the file carries no dates ("do not include any dates"), so the time is lost. A dated release would test exams later than those used for training. Not taken as stationary (Andrej, 2026-11-27): hormone therapy use, the density scale and the imaging changed after 2002, and nothing dated can measure it.
 
 ## Splits
 

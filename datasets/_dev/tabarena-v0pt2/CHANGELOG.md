@@ -27,6 +27,8 @@
   menopausal" level for surgical menopause and hormone therapy. Random 3-fold IID splits, `ForcedIIDFromTemporal`
   (leaf `L-FORCED.random`); metric ROC AUC (the paper's c statistic); fit approximate. Full review panel: ship after
   changes, applied; three questions in the record's review.
+- Andrej's decisions (2026-11-27): the forced time tag stays; `Outdated` as a note in the record; the BibTeX note
+  also carries the main page's required citation sentence (P01CA154292, download date).
 
 ## 2026-11-27, nyc_taxi_trip_duration: trips faster than 120 km/h dropped (task change; container not rebuilt)
 

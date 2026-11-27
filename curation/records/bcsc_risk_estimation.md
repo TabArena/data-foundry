@@ -8,6 +8,8 @@ data_foundry_status:
 - WIP (Triage)
 claimed_by: Andrej
 suggestion: 'Yes'
+decision_markers:
+- Outdated
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -54,11 +56,16 @@ type_adapter_id: curation-record-v1
 
 CC (2026-11-27, Andrej): add it. It is the risk task before the mammogram is read, which `breast_cancer_prediction` cannot carry (there the radiologist's read is a feature; its review issue 2).
 
+CC (2026-11-27, Andrej): review issues decided.
+- Issue 1, A: `ForcedIIDFromTemporal` stays: the relation is known to have changed after 2002 (hormone therapy use, the density scale, the imaging) and nothing dated can measure it.
+- Issue 2, B: `Outdated` as a note: the risk-factor relation still holds, but the era's hormone therapy use, density scale and imaging differ; it does not keep the dataset out (as for cirrhosis_patient_survival_prediction and hepatitis_survival_prediction).
+- Issue 3, B: the BibTeX note carries both the documentation page's acknowledgement and the main page's required citation sentence, with the download date.
+
 ## Review
 
 **Outcome:** added. The BCSC Risk Estimation Dataset, one exam per woman: 1,007,660 women, 7,319 cancers within a year (0.73%), twelve risk factors known at the screening visit, before the radiologist assesses the mammogram; the risk task `breast_cancer_prediction` cannot carry (its review issue 2, open). The full review panel recommends shipping after changes, all applied: the age band 75-79 restored (it had been set to missing), the fit set to approximate, a "not menopausal" level, and corrected notes. Logistic regression and regularised LightGBM beat age alone by 0.04 to 0.05 ROC AUC on every fold, and nothing leaks: the 91.2% of test women whose exact profile is in training gain nothing from those women's outcomes.
 
-**Main points:** Keep the forced time tag (1), mark the 1996-2002 exams `Outdated` as a note (2), and add the source page's second citation wording (3)?
+**Main points:** Nothing is left open: the forced time tag stays (issue 1, A), `Outdated` is a note (issue 2, B), and the citation carries both wordings (issue 3, B), all 2026-11-27.
 
 **Issues for Andrej:**
 
@@ -88,6 +95,10 @@ CC (2026-11-27, Andrej): add it. It is the risk task before the mammogram is rea
 
    [^split32]: **SPLIT-32**: the review reasons whether the use case can be taken as stationary; `AssumedStationaryRelation` is set by a person only.
 
+   **Andrej (2026-11-27, ok):** as implemented.
+
+   **Resolved (2026-11-27, Andrej):** A, as implemented: `ForcedIIDFromTemporal` stays; the `Time basis:` line gives the reasoning.
+
 2. **Ship with `Outdated` as a note, or with no marker?**
 
    * **Problem:**
@@ -110,6 +121,10 @@ CC (2026-11-27, Andrej): add it. It is the risk task before the mammogram is rea
 
    [^hep]: CC 2026-11-10 on `hepatitis_survival_prediction`.
 
+   **Andrej (2026-11-27, change):** Option B: Outdated as a note.
+
+   **Resolved (2026-11-27, Andrej):** B: `Outdated` in the record's markers as a note, with a CC line; the dataset ships.
+
 3. **Add the source page's citation wording beside the acknowledgement you asked for?**
 
    * **Problem:**
@@ -124,6 +139,10 @@ CC (2026-11-27, Andrej): add it. It is the risk task before the mammogram is rea
      | C | Replace it with the main page's text | The main page's wording only | One wording | Drops the wording you asked for |
 
    * **Recommendation:** B: the main page states the wording it requires of downloaders, and carrying both costs one sentence. Confidence: medium. **Decision:** A, B or C?
+
+   **Andrej (2026-11-27, change):** Option B: Add the main page's sentence after it.
+
+   **Resolved (2026-11-27, Andrej):** B: the BibTeX note adds the main page's sentence (P01CA154292, downloaded 11/27/2026) after the acknowledgement.
 
 **Review panel:** ship after changes (mediator). Tier full: claim, column and split auditors, domain practitioner, precedent checker, blind reviewer, task gamer, advocate and critic with one rebuttal each, mediator. Claims: 28, 23 hold, 5 refuted (4 fixed: the age band, the code-9 wording, the hormone therapy share, the sibling's status; the citation wording is issue 3). Blind review: include with changes (the age band). Task gamer: no exploit beyond this mammogram's density, a known input worth 0.016 ROC AUC that the fit now names. Agreed: the split, no leak, the metric, the file version. Settled in the debate: fit approximate, not direct.
 

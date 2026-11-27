@@ -138,7 +138,7 @@ CC (2026-11-27, Andrej): the task as defined is not a forecast but the radiologi
      | | Option | What it does | Pro | Con |
      |---|---|---|---|---|
      | A | Retire, `No Good Target / Scientific Discovery` | `No (Retired)`; the risk task before the read is taken by `bcsc_risk_estimation` | No task built on the decision it would support; no use against the source's teaching-only terms; the risk task on the source made for it (2.4M exams, the published model) | Loses a v0.2 dataset; the marker is a judgment (no precedent of a label found through a feature's decision) |
-     | B | Risk before the read | Drop `birads_assessment`; keep density, as the BCSC risk model does; use case: tailor screening at the visit | A real decision (who gets extra screening); keeps the slot | ROC AUC 0.56-0.61; a smaller copy of `bcsc_risk_estimation` with fewer risk factors; still a teaching set |
+     | B | Risk before the read | Drop `birads_assessment`; keep density, as the BCSC risk model does; use case: tailor screening at the visit | A real decision (who gets extra screening); keeps the slot | ROC AUC 0.56-0.61; the same question as `bcsc_risk_estimation` on a later, much smaller teaching sample |
      | C | Recalled women only | Keep rows read 0; predict which work-ups find cancer | The read's decision is fixed, so it is not a feature | Every recalled woman is worked up anyway, so no decision changes; ROC AUC 0.54-0.57; 2,858 rows |
      | D | Interval cancers | Keep rows read 1-2; predict a cancer missed by the read | A real question (supplemental screening after a negative read) | 31 cancers, about 10 per test fold: too few to rank methods |
      | E | Keep (implemented) | The read stays a feature; the use case is restated as the read's accuracy | No change | The task is the radiologist's decision and its consequence; the score is the read's accuracy, which the dataset was made to teach |
@@ -148,6 +148,26 @@ CC (2026-11-27, Andrej): the task as defined is not a forecast but the radiologi
    **Notes for the AI:** A: record `suggestion: No (Retired)`, the marker in the record tags as on other retired records, folder removed as for audiology_diagnosis, CHANGELOG entry. B: drop `birads_assessment` in `_clean`, rewrite `task_summary` and `curation_comments`, rerun `dataset check` and the task probes (TP-2, shuffled labels).
 
    [^barlow]: Barlow WE, White E, Ballard-Barbash R, Vacek PM, Titus-Ernstoff L, Carney PA, Tice JA, Buist DSM, Geller BM, Rosenberg R, Yankaskas BC, Kerlikowske K. Prospective breast cancer risk prediction model for women undergoing screening mammography. J Natl Cancer Inst. 2006;98(17):1204-1214. doi:10.1093/jnci/djj331.
+
+   **Andrej (2026-11-27, discuss):** Is B really an exact copy of the same task as bcsc_risk_estimation?
+
+   **Answer (AI, 2026-11-27):**
+   * You asked whether option B (this file without the radiologist's assessment) is an exact copy of `bcsc_risk_estimation`.
+   * No. It is the same question on other data: the same prediction point (the screening visit, with density read from this mammogram and its assessment left out) and the same label (in situ or invasive cancer within a year), but other exams, other years and other inputs. Option B's con, "a smaller copy", overstates it.
+
+     | | Option B (this file) | `bcsc_risk_estimation` |
+     |---|---|---|
+     | Exams | 2005-2008, film and digital (20,000 each) | 1996-2002, film |
+     | Women | 36,714, aged 60-89 | 1,007,660, aged 35-84 |
+     | Cancers | 239 (0.65%) | 7,319 (0.73%) |
+     | Inputs besides density | age in years, BMI, family history (yes/no), earlier biopsy, earlier mammogram, hormone therapy, comparison film at hand, film or digital | age band, menopause and its kind, race, Hispanic, BMI band, age at first birth, number of relatives with breast cancer, earlier procedure, last mammogram result, hormone therapy |
+     | ROC AUC on its folds | logistic regression 0.606, LightGBM 0.563 | logistic regression 0.648, LightGBM 0.658 |
+     | Source terms | teaching only, "not ... primary research" | citation required, no teaching clause |
+
+   * Both are BCSC registry samples, so some women may be in both, but no exam can be: the years do not overlap, and neither file has an id to link them.
+   * What the difference changes: option B is the later, digital-era sample, which speaks against the age concern that `bcsc_risk_estimation` carries (`Outdated` as a note). Against it: its signal is weak and unstable (about 80 cancers per test fold, LightGBM below logistic regression), and its source asks not to be used for research.
+   * **Options:** unchanged (A retire, B risk before the read, C recalled women, D interval cancers, E keep as implemented); option B's con now reads "the same question as `bcsc_risk_estimation` on a later, much smaller teaching sample".
+   * **Recommendation:** A still, now with medium confidence: B is a defensible second dataset of the risk task, worth it if a later sample matters more to you than size and the teaching-only terms. **Decision:** A or B (or C, D, E)?
 
 ## Reference
 
