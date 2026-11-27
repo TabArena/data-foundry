@@ -55,7 +55,8 @@ RENAME = {
     "hrt": "current_hormone_therapy",
     "cancer": TARGET,
 }
-# 9 means unknown in every coded column (codebook); density 9 also covers "different measurement system".
+# 9 means unknown in every coded column except the age group, where it is the band 75-79 (codebook); density 9
+# also covers "different measurement system", surgical menopause and hormone therapy 9 also "not menopausal".
 UNKNOWN = 9
 
 # The codebook's words for its codes (CLEAN-12).
@@ -83,7 +84,7 @@ CODE_LABELS = {
     "hispanic": {"0": "no", "1": "yes"},
     "bmi_group": {"1": "10-24.99", "2": "25-29.99", "3": "30-34.99", "4": "35 or more"},
     "age_at_first_birth": {"0": "under 30", "1": "30 or older", "2": "nulliparous"},
-    "first_degree_relatives_with_breast_cancer": {"0": "0", "1": "1", "2": "2 or more"},
+    "first_degree_relatives_with_breast_cancer": {"0": "0", "1": "1 (or positive, number unknown)", "2": "2 or more"},
     "prior_breast_procedure": {"0": "no", "1": "yes"},
     "last_mammogram_result": {"0": "negative", "1": "false positive"},
     "surgical_menopause": {"0": "natural", "1": "surgical"},
@@ -94,7 +95,7 @@ ORDINAL_LEVELS = {
     "age_group": list(CODE_LABELS["age_group"].values()),
     "birads_breast_density": list(CODE_LABELS["birads_breast_density"].values()),
     "bmi_group": list(CODE_LABELS["bmi_group"].values()),
-    "first_degree_relatives_with_breast_cancer": ["0", "1", "2 or more"],
+    "first_degree_relatives_with_breast_cancer": ["0", "1 (or positive, number unknown)", "2 or more"],
 }
 CATEGORICAL = [c for c in CODE_LABELS if c not in ORDINAL_LEVELS]
 
@@ -103,12 +104,13 @@ class BcscRiskEstimation(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question=(
             "Will a woman who comes for a screening mammogram be diagnosed with breast cancer within a year, judged "
-            "from her risk factors before the mammogram is read?"
+            "from her risk factors and her breast density, before the radiologist assesses the mammogram?"
         ),
         use_case=(
-            "At a woman's screening visit, a screening programme estimates her short-term breast cancer risk from "
-            "self-reported risk factors, her breast density and the result of her last mammogram, to tailor "
-            "screening and prevention (the source's published risk model)."
+            "At a woman's screening visit, the screening programmes of the Breast Cancer Surveillance Consortium "
+            "estimate the short-term breast cancer risk of their later women from self-reported risk factors, her "
+            "breast density and the result of her last mammogram, to tailor screening and prevention (the source's "
+            "published risk model)."
         ),
         row=(
             "One screening mammogram of a woman aged 35 to 84 in the US Breast Cancer Surveillance Consortium, 1996 "
@@ -121,17 +123,21 @@ class BcscRiskEstimation(AbstractCuratedDataset):
         known=(
             "Age group, menopause and how it came about, race and ethnicity, BMI group, age at first birth, the "
             "number of first-degree relatives with breast cancer, an earlier breast procedure, the result of the "
-            "last mammogram, current hormone therapy and the breast density; not the read of this mammogram."
+            "last mammogram, current hormone therapy, and the breast density the radiologist records from this "
+            "mammogram; not the radiologist's assessment of it."
         ),
         split="Random folds over the women: every row is a different woman.",
         changes=(
             "We expand the source's aggregated cells by their count, drop `invasive` (part of the target) and the "
             "source's `training` flag (a prescribed random split), and set the code for unknown to missing."
         ),
-        fit="direct",
+        fit="approximate",
         fit_reason=(
             "The rows, features and label are those of the source's published risk model (Barlow et al. 2006, c "
-            "statistic 0.62-0.63), taken before the mammogram is read."
+            "statistic 0.62-0.63, per menopausal group), taken before the mammogram's assessment. Two gaps: the "
+            "one-year label (in situ or invasive, mostly this screen's own detections) stands in for the five-year or "
+            "lifetime invasive risk that prevention and supplemental screening decide on; and density read from this "
+            "mammogram stands in for the prior exam's density a model at the visit would take (worth 0.016 ROC AUC)."
         ),
     )
 
@@ -188,11 +194,14 @@ class BcscRiskEstimation(AbstractCuratedDataset):
     curation_comments = """
         We start with the BCSC Risk Estimation Dataset, the data of the BCSC's published risk model (Barlow et al. 2006): screening mammograms of 1996-2002 from women aged 35-84 without earlier breast cancer and with a mammogram in the five years before, linked to cancer registries and pathology. The file is aggregated: one row per combination of risk factors and outcome, with a `count`.
 
-        - Prediction point: the woman comes for a screening mammogram; the intake answers, the breast density and the result of her last mammogram are known; the read of this mammogram is not in the data ("The index mammogram's assessment is not included"). This is the step before `breast_cancer_prediction`, where the read is a feature.
+        - Prediction point: the woman comes for a screening mammogram; the intake answers, the result of her last mammogram and the breast density the radiologist records from this mammogram are known; the radiologist's assessment of this mammogram is not in the data ("The index mammogram's assessment is not included"). This is the step before `breast_cancer_prediction`, where the read is a feature.
         - Target: `cancer` (invasive or DCIS within one year after the exam), the paper's outcome. `invasive` is a part of it and goes.
         - Version: the one-exam-per-woman file (`risk_rand.txt`, added in August 2012; "All population and other characteristics remain the same"), 1,007,660 women, 7,319 cancers (0.73%). The page does not say how the exam was chosen (the name suggests at random). The all-exams file (`risk.txt`, 2,392,998 exams, 11,638 cancers, 0.49%, the paper's data) has no woman id in its cells, so random folds would put one woman's exams on both sides; it is not used. The cancer share is higher with one exam per woman because women with a cancer leave follow-up at the diagnosis and so contribute fewer exams.
         - `training` (a "75% random sample" for the paper's development, 25% validation; 75.0% in this file too, assignment not described for it) goes: we declare our own folds.
-        - Unknown (code 9) becomes missing in every coded column; density 9 also covers "different measurement system".
+        - Unknown (code 9) becomes missing in every coded column except the age group, where 9 is the band 75-79 (56,233 women, 1.15% cancers) and no code means unknown. Density 9 also covers "different measurement system"; surgical menopause and hormone therapy 9 is "unknown or not menopausal": it holds all 280,205 premenopausal women, which `menopausal_status` tells apart.
+        - Density is the radiologist's reading of this mammogram ("judged by the radiologist from the screening mammogram"), recorded before the exam's assessment, which the source leaves out; the BCSC risk calculator takes it as an input. It is worth 0.016 ROC AUC (untuned LightGBM 0.653 with it, 0.638 without). Women with an unknown density or last mammogram result have a 1.2-1.4 times higher cancer share within an age band, a fact fixed at the visit.
+        - Surgical menopause and hormone therapy: code 9 becomes "not menopausal" for the 280,205 premenopausal women and stays missing for the others (CLEAN-12). The relatives level 1 also holds a positive family history with the number unknown (codebook), and says so.
+        - Metric: ROC AUC is the paper's c statistic, but its 0.631 and 0.624 are per menopausal group; logistic regression gives 0.62-0.63 per group here and 0.649 pooled. AUC does not score calibration, which a clinical user of absolute risk needs.
         - Codes carry the codebook's words (CLEAN-12); age group, density, BMI group and the number of relatives are ordered (CLEAN-14).
         - Repeated feature vectors: every row of a cell is a copy of the others (181,903 cells for 1,007,660 women), as the twelve features are coarse categories; they are different women with independent outcomes.
         - Size: 3 folds give 671,773 training and 335,887 test rows, under the collection's 1M / 500k row budget, so the dataset ships whole (no `_1m` version).
@@ -237,10 +246,14 @@ class BcscRiskEstimation(AbstractCuratedDataset):
         df = raw.loc[raw.index.repeat(raw["count"])].reset_index(drop=True)
         df = drop_columns(df, ["count", "training", "invasive"])
         df = df.rename(columns=RENAME)
-        coded = list(CODE_LABELS)
+        coded = [c for c in CODE_LABELS if c != "age_group"]  # age 9 is the band 75-79
         df[coded] = df[coded].replace(UNKNOWN, np.nan)
         df[TARGET] = df[TARGET].map({0: "No", 1: "Yes"})
         df = decode(df, CODE_LABELS)
+        # code 9 of these two holds "unknown or not menopausal": premenopausal women get a level of their own (CLEAN-12)
+        premenopausal = df["menopausal_status"].eq("premenopausal")
+        for col in ["surgical_menopause", "current_hormone_therapy"]:
+            df[col] = df[col].astype(object).mask(premenopausal & df[col].isna(), "not menopausal")
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

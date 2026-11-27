@@ -1,5 +1,15 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-27, bcsc_risk_estimation added (new dataset; container not built)
+
+- `bcsc_risk_estimation`: the BCSC Risk Estimation Dataset (Barlow et al. 2006), the one-exam-per-woman file:
+  1,007,660 women, 7,319 cancers within one year after the exam, twelve risk factors known at the screening visit
+  before the radiologist assesses the mammogram (density is read from it). Aggregated cells expanded by their count;
+  `invasive` and the source's 75/25 `training` flag dropped; code 9 missing, except the age band 75-79 and a "not
+  menopausal" level for surgical menopause and hormone therapy. Random 3-fold IID splits, `ForcedIIDFromTemporal`
+  (leaf `L-FORCED.random`); metric ROC AUC (the paper's c statistic); fit approximate. Full review panel: ship after
+  changes, applied; three questions in the record's review.
+
 ## 2026-11-27, nyc_taxi_trip_duration: trips faster than 120 km/h dropped (task change; container not rebuilt)
 
 - `nyc_taxi_trip_duration_1m` drops the 32 trips whose straight line from pickup to drop-off implies more than
