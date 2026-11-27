@@ -38,6 +38,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
+CC (2026-11-27, Andrej): Review issue 5 settled on (a), the split that now ships: five repeats of two folds, a rock slab per fold and a fifth of every reference map held out of each training side. Issue 6, the warning texts rewritten for that split, is the only item left open.
 CC (2026-11-27, Andrej): Review issue 5, the split is rebuilt. The shipped plan is five repeats of two folds: a fold tests one rock slab with the other never in its training side, and a repeat holds a different fifth of every reference map out of the training side, drawn inside the map so every mineral and every integration time stays in. Both sides now vary. Measured on three such draws, the spread is about 0.04 of log loss on the gabbro and 0.16 on the granite, against 0.95 to 4.83 when whole maps are dropped, which is why the earlier assessment was wrong to stop at the source's single fold.
 CC (2026-11-27, Andrej): Review issues 1, 2, 3, 4 and 7 all `ok`, so the record leaves `TBD` (issue 4's run is still owed and comes back as its own item when its table exists). Issue 5 stays open with the assessment you asked for: the data holds two test units and no third can be made, varying the training library is refuted by measurement (log loss 0.95 to 4.83 over three leave-one-map-out draws, driven by which integration time survives), writing the fold as two or four cells is bookkeeping on one training side, and more rocks is the only real answer.
 CC (2026-11-27, Andrej): Review issue 1 rewritten after Andrej asked what is most correct for the task. The mirror stays the read path: ODR needs a browser for every file, so a definition that read it could not be rebuilt by anyone, and three of its files match byte for byte, the one with the spreadsheet damage included, which a re-upload would not reproduce. The unchecked fourth file ships 5,183 of 34,857 test spectra, so its checksum is a provenance note and no longer holds the verdict. ODR's file list is the one check that can still change something, and the answer to a longer list is a new candidate record (new option D), not re-scoping this one: the task is the paper's, bounded by its Table 1.
@@ -379,6 +380,11 @@ for byte (issue 1 for the rest).
 
    * **Recommendation:** (a), now shipped; more rocks stays the only way to make the between-rock number rest on
      more than two units. **Decision:** keep (a), take (b), or change the five repeats or the fifth held out?
+
+   **Resolved (2026-11-27, Andrej):** (a): five repeats of two folds, the library drawn inside each map, as it now
+   ships. A fold tests one rock slab with the other never in its training side, and a repeat holds a different
+   fifth of every reference map out of the training side. More rocks stays the open ask, through the deposit's
+   file list or the authors.
 
    **What the change cost, measured after it was made.** `dataset check` stays at 0 errors. The task probe on the
    shipped splits: a linear model reaches log loss 0.913 against the class shares' 2.622, better on 100% of the

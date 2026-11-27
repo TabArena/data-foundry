@@ -1,5 +1,14 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-27, bacteria_id_raman retired (`Too Small`), raman_mlrod's split settled
+
+- `bacteria_id_raman` is removed from the working copy. The curator's call on the review's size question: the task
+  is scored on 50 patients, 10 of each treatment group, with 25 in a test fold, where one patient carries 13% to
+  34% of a fold's loss and the patient-bootstrap standard error of a fold is 0.032 on a mean of 0.120. The record
+  goes to `No` with the `Too Small` marker and keeps the whole definition's design and its measured numbers.
+- `raman_mlrod` keeps the split added earlier today: five repeats of two folds, a rock slab per fold and a fifth of
+  every reference map held out of each training side.
+
 ## 2026-11-27, raman_mlrod gets a split whose two sides both vary (no container built)
 
 - The single fold of the source's design is replaced by five repeats of two folds. A fold tests one rock slab, with

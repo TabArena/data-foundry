@@ -4,13 +4,9 @@ name: Pathogenic Bacteria
 checked_by:
 - Lennart
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
-suggestion: 'Yes'
-priority: 3
+suggestion: 'No'
 decision_markers:
-- TBD
+- Too Small
 tags:
 - AI-Filled (Verify)
 - Many class
@@ -25,10 +21,10 @@ collections:
 - RamanBench
 original_source: Github
 year: '2019'
+collection_period: 2018-2019
 domain: medical & healthcare
 required_split:
 - Grouped (NON-IID)
-collection_period: 2018-2019
 problem_type: Multiclass Classification
 original_data_state: Other
 source_links:
@@ -36,12 +32,12 @@ source_links:
 - https://github.com/csho33/bacteria-ID
 - https://arxiv.org/abs/2605.02003
 - https://pypi.org/project/raman-data/
-v2_path: datasets/_dev/tabarena-v0pt2/bacteria_id_raman/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
 
+CC (2026-11-27, Andrej): retired, `No` with `Too Small` (Review issue 2, option C, and the page's verdict). 50 scored patients, 10 per treatment group, 25 per test fold: the row count is 78,500 spectra but the units are patients, and one of them carries up to a third of a fold's loss. The folder is removed from the working copy; the record keeps the definition's design and every measured number. Review issue 4, the warning texts, is left as it stands: there is no longer a `dataset.py` to write them into.
 CC (2026-11-27, Andrej): corrected in Review issue 3's answer: the paper does not say where the 30 reference isolates came from, so calling them ATCC type strains was an inference from a variable name in the source's code. What holds is that they are the source's labelled library, grown from stock, and that no patient of the 50 is one of them by the separation measured in the panel's provenance check.
 CC (2026-11-27, Andrej): Review issue 3, `ok`: the 5 reference isolates of the three library-only groups stay in training with the note, as the source pre-trains on all eight groups. Issues 2 and 4 are still open.
 CC (2026-11-25, Andrej): Review issue 1, `ok`: one prediction per patient, from all of its spectra, as implemented.
@@ -212,7 +208,11 @@ log loss on 2026-10-21). Priority 4 becomes 3 (the fit is approximate).
 
    The reference library is not balanced at all: Meropenem 8 isolates, Penicillin 7, Vancomycin 7, Caspofungin 2, Ceftriaxone 2, Piperacillin-tazobactam 2, Ciprofloxacin 1, Daptomycin 1. Three of those classes (Ciprofloxacin, Ceftriaxone, Caspofungin) have no patient at all, which is what issue 3 is about.
 
-   This issue stays open: the question was asked, not decided.
+   **Resolved (2026-11-27, Andrej):** `change`, C: `Too Small`. The dataset is scored on 50 patients, 10 of each
+   treatment group, and a test fold holds 25 of them, 5 per group; one patient carries 13% to 34% of a fold's loss
+   and the patient-bootstrap standard error of a fold is 0.032 on a mean of 0.120. The record goes to `No` with the
+   marker, and the folder leaves the working copy. The spectra, the library design and the measured numbers stay in
+   this record for whoever comes back to it with more patients.
 
    **Notes for the AI:** B: in `_make_splits`, `n_repeats, n_folds = protocol.recommended_dimensions(clinical, group_on="isolate", group_labels="per_group")` (3 x 20); rewrite splits_comment, `task_summary.split` and the few-patients bullet; propose `groups_test_groups_few` for acceptance; add the amendment to the across-datasets REVIEW.md (text below) and, once you agree, to TP-5. Amendment text: "TP-5 amendment (proposed, bacteria_id_raman): a class at 3 or more units per test fold is not a handful when no class is short, a test fold holds 15 or more units, and the score is stable across splits (best family's skill within a narrow band on every probed split); below that, fewer and larger folds first, then Too Small." C: `suggestion` `No`, marker `Too Small`. Re-run `dataset check` and the task probe on B.
 
