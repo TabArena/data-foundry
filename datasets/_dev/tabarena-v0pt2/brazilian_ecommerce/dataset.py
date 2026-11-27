@@ -146,6 +146,13 @@ class BrazilianEcommerce(AbstractCuratedDataset):
     splits_comment = """
         A model refit at the start of each month predicts the delivery time of the orders placed during that month. The month just before the refit is a gap: many of its orders are still in transit at the refit, and the delivered ones are the fast ones, so a model that sees the purchase time as a number (AutoGluon keeps the epoch value next to the date parts) would learn that new orders are fast (see the decisions and curation_comments). The few older orders still in transit at the refit are left out of that window's training rows, as in hotel_booking_demand. The test windows are calendar months walking back from July 2018, the newest month the review sample covers in full (see curation_comments), until the training side would fall below 50% of the rows: 5 windows, March to July 2018, newest first. The convention's 9 windows for a dataset of this size do not fit above the 50% floor with monthly windows.
     """
+    accepted_check_warnings = {
+        "splits_dimensions_off_protocol": (
+            "Five windows against the nine an IID split of 88,721 orders would get (SPLIT-33): with monthly windows "
+            "and the one-month gap, a sixth window would train on less than half the orders. The splits comment names "
+            "the target, the count reached and what stops more (SPLIT-15; Lennart, 2026-11-26)."
+        ),
+    }
     split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="order_purchase_timestamp",

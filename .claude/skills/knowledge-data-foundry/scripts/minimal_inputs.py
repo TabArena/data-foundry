@@ -100,7 +100,7 @@ def main() -> int:
             link = args.target / rel
             link.parent.mkdir(parents=True, exist_ok=True)
             if not link.exists() and not link.is_symlink():
-                if rel in prepared:
+                if rel in prepared or Path(rel).name == PREPARED_MARKER:  # a marker the build read is copied too
                     shutil.copy2(warehouse / rel, link)
                 else:
                     link.symlink_to(warehouse / rel)

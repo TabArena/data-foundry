@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: liberty_mutual_fire_peril_loss_cost
 container_format: 2
-checksum: v2:15d69a661cbf88c6b38a1a78d1b992db744ac9e0e6e3650b21d571abb2d24d6c
-build: null
+checksum: v2:b56ff5046b0e246817d8b4af02a8a8e5d581a41aa3c1d1a0daae983f6042cef6
+build:
+  uuid: 01a217f9-5699-7acd-a488-de88c638e64b
+  checksum: v2:b56ff5046b0e246817d8b4af02a8a8e5d581a41aa3c1d1a0daae983f6042cef6
+  built_at: '2026-11-26T13:11:37+00:00'
+  path: liberty_mutual_fire_peril_loss_cost/01a217f9-5699-7acd-a488-de88c638e64b
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 452061
@@ -34,6 +47,58 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Default splits: random policies, as the competition split them ("The train
+    and test sets are split randomly",
+
+    data page), tagged as forced from temporal: an underwriter prices next term''s
+    policies, but the release has
+
+    no dates and no risk id. The file holds consecutive terms of the same risks: 22.3%
+    of the rows are equal to
+
+    another in every column but `var15`, an age that steps by exactly 1 between them
+    in 36,708 of the steps;
+
+    47.5% when `var11` (the sum insured) may differ too, 63.9% when `var13` also may.
+    On the shipped folds
+
+    16.8-16.9%, 39.1-39.3% and 53.5-53.7% of the test rows have their risk in training
+    on these three keys, and
+
+    6.2-6.3%, 18.1-18.2% and 24.9% a later term of it (5.2% only later terms, on the
+    first key). The risk
+
+    carries nothing of the outcome: a risk''s loss in training ranks its test terms
+    at AUC 0.500-0.524 on every
+
+    key, only 6 to 14 of the 1,188 losses share their risk with another loss, and
+    taking a test risk''s terms out
+
+    of training costs no more than dropping as many random rows (paired on each fold).
+    So the later terms in
+
+    training are no measurable shortcut and stay (SPLIT-9; as in lending_club and
+    avito_demand_prediction_1m).
+
+    We read the risk as no group new data would lack: an insurer prices renewals of
+    its own risks (SPLIT-30).
+
+    Holding out whole risks on the first key would be partial (43.0-43.1% of the test
+    rows keep their risk in
+
+    training on the third) and would test every renewal as a new risk. With the policy
+    year, the split would be
+
+    temporal (train on earlier terms, test on the next); the year should be taken
+    if a release has it. Shipped
+
+    forced on the curator''s call (Andrej, 2026-11-02): a forced IID split ships only
+    when no leak is found across
+
+    the random split, as here (the shared risk carries no outcome); how_much_did_it_rain''s
+    `No` named a measured
+
+    leak.'
   n_train:
     min: 301374
     max: 301374
@@ -66,7 +131,7 @@ decisions:
 
 Regression of `log1p_transformed_loss_ratio`, scored with `normalized_weighted_gini` on IID splits. 452,061 rows and 299 features. Source: Kaggle (2014).
 
-Not built yet. The current definition gives checksum `v2:15d69a661cbf88c6b38a1a78d1b992db744ac9e0e6e3650b21d571abb2d24d6c`.
+Built as `01a217f9-5699-7acd-a488-de88c638e64b` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -147,7 +212,7 @@ Only curators run `build`, when the dataset ships.
 
 **Scoring columns**
 
-Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.metrics.scorer(container)(y_test, y_pred, test_idx)`).
 
 | column | role | how the metric uses it | model input |
 |---|---|---|---|
@@ -209,13 +274,11 @@ We start with train.csv from the Kaggle competition (452,061 policies; the test 
 - Note: `var13` alone ranks the shipped test folds at a weighted Gini of 0.221-0.260 (ties averaged), the regularised LightGBM on the log1p target at 0.306-0.320, higher on every fold (TP-4: not trivial); the forum knew it ("target = -var13", thread 9706). Its loss rate falls from 0.41% to 0.04% over its range, like an underwriting grade, so it stays (LEAK-38).
 - Note: a test fold holds about 400 losses, so the weighted Gini of one model moves by a fold standard deviation of 0.042-0.045 (9 random or grouped folds; 0.035-0.072 within one repeat of 3 folds); differences between methods below that are fold noise (EV-8).
 - Anomaly: the location blocks are coarse: 2,588 distinct geodemographic vectors, 327 crime and 24,531 weather vectors.
-- Time basis: ForcedIIDFromTemporal (SPLIT-8): an underwriter prices next term's policies, but the release has
-  no dates and no risk id, so policies are split at random as the competition split them; a risk's other terms
-  in training carry nothing of its outcome (`splits_comment`). A dated release would allow a split by term. Not
-  taken as stationary (Andrej, 2026-11-18): A partly physical peril, but a commercial market product with an
-  undisclosed transformed loss ratio, an unknown period and a volatile neighbour; mixed at best.
+- Time basis: ForcedIIDFromTemporal: an underwriter prices next term's policies, but the release has no dates and no risk id, so policies are split at random as the competition split them; a risk's other terms in training carry nothing of its outcome (`splits_comment`). A dated release would allow a split by term. Not taken as stationary (Andrej, 2026-11-18): A partly physical peril, but a commercial market product with an undisclosed transformed loss ratio, an unknown period and a volatile neighbour; mixed at best.
 
 ## Splits
+
+Repeated 3-fold cross-validation over the rows: 1 repeat(s) x 3 folds, 3 splits, the repeats set by the 452,061 rows (SPLIT-33).
 
 Default splits: random policies, as the competition split them ("The train and test sets are split randomly",
 data page), tagged as forced from temporal: an underwriter prices next term's policies, but the release has
@@ -322,7 +385,7 @@ Rows equal in every column but var15, which then mostly steps by 1: consecutive 
 
 0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 136,070,361 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 136,070,361 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to run them; nothing else checks duplicate rows and columns.)
 
 Accepted on purpose:
 
@@ -539,4 +602,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a217f9-5699-7acd-a488-de88c638e64b |
+| checksum | v2:b56ff5046b0e246817d8b4af02a8a8e5d581a41aa3c1d1a0daae983f6042cef6 |
+| built_at | 2026-11-26T13:11:37+00:00 |
+| path | liberty_mutual_fire_peril_loss_cost/01a217f9-5699-7acd-a488-de88c638e64b |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

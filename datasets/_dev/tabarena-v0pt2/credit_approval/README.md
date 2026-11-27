@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: credit_approval
 container_format: 2
-checksum: v2:85736115669e251271050daf7d73c7dbe72afc64aee07351eb72808ce21c8c18
+checksum: v2:0a2d7411735248477b4389d377414c0bd8bc9f518c1f0d38286edd5b8cdbcd32
 build:
-  uuid: 01a111fc-cedf-7a16-9575-fb28a8d57db5
-  checksum: v2:fed2366eee147d0f31c9c26ffade9f9ad26172afab61f28a4da7b7b54cb1d07d
-  built_at: '2026-10-06T16:12:23+00:00'
-  path: credit_approval/01a111fc-cedf-7a16-9575-fb28a8d57db5
+  uuid: 01a21800-f368-7465-9a53-abe1bcc5f16d
+  checksum: v2:0a2d7411735248477b4389d377414c0bd8bc9f518c1f0d38286edd5b8cdbcd32
+  built_at: '2026-11-26T13:17:25+00:00'
+  path: credit_approval/01a21800-f368-7465-9a53-abe1bcc5f16d
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 690
   n_features: 14
@@ -47,6 +47,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 460
     max: 460
@@ -68,7 +69,7 @@ decisions: []
 
 Binary classification of `A16`, scored with `roc_auc` on IID splits. 690 rows and 14 features. Source: UCI (1987).
 
-Built as `01a111fc-cedf-7a16-9575-fb28a8d57db5` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:85736115669e251271050daf7d73c7dbe72afc64aee07351eb72808ce21c8c18`, so the build is stale. See [Build](#build).
+Built as `01a21800-f368-7465-9a53-abe1bcc5f16d` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -192,7 +193,7 @@ We get the data from UCI.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `A16`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 690 rows (SPLIT-33).
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 460 rows, test 230 rows.
 
@@ -356,11 +357,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-cedf-7a16-9575-fb28a8d57db5 |
-| checksum | v2:fed2366eee147d0f31c9c26ffade9f9ad26172afab61f28a4da7b7b54cb1d07d |
-| built_at | 2026-10-06T16:12:23+00:00 |
-| path | credit_approval/01a111fc-cedf-7a16-9575-fb28a8d57db5 |
+| uuid | 01a21800-f368-7465-9a53-abe1bcc5f16d |
+| checksum | v2:0a2d7411735248477b4389d377414c0bd8bc9f518c1f0d38286edd5b8cdbcd32 |
+| built_at | 2026-11-26T13:17:25+00:00 |
+| path | credit_approval/01a21800-f368-7465-9a53-abe1bcc5f16d |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:85736115669e251271050daf7d73c7dbe72afc64aee07351eb72808ce21c8c18` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

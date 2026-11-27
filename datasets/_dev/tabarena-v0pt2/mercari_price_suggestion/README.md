@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: mercari_price_suggestion
 container_format: 2
-checksum: v2:d2dad1985ee08fc32c2079c69564bbb881ccfe5c92833345d27e918a6d36b647
+checksum: v2:6390f12c383e305e6ef6564c309b896935a9b5ae79d4fd72384bb4b743d03d59
 build:
-  uuid: 01a111fb-0462-74d5-bdd8-89846cb8d091
-  checksum: v2:831bd4bf3baf371d5e158bbb6b34b20f1a8162d5f2ce48ab85046990e4233d7e
-  built_at: '2026-10-06T16:10:51+00:00'
-  path: mercari_price_suggestion/01a111fb-0462-74d5-bdd8-89846cb8d091
+  uuid: 01a217fe-09ee-74ba-b5cf-afc3f2619e27
+  checksum: v2:6390f12c383e305e6ef6564c309b896935a9b5ae79d4fd72384bb4b743d03d59
+  built_at: '2026-11-26T13:14:27+00:00'
+  path: mercari_price_suggestion/01a217fe-09ee-74ba-b5cf-afc3f2619e27
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 1481612
   n_features: 6
@@ -47,6 +47,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 987741
     max: 987742
@@ -69,7 +70,7 @@ decisions: []
 
 Regression of `price`, scored with `rmsle` on IID splits. 1,481,612 rows and 6 features. Source: Kaggle (2017).
 
-Built as `01a111fb-0462-74d5-bdd8-89846cb8d091` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d2dad1985ee08fc32c2079c69564bbb881ccfe5c92833345d27e918a6d36b647`, so the build is stale. See [Build](#build).
+Built as `01a217fe-09ee-74ba-b5cf-afc3f2619e27` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -209,7 +210,7 @@ We start from the Kaggle competition dataset.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows: 1 repeat(s) x 3 folds, 3 splits, the repeats set by the 1,481,612 rows (SPLIT-33).
 
 1 repeat(s) x 3 fold(s) with seed 4267; train 987,741 to 987,742 rows, test 493,870 to 493,871 rows.
 
@@ -292,11 +293,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fb-0462-74d5-bdd8-89846cb8d091 |
-| checksum | v2:831bd4bf3baf371d5e158bbb6b34b20f1a8162d5f2ce48ab85046990e4233d7e |
-| built_at | 2026-10-06T16:10:51+00:00 |
-| path | mercari_price_suggestion/01a111fb-0462-74d5-bdd8-89846cb8d091 |
+| uuid | 01a217fe-09ee-74ba-b5cf-afc3f2619e27 |
+| checksum | v2:6390f12c383e305e6ef6564c309b896935a9b5ae79d4fd72384bb4b743d03d59 |
+| built_at | 2026-11-26T13:14:27+00:00 |
+| path | mercari_price_suggestion/01a217fe-09ee-74ba-b5cf-afc3f2619e27 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:d2dad1985ee08fc32c2079c69564bbb881ccfe5c92833345d27e918a6d36b647` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

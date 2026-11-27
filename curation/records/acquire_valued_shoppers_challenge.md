@@ -70,6 +70,8 @@ CC (2026-11-17, Andrej): the declared split (temporal on `offerdate`, windows of
 
 CC (2026-11-19, Andrej): windows below the target count kept (Review issue 6, A as implemented): four five-day windows; the next (6-10 April) would train on 41.4%; the reason is in the splits comment.
 
+CC (2026-11-26, Lennart): task-probe flag `drift_baseline` after the rebuild of 2026-11-26: kept as shipped (TP-1, TP-2). The newest rows' class shares come within 2% of the best log loss, but ROC AUC, the metric, ignores the shares, and all 21 tuned configurations beat 0.5 in 5 of 5 folds.
+
 ## Review
 
 **Outcome:** added. Kaggle's Acquire Valued Shoppers Challenge (2014): 160,057 shoppers who got a discount offer on

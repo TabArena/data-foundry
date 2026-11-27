@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: california_house_prices_2020
 container_format: 2
-checksum: v2:2cd71f93489fdf48a44bc68441800c7e618ec8f8f7e5bc3008ff8469fb368079
+checksum: v2:08afd671a3f70a4f67a747cd82fd74295284ec81d0122e5f7f1d6278f5da3416
 build:
-  uuid: 01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a
-  checksum: v2:c703f2c88510fa9def52e7c79051dd9dd5f9e711d25ea0914082fd131606d0eb
-  built_at: '2026-10-14T12:58:04+00:00'
-  path: california_house_prices_2020/01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a
+  uuid: 01a21800-27cb-7351-b30f-92b3082feb62
+  checksum: v2:08afd671a3f70a4f67a747cd82fd74295284ec81d0122e5f7f1d6278f5da3416
+  built_at: '2026-11-26T13:16:35+00:00'
+  path: california_house_prices_2020/01a21800-27cb-7351-b30f-92b3082feb62
   data_foundry_version: 0.0.5
-  git_sha: f93df193827f5244586b178fd7199efb86d66359-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 38986
   n_features: 40
@@ -50,6 +50,34 @@ splits:
   time_horizon_unit: steps
   time_gap: null
   time_gap_unit: null
+  reason: 'Nine test windows in sale order, each a ninth of the newest half of the
+    sales (2,165 rows), each trained on all earlier sales (Andrej, 2026-11-19): 50.0%,
+    55.6%, 61.1%, 66.7%, 72.2%, 77.8%, 83.3%, 88.9% and 94.4% of the 38,986 rows,
+    so no window trains on less than half of the data (SPLIT-14). We simulate deploying
+    a model at one point in the sale order for the next stretch of sales. As the time_index
+    gives the order but no dates, the windows are counts of sales, not calendar periods;
+    2,165 sales span about two to three weeks of listings. The use case (a price estimate
+    at listing) sets no window length and no source gives a refit cadence, so the
+    windows follow the nine an IID split of this size would get; until 2026-11-19
+    three windows of a sixth of the sales (6,497 rows) shipped, and before 2026-10-21
+    quarters, whose oldest trained on 25% of the rows.
+
+    The windows are cut in sale order, the time the label arrives, while a home is
+    predicted at its listing: a test
+
+    home listed before its window began meets training sales that closed after its
+    listing (97-100% of each
+
+    window''s test homes listed before the latest training listing, 2026-11-19; on
+    the sixths a gap of a third or a
+
+    whole window at equal training size changed the RMSLE by -0.001 to +0.005, in
+    no consistent direction,
+
+    2026-11-11). A home enters the data only once sold, so a cut on the listing date
+    would make the newest listings
+
+    the fast sellers.'
   n_train:
     min: 19501
     max: 36821
@@ -59,8 +87,7 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - dataset_sequential_id_column
+  warnings: []
   infos: []
   accepted: {}
 decisions: []
@@ -72,7 +99,7 @@ decisions: []
 
 Regression of `Sold Price`, scored with `rmsle` on temporal splits by `time_index`. 38,986 rows and 40 features. Source: Kaggle (2021).
 
-Built as `01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:2cd71f93489fdf48a44bc68441800c7e618ec8f8f7e5bc3008ff8469fb368079`, so the build is stale. See [Build](#build).
+Built as `01a21800-27cb-7351-b30f-92b3082feb62` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -220,7 +247,9 @@ We found out that the data was web scraped from a real-estate website and that t
 
 ## Splits
 
-Nine test windows in sale order, each a ninth of the newest half of the sales (2,165 rows), each trained on all earlier sales (Andrej, 2026-11-19): 50.0%, 55.6%, 61.1%, 66.7%, 72.2%, 77.8%, 83.3%, 88.9% and 94.4% of the 38,986 rows, so no window trains on less than half of the data (SPLIT-14). Each window is a separate repeat with one fold. We simulate deploying a model at one point in the sale order for the next stretch of sales. As the time_index gives the order but no dates, the windows are counts of sales, not calendar periods; 2,165 sales span about two to three weeks of listings. The use case (a price estimate at listing) sets no window length and no source gives a refit cadence, so the windows follow the nine an IID split of this size would get; until 2026-11-19 three windows of a sixth of the sales (6,497 rows) shipped, and before 2026-10-21 quarters, whose oldest trained on 25% of the rows.
+Expanding-window temporal splits: 9 test window(s) of 2165 rows, walking back from the newest data, newest first; train is all earlier data. The test windows by `time_index`, as listed: 39207 to 41536 (2,165 test, 36,821 train rows); 36903 to 39206 (2,165 test, 34,656 train rows); 34599 to 36902 (2,165 test, 32,491 train rows); 32280 to 34598 (2,165 test, 30,326 train rows); 29980 to 32279 (2,165 test, 28,161 train rows); 27685 to 29979 (2,165 test, 25,996 train rows); 25390 to 27684 (2,165 test, 23,831 train rows); 23086 to 25389 (2,165 test, 21,666 train rows); 20801 to 23085 (2,165 test, 19,501 train rows).
+
+Nine test windows in sale order, each a ninth of the newest half of the sales (2,165 rows), each trained on all earlier sales (Andrej, 2026-11-19): 50.0%, 55.6%, 61.1%, 66.7%, 72.2%, 77.8%, 83.3%, 88.9% and 94.4% of the 38,986 rows, so no window trains on less than half of the data (SPLIT-14). We simulate deploying a model at one point in the sale order for the next stretch of sales. As the time_index gives the order but no dates, the windows are counts of sales, not calendar periods; 2,165 sales span about two to three weeks of listings. The use case (a price estimate at listing) sets no window length and no source gives a refit cadence, so the windows follow the nine an IID split of this size would get; until 2026-11-19 three windows of a sixth of the sales (6,497 rows) shipped, and before 2026-10-21 quarters, whose oldest trained on 25% of the rows.
 The windows are cut in sale order, the time the label arrives, while a home is predicted at its listing: a test
 home listed before its window began meets training sales that closed after its listing (97-100% of each
 window's test homes listed before the latest training listing, 2026-11-19; on the sixths a gap of a third or a
@@ -261,9 +290,8 @@ Each test window against its train side, by statistics of the data, never of a m
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 0 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `dataset_sequential_id_column`: 1 integer column(s) hold one value per row, densely numbered like a running id: ['time_index']. (hint: A running id often encodes the order of collection (time) or the origin (a prefix per source), which a model then learns. Drop it, or declare it `NonFeature(column, 'identifier')` in the parent.)
 
 ## Data checks
 
@@ -296,7 +324,7 @@ Each test window against its train side, by statistics of the data, never of a m
 | Garage spaces | float64 | 660 | 1.69 | 41 | 2.0, 0.0, 1.0, 3.0, 4.0, 5.0, 6.0, 8.0, 10.0, 7.0 |
 | Sold Price | float64 | 0 | 0 | 5119 | 13.9978, 13.9108, 14.0779, 14.0387, 13.653, 13.9553, 13.8643, 14.1156, 14.221, … |
 | Listed Price | float64 | 0 | 0 | 4168 | 899000.0, 799000.0, 699000.0, 1495000.0, 995000.0, 1299000.0, 599000.0, 999000.… |
-| time_index | int64 | 0 | 0 | 38986 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
+| time_index | int64 | 0 | 0 | 38986 | 41536, 0, 1, 2, 3, 4, 5, 6, 7, 8 |
 | Bedrooms_description | string | 32952 | 84.52 | 219 | Walk-in Closet, Master Suite / Retreat, Walk-in Closet, Master Suite / Retreat,… |
 | Cooling features | string | 18521 | 47.51 | 249 | Central, Central Air, Other, Wall/Window Unit(s), Wall, Central, Solar, See Rem… |
 | Cooling | string | 17290 | 44.35 | 431 | Central Air, Central AC, Central, Ceiling Fan, Ceiling Fan, Central AC, Other, … |
@@ -323,7 +351,7 @@ Each test window against its train side, by statistics of the data, never of a m
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | 0.001 | -0.223 | 0.574 | 0.003 | log | 536660 | 2.09311e+16 | exponential |
+| 0 | 0 | 0 | 0.001 | -0.223 | 0.574 | 0.003 | log | 536660 | 3.05172e+13 | exponential |
 
 ### Numeric features
 
@@ -430,11 +458,10 @@ Each test window against its train side, by statistics of the data, never of a m
 
 | field | value |
 |---|---|
-| uuid | 01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a |
-| checksum | v2:c703f2c88510fa9def52e7c79051dd9dd5f9e711d25ea0914082fd131606d0eb |
-| built_at | 2026-10-14T12:58:04+00:00 |
-| path | california_house_prices_2020/01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a |
+| uuid | 01a21800-27cb-7351-b30f-92b3082feb62 |
+| checksum | v2:08afd671a3f70a4f67a747cd82fd74295284ec81d0122e5f7f1d6278f5da3416 |
+| built_at | 2026-11-26T13:16:35+00:00 |
+| path | california_house_prices_2020/01a21800-27cb-7351-b30f-92b3082feb62 |
 | data_foundry_version | 0.0.5 |
-| git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:2cd71f93489fdf48a44bc68441800c7e618ec8f8f7e5bc3008ff8469fb368079` |

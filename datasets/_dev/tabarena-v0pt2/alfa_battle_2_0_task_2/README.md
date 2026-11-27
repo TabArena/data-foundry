@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: alfa_battle_2_0_task_2
 container_format: 2
-checksum: v2:08ac3bcaa99183175d13c2534e057ce843287f9e53745d4bda4051184e30cd75
-build: null
+checksum: v2:5b54eb7102e2255ab66c2947e99e204f655c2a60bfbfe235aca930a4b1b65e8d
+build:
+  uuid: 01a217f4-e366-76e3-a61b-dfc7b0537646
+  checksum: v2:5b54eb7102e2255ab66c2947e99e204f655c2a60bfbfe235aca930a4b1b65e8d
+  built_at: '2026-11-26T13:05:18+00:00'
+  path: alfa_battle_2_0_task_2/01a217f4-e366-76e3-a61b-dfc7b0537646
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 963811
@@ -35,6 +48,42 @@ splits:
   time_horizon_unit: months
   time_gap: null
   time_gap_unit: null
+  reason: 'A scoring model is refit on all products issued so far and used for the
+    next two months. No source gives a horizon or a refit cadence, so the two months
+    are a convention (CC 2026-11-11): the competition trained on the issues of a period
+    and tested on the issues of the following period (Alfa-Bank, habr.com/ru/companies/alfa/articles/551130)
+    without naming either length. We use 3 test windows of two issue months each,
+    walking back from the newest: months 22-23, 20-21 and 18-19 (Andrej, 2026-11-20;
+    months 14-15 of 2026-11-11 trained on 41.1% of the rows). Reaching further back
+    for diversity was tested and found nothing to gain: the adversarial ROC AUC between
+    two months climbs steadily with the months between them, and neighbouring months
+    differ about equally wherever they lie (0.65-0.72 without the payment-system features),
+    so no period justifies an older window. From each training side we remove the
+    products of clients that also have a product in the test window (curation_comments,
+    "Repeat clients"): their default flags were most likely not known when the test
+    products were issued. The windows hold 120,428, 107,844 and 121,390 products and
+    train on 804,162, 702,678 and 581,221 after the filter removes 39,221, 32,861
+    and 32,928 (83.4%, 72.9% and 60.3% of the 963,811 rows; 87.5%, 76.3% and 63.7%
+    before it). The default rate is 3.02%, 3.36% and 3.12% in the windows (2.78%,
+    2.67% and 2.58% on the train sides). The competition''s test labels are not public,
+    so we split the 24 labelled months, and 3 windows of 7 months would leave 58%,
+    27% and 6% of the data for training. The flag of any product issued in the 12
+    months before a window may still change after the window starts, so the other
+    training products of those months hold labels a deployed model would not have
+    had yet; a 12-month gap would leave 13-27% of the rows for training, a 6-month
+    gap 35-53% (before the filter). At equal training size, a 6-month gap lowers untuned
+    LightGBM by 0.014-0.015 ROC AUC on the newest and the oldest window (months 22-23
+    and 18-19, measured 2026-10-26), an upper bound on that optimism (it mixes in
+    the cost of older training data).
+
+
+    Exception to SPLIT-10 (2026-10-21, Lennart): the data has no label dates and a
+    default can be flagged up to a year after the issue, so a gap of the label delay
+    leaves 13-27% (12 months) or 35-53% (6 months) of the rows for training in the
+    windows of 2026-11-20, below the floor. Serves SPLIT-14 (Must). SPLIT-9 is met
+    by removing the measurable shortcut, the products of the test window''s clients;
+    the diffuse rest of unmatured labels falls under SPLIT-10 (principles.md, Tensions).
+    No gap (gap 0; Lennart, 2026-10-26).'
   n_train:
     min: 581221
     max: 804162
@@ -48,12 +97,8 @@ bundle_checks:
   infos:
   - dataset_duplicates_skipped
   - dataset_pure_feature_value_skipped
-  - meta_time_horizon_unit
-  accepted:
-    splits_rows_unused: 'By design: these 219 products, all of months 0-17 and so
-      on all three training sides, belong to clients with a product in every test
-      window, so the repeat-client filter removes them from every training side (curation_comments,
-      ''Repeat clients'').'
+  - splits_rows_unused
+  accepted: {}
 decisions:
 - Issue month reconstructed from the week codes of the transactions
 - Training sides without the products of the test window's clients
@@ -65,7 +110,7 @@ decisions:
 
 Binary classification of `default`, scored with `roc_auc` on temporal splits by `issue_month` (one step is a month). 963,811 rows and 510 features. Source: Other (2020).
 
-Not built yet. The current definition gives checksum `v2:08ac3bcaa99183175d13c2534e057ce843287f9e53745d4bda4051184e30cd75`.
+Built as `01a217f4-e366-76e3-a61b-dfc7b0537646` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -92,7 +137,9 @@ Not built yet. The current definition gives checksum `v2:08ac3bcaa99183175d13c25
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
+- The curation record, with the triage decision, its sources and the review: [`curation/records/alfa_battle_2_0_task_2.md`](../../../../curation/records/alfa_battle_2_0_task_2.md)
 - The original source: <https://boosters.pro/championship/alfabattle2/overview>
+- The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
 ## Rebuild
 
@@ -201,7 +248,9 @@ We start with train_target.csv and the 50 train transaction files of AlfaBattle 
 
 ## Splits
 
-A scoring model is refit on all products issued so far and used for the next two months. No source gives a horizon or a refit cadence, so the two months are a convention (CC 2026-11-11): the competition trained on the issues of a period and tested on the issues of the following period (Alfa-Bank, habr.com/ru/companies/alfa/articles/551130) without naming either length. We use 3 test windows of two issue months each, walking back from the newest: months 22-23, 20-21 and 18-19 (Andrej, 2026-11-20; months 14-15 of 2026-11-11 trained on 41.1% of the rows). Reaching further back for diversity was tested and found nothing to gain: the adversarial ROC AUC between two months climbs steadily with the months between them, and neighbouring months differ about equally wherever they lie (0.65-0.72 without the payment-system features), so no period justifies an older window. Each trains on all earlier months. From each training side we remove the products of clients that also have a product in the test window (curation_comments, "Repeat clients"): their default flags were most likely not known when the test products were issued. The windows hold 120,428, 107,844 and 121,390 products and train on 804,162, 702,678 and 581,221 after the filter removes 39,221, 32,861 and 32,928 (83.4%, 72.9% and 60.3% of the 963,811 rows; 87.5%, 76.3% and 63.7% before it). The default rate is 3.02%, 3.36% and 3.12% in the windows (2.78%, 2.67% and 2.58% on the train sides). The competition's test labels are not public, so we split the 24 labelled months, and 3 windows of 7 months would leave 58%, 27% and 6% of the data for training. The flag of any product issued in the 12 months before a window may still change after the window starts, so the other training products of those months hold labels a deployed model would not have had yet; a 12-month gap would leave 13-27% of the rows for training, a 6-month gap 35-53% (before the filter). At equal training size, a 6-month gap lowers untuned LightGBM by 0.014-0.015 ROC AUC on the newest and the oldest window (months 22-23 and 18-19, measured 2026-10-26), an upper bound on that optimism (it mixes in the cost of older training data).
+Expanding-window temporal splits: 3 test window(s) of 2 time values, starting at 22, 20, 18, newest first; train is all earlier data. Each train side keeps no row of an entity of `client_key` that its window tests. The test windows by `issue_month`, as listed: 22 to 23 (120,428 test, 804,162 train rows); 20 to 21 (107,844 test, 702,678 train rows); 18 to 19 (121,390 test, 581,221 train rows).
+
+A scoring model is refit on all products issued so far and used for the next two months. No source gives a horizon or a refit cadence, so the two months are a convention (CC 2026-11-11): the competition trained on the issues of a period and tested on the issues of the following period (Alfa-Bank, habr.com/ru/companies/alfa/articles/551130) without naming either length. We use 3 test windows of two issue months each, walking back from the newest: months 22-23, 20-21 and 18-19 (Andrej, 2026-11-20; months 14-15 of 2026-11-11 trained on 41.1% of the rows). Reaching further back for diversity was tested and found nothing to gain: the adversarial ROC AUC between two months climbs steadily with the months between them, and neighbouring months differ about equally wherever they lie (0.65-0.72 without the payment-system features), so no period justifies an older window. From each training side we remove the products of clients that also have a product in the test window (curation_comments, "Repeat clients"): their default flags were most likely not known when the test products were issued. The windows hold 120,428, 107,844 and 121,390 products and train on 804,162, 702,678 and 581,221 after the filter removes 39,221, 32,861 and 32,928 (83.4%, 72.9% and 60.3% of the 963,811 rows; 87.5%, 76.3% and 63.7% before it). The default rate is 3.02%, 3.36% and 3.12% in the windows (2.78%, 2.67% and 2.58% on the train sides). The competition's test labels are not public, so we split the 24 labelled months, and 3 windows of 7 months would leave 58%, 27% and 6% of the data for training. The flag of any product issued in the 12 months before a window may still change after the window starts, so the other training products of those months hold labels a deployed model would not have had yet; a 12-month gap would leave 13-27% of the rows for training, a 6-month gap 35-53% (before the filter). At equal training size, a 6-month gap lowers untuned LightGBM by 0.014-0.015 ROC AUC on the newest and the oldest window (months 22-23 and 18-19, measured 2026-10-26), an upper bound on that optimism (it mixes in the cost of older training data).
 
 Exception to SPLIT-10 (2026-10-21, Lennart): the data has no label dates and a default can be flagged up to a year after the issue, so a gap of the label delay leaves 13-27% (12 months) or 35-53% (6 months) of the rows for training in the windows of 2026-11-20, below the floor. Serves SPLIT-14 (Must). SPLIT-9 is met by removing the measurable shortcut, the products of the test window's clients; the diffuse rest of unmatured labels falls under SPLIT-10 (principles.md, Tensions). No gap (gap 0; Lennart, 2026-10-26).
 
@@ -271,13 +320,9 @@ A product is linked to the client's other products by identical transactions: 30
 
 0 error(s), 0 warning(s), 3 info (28 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 492,507,421 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 492,507,421 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to run them; nothing else checks duplicate rows and columns.)
 - **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 492,507,421 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
-- **info** `meta_time_horizon_unit`: `time_horizon_unit='months'` implies calendar time, but `time_on='issue_month'` has dtype int64, so the horizon cannot be cross-checked. (hint: Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use `time_horizon_unit='steps'` for a plain numeric time index.)
-
-Accepted on purpose:
-
-- `splits_rows_unused`: By design: these 219 products, all of months 0-17 and so on all three training sides, belong to clients with a product in every test window, so the repeat-client filter removes them from every training side (curation_comments, 'Repeat clients').
+- **info** `splits_rows_unused`: 219 row(s) (0.0%) appear in no train and no test set. (hint: Expected of a temporal split (the rows of a gap, history no window trains on, rows a filter keeps out of every training side); say why in `splits_comment`.)
 
 ## Data checks
 
@@ -375,7 +420,7 @@ Accepted on purpose:
 | rub_median | 963808 | 2109.84 | 6814.6 | 0.4 | 995001 |
 | rub_std | 963808 | 11167.3 | 17069.9 | 0 | 3.27961e+06 |
 | rub_min | 963808 | 158.429 | 1380.55 | 0.01 | 500000 |
-| rub_max | 963808 | 90019.5 | 183849 | 70 | 5.48932e+07 |
+| rub_max | 963808 | 90019.6 | 183849 | 70 | 5.48932e+07 |
 | hour_diff_mean | 963811 | 99.9743 | 152.536 | 0 | 1713.2 |
 | hour_diff_median | 963811 | 61.42 | 148.009 | 0 | 2189 |
 | hour_diff_std | 963811 | 131.141 | 161.392 | 0 | 3612.48 |
@@ -424,7 +469,7 @@ Accepted on purpose:
 | share_operation_type_6 | 963811 | 0.0233619 | 0.0752004 | 0 | 1 |
 | share_operation_type_7 | 963811 | 0.0170426 | 0.0590073 | 0 | 1 |
 | share_operation_type_8 | 963811 | 0.0147375 | 0.0557542 | 0 | 1 |
-| share_operation_type_9 | 963811 | 0.00648794 | 0.0250735 | 0 | 1 |
+| share_operation_type_9 | 963811 | 0.00648793 | 0.0250735 | 0 | 1 |
 | share_operation_type_10 | 963811 | 0.0122536 | 0.0604285 | 0 | 1 |
 | share_operation_type_11 | 963811 | 0.0108051 | 0.0483756 | 0 | 1 |
 
@@ -506,4 +551,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a217f4-e366-76e3-a61b-dfc7b0537646 |
+| checksum | v2:5b54eb7102e2255ab66c2947e99e204f655c2a60bfbfe235aca930a4b1b65e8d |
+| built_at | 2026-11-26T13:05:18+00:00 |
+| path | alfa_battle_2_0_task_2/01a217f4-e366-76e3-a61b-dfc7b0537646 |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

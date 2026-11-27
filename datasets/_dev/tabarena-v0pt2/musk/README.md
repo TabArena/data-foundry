@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: musk
 container_format: 2
-checksum: v2:984204e0e0f2217335e92705b0570ee032a3d192d338109c1ad71166b6a9d765
+checksum: v2:86f0e68613cc6e8b313924be3a62ceb53d630b5f095f8f0063a691573064077a
 build:
-  uuid: 01a111fc-e484-7212-b264-ac00bcffbd4d
-  checksum: v2:97fd0ae473c7c5b7269a847b647b7c59f16d497f1cab4f66c09586c43df3ff7b
-  built_at: '2026-10-06T16:12:29+00:00'
-  path: musk/01a111fc-e484-7212-b264-ac00bcffbd4d
+  uuid: 01a21800-e0ef-7c63-a201-84f1f28a7690
+  checksum: v2:86f0e68613cc6e8b313924be3a62ceb53d630b5f095f8f0063a691573064077a
+  built_at: '2026-11-26T13:17:21+00:00'
+  path: musk/01a21800-e0ef-7c63-a201-84f1f28a7690
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 6598
   n_features: 166
@@ -53,6 +53,8 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: Each test set holds 34 molecules, 675 to 5,046 conformations, as the molecules
+    have 1 to 1,044 conformations each.
   n_train:
     min: 1552
     max: 5923
@@ -76,7 +78,7 @@ decisions: []
 
 Binary classification of `class`, scored with `roc_auc` on grouped splits by `molecule_name`, one prediction per group (any). 6,598 rows and 166 features. Source: UCI (1994).
 
-Built as `01a111fc-e484-7212-b264-ac00bcffbd4d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:984204e0e0f2217335e92705b0570ee032a3d192d338109c1ad71166b6a9d765`, so the build is stale. See [Build](#build).
+Built as `01a21800-e0ef-7c63-a201-84f1f28a7690` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -192,13 +194,13 @@ The first 5 of 6,598 rows of the final frame (random rows: the frame is shuffled
 
 - We rename the molecule IDs to remove the target leakage from the names.
 - We drop the conformation name as it leaks information that the real task should not have (the correlation between specific conformations across samples).
-- Time basis: Timeless: the shapes are computed from each molecule's structure, all at once, and the label is an
-  expert's judgement of the molecule's smell (Dietterich et al. 1997); no row is dated, and every shape of a
-  test molecule is held out with it. Not tested: a new chemical class outside the 102 molecules.
+- Time basis: Timeless: the shapes are computed from each molecule's structure, all at once, and the label is an expert's judgement of the molecule's smell (Dietterich et al. 1997); no row is dated, and every shape of a test molecule is held out with it. Not tested: a new chemical class outside the 102 molecules.
 
 ## Splits
 
-We create stratified grouped 20-repeated 3-fold split. Each test set holds 34 molecules, 675 to 5,046 conformations, as the molecules have 1 to 1,044 conformations each.
+Repeated 3-fold cross-validation over the groups of `molecule_name` (one label each), stratified on `class`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 102 groups (SPLIT-33).
+
+Each test set holds 34 molecules, 675 to 5,046 conformations, as the molecules have 1 to 1,044 conformations each.
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 1,552 to 5,923 rows, test 675 to 5,046 rows.
 
@@ -292,7 +294,7 @@ One group is a molecule; its rows are its low-energy conformations (102 molecule
 | nearest neighbour in the same group | 86.7% of the rows (chance: 8.1%) |
 | label variance explained by the group | 1.00 (shuffled groups: 0.01) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
@@ -470,11 +472,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-e484-7212-b264-ac00bcffbd4d |
-| checksum | v2:97fd0ae473c7c5b7269a847b647b7c59f16d497f1cab4f66c09586c43df3ff7b |
-| built_at | 2026-10-06T16:12:29+00:00 |
-| path | musk/01a111fc-e484-7212-b264-ac00bcffbd4d |
+| uuid | 01a21800-e0ef-7c63-a201-84f1f28a7690 |
+| checksum | v2:86f0e68613cc6e8b313924be3a62ceb53d630b5f095f8f0063a691573064077a |
+| built_at | 2026-11-26T13:17:21+00:00 |
+| path | musk/01a21800-e0ef-7c63-a201-84f1f28a7690 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:984204e0e0f2217335e92705b0570ee032a3d192d338109c1ad71166b6a9d765` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

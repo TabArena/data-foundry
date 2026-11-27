@@ -1,5 +1,76 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-26, every definition rebuilt on the restructured package (174 containers)
+
+- All 174 definitions were rebuilt at the top of the codebase-review stack (#138 to #149). The generated READMEs now
+  name `data-foundry probe group` instead of `group_probes.py` (airfoil_self_noise and sat11_hand_algo_runtime keep
+  the script name in their dated notes), carry the splits reason and the merged check slugs, and every container
+  writes its `benchmark_task.json`. All 174 build, reload and match their stored checksums; container format 2.
+- Raw files fetched for the three definitions whose inputs were not in this warehouse, as their
+  `download_description` says: gossis_icu_hospital_mortality (Kaggle, widsdatathon2020), thyroid_discordant_archive
+  (UCI, thyroid0387) and kdd_cup_09_appetency (the large training data's five chunks and its labels, kdd.org).
+- Rows or splits differ from the committed READMEs in 22 datasets, all from changes on main since those READMEs were
+  last built: the 15 `_1m` versions keep every training row (2026-11-10; a benchmark samples them by
+  `train_sampling`), and acquire_valued_shoppers_challenge, airqo_low_cost_air_quality_monitor_calibration_challenge,
+  chicago_traffic_crashes, huesken_sirna_efficacy, mortgage, onlinenewspopularity and rain_in_australia get the
+  windows and repeats of the split rules of 2026-11-24. Main's own `dataset check` gives the same rows and splits for
+  those seven and for sepsis_prediction_1m, fraud_detection_in_electricity_and_gas_consumption_1m,
+  nyc_taxi_trip_duration_1m and expresso_churn_prediction_1m.
+- Warnings new against the committed READMEs, none from this rebuild:
+  - apistox and thyroid_discordant_archive (`splits_below_target`) and loan_default_prediction_imperial_college
+    (`dataset_sequential_id_column`) show the merged slugs, `splits_dimensions_off_protocol` and
+    `dataset_identifier_column`;
+  - 2024_lusaka_mobility_prediction_hackathon, ames_housing, brazilian_ecommerce, college_scorecard,
+    numerai_v5_2_1m and sf_permit_time get SPLIT-15's window count (`splits_dimensions_off_protocol`), which their
+    READMEs predate; main's check gives it for lusaka, college_scorecard and sf_permit_time as well;
+  - numerai_v5_2_1m's committed README was never from a build. Its build adds `task_feature_looks_like_exposure`
+    (the name heuristic reads "swept" in the anonymised `feature_swept_irrespirable_grillade`) and
+    `task_target_value_dominant` (the five-level target is 0.5 on half the rows).
+  - Accepted (Lennart, 2026-11-26): `splits_dimensions_off_protocol` in those eight definitions, each acceptance
+    naming SPLIT-33's target, the windows reached and what stops more (SPLIT-15); the splits comments of
+    2024_lusaka_mobility_prediction_hackathon and numerai_v5_2_1m now name the target as well. numerai_v5_2_1m also
+    accepts its two new warnings. A CC line in each record; the eight datasets were rebuilt.
+- Open warnings after the acceptances: 27 in 17 datasets. `dataset_constant_column` (aps_failure,
+  asp_potassco_classification, labour_inspection_compliance, mercedes_benz_greener_manufacturing,
+  pva_revenue_prediction_kddcup98, sat11_hand_algo_runtime); `dataset_conflicting_duplicate_rows`
+  (asp_potassco_classification, blood_transfusion, hr_analytics, ljubljana_primary_tumor, superconductivity,
+  website_phishing); `dataset_duplicate_rows` (blood_transfusion, concrete_compressive_strength, hr_analytics,
+  ljubljana_primary_tumor, website_phishing); `dataset_pure_feature_value` (amazon_employee_access, aps_failure); one
+  each of `task_feature_looks_like_exposure` (early_learning_predictors), `task_target_value_dominant`,
+  `dataset_missing_value_label` and `meta_license_unknown` (pva_revenue_prediction_kddcup98),
+  `dataset_identifier_column` (loan_default_prediction_imperial_college), `dataset_duplicate_columns`
+  (mercedes_benz_greener_manufacturing), `dataset_missing_value_sentinel` (musk) and `splits_test_minority_few`
+  (seismic_bumps).
+- Inputs: the build traced 2,658 raw files (107.3 GB), and a check-only rebuild from links to those files alone gives
+  every checksum again. The tracer missed SQLite reads (aeolus_rebuilt_1m's `stations.db`,
+  noaa_afsc_bottom_trawl_survey_cpue's strata GeoPackage): `build_one.py` now notes `sqlite3.connect`, both were
+  rebuilt with the same checksums and reproduce. `minimal_inputs.py links` copies a traced `.prepared_raw_files.json`
+  instead of linking it, and `compare_builds.py` reads a README's front matter up to its closing line (a splits
+  reason may hold a table).
+- Task probes (`data-foundry probe task --built`) on the 22 datasets whose rows or splits changed. Flags with a
+  decision already: numerai_v5_2_1m and g_research_crypto_forecasting_1m (no_signal, drift_baseline, unstable: R^2
+  of untuned models under a correlation metric, as their records say), expresso_churn_prediction_1m (one_feature,
+  kept 2026-10-07). New flags, each kept as shipped (Lennart, 2026-11-26, on a review page; CC lines in the
+  records and rows in task_probes.md's cases):
+  - maps_router_eta_1m, one_feature (TP-4): `num_18` alone reaches skill 0.761 against the random forest's 0.800
+    (RMSE 0.183 against 0.168; the constant 0.375), and all 21 BeyondArena configurations beat it;
+  - consumer_complaints_1m, no_spread (TP-3): LightGBM log loss 0.403, random forest 0.413, linear 0.569 (paired SE
+    0.19); the tuned configurations spread from 0.410 to 0.565;
+  - acquire_valued_shoppers_challenge, drift_baseline beside its decided no_spread (TP-1, TP-2): the newest rows'
+    class shares have log loss 0.623 against the random forest's 0.615, but ROC AUC, the metric, ignores them, and
+    all 21 tuned configurations beat 0.5 in 5 of 5 folds.
+  On the `_1m` containers, which now hold every training row, the task probe loads the whole container before it
+  caps the sides: 490 GB peak for maps_router_eta_1m and 634 GB for numerai_v5_2_1m, so they run one at a time.
+- The superseded containers were deleted from the local warehouse (Lennart, 2026-11-26): 276 of the working
+  copy's datasets, 80 GB, none a README's current build or a UUID pinned in the collections registry. The 103
+  containers in the folders of datasets outside the working copy were left alone.
+- Group probes re-run (`data-foundry probe group`, mean of three splits each) for the four definitions with a unit
+  weight, whose runs before 2026-11-09 read the unit column as a feature (only boreal had been measured again):
+  boreal_postfire_lichen_biomass R^2 0.408 on random folds against -0.035 on grouped ones (gap 0.443, as on
+  2026-11-10); dementia_prediction ROC AUC 0.864 against 0.785; pancreatic_cancer_mouse_detection ROC AUC 0.676
+  against 0.634 (across groups, the linear model 0.645, permutation p 0.03); superconductivity R^2 0.915 against
+  0.909. No split changes: each grouping follows its use case, as its record says.
+
 ## 2026-11-26, leave one group out is a declaration; group bases carry their attribution (no container built)
 
 - `leave_one_group_out = True` became `grouped_splits = GroupedSplits(kind="leave_one_group_out")` beside the

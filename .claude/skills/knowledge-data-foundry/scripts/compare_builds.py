@@ -36,9 +36,10 @@ def _results(directory: Path) -> dict[str, dict]:
 
 def _committed_warnings(root: Path, name: str, ref: str) -> set[str] | None:
     out = subprocess.run(["git", "show", f"{ref}:{root}/{name}/README.md"], capture_output=True, text=True, check=False)
-    if out.returncode != 0 or not out.stdout.startswith("---"):
+    end = out.stdout.find("\n---\n", 4)  # the closing line: a value may hold "---" (a table in the splits reason)
+    if out.returncode != 0 or not out.stdout.startswith("---\n") or end == -1:
         return None
-    front = yaml.safe_load(out.stdout.split("---", 2)[1]) or {}
+    front = yaml.safe_load(out.stdout[4:end]) or {}
     checks = front.get("bundle_checks") or {}
     return set(checks.get("warnings", [])) | set(checks.get("errors", []))
 

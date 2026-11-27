@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: chicago_traffic_crashes
 container_format: 2
-checksum: v2:1f5ef1f75a8676ebb67ff20539b6d807af6f579595a6b4134ba99cc72bce81dc
+checksum: v2:e54f9570c1debb30e834661f8ca7a7160541103afc3b536ec130ed513dd7cc71
 build:
-  uuid: 01a18a0b-6aa8-726f-a33a-75044860edbf
-  checksum: v2:0e922de5b739eda2afd324862b5e2f3211ad7a1aa3088df8e1bbf576da978afc
-  built_at: '2026-10-29T23:43:07+00:00'
-  path: chicago_traffic_crashes/versions/01a18a0b-6aa8-726f-a33a-75044860edbf
+  uuid: 01a217fd-5b06-7d55-841f-8e0d110f9174
+  checksum: v2:e54f9570c1debb30e834661f8ca7a7160541103afc3b536ec130ed513dd7cc71
+  built_at: '2026-11-26T13:13:40+00:00'
+  path: chicago_traffic_crashes/01a217fd-5b06-7d55-841f-8e0d110f9174
   data_foundry_version: 0.0.5
-  git_sha: 1964e1b2e4caa41c8a94082e028f65d4cd8b2b6b-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
     python: 3.12.3
-    pandas: 3.1.0
-    numpy: 2.5.4
-    pyarrow: 26.0.0
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
     scikit-learn: 1.7.2
-    polars: 2.0.0
-build_stale: true
+    polars: 1.41.1
+build_stale: false
 data:
   n_rows: 998117
   n_features: 15
@@ -43,16 +43,145 @@ splits:
   n_repeats: 9
   n_folds: 1
   random_state: 4267
-  time_horizon: 3
+  time_horizon: 1
   time_horizon_unit: months
   time_gap: 1
   time_gap_unit: months
+  reason: 'Training starts on 2017-09-01; no side is sampled.
+
+    October 2026 is excluded because the source snapshot ends within that month; the
+    newest test month is September 2026.
+
+    The length is the refit cadence, one month (the curator''s pick, 2026-11-11):
+    the one documented cycle of the
+
+    analyst''s work is monthly, as CDOT compiles its list of traffic fatalities "after
+    monthly reviews of fatal
+
+    traffic crash information" and updates it monthly (Vision Zero Chicago Traffic
+    Fatalities, catalog.data.gov);
+
+    the yearly crash report is its other cycle. The quarter used until 2026-11-11
+    was a convention of the build that
+
+    no source names. A month holds 6 to 15 fatal crashes against 20 to 30 in a quarter,
+    so a window''s score leans
+
+    less on them, which the log loss over all five classes allows. The one-month horizon
+    is a refit cadence, not a
+
+    medical outcome window.
+
+    The windows (the curator''s pick of 2026-11-11: nine spread over four years, at
+    one month): the newest month
+
+    always stays; the other eight are spread over the 53 monthly windows that keep
+    half the crashes for training
+
+    (May 2022 to September 2026), stepping back five and six months in turn, so each
+    window falls in another
+
+    calendar month and every season appears at least twice (September, October and
+    November; April and May; June
+
+    and July; December and January), and they lie on both sides of the 2023Q4 step
+    in "reported, not evident"
+
+    (below). Test crashes (fatal ones), then training crashes after the notification
+    filter and their share of the
+
+    998,117: September 2026 9,641 (6), 978,937 (98.1%); April 2026 8,961 (10), 931,711
+    (93.3%); October 2025 9,031
+
+    (7), 879,272 (88.1%); May 2025 10,079 (6), 830,229 (83.2%); November 2024 8,924
+    (9), 777,987 (77.9%); June 2024
+
+    10,120 (10), 727,880 (72.9%); December 2023 9,095 (12), 675,888 (67.7%); July
+    2023 9,499 (8), 627,408 (62.9%);
+
+    January 2023 8,091 (15), 574,344 (57.5%). In all 83,441 test crashes, 83 of them
+    fatal; no window trains on
+
+    less than half the crashes.
+
+    Train ends one month before each window (a one-month gap, as zillow_prize): a
+    model refit at a month start
+
+    would not yet see the final class of the last month''s crashes, since the SR1050
+    manual lets a report be amended
+
+    when a person dies later (printed pages 2-3 and 9) and a traffic death is counted
+    within 30 days of the crash.
+
+    The source has no label versions or amendment dates. The portal''s row field :updated_at
+    bounds the delay: for
+
+    crashes of June-August 2026 the last update is a median 16.1 days after the crash
+    and 99.4% of rows are last
+
+    updated within 30 days; 5 of 32 fatal crashes were updated later (33-102 days);
+    injury shares do not shift
+
+    across the update. Limits: :updated_at changes with any field, not only the label;
+    the bulk reload of
+
+    2026-05-21 hides earlier history; 1,904 older crashes were rewritten in one batch
+    on 2026-11-03.
+
+    lt_vehicle_loan_default_prediction has no gap because there a 30-day gap would
+    leave training sides under
+
+    SPLIT-14''s 50% floor and its measured effect was small; here the floor holds
+    and the gap costs 0.9-1.6% of a
+
+    training side. The 9,529 crashes of August 2026, the newest window''s gap month,
+    fall in no split, as do 9
+
+    crashes of January to July 2026 notified only after 1 September 2026 and the one
+    notified before its event.
+
+    Training also requires DATE_POLICE_NOTIFIED strictly before the month start of
+    the window (the refit) and not
+
+    before the recorded event; 9 to 37 crashes of a training side''s history are not
+    yet notified then and are left
+
+    out. This intermediate timestamp is removed before the model frame is returned.
+    The event time is floored to
+
+    whole hours in `_clean`, before the rows are sorted by it, and cohorts are drawn
+    on the floored hour (window and
+
+    gap bounds fall on midnight, so no cohort changes); only the check "not notified
+    before the recorded event"
+
+    reads the source minute, through a flag removed with the timestamp (2026-11-05,
+    LEAK-13).
+
+    Locations can recur across time; this is not unseen-location evaluation.
+
+    Drift (SPLIT-20, USE-5 open): the share of "REPORTED, NOT EVIDENT" steps from
+    4.09-4.71% (2022Q1-2023Q3) to
+
+    5.56% in 2023Q4, then 6.07-6.54% (2024Q2-2026Q1) and 6.64-6.74% (2026Q2-Q3, a
+    further rise in desk reports),
+
+    while incapacitating plus fatal falls from about 2.0% to 1.4%; the desk-report
+    share stays at 50-53%. January
+
+    and July 2023 lie before the step (4.0% and 4.8% of their crashes), December 2023
+    in its quarter (5.2%) and the
+
+    six newer windows after it (6.0-6.8%); the step was accepted as drift on 2026-11-05,
+    the same task on both
+
+    sides. Its cause (a change in recording practice?) is not known.'
   n_train:
-    min: 738598
-    max: 959318
+    min: 574344
+    max: 978937
   n_test:
-    min: 24682
-    max: 29258
+    min: 8091
+    max: 10120
 bundle_checks:
   ok: true
   errors: []
@@ -60,13 +189,8 @@ bundle_checks:
   infos:
   - dataset_duplicate_rows
   - dataset_conflicting_duplicate_rows
-  accepted:
-    splits_rows_unused: '9,539 crashes are in no split: the 9,529 of August 2026,
-      the newest window''s gap month, which falls in no test month; 9 of January to
-      July 2026 notified to the police only after 1 September 2026, the newest refit,
-      and in no test month; and one crash (11 March 2018) notified before its recorded
-      event, so no training side takes it, and before the oldest test window. They
-      stay in the frame unused rather than being dropped by their timestamps.'
+  - splits_rows_unused
+  accepted: {}
 decisions:
 - Keep all five police injury classes
 - Filter measurable notification unavailability before each refit
@@ -78,7 +202,7 @@ decisions:
 
 Multiclass classification of `most_severe_injury`, scored with `log_loss` on temporal splits by `crash_date`. 998,117 rows and 15 features. Source: GOV Website (2026).
 
-Built as `01a18a0b-6aa8-726f-a33a-75044860edbf` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:1f5ef1f75a8676ebb67ff20539b6d807af6f579595a6b4134ba99cc72bce81dc`, so the build is stale. See [Build](#build).
+Built as `01a217fd-5b06-7d55-841f-8e0d110f9174` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -103,10 +227,9 @@ Built as `01a18a0b-6aa8-726f-a33a-75044860edbf` on 2026-10-29, but `dataset.py` 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
-| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/chicago_traffic_crashes.md`](../../../../curation/records/chicago_traffic_crashes.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/chicago_traffic_crashes.md`](../../../../curation/records/chicago_traffic_crashes.md)
 - The original source: <https://data.cityofchicago.org/Transportation/Traffic-Crashes-Crashes/85ca-t3if>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -157,7 +280,7 @@ Only curators run `build`, when the dataset ships.
 | name | `log_loss` (standard; takes proba; lower is better) |
 | origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | mean of -log p(true class) |
-| reason | The original City portal, field dictionary and linked SR1050 manual define a crash-report release, not a scored prediction competition or a single defining model-selection metric. Use multiclass log loss for the accepted five-class probability task. On the newest window about 35% of the loss is in the 'reported, not evident' class and about 10% in incapacitating plus fatal; skill over the class prior is 18.0% on all rows against 11.8% on on-scene reports alone (one quick LightGBM on most of the shipped inputs, 2026-11-05). |
+| reason | The original City portal, field dictionary and linked SR1050 manual define a crash-report release, not a scored prediction competition or a single defining model-selection metric. Use multiclass log loss for the accepted five-class probability task. On July-September 2026 about 35% of the loss is in the 'reported, not evident' class and about 10% in incapacitating plus fatal; skill over the class prior is 18.0% on all rows against 11.8% on on-scene reports alone (one quick LightGBM on most of the shipped inputs, 2026-11-05). |
 
 <details>
 <summary>Feature types: 9 categorical, 1 ordinal, 0 string, 1 datetime</summary>
@@ -222,7 +345,9 @@ We start with the original City's 2026-11-04 bulk CSV export, not a Kaggle re-up
 
 ## Splits
 
-Nine one-month test windows, newest first, on event time CRASH_DATE, each with expanding earlier history: September 2026, April 2026, October 2025, May 2025, November 2024, June 2024, December 2023, July 2023 and January 2023. Training starts on 2017-09-01; no side is sampled.
+Custom temporal splits (`_make_splits`): 9 test window(s), each with its own train side. The test windows by `crash_date`, as listed: 2026-09-01 to 2026-09-30 (9,641 test, 978,937 train rows); 2026-04-01 to 2026-04-30 (8,961 test, 931,711 train rows); 2025-10-01 to 2025-10-31 (9,031 test, 879,272 train rows); 2025-05-01 to 2025-05-31 (10,079 test, 830,229 train rows); 2024-11-01 to 2024-11-30 (8,924 test, 777,987 train rows); 2024-06-01 to 2024-06-30 (10,120 test, 727,880 train rows); 2023-12-01 to 2023-12-31 (9,095 test, 675,888 train rows); 2023-07-01 to 2023-07-31 (9,499 test, 627,408 train rows); 2023-01-01 to 2023-01-31 (8,091 test, 574,344 train rows).
+
+Training starts on 2017-09-01; no side is sampled.
 October 2026 is excluded because the source snapshot ends within that month; the newest test month is September 2026.
 The length is the refit cadence, one month (the curator's pick, 2026-11-11): the one documented cycle of the
 analyst's work is monthly, as CDOT compiles its list of traffic fatalities "after monthly reviews of fatal
@@ -268,19 +393,36 @@ and July 2023 lie before the step (4.0% and 4.8% of their crashes), December 202
 six newer windows after it (6.0-6.8%); the step was accepted as drift on 2026-11-05, the same task on both
 sides. Its cause (a change in recording practice?) is not known.
 
-9 repeat(s) x 1 fold(s) with seed 4267; train 738,598 to 959,318 rows, test 24,682 to 29,258 rows. Prediction horizon: 3 months. Gap between train and test: 1 months.
+9 repeat(s) x 1 fold(s) with seed 4267; train 574,344 to 978,937 rows, test 8,091 to 10,120 rows. Prediction horizon: 1 months. Gap between train and test: 1 months.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 959318 | 28987 | 2017-09-01 00:00:00 | 2026-05-31 23:00:00 | 2026-07-01 00:00:00 | 2026-09-30 23:00:00 |
-| 1 | 0 | 931711 | 28742 | 2017-09-01 00:00:00 | 2026-02-28 23:00:00 | 2026-04-01 00:00:00 | 2026-06-30 23:00:00 |
-| 2 | 0 | 905843 | 25920 | 2017-09-01 00:00:00 | 2025-11-30 23:00:00 | 2026-01-01 00:00:00 | 2026-03-31 23:00:00 |
-| 3 | 0 | 879272 | 26147 | 2017-09-01 00:00:00 | 2025-08-31 23:00:00 | 2025-10-01 00:00:00 | 2025-12-31 23:00:00 |
-| 4 | 0 | 849203 | 29011 | 2017-09-01 00:00:00 | 2025-05-31 23:00:00 | 2025-07-01 00:00:00 | 2025-09-30 23:00:00 |
-| 5 | 0 | 821512 | 29055 | 2017-09-01 00:00:00 | 2025-02-28 23:00:00 | 2025-04-01 00:00:00 | 2025-06-30 23:00:00 |
-| 6 | 0 | 796777 | 24682 | 2017-09-01 00:00:00 | 2024-11-30 23:00:00 | 2025-01-01 00:00:00 | 2025-03-31 23:00:00 |
-| 7 | 0 | 768189 | 27564 | 2017-09-01 00:00:00 | 2024-08-31 23:00:00 | 2024-10-01 00:00:00 | 2024-12-31 23:00:00 |
-| 8 | 0 | 738598 | 29258 | 2017-09-01 00:00:00 | 2024-05-31 23:00:00 | 2024-07-01 00:00:00 | 2024-09-30 23:00:00 |
+| 0 | 0 | 978937 | 9641 | 2017-09-01 00:00:00 | 2026-07-31 23:00:00 | 2026-09-01 00:00:00 | 2026-09-30 23:00:00 |
+| 1 | 0 | 931711 | 8961 | 2017-09-01 00:00:00 | 2026-02-28 23:00:00 | 2026-04-01 00:00:00 | 2026-04-30 23:00:00 |
+| 2 | 0 | 879272 | 9031 | 2017-09-01 00:00:00 | 2025-08-31 23:00:00 | 2025-10-01 00:00:00 | 2025-10-31 23:00:00 |
+| 3 | 0 | 830229 | 10079 | 2017-09-01 00:00:00 | 2025-03-31 23:00:00 | 2025-05-01 00:00:00 | 2025-05-31 23:00:00 |
+| 4 | 0 | 777987 | 8924 | 2017-09-01 00:00:00 | 2024-09-30 23:00:00 | 2024-11-01 00:00:00 | 2024-11-30 23:00:00 |
+| 5 | 0 | 727880 | 10120 | 2017-09-01 00:00:00 | 2024-04-30 23:00:00 | 2024-06-01 00:00:00 | 2024-06-30 23:00:00 |
+| 6 | 0 | 675888 | 9095 | 2017-09-01 00:00:00 | 2023-10-31 23:00:00 | 2023-12-01 00:00:00 | 2023-12-31 23:00:00 |
+| 7 | 0 | 627408 | 9499 | 2017-09-01 00:00:00 | 2023-05-31 23:00:00 | 2023-07-01 00:00:00 | 2023-07-31 23:00:00 |
+| 8 | 0 | 574344 | 8091 | 2017-09-01 00:00:00 | 2022-11-30 23:00:00 | 2023-01-01 00:00:00 | 2023-01-31 23:00:00 |
+
+
+### The test windows
+
+Each test window against its train side, by statistics of the data, never of a model: the target, and the population stability index (PSI) of each feature, its largest value and the features that drift most (below 0.1 little shift, above 0.25 a large one), and the share of test rows with a category the train side never shows. Up to 20,000 rows per side. The candidates the windows were chosen from: `.venv/bin/python -m data_foundry.curation.cli dataset windows chicago_traffic_crashes`.
+
+| window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
+|---|---|---|---|---|---|---|---|---|
+| 0 | Sep 2026 | 9641 | 0.981 | FATAL 0.1%, INCAPACITATING INJURY 1.5%, NO INDICATION OF INJURY 81.7%, NONINCAP… | FATAL 0.1%, INCAPACITATING INJURY 1.8%, NO INDICATION OF INJURY 84.8%, NONINCAP… | 0.022 | trafficway_type (0.02), first_crash_type (0.02), beat_of_occurrence (0.01) | 0 |
+| 1 | Apr 2026 | 8961 | 0.933 | FATAL 0.1%, INCAPACITATING INJURY 1.2%, NO INDICATION OF INJURY 84.2%, NONINCAP… | FATAL 0.1%, INCAPACITATING INJURY 1.7%, NO INDICATION OF INJURY 84.7%, NONINCAP… | 0.02 | first_crash_type (0.02), trafficway_type (0.02), beat_of_occurrence (0.01) | 0.0008 |
+| 2 | Oct 2025 | 9031 | 0.881 | FATAL 0.1%, INCAPACITATING INJURY 1.5%, NO INDICATION OF INJURY 82.6%, NONINCAP… | FATAL 0.1%, INCAPACITATING INJURY 1.8%, NO INDICATION OF INJURY 84.8%, NONINCAP… | 0.029 | trafficway_type (0.03), first_crash_type (0.02), street_name (0.01) | 0.0001 |
+| 3 | May 2025 | 10079 | 0.832 | FATAL 0.1%, INCAPACITATING INJURY 1.1%, NO INDICATION OF INJURY 84.2%, NONINCAP… | FATAL 0.1%, INCAPACITATING INJURY 1.7%, NO INDICATION OF INJURY 85.6%, NONINCAP… | 0.03 | trafficway_type (0.03), first_crash_type (0.02), beat_of_occurrence (0.01) | 0.0002 |
+| 4 | Nov 2024 | 8924 | 0.779 | FATAL 0.1%, INCAPACITATING INJURY 1.5%, NO INDICATION OF INJURY 84.4%, NONINCAP… | FATAL 0.1%, INCAPACITATING INJURY 1.9%, NO INDICATION OF INJURY 85.4%, NONINCAP… | 0.048 | trafficway_type (0.05), first_crash_type (0.01), beat_of_occurrence (0.01) | 0.0001 |
+| 5 | Jun 2024 | 10120 | 0.729 | FATAL 0.1%, INCAPACITATING INJURY 1.6%, NO INDICATION OF INJURY 82.7%, NONINCAP… | FATAL 0.1%, INCAPACITATING INJURY 1.9%, NO INDICATION OF INJURY 85.1%, NONINCAP… | 0.058 | trafficway_type (0.06), first_crash_type (0.02), beat_of_occurrence (0.01) | 0.0001 |
+| 6 | Dec 2023 | 9095 | 0.677 | FATAL 0.1%, INCAPACITATING INJURY 1.4%, NO INDICATION OF INJURY 84.7%, NONINCAP… | FATAL 0.1%, INCAPACITATING INJURY 1.9%, NO INDICATION OF INJURY 85.7%, NONINCAP… | 0.082 | trafficway_type (0.08), first_crash_type (0.02), street_name (0.01) | 0.0002 |
+| 7 | Jul 2023 | 9499 | 0.629 | FATAL 0.1%, INCAPACITATING INJURY 2.0%, NO INDICATION OF INJURY 83.5%, NONINCAP… | FATAL 0.1%, INCAPACITATING INJURY 1.8%, NO INDICATION OF INJURY 85.2%, NONINCAP… | 0.062 | trafficway_type (0.06), first_crash_type (0.02), street_name (0.01) | 0.0001 |
+| 8 | Jan 2023 | 8091 | 0.575 | FATAL 0.2%, INCAPACITATING INJURY 1.6%, NO INDICATION OF INJURY 86.4%, NONINCAP… | FATAL 0.1%, INCAPACITATING INJURY 1.7%, NO INDICATION OF INJURY 85.4%, NONINCAP… | 0.062 | trafficway_type (0.06), first_crash_type (0.03), street_name (0.01) | 0.0006 |
 
 ## Decisions
 
@@ -301,28 +443,25 @@ Source classes remain distinct; missing labels are not interpreted as no injury.
 
 Notification must precede refit and cannot precede its recorded event. It is eligibility metadata only and does not date the injury label; the one-month gap before each window (its rows counted here) stands in for later amendments.
 
-| quarter start | gap month rows | prior rows | not yet notified | notification before event | eligible train pool | test rows |
+| month start | gap month rows | prior rows | not yet notified | notification before event | eligible train pool | test rows |
 |---|---|---|---|---|---|---|
-| 2026-07-01 00:00:00 | 9795 | 959335 | 16 | 1 | 959318 | 28987 |
-| 2026-04-01 00:00:00 | 8658 | 931730 | 18 | 1 | 931711 | 28742 |
-| 2026-01-01 00:00:00 | 8604 | 905864 | 20 | 1 | 905843 | 25920 |
-| 2025-10-01 00:00:00 | 9029 | 879292 | 19 | 1 | 879272 | 26147 |
-| 2025-07-01 00:00:00 | 10084 | 849226 | 22 | 1 | 849203 | 29011 |
-| 2025-04-01 00:00:00 | 8718 | 821537 | 24 | 1 | 821512 | 29055 |
-| 2025-01-01 00:00:00 | 8774 | 796799 | 21 | 1 | 796777 | 24682 |
-| 2024-10-01 00:00:00 | 9790 | 768219 | 29 | 1 | 768189 | 27564 |
-| 2024-07-01 00:00:00 | 10120 | 738631 | 32 | 1 | 738598 | 29258 |
+| 2026-09-01 00:00:00 | 9529 | 978947 | 9 | 1 | 978937 | 9641 |
+| 2026-04-01 00:00:00 | 8658 | 931730 | 18 | 1 | 931711 | 8961 |
+| 2025-10-01 00:00:00 | 9029 | 879292 | 19 | 1 | 879272 | 9031 |
+| 2025-05-01 00:00:00 | 8892 | 830255 | 25 | 1 | 830229 | 10079 |
+| 2024-11-01 00:00:00 | 9866 | 778009 | 21 | 1 | 777987 | 8924 |
+| 2024-06-01 00:00:00 | 10719 | 727912 | 31 | 1 | 727880 | 10120 |
+| 2023-12-01 00:00:00 | 8755 | 675918 | 29 | 1 | 675888 | 9095 |
+| 2023-07-01 00:00:00 | 9570 | 627446 | 37 | 1 | 627408 | 9499 |
+| 2023-01-01 00:00:00 | 8916 | 574378 | 33 | 1 | 574344 | 8091 |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 3 info (28 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 397 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 49 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
-
-Accepted on purpose:
-
-- `splits_rows_unused`: 9,539 crashes are in no split: the 9,529 of August 2026, the newest window's gap month, which falls in no test month; 9 of January to July 2026 notified to the police only after 1 September 2026, the newest refit, and in no test month; and one crash (11 March 2018) notified before its recorded event, so no training side takes it, and before the oldest test window. They stay in the frame unused rather than being dropped by their timestamps.
+- **info** `splits_rows_unused`: 9,539 row(s) (1.0%) appear in no train and no test set. (hint: Expected of a temporal split (the rows of a gap, history no window trains on, rows a filter keeps out of every training side); say why in `splits_comment`.)
 
 ## Data checks
 
@@ -434,11 +573,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a18a0b-6aa8-726f-a33a-75044860edbf |
-| checksum | v2:0e922de5b739eda2afd324862b5e2f3211ad7a1aa3088df8e1bbf576da978afc |
-| built_at | 2026-10-29T23:43:07+00:00 |
-| path | chicago_traffic_crashes/versions/01a18a0b-6aa8-726f-a33a-75044860edbf |
+| uuid | 01a217fd-5b06-7d55-841f-8e0d110f9174 |
+| checksum | v2:e54f9570c1debb30e834661f8ca7a7160541103afc3b536ec130ed513dd7cc71 |
+| built_at | 2026-11-26T13:13:40+00:00 |
+| path | chicago_traffic_crashes/01a217fd-5b06-7d55-841f-8e0d110f9174 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 1964e1b2e4caa41c8a94082e028f65d4cd8b2b6b-dirty |
-| libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:1f5ef1f75a8676ebb67ff20539b6d807af6f579595a6b4134ba99cc72bce81dc` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

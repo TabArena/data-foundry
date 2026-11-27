@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: coffee_rating_prediction
 container_format: 2
-checksum: v2:87dead63334116b4286b609bdcf39c602eb73babf869b79f80aced25b521c6ed
+checksum: v2:b9e99bf9e49b0ca060d1129bbde87686b98b73aaff0ea184a64cd40b90c01ee1
 build:
-  uuid: 01a111fc-f020-7625-b0b4-3e15565c2a7b
-  checksum: v2:42fdd069b327bcb3840eb99b3ce9ae083ec892a2618bfe1dc6753c7687dc5694
-  built_at: '2026-10-06T16:12:32+00:00'
-  path: coffee_rating_prediction/01a111fc-f020-7625-b0b4-3e15565c2a7b
+  uuid: 01a21800-bfc1-7d8e-8e8d-68f0b61349d9
+  checksum: v2:b9e99bf9e49b0ca060d1129bbde87686b98b73aaff0ea184a64cd40b90c01ee1
+  built_at: '2026-11-26T13:17:13+00:00'
+  path: coffee_rating_prediction/01a21800-bfc1-7d8e-8e8d-68f0b61349d9
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 2367
   n_features: 8
@@ -50,6 +50,36 @@ splits:
   time_horizon_unit: months
   time_gap: 1
   time_gap_unit: months
+  reason: 'We simulate a setting where we refit the model every 2 months and only
+    test on the next 2 months, walking back
+
+    from the newest review until the training data would fall below 50% of the rows
+    (12 windows,
+
+    August-September 2023 back to October-November 2021, 62 to 137 test reviews each).
+    Twelve windows against the
+
+    30 an IID split of 2,367 reviews would get (SPLIT-33): monthly windows would reach
+    25, but some months hold
+
+    only 2-10 reviews, which makes per-window RMSE noise; 2-month windows keep at
+    least ~50 test rows each, and
+
+    the window length and the gap follow the use case rather than the count (SPLIT-15).
+
+    A score is published with its review month, weeks or months after the roaster
+    submitted the coffee (the delay is
+
+    not stated). The roaster predicts at submission, so each window trains only on
+    reviews published at least one
+
+    month before it starts: a one-month gap, the smallest the monthly dates allow
+    (Andrej, 2026-11-18). Reviews of
+
+    one month share their scoring (the month explains 8% of the score''s variance;
+    some months are themed tastings),
+
+    and whole two-month windows keep each month on one side.'
   n_train:
     min: 1211
     max: 2212
@@ -71,12 +101,12 @@ bundle_checks:
       on reviews published at least a month before it starts (Andrej, 2026-11-18).
       The gap is the publication delay the split cannot read off the dates, not a
       second copy of it.'
-    splits_below_target: 12 two-month windows against the 30 an IID split of 2,367
-      reviews would get (SPLIT-33). Monthly windows would reach 25, but some months
-      hold only 2 to 10 reviews, which makes a per-window RMSE of noise; the window
-      length and the gap follow the use case and are not shortened to reach the count
-      (SPLIT-15). The splits comment names the target, the count reached and what
-      stops more.
+    splits_dimensions_off_protocol: 12 two-month windows against the 30 an IID split
+      of 2,367 reviews would get (SPLIT-33). Monthly windows would reach 25, but some
+      months hold only 2 to 10 reviews, which makes a per-window RMSE of noise; the
+      window length and the gap follow the use case and are not shortened to reach
+      the count (SPLIT-15). The splits comment names the target, the count reached
+      and what stops more.
 decisions: []
 ---
 
@@ -86,7 +116,7 @@ decisions: []
 
 Regression of `rating`, scored with `rmse` on temporal splits by `review_date`. 2,367 rows and 8 features. Source: Kaggle (2023).
 
-Built as `01a111fc-f020-7625-b0b4-3e15565c2a7b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:87dead63334116b4286b609bdcf39c602eb73babf869b79f80aced25b521c6ed`, so the build is stale. See [Build](#build).
+Built as `01a21800-bfc1-7d8e-8e8d-68f0b61349d9` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -229,6 +259,8 @@ We start with the Kaggle version. Note, we acknowledge that the dataset is not o
 
 ## Splits
 
+Expanding-window temporal splits: 12 test window(s) of 2 months, walking back from the newest data, newest first; train is all earlier data up to a gap of 1 months. The test windows by `review_date`, as listed: 2023-08-01 to 2023-09-01 (104 test, 2,212 train rows); 2023-06-01 to 2023-07-01 (88 test, 2,137 train rows); 2023-04-01 to 2023-05-01 (62 test, 2,048 train rows); 2023-02-01 to 2023-03-01 (92 test, 1,983 train rows); 2022-12-01 to 2023-01-01 (81 test, 1,868 train rows); 2022-10-01 to 2022-11-01 (137 test, 1,755 train rows); 2022-08-01 to 2022-09-01 (77 test, 1,679 train rows); 2022-06-01 to 2022-07-01 (101 test, 1,581 train rows); 2022-04-01 to 2022-05-01 (92 test, 1,504 train rows); 2022-02-01 to 2022-03-01 (87 test, 1,406 train rows); 2021-12-01 to 2022-01-01 (79 test, 1,302 train rows); 2021-10-01 to 2021-11-01 (111 test, 1,211 train rows).
+
 We simulate a setting where we refit the model every 2 months and only test on the next 2 months, walking back
 from the newest review until the training data would fall below 50% of the rows (12 windows,
 August-September 2023 back to October-November 2021, 62 to 137 test reviews each). Twelve windows against the
@@ -292,7 +324,7 @@ Accepted on purpose:
 
 - `meta_license_unknown`: Kaggle gives the licence as 'Other (specified in description)', but the description names none (checked 2026-11-10).
 - `task_label_time_gap`: `review_date` is the month the review was published, which is when the score exists, so it is declared `time_of="label"` and is no input. The one-month gap stands for the roaster's submission delay: the roaster predicts at submission, weeks or months before publication, so each window trains only on reviews published at least a month before it starts (Andrej, 2026-11-18). The gap is the publication delay the split cannot read off the dates, not a second copy of it.
-- `splits_below_target`: 12 two-month windows against the 30 an IID split of 2,367 reviews would get (SPLIT-33). Monthly windows would reach 25, but some months hold only 2 to 10 reviews, which makes a per-window RMSE of noise; the window length and the gap follow the use case and are not shortened to reach the count (SPLIT-15). The splits comment names the target, the count reached and what stops more.
+- `splits_dimensions_off_protocol`: 12 two-month windows against the 30 an IID split of 2,367 reviews would get (SPLIT-33). Monthly windows would reach 25, but some months hold only 2 to 10 reviews, which makes a per-window RMSE of noise; the window length and the gap follow the use case and are not shortened to reach the count (SPLIT-15). The splits comment names the target, the count reached and what stops more.
 
 ## Data checks
 
@@ -370,11 +402,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-f020-7625-b0b4-3e15565c2a7b |
-| checksum | v2:42fdd069b327bcb3840eb99b3ce9ae083ec892a2618bfe1dc6753c7687dc5694 |
-| built_at | 2026-10-06T16:12:32+00:00 |
-| path | coffee_rating_prediction/01a111fc-f020-7625-b0b4-3e15565c2a7b |
+| uuid | 01a21800-bfc1-7d8e-8e8d-68f0b61349d9 |
+| checksum | v2:b9e99bf9e49b0ca060d1129bbde87686b98b73aaff0ea184a64cd40b90c01ee1 |
+| built_at | 2026-11-26T13:17:13+00:00 |
+| path | coffee_rating_prediction/01a21800-bfc1-7d8e-8e8d-68f0b61349d9 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:87dead63334116b4286b609bdcf39c602eb73babf869b79f80aced25b521c6ed` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

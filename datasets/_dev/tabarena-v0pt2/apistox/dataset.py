@@ -148,6 +148,14 @@ class Apistox(AbstractCuratedDataset):
     splits_comment = """
         The windows hold 54, 106, 118 and 173 compounds (12, 22, 19 and 33 toxic), and their train sides 95%, 85%, 73% and 56% of all compounds. A model trained on the compounds known up to a year predicts the toxicity of the compounds that appear in the next ten years. Ten years is the shortest window with 50 compounds at the newest end (2016-2023 holds 37): new compounds are few in recent years. An IID task of this size would get 10 x 3 splits, but the newest half of the data (from 1977 on) holds only 526 compounds, so four windows of about 50 or more remain.
     """
+    accepted_check_warnings = {
+        "splits_dimensions_off_protocol": (
+            "Four windows against the 30 an IID split of 1,035 compounds would get (SPLIT-33): the newest half of the "
+            "data holds 526 compounds, and ten years is the shortest window with about 50 compounds at the newest end. "
+            "The splits comment names the target, the count reached and what stops more (SPLIT-15; Lennart, "
+            "2026-11-26)."
+        ),
+    }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         return pd.read_csv(raw_dir / RAW_FILE)

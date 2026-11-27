@@ -297,6 +297,12 @@ class CollegeScorecard(AbstractCuratedDataset):
         time_unit="years",
     )
     accepted_check_warnings = {
+        "splits_dimensions_off_protocol": (
+            "Four windows against the nine an IID split of 34,431 institution cohorts would get (SPLIT-33): the "
+            "five-year gap until a cohort's completion rate is published leaves no fifth window that trains on half of "
+            "the 18 cohorts. The splits comment names the target, the count reached and what stops more "
+            "(SPLIT-15; Lennart, 2026-11-26)."
+        ),
         "splits_feature_missing_in_test": (
             "Decided (Lennart, 2026-11-11): `DISTANCEONLY` is recorded from the 2011 cohort on, so "
             "the 2015 and 2016 windows train on cohorts without it (curation_comments)."

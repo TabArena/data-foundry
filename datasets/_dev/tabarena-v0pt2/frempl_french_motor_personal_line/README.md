@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: frempl_french_motor_personal_line
 container_format: 2
-checksum: v2:153ee005c68be3d0ea5792c9fa5dd6a340dc6f9dfe17d5206ba9ce6eaab4ce7a
-build: null
+checksum: v2:76f4c4869e29a3b55ecc1b7e6bab895f0464e8bca8d533d2e32ea34eea2fafea
+build:
+  uuid: 01a217fe-fd6a-7d6d-ae49-7d4cd2cc7728
+  checksum: v2:76f4c4869e29a3b55ecc1b7e6bab895f0464e8bca8d533d2e32ea34eea2fafea
+  built_at: '2026-11-26T13:15:31+00:00'
+  path: frempl_french_motor_personal_line/01a217fe-fd6a-7d6d-ae49-7d4cd2cc7728
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 115155
@@ -44,6 +57,127 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Default splits, grouped by policy component (`policy_component`): a policy''s
+    records, in one sample file or
+
+    across them, stay on one side (61,091 components for 115,155 records). A tariff
+    is fit on past policy-years and applied to the
+
+    next year''s policies, so the task is temporal by its use case, but the release
+    holds one year (records within
+
+    2004), so held-out policies of the same year stand in for next year''s (ForcedGroupedFromTemporal,
+    SPLIT-8).
+
+    Windows inside 2004 can train only on records whose period had ended by the cutoff:
+    13% to 39% of the rows for
+
+    1 April, 1 July and 1 October, below the 50% floor, and only contracts that ended
+    early; on the records that
+
+    start in the next three months they reach a claim AUC of 0.55, 0.59 and 0.62,
+    against 0.60, 0.59 and 0.62 for
+
+    as many random records. Random records would put a test record''s later records
+    in the training side: about a
+
+    fifth of each test fold had one, and its claim counters rose after 87% of the
+    test record''s claims and after
+
+    0.9% of the others. A lookup that finds such a record among the training rows
+    from the features alone took a
+
+    LightGBM model from a normalized Gini of 0.303 to 0.395 on the same test rows
+    when those later records stayed
+
+    in training (3 of 3 folds, before the `Exposure` fix); LightGBM alone reads one
+    row at a time and scores the
+
+    same either way. Grouping costs nothing measured: on the earlier folds by within-file
+    chain untuned LightGBM
+
+    scored a row Gini of 0.332 and a claim AUC of 0.673, 0.329 and 0.673 on random
+    ones, and the component key
+
+    against the chain 0.2785 against 0.2827 (before the fix); on the component folds
+    of 2026-11-03 it scored a row
+
+    Gini of 0.324 and a claim AUC of 0.668 (the total amount as target, before 2026-11-06).
+    The component also
+
+    joins the 10,292 records that continue only in another file, which the chains
+    left apart; under the chains a
+
+    lookup of such a record had ranked claims at AUC 0.51. Since 2026-11-08 (Lennart)
+    it also
+
+    joins a record to a successor whose contract change changed one profile column
+    (61,091 components, 68,857
+
+    before): with those successors in other components, a lookup of a test record''s
+    candidate successors in
+
+    training lifted a weighted Tweedie fit from 0.174 to 0.195 (+0.020, 9 of 9 splits;
+    untuned LightGBM, 300
+
+    trees, one seed); on the shipped folds none of the 9,160 such pairs crosses a
+    split, the lookup gains +0.001
+
+    (SD 0.012, higher on 5 of 9), and the honest fit scores 0.170 (0.132 to 0.243),
+    against 0.174 on the folds
+
+    before, an unpaired comparison inside the fold SD of about 0.03.
+
+    Shipped forced on the curator''s call (Andrej, 2026-11-02: "Forced group splits
+    should be fine"). The leak test
+
+    across the split (SPLIT-8, 2026-11-02, on the chain folds) finds none, and the
+    leak probe on the component
+
+    folds flags nothing (2026-11-03): the 0.37% of test rows whose features were in
+    training agree on a claim less than the base rate (84%
+
+    against 91%), and the training side''s mean outcome of the test row''s start month
+    (and risk area by month) moves
+
+    the Gini by -0.0005 on average; dropping the test rows'' own quarter from training
+    costs no more than dropping as
+
+    many random rows. Re-run on 2026-11-06 with the claim cost per year, it flags
+    nothing: no feature alone above an
+
+    R^2 of 0.003, and the 0.42% of test rows with an exact feature copy in training
+    agree with it as often as two
+
+    random records do (82%). Re-run on the widened folds of 2026-11-08, it flags nothing:
+    no feature alone above
+
+    an R^2 of 0.002, and 0.4% of test rows with an exact feature copy in training
+    (0.3% with the same label only);
+
+    the group probe finds no gap between random and grouped folds (R^2 0.005 both),
+    both on the log1p scale. With
+
+    the cost per year on the identity scale (2026-11-08) the leak probe flags nothing
+    either: no
+
+    feature alone above an R^2 of 0, and the same 0.4% of test rows with an exact
+    feature copy in training; without
+
+    `Gender` (2026-11-08, the same folds) it flags nothing, no feature alone above
+    an R^2 of 0, and 0.6% of test
+
+    rows with an exact feature copy in training (0.5% with the same label only). Each
+    test record is predicted
+
+    from the training rows and its own features only; no feature or model step may
+    use other test rows: a test
+
+    record''s later records are test rows too, those whose contract change changed
+    one profile column included,
+
+    and their start and claim counters give its realized length and its claim (LEAK-9;
+    the curation notes).'
   n_train:
     min: 76290
     max: 77036
@@ -75,7 +209,7 @@ decisions:
 
 Regression of `claim_amount_per_year`, scored with `normalized_weighted_gini` on grouped splits by `policy_component`. 115,155 rows and 15 features. Source: Other (2014).
 
-Not built yet. The current definition gives checksum `v2:153ee005c68be3d0ea5792c9fa5dd6a340dc6f9dfe17d5206ba9ce6eaab4ce7a`.
+Built as `01a217fe-fd6a-7d6d-ae49-7d4cd2cc7728` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -178,7 +312,7 @@ Only curators run `build`, when the dataset ships.
 
 **Scoring columns**
 
-Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.metrics.scorer(container)(y_test, y_pred, test_idx)`).
 
 | column | role | how the metric uses it | model input |
 |---|---|---|---|
@@ -262,14 +396,11 @@ We start with freMPL5 to freMPL9 of CASdatasets 1.2-1, five samples of one Frenc
 - CC (2026-11-08, Lennart): `Gender` leaves the features, on the stance Lennart set for australian_vehicle_insurance_2004_2005 ("A stance for the family; as if we were to simulate the case in europe always"): sex is no rating factor of any insurance pricing task of this collection, whatever the actor's jurisdiction, as under EU law (Test-Achats). It stays in the policy component's key, which is unchanged (61,091 components). Supersedes the note that kept `Gender` as the insurer recorded it, with the EU-law note (AI, 2026-11-01), which shipped with Andrej's verdict of 2026-11-03. It carried nothing measurable (-0.0004 with a weighted Tweedie fit, -0.0008 with squared error on the cost per year, with it against without; 5 of 9 splits each).
 - CC (2026-11-09, Andrej): a record gets no claim amount of the record its contract change continues and no flag that it continues one (as implemented). The claim counters and the bonus-malus carry the predecessor's claim and its type, the amount showed no signal beyond them in the raw counts, and under the folds it would put one test record's target into another's features.
 - CC (2026-11-09, Andrej): the normalized form: the metric is `normalized_weighted_gini` weighted by `Exposure`, in place of `ordered_lorenz_gini` per unit of `Exposure` (D9, Lennart, 2026-11-06; checked as declared by Lennart on 2026-11-08). Target, weight, features and folds are unchanged; the two forms rank every model the same on each fold, and the scores now read on the 0-to-1 scale of the other cost-per-year tasks (the metric bullet).
-- Time basis: ForcedGroupedFromTemporal (SPLIT-8): a tariff is fit on one year's policies and applied to the
-  next year's, but the release holds one year, too few periods for windows; whole policy components are held out
-  instead (`splits_comment`). A release of later years would allow a split by year. The stationary-relation test
-  over the start quarters (2026-11-18, Q2 to Q4 of 2004 tested forward) is inconclusive: the forward model is
-  not worse (weighted Gini gap -0.011 ± 0.011 for LightGBM), but two SD reach 10.4 floors, so the forced tag
-  stays.
+- Time basis: ForcedGroupedFromTemporal: a tariff is fit on one year's policies and applied to the next year's, but the release holds one year, too few periods for windows; whole policy components are held out instead (`splits_comment`). A release of later years would allow a split by year. The stationary-relation test over the start quarters (2026-11-18, Q2 to Q4 of 2004 tested forward) is inconclusive: the forward model is not worse (weighted Gini gap -0.011 ± 0.011 for LightGBM), but two SD reach 10.4 floors, so the forced tag stays.
 
 ## Splits
+
+Repeated 3-fold cross-validation keeping each group of `policy_component` whole (shuffled group k-fold, a new draw per repeat): 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 115,155 rows (SPLIT-33).
 
 Default splits, grouped by policy component (`policy_component`): a policy's records, in one sample file or
 across them, stay on one side (61,091 components for 115,155 records). A tariff is fit on past policy-years and applied to the
@@ -349,7 +480,7 @@ One group is a policy component: a record and every record that may continue it,
 | nearest neighbour in the same group | 1.5% of the rows (chance: 0.0%) |
 | label variance explained by the group | 0.21 (shuffled groups: 0.58) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Decisions
 
@@ -398,7 +529,7 @@ A record continues another, in the next row of its file or in another file, when
 
 - **info** `dataset_duplicate_rows`: 10 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 4 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
-- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (1.5% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (0.21 vs 0.58). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.)
+- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (1.5% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (0.21 vs 0.58). (hint: The grouping may not be needed: compare IID and grouped scores with `data-foundry probe group`.)
 
 Accepted on purpose:
 
@@ -489,4 +620,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a217fe-fd6a-7d6d-ae49-7d4cd2cc7728 |
+| checksum | v2:76f4c4869e29a3b55ecc1b7e6bab895f0464e8bca8d533d2e32ea34eea2fafea |
+| built_at | 2026-11-26T13:15:31+00:00 |
+| path | frempl_french_motor_personal_line/01a217fe-fd6a-7d6d-ae49-7d4cd2cc7728 |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
