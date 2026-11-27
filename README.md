@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-27 11:20 UTC: 226 claim(s) (Andrej 195, Lennart 12, Myunghwan 19).
+As of 2026-11-27 16:02 UTC: 238 claim(s) (Andrej 207, Lennart 12, Myunghwan 19).
 
 ## Andrej
 
@@ -11,6 +11,7 @@ As of 2026-11-27 11:20 UTC: 226 claim(s) (Andrej 195, Lennart 12, Myunghwan 19).
 | `5g_energy_consumption` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `acquire_valued_shoppers_challenge` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `airfoil_self_noise` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
+| `alerce_ztf_light_curve_classes` | add | 2026-11-27 | 2026-12-04 | add-dataset (gap batch 2026-11-27, full panel) |
 | `allstate_claim_prediction_challenge` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `allstate_claims_severity` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `amazon_employee_access` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -23,6 +24,7 @@ As of 2026-11-27 11:20 UTC: 226 claim(s) (Andrej 195, Lennart 12, Myunghwan 19).
 | `astrazeneca_chembl_logd74` | add | 2026-11-25 | 2026-12-02 | add-dataset (Andrej) |
 | `audiology_diagnosis` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `australian_vehicle_insurance_2004_2005` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
+| `bacteremia_vienna` | add | 2026-11-27 | 2026-12-04 | add-dataset (gap batch 2026-11-27, full panel) |
 | `bacteria_id_raman` | review | 2026-11-25 | 2026-12-02 | Curator review of the two RamanBench definitions; taken over from Lennart by agreement |
 | `bad_customer_detection` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `bank_customer_churn` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -47,6 +49,7 @@ As of 2026-11-27 11:20 UTC: 226 claim(s) (Andrej 195, Lennart 12, Myunghwan 19).
 | `concrete_compressive_strength` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `covertype` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `craigslist_used_vehicles_f150` | add | 2026-11-25 | 2026-12-02 | add-dataset (better-data replacements, 2026-11-25) |
+| `crash2_trauma_early_death` | add | 2026-11-27 | 2026-12-04 | add-dataset (gap batch 2026-11-27, full panel) |
 | `credit_approval` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `credit_card_clients_default` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `credit_g` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -60,6 +63,7 @@ As of 2026-11-27 11:20 UTC: 226 claim(s) (Andrej 195, Lennart 12, Myunghwan 19).
 | `early_stage_diabetes_risk_prediction` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej): retirement reassessed |
 | `ecoli_proteins` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `electric_motor_temperature_prediction` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
+| `els2002_bachelors_attainment` | add | 2026-11-27 | 2026-12-04 | add-dataset (gap batch 2026-11-27, full panel) |
 | `emscad` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `eryhemato_squamous_disease` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `fiat_500` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -96,12 +100,15 @@ As of 2026-11-27 11:20 UTC: 226 claim(s) (Andrej 195, Lennart 12, Myunghwan 19).
 | `hotel_booking_demand` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `houses` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `hr_analytics` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
+| `hsls09_postsecondary_enrollment` | add | 2026-11-27 | 2026-12-04 | add-dataset (gap batch 2026-11-27, full panel) |
 | `ieee_fraud_detection` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `immoscout_german_house_prices` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `in_vehicle_coupon_recommendation` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `indian_liver_patient_dataset` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
+| `itpa_hmode_confinement_db5` | add | 2026-11-27 | 2026-12-04 | add-dataset (gap batch 2026-11-27, full panel) |
 | `jm1` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `kdd_cup_09_appetency` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
+| `kepler_dr24_tce_vetting` | add | 2026-11-27 | 2026-12-04 | add-dataset (gap batch 2026-11-27, full panel) |
 | `kick` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `kickstarter` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `labour_inspection_compliance` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -110,6 +117,7 @@ As of 2026-11-27 11:20 UTC: 226 claim(s) (Andrej 195, Lennart 12, Myunghwan 19).
 | `ljubljana_breast_cancer` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `ljubljana_primary_tumor` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `loan_default_prediction_imperial_college` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
+| `london_passenger_mode_choice` | add | 2026-11-27 | 2026-12-04 | add-dataset (gap batch 2026-11-27, full panel) |
 | `lung_adenocarcinoma_metastasis` | review | 2026-11-11 | 2026-11-18 (expired) | BeyondArena v0.2 review page (Andrej); PR #75 |
 | `lung_cancer` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `lung_cancer_epithelial_genexp` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -133,6 +141,7 @@ As of 2026-11-27 11:20 UTC: 226 claim(s) (Andrej 195, Lennart 12, Myunghwan 19).
 | `noaa_afsc_bottom_trawl_survey_cpue` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `noaa_storm_events_damage` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `obesity_estimation` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
+| `ofsted_school_inspection_outcomes` | add | 2026-11-27 | 2026-12-04 | add-dataset (gap batch 2026-11-27, full panel) |
 | `open_soil_spectral_library` | review | 2026-11-12 | 2026-11-19 (expired) | Catalogue split keys (PR #81): collection facts and open split issues |
 | `otto_group_product_classification_challenge` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `pancreatic_cancer_mouse_detection` | review | 2026-11-11 | 2026-11-18 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -146,6 +155,7 @@ As of 2026-11-27 11:20 UTC: 226 claim(s) (Andrej 195, Lennart 12, Myunghwan 19).
 | `pricing_game_2017_french_mtpl` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `prism_stool_metabolomics_cd_vs_uc` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
 | `protein_model_quality_rf_pcp` | review | 2026-11-12 | 2026-11-19 (expired) | Catalogue split keys (PR #81): collection facts and open split issues |
+| `pump_it_up_tanzania_water_points` | add | 2026-11-27 | 2026-12-04 | add-dataset (gap batch 2026-11-27, full panel) |
 | `pva_revenue_prediction_kddcup98` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `qsar_aquatic_toxicity` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `qsar_bioconcentration` | review | 2026-11-11 | 2026-11-18 (expired) | BeyondArena v0.2 review page (Andrej) |
@@ -173,12 +183,14 @@ As of 2026-11-27 11:20 UTC: 226 claim(s) (Andrej 195, Lennart 12, Myunghwan 19).
 | `seismic_bumps` | add | 2026-11-19 | 2026-11-26 (expired) | add-dataset (Andrej, review page) |
 | `sepsis_survival_minimal_clinical_records` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `sf_permit_time` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
+| `slf_avalanche_danger_level` | add | 2026-11-27 | 2026-12-04 | add-dataset (gap batch 2026-11-27, full panel) |
 | `spanish_homeowners_motor_insurance_2010_2014` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `spanish_motor_insurance_2015_2018` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `spanish_motor_insurance_coverage_level_2022_2024` | review | 2026-11-09 | 2026-11-16 (expired) | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `splice` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `student_portuguese_performance` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `superconductivity` | review | 2026-11-11 | 2026-11-18 (expired) | BeyondArena v0.2 review page (Andrej) |
+| `swan_sf_solar_flare` | add | 2026-11-27 | 2026-12-04 | add-dataset (gap batch 2026-11-27, full panel) |
 | `taiwanese_bankruptcy_prediction` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `tcga_brca_tumor_vs_normal_rnaseq` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
 | `tcga_hnsc_tumor_vs_normal_rnaseq` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
