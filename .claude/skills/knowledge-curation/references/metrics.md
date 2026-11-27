@@ -126,17 +126,46 @@ precision, recall, F-measure: fallback), forest_fires (MAD and RMSE, ranked by M
 open_soil_spectral_library (tunes and cross-validates by RMSE on log1p on the same cut, grades by CCC with RPIQ: the
 tuning criterion kept).
 
-**MET-18 (Should; narrows MET-4 and MET-5).** When the scored rows fall into groups the actor does not choose between
-(the protein whose candidate models are ranked, the gene whose guides are ranked, the family whose lines are ranked),
-and a predictor that knows nothing but each group's mean beats the models under a pooled score, the metric is declared
-per group (the source's metric computed within the group, `mean_group_pearsonr` on the group column where the source
-has none) and the pooled score is named as the original from context (MET-11), whether or not it is the source's
-metric. A pooled score then credits a model for ranking the groups, which the actor already holds at the prediction
-point, while the decision is a ranking inside the group (MET-1, the real task; MET-2, the unit the actor acts on).
-Two measurements are reported with the declaration: the share of the target's variance that lies between groups, and
-what a group-mean predictor scores against the models under the pooled metric. Where the actor does choose between
-the groups, or the rows are one pool to them, the pooled score stays. Cases: protein_model_quality_rf_pcp,
-huesken_sirna_efficacy and genomic_prediction_soy_yield, with each one's measurements in the table below.
+**MET-18 (Should; narrows MET-4 and MET-5).** Score inside the group when the rows come in groups the actor works
+within rather than chooses between, and the group alone carries most of the score.
+
+The case it is for: the actor is handed one group and ranks what is in it. A protein and its candidate structures, a
+gene and its guides, a cross and its progeny. They never pick between groups, because they already know which group
+they are in.
+
+Two conditions, both required:
+
+1. the rows fall into groups, and the group is a column of the table;
+2. the actor acts inside one group at a time, so the ranking of the groups is not a decision they make.
+
+These are facts about the data and the use case, and they settle the metric where the source names none: it is then
+the source's metric computed within the group, or `mean_group_pearsonr` on the group column where the source names
+no metric at all, with the pooled score named as the original from context (MET-11).
+
+A third condition, and only for overruling a metric the source deliberately chose:
+
+3. a predictor that knows nothing but each group's mean beats the models under the source's own pooled score,
+   where at least one of those models has its capacity or penalty chosen on the training side. An untuned baseline
+   does not meet this: a model worse than it should be makes any group mean look strong, so the test would then
+   measure our modelling effort rather than the task.
+
+Condition 3 is the bar for narrowing MET-4 and MET-5, which exist so that a field's stated criterion is not
+second-guessed on taste. Where the source states no metric, 1 and 2 are enough and the group-mean measurement is
+reported as evidence of size rather than as a gate.
+
+Why: a pooled score pays a model for ranking the groups, which the actor already holds at the prediction point,
+while the decision is the ranking inside one group (MET-1, the real task; MET-2, the unit the actor acts on).
+
+What the declaration reports either way: the share of the target's variance that lies between groups, and what the
+group-mean predictor scores against the models under the pooled metric, naming the models and how their capacity
+or penalty was set.
+
+When it does not apply: the actor chooses between the groups, or the rows are one pool to them. Then the pooled
+score stays.
+
+Cases: protein_model_quality_rf_pcp and huesken_sirna_efficacy enter on 1 and 2, their sources naming no
+metric the task would use; genomic_prediction_soy_yield is so far the only one to need 3, since its source
+ranks by pooled Pearson's r deliberately. Each one's measurements are in the table below.
 
 **MET-6 (Should).** A threshold metric (accuracy or error rate, balanced accuracy, NER or BER, F1, precision, recall,
 precision at k, a misclassification cost) is declared from a paper only when the source fixes the decision (the

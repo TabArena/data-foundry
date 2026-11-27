@@ -1,5 +1,31 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-27, curation rules: MET-18 reworded, split in two and hardened (Andrej's decision; no dataset changed)
+
+- The rule adopted on 2026-11-26 was one sentence carrying three nested conditions, two cross-references and a
+  double negative, and the curator could not read it back. It now opens with the rule in a line, names the case it
+  is for, and sets its conditions out as a list. The substance of that part is unchanged.
+- Laying it out showed the three conditions are not the same kind of thing, and the rule is split accordingly.
+  Conditions 1 and 2, that the rows fall into groups and the actor works inside one group at a time, are facts
+  about the data and the use case; they alone settle the metric where the source names none, which is the case of
+  `protein_model_quality_rf_pcp` and `huesken_sirna_efficacy`. Condition 3, that a group-mean predictor beats the
+  models under the pooled score, is now required only to overrule a metric the source deliberately chose, which so
+  far is `genomic_prediction_soy_yield` alone. That keeps the strong move, second-guessing a field's stated
+  criterion, behind the strong evidence, which is what MET-4 and MET-5 exist for.
+- Condition 3 is also hardened: at least one of the models the group mean is compared against must have its
+  capacity or penalty chosen on the training side. An untuned baseline does not meet it, because a model worse
+  than it should be makes any group mean look strong, and the test would then measure our modelling effort rather
+  than the task. The declaration now also names the models and how their capacity was set.
+- `genomic_prediction_soy_yield` is the one case that needs condition 3, so its declaration is brought to the new
+  requirement. Its ridge's penalty is not chosen by inner cross-validation, but the score is flat across it, 0.2180
+  at the penalty used against 0.2255 at ten times it, while the family-mean oracle's margin over it is six times
+  that whole range; the metric reason now says so and names the untuned LightGBM beside it. `dataset check`: 0
+  errors, 0 warnings, 1 info over 28 checks; README regenerated. No value, split or metric changed.
+- Still not done, as option C was not taken when the rule was adopted: the grouped-ranking register has not been
+  re-walked. With condition 3 now gated on a deliberate source metric and on a specified model, a walk could move
+  cases either way; `genomic_prediction_switchgrass_height` was screened with a pooled metric before the rule
+  existed.
+
 ## 2026-11-27, gse40279_methylation_age: the deferred check ran, and its README is current again (nothing built)
 
 - The folder's `dataset check` had been deferred since 2026-11-25 on the belief that a frame of this width could

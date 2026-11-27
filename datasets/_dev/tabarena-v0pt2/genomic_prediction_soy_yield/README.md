@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: genomic_prediction_soy_yield
 container_format: 2
-checksum: v2:f39b3809511e5eb336382c515761fe9063298f319f46791e2fddd8a2bb8c4ea1
+checksum: v2:e3074a7e0af386ccc37df8294f8ab8bb6fad92e923a17b5fb97abfd3b1912d8a
 build: null
 build_stale: false
 raw_files:
@@ -82,7 +82,7 @@ decisions:
 
 Regression of `yield_kg_ha`, scored with `mean_group_pearsonr` on grouped splits by `family`. 5,143 rows and 4,312 features. Source: Other (2015).
 
-Not built yet. The current definition gives checksum `v2:f39b3809511e5eb336382c515761fe9063298f319f46791e2fddd8a2bb8c4ea1`.
+Not built yet. The current definition gives checksum `v2:e3074a7e0af386ccc37df8294f8ab8bb6fad92e923a17b5fb97abfd3b1912d8a`.
 
 ## In brief
 
@@ -190,7 +190,7 @@ Only curators run `build`, when the dataset ships.
 | name | `mean_group_pearsonr` (custom; takes value; higher is better) |
 | origin | context: obvious from the task: the source defines no metric |
 | definition | mean over groups of the Pearson correlation within the group; method='numerai_corr' transforms first as Numerai's CORR |
-| reason | The decision is which lines of one new cross to advance, a ranking inside the cross, and the split holds out whole crosses. The field's own criterion, which the papers on this population report (Xavier et al. 2016, 'predictive ability'; Azodi et al. 2019 rank by Pearson's r 'as it is the standard metric for GP performance'), is the correlation pooled over the held-out lines; it is the original here. 55.7% of the variance of the line values lies between the 39 families (Diers et al. 2018 publish 0.57 from their own trials), and a pooled correlation scores that ranking of the crosses, which a breeder reads off the parents, more than the ranking inside a cross that genomic selection is bought for: on the first 6 shipped splits, giving every test line the true mean of its own cross and nothing else scores a pooled r of 0.69 (RMSE 234 kg/ha) against 0.23 (360 kg/ha) for ridge on the markers, while the same blind predictor scores 0 within the family. The breeder reads that ranking for free: the non-recurrent parent's own yield in the same trials predicts its family's mean at r = 0.94 over the 38 families. Pooled, the markers themselves are worth almost nothing (R^2 +0.0016 over 3 grouped folds, -0.0245 over 5) while the mask of unscored calls alone is worth +0.1629, so a pooled score would rank models by their handling of missing values; within a family the mask is worth r -0.028 against the calls' +0.213. Ridge itself scores 0.236 pooled and 0.239 per family, so the declared metric does not flatter it. The mask and ridge figures of the last two sentences were measured before IN_2014 joined the correction, on line values the shipped ones follow at a within-family r of 0.970; the variance share, the oracle and the parent fact are measured on what ships. |
+| reason | The decision is which lines of one new cross to advance, a ranking inside the cross, and the split holds out whole crosses. The field's own criterion, which the papers on this population report (Xavier et al. 2016, 'predictive ability'; Azodi et al. 2019 rank by Pearson's r 'as it is the standard metric for GP performance'), is the correlation pooled over the held-out lines; it is the original here. 55.7% of the variance of the line values lies between the 39 families (Diers et al. 2018 publish 0.57 from their own trials), and a pooled correlation scores that ranking of the crosses, which a breeder reads off the parents, more than the ranking inside a cross that genomic selection is bought for: on the first 6 shipped splits, giving every test line the true mean of its own cross and nothing else scores a pooled r of 0.69 (RMSE 234 kg/ha) against 0.23 (360 kg/ha) for ridge on the markers, while the same blind predictor scores 0 within the family. The breeder reads that ranking for free: the non-recurrent parent's own yield in the same trials predicts its family's mean at r = 0.94 over the 38 families. Pooled, the markers themselves are worth almost nothing (R^2 +0.0016 over 3 grouped folds, -0.0245 over 5) while the mask of unscored calls alone is worth +0.1629, so a pooled score would rank models by their handling of missing values; within a family the mask is worth r -0.028 against the calls' +0.213. Ridge itself scores 0.236 pooled and 0.239 per family, so the declared metric does not flatter it. The models the oracle is compared against, and how their capacity was set: ridge by eigendecomposition over the shipped splits, whose penalty is not chosen by inner cross-validation but whose score is flat across it (0.2180 at the penalty used, 0.2255 at ten times it), and an untuned LightGBM at 0.1996. The oracle's margin is six times the whole range the penalty spans, so no choice of it would change the comparison.The mask and ridge figures of the last two sentences were measured before IN_2014 joined the correction, on line values the shipped ones follow at a within-family r of 0.970; the variance share, the oracle and the parent fact are measured on what ships. |
 | inputs | group: `family` |
 
 <details>
