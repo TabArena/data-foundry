@@ -77,6 +77,10 @@ CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTe
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. The only forward comparison the data allow shows a gap whose CI excludes zero; with a competitive market behind churn there is no reason to take later months as interchangeable.
 
+CC (2026-11-27, Andrej): the declared metric (ROC AUC on the churn label, the binary fallback) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added. The record gained `Target: Later` on 2026-11-13.

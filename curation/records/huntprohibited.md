@@ -66,6 +66,12 @@ CC (2026-10-26, Lennart): verdict ship.
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Adversarial moderation with drift sources the definition names; a 0.002 AUC marker over four months bounds one change, not later use.
 
+CC (2026-11-27, Andrej): the declared metric (average precision at k = 12,500 per 500,000-ad test fold, the competition's AP@k) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): the declared split (random on the ad rows, 3 folds with 1 repeat, `ForcedIIDFromTemporal`) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added as `huntprohibited_1m`. Stationarity reasoning of 2026-11-18: the forced tag stays (issue 2, A, Andrej).

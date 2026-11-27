@@ -70,6 +70,12 @@ CC (2026-11-16, Andrej): time basis `StationaryRelation` instead of `DelayedTarg
 
 CC (2026-11-18, Andrej): time basis `AssumedStationaryRelation` in place of `StationaryRelation` (Review issue 3, C; stationarity reasoning): the operator ranks its transformers for the year right after the inventory, and burns follow lightning density and network exposure, which one year does not change. The stationary-relation test of 2026-11-18 is inconclusive on the source's one forward period, so the tag rests on this reason; the random folds stay.
 
+CC (2026-11-27, Andrej): the declared metric (ROC AUC on the burned label, the binary fallback) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): the declared split (random on the transformer rows, 3 repeats of 3 folds, `AssumedStationaryRelation`) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added. The time basis went from `ForcedIIDFromTemporal` to `DelayedTarget` (2026-11-13), to `StationaryRelation` when `DelayedTarget` was retired (2026-11-16), and to `AssumedStationaryRelation` (2026-11-18).

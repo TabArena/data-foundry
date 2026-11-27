@@ -146,6 +146,15 @@ class BiasCorrectionRBiasCorrectionR2(AbstractCuratedDataset):
         - Note: the targets are the AWS daily extremes, the present-day columns the extremes of hourly readings up to 21
           KST (Sec. 2.3). So a row's label is close to, and mostly below, the next day's `Present_Tmin` at the station,
           a value known only on the next day (decision table).
+        - Potential leak, kept on purpose (an evaluation channel, Andrej, 2026-11-27): the label of a station-day is
+          within 0.42 degrees of the same station's next-day `Present_Tmin` (correlation 0.990), and for six of the
+          seven days of each window that next-day row is in the same test window. A model that reads each row on its
+          own gains nothing, so the score is honest; a method that joins the next-day row from the test frame, such as
+          a lead feature built over the test rows or an in-context model, roughly halves its error (untuned LightGBM,
+          the 9 windows: RMSE 0.809 on each row alone, 0.438 with the next-day minimum joined; the training mean
+          2.071). Protocol: each test row is predicted from the training rows and its own features only; no feature
+          or model step may use other test rows, and a method that reads another test row of the same station is
+          called out and not benchmarked.
         - Note: the task probes flag no_spread and unstable; we keep the task. Untuned LightGBM beats the training mean
           on 8 of 9 windows (skill 0.61-0.96); in the oldest, 2017-06-30 to 07-06, the training mean is already within
           RMSE 1.11 and LightGBM falls just below it (skill -0.07). The skill varies with the training mean's error
@@ -174,6 +183,9 @@ class BiasCorrectionRBiasCorrectionR2(AbstractCuratedDataset):
         midnight, after the first prediction that evening. Each window holds 149-175 station-days (6-7 days of the 25
         stations), and the oldest trains on the four summers 2013-2016. The 9 windows are the 3 x 3 splits of the v2
         protocol for this size; the paper's own hindcast refits every day (Cho et al. 2020, Sec. 3.3).
+        Protocol: a station's next-day row, whose `Present_Tmin` is within 0.42 degrees of the label, is in the same
+        test window for six of the seven days of a window; each test row is predicted from the training rows and its
+        own features only, and no feature or model step may use other test rows (CC 2026-11-27).
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

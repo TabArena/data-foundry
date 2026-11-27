@@ -1,5 +1,23 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-27, review of the 33 unreviewed datasets: Andrej's marks applied (containers not rebuilt)
+
+- `lt_vehicle_loan_default_prediction`: five whole-week test windows (27 September to 31 October 2018, 112,550 test
+  rows, oldest training side 51.73%) in place of nine four-day windows; the 5-of-9 count warning accepted. The split
+  rule's case row for this dataset is corrected, and its clause now asks for a measured link to the row's own entity.
+- `g_research_crypto_forecasting_1m` declares the ordinary windows leaf; the crash window stays as a window choice.
+- Text only, no data or split change: `ames_housing` prices a recorded sale given its type and condition (its
+  13-window warning accepted); `bias_correction_r_bias_correction_r_2` names the next-day-row channel with a protocol
+  line; `churn_telco_south_asia` corrects its Decision on the September columns; `college_scorecard` gets the
+  `Selection Bias` marker and a narrower actor; `house_sales` softens "declared by the parties" and fixes two stale
+  counts; `pkdd_15_taxi_trip_time_prediction_ii_1m` restates its one-day gap as the refit's latency;
+  `rain_in_australia` adds a protocol line against reading other test rows and names the three stations that stop
+  reporting; `medical_facility_operational_data` explains the falling target level across its windows.
+- Eleven records shipped as defined with their metric and split checks (brazilian_ecommerce, diabetes_3,
+  differentiated_thyroid_cancer_recurrence, distribution_transformers_at_cauca_department, expresso_churn_prediction,
+  fraud_detection_in_electricity_and_gas_consumption, huntprohibited, melbourne_housing_market, mobile_churn,
+  onlinenewspopularity, tunisian_fraud_detection_challenge).
+
 ## 2026-11-27, bcsc_risk_estimation added (new dataset; container not built)
 
 - `bcsc_risk_estimation`: the BCSC Risk Estimation Dataset (Barlow et al. 2006), the one-exam-per-woman file:

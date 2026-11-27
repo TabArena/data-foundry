@@ -72,11 +72,19 @@ CC (2026-11-17, Andrej): the declared split (random, 10x3 folds, `ForcedIIDFromT
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Telecom churn is driven by a competitive market and the data already show a network-mix shift; the closest measured churn set is not flat.
 
+CC (2026-11-27, Andrej): Review issue 3: Option C, keep all columns, rewrite the Decision ("Keep all columns, rewrite the Decision"). The September columns stay; the Decision and the notes now give the class gap at equal calls (churners name ufone 0.13 to 0.26 less often in September, none in August), say it fits churners using less before leaving and also some leaving inside September, and say "four in five" for the near-inactive churners (124 of 157 at 5 calls or fewer).
+
+CC (2026-11-27, Andrej): the declared metric (ROC AUC on churn_status, over the random splits) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
+
+**Assessment (AI, 2026-11-27):** applied; `dataset check` 0 errors, 0 warnings, 2,000 rows, no data change. The untested "six short runs, 54 rows" claim stays as written.
+
 ## Review
 
-**Outcome:** added. The record gained `Target: Later` on 2026-11-13.
+**Outcome:** added. The record gained `Target: Later` on 2026-11-13 (issue 1); `ForcedIIDFromTemporal` stays (issue 2, 2026-11-18); on 2026-11-27 the September columns stay and the Decision was rewritten (issue 3, C). Nothing open.
 
-**Main points:** Task gamer (blind, 2026-11-27): nothing gamed. Untuned LightGBM ROC AUC 0.818 (0.786 to 0.849 over 30 splits; a random column moves it by about 0.004); value counts over all rows, number formats, row position and derived usage ratios add nothing; no duplicate rows. On its own it names `sep_fav_a` as the strongest category (ufone 35% churn against 68% to 76%) and asks when the churn was observed relative to September, the open question of issue 3. Re-audited 2026-11-27 against the Kaggle file (sha256 matches): the record's numbers reproduce (random forest ROC AUC 0.815, 0.805 above 5 calls), no copies, no flagged dtypes, `roc_auc` computable on all 30 folds. Open: issue 3 (the September columns). Earlier: nothing open: issue 1 resolved on 2026-11-13 (`Target: Later` recorded). Issue 2 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
+**Main points:** Task gamer (blind, 2026-11-27): nothing gamed. Untuned LightGBM ROC AUC 0.818 (0.786 to 0.849 over 30 splits); value counts, number formats, row position and derived usage ratios add nothing; no duplicate rows. Re-audited against the Kaggle file (sha256 matches): the record's numbers reproduce (random forest ROC AUC 0.815, 0.805 above 5 calls), no copies, `roc_auc` computable on all 30 folds. Whether some churners left inside September cannot be tested; the Decision now says so.
 
 **Issues for Andrej and Lennart:**
 
@@ -167,6 +175,10 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
    * **Recommendation:** C: the gap is equally consistent with a pre-churn signal, and B removes little while the totals keep the exposure. **Decision:** A, B or C?
 
    **Notes for the AI:** with B or C, also change "near-inactive subscribers are almost all churners" to four in five (124 of 157 at 5 calls or fewer). Untested: the "six short runs, 54 rows" claim (another segmentation). Full audit: `local-data-warehouse/_runs/2026-11-26_review33/churn_telco_south_asia/findings_audit.md`.
+
+   **Andrej (2026-11-27, change):** Option C: Keep all columns, rewrite the Decision.
+
+   **Resolved (2026-11-27, Andrej):** C. All columns stay; the decision-table entry and the notes give the class gap at equal calls and that it fits both churners using less before leaving and some leaving in September, and "almost all churners" became four in five (124 of 157). `dataset check` 0 errors.
 
 ## Reference
 

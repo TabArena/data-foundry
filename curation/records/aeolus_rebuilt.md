@@ -74,7 +74,8 @@ CC (2026-11-17, Andrej): the declared split (temporal on `FL_DATE`, windows of 1
 
 **Outcome:** added as `aeolus_rebuilt_1m`. Under the rule on choosing test windows, rewritten on 2026-11-10, you chose
 B (issue 1): the test fortnights are 18-31 December, 3-16 July and 13-26 March 2024 instead of the newest six weeks,
-and the 14-day length and the one-day gap stay with a new reason. Nothing is left open.
+and the 14-day length and the one-day gap stay with a new reason. Open: issue 3, the airports' state at the
+prediction point as new inputs (your question of 2026-11-27).
 
 **Main points:** Re-audited on 2026-11-27: nothing to decide. All 25 flight files and the station history match their checksums, and the frame rebuilt from today's live station files still matches the record exactly (13,690,703 rows; test windows of 264,245, 278,071 and 267,477 flights). Every number in the splits comment recomputes on the shipped windows, and the newest window ends on the last day of the data. Text fixes need no decision: the committed README still describes the windows before 2026-11-10; the probe figures in the notes were measured on those old windows and recompute slightly higher (LightGBM 0.826 against 0.819); two source files, the carrier code table and the weather station database, come from live downloads whose declared hashes no longer reproduce; and two weather columns go missing for about 16,000 rows a month in August-September and December 2024, though never in a test window. Earlier: Settled on 2026-11-10: the test windows are the holiday peak, the summer peak and a spring fortnight
 of 2024 (issue 1, B), and the declared horizon is checked. Settled on 2026-11-17: the three 14-day windows stay
@@ -219,3 +220,29 @@ sense and is justifiable keep it and resolve them"); the record's CC line says t
    **Andrej (2026-11-17, ok):** as implemented.
 
    **Resolved (2026-11-17, Andrej):** A, as implemented: Three 14-day windows on `FL_DATE` starting 2024-12-18, 2024-07-03 and 2024-03-13 (264,245 / 278,071 / 267,477 test flights), train every flight from 2023-01-01 up to two days before the window (97.9 / 74.2 / 58.3% of 13,708,650; a benchmark fits on a random 1M of the newest year), 1-day gap, temporal.
+
+3. **Add the airports' state at the prediction point, the row form of the release's flight network?**
+
+   * **Problem:**
+     - The 34 inputs are the BTS schedule, the weather of the hour before departure at both airports, and the aircraft's previous flight (five `INBOUND_*` columns, worth 0.15 to 0.17 ROC AUC per window), which also cover the release's flight chains.
+     - The release's daily graphs link flights at the same airport at adjacent times, and their row form, the airport's state at the prediction point, is not an input.
+     - The rule on building features admits such an input, one the actor reads at the prediction point from other rows of the same release, as with the other stations' readings in `rain_in_australia`.
+   * **Effect on the task:** congestion at the airports, the main thing the release's graph carries, is not an input. Its gain is not measured yet.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the 34 inputs (implemented) | nothing changes | settled, measured, no new leak surface | airport congestion is absent |
+     | B | Add the airports' state in the hour before the prediction point | about 8 to 10 columns: scheduled departures and arrivals at origin and destination in the hour, and the origin's departures in the past hour with their mean delay and share late | the release's graph as row features; known at the prediction point; what a dispatcher reads | a rebuild of a 13.7M-row frame; each column needs the prediction-point check (cancelled and diverted flights, time zones) |
+     | C | B, plus the same flight number's earlier legs that day | adds the release's chain view | closest to the release's three parts | mostly duplicates the aircraft's previous flight |
+
+   * **Recommendation:** B, measured first on the three windows (gain over A, and a leak probe per column); if the gain is below about 0.005 ROC AUC, keep A. **Decision:** A, B or C?
+
+   **Notes for the AI:** under B, measure on the shipped windows with 1M training rows before changing the definition, report the table here, then change the definition in this round's pull request.
+
+   **Andrej (2026-11-27, discuss):** Why are there so few features only? aeolus should offer a ton of time and graph related features in addition? Also, I believe there should be even more samples so this is a candidate for a _1m dataset?
+
+   **Answer (AI, 2026-11-27):**
+   * You asked why there are so few inputs, whether the release's time and graph parts should add more, and whether this should be a `_1m` dataset.
+   * The size: it already is the `_1m` version. The folder is `aeolus_rebuilt_1m`, and the container holds all 13,690,703 operated flights of 2023-2024 that a split uses. The test windows keep all of their 264,245 to 278,071 flights, and a benchmark sub-samples each training side to 1M flights before a fit. The source has nothing more for these years; adding 2025 would be a separate rebuild.
+   * The inputs: the time part is covered by the aircraft's previous flight. The graph part is missing, and this issue proposes it (above).

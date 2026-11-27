@@ -53,11 +53,15 @@ CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the o
 
 CC (2026-11-17, Andrej): the declared split (temporal on `order_purchase_timestamp`, horizon 1 month, 5 windows, gap 1 month) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-27, Andrej): the declared metric (RMSLE on the delivery time in days, computed on the original scale after the log target is inverted) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added as `brazilian_ecommerce`; re-audited 2026-11-27 against a fresh Kaggle v2 download (all 9 CSVs byte-identical, archive md5 matches): 88,721 rows, LightGBM RMSLE 0.483 against 0.642 for the dummy on all 5 monthly windows.
 
-**Main points:** One decision: issue 1 (the gap's length). The split's leaf, the floor (56% to 87%) and the 33-unit minimum hold; the newest orders are not censored (undelivered share 1.2% to 2.9% by month, flat). Text fixes for the next edit: accept the new `splits_below_target` warning (5 windows against 9; the use case is a monthly refit, and 15-day windows would give 11); one sentence in `curation_comments` on the July cut (239 delivered July orders, 3.9%, promised after 2018-08-24 are dropped, median 11.3 days against 7.4 kept); `task_summary.predicted` says a median of 7.5 to 9 days, measured 7.4 to 9.2; the split bullet's "gap costs 0.04 to 0.06 R^2" measures about 0.03.
+**Main points:** Issue 1 (the gap's length) is decided: the month stays (A, 2026-11-27). The split's leaf, the floor (56% to 87%) and the 33-unit minimum hold; the newest orders are not censored (undelivered share 1.2% to 2.9% by month, flat). Text fixes for the next edit: accept the new `splits_below_target` warning (5 windows against 9; the use case is a monthly refit, and 15-day windows would give 11); one sentence in `curation_comments` on the July cut (239 delivered July orders, 3.9%, promised after 2018-08-24 are dropped, median 11.3 days against 7.4 kept); `task_summary.predicted` says a median of 7.5 to 9 days, measured 7.4 to 9.2; the split bullet's "gap costs 0.04 to 0.06 R^2" measures about 0.03.
 
 **Issues for Andrej and Lennart:**
 
@@ -85,6 +89,10 @@ CC (2026-11-17, Andrej): the declared split (temporal on `order_purchase_timesta
    * **Recommendation:** A: the gap stands for the labels a refit has, and only the month covers nearly all of them; the score is not a reason to shorten it. **Decision:** A or B?
 
    **Notes for the AI:** full audit and the horizon options in `local-data-warehouse/_runs/2026-11-26_review33/brazilian_ecommerce/findings_audit.md`. Unchecked: whether Olist revised a promise after purchase (one date per order).
+
+   **Andrej (2026-11-27, ok):** As implemented (A).
+
+   **Resolved (2026-11-27, Andrej):** A, as implemented: the gap stays one month, which covers the 95th percentile of the label delay; `dataset.py` is unchanged.
 
 ## Reference
 

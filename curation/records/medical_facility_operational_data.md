@@ -110,6 +110,8 @@ CC (2026-11-05, Lennart): ship. Every issue of the second-pass review is settled
 
 CC (2026-11-17, Andrej): Review issue 15, A, as implemented (Day boundary as the gap: nine 14-day windows on `arrival_order`, train on every visit that arrived and began its exam before the window's first day, 41,048-77,557 of 82,001 (50.1-94.6%)), settled by the cross-dataset item on the tree's gap questions (B: the step is the time column's smallest recorded step).
 
+CC (2026-11-27, Andrej): Review issue 17, B ("Option B: Add a note to the splits comment."): the splits comment states that the mean wait of the test visits falls from 10.01 minutes in the oldest window to 2.99 in the newest, because patients check in about eight minutes earlier while the time from arrival to start stays flat, and that the score stays flat.
+
 ## Review
 
 **Outcome:** added. The review panel recommends shipping after changes; the changes that need no decision are made
@@ -128,8 +130,8 @@ this patient (issue 6). For Lennart: issues 6 to 11, all settled on 2026-11-05; 
 **Main points:** Re-audited on 2026-11-26: `minutes_early`, the strongest input, is known at check-in (it comes from the
 row's own arrival and booked slot, and no start precedes its arrival), and it does not carry the task alone, since the
 other 87 features together reach R2 0.571. Every queue statistic is cumulative to the arrival, not a whole-day total.
-Two issues are open, both about the newest data: the last 28 days sit in no test window (16), and the target falls by
-two thirds across the windows unremarked (17). Earlier, nothing open. Settled on 2026-11-05 (Lennart): `minutes_early` added (issue 6, A); the protocol line
+One issue is open, about the newest data: the last 28 days sit in no test window (16). Settled on 2026-11-27 (Andrej): the fall of the target by two thirds across
+the windows is stated in the splits comment (17, B). Earlier, nothing open. Settled on 2026-11-05 (Lennart): `minutes_early` added (issue 6, A); the protocol line
 that each test visit is predicted on its own stays (7, A); the source's two-week test windows replace the 42-53-day
 ones (8, B); the expected-delay table stays under LEAK-38 as amended (9, D); the empty-set summaries set to missing
 (10, B); the schedule fields stay (11, A). Settled on 2026-11-17 (Andrej): the day boundary is the gap (15, A).
@@ -538,6 +540,15 @@ history.
 
    **Notes for the AI:** B is a split change, so the splits comment, the README and the accepted `splits_rows_unused` text are rewritten, `dataset check` is re-run, and it is its own pull request.
 
+   **Andrej (2026-11-27, discuss):** Why are the last days currently unused? I find it hard to believe there was no clear reason to that?
+
+   **Answer (AI, 2026-11-27):**
+   * You asked why the last 28 days are in no split.
+   * Until 2026-11-05 there was no tail: nine equal-count windows of 42 to 53 days tiled the period up to the last arrival.
+   * On 2026-11-05 the windows were shortened to the source's two weeks by keeping the first 14 days of each old window (the CC of that day: "each from the first whole day at or after the start of one of the nine equal-count windows shipped before"), so the folds stayed nine and the training floor held. The newest old window lost its last 28 days with that, and the accepted warning calls it "by design" with no reason beyond the construction.
+   * So the tail is a by-product of reusing the old starts, not a choice about those visits. Nothing in the data argues against testing them: the model trained on everything earlier scores MAE 13.46 on the tail, in line with the shipped windows.
+   * **Recommendation:** B, as before: anchor the newest window to the last 14 days and keep the other starts, count, length and floor. **Decision:** A, B or C?
+
 17. **Say that the waiting time a model must hit falls by two thirds across the test windows, and why?**
 
    * **Problem:**
@@ -564,6 +575,10 @@ history.
      | C | Train on recent history only | the last 180 days | tracks the level | worse on the measurement, with fewer rows |
 
    * **Recommendation:** B. **Decision:** A, B or C?
+
+   **Andrej (2026-11-27, change):** Option B: Add a note to the splits comment.
+
+   **Resolved (2026-11-27, Andrej):** B. The definition's `splits_comment` now says the mean wait of the test visits falls from 10.01 minutes in the oldest window to 2.99 in the newest, that the fall comes from patients checking in about eight minutes earlier (26.9 to 34.6) while arrival to start stays flat (37.4 to 38.1), and that the score stays flat (LightGBM MAE 14.47 and 13.49). Splits, rows and columns are unchanged.
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after Lennart's review of PR #33 on 2026-11-04. Claims: 44 (40 numbered, 4 implied); 31 hold, 7 refuted in whole or in part (wording, the licence, the metric's reference and the patient's offset; fixed in the notes or put to Lennart as issue 6), 6 untested (the 2026-10-26/28 panel and replay claims, and how the estimates were made). Blind review: would include with small changes; its main concern, `arrival_order` as a feature, is answered by CLEAN-3 (known at arrival, +0.08 MAE without it). Task gamer: reading the later test rows of a window rebuilds earlier targets, MAE 15.57 to 8.70 (-44%, all 9 splits), now a LEAK-9 note and protocol line (issue 7). Agreed: ship after changes; F1-F3 only, the temporal split, MAE, the kept expected-delay table, `arrival_order` stays. Disputed: LEAK-9 against LEAK-5 for the test-row decode (settled as LEAK-9; the evaluator guarantee is issue 7), and whether the patient's offset must be added or the summary reworded (USE-6, USE-8, USE-9; issue 6). The mediator's issues 1-4 are issues 6-9 here; the schedule-field keep is issue 11.
 

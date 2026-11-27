@@ -425,6 +425,16 @@ weighted rate deviance the same comparison gives +0.0048. A dated AI line next t
 
    * **Recommendation:** B. The data, split and metric are right as decided on 2026-11-06; what is missing is a sentence telling a reader where the score comes from. **Decision:** A, B, C or D?
 
+   **Andrej (2026-11-27, discuss):** This sounds weird: "their claim rate per year insured is about twice the full-year rate" - Why do they claim more?
+
+   **Answer (AI, 2026-11-27):**
+   * You asked why part-year policies claim more per year insured.
+   * They do not mainly have more accidents. A claim often ends the policy: a car written off or sold after an accident ends the cover, and a policyholder who claimed often leaves for another insurer before the bonus-malus penalty applies. Then the year holds the claim and its exposure is cut short, so claims divided by exposure is high. This is the record's surrender mechanism, and it shows in the measured actual/expected: 1.42 on part-year rows against 0.93 on full years.
+   * The portfolio carries no start or end dates, so a policy that ended after a claim cannot be told from one that started late, and the share of each is not known.
+   * The arithmetic adds noise, not bias: one claim over a quarter-year is a rate of 4. The exposure weight handles that, and it is why the unweighted mean rate is 1.13 times the portfolio rate.
+   * Consequence for the issue: the part-year rows carry about 55% of the measured skill, and their exposure is partly set by the outcome. That is the sentence option B adds.
+   * **Recommendation:** B, with the mechanism in its sentence. **Decision:** A, B, C or D?
+
 **Review panel:** ship after changes (mediator). Tier full, re-review of 2026-11-06 under LEAK-41, MET-14 to MET-16,
 after issue 1 was resolved as the rate weighted by `expo`. Claim audit: 31 claims, 20 hold (2 with a caveat), 2 refuted
 (LEAK-41's report and the copy counts, both now in the notes), 4 stale or on mixed scales (now named or superseded),

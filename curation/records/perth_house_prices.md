@@ -265,3 +265,22 @@ the rule on late labels since its amendment of 2026-11-04. `temporal` is unchang
      | C | Leave the record as it is (implemented) | nothing changes | no work | the record's "may also mean no car space" is wrong for six of the nine windows |
 
    * **Recommendation:** A. The column carries nothing the model needs, so the choice between A and B is about honesty rather than score; a note is the milder of the two and keeps the attribute where it was recorded. **Decision:** A, B or C?
+
+   **Andrej (2026-11-27, discuss):** Before October 2019 a missing garage count means the house has no car space - should this be recoded to zero then?
+
+   **Answer (AI, 2026-11-27):**
+   * You asked whether the blanks before October 2019 should become zero.
+   * Only mostly: in the join to the second listing, 27 of the 40 blanks before October 2019 had no parking space and 13 had one or more. A recode makes about a third of them wrong, on our inference from 40 matched rows.
+   * After the recode a blank means "not read" in both periods. The later blanks stay blank: 47 of 75 had two spaces and 1 of 75 none.
+   * The column carries no score either way (RMSE 0.1605 as shipped, 0.1603 without it), so the choice is about what the column says, not about the score.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | A note naming the two meanings and the date | one bullet | costs nothing | blanks change meaning mid-evaluation |
+     | B | Drop the garage column | 1 feature fewer | removes the inconsistency; measured free | loses the attribute where recorded |
+     | C | Leave the record as it is (implemented) | nothing changes | no work | the record's sentence is wrong for six windows |
+     | D | Recode the blanks before October 2019 to zero, with a note | a blank then means "not read" in both periods | one meaning per value | wrong for about a third of the recoded rows; an imputation on 40 matched rows |
+
+   * **Recommendation:** A, or D if you prefer one meaning per value: the third that D gets wrong is the price of making blanks consistent, and the score does not decide between them. **Decision:** A, B, C or D?
+

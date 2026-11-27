@@ -115,13 +115,15 @@ CC (2026-11-11, Lennart): the declared horizon (calendar months, a one-day gap, 
 
 **Assessment (AI, 2026-11-11):** applied issue 1 (B) and the horizon (B): `temporal` declares calendar months from 2014-06-01, 2014-04-01 and 2014-02-01 with a one-day gap; test 146,714, 130,112 and 122,831 trips, train 1,484,039, 1,200,383 and 943,912 (90.7%, 73.4% and 57.7% of the 1,636,276 trips); without the gap 47, 7 and 21 training trips would end after the window start, with it none; 100%, 99.93% and 100% of the June, April and February trips are by taxis seen before. The R^2 figures of the notes stay those of the April-June windows, dated as such. `dataset check`: 0 errors, 0 warnings.
 
+CC (2026-11-27, Andrej): ship as defined after one change (review of 2026-11-27); the declared split (temporal on `start_time`, calendar-month windows June, April and February 2014, a one-day gap) is checked and stays as declared. Review issue 2, B ("Option B: Keep the day, restate the reason."): the gap stays and `splits_comment` names the monthly refit's latency as its reason, with the measured overhang of unfinished trips as the second fact; text fixes from the notes: `taxi_id` adds 0.005 to 0.016 R^2, the challenge scored the total travel time from a partial trajectory, and 1,962 kept trips above 80 km/h are untested.
+
 ## Review
 
 **Outcome:** added as `pkdd_15_taxi_trip_time_prediction_ii_1m`. Verdict ship on 2026-10-26; on 2026-11-11 you chose
-calendar months (H, B) and February, April and June 2014 as the test months (issue 1, B); both are applied and nothing
-is left open.
+calendar months (H, B) and February, April and June 2014 as the test months (issue 1, B); both are applied. On 2026-11-27 you kept the one-day gap
+and restated its reason as the refit's latency (issue 2, B); nothing is left open.
 
-**Main points:** Re-audited 2026-11-27 against the UCI file (sha256 matches): the 1,636,276 trips, the 120 km/h filter (7,344 trips dropped, kept maximum 119.98 km/h), the windows (train 57.7% / 73.4% / 90.7%) and the notes' R^2 figures reproduce; no train/test copies, dummy RMSLE 0.605 on every fold. Open: issue 2 (the one-day gap's reason). The committed README still documents the superseded 30-day windows and needs a regeneration with the next rebuild. Earlier: Settled on 2026-11-11: the test windows are the calendar months February, April and June 2014, as one
+**Main points:** Re-audited 2026-11-27 against the UCI file (sha256 matches): the 1,636,276 trips, the 120 km/h filter (7,344 trips dropped, kept maximum 119.98 km/h), the windows (train 57.7% / 73.4% / 90.7%) and the notes' R^2 figures reproduce; no train/test copies, dummy RMSLE 0.605 on every fold. Settled on 2026-11-27: the one-day gap stays, its reason is the monthly refit's latency (issue 2). The committed README still documents the superseded 30-day windows and needs a regeneration with the next rebuild. Earlier: Settled on 2026-11-11: the test windows are the calendar months February, April and June 2014, as one
 model trained on the trips so far serves for months, and one window falls in the winter.
 
 **Horizon:**
@@ -281,3 +283,7 @@ May 2014, the newest window's gap day, lie in no split. The record has the horiz
    * **Recommendation:** B, the same answer as nyc_taxi_trip_duration's, as a text change. **Decision:** A, B or C?
 
    **Notes for the AI:** text fixes to make with B, measured 2026-11-27: `taxi_id` adds 0.005 to 0.016 R^2 on the shipped windows (notes say 0.008 to 0.014); `changes` says the challenge asked for the "remaining time", while the record's Comments say it scored the total travel time from a partial trajectory (source behind a Kaggle login, unverified); 1,962 kept trips imply more than 80 km/h in a straight line (probably missing GPS points), not tested. Full audit: `local-data-warehouse/_runs/2026-11-26_review33/pkdd_15_taxi_trip_time_prediction_ii/`.
+
+   **Andrej (2026-11-27, change):** Option B: Keep the day, restate the reason.
+
+   **Resolved (2026-11-27, Andrej):** B. The one-day gap stays and the folds are unchanged. `splits_comment` now gives the monthly refit's latency (collect, fit, check, deploy) as the reason, and keeps the overhang counts (47, 7 and 21 train trips ending after the window start without a gap, by at most 0.45, 0.18 and 0.56 hours) as the second fact. Also fixed, from the notes: the `taxi_id` gain reads 0.005 to 0.016 R^2 on the shipped windows, `changes` says the challenge scored the total travel time from a partial trajectory, and `curation_comments` records the 1,962 kept trips above 80 km/h as untested. `dataset check` is run again.

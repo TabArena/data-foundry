@@ -255,6 +255,33 @@ the 20 trips over 3 hours (issue 4) and the 19 trips faster than 120 km/h in a s
 
    **Notes for the AI:** B is a split change (`gap=3, gap_unit="hours"`, the new windows, `dataset check`), its own pull request. Under A, the acceptance text names the count and the floor as what stops more windows. Either way, add a sentence that the last partial day is short night trips in local time, not censoring.
 
+   **Andrej (2026-11-27, discuss):** To get to 9 splits, wouldn't it be more realistic to assume a one-day gap but also a one day forecasting window? Isn't that more realistic for the use case?
+
+   **Answer (AI, 2026-11-27):**
+   * You asked whether nine one-day windows with the one-day gap fit the use case better than three four-day windows.
+   * Yes, for the actor: a ride-hailing arrival-time model is a model a provider can refit daily, and nothing in the source names the four-day cadence (the notes call it a benchmark choice). The day keeps the gap's operational reason and matches the day kept on `nyc_taxi_trip_duration` and `pkdd_15_taxi_trip_time_prediction_ii`.
+   * Measured on the shipped frame (110,336 trips, 1 January to 1 February 02:09), untuned LightGBM, one seed. The days run from 03:00 to 03:00, so that the newest window holds the last rows (the data ends at 02:09 on 1 February, and a midnight boundary leaves those 70 trips outside every window, which the check refuses).
+
+     | Windows | Test trips per window | Training share | RMSE per window | Mean RMSE |
+     |---|---|---|---|---|
+     | three of four days, gap 1 day (implemented) | 11,138 to 16,055 | 0.597 to 0.860 | 8.61 / 9.39 / 9.11 | 9.04 |
+     | nine of one day from 23 to 31 January, gap 1 day | 3,223 to 4,444 | 0.666 to 0.936 | 7.00 (Sunday 29th) to 10.86 (Monday 30th) | 9.32 |
+
+   * The count warning goes away, the training floor is far from binding (0.666), and each weekday is tested at least once, which removes the uneven weekday mix the splits comment now has to explain. The cost: each window is a single day of about 3,500 trips, so the per-window scores spread more (7.0 to 10.9 against 8.6 to 9.4), and the mean is over different days than today's.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the one-day gap and accept the warning | three four-day windows | no change to the split | a cadence with no source; the count warning accepted |
+     | B | A three-hour gap, four windows, accept the warning | the gap follows the measured label delay | one more window | still four of nine; floor at 0.506 |
+     | C | Overlapping windows, a step of two days | six windows | closer to nine | windows share test rows |
+     | D | Leave it as it is (implemented) | three windows, warning unaccepted | no work | the check warns on every build |
+     | E | Nine one-day windows (23 to 31 January, days from 03:00), gap 1 day | a daily refit; the use case says "refit every day" | nine windows, no warning, every weekday tested, the day's gap kept | about 3,500 trips per window; per-day scores spread more |
+
+   * **Recommendation:** E. It meets the window count without overlap or an accepted warning and states a cadence an operator would use. **Decision:** A, B, C, D or E?
+
+   **Notes for the AI:** E is a split change: `window=1`, cutoffs 2023-01-23 03:00 to 2023-01-31 03:00, `gap=1`; the use case, `splits_comment` (cadence, the 03:00 boundary, the counts above) and the record's split line change; `dataset check`. Lands in this round's pull request.
+
 **Review panel:** ship after changes (mediator). Tier full, a second pass after Lennart's review of PR #33
 (2026-11-04): seven evidence agents, the advocate and the critic with one rebuttal each, and the mediator. Claims: 25
 audit rows over claims 1 to 58 and the metric; 18 hold, 6 refuted or overstated (the long durations "not errors", the

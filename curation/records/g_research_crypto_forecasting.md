@@ -83,6 +83,8 @@ CC (2026-11-17, Andrej): the declared split (temporal on `timestamp`, windows of
 
 CC (2026-11-19, Andrej): the 91-day windows and the crash window at 48.25% stay as the curator's exception (Review issue 11, A).
 
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27). Review issue 12, ok: the quoted model figures stay as implemented. Review issue 13, B ("Option B: Declare the windows leaf and keep the crash window as a window choice."): the definition's `split_leaf` is the ordinary windows leaf, and the accepted floor warning for the crash window (48.25%) stays. The declared split (temporal on `timestamp`, windows of 91 days, 3 windows at fixed cutoffs, gap 15 minutes) is checked and stays as declared.
+
 ## Review
 
 **Outcome:** added as `g_research_crypto_forecasting_1m`. G-Research's Kaggle competition data, one row per coin and
@@ -127,8 +129,8 @@ correlation is positive on 75-77 of 91 days (+), against the oldest window's int
 **Main points:** Re-audited on 2026-11-26: no look-ahead in any feature (each trailing return and trailing mean
 recomputed for Bitcoin over 132,477 minutes matches to rounding error), the weight is a scoring column and not a
 feature, and the gap is exact, with each training side's last label completing at the first test minute. The probe's
-fall in rows a day over the newest periods is the 500,000-row test cap and not censoring. Two issues are open: the
-model figures, which turn out stronger than the probe suggests (12), and the split's leaf label (13). Needing no
+fall in rows a day over the newest periods is the 500,000-row test cap and not censoring. Settled on 2026-11-27: the quoted model figures stay as they are (12, A), and the split's leaf is the
+ordinary windows leaf, with the crash window kept as a window choice (13, B). Needing no
 decision: the committed README is stale by two definition changes, the training shares should name their base, and
 the raw files carry no declared checksums, for which the three recorded hashes can be added. Earlier, settled on 2026-11-11: the test windows on the longer history are the newest from 25 October 2021,
 the 2021 bull run from 22 December 2020 and the 2020 crash from 28 February 2020, the last on 48.25% of the rows
@@ -601,6 +603,10 @@ to 23 January 2022; which other windows to test is issue 9. `dataset check`: 0 e
 
    * **Recommendation:** B. The intervals already exclude zero in every window, so a twelve-seed rerun could only tighten them. **Decision:** A, B or C?
 
+   **Andrej (2026-11-27, ok):** As implemented (A).
+
+   **Resolved (2026-11-27, Andrej):** A. The quoted figures stay as they are, dated to the windows that ended on 20 September 2021; nothing changed in `dataset.py`. The measurement on the shipped windows stays in this issue's table for reference.
+
 13. **Name the split's leaf as the windows it ships rather than as an exception?**
 
    * **Problem:**
@@ -617,6 +623,10 @@ to 23 January 2022; which other windows to test is issue 9. `dataset check`: 0 e
      | C | Move the oldest window to 27 April 2020 (52.1%) and drop the crash | every window clears the floor with no warning | no exception of any kind | loses the March 2020 crash you chose to test |
 
    * **Recommendation:** B; C only if you no longer want the crash tested. **Decision:** A, B or C?
+
+   **Andrej (2026-11-27, change):** Option B: Declare the windows leaf and keep the crash window as a window choice.
+
+   **Resolved (2026-11-27, Andrej):** B. `split_leaf` is now `L-ORDER.windows`, the leaf the walk reaches; the windows, the cutoffs and the accepted `splits_train_under_half` warning for the crash window (48.25%, the curator's choice of window) are unchanged. The record has the CC line.
 
 **Review panel:** ship after changes, text only (mediator). Tier focused, a re-review of 2026-11-06 under LEAK-41 and
 MET-14 to MET-16: the claim auditor, then the mediator. Claims: 21; 15 hold (one with a wording caveat, fixed), 4

@@ -107,6 +107,10 @@ CC (2026-11-17, Andrej): Review issue 12, A, as implemented: Nine expanding two-
 
 CC (2026-11-17, Andrej): the declared split (temporal on `publication_date`, windows of 2 weeks, 9 windows at fixed cutoffs, gap 1 week) is checked: confirmed in the blind split walk.
 
+CC (2026-11-27, Andrej): the declared metric (RMSLE on the share count, computed on the original scale after the log target is inverted) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added. On 2026-11-11 you chose nine two-week windows, one every five weeks from 9 March to 27 December

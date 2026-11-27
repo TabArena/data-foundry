@@ -78,11 +78,15 @@ CC (2026-11-17, Andrej): the declared split (random, 1x3 folds, `ForcedIIDFromTe
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. The dormancy signal is partly mechanical, but packages, prices and competition shape churn and the nearest measured churn set shifts; mixed at best.
 
+CC (2026-11-27, Andrej): the declared metric (ROC AUC of the churn probability against CHURN, the competition's metric) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added as `expresso_churn_prediction_1m`. Re-audited on 2026-11-26 against the shipped frame: no leak
 beyond the region column already dropped (its missing flag rises from 0.665 to 0.936 with activity, so it is filled
-after the outcome), and the split tree's leaf matches what ships. One issue is open (3). Two things need no decision:
+after the outcome), and the split tree's leaf matches what ships. No issue is open (issue 3 decided 2026-11-27, A). Two things need no decision:
 the committed README still reports the old 1,500,000-row sample against the 2,154,048 rows that ship, so it is
 regenerated at the next build; and the source's own terms forbid the Kaggle upload our download instruction names,
 which is a note on the record rather than a curation issue and is raised across datasets, since another Zindi record
@@ -186,6 +190,10 @@ is fetched the same way. The time basis is `ForcedIIDFromTemporal`: `DelayedTarg
      | D | Rewrite the text to what the data shows alone | no dependence on the codebook | robust | loses the operator's own meaning of each column |
 
    * **Recommendation:** C, with B in the meantime, since C is the only option that settles whether the activity count reaches into the label period. **Decision:** A, B, C or D?
+
+   **Andrej (2026-11-27, ok):** As implemented (A).
+
+   **Resolved (2026-11-27, Andrej):** A, as implemented: the claims that rest on the codebook stay as written; `dataset.py` is unchanged.
 
 ## Reference
 

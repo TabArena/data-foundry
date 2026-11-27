@@ -3,6 +3,7 @@ unique_name: ames_housing
 name: Ames Housing (De Cock 2011)
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -82,24 +83,21 @@ CC (2026-11-04, Lennart): SPLIT-10 is amended (on lt_vehicle_loan_default_predic
 
 CC (2026-11-17, Andrej): the declared split (temporal on `Month Sold`, windows of 2 months, windows while training keeps 50% of the rows (13 in the build), no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-27, Andrej): Review issue 1: Option A, ship the transaction price ("Ship the transaction price: reword the question, use case and predicted fields"). The question, use case, row and predicted fields now say the task prices a recorded sale given its type and condition; data, features and split unchanged. The sentence on the sales-ratio standard is struck from the notes and the decision table, since it is wrong in both directions.
+
+CC (2026-11-27, Andrej): Review issue 2: as implemented (B), the 12 adjoining-land sales stay dropped; the notes no longer cite the standard for the drop, which rests on the curator's call.
+
+CC (2026-11-27, Andrej): Review issue 3: as implemented (A), 13 windows; the below-target warning is accepted with the numbers (the five further windows train on 33.6% to 46.8% of the sales and the exception stays untaken).
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
+
+**Assessment (AI, 2026-11-27):** applied; `dataset check` 0 errors, 2,837 rows and the 13 windows unchanged, `splits_below_target` accepted in the definition. Reworded: question, use case, row, predicted, the prediction-point note, the sale-filter note and its decision-table entry.
+
 ## Review
 
-**Outcome:** added. Re-reviewed on 2026-11-26 (focused panel: claim, column and split auditors, a task gamer and a
-mediator), with the recommendation to ship after changes, all of them to the text. Validity: the sale records hold up
-on every test designed to break them, and the one Must that is triggered is a wording conflict, not a data fault, since
-the definition names two incompatible prediction points (issue 1). The two transaction fields were suspected of being
-assigned from the price and are not: the residual test finds no one-sided pattern, so they are legitimate inputs.
-No leak was found by any route: no repeat sale spans a cut, no feature is dated after its sale, and a random split
-scores worse than the shipped one, so the temporal split is not the flattering choice. Value: not trivial, and the
-window count sits at 13 against a target of 30, which is argued but never accepted in the definition. Quality: the
-curator's own placement rule for an absent state is applied backwards on two garage columns, and six counts in text a
-participant reads were taken before the 82 non-market sales left and never recomputed. Weighed: source +, use case +,
-shape +, size -, gap - (a crowded domain).
+**Outcome:** added. Decided on 2026-11-27: ship the price of a recorded sale given its type and condition (issue 1, A, words only), keep the 12 adjoining-land sales dropped (issue 2, B) and keep 13 windows with the warning accepted (issue 3, A). The sale records hold up on every test designed to break them and no leak was found by any route.
 
-**Main points:** Three for you: which of the two prediction points ships, since only one of them lets the sale's own
-type and condition be inputs (1); whether the 12 adjoining-owner sales come back, the one group the cited standard
-says should not have been dropped (2); and whether the window count goes from 13 to 18 by taking the training-floor
-exception, which is the only access to 2007 and the market's turn (3).
+**Main points:** Nothing open.
 
 **Issues for Andrej:**
 
@@ -143,6 +141,10 @@ exception, which is the only access to 2007 and the market's turn (3).
 
    **Notes for the AI:** under B the consistency check is owed against house_sales (2026-10-22 and 10-26), and the departure needs the fact that sets this case apart or house_sales reopened. The two do not share a mechanism: there the codes are county warnings set after recording, here the condition is in the source's own file. Cite house_sales for its measured gain and its one-sided test, not for the mechanism (house_sales re-audit, 2026-11-26).
 
+   **Andrej (2026-11-27, change):** Option A: Ship the transaction price: reword the question, use case and predicted fields.
+
+   **Resolved (2026-11-27, Andrej):** A. The question, use case, row and predicted fields describe the price of a recorded sale given its type and condition; the prediction-point note says so too, and the sentence on the cited standard is struck. Data, features and split are unchanged; `dataset check` 0 errors.
+
 2. **Bring back the 12 adjoining-owner sales?**
 
    * **Problem:**
@@ -165,6 +167,10 @@ exception, which is the only access to 2007 and the market's turn (3).
      | B | Keep them dropped (implemented) | nothing changes | simplest; correct if issue 1 goes B | its only stated authority says the opposite, and the data show no discount |
 
    * **Recommendation:** A if issue 1 goes A; B if issue 1 goes B. **Decision:** A or B?
+
+   **Andrej (2026-11-27, ok):** As implemented (B).
+
+   **Resolved (2026-11-27, Andrej):** B, the 12 adjoining-land sales stay dropped; the drop is worded as the curator's call, with no claim that the standard supports it.
 
 3. **Take the training-floor exception to test 2007 as well, or keep 13 windows?**
 
@@ -190,6 +196,10 @@ exception, which is the only access to 2007 and the market's turn (3).
      | B | Go to 18 windows by taking the exception | adds the five windows down to a third of the rows in training | the only access to 2007 and the turn; moves the count toward the target; the rule's amendment names this case | five windows train on a third to a half of the data, unlike any deployment; needs your line on the record and an accepted second warning |
 
    * **Recommendation:** A is fully compliant and is what the split auditor recommends; the mediator leans B, because the preference for other years is explicit and 2008 is the regime a deployed model had to handle. A ships unless you write the line. **Decision:** A or B?
+
+   **Andrej (2026-11-27, ok):** As implemented (A).
+
+   **Resolved (2026-11-27, Andrej):** A, 13 windows; `splits_below_target` is accepted in the definition with the numbers of the five further windows (33.6% to 46.8% training share) and the date.
 
 **Review panel:** ship after changes (mediator, focused tier: claim auditor, column auditor, split auditor, task gamer).
 Claims: 29 tested, 16 hold, 11 refuted on wording and counts, 2 untested. Columns: no post-outcome value; two garage

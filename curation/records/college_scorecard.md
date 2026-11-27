@@ -3,9 +3,12 @@ unique_name: college_scorecard
 name: College scorecard
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
+decision_markers:
+- Selection Bias
 tags:
 - Non-IID (Temporal)
 - '?'
@@ -53,11 +56,17 @@ CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note 
 
 CC (2026-11-17, Andrej): the declared split (temporal on `cohort_year`, windows of 1 value, up to 9 windows while training keeps 50% of the rows (4 in the build), gap 5 values) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-27, Andrej): Review issue 1: Option B, `Selection Bias` marker and a `fit_reason` sentence, keep `Yes` ("Selection Bias marker and a fit_reason sentence, keep Yes"). The record carries `Selection Bias`; the fit reason and the notes name the survivor cut (a row exists only if the college is still in the file six years after entry: 699 of 3,335 entry rows absent in the 2015 test cohort, 409 of 3,111 in 2018, for-profit colleges most, and the absent colleges completed less); `fit` stays direct.
+
+CC (2026-11-27, Andrej): Review issue 2: Option B, narrow the wording ("Narrow the wording"). The use case now names the college, or an agency that receives its entry-year report, as the actor and drops "published"; the task, data and split are unchanged.
+
+**Assessment (AI, 2026-11-27):** applied; `dataset check` 0 errors, 1 warning left from before this round (`splits_below_target`, 4 windows against 9) and 1 info; no data change. The text fixes the audit listed for the next edit (the new below-target warning, the `DISTANCEONLY` note, `UG25ABV`, the no-gap R^2 figures, the zip folder date) are not part of these marks and are not applied.
+
 ## Review
 
-**Outcome:** added as `college_scorecard`; re-audited 2026-11-27 against the pinned Wayback zip (MD5 matches the recorded ETag): 34,431 rows, 2,569 institutions, 92 features, LightGBM RMSE 0.085 against 0.198 for the dummy on all 4 windows.
+**Outcome:** added as `college_scorecard`; re-audited 2026-11-27 against the pinned Wayback zip (MD5 matches the recorded ETag): 34,431 rows, 2,569 institutions, 92 features, LightGBM RMSE 0.085 against 0.198 for the dummy on all 4 windows. Decided 2026-11-27: `Selection Bias` and the survivor cut named, `Yes` kept (issue 1, B); the use case narrowed to the college as actor (issue 2, B).
 
-**Main points:** Task gamer (blind, 2026-11-27): nothing gamed. Untuned LightGBM RMSE 0.0851 (0.0824 to 0.0864 over 4 windows; a random column adds 0.0003); institution keys rebuilt from stable columns, missing-value patterns, formats and row order found nothing, and training on all history beats the last 12 years. It suspects `C150_4_LATEST` (worth 0.004) of coming from a later cohort; the definition takes it from the entry-year file, the cohort six years older, so it is signal for the college (issue 2 covers outside actors). Two decisions: issue 1 (rows exist only for colleges still in the file six years later, not named) and issue 2 (the use case says "published" data, which an outside actor gets a year later). The split (one cohort per window, gap five, 2015-2018) holds and stays. Text fixes for the next edit: accept the new `splits_below_target` warning; the `DISTANCEONLY` note should name the 13 other columns first recorded inside the history (dropping all costs 0.002 R^2); `UG25ABV` is recorded in odd years only; "without the gap R^2 0.86 instead of 0.81" recomputes to 0.850 against 0.803; the zip's folder is dated 3 June, not 10 June.
+**Main points:** Task gamer (blind, 2026-11-27): nothing gamed. Untuned LightGBM RMSE 0.0851 (0.0824 to 0.0864 over 4 windows; a random column adds 0.0003); institution keys rebuilt from stable columns, missing-value patterns, formats and row order found nothing, and training on all history beats the last 12 years. It suspects `C150_4_LATEST` (worth 0.004) of coming from a later cohort; the definition takes it from the entry-year file, the cohort six years older. The split (one cohort per window, gap five, 2015-2018) holds and stays. Text fixes for the next edit: accept the new `splits_below_target` warning; the `DISTANCEONLY` note should name the 13 other columns first recorded inside the history (dropping all costs 0.002 R^2); `UG25ABV` is recorded in odd years only; "without the gap R^2 0.86 instead of 0.81" recomputes to 0.850 against 0.803; the zip's folder is dated 3 June, not 10 June.
 
 **Issues for Andrej and Lennart:**
 
@@ -84,6 +93,10 @@ CC (2026-11-17, Andrej): the declared split (temporal on `cohort_year`, windows 
 
    * **Recommendation:** B: the cut follows from the label (no rate without a later file), so it cannot be undone, only named. **Decision:** A, B or C?
 
+   **Andrej (2026-11-27, change):** Option B: Selection Bias marker and a fit_reason sentence, keep Yes.
+
+   **Resolved (2026-11-27, Andrej):** B. `Selection Bias` is on the record; the `fit_reason` and a note in the curation notes name the survivor cut and its size; `fit` stays direct and the verdict `Yes`. `dataset check` 0 errors.
+
 2. **Narrow the use case's actor to the college?**
 
    * **Problem:**
@@ -101,3 +114,7 @@ CC (2026-11-17, Andrej): the declared split (temporal on `cohort_year`, windows 
    * **Recommendation:** B, as a text change. **Decision:** A, B or C?
 
    **Notes for the AI:** the column-by-column period table and the horizon options are in `local-data-warehouse/_runs/2026-11-26_review33/college_scorecard/findings_audit.md`.
+
+   **Andrej (2026-11-27, change):** Option B: Narrow the wording.
+
+   **Resolved (2026-11-27, Andrej):** B. The use case's actor is the college (or an agency receiving its entry-year report) and "published" is dropped from it and from the notes on the entry-year features; same task, data and split. `dataset check` 0 errors.

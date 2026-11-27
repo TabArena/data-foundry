@@ -563,6 +563,27 @@ regenerated).
 
    * **Recommendation:** A. The field is physical, the actor works from finalised reports, and dropping it empties the task. **Decision:** A, B, C or D?
 
+   **Andrej (2026-11-27, discuss):** This sounds like a leak to me? Think a bit more about it.
+
+   **Answer (AI, 2026-11-27):**
+   * You asked whether the collision type leaks the injury outcome. A leak would need one of three things: the code computed from the injuries, written after them and changed by them, or recorded only when someone is hurt. Each was checked on the 998,184 labelled crashes from September 2017.
+   * **Not computed from the injuries:** the code describes the first harmful event (pedestrian, parked car, rear end). A pedestrian contact keeps the code without an injury: 12.1% of pedestrian crashes injure no one, and 71% of those report damage of $500 or less, so a minor contact is still filed as a pedestrian crash.
+   * **The rates are physics:** an unprotected person is struck. Pedestrian crashes injure in 87.9% (killed or seriously injured 16.8%), cyclists 71.8% (9.1%), head-on 34.6% (6.1%), angle 24.4%, rear end 14.4%, parked car 3.9% (0.5%).
+
+     | Collision type | Crashes | Injured | Killed or seriously injured | Desk reports |
+     |---|---|---|---|---|
+     | parked motor vehicle | 229,961 | 3.9% | 0.5% | 52.5% |
+     | rear end | 210,507 | 14.4% | 0.9% | 63.4% |
+     | angle | 108,793 | 24.4% | 2.5% | 42.5% |
+     | head on | 8,295 | 34.6% | 6.1% | 33.2% |
+     | pedalcyclist | 17,925 | 71.8% | 9.1% | 28.0% |
+     | pedestrian | 25,327 | 87.9% | 16.8% | 19.2% |
+
+   * **Written later and changed by the outcome:** this cannot be ruled out from the data, since there is no per-field timestamp. The amended-report check found no systematic recoding (pedestrian share among fatal rows 29.1% against 25.7%, direction not consistent).
+   * **The actor holds it:** the road-safety analyst ranks sites from finalised reports and holds the type for every crash. Severity given collision type is the standard input of that work, since crash-severity distributions are tabulated by collision type, so the task's skill sitting on it is the task, not a shortcut. The caller at the scene also knows "a car hit a pedestrian".
+   * Where it does bite: the task measures little beyond the type (21% of the gain without it). That is the content of A's sentence, and reason enough to say it, but not a leak.
+   * **Recommendation:** A, as before. **Decision:** A, B, C or D?
+
 14. **Say that for ranking dangerous corridors the model adds little over counting crashes?**
 
    * **Problem:**

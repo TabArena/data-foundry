@@ -53,18 +53,17 @@ CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run).
 
 CC (2026-11-17, Andrej): the declared split (temporal on `Date`, windows of 7 days, 9 windows, gap 1 day) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-27, Andrej): Review issue 1: Option A, state the measurement and a protocol line ("State the measurement and a protocol line"). The notes and the splits comment now say a station's next-day row, within 0.42 degrees of the label, sits in the same test window for six of seven days, that a model joining it roughly halves its error (untuned LightGBM RMSE 0.809 on each row, 0.438 with the next-day minimum), and that no step may read other test rows; the data and the windows are unchanged.
+
+CC (2026-11-27, Andrej): the declared metric (RMSE on Next_Tmin, over the 9 test windows) is checked and stays as declared.
+
+**Assessment (AI, 2026-11-27):** applied; `dataset check` 0 errors, 7,648 rows and the 9 windows unchanged. Issue 2 (the windows over two summers) has no mark yet and stays open.
+
 ## Review
 
-**Outcome:** added. Re-audited on 2026-11-27: the data reproduce (checksum matches, 7,648 rows recomputed, `dataset
-check` clean), the second target is not shipped as a feature, the one-day gap is right (training ends two days before
-each window, and the evening forecast's lead lies inside the gap), and the split tree's leaf matches what ships. Two
-issues are open: a station's next-day row inside the same window carries the label (1), and the nine windows sit in a
-single summer for a reason the window rule does not accept (2). Needing no decision: the solar radiation column is
-not the day's observation but the station's calendar-day potential radiation, identical every year, which is why it
-drifts in every window; and 9 of 25 stations lack the day's minimum on 2017-06-30.
+**Outcome:** added. Re-audited on 2026-11-27: the data reproduce (checksum matches, 7,648 rows recomputed, `dataset check` clean), the second target is not shipped as a feature, the one-day gap is right, and the split tree's leaf matches what ships. Issue 1 decided on 2026-11-27 (A): the next-day row that carries the label is stated with its measurement and a protocol line. One issue is open: the nine windows sit in a single summer for a reason the window rule does not accept (2); your ok of 2026-11-27 waits on the reason to keep them. Needing no decision: the solar radiation column is not the day's observation but the station's calendar-day potential radiation, identical every year, which is why it drifts in every window; and 9 of 25 stations lack the day's minimum on 2017-06-30.
 
-**Main points:** Task gamer (blind, 2026-11-27): found issue 1's leak on its own and at the same size: the same station's next-day `Present_Tmin` cuts RMSE from 0.816 to 0.432 (a bare rule on it 0.517, persistence 1.439), more than the random-column noise (up to 0.05) on 8 of 9 windows. It also proposes dropping `Present_Tmin` and `Present_Tmax` to close the channel; that removes the observation of the evening itself, which a deployed model has, and its cost was not measured, so issue 1's options stay as they are. Nothing else found (formats, the summer-only gaps between windows). Two for you: say that a station's next-day row in the same window carries the label (1), and spread
-the test windows over two summers with a reason from the data (2).
+**Main points:** Task gamer (blind, 2026-11-27): found issue 1's leak on its own and at the same size (the same station's next-day `Present_Tmin` cuts RMSE from 0.816 to 0.432); it also proposes dropping `Present_Tmin` and `Present_Tmax`, which removes the evening's own observation that a deployed model has, so the protocol line was chosen instead. Nothing else found. One for you: spread the test windows over two summers with a reason from the data (2).
 
 **Issues for Andrej:**
 
@@ -94,6 +93,10 @@ the test windows over two summers with a reason from the data (2).
 
    * **Recommendation:** A. It follows from the chosen windows, so it is best accepted together with the window decision in issue 2. **Decision:** A, B or C?
 
+   **Andrej (2026-11-27, change):** Option A: State the measurement and a protocol line.
+
+   **Resolved (2026-11-27, Andrej):** A. The curation notes carry a "Potential leak, kept on purpose" line with the measurement and the protocol (each test row is predicted from the training rows and its own features only; no feature or model step may use other test rows), and the splits comment ends with the same protocol line. Data and windows are unchanged; `dataset check` 0 errors.
+
 2. **Spread the test windows over two summers, with the reason restated from the data?**
 
    * **Problem:**
@@ -112,6 +115,13 @@ the test windows over two summers with a reason from the data (2).
    * **Recommendation:** B, with the reason restated from the data (target and feature drift by window) rather than from model scores. **Decision:** A, B or C?
 
    **Notes for the AI:** B is a split change: new cutoffs in `temporal`, the splits comment rewritten from data statistics, `dataset check` re-run, its own pull request. Whether the source paper defines its own split (training on 2013-2016 and testing on 2017) was not checked; if it does, the rule to follow a source-defined split comes first.
+
+   **Andrej (2026-11-27, ok):** As implemented (A).
+
+   **Answer (AI, 2026-11-27):**
+   * A consistency check before applying: A keeps windows whose only recorded reason is a comparison of model scores, which the window rule does not accept as the basis for choosing windows. The windows themselves can stay; the reason cannot.
+   * Keeping A needs a reason from the data or the use, for example that the newest weeks are the period a deployed forecaster serves. Under A the score comparison leaves the notes and that reason replaces it.
+   * **Decision:** A with a reason from the data (which one?), or B as recommended?
 
 **Review panel:** ship after changes (re-audit against the source, 2026-11-27; no separate mediator). Claims: the row
 count and every dropped day reproduce; the solar radiation column is mislabelled as an observation. Columns: no

@@ -168,9 +168,9 @@ class CollegeScorecard(AbstractCuratedDataset):
             "What share of the students entering a US four-year college this fall will graduate within six years?"
         ),
         use_case=(
-            "For example, when a new class enters, a state agency, an accreditor or the college itself estimates its "
-            "six-year completion rate from the college's published data, to plan support or review colleges likely to"
-            " fall short."
+            "For example, when a new class enters, the college itself, or an agency that receives its entry-year "
+            "report, estimates the class's six-year completion rate from the college's figures of that year, to plan "
+            "support or review classes likely to fall short."
         ),
         row=(
             "One four-year US institution and the first-time, full-time class that entered it in one fall, 2001 to "
@@ -183,7 +183,7 @@ class CollegeScorecard(AbstractCuratedDataset):
         known=(
             "The college's figures in the Scorecard file of the entry year: type, control, state and region, degrees,"
             " admission rate, ACT and SAT scores, cost and net price, aid and loan shares, enrollment by race and field of"
-            " study, spending and faculty, and its latest published completion and retention rates of older classes."
+            " study, spending and faculty, and its latest completion and retention rates of older classes."
         ),
         split=(
             "Each of four test windows is one entering class (2015 to 2018, newest first); training is every class "
@@ -198,9 +198,10 @@ class CollegeScorecard(AbstractCuratedDataset):
         ),
         fit="direct",
         fit_reason=(
-            "Everything the model sees is published in the entry year and the rate follows six years later, as in "
-            "use; each test class comes after every class with a published rate. State and region carry their newest "
-            "value in old files, a small exception."
+            "Everything the model sees is in the college's entry-year figures and the rate follows six years later, "
+            "as in use. Only colleges still in the file six years after entry have a row (about a fifth of the 2015 "
+            "entry rows are absent, and they completed less), so the task scores survivors. "
+            "State and region carry their newest value in old files, a small exception."
         ),
     )
 
@@ -253,9 +254,10 @@ class CollegeScorecard(AbstractCuratedDataset):
     curation_comments = """
         We start with the files MERGED1996_97_PP.csv to MERGED2025_26_PP.csv of the College Scorecard release of June 10, 2026 (U.S. Department of Education).
 
-        - Prediction point: the fall a first-time, full-time cohort enters a four-year institution. A model sees that year's Scorecard file, including the institution's latest published outcomes, and predicts the share of the cohort that completes within 150% of normal time, published six files later (Institution_Cohort_Map).
+        - Prediction point: the fall a first-time, full-time cohort enters a four-year institution. The college has its figures of that year, including its latest published outcomes, and predicts the share of the cohort that completes within 150% of normal time, published six files later (Institution_Cohort_Map).
         - One row per institution and entering cohort of fall 2001-2018 (the first test scores and the last completion rates): the features of a four-year institution (ICLEVEL = 1) from the entry-year file, and as target `completion_rate_150pct` the C150_4 of the file six years later, joined on UNITID. The entry file's own C150_4, the rate of the cohort six years older, becomes C150_4_LATEST.
         - We keep cohorts of at least 30 students (D150_4), the size below which the Scorecard suppresses its pooled rates (documentation p. 25).
+        - Selection Bias (Andrej, 2026-11-27): a row exists only if the institution is still in the file six years after entry, because its rate is published then, and its class has 30 or more students. The survivor cut removes 699 of 3,335 entry rows of the 2015 test cohort and 409 of 3,111 of 2018 (for-profit colleges most: 57% absent in 2015, 36% in 2018), the 30-student cut a further 244 and 265. The removed colleges completed less (prior completion rate 0.34 to 0.39 against 0.52 to 0.53 kept), so the task scores colleges that survived while a deployed model sees every entering class, the closing colleges included. The cut follows from the label and cannot be undone, only named.
         - Features: close to TableShift's list. We drop columns the release fills from its newest file or one fixed year (LOCALE, CCBASIC, CCSIZSET, ACCREDAGENCY, HBCU, SCH_DEG), which would show old cohorts later information, series that end before the newest test cohort (the NSLDS student profile, the census shares, the writing scores) and mostly blank ones, and add per-year columns such as PREDDEG, C150_4_LATEST and RET_FT4. UG25ABV stays, though IPEDS collects it for odd falls only.
         - SAT: from the 2017 cohort on the Scorecard reports the redesigned test, unlike every training cohort (median change within an institution from 2016 to 2017: +30 SATMT25, +70 SAT_AVG, against at most 7 between any two other years up to 2018). We put SATMT25, SATMT75 and SAT_AVG of those cohorts back on the old scale with the College Board's concordance tables (May 2016; linear between their 10-point steps), after which the median 2016-2017 change is 0 and -5 (Lennart, 2026-10-16). Untuned LightGBM R² on the 2018 and 2017 windows: 0.783 and 0.802 as published, 0.798 and 0.808 converted, 0.796 and 0.809 without SAT; the ACT columns cover most of the same institutions. SATVR25/75 stay out: the new reading-and-writing section has no table to the old critical reading section.
         - The institution's own history stays: C150_4_LATEST and RET_FT4 are published in the entry-year file, and an entity's own history is legitimate under a temporal split. The latest rate carried forward scores R² 0.734 on the 2018 window (decision table), untuned LightGBM on all features 0.797.
@@ -401,7 +403,7 @@ class CollegeScorecard(AbstractCuratedDataset):
             ),
             Decision(
                 "The institution's latest published completion and retention rates are features",
-                "Both are published in the entry-year file, so a user has them at the prediction point. The latest "
+                "Both are in the entry-year file, so the college has them at the prediction point. The latest "
                 "completion rate, carried forward through a line fit on the train side, is the baseline to beat "
                 "(table); untuned LightGBM on all features beats it on every window.",
                 pd.DataFrame(carried),

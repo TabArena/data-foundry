@@ -87,17 +87,21 @@ CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note 
 
 CC (2026-11-17, Andrej): the declared split (temporal on `Date`, windows of 14 days, 26 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-27, Andrej): ship as defined after two changes (review of 2026-11-27). Review issue 8, B ("Option B: A protocol line in the splits comment and the record."): no feature or model step may use other test rows, as a station's next-day row, which carries the label, is in the same test window for 92.1% of the 16,484 test rows; a method that reads another test row of the same station is called out and not benchmarked. Review issue 9, B ("Option B: Add one sentence naming the three stations and their end dates."): the accepted `splits_feature_missing_in_test` text now names Katherine (2019-03-22), Adelaide (2020-07-30) and Newcastle (2021-04-15) as stations that stop reporting, so the stations reporting each year fall from 49 to 46; the edited accepted text is signed off.
+
 ## Review
 
 **Outcome:** added. Shipped on your verdict of 2026-10-26; on 2026-11-11 you kept the 14-day windows without a gap
-(Horizon, ok) and spread the 26 windows one every 16 weeks from May 2018 to January 2026 (issue 7, B); both are applied
-and nothing is left open. The review file of October (issues 2 to 6, settled on 2026-10-26) was removed then and stays
+(Horizon, ok) and spread the 26 windows one every 16 weeks from May 2018 to January 2026 (issue 7, B); both are applied.
+On 2026-11-27 you added the protocol line against reading other test rows (issue 8, B) and the three ending stations to
+the accepted warning's text (issue 9, B); nothing is left open. The review file of October (issues 2 to 6, settled on 2026-10-26) was removed then and stays
 in git; this file numbers on from it.
 
 **Main points:** Re-audited on 2026-11-26: the prediction point is clean (every previous-day column equals the raw
 value of the day before in all rows, and `RISK_MM`, the best-known leak in this dataset's history, is dropped and
-absent from the 166 shipped columns). Two issues are open: a station's next-day row carrying the label inside the
-same test window (8), and the stations that stop reporting (9). The committed README still describes the windows
+absent from the 166 shipped columns). Settled on 2026-11-27: a station's next-day row carries the label inside the
+same test window, so a protocol line forbids reading other test rows (8); the three stations that stop reporting are
+named in the accepted warning (9). The committed README still describes the windows
 before 2026-11-11 and is regenerated at the next build. Earlier, settled on 2026-11-11: 26 fortnights spread over the eight years open, so the score meets the dry and
 the wet years, with the test rows of the 26 fortnights of the last year kept.
 
@@ -247,6 +251,10 @@ the one or two weeks set for weather; the no-gap sentence stays. The record has 
 
    * **Recommendation:** B, the precedent and the mildest remedy. **Decision:** A, B or C?
 
+   **Andrej (2026-11-27, change):** Option B: A protocol line in the splits comment and the record.
+
+   **Resolved (2026-11-27, Andrej):** B. The definition's `splits_comment` and `curation_comments` now carry the protocol line (each test row is predicted from the training rows and its own features only; no feature or model step may use other test rows; a method that reads another test row of the same station is called out and not benchmarked), with the 92.1% share and the 261,914-row identity. The record has the CC line. No column or row changed.
+
 9. **Name the three stations that stop reporting inside the evaluation period?**
 
    * **Problem:**
@@ -271,6 +279,10 @@ the one or two weeks set for weather; the no-gap sentence stays. The record has 
      | C | Drop the ended stations' neighbour columns | fewer columns that go empty | cleaner | cuts information kept on purpose |
 
    * **Recommendation:** B, at low priority; it changes nothing but the account. **Decision:** A, B or C?
+
+   **Andrej (2026-11-27, change):** Option B: Add one sentence naming the three stations and their end dates.
+
+   **Resolved (2026-11-27, Andrej):** B. The accepted `splits_feature_missing_in_test` text and `curation_comments` now name Katherine (2019-03-22), Adelaide (2020-07-30) and Newcastle (2021-04-15), the stations reporting each year falling from 49 to 46; the count of 12 columns is unchanged. The record has the CC line that accepts the edited text.
 
 ## Reference
 

@@ -234,6 +234,16 @@ has the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regen
 
    **Notes for the AI:** under A, the clause goes in `splits_comment` and a dated assessment line in the record, and the cross item goes into the working copy's `REVIEW.md`. Under B or C the windows are rebuilt and it is its own pull request.
 
+   **Andrej (2026-11-27, discuss):** This is not a leak since later windows are not available per train test split, right? Within a train-test split, this could only be exploited with transductive learning, right?
+
+   **Answer (AI, 2026-11-27):**
+   * You asked whether the later quarters are out of reach within a split, so that only transductive use could exploit them.
+   * The first part is right: a split's training side holds only earlier quarters and its test side one quarter, so neither side holds a test loan's later row. A model fit on the training rows and given the test rows cannot see it.
+   * Transductive learning does not reach it either: a test quarter holds one row per loan, so the test rows contain no successor to find. The only way in is a row outside both sides of the split, which the container ships because it holds one frame of all sixty quarters and names the splits as positions.
+   * So it is not a leak of the split. It is a hazard of the container: the -86% and -88% came from a column computed over the whole frame before slicing (a "does this loan appear later" count), the pattern the worked example uses for honest features.
+   * That makes A a protocol line rather than a leak note: "features may use only the rows of the split's own sides". D stays defensible, since the plain fit path is clean. The frame-per-split question (B) stays with the cross-dataset item.
+   * **Recommendation:** A, worded as the protocol line above. **Decision:** A, B, C or D?
+
 18. **Freeze the origination fields within each loan, or keep them as recorded?**
 
    * **Problem:**
@@ -262,6 +272,15 @@ has the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regen
    * **Recommendation:** A. The rows can be named, the remedy is the mildest one available, and the measurement removes the only argument for keeping them. **Decision:** A, B or C?
 
    **Notes for the AI:** the counts differ between the two audits (3,269 changed rows, 3,872 own-quarter rows before propagation, 2,703 in the current note, 3,540 loans). Settle one definition before writing the clause or the fix.
+
+   **Andrej (2026-11-27, discuss):** Is this a leak fix or a preprocessing data science choice?
+
+   **Answer (AI, 2026-11-27):**
+   * You asked whether freezing the origination fields fixes a leak or is a preprocessing choice.
+   * By timing it is a leak: on 3,108 of the 3,269 changed rows the "origination" interest rate is the row's own-quarter rate, a value from the quarter being predicted, and the missing flag flips with the outcome (payoff 7.95% on flip rows against 2.52% on the loan's other rows). The servicer rewrites the field when the loan is modified or refinanced, which is close to the event the target records.
+   * By size it is nothing: freezing changes log loss by -0.0003 to -0.0006, slightly better.
+   * The rule on values known at the prediction point decides on timing when the late cells can be found row by row, as here, and asks for the fix then. Read as cleaning instead (a field named for origination should hold the origination value), the answer is the same.
+   * **Recommendation:** A either way: it costs no score and makes the columns mean what their names say. **Decision:** A, B or C?
 
 **Review panel:** ship after changes (mediator, focused tier: claim auditor, column auditor, split auditor, task gamer). Claims: the calendar anchor, the macro lags, the market rate, the target's absorbing form, the dedup and the LEAK-20 exception all survive tests designed to refute them. Refuted: the standing objection on the probes is stale and the dataset is better than its notes claim; "a closed book that ages" describes the wrong panel. Agreed: the one-quarter windows without a gap, and that entity leakage through earlier rows is null. Disputed: the later rows (issue 17) and the origination fields (issue 18).
 

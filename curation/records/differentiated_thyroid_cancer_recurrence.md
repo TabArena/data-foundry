@@ -70,6 +70,10 @@ CC (2026-11-17, Andrej): the declared split (random, 20x3 folds, `ForcedIIDFromT
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Changed rules and staging inside and after the collection span are named facts against.
 
+CC (2026-11-27, Andrej): the declared metric (ROC AUC on the recurrence label, the binary fallback) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below (issue 1, A, 2026-11-18).

@@ -103,6 +103,10 @@ CC (2026-11-20, Andrej): the three cohort-year windows stay, below the target of
 
 CC (2026-11-20, Andrej): the three cohort-year windows are the tree's leaf Temporal · labels arrive later (the labels-arrive-later step added to the fill-in branches today; tunisian its example); gap 0 kept under it, as an audit's delay of years would leave fewer than three windows (Lennart's call of 2026-11-05 confirmed).
 
+CC (2026-11-27, Andrej): the declared split (temporal on `fiscal_year`, windows of 1 year, 3 windows (2015, 2016, 2017), no gap) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added. The Tunisian Ministry of Finance's labelled taxpayer-years from the 2019 Zindi challenge: 20,930

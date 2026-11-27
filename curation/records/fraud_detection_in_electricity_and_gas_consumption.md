@@ -84,6 +84,12 @@ CC (2026-10-26, Lennart): verdict ship.
 
 CC (2026-10-31, Lennart): marks on the review board of PR #37: reading_remarque left unordered with a note (codes 6-9 undocumented, used as a changing code list).
 
+CC (2026-11-27, Andrej): the declared metric (ROC AUC over clients, one fraud probability per client, the competition's metric) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): the declared split (grouped on `client_id`, 3 folds with 1 repeat) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added as `fraud_detection_in_electricity_and_gas_consumption_1m`. Re-audited on 2026-11-26: nothing

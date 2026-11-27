@@ -119,6 +119,13 @@ and the model barely beats the median (1).
 
    * **Recommendation:** A now and B before any decision to retire, since the signal rule makes a tuned run the only ground for `No Signal`. **Decision:** A, B, C or D?
 
+   **Andrej (2026-11-27, change):** Option C: Retire with No Signal.
+
+   **Answer (AI, 2026-11-27):**
+   * A consistency check before applying: the signal rule makes a tuned run the only ground for `No Signal`; here only an untuned L1 LightGBM exists (+0.00008 MAE over the median, 1.6 standard errors). The page verdict for this record also says ship, which conflicts with retiring.
+   * Without the location columns the gain is +0.00033 (SE 0.00004), so a small real signal may exist and be diluted; a tuned run settles that either way.
+   * **Decision:** retire now as an exception to the signal rule (with the fact that sets it apart: the gain sits inside 0.1% of the error on the declared metric), or B first (the tuned run, then retire or keep on its result)?
+
 **Review panel:** ship after changes (re-audit against the source, 2026-11-27; no separate mediator). Claims: every
 count recomputed on the shipped frame holds except the median claim. Columns: the five flagged codes are already
 categorical; the property snapshot postdates the 2017 sales, disclosed and small. Split: the tree reaches the leaf

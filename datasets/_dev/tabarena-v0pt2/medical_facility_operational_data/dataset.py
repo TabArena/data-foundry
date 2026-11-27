@@ -156,6 +156,14 @@ class MedicalFacilityOperationalData(AbstractCuratedDataset):
         so the order is real time. F3 starts later than F1 and F2: about eight months and 8,231 visits of F3 history
         precede the oldest window. Each test visit is predicted from the training rows and its own features only; no
         feature or model step may use other test rows. No held-out-facility or new-patient guarantee is asserted.
+        The waiting time falls across the windows (Andrej, 2026-11-27): the mean `Wait` of the test visits is 10.01
+        minutes in the oldest window and 2.99 in the newest. `Wait` is the time from arrival to the start of the exam
+        minus how early the patient checked in; the time from arrival to start stays flat (37.4 to 38.1 minutes) and
+        patients check in about eight minutes earlier (26.9 to 34.6), mostly at two of the three facilities. The fall is
+        a change in behaviour and not in how arrivals were recorded (the monthly series shows it, and a fixed
+        facility mix does not remove it). The level a model must hit moves from about ten minutes to one to three while
+        the score stays flat (LightGBM MAE 14.47 in the oldest window, 13.49 in the newest; mean bias -0.75, range -2.1
+        to +0.5), so the windows' scores are not on one level of target.
     """
     accepted_check_warnings = {
         "splits_rows_unused": "By design (Lennart, 2026-11-05): the nine 14-day windows start at the nine "

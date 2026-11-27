@@ -72,6 +72,10 @@ CC (2026-11-11, Lennart): the declared horizon (three weekly sheets, no gap, win
 
 CC (2026-11-17, Andrej): the declared split (temporal on `Date`, windows of 3 values, up to 9 windows while training keeps 50% of the rows (9 in the build), no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-27, Andrej): the declared metric (RMSLE on the sale price, computed on the original scale after the log target is inverted) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added. On 2026-11-11 you kept the nine windows of three weekly result sheets, 12 August 2017 to
