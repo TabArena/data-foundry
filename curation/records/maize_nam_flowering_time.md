@@ -4,9 +4,6 @@ name: NAM-maize-DTA (Maize Nested Association Mapping Flowering Time)
 checked_by:
 - AI (UNVERIFIED)
 - Andrej
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: TBD -> 2nd Tier
 priority: 1
 tags:
@@ -112,7 +109,7 @@ CC (2026-11-27, Andrej): back to `2nd Tier`, priority 1; the v2 folder leaves th
 
 ## Review
 
-**Outcome:** added, then recommended out of the working copy and set to `2nd Tier` on the curator's decision of 2026-11-27: the task is real and clean but too narrow to spend a benchmark slot on. The definition and the panel's evidence stay in this record and in the working copy's log, so a later round can pick it up without repeating any of it. What was added: 4,699 recombinant inbred lines of the 25-family maize Nested
+**Outcome:** not added: a v2 folder was built on 2026-11-26, reviewed by a full panel and withdrawn from the working copy on the curator's decision of 2026-11-27, with the record set to `2nd Tier`. The task is real and clean but too narrow to spend a benchmark slot on. The definition and the panel's evidence stay in this record and in the working copy's log, so a later round can pick it up without repeating any of it. What was added: 4,699 recombinant inbred lines of the 25-family maize Nested
 Association Mapping population, days to anthesis in days from 1,106 imputed linkage-map markers, grouped on the
 family, scored by the within-family correlation. The data is the project's own Buckler et al. 2009 release and the
 target is the line value it publishes, so no value is computed here. `dataset check` passes with 0 errors and 0
