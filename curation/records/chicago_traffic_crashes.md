@@ -123,7 +123,13 @@ settled on 2026-11-05. On 2026-11-11 you chose one-month windows with the one-mo
 over four years (issue 12, B), September 2026 back to January 2023, each in another calendar month; both are applied.
 Left: the rebuild from the 2026-11-04 export before its URL stops working on 2026-12-22, which needs your ask.
 
-**Main points:** Settled on 2026-11-11: nine one-month test windows from January 2023 to September 2026, on both sides
+**Main points:** Re-audited on 2026-11-26. Time-critical: the portal's export URL carries a `Sunset: Tue, 22 Dec 2026`
+header, so a rebuild after that date has no source, and the pinned snapshot already does not reproduce (the portal
+amends historical records; today's export moves the frame by 7 rows). The 21.7% of test rows with an exact feature
+twin in training do not inflate the score: model skill is lower on them, and they are repeat addresses of common crash
+types. The newest month is complete and shows no censoring. Three issues are open: one coded field carrying 85% of the
+skill (13), the thin value for ranking corridors (14), and a horizon block describing the retired quarters (15).
+Earlier, settled on 2026-11-11: nine one-month test windows from January 2023 to September 2026, on both sides
 of the 2023Q4 step, each trained on the crashes up to a month before it, as the city reviews its fatal crashes monthly.
 
 **Horizon:**
@@ -192,7 +198,7 @@ no split, 9,529 of them in August 2026, the newest window's gap month) are rewri
 98.1% of the crashes. The record has the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not
 regenerated).
 
-**Issues for Lennart:**
+**Issues for Andrej and Lennart:**
 
 7. **Reword the use case to a road-safety analyst?**
 
@@ -528,6 +534,85 @@ regenerated).
    step ("reported, not evident" 4.0% and 4.8%), December 2023 in its quarter (5.2%) and the six newer windows after it
    (6.0-6.8%), as the drift paragraph now says. The eligibility table of `_decisions` follows the months. The record
    has the CC line. `dataset check`: 0 errors, 0 warnings.
+
+13. **State that one officer-coded field carries 85% of the skill?**
+
+   * **Problem:**
+     - The type of the first collision alone earns 85% of the gain over the prior, and without it the model keeps only 21%.
+     - It is entered in the same finalised report as the injury fields, and the data carries no per-field timestamp, so whether it is written before or after the injuries can be neither shown nor refuted.
+     - The notes already call the fit approximate and say the field is not a raw caller observation, but nothing says how much of the task rests on it.
+   * **Effect on the task:** The benchmark largely measures how well a model reads one coded field. That is legitimate for an actor who works from finalised reports, for whom the order of entry does not matter, but a reader should know it.
+   * **Experiments:** LightGBM, four of the nine windows, the newest 500,000 training rows, one seed.
+
+     | Inputs | Log loss | Share of the gain over the prior | Ranking of killed or seriously injured |
+     |---|---|---|---|
+     | the prior only | 0.6087 | 0% | 0.500 |
+     | collision type only | 0.5204 | 85% | 0.775 |
+     | all 15 | 0.5053 | 100% | 0.806 |
+     | all but collision type | 0.5868 | 21% | 0.650 |
+
+     The field reads physically: 87.9% of pedestrian crashes injure someone, against 3.9% of crashes into a parked car. An amended-report check for recoding is inconclusive (pedestrian share among fatal rows 29.1% against 25.7%, p 0.0015, direction not systematic).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep it and state the measured share |  one sentence in the fit reason and the notes | honest; no data change | the task still rests on one coded field |
+     | B | Drop the field | removes the timing question | no open question about entry order | the skill falls to 21% and the task is close to empty |
+     | C | Keep it with your line that it is kept on purpose | a record line plus a note | an explicit sign-off | says what A says, with one more step |
+     | D | Leave it as it is (implemented) | the field stays and its share stays unstated | no work | a reader cannot tell how much of the task rests on one coded field |
+
+   * **Recommendation:** A. The field is physical, the actor works from finalised reports, and dropping it empties the task. **Decision:** A, B, C or D?
+
+14. **Say that for ranking dangerous corridors the model adds little over counting crashes?**
+
+   * **Problem:**
+     - The use case is to rank sites for safety work by their expected killed-or-seriously-injured crashes.
+     - Ranked that way, by street corridor, the model's ranking barely beats one built from the crash count alone, and the corridors it puts in the top twenty are the same ones.
+     - The metric is a fair proxy for the decision; it is the task that is thin for site ranking, which nothing in the notes says.
+   * **Effect on the task:** A benchmark score here says little about the decision the use case names, because most of what that decision needs is already in the crash count.
+   * **Experiments:** the four test windows pooled, 86 street corridors with at least 100 test crashes, ranked by predicted killed-or-seriously-injured total.
+
+     | Model | Rank agreement with observed | Top-twenty overlap | Predicted total (observed 604) |
+     |---|---|---|---|
+     | the crash count alone | 0.663 | 11 | 677 |
+     | all 15 inputs | 0.691 | 11 | 645 |
+     | collision type only | 0.698 | 11 | 700 |
+
+     Every model's expected total runs 7 to 16% high, because the share of crashes that kill or seriously injure falls from 2.0% in 2022-23 to 1.4% in 2026.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Add the site-ranking result to the metric's reason | text only | honest about what the score is worth for the decision | no score change |
+     | B | Declare a binary killed-or-seriously-injured log loss | changes the target to match the decision | fits the decision directly | reopens the five-class target already settled |
+     | C | Leave it unwritten (implemented) | nothing changes | no work | the gap between the score and the decision stays hidden |
+
+   * **Recommendation:** A. **Decision:** A, B or C?
+
+15. **Rewrite the review's horizon block, which still describes the retired quarters?**
+
+   * **Problem:**
+     - The horizon block of this review still says to keep three-month windows and marks three months as implemented, while the definition has shipped nine one-month windows since 2026-11-11.
+     - Its supporting figure, that 99.4% of reports are updated within 30 days, mostly counts a refresh: every row is re-touched 15 or 16 days after the crash, whatever its type.
+     - The gap decision stands; only the block's description and the base of its figure are wrong.
+   * **Effect on the task:** None on the data. A reader opening the review sees a quarter where a month ships, and a reporting-lag figure that measures something else.
+   * **Experiments:** the reporting lag measured on the portal, June to August 2026.
+
+     | Measure | Value |
+     |---|---|
+     | rows re-touched at day 15 or 16 | 24,243 of 29,222 |
+     | amended reports updated after 30 days | 9.0% (n 1,373) |
+     | amended reports updated after 90 days | 1.3% |
+     | share of all fatal rows held by amended reports | 26.2%, against 3.7% of all rows |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Rewrite the block to the one-month choice and restate the figure's base | text only | the review matches what ships | none |
+     | B | Leave it (implemented) | nothing changes | no work | the next reader sees a quarter |
+
+   * **Recommendation:** A. **Decision:** A or B?
 
 **Review panel:** ship after changes (mediator). The tier was full, as a second pass after Lennart's review of PR #33
 on 2026-11-04: seven evidence agents, the advocate and the critic with one rebuttal each, and the mediator. Claims: 27
