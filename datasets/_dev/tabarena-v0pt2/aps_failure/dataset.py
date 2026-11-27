@@ -210,8 +210,7 @@ class ApsFailure(AbstractCuratedDataset):
         """,
     )
     splits_comment = """
-        Stratified grouped 3-fold cross-validation over the 61,466 trucks with 3 repeats: a truck's rows stay on one
-        side, and the folds are drawn over trucks, stratified by label (no truck carries two labels). Each test fold
+        Each test fold
         holds 20,488 or 20,489 trucks, about 21,300 rows and about 420 failures. 0.05% of the test rows keep a linked
         row in training (a pair sharing 5 rare values but fewer than 60 equal counters, left apart), against 25% under
         random folds on all 76,000 rows. The challenge's own split held out its last 16,000 rows, with 4,458 pairs of

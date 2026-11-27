@@ -89,7 +89,7 @@ class ForensicGlassIdentification(AbstractCuratedDataset):
 
     # Task
     splits_comment = """
-        Default splits: random fragments, stratified on the glass type. The random split is a deliberate choice
+        The random split is a deliberate choice
         (2026-11-12, Andrej), weighed against a split grouped on glass objects: no clean groups
         govern how the collection was made. Only 7 objects (14 rows, 7%) are tied together by a link calibrated against
         chance (identical refractive index, the same type and every oxide within the tolerance of two analyses: 7

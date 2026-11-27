@@ -276,13 +276,13 @@ class PricingGame2016FrenchFleet(AbstractCuratedDataset):
         ),
         reference=RULES_URL,
         params={"power": 1.5, "min_prediction": FLOOR},
-        inputs={"weight": WEIGHT},
     )
     scoring_columns = (
         ScoringColumn(
             column=WEIGHT,
             role="weight",
             used_by="rescaled_mean_tweedie_deviance",
+            fit=True,
             description=(
                 "the period's vehicle-years (the source's Exposition_au_risque, 0.08 to 1), realized: 57.4% of the "
                 "periods end before 31 December at a cut not known at the start (a quarter of them on a month's end), "
@@ -291,7 +291,6 @@ class PricingGame2016FrenchFleet(AbstractCuratedDataset):
             ),
         ),
     )
-    sample_weight = WEIGHT
     accepted_check_warnings = {
         "dataset_duplicate_rows": (
             "Vehicles of one fleet in the same period share every contract class and the start, so the length to the "

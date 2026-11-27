@@ -548,7 +548,9 @@ def test_template_has_the_panel_tab_and_keeps_the_store():
 
 
 def test_split_from_the_readme_and_the_definition(rp):
-    """The split comes from the README's front matter and Splits section, the Forced tags and the split notes."""
+    """The split comes from the README's front matter (its reason too) and Splits section, the Forced tags and the
+    split notes; a README written before the reason key takes the definition's `splits_comment`.
+    """
     readme = """---
 task:
   split_regime: temporal_non_iid
@@ -564,11 +566,14 @@ splits:
   time_horizon_unit: days
   time_gap: 1
   time_gap_unit: days
+  reason: Six weeks ahead, as the competition asks.
   n_train: {min: 10, max: 20}
   n_test: {min: 5, max: 6}
 ---
 
 ## Splits
+
+Expanding-window temporal splits: 3 test window(s) of 42 days.
 
 Six weeks ahead, as the competition asks.
 
@@ -593,8 +598,13 @@ Six weeks ahead, as the competition asks.
     assert got["tableHtml"].count("<tr>") == 2
     assert got["notes"] == ["The split follows the competition's temporal test window."]
 
-    default = readme.replace("Six weeks ahead, as the competition asks.", "Default splits.")
-    assert rp._split(default, [], None)["noteHtml"] == ""
+    assert "Expanding-window" not in got["noteHtml"]
+    no_reason = readme.replace("  reason: Six weeks ahead, as the competition asks.", "  reason: null")
+    assert rp._split(no_reason, [], None, splits_comment="ignored: the key says none")["noteHtml"] == ""
+    before_the_key = readme.replace("  reason: Six weeks ahead, as the competition asks.\n", "")
+    assert rp._split(before_the_key, [], None)["noteHtml"] == ""
+    note = rp._split(before_the_key, [], None, splits_comment="\n        Six weeks ahead.\n    ")["noteHtml"]
+    assert "Six weeks ahead" in note
     assert rp._split("no front matter", [], None) is None
 
     code = 'class X:\n    data_tags = ("ForcedIIDFromTemporal",)\n    curation_comments = "- a split note"\n'
@@ -840,9 +850,9 @@ def test_issue_options_name_what_each_mark_locks_in(rp):
     assert rp._thread("Plain text.")["options"] == []
 
 
-def _iid_split(rp, tags, comments):
+def _iid_split(rp, tags, comments, basis_reason=None):
     readme = "---\ntask:\n  split_regime: iid\nsplits:\n  n_repeats: 3\n  n_folds: 3\n---\n"
-    return rp._split(readme, tags, comments)
+    return rp._split(readme, tags, comments, basis_reason)
 
 
 def _record(tmp_path, *tags):
@@ -852,8 +862,8 @@ def _record(tmp_path, *tags):
 
 
 def test_the_split_box_shows_the_basis_and_the_records_facts(rp, tmp_path):
-    """The time basis, its `Time basis:` line and the record's collection facts reach the split box, as information."""
-    split = _iid_split(rp, ["IID", "ForcedIIDFromTemporal"], "- Time basis: all scored in September 2005.\n- x")
+    """The time basis, its reason and the record's collection facts reach the split box, as information."""
+    split = _iid_split(rp, ["IID", "ForcedIIDFromTemporal"], "- x", "all scored in\n    September 2005.")
     rp._time_facts(
         split, _record(tmp_path, "Samples: One Moment", "Target: Fixed Delay", "Entities: Recur", "Tiny Data")
     )

@@ -278,14 +278,14 @@ premium earned pro rata. The training rows' weights shape the fit; the test rows
 when predicting (LEAK-41; [definition_fields.md](../../knowledge-data-foundry/references/definition_fields.md),
 `sample_weight`). The task summary says so in `known_at_scoring` (Lennart, 2026-11-09).
 
-**MET-16 (Should; 2026-11-06, Lennart; amended 2026-11-12, Lennart).** A survey or design weight is never a feature.
-The task is scored unweighted unless the use case is a population estimate; then one weight ships as a scoring column
-and as the sample weight, and folds follow the design when it is known. A weight may also be declared for training
-alone, when it says how much each row's label is worth to the fit while the decision counts the rows without it: a
-design weight when sampling depends on the outcome (the notes name the sampling), or a label's precision (the number of
-replicate measurements behind a mean). It is the task's `sample_weight`, a weight scoring column declared
-`used_by="training"` that the metric does not read, never a feature; its description says why it trains and why it
-does not score. A harness fits every model with it like any sample weight and weights a validation loss by the metric's
+**MET-16 (Should; 2026-11-06, Lennart; amended 2026-11-12, Lennart).** A survey or design weight is never a feature. The
+task is scored unweighted unless the use case is a population estimate; then one weight ships as a scoring column and as
+the sample weight, and folds follow the design when it is known. A weight may also be declared for training alone, when
+it says how much each row's label is worth to the fit while the decision counts the rows without it: a design weight
+when sampling depends on the outcome (the notes name the sampling), or a label's precision (the number of replicate
+measurements behind a mean). It is the task's `sample_weight`, a weight scoring column declared `fit=True,
+used_by="training"` that the metric does not read, never a feature; its description says why it trains and why it does
+not score. A harness fits every model with it like any sample weight and weights a validation loss by the metric's
 weight (`validation_weight`), and the score cannot show whether a model used it. What a given harness supports today
 (AutoGluon ties the training and the validation weight to one column) does not limit what a dataset declares. A unit
 weight of our own that gives each unit one vote (MET-17) is no survey or design weight in this sense (2026-11-08,
@@ -297,14 +297,14 @@ video_transcoding_time_prediction).** When the source's rows come in units with 
 counts each unit once if the actor decides once per unit and the unit's further rows are repeats the source's protocol
 made (the quadrats of a plot, the SuperCon entries of a composition, the bleeds of a mouse, the visits of a person).
 Each row then weighs 1 over its unit's rows, through a weight scoring column the metric reads, for scoring only
-(MET-15), and the rows stay (SPLIT-26); the task declares it as its `unit_weight` (the weight column and the unit's
-column), so downstream tools weight their validation loss alike. The score stays per row when each row is a decision of
-its own (an instance a solver selector runs, a job a scheduler places); the notes then say how unequal the units are and
-how far one vote per unit moves the ranking. The weight changes how much a prediction counts, never what one prediction
-is (SPLIT-23). A score that departs this way from the source's per-row score is declared from context and names the
-source's score as the original (MET-11). Why: a unit the protocol happened to measure five times would otherwise count
-five times in a decision the actor makes once; on the six cases one vote per unit ranks models at Kendall tau 0.66 to
-0.98 per split against the per-row score.
+(MET-15), and the rows stay (SPLIT-26); the task declares it as its `unit_weight` (the weight scoring column with
+`unit=` the unit's column), so downstream tools weight their validation loss alike. The score stays per row when each
+row is a decision of its own (an instance a solver selector runs, a job a scheduler places); the notes then say how
+unequal the units are and how far one vote per unit moves the ranking. The weight changes how much a prediction counts,
+never what one prediction is (SPLIT-23). A score that departs this way from the source's per-row score is declared from
+context and names the source's score as the original (MET-11). Why: a unit the protocol happened to measure five times
+would otherwise count five times in a decision the actor makes once; on the six cases one vote per unit ranks models at
+Kendall tau 0.66 to 0.98 per split against the per-row score.
 
 ## Patterns
 

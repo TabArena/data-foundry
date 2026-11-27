@@ -170,7 +170,6 @@ class AspPotasscoClassification(AbstractCuratedDataset):
             "instances. ASlib's feature costs are left out: they are the same whichever configuration is picked."
         ),
         params={"cutoff": 600, "k": 10, "timeout_rel_tol": 0.0001},
-        inputs={"group": "instance_id"},
         target_transform="log",
     )
     scoring_columns = (

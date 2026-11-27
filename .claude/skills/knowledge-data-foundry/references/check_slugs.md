@@ -165,7 +165,7 @@ Errors a definition may accept:
 | `meta_curation_comments_empty` | info | yes | `curation_comments` is empty. |
 | `meta_dataset_year` | warning | yes | A source's year is not a plausible 4-digit year. |
 | `meta_download_description_empty` | warning | yes | `download_description` is empty. |
-| `meta_group_basis_missing` | error | no | `ForcedIIDFromGrouped` has no `Group basis:` line (SPLIT-35). |
+| `meta_group_basis_missing` | error | no | `ForcedIIDFromGrouped` without its group basis (SPLIT-35). |
 | `meta_license_unknown` | warning | yes | A source's license is unknown. |
 | `meta_placeholder_left` | error | no | Scaffolding placeholders are left: `TODO` or `<unique_name>` in the metadata (a source's license included), `TODO(verify)` in `dataset.py`. |
 | `meta_source_link` | warning | yes | A source's link does not look like a URL or DOI. |
@@ -175,16 +175,13 @@ Errors a definition may accept:
 | `meta_tags_missing_non_iid` | warning | yes | A non-IID split without the `Non-IID` tag. |
 | `meta_tags_missing_regime` | warning | yes | A temporal or grouped split without its regime's tag. |
 | `meta_tags_multiple_regimes` | warning | yes | `data_tags` carry more than one split regime. |
-| `meta_time_basis_line_missing` | info | yes | A time basis tag without its `Time basis:` line. |
-| `meta_time_basis_lines` | error | no | `curation_comments` hold more than one `Time basis:` line. |
-| `meta_time_basis_mismatch` | error | no | The `Time basis:` line names another tag than `data_tags` carry. |
+| `meta_time_basis_field_missing` | info | yes | A time basis tag in `data_tags` without the stored time basis. |
+| `meta_time_basis_mismatch` | error | no | The stored time basis names another tag than `data_tags` carry. |
 | `meta_time_basis_missing` | info | yes | The split is not temporal, and the definition does not say why (SPLIT-32). |
 | `meta_time_basis_on_temporal` | error | no | A time basis that says why a split is not temporal, on a temporal split. |
 | `meta_time_basis_regime` | error | no | The time basis tag contradicts the split's regime. |
-| `meta_time_basis_renamed` | info | yes | A time basis tag under its old name. |
 | `meta_time_basis_several` | error | no | `data_tags` carry more than one time basis. |
 | `meta_time_basis_unattributed` | error | no | A time basis only a person sets, without the person and date (SPLIT-32). |
-| `meta_time_basis_unstructured` | info | yes | A free-text `Time basis:` line instead of `TimeBasis(tag, reason)`. |
 | `meta_time_gap_without_time_on` | error | no | `time_gap` is set on a task without a time column. |
 | `meta_time_horizon_mismatch` | warning | yes | The declared horizon differs from the span of the first test window. |
 | `meta_time_horizon_missing` | error | no | A temporal task without `time_horizon`. |
@@ -213,4 +210,4 @@ Errors a definition may accept:
 |---|---|---|---|
 | `check_crashed` | error | no | A check raised an exception: a bug in the check or an unexpected bundle. |
 
-167 slugs; 97 can be errors, 61 warnings, 20 infos.
+164 slugs; 96 can be errors, 61 warnings, 18 infos.

@@ -18,6 +18,7 @@ from data_foundry.definition.dataset import (
     Decision,
     FeatureTypes,
     NonFeature,
+    ScoringColumn,
     TaskSummary,
     clean_text,
 )
@@ -33,21 +34,28 @@ from data_foundry.definition.preprocessing import (
 )
 from data_foundry.definition.registry import discover_datasets, get_dataset, load_definition
 from data_foundry.definition.report import read_report
-from data_foundry.definition.splits import SplitPlan, Splits, Temporal, TemporalSplits, window_bounds
+from data_foundry.definition.splits import (
+    GroupedSplits,
+    SplitPlan,
+    Splits,
+    Temporal,
+    TemporalSplits,
+    window_bounds,
+)
 from data_foundry.definition.windows import Window, candidate_windows, window_stats
 from data_foundry.definition.workbench import workbench
 from data_foundry.encodings import Encoding
 from data_foundry.metrics import Metric
 from data_foundry.schema import (
+    GroupBasis,
     Grouping,
     RawFile,
     RowBudget,
-    ScoringColumn,
     Source,
     SpecialFeature,
     SpectrumDetails,
+    TimeBasis,
     TrainSampling,
-    UnitWeight,
 )
 from data_foundry.special import SpecialColumn, SpecialColumnGroup
 from data_foundry.special.chemistry import (
@@ -61,7 +69,6 @@ from data_foundry.special.chemistry import (
     scaffold_groups,
 )
 from data_foundry.special.spectra import Spectrum
-from data_foundry.time_basis import GroupBasis, TimeBasis
 from data_foundry.utils.dtypes import object_columns
 
 __all__ = [
@@ -74,6 +81,7 @@ __all__ = [
     "Encoding",
     "FeatureTypes",
     "GroupBasis",
+    "GroupedSplits",
     "Grouping",
     "Metric",
     "NonFeature",
@@ -94,7 +102,6 @@ __all__ = [
     "TemporalSplits",
     "TimeBasis",
     "TrainSampling",
-    "UnitWeight",
     "Window",
     "anonymize_ids",
     "candidate_windows",

@@ -17,7 +17,6 @@ from data_foundry.definition import (
     TaskSummary,
     Temporal,
     TemporalSplits,
-    UnitWeight,
     drop_columns,
 )
 
@@ -242,13 +241,13 @@ class NoaaStormEventsDamage(AbstractCuratedDataset):
             "fitted by squared error. "
             "Chosen over RMSLE by the curator (Lennart, 2026-11-08)."
         ),
-        inputs={"weight": CELL_WEIGHT},
     )
     scoring_columns = (
         ScoringColumn(
             column=CELL_WEIGHT,
             role="weight",
             used_by="mean_tweedie_deviance",
+            unit=CELL,
             description=(
                 "1 over the number of entries of the row's county or zone, event type and year (`cell`), so that "
                 "each cell counts once in the deviance; known only once the year is over, for scoring only, never a "
@@ -256,7 +255,6 @@ class NoaaStormEventsDamage(AbstractCuratedDataset):
             ),
         ),
     )
-    unit_weight = UnitWeight(column=CELL_WEIGHT, unit=CELL)
     accepted_check_warnings = {
         "task_target_value_dominant": (
             "Zero-inflated: 68% of the entries are $0, kept as entered; part of the zeros are unestimated damage "

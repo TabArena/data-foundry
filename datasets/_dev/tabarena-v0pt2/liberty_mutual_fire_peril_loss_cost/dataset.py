@@ -142,7 +142,6 @@ class LibertyMutualFirePerilLossCost(AbstractCuratedDataset):
         "normalized_weighted_gini",
         original="Normalized weighted Gini coefficient, weights var11",
         reference="https://www.kaggle.com/competitions/liberty-mutual-fire-peril/overview/evaluation",
-        inputs={"weight": "var11_weight"},
         target_transform="log1p",
     )
     scoring_columns = (

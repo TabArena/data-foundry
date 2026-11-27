@@ -50,7 +50,7 @@ from data_foundry.checks.protocol import protocol_checks
 from data_foundry.checks.results import SEVERITY_ORDER, BundleCheckReport, CheckResult, run_guarded
 from data_foundry.curation_container import CuratedContainer, non_feature_columns
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
-from data_foundry.schema import TIME_BASIS_TAGS, as_column_list, current_tag, training_only_weight
+from data_foundry.schema import TIME_BASIS_TAGS, as_column_list, training_only_weight
 from data_foundry.utils.checksum import categorical_details
 from data_foundry.utils.dtypes import is_str_dtype, object_columns
 from data_foundry.v1 import DatasetMetadata, PredictiveMLTaskMetadata
@@ -1066,8 +1066,9 @@ def _scoring_column_findings(ctx: _Ctx) -> Iterator[CheckResult]:
             "task_scoring_column_unused",
             "error",
             f"Scoring column(s) {unused} are not an input of the metric {spec.name!r} in the role they declare.",
-            hint="Map the role to the column in the metric's `inputs`, or drop the column (or keep it as a feature). "
-            'A weight for training alone is the `sample_weight`, its scoring column `used_by="training"` (MET-16).',
+            hint="Give the column the role the metric reads (its `inputs` follow the scoring columns), or drop the "
+            'column (or keep it as a feature). A weight for training alone is declared `fit=True, used_by="training"` '
+            "(MET-16).",
         )
 
 
@@ -1130,8 +1131,8 @@ def _weight_findings(ctx: _Ctx) -> Iterator[CheckResult]:
             "error",
             f"`sample_weight={sample_weight!r}` is not the row weight the metric {spec.name!r} reads "
             f"({row_weight!r}): models would train on another weighting than the score uses (MET-15).",
-            hint="Map the metric's `weight` input to the same scoring column, drop `sample_weight`, or, for a weight "
-            'meant for training alone, declare its scoring column `used_by="training"` (MET-16).',
+            hint="Declare `fit=True` on the scoring column the metric weights by instead, or, for a weight meant for "
+            'training alone, declare its scoring column `used_by="training"` (MET-16).',
         )
     unit = getattr(task, "unit_weight", None)
     if unit is not None:
@@ -1145,8 +1146,8 @@ def _weight_findings(ctx: _Ctx) -> Iterator[CheckResult]:
             "warning",
             f"The metric weights rows by {row_weight!r}, but {trains}. A realized amount at risk (time insured) must "
             "also be the training weight (MET-15).",
-            hint=f'Declare `sample_weight = "{row_weight}"`, or accept the warning when the weight is a function of '
-            "the features (a sum insured, an asset's weight).",
+            hint=f"Declare the scoring column `{row_weight}` with `fit=True`, or accept the warning when the weight is "
+            "a function of the features (a sum insured, an asset's weight).",
         )
     weight_columns = [c for c in dict.fromkeys((sample_weight, row_weight)) if c is not None]
     for column in weight_columns:
@@ -1165,7 +1166,7 @@ def _weight_findings(ctx: _Ctx) -> Iterator[CheckResult]:
                 f"Feature(s) {suspects} look like an amount at risk (time insured, area swept). A realized one is cut "
                 "by the outcome and never a feature; it is the rate's denominator and the weight (LEAK-41, MET-15).",
                 hint="Say in the notes what the column is (planned or realized) and accept the warning, or ship the "
-                "rate with the column as `sample_weight`.",
+                "rate with the column as its weight scoring column, `fit=True`.",
             )
 
 
@@ -2004,13 +2005,11 @@ _TIME_BASIS_HINTS = {
     "meta_time_basis_unattributed": "Only a person sets it (SPLIT-32): on the stationary-relation test's flat reading "
     "(`StationaryRelation`) or for a reason from the dataset's domain or use case (`AssumedStationaryRelation`); "
     "otherwise keep the forced tag.",
-    "meta_time_basis_line_missing": "Name the reason (time lost, or too few periods) and what a dated release would "
+    "meta_time_basis_field_missing": "Name the reason (time lost, or too few periods) and what a dated release would "
     "change, as `time_basis = TimeBasis(tag, reason)` (SPLIT-8, SPLIT-32).",
-    "meta_time_basis_unstructured": "Declare it as `time_basis = TimeBasis(tag, reason)`; the build renders the line.",
     "meta_time_basis_regime": "Make the split what the tag says, or change the tag (SPLIT-8, SPLIT-35).",
-    "meta_time_basis_mismatch": "The line and the tag come from one `time_basis = TimeBasis(...)`.",
+    "meta_time_basis_mismatch": "The tag and the stored time basis come from one `time_basis = TimeBasis(...)`.",
     "meta_time_basis_several": "Keep the one time basis that says why the split is not temporal (SPLIT-32).",
-    "meta_time_basis_lines": "Keep one `Time basis:` line: the one `time_basis = TimeBasis(...)` renders.",
     "meta_group_basis_missing": "Declare `group_basis = GroupBasis(reason)`: the group, why the data cannot key it, "
     "and the overlap the random split leaves (SPLIT-35).",
 }
@@ -2026,18 +2025,21 @@ def _check_time_basis(ctx: _Ctx) -> Iterator[CheckResult]:
     """
     if ctx.container.format_version < 2:
         return
-    tags = list(ctx.dataset_metadata.data_tags)
-    comments = ctx.dataset_metadata.curation_comments
+    meta = ctx.dataset_metadata
+    tags = list(meta.data_tags)
+    time_basis, group_basis = meta.time_basis, meta.group_basis
     task = ctx.container.task_metadata
     temporal = ctx.regime == "temporal_non_iid"
-    grouped = getattr(task, "grouping", None) is not None
-    for slug, severity, message in basis_rules.problems(tags, comments, temporal=temporal, grouped=grouped):
+    grouped = task.grouping is not None
+    for slug, severity, message in basis_rules.problems(
+        tags, time_basis, group_basis, temporal=temporal, grouped=grouped
+    ):
         if not (ctx.from_definition and severity == "error"):
             yield CheckResult(slug, severity, message, hint=_TIME_BASIS_HINTS.get(slug))
     if temporal or ctx.df is None:
         return
-    prototypes = {current_tag(t) for t in tags} & set(TIME_BASIS_TAGS)
-    explained = "RetrospectiveFillIn" in prototypes or (basis_rules.parse(comments) is not None and not prototypes)
+    prototypes = set(tags) & set(TIME_BASIS_TAGS)
+    explained = "RetrospectiveFillIn" in prototypes or (time_basis is not None and not prototypes)
     dated = [c for c in ctx.df.columns if c != ctx.target and pd.api.types.is_datetime64_any_dtype(ctx.df[c])]
     if dated and not explained:
         yield CheckResult(

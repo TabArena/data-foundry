@@ -302,8 +302,7 @@ class AirqoLowCostAirQualityMonitorCalibrationChallenge(AbstractCuratedDataset):
     splits_comment = """
         Six one-month windows, newest first: February 2021, January 2021, December 2020, November 2020, October 2020
         and August 2020 (Lennart: October to February on 2026-11-05; August on 2026-11-11).
-        Each trains on every earlier hour: 9,994, 8,946, 8,110, 7,514, 6,204 and 5,166 rows (92.3%, 82.6%, 74.9%,
-        69.4%, 57.3% and 47.7% of the 10,828); the test months hold 834, 1,048, 836, 596, 1,310 and 576 hours. August
+        August
         2020 trains on less than half the hours (47.7%), beside the five months from October on 57.3% to 92.3%. A
         model refit at the start of each month corrects that month's readings; the monthly cadence is the curator's
         judgment (Lennart, 2026-11-04; checked 2026-11-11), as no source gives one. Adong et al. (2022) say it is

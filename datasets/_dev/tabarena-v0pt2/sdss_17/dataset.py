@@ -12,9 +12,9 @@ from data_foundry.definition import (
     FeatureTypes,
     Metric,
     Source,
-    Splits,
     TaskSummary,
     Temporal,
+    TemporalSplits,
 )
 
 # The first day of each test window, newest first: 2019 and 2020 form one window (1 January 2019 to the end of the data,
@@ -155,9 +155,10 @@ class Sdss17(AbstractCuratedDataset):
     )
 
     split_leaf = "L-ORDER.windows"
-    # Splits: calendar-year windows with 2019 and 2020 merged (`_make_splits`); declared windows have one length
+    # Splits: calendar-year windows with 2019 and 2020 merged, each running to the next start (`window=None`)
     temporal = Temporal(
         on="date",
+        splits=TemporalSplits(window=None, unit="years", cutoffs=WINDOW_STARTS),
         horizon=1,
         horizon_unit="years",
         time_of="label",  # the date of the spectrum arrives with the class: no model input (2026-11-12, Andrej)
@@ -168,8 +169,7 @@ class Sdss17(AbstractCuratedDataset):
         2011, to DR16, December 2019) would. No gap: the pipeline's class comes with the spectrum, and a public user
         waits for the next release, which the one-year windows already stand in for.
 
-        The windows train on 51.3% (2012) to 98.9% (2019-2020) of the 99,999 objects and hold 11,044, 9,843, 5,849,
-        3,364, 4,873, 5,989, 6,705 and 1,076 spectra. The sizes follow DR17, of which the file holds 1.6% to 2.4% a
+        The sizes follow DR17, of which the file holds 1.6% to 2.4% a
         year: BOSS used all the dark time until June 2014, eBOSS half of it until it ended on 1 March 2019,
         and 2020 holds only 7 eFEDS plates of X-ray sources (and 1 reverberation-mapping plate), observed before the
         observatory closed for COVID-19 on 24 March 2020. A 2020 window alone (141 spectra, 8 plates, one programme)
@@ -220,19 +220,6 @@ class Sdss17(AbstractCuratedDataset):
             ]
         )
         return df
-
-    def _make_splits(self, df: pd.DataFrame) -> Splits:
-        """The windows of `WINDOW_STARTS`, newest first, each training on every spectrum taken before its start."""
-        dates = df["date"]  # the frame arrives sorted by date with a RangeIndex
-        positions = np.arange(len(df))
-        splits: Splits = {}
-        end = None
-        for start in WINDOW_STARTS:
-            test = (dates >= start) & (dates < end) if end is not None else dates >= start
-            train = dates < start
-            splits[len(splits)] = {0: (positions[train.to_numpy()].tolist(), positions[test.to_numpy()].tolist())}
-            end = start
-        return splits
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         # cam_col names which of the six camera columns took the image: a code, not a quantity (point 4, 2026-10-31)

@@ -17,7 +17,6 @@ from data_foundry.definition import (
     Source,
     TaskSummary,
     TimeBasis,
-    UnitWeight,
     drop_columns,
 )
 
@@ -258,13 +257,13 @@ class BorealPostfireLichenBiomass(AbstractCuratedDataset):
             "number of quadrats (`plot_weight`: 0.2 for the five of an NT plot, 0.5 for the two of an SK plot), "
             "where unweighted the survey protocols would count an NT plot 2.5 times an SK plot (Lennart, 2026-11-08)."
         ),
-        inputs={"weight": "plot_weight"},
     )
     scoring_columns = (
         ScoringColumn(
             column="plot_weight",
             role="weight",
             used_by="rmse",
+            unit="plot",
             description=(
                 "1 over the number of quadrats of the row's plot (0.2 for the five of an NT plot, 0.5 for the two of "
                 "an SK plot), so that each plot counts once in the RMSE; for scoring only, never a feature or a "
@@ -272,7 +271,6 @@ class BorealPostfireLichenBiomass(AbstractCuratedDataset):
             ),
         ),
     )
-    unit_weight = UnitWeight(column="plot_weight", unit="plot")
     grouping = Grouping(
         on="burn_area",
         labels="per_sample",

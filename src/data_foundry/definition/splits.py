@@ -4,7 +4,8 @@
   size of the train side in units: the groups of ``per_group`` labels, else the scored units (the metric's ``group``
   input) when all rows of each are in one group of the split, else the rows
   (:func:`~data_foundry.checks.protocol.recommended_dimensions`): 20, 10, 3 or 1, at any size of the frame, so every
-  IID or grouped task has at least 3 splits.
+  IID or grouped task has at least 3 splits. A grouped task whose few groups are each a deployment declares leave one
+  group out instead (:class:`GroupedSplits`).
 * Temporal data gets at least 3 expanding windows (:class:`TemporalSplits`).
 * Data Foundry sets no row budget: by default the splits use the full frame and no side is capped. A collection sets
   one (``row_budget = RowBudget(train=..., test=...)`` in a ``collection.py`` next to the dataset folders,
@@ -26,7 +27,7 @@ without this package.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 import pandas as pd
@@ -40,8 +41,12 @@ from data_foundry.sampling import (
     _sample_positions,
     _sampling_columns,
 )
-from data_foundry.schema import RowBudget, TimeOf, TimeUnit, as_column_list
+from data_foundry.schema import DatasetDefinitionError, RowBudget, TimeOf, TimeUnit, as_column_list
 from data_foundry.utils.optional import import_build_dependency
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
 
 Splits = dict[int, dict[int, tuple[list[int], list[int]]]]
 """Outer splits: ``{repeat: {fold: (train_positions, test_positions)}}``."""
@@ -70,6 +75,74 @@ SampleBy = Literal["rows", "time"]
 * ``"rows"``: rows, in one random order of the frame (the default).
 * ``"time"``: whole values of the time column, in one random order of the values; every row of a drawn value is kept.
 """
+
+
+def leave_one_group_out_splits(df: pd.DataFrame, group_on: str | list[str]) -> tuple[Splits, list[Any]]:
+    """One repeat, one fold per group of ``group_on``: fold i tests on the i-th group and trains on all others.
+
+    ``group_on`` is one column, or a list that holds one. The groups come in the order of the column's categories (a
+    categorical or ordinal column: heart_disease's hospitals, online_shoppers' months), else sorted. Returns the
+    splits and the groups in fold order.
+    """
+    columns = as_column_list(group_on)
+    if len(columns) != 1:
+        msg = f"Leave one group out holds out the groups of one column, not {columns}."
+        raise ValueError(msg)
+    (column,) = columns
+    _require_range_index(df)
+    _require_group_keys(df, column)
+    values = df[column]
+    if isinstance(values.dtype, pd.CategoricalDtype):
+        present = set(values.dropna().unique())
+        groups = [c for c in values.cat.categories if c in present]
+    else:
+        groups = sorted(values.dropna().unique())
+    keys = values.to_numpy()
+    folds = {i: (np.flatnonzero(keys != g).tolist(), np.flatnonzero(keys == g).tolist()) for i, g in enumerate(groups)}
+    return {0: folds}, groups
+
+
+GroupedSplitKind = Literal["leave_one_group_out"]
+"""How :class:`GroupedSplits` holds out the groups.
+
+* ``"leave_one_group_out"``: one repeat, fold i tests on the i-th group of ``grouping.on`` and trains on all the
+  others (:func:`leave_one_group_out_splits`).
+"""
+
+
+@dataclass(frozen=True)
+class GroupedSplits:
+    """How a grouped task's splits hold out its groups, when the protocol's repeated 3-fold cross-validation does not
+    fit; the grouped counterpart of :class:`TemporalSplits`.
+
+    Declared as ``grouped_splits = GroupedSplits(kind="leave_one_group_out")`` beside ``grouping`` in ``dataset.py``,
+    for a task whose few groups are each a deployment (heart_disease's three hospitals, online_shoppers' seven
+    months): repeats would draw the same folds again, so the protocol's split checks accept the one repeat.
+
+    Attributes:
+        kind: ``"leave_one_group_out"`` (:data:`GroupedSplitKind`): one repeat, one fold per group, in the order of
+            the group column's categories, else sorted.
+    """
+
+    kind: GroupedSplitKind
+
+    def __post_init__(self) -> None:
+        if self.kind != "leave_one_group_out":
+            msg = f"GroupedSplits.kind={self.kind!r} is not one of ('leave_one_group_out',)."
+            raise ValueError(msg)
+
+    def splits(self, df: pd.DataFrame, group_on: str | list[str]) -> tuple[Splits, list[Any]]:
+        """The splits on ``df`` and the groups in fold order."""
+        return leave_one_group_out_splits(df, group_on)
+
+    @staticmethod
+    def describe(group_on: str | list[str], groups: list[Any]) -> str:
+        """The generated description of the splits."""
+        (column,) = as_column_list(group_on)
+        return (
+            f"Leave one group out: one repeat of {len(groups)} folds, fold i testing the i-th group of `{column}` "
+            f"({', '.join(str(g) for g in groups)}) and training on all the others."
+        )
 
 
 # --- cross-validation -----------------------------------------------------------------------------------------
@@ -208,9 +281,12 @@ class TemporalSplits:
         TemporalSplits(window=None, unit="unique", n_windows=9, min_train_fraction=0.5)
         TemporalSplits(window=7, unit="days", n_windows=3)                    # 3 weekly windows
         TemporalSplits(window=91, unit="days", n_windows=3, gap=15, gap_unit="minutes", sample_by="time")
+        TemporalSplits(window=None, unit="years", cutoffs=("2019-01-01", "2018-01-01", "2017-01-01"))
 
-    A window of fixed length is the prediction horizon (:attr:`horizon`): ``window`` ``unit`` for a calendar unit,
-    ``window`` steps for ``unit="rows"``.
+    ``window=None`` with ``cutoffs``: windows of unequal length, each running from its start to the next start, the
+    newest to the end of the data (sdss_17's calendar years with 2019 and 2020 merged; bank_marketing's starts on a
+    file order). A window of fixed length is the prediction horizon (:attr:`horizon`): ``window`` ``unit`` for a
+    calendar unit, ``window`` steps for ``unit="rows"``.
 
     ``gap`` counts in ``unit`` unless ``gap_unit`` names another unit: a calendar window can leave a gap of minutes
     or hours (``gap=15, gap_unit="minutes"``, for a label known 16 minutes after its row). ``gap_unit`` needs a
@@ -268,9 +344,9 @@ class TemporalSplits:
             problems.append(f"sample_by={self.sample_by!r} is not one of ('rows', 'time')")
         return problems
 
-    def splits(self, df: pd.DataFrame, time_on: str) -> Splits:
-        """Build the splits for ``df`` (sorted by ``time_on``)."""
-        return temporal_window_splits(
+    def bounds(self, df: pd.DataFrame, time_on: str) -> list[WindowBounds]:
+        """The windows on ``df`` (sorted by ``time_on``) as position ranges, newest first (:func:`window_bounds`)."""
+        return window_bounds(
             df,
             time_on=time_on,
             window=self.window,
@@ -283,16 +359,27 @@ class TemporalSplits:
             min_train_fraction=self.min_train_fraction,
         )
 
+    def splits(self, df: pd.DataFrame, time_on: str) -> Splits:
+        """Build the splits for ``df`` (sorted by ``time_on``)."""
+        return {
+            i: {0: (list(range(b.train_stop)), list(range(b.test_start, b.test_stop)))}
+            for i, b in enumerate(self.bounds(df, time_on))
+        }
+
     def describe(self, n_built: int, *, derived_window: int | None = None) -> str:
-        """The splits comment for these windows (``derived_window``: the length ``window=None`` resolved to)."""
+        """The generated description of these windows (``derived_window``: the length ``window=None`` resolved to)."""
         unit = {"unique": "time values", "rows": "rows"}.get(self.unit, self.unit)
         window = self.window if self.window is not None else derived_window
-        size = f"{window} {unit}" if window is not None else "from each cutoff to the end of the data"
-        if self.cutoffs is not None:
-            where = f"starting at {', '.join(str(c) for c in sorted(self.cutoffs, reverse=True))}"
+        if window is not None:
+            size = f" of {window} {unit[:-1] if window == 1 else unit}"
         else:
-            where = "walking back from the newest data"
-        text = f"Expanding-window temporal splits: {n_built} test window(s) of {size}, {where}, newest first"
+            size = ", each from its start to the next start, the newest to the end of the data"
+        if self.cutoffs is not None:
+            starts = ", ".join(time_text(c) for c in sorted(self.cutoffs, reverse=True))
+            where = f", starting at {starts}" if window is not None else f" (starts: {starts})"
+        else:
+            where = ", walking back from the newest data"
+        text = f"Expanding-window temporal splits: {n_built} test window(s){size}{where}, newest first"
         if self.step is not None and self.window is not None and self.step != self.window:
             text += f", moving by {self.step} {unit}"
         text += "; train is all earlier data"
@@ -306,7 +393,7 @@ class TemporalSplits:
 
         A calendar window gives ``(window, unit)`` and a row window ``(window, "steps")``. ``unit="unique"`` gives
         None: a window of distinct time values has no unit (the values may be days, years or an index), and neither
-        has ``window=None`` (the windows run from each cutoff to the end of the data).
+        has ``window=None`` (windows of their own lengths).
         """
         if self.window is None:
             return None
@@ -352,6 +439,10 @@ class Temporal:
                  horizon_unit="weeks", gap=4, gap_unit="weeks", time_unit="weeks")             # an era is a week
         Temporal(on="sale_order", splits=TemporalSplits(window=5000, unit="rows", n_windows=3),
                  time_of="label", prediction_time="listed_on")   # split by sale, predicted at the listing
+        Temporal(on="order_purchase_timestamp", splits=TemporalSplits(window=1, unit="months", gap=1,
+                 min_train_fraction=0.5), label_known_on="order_delivered_customer_date")  # delivered before
+        Temporal(on="issue_d", splits=TemporalSplits(window=3, unit="months", cutoffs=(...)),
+                 exclude_test_entities_on="borrower_key")   # no loan of a borrower the window tests trains
 
     Attributes:
         on: The time column; the frame is sorted by it and future rows never train a split.
@@ -380,6 +471,15 @@ class Temporal:
         prediction_time: With ``time_of="label"``, the column of the prediction point, when the data has one
             (california_house_prices_2020's ``Listed On`` beside its sale order): a model input, named so that the
             README and the checks know which input carries the actor's time.
+        label_known_on: When each row's label became known, for a label that arrives an uneven time after the
+            prediction point (a delivery, a permit's issue): each train side keeps only the rows whose label was known
+            before its window starts (a missing time: never known). A column (no model input: the split reads it
+            and the frame drops it afterwards) or a function of the frame that returns the times (sf_permit_time
+            rebuilds its issue date from the filing date and the target). Needs declared windows.
+        exclude_test_entities_on: A column of entity keys (a borrower, a client) whose rows in a test window take
+            the entity's rows out of that window's train side: an evaluation stand-in for an as-of filter on label
+            dates the data does not have (lending_club, alfa_battle_2_0_task_2). A missing key matches nothing. No
+            model input: the frame drops it after the split. Needs declared windows.
 
     The container stores the column as the task's ``time_on`` (with ``time_unit``), ``time_of="label"`` as its
     ``time_of`` (a prediction time is left unset, as in every container built before the field) and
@@ -396,6 +496,8 @@ class Temporal:
     time_unit: TimeUnit | None = None
     time_of: TimeOf = "prediction"
     prediction_time: str | None = None
+    label_known_on: str | Callable[[pd.DataFrame], pd.Series] | None = None
+    exclude_test_entities_on: str | None = None
 
     def __post_init__(self) -> None:
         if self.time_unit is not None and self.time_unit not in STEPS_PER_YEAR:
@@ -432,6 +534,93 @@ class Temporal:
             )
             raise ValueError(msg)
         self._check_gap()
+        self._check_train_filters()
+
+    def _check_train_filters(self) -> None:
+        known, entities = self.label_known_on, self.exclude_test_entities_on
+        if known is None and entities is None:
+            return
+        if self.splits is None:
+            msg = (
+                "Temporal: `label_known_on` and `exclude_test_entities_on` filter the train sides of declared windows; "
+                "declare `splits=TemporalSplits(...)`."
+            )
+            raise ValueError(msg)
+        if known is not None and not (callable(known) or (isinstance(known, str) and known.strip())):
+            msg = "Temporal.label_known_on names a column or is a function of the frame."
+            raise ValueError(msg)
+        if entities is not None and not (isinstance(entities, str) and entities.strip()):
+            msg = "Temporal.exclude_test_entities_on names a column."
+            raise ValueError(msg)
+        if self.on in (known, entities):
+            msg = "Temporal: the time column `on` orders the rows; it cannot also be a train filter's column."
+            raise ValueError(msg)
+
+    @property
+    def split_columns(self) -> list[str]:
+        """The columns only the split reads (``label_known_on``, ``exclude_test_entities_on``): the frame drops them
+        after the split, so they are never model inputs.
+        """
+        columns = [self.label_known_on, self.exclude_test_entities_on]
+        return [c for c in columns if isinstance(c, str)]
+
+    def window_splits(self, df: pd.DataFrame) -> Splits:
+        """The declared windows on ``df`` (sorted by :attr:`on`), each train side filtered by ``label_known_on`` and
+        ``exclude_test_entities_on``. The frame keeps its columns: the caller drops :attr:`split_columns`.
+        """
+        bounds = self.splits.bounds(df, self.on)
+        known = self.label_known_times(df)
+        entities = df[self.exclude_test_entities_on] if self.exclude_test_entities_on is not None else None
+        times = df[self.on]
+        splits: Splits = {}
+        for i, b in enumerate(bounds):
+            train = np.arange(b.train_stop)
+            test = np.arange(b.test_start, b.test_stop)
+            if known is not None:
+                # A calendar window starts at its bound; a window of time values or rows at its first test row's time.
+                start = b.start if self.splits.unit in _CALENDAR_UNITS else times.iloc[b.test_start]
+                train = train[(known.iloc[train] < start).to_numpy()]
+            if entities is not None:
+                tested = entities.iloc[test].dropna().unique()
+                train = train[~entities.iloc[train].isin(tested).to_numpy()]
+            splits[i] = {0: (train.tolist(), test.tolist())}
+        return splits
+
+    def label_known_times(self, df: pd.DataFrame) -> pd.Series | None:
+        """When each row's label became known (``label_known_on``), None without it.
+
+        Raises:
+            DatasetDefinitionError: The times and the time column ``on`` are not both dates of one time zone (or both
+                not dates), so they cannot be compared.
+        """
+        known = self.label_known_on
+        if known is None:
+            return None
+        times = known(df) if callable(known) else df[known]
+        name = f"`{known}`" if isinstance(known, str) else f"`{getattr(known, '__name__', 'label_known_on')}`"
+        on = df[self.on]
+        dated = [pd.api.types.is_datetime64_any_dtype(s) for s in (on, times)]
+        zones = [getattr(s.dtype, "tz", None) for s in (on, times)]
+        if dated[0] != dated[1] or str(zones[0]) != str(zones[1]):
+            msg = (
+                f"Temporal: `label_known_on` {name} ({times.dtype}) and the time column `{self.on}` ({on.dtype}) "
+                "cannot be compared: give both as dates of one time zone (or both without one)."
+            )
+            raise DatasetDefinitionError(msg)
+        return times
+
+    def describe_train_filters(self) -> str:
+        """The generated sentence on the train filters, empty without any."""
+        parts = []
+        if self.label_known_on is not None:
+            known = self.label_known_on
+            what = f"`{known}`" if isinstance(known, str) else f"`{getattr(known, '__name__', 'label_known_on')}`"
+            parts.append(f"only the rows whose label was known (by {what}) before its window starts")
+        if self.exclude_test_entities_on is not None:
+            parts.append(f"no row of an entity of `{self.exclude_test_entities_on}` that its window tests")
+        if not parts:
+            return ""
+        return " Each train side keeps " + " and ".join(parts) + "."
 
     def _check_gap(self) -> None:
         if (self.gap is None) != (self.gap_unit is None):
@@ -523,10 +712,10 @@ def temporal_window_splits(
     Args:
         df: The frame, sorted ascending by ``time_on`` with a RangeIndex (splits are positions).
         time_on: The time column: datetime for calendar units, any sortable type for ``"unique"``/``"rows"``.
-        window: Test-window length in ``unit``. With ``cutoffs``, None means "from the cutoff to the end of the
-            data". For ``"unique"``/``"rows"``, None derives the length from ``n_windows`` and
-            ``min_train_fraction``: the newest ``1 - min_train_fraction`` of the values (rows) is cut into
-            ``n_windows`` equal windows.
+        window: Test-window length in ``unit``. With ``cutoffs``, None means "from each cutoff to the next newer
+            one, the newest to the end of the data". For ``"unique"``/``"rows"``, None derives the length from
+            ``n_windows`` and ``min_train_fraction``: the newest ``1 - min_train_fraction`` of the values (rows) is cut
+            into ``n_windows`` equal windows.
         unit: See :data:`TemporalUnit`.
         n_windows: How many windows to build (None: as many as the stop rules allow).
         step: How far each window moves back, in ``unit`` (default ``window``).
@@ -555,6 +744,16 @@ def temporal_window_splits(
         min_train_fraction=min_train_fraction,
     )
     return {i: {0: (list(range(b.train_stop)), list(range(b.test_start, b.test_stop)))} for i, b in enumerate(bounds)}
+
+
+def time_text(value: Any) -> str:
+    """A time value for a generated description: a midnight timestamp as its date, anything else as it is."""
+    if isinstance(value, (pd.Timestamp, np.datetime64)):
+        value = pd.Timestamp(value)
+        return str(value.date()) if value == value.normalize() else str(value)
+    if isinstance(value, (float, np.floating)) and float(value).is_integer():
+        return str(int(value))  # a year stored as a float
+    return str(value)
 
 
 def window_bounds(  # noqa: C901, PLR0912 - one branch per unit and stop rule
@@ -608,12 +807,13 @@ def window_bounds(  # noqa: C901, PLR0912 - one branch per unit and stop rule
 
     intervals: list[tuple] = []
     if cutoffs is not None:
+        newer = None  # the start of the next newer window: the end of a window of `window=None`
         for cutoff in sorted(cutoffs, reverse=True):
             if unit in _CALENDAR_UNITS:
                 start = pd.Timestamp(str(cutoff))
                 if times.dt.tz is not None and start.tzinfo is None:  # a plain cutoff means the column's time zone
                     start = start.tz_localize(times.dt.tz)
-                end = None if window is None else start + _calendar_offset(unit, window)
+                end = newer if window is None else start + _calendar_offset(unit, window)
                 train_end = start - _calendar_offset(gap_unit, gap) if gap else start
             else:
                 if unit == "unique" and cutoff not in values:
@@ -623,9 +823,10 @@ def window_bounds(  # noqa: C901, PLR0912 - one branch per unit and stop rule
                     )
                     raise ValueError(msg)
                 start = int(values.get_loc(cutoff)) if unit == "unique" else int(cutoff)
-                end = None if window is None else start + window
+                end = newer if window is None else start + window
                 train_end = start - gap
             intervals.append((start, end, train_end))
+            newer = start
         _require_newest_window(intervals[0][1], times, None if unit in _CALENDAR_UNITS else axis_max, unit)
     else:
         i = 0

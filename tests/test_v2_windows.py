@@ -12,6 +12,7 @@ import pytest
 
 from data_foundry.checks.protocol import _window_count_findings, split_count, training_sides
 from data_foundry.definition import (
+    DatasetDefinitionError,
     checks as definition_checks,
     get_dataset,
 )
@@ -274,3 +275,18 @@ def test_a_definition_with_a_derived_window_lists_its_candidates(tmp_path: Path,
     table = ds.window_stats(min_train_fraction=0.5)
     assert table["chosen"].sum() == 3
     assert len(table) == 3
+
+
+def test_windows_between_cutoffs_ask_for_the_candidates_length(tmp_path: Path, warehouse: Path) -> None:  # noqa: F811
+    """Windows that run from cutoff to cutoff (`window=None, cutoffs=...`) have no single length: `dataset windows`
+    asks for the candidates' window and unit, and lists them with one given.
+    """
+    del warehouse  # 30 days of 20 rows
+    splits = 'TemporalSplits(window=None, unit="days", cutoffs=("2024-01-26", "2024-01-21", "2024-01-16"))'
+    windows = f'{splits}, horizon=5, horizon_unit="days"'
+    write_version(tmp_path / "datasets", "toy_ds_0p19k", temporal_version_body(windows=windows), TEMPORAL_BUDGET)
+    ds = get_dataset(tmp_path / "datasets", "toy_ds_0p19k")
+    with pytest.raises(DatasetDefinitionError, match="no single length; give the candidates' window and unit"):
+        ds.window_stats(min_train_fraction=0.5)
+    table = ds.window_stats(window=5, unit="days", min_train_fraction=0.5)
+    assert table["chosen"].sum() == 3

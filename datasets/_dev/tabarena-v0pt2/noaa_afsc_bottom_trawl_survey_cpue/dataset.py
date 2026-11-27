@@ -353,7 +353,6 @@ class NoaaAfscBottomTrawlSurveyCpue(AbstractCuratedDataset):
             "11 taxa, lower is better (equal to the mean over taxa of sqrt(1 - R^2) on counts). A taxon whose catches "
             "do not vary in a window is left out; none is in the nine windows."
         ),
-        inputs={"group": "taxon_group"},
         target_transform="log1p",
     )
     scoring_columns = (

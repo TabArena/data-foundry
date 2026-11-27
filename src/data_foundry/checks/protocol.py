@@ -16,11 +16,13 @@ import pandas as pd
 
 from data_foundry.checks.results import CheckResult
 from data_foundry.sampling import one_group_column
+from data_foundry.schema import as_column_list
 
 if TYPE_CHECKING:
     from collections.abc import Iterable, Sequence
 
     from data_foundry.curation_container import CuratedContainer
+    from data_foundry.row_table import Splits
     from data_foundry.schema import PredictiveMLTaskMetadataV2, RowBudget, TrainSampling
 
 N_FOLDS = 3
@@ -112,16 +114,44 @@ def recommended_dimensions(
     Returns:
         ``(n_repeats, n_folds)``.
     """
-    n = len(df)
-    if group_on is not None and group_labels == "per_group":
-        df, group_on = one_group_column(df, group_on)
-        n = df[group_on].nunique()
-    elif scored_unit_on is not None and scored_units_within_groups(df, group_on, scored_unit_on):
-        n = df[scored_unit_on].nunique(dropna=False)
+    n, _ = counted_units(df, group_on=group_on, group_labels=group_labels, scored_unit_on=scored_unit_on)
     return repeats_for(n), N_FOLDS
 
 
-# --- checks -----------------------------------------------------------------------------------------------------
+def counted_units(
+    df: pd.DataFrame,
+    *,
+    group_on: str | list[str] | None = None,
+    group_labels: str | None = None,
+    scored_unit_on: str | None = None,
+) -> tuple[int, str]:
+    """The units :func:`recommended_dimensions` counts, and what they are: ``(n, "groups")``, ``(n, "scored units")``
+    or ``(n, "rows")``.
+    """
+    if group_on is not None and group_labels == "per_group":
+        df, group_on = one_group_column(df, group_on)
+        return int(df[group_on].nunique()), "groups"
+    if scored_unit_on is not None and scored_units_within_groups(df, group_on, scored_unit_on):
+        return int(df[scored_unit_on].nunique(dropna=False)), "scored units"
+    return len(df), "rows"
+
+
+def is_leave_one_group_out(df: pd.DataFrame, splits: Splits, group_on: str | list[str] | None) -> bool:
+    """Whether ``splits`` hold out one whole group of ``group_on`` per fold, every group once, in one repeat, each
+    fold training on all the other rows: the splits :class:`GroupedSplits` ``(kind="leave_one_group_out")`` builds.
+    """
+    columns = as_column_list(group_on)
+    if len(splits) != 1 or len(columns) != 1 or columns[0] not in df.columns:
+        return False
+    keys = df[columns[0]].to_numpy()
+    sizes = pd.Series(keys).value_counts(dropna=False)
+    tested = []
+    for train, test in next(iter(splits.values())).values():
+        groups = pd.unique(keys[list(test)])
+        if len(groups) != 1 or len(test) != sizes[groups[0]] or len(train) + len(test) != len(keys):
+            return False
+        tested.append(groups[0])
+    return len(set(tested)) == len(tested) == len(sizes)
 
 
 def protocol_checks(container: CuratedContainer) -> list[CheckResult]:
@@ -132,7 +162,8 @@ def protocol_checks(container: CuratedContainer) -> list[CheckResult]:
       ``experiment_metadata.row_budget.test``. A container without a budget has no size limit; the train sides are
       sub-sampled by a benchmark, not in the container.
     * ``splits_train_sampling_missing`` (error): a container with a row budget records no ``train_sampling``.
-    * ``splits_dimensions_off_protocol`` (warning): IID or grouped splits other than :func:`recommended_dimensions`;
+    * ``splits_dimensions_off_protocol`` (warning): IID or grouped splits other than :func:`recommended_dimensions`
+      (leave one group out, declared as ``GroupedSplits``, is the exception: :func:`is_leave_one_group_out`);
       or a temporal split with fewer windows (training sides) than SPLIT-33 gives an IID split of its scored units
       (SPLIT-15), the minimum of :data:`MIN_TEMPORAL_SPLITS` included.
     """
@@ -149,6 +180,8 @@ def protocol_checks(container: CuratedContainer) -> list[CheckResult]:
     if not flat or len(folds_per_repeat) != 1:
         return findings
     actual = (len(splits), folds_per_repeat.pop())
+    if task.group_on is not None and is_leave_one_group_out(container.dataset, splits, task.group_on):
+        return findings  # `GroupedSplits(kind="leave_one_group_out")`: one fold per group, repeats would copy them
     recommended = recommended_dimensions(
         container.dataset,
         group_on=task.group_on,

@@ -22,11 +22,15 @@ from data_foundry.curation_container import (
 )
 from data_foundry.definition.report import _metric_block
 from data_foundry.schema import (
+    DatasetMetadataV2,
+    GroupBasis,
     MetricSpec,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadataV2,
     RowBudget,
     ScoringColumn,
+    Source,
+    TimeBasis,
     UnitWeight,
 )
 from data_foundry.utils.checksum import encode_pydantic_metadata
@@ -669,7 +673,11 @@ def test_forced_iid_tag_on_an_iid_task_is_not_flagged():
 
 
 def make_basis_container(metadata: DatasetMetadata, *, df: pd.DataFrame | None = None, temporal: bool = False):
-    """A format-2 container with ``metadata``'s tags and comments: the time basis check reads format 2 only."""
+    """A format-2 container with ``metadata``'s tags and comments: the time basis check reads format 2 only, so format-1
+    metadata becomes format-2 metadata with its tags.
+    """
+    if not isinstance(metadata, DatasetMetadataV2):
+        metadata = basis_metadata(list(metadata.data_tags))
     df = make_iid_frame() if df is None else df
     task = {}
     if temporal:
@@ -694,45 +702,65 @@ def test_a_forced_tag_answers_why_the_split_is_not_temporal():
 
 
 def test_a_time_basis_on_a_temporal_split_is_flagged():
-    metadata = make_dataset_metadata(data_tags=["Non-IID", "Temporal", "Retrospective"])
+    metadata = make_dataset_metadata(data_tags=["Non-IID", "Temporal", "RetrospectiveFillIn"])
     assert "meta_time_basis_on_temporal" in slugs_of(make_basis_container(metadata, temporal=True))
 
 
-def test_a_time_basis_line_without_a_tag_answers_why():
-    """A `Time basis:` line alone says why the split is not temporal."""
-    metadata = make_dataset_metadata(data_tags=["IID"], curation_comments="- Time basis: dates kept, not split on.")
-    assert "meta_time_basis_missing" not in slugs_of(make_basis_container(metadata))
-
-
-def test_a_forced_tag_without_its_line_gets_a_note():
-    """A forced tag without its `Time basis:` line gets a note; with the line, none."""
-    metadata = make_dataset_metadata(data_tags=["ForcedIIDFromTemporal"])
-    assert "meta_time_basis_line_missing" in slugs_of(make_basis_container(metadata))
-    metadata = make_dataset_metadata(
-        data_tags=["ForcedIIDFromTemporal"], curation_comments="- Time basis: time lost; a dated release would test."
+def basis_metadata(
+    tags: list[str], time_basis: TimeBasis | None = None, group_basis: GroupBasis | None = None
+) -> DatasetMetadataV2:
+    """Format-2 dataset metadata with ``tags`` and the stored time basis and group basis."""
+    publication = Source(
+        role="publication",
+        platform="Kaggle",
+        url="https://example.com/toy",
+        license="CC BY 4.0",
+        year="2025",
+        bibtex=BIBTEX,
     )
-    assert "meta_time_basis_line_missing" not in slugs_of(make_basis_container(metadata))
+    return DatasetMetadataV2(
+        unique_name="toy_ds",
+        domain="finance",
+        sources=[publication],
+        download_description="kaggle datasets download toy",
+        data_tags=tags,
+        curation_comments="Read the CSV.",
+        time_basis=time_basis,
+        group_basis=group_basis,
+    )
 
 
-ASSUMED_LINE = (
-    "- Time basis: AssumedStationaryRelation (Lennart, 2026-11-20): one clinic's ultrasound diagnosis over a year, a"
-    " relation of body composition to gallstones that practice does not move; the visit dates are lost."
+def test_a_forced_tag_without_its_time_basis_gets_a_note():
+    """A forced tag without the stored time basis gets a note; with it, none."""
+    metadata = basis_metadata(["IID", "ForcedIIDFromTemporal"])
+    assert "meta_time_basis_field_missing" in slugs_of(make_basis_container(metadata))
+    basis = TimeBasis("ForcedIIDFromTemporal", "time lost; a dated release would test.")
+    metadata = basis_metadata(["IID", "ForcedIIDFromTemporal"], basis)
+    assert "meta_time_basis_field_missing" not in slugs_of(make_basis_container(metadata))
+
+
+ASSUMED = TimeBasis(
+    "AssumedStationaryRelation",
+    "one clinic's ultrasound diagnosis over a year, a relation of body composition to gallstones that practice does "
+    "not move; the visit dates are lost.",
+    set_by="Lennart",
+    on="2026-11-20",
 )
 
 
 @pytest.mark.parametrize(
-    ("comments", "expected"),
+    ("basis", "expected"),
     [
-        (ASSUMED_LINE, 0),
-        ("- Time basis: AssumedStationaryRelation: the relation does not move.", 1),
-        (ASSUMED_LINE.replace("Lennart", "AI"), 1),
-        (ASSUMED_LINE.replace("Lennart", "Claude"), 1),
-        ("- Time basis: AssumedStationaryRelation (Lennart, 2026-11-20): flat.", 1),
+        (ASSUMED, 0),
+        (TimeBasis("AssumedStationaryRelation", "the relation does not move."), 1),
+        (dataclasses.replace(ASSUMED, set_by="AI"), 1),
+        (dataclasses.replace(ASSUMED, set_by="Claude"), 1),
+        (dataclasses.replace(ASSUMED, reason="flat."), 1),
     ],
 )
-def test_an_assumed_stationary_relation_names_a_person_and_a_reason(comments: str, expected: int) -> None:
+def test_an_assumed_stationary_relation_names_a_person_and_a_reason(basis: TimeBasis, expected: int) -> None:
     """Only a person sets `AssumedStationaryRelation`, with a reason; dataset check refuses it otherwise (SPLIT-32)."""
-    metadata = make_dataset_metadata(data_tags=["IID", "AssumedStationaryRelation"], curation_comments=comments)
+    metadata = basis_metadata(["IID", "AssumedStationaryRelation"], basis)
     assert slugs_of(make_basis_container(metadata)).count("meta_time_basis_unattributed") == expected
 
 
@@ -745,13 +773,15 @@ def test_the_missing_basis_hint_does_not_offer_a_human_set_tag() -> None:
 
 
 def test_a_stationary_relation_names_a_person_and_the_measurement() -> None:
-    """`StationaryRelation` is human-set too: dataset check refuses a line without a person (SPLIT-32)."""
-    line = (
-        "- Time basis: StationaryRelation (Andrej, 2026-11-19): two periods of case numbers, LightGBM +0.016 +- 0.016"
-        " ROC AUC against a floor of 0.004."
+    """`StationaryRelation` is human-set too: dataset check refuses a time basis without a person (SPLIT-32)."""
+    named = TimeBasis(
+        "StationaryRelation",
+        "two periods of case numbers, LightGBM +0.016 +- 0.016 ROC AUC against a floor of 0.004.",
+        set_by="Andrej",
+        on="2026-11-19",
     )
-    for comments, expected in ((line, 0), ("- Time basis: StationaryRelation: flat over the two periods.", 1)):
-        metadata = make_dataset_metadata(data_tags=["IID", "StationaryRelation"], curation_comments=comments)
+    for basis, expected in ((named, 0), (dataclasses.replace(named, set_by=None, on=None), 1)):
+        metadata = basis_metadata(["IID", "StationaryRelation"], basis)
         assert slugs_of(make_basis_container(metadata)).count("meta_time_basis_unattributed") == expected
 
 
@@ -762,49 +792,55 @@ def _dated_frame() -> pd.DataFrame:
 
 
 @pytest.mark.parametrize(
-    ("tags", "comments", "noted"),
+    ("tags", "basis", "noted"),
     [
-        (["IID", "Timeless"], "- Time basis: Timeless: a fixed property.", True),
-        (["IID", "Retrospective"], "- Time basis: Retrospective: one scrape, prices of that day.", False),
-        (["IID", "ForcedIIDFromTemporal"], "- Time basis: one mailing, too few periods; gifts dated before it.", False),
-        (["IID"], "- Time basis: dated, kept random by choice; a temporal split costs 0.01.", False),
-        (["IID"], "Read the CSV.", True),
+        (["IID", "Timeless"], TimeBasis("Timeless", "a fixed property."), True),
+        (["IID", "RetrospectiveFillIn"], TimeBasis("RetrospectiveFillIn", "one scrape, prices of that day."), False),
+        (
+            ["IID", "ForcedIIDFromTemporal"],
+            TimeBasis("ForcedIIDFromTemporal", "one mailing, too few periods; gifts dated before it."),
+            False,
+        ),
+        (["IID"], None, True),
     ],
 )
-def test_date_columns_are_noted_unless_the_definition_says_why(tags, comments, noted):
-    """Date columns are noted unless the basis or a `Time basis:` line without a prototype explains them."""
-    metadata = make_dataset_metadata(data_tags=tags, curation_comments=comments)
-    found = slugs_of(make_basis_container(metadata, df=_dated_frame()))
+def test_date_columns_are_noted_unless_the_definition_says_why(tags, basis, noted):
+    """Date columns are noted unless the basis explains them: `RetrospectiveFillIn` or a forced tag's reason."""
+    found = slugs_of(make_basis_container(basis_metadata(tags, basis), df=_dated_frame()))
     assert ("meta_time_present_unused" in found) is noted
 
 
 @pytest.mark.parametrize(
-    ("tags", "comments", "slug", "severity"),
+    ("tags", "basis", "slug", "severity"),
     [
-        (["IID"], "- Time basis: Retrospective: one scrape.", "meta_time_basis_mismatch", "error"),
-        (["IID", "Timeless"], "- Time basis: Retrospective: one scrape.", "meta_time_basis_mismatch", "error"),
+        (["IID"], TimeBasis("RetrospectiveFillIn", "one scrape."), "meta_time_basis_mismatch", "error"),
         (
             ["IID", "Timeless"],
-            "- Time basis: Timeless: a.\n- Time basis: Timeless: b.",
-            "meta_time_basis_lines",
+            TimeBasis("RetrospectiveFillIn", "one scrape."),
+            "meta_time_basis_mismatch",
             "error",
         ),
-        (["IID", "Timeless", "Retrospective"], "- Time basis: Timeless: a.", "meta_time_basis_several", "error"),
-        (["IID"], "- Time basis: DelayedTarget: one extract.", "meta_time_basis_unstructured", "info"),
         (
-            ["IID", "ForcedIIDFromTemporal"],
-            "- Time basis: time lost; a dated release would test.",
-            "meta_time_basis_unstructured",
-            "info",
+            ["IID", "Timeless", "RetrospectiveFillIn"],
+            TimeBasis("Timeless", "a."),
+            "meta_time_basis_several",
+            "error",
         ),
-        (["IID", "UnseenGroup"], "- Time basis: UnseenGroup: a new hospital.", "meta_time_basis_regime", "error"),
-        (["IID", "ForcedIIDFromGrouped"], "- Time basis: Timeless: a property.", "meta_group_basis_missing", "error"),
+        (["IID", "UnseenGroup"], TimeBasis("UnseenGroup", "a new hospital."), "meta_time_basis_regime", "error"),
+        (["IID", "Timeless", "ForcedIIDFromGrouped"], TimeBasis("Timeless", "a."), "meta_group_basis_missing", "error"),
     ],
 )
-def test_the_time_basis_line_agrees_with_its_tag(tags, comments, slug, severity):
-    """One time basis, one line that names it, the regime it asks for (``data_foundry.time_basis.problems``)."""
-    report = run_bundle_checks(make_basis_container(make_dataset_metadata(data_tags=tags, curation_comments=comments)))
+def test_the_stored_time_basis_agrees_with_its_tag(tags, basis, slug, severity):
+    """One time basis, the tag it names, the regime it asks for (``data_foundry.time_basis.problems``)."""
+    report = run_bundle_checks(make_basis_container(basis_metadata(tags, basis)))
     assert (slug, severity) in {(r.slug, r.severity) for r in report.results}
+
+
+def test_a_group_basis_satisfies_its_tag():
+    """`ForcedIIDFromGrouped` with its stored group basis: no `meta_group_basis_missing`."""
+    tags = ["IID", "Timeless", "ForcedIIDFromGrouped"]
+    metadata = basis_metadata(tags, TimeBasis("Timeless", "a."), GroupBasis("no structure."))
+    assert "meta_group_basis_missing" not in slugs_of(make_basis_container(metadata))
 
 
 def test_a_format_1_container_gets_no_time_basis_findings():

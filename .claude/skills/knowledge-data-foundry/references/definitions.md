@@ -57,7 +57,7 @@ class MyDataset(AbstractCuratedDataset):
             """,                         # the key is parsed from the entry
         ),
     )
-    data_tags = ("Spatial",)            # context tags only; regime tags are added from the task
+    data_tags = ("Spatial",)            # context tags only; the regime tags are derived from the task
     download_description = """
         kaggle datasets download ... && unzip ...
     """                                  # indented like code: dedented by the base class
@@ -75,7 +75,7 @@ class MyDataset(AbstractCuratedDataset):
     # Splits: a temporal task; a grouped one declares `grouping = Grouping(...)` instead, an IID one neither
     temporal = Temporal(on="date", splits=TemporalSplits(window=7, unit="days", n_windows=3))
     splits_comment = """
-        A model refit weekly ...
+        A model refit weekly, as the source does: ... (the reason; the code writes the windows)
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:      # required: reading only, cached
@@ -103,7 +103,8 @@ A time column a model sees coarser than recorded (crash times to the hour) is co
 leaves each period in the order of the finer values (chicago_traffic_crashes, 2026-11-04); `dataset check` warns
 (`definition_time_changed_in_split`).
 
-Other hooks: `_make_splits(df)` for splits the declarations cannot express (return a `SplitPlan`);
+Other hooks: `_make_splits(df)` for splits the declarations below cannot express (return a `SplitPlan`; check
+[The split declarations](#the-split-declarations) first);
 `_prepare_raw_files(raw_dir)` with `prepared_raw_files = (...)` for a heavy one-off step that writes intermediate
 files into the raw directory (it runs again when a file is missing or when the method, a helper of `dataset.py` it
 calls, or a module constant it reads changed; the hash sits in `.prepared_raw_files.json` next to the files). Sibling
@@ -137,7 +138,10 @@ Do not re-implement any of this.
   Multi-line text (`download_description`, a source's `bibtex`, `curation_comments`, `splits_comment`) is indented
   like code and dedented for you. A source's BibTeX key is parsed from its `bibtex` (set `Source(bibtex_key=...)` only
   when it must differ). The regime tags (`IID`, or `Non-IID` with `Temporal`, `Grouped` or `GroupedTemporal`) are
-  added from the task.
+  derived from the task; `data_tags` that list one are refused. A `time_basis` or `group_basis` is stored as data in
+  the dataset metadata (and its tag added to `data_tags`), never written into `curation_comments`. A weight is declared
+  once, on its `ScoringColumn` (`fit=True` for the training weight, `unit=...` for a unit weight), and the metric's
+  `inputs` are derived from the scoring columns' roles.
 * Defaults: `stratify_on` is the target for classification; set it only to deviate. `metric` has no default: it is
   required, and `Metric.fallback(reason=...)` resolves to the problem type's `roc_auc`, `log_loss` or `rmse` at build.
 * After `_clean`: it casts the columns `_feature_types` names (a dict gives datetime formats; unused categories are
@@ -192,7 +196,7 @@ A metric input known at the prediction point (a weight that is a function of the
 ## Field mapping (record to definition)
 
 Each attribute of the class, what it holds, its allowed values and the house conventions (`unique_name`, `domain`,
-`sources`, `data_tags`, `problem_type`, the metric, `sample_weight`, `scoring_columns`, `special_features` and the
+`sources`, `data_tags`, `problem_type`, the metric, `scoring_columns` and their weights, `special_features` and the
 rest) are in [definition_fields.md](definition_fields.md). The one free-text field with a house format is next.
 
 ### `curation_comments`
@@ -257,7 +261,7 @@ The order the collection's definitions converge on. Emit the steps that plausibl
 # 9. TODO(verify): duplicate rows: decide and document (leak_checks.md, Copies across the split (LEAK-16 to LEAK-21)).
 # 10. TODO(verify): target transform: `np.log` / `np.log1p` a skewed positive target and rename the column; skip it
 #     when the source already logged it or a deviance scores the target (CLEAN-16). A count or amount over a realized
-#     amount at risk becomes the rate, the amount its weight scoring column and `sample_weight` (MET-14, MET-15).
+#     amount at risk becomes the rate, the amount its weight scoring column with `fit=True` (MET-14, MET-15).
 # 11. TODO(verify): censored or capped target values: decide case by case and document it in `curation_comments`
 #     (asp_potassco_classification and sat11_hand_algo_runtime keep a timed-out run at its recorded limit and drop
 #     only the instances on which every configuration timed out; a target censored by the download date: LEAK-24).
@@ -299,8 +303,15 @@ the train side, in the units the metric scores (the groups of `per_group` labels
 metric's `group` input, when all rows of each are in one group, else the rows; SPLIT-33, `recommended_dimensions`),
 built by `iid_splits` / `grouped_splits` with the benchmark seed, on the full frame: Data Foundry caps no split unless
 the definition is a version with a row budget (a `_1m` version, below; the whole path as a decision tree:
-[split_protocol.md](split_protocol.md)). The comment is "Default splits."; set `splits_comment` only when there is
-something to say (a split that deliberately differs from the source's protocol, what a grouped test fold holds).
+[split_protocol.md](split_protocol.md)). The code describes these splits ([The splits comment](#the-splits-comment));
+set `splits_comment` only when there is a reason to give (a split that deliberately differs from the source's
+protocol, what a grouped test fold holds).
+
+A task whose few groups are each a deployment (heart_disease's three hospitals, online_shoppers' seven months)
+declares `grouped_splits = GroupedSplits(kind="leave_one_group_out")` beside its `grouping`: one repeat, fold i tests
+the i-th group (in the order of the group column's categories, else sorted) and trains on all the others, since
+repeats would draw the same folds again. The split checks know the pattern, so no `splits_dimensions_off_protocol` is
+accepted for it.
 
 ### Grouped: `Grouping`
 
@@ -363,18 +374,19 @@ It is stored in the container (`task_metadata.grouping`, read with `container.gr
 
 Declare `temporal = Temporal(on="date", splits=TemporalSplits(...))`: the time column and the test windows in one
 place. The horizon is a human judgment (SPLIT-12 in [splits.md](../../knowledge-curation/references/splits.md));
-write the reasoning in `splits_comment`, which replaces the generated text, so restate the windows (and any
-sub-sampling or trimming) in it. A window of fixed length is the horizon (`window` `unit` for a calendar unit, `window`
-steps for `unit="rows"`), and declaring it again is an error. Add `horizon=..., horizon_unit=...` only when the windows
+write the reasoning in `splits_comment`; the code's description of the windows comes before it
+([The splits comment](#the-splits-comment)), so the comment does not restate the windows. A window of fixed length
+is the horizon (`window` `unit` for a calendar unit, `window` steps for `unit="rows"`), and declaring it again is an
+error. Add `horizon=..., horizon_unit=...` only when the windows
 do not fix it: `unit="unique"` (anes counts election years, garments days), `window=None` (california, kick), or
 `_make_splits` (hotel).
 
 The gap between train and test is stored next to the horizon (`time_gap`, `time_gap_unit` in the split metadata, left
 out of the checksum while unset): the `gap` of a calendar or row window states it, while a gap of distinct time values
 (`unit="unique"`: college_scorecard's cohorts, numerai's weekly eras) or one built in `_make_splits`
-(brazilian_ecommerce, sf_permit_time) is declared as `Temporal(..., gap=..., gap_unit=...)`. A `unique` window with a
-gap and no declared unit does not import, nor does a declared gap the windows already state or do not leave
-(Lennart, 2026-10-16). A calendar window's gap counts in the window's unit unless `gap_unit` names another
+(predict_students_dropout_and_academic_success) is declared as `Temporal(..., gap=..., gap_unit=...)`. A `unique`
+window with a gap and no declared unit does not import, nor does a declared gap the windows already state or do not
+leave (Lennart, 2026-10-16). A calendar window's gap counts in the window's unit unless `gap_unit` names another
 (`"minutes"`, `"hours"` or a calendar unit): `TemporalSplits(window=91, unit="days", n_windows=3, gap=15,
 gap_unit="minutes")` leaves 15 minutes for a label known 16 minutes after its row (g_research_crypto_forecasting_1m;
 Lennart, 2026-10-22), stored as `time_gap=15, time_gap_unit="minutes"`.
@@ -419,6 +431,48 @@ repeat per time window, always fold `0` (`splits_temporal_layout`); split 0 is t
 | Only a row order (california, mercedes) | `TemporalSplits(window=320, unit="rows", n_windows=9)` (horizon: 320 steps); `window=None` needs `Temporal(horizon=..., horizon_unit="steps")` |
 | A gap in a smaller unit than the window (g_research_crypto_forecasting_1m: 3 x 91 days, 15-minute gap, whole minutes sampled) | `TemporalSplits(window=91, unit="days", n_windows=3, gap=15, gap_unit="minutes", sample_by="time")` |
 | Overlapping windows (ghana, now retired: 3 days moving by 2) | `TemporalSplits(window=3, unit="days", step=2, min_train_fraction=0.5)` |
+| Windows of unequal length, each to the next start (sdss_17: calendar years with 2019 and 2020 merged; bank_marketing: campaigns and quarters on a file order; 2_month_survival_rate_prediction: half-years after a 60-day gap) | `TemporalSplits(window=None, unit="years", cutoffs=("2019-01-01", "2018-01-01", ...))`; the horizon is declared on `Temporal` |
+| Train only on labels known before the window (brazilian_ecommerce: delivered orders; sf_permit_time: issued permits) | `Temporal(..., splits=TemporalSplits(...), label_known_on="order_delivered_customer_date")`, or a function of the frame (`label_known_on=_issued`) |
+| No training row of an entity the window tests (lending_club's borrowers, alfa_battle_2_0_task_2's clients) | `Temporal(..., splits=TemporalSplits(...), exclude_test_entities_on="borrower_key")` |
+
+### The split declarations
+
+Before writing `_make_splits`, check whether a declaration says it; the code then describes the split and the
+comparison of positions in a review is not needed. Each replaced a custom split step with identical positions
+(2026-11-26):
+
+* `TemporalSplits(window=None, cutoffs=(...))`: each window runs from its start to the next newer start, the newest to
+  the end of the data. Unequal windows fix no horizon, so `Temporal(horizon=..., horizon_unit=...)` states it; a `gap`
+  works as for other windows.
+* `Temporal(label_known_on=...)`: each train side keeps only the rows whose label became known before its window
+  starts (a calendar window's start, else the time of its first test row); a missing time is never known. A column is a
+  split input only: the frame drops it after the split. A function of the frame (sf_permit_time's issue date, rebuilt
+  from the filing date and the target) adds no column, so the row order does not change.
+* `Temporal(exclude_test_entities_on=...)`: each train side leaves out the rows of every entity key its window tests
+  (a missing key matches nothing), an evaluation stand-in for an as-of filter on label dates the data do not have. The
+  frame drops the key after the split.
+* `GroupedSplits(kind="leave_one_group_out")` (above, IID and grouped).
+
+Still custom (2026-11-26), each for a reason none of these covers: windows computed from the data
+(african_credit_scoring_challenge, medical_facility_operational_data), a label known within the test year
+(predict_students_dropout_and_academic_success), two filter columns and evidence recorded during the split
+(chicago_traffic_crashes), prediction points with their own test and train rules (hotel_booking_demand), and the
+latest application per derived client (home_credit_default_risk).
+
+### The splits comment
+
+The container's and the README's splits comment is the generated description of the splits, then the definition's
+`splits_comment` as a second paragraph. The description says what the code knows: the windows (count, length, starts
+or "walking back from the newest data", newest first, the gap), each window's first and last time with its test and
+train rows, the train filters, the folds and repeats and the units that set them, and for a `_1m` version the test cap
+and the train sampling. A custom `_make_splits` gets a description read off its splits (the count, and for a temporal
+task each window's times and sizes).
+
+So `splits_comment` holds only what the code cannot know: the use case the split simulates, why this length, these
+windows and this gap, the decisions and who made them (with the date and the quote), the measurements behind them and
+what the split does not test. Never restate the window dates or sizes, the fold or repeat counts, or the budget and
+sampling text. `None` leaves the description alone; a custom `_make_splits` needs a `splits_comment`. The README's
+front matter holds the reason alone as `splits.reason` (the review page reads it).
 
 The number of windows aims at the splits an IID split of the data would get (`split_count`: 60, 30, 9 or 3 for two
 thirds of the scored units), never fewer than 3 and never a train side below half the data
@@ -620,8 +674,8 @@ slug, its severities and whether a definition may accept it is in [check_slugs.m
 | `task_target_dtype`, `task_target_class_count` | a classification target is a `category` with the right class count |
 | `task_target_missing_values` | drop rows with a missing target |
 | `splits_class_missing` | a class missing from a fold (a multiclass test side without it, a train side without a class its test side holds, a fold that flips between binary and multiclass) or too rare to stratify: widen the windows, or, for a class too rare to stratify: keep a rare class of the source's labels when its rows carry about their share of the score, merge only by a convention of the field, and accept with the counts ([task_probes.md](../../knowledge-curation/references/task_probes.md), TP-7 and TP-8) |
-| `task_metric_*` | declare `metric` with its origin and reference, the canonical name and the params and inputs the metric takes; each input column a `ScoringColumn` ([definition_fields.md](definition_fields.md), `metric`) |
-| `task_sample_weight_not_metric_weight`, `task_weight_invalid`, `task_rate_count_not_whole`, `task_feature_looks_like_exposure` | a count or amount over a realized amount at risk: build the rate in `_clean` (assert that target x weight rebuilds the count), ship the amount as the weight scoring column the metric reads and as `sample_weight`, never as a feature (MET-14, MET-15, LEAK-41); a feature named like an amount at risk that is known at the prediction point is accepted with that reason; a weight for training alone that the metric does not read is declared `used_by="training"` (MET-16) |
+| `task_metric_*` | declare `metric` with its origin and reference, the canonical name and the params the metric takes; each input column a `ScoringColumn` of the input's role, which gives the metric its `inputs` ([definition_fields.md](definition_fields.md), `metric`) |
+| `task_sample_weight_not_metric_weight`, `task_weight_invalid`, `task_rate_count_not_whole`, `task_feature_looks_like_exposure` | a count or amount over a realized amount at risk: build the rate in `_clean` (assert that target x weight rebuilds the count), ship the amount as the weight scoring column the metric reads, declared `fit=True` (the task's `sample_weight`), never as a feature (MET-14, MET-15, LEAK-41); a feature named like an amount at risk that is known at the prediction point is accepted with that reason; a weight for training alone that the metric does not read is declared `fit=True, used_by="training"` (MET-16) |
 | `task_stratify_*` | stratify on the target (classification) or a discrete feature |
 | `task_time_on_dtype`, `task_time_on_missing_values`, `task_time_on_not_sorted` | a datetime (`_feature_types`) or numeric time column without NaN; the base class sorts |
 | `task_group_labels_mismatch` | pick `per_group` or `per_sample` correctly: `per_group` with groups of several labels is an error; `per_sample` with at least 95% single-label groups is a warning: `per_group` if one label by construction, else accept with the count of mixed groups |
@@ -726,8 +780,9 @@ A custom metric is added in the same change as the dataset that needs it (MET-13
    * the stability checklist below, which `tests/test_v2_metrics_stability.py` runs on every registered metric (a
      metric with required params needs an entry in its `EXAMPLE_PARAMS`).
 4. In the definition, declare it (`Metric.source("cost_matrix", params={...}, reference=...)`), declare every input
-   column as a `ScoringColumn`, and run `dataset check`: `task_metric_not_computable` scores a random prediction on
-   every split, so a test fold that lacks what the metric needs shows up there (MET-2).
+   column as a `ScoringColumn` of the input's role (which maps it into the metric's `inputs`), and run `dataset check`:
+   `task_metric_not_computable` scores a random prediction on every split, so a test fold that lacks what the metric
+   needs shows up there (MET-2).
 
 ### Metric stability
 

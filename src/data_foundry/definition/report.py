@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING, Any
 import pandas as pd
 import yaml
 
+from data_foundry import time_basis as basis_rules
 from data_foundry.checks import groups as group_checks
 from data_foundry.curation._paths import records_dir, resolve_curation_root
 from data_foundry.curation_container import feature_columns
@@ -31,6 +32,7 @@ from data_foundry.definition.dataset import (
     CLI_COMMAND,
     DEFINITION_FILENAME,
     REPORT_FILENAME,
+    clean_text,
     provenance,
     raw_name,
     split_summary,
@@ -202,6 +204,8 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
             "time_horizon_unit": splits_meta.time_horizon_unit,
             "time_gap": splits_meta.time_gap,
             "time_gap_unit": splits_meta.time_gap_unit,
+            # the definition's `splits_comment`, without the generated description the splits comment opens with
+            "reason": clean_text(ds.splits_comment) or None,
             "n_train": {"min": int(sizes["n_train"].min()), "max": int(sizes["n_train"].max())},
             "n_test": {"min": int(sizes["n_test"].min()), "max": int(sizes["n_test"].max())},
             # only for a sub-sampled version, so every other README's front matter stays as it was
@@ -606,10 +610,10 @@ def _sample_section(result: CurationResult) -> list[str]:
 
 def _curation_notes_section(result: CurationResult) -> list[str]:
     meta = result.container.dataset_metadata
-    out = []
-    if meta.curation_comments and meta.curation_comments.strip():
-        out += [meta.curation_comments.strip(), ""]
-    return ["## Curation notes", "", *out] if out else []
+    notes = [meta.curation_comments.strip()] if meta.curation_comments and meta.curation_comments.strip() else []
+    bases = (getattr(meta, "time_basis", None), getattr(meta, "group_basis", None))
+    notes += [f"- {basis_rules.line(basis)}" for basis in bases if basis is not None]
+    return ["## Curation notes", "", "\n".join(notes), ""] if notes else []
 
 
 def _splits_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:

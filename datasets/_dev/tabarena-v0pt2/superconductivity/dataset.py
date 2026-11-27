@@ -16,7 +16,6 @@ from data_foundry.definition import (
     Source,
     TaskSummary,
     TimeBasis,
-    UnitWeight,
 )
 
 
@@ -135,20 +134,19 @@ class Superconductivity(AbstractCuratedDataset):
             "(`composition_weight`) and each composition counts once, as Stanev et al. (2018) count each material "
             "once. Unweighted, YBa2Cu3O7 (110 entries) would count 110 times a composition measured once."
         ),
-        inputs={"weight": "composition_weight"},
     )
     scoring_columns = (
         ScoringColumn(
             column="composition_weight",
             role="weight",
             used_by="rmse",
+            unit="composition",
             description=(
                 "1 over the number of SuperCon entries of the row's composition (from 1/110 to 1), so that each "
                 "composition counts once in the RMSE; for scoring only, never a feature or a training weight"
             ),
         ),
     )
-    unit_weight = UnitWeight(column="composition_weight", unit="composition")
     grouping = Grouping(
         on="composition",
         labels="per_sample",

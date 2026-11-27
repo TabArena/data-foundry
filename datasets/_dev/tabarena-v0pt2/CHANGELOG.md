@@ -1,5 +1,56 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-26, leave one group out is a declaration; group bases carry their attribution (no container built)
+
+- `leave_one_group_out = True` became `grouped_splits = GroupedSplits(kind="leave_one_group_out")` beside the
+  `grouping`, and the split checks accept one fold per group without an acceptance. heart_disease and
+  online_shoppers_purchasing_intention_dataset declare it and drop their `splits_dimensions_off_protocol` acceptance;
+  their repeats, folds, train and test positions, frame and splits comment are identical on the real data.
+- bioresponse and covertype moved "ForcedIIDFromGrouped (Andrej, 2026-11-16)" out of the `GroupBasis` reason into
+  `set_by` and `on`; the README's `Group basis:` line now names the tag itself, so the line reads as before.
+
+## 2026-11-26, split declarations replace nine custom splits; the splits comment is generated first (no container built)
+
+- New declarations (`data_foundry.definition`): `TemporalSplits(window=None, cutoffs=...)` runs each window to the next
+  start; `Temporal(label_known_on=...)` trains only on labels known before a window;
+  `Temporal(exclude_test_entities_on=...)` leaves out the training rows of the entities a window tests;
+  `leave_one_group_out = True` holds out one group per fold. Nine custom `_make_splits` became declarations, each
+  with identical repeats, folds, train and test positions
+  and frame on the real data: bank_marketing, sdss_17 and 2_month_survival_rate_prediction (windows to the next start),
+  brazilian_ecommerce and sf_permit_time (labels known), lending_club and alfa_battle_2_0_task_2 (entities of the
+  window), heart_disease and online_shoppers_purchasing_intention_dataset (one group out). Six stay custom:
+  african_credit_scoring_challenge, chicago_traffic_crashes, home_credit_default_risk, hotel_booking_demand,
+  medical_facility_operational_data and predict_students_dropout_and_academic_success.
+  The `splits_rows_unused` acceptances of brazilian_ecommerce, lending_club and alfa_battle_2_0_task_2 are not kept:
+  rows a temporal split leaves out are an info since the overlapping checks were merged.
+- The splits comment of a container and its README is now the generated description of the splits (the windows with
+  their times and sizes, the folds and repeats and the units that set them, the gap, the budget and the train
+  sampling), then the definition's `splits_comment` as the reason; the description replaces "Default splits.".
+  The `splits_comment` of 55 definitions lost the 72 sentences that only restated it (window dates and sizes, fold and
+  repeat counts, the budget and sampling text); every reason, decision and attribution stays word for word. The other
+  metadata of all 174 definitions is unchanged (compared). The generated `README.md` files change at the next rebuild.
+
+## 2026-11-26, a weight is declared once and the time basis is data (no container built)
+
+- A weight is declared on its scoring column alone (codebase review of 2026-11-25): `ScoringColumn(..., fit=True)` is
+  the training weight and `ScoringColumn(..., unit="<unit column>")` a unit weight, and the metric's `inputs` are
+  derived from the scoring columns' roles. The class attributes `sample_weight` and `unit_weight` are gone; the task
+  metadata still stores both, unchanged. 18 definitions changed their declaration only, with the same task metadata:
+  asp_potassco_classification, australian_vehicle_insurance_2004_2005, bemtpl97, boreal_postfire_lichen_biomass,
+  dementia_prediction, frempl_french_motor_personal_line, fremtpl2, g_research_crypto_forecasting_1m,
+  liberty_mutual_fire_peril_loss_cost, noaa_afsc_bottom_trawl_survey_cpue, noaa_storm_events_damage,
+  pancreatic_cancer_mouse_detection, pricing_game_2016_french_fleet, sat11_hand_algo_runtime,
+  spanish_motor_insurance_coverage_level_2022_2024, superconductivity, wadden_sea_sibes_macoma_abundance and
+  wisconsin_local_government_property_insurance_fund.
+- The time basis and the group basis are stored in the dataset metadata (`time_basis`, `group_basis`) instead of a
+  bullet rendered into `curation_comments`; the README shows the same line under the curation notes. A rebuilt
+  container of the 106 definitions with a time basis carries the field and no bullet.
+- Regime tags in `data_tags` are refused: amex_non_iid_1m, electric_motor_temperature_prediction and
+  sepsis_prediction_1m listed `Non-IID` and `Grouped` by hand and now get the derived tags, `GroupedTemporal` in place
+  of `Grouped`, since each orders the rows inside a group (`grouping.time_on`), as
+  force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition already does. Their splits are
+  unchanged.
+
 ## 2026-11-26, GETTING_STARTED.md brought up to date (no container built)
 
 - `GETTING_STARTED.md` no longer says the folder's `README.md` lists the datasets (it has no table), names the skills

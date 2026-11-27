@@ -78,7 +78,6 @@ class ElectricMotorTemperaturePrediction(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Non-IID", "Grouped")
     download_description = """
         kaggle datasets download wkirgsn/electric-motor-temperature --unzip && mkdir -p local-data-warehouse/electric_motor_temperature_prediction && mv measures_v2.csv local-data-warehouse/electric_motor_temperature_prediction/
     """

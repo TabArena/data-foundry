@@ -824,12 +824,12 @@ RATE_TASK = """    target = "rate"
         "mean_poisson_deviance",
         reference="https://example.org/eval",
         params={"min_prediction": 1e-4},
-        inputs={"weight": "exposure"},
     )
     scoring_columns = (
-        ScoringColumn(column="exposure", role="weight", used_by="mean_poisson_deviance", description="years insured"),
+        ScoringColumn(
+            column="exposure", role="weight", used_by="mean_poisson_deviance", fit=True, description="years insured"
+        ),
     )
-    sample_weight = "exposure"
 """
 RATE_CLEAN = """        df["exposure"] = (df["row_id"] % 12 + 1) / 12
         df["rate"] = df["y"] / df["exposure"]

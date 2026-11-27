@@ -15,7 +15,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from data_foundry.schema import FORCED_TIME_TAGS, TIME_BASIS_TAGS, current_tag
+from data_foundry.schema import FORCED_TIME_TAGS, TIME_BASIS_TAGS
 
 if TYPE_CHECKING:
     from data_foundry.curation.record import CurationRecord
@@ -87,12 +87,12 @@ def is_typed(tags: set[str]) -> bool:
 
 
 def definition_basis(cls: type) -> tuple[set[str], str]:
-    """A loaded definition's time-basis tags (as its container carries them) and its regime: ``iid``, ``grouped`` or
-    ``temporal``.
+    """A loaded definition's time-basis tag (the dataset metadata's ``time_basis``, as a set of none or one) and its
+    regime: ``iid``, ``grouped`` or ``temporal``.
     """
-    tags = set(cls.dataset_metadata.data_tags)
+    basis = cls.dataset_metadata.time_basis
     regime = "temporal" if cls.temporal is not None else "grouped" if cls.grouping is not None else "iid"
-    return {current_tag(t) for t in tags} & {*TIME_BASIS_TAGS, *FORCED_TIME_TAGS}, regime
+    return ({basis.tag} if basis is not None else set()) & {*TIME_BASIS_TAGS, *FORCED_TIME_TAGS}, regime
 
 
 def record_problems(tags: set[str], cls: type | None, *, strict: bool | None = None) -> list[str]:

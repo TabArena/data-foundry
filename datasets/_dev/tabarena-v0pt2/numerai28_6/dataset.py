@@ -107,7 +107,7 @@ class Numerai286(AbstractCuratedDataset):
         definition="Mean binary log loss of the uploaded probability that a row is of class 1",
     )
     splits_comment = """
-        Default splits (random rows, stratified on the target). Forced IID from temporal (SPLIT-8): the release has no era or date, so the weekly splits of Numerai's tournament cannot be rebuilt; see the curation notes for the hidden-week checks.
+        Forced IID from temporal (SPLIT-8): the release has no era or date, so the weekly splits of Numerai's tournament cannot be rebuilt; see the curation notes for the hidden-week checks.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

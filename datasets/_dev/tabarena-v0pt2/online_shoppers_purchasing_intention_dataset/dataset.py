@@ -4,16 +4,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
+    GroupedSplits,
     Grouping,
     Metric,
     Source,
-    SplitPlan,
     TaskSummary,
     TimeBasis,
     decode,
@@ -143,14 +142,11 @@ class OnlineShoppersPurchasingIntentionDataset(AbstractCuratedDataset):
             One group is a calendar month of visits, June to December of one year (the year is not in the data). The shop scores visits of months its model has not seen, and the purchase share moves from month to month (10% in June to 25% in November), so whole months are held out. Each row is one visit by a different user (Sakar et al. 2019, Sec. 2.1) and one prediction, made from that visit alone.
         """,
     )
+    grouped_splits = GroupedSplits(kind="leave_one_group_out")
     splits_comment = """
         Leave one month out (Andrej, 2026-11-19): seven splits, one repeat, each testing one month and training on the other six. The months and their visits, each with the train side's share of the 6,875 visits: June 288 (95.8%), July 432 (93.7%), August 433 (93.7%), September 448 (93.5%), October 549 (92.0%), November 2,998 (56.4%) and December 1,727 (74.9%). A split by time is out: only December can train on half the visits in time order, and the file order within a month is not the order of days. The month is the group column and no model input. Repeats would give the same seven splits.
     """
     accepted_check_warnings = {
-        "splits_dimensions_off_protocol": (
-            "Decided (Andrej, 2026-11-19): leave one month out gives exactly seven splits; repeats would give the same "
-            "seven."
-        ),
         "groups_test_groups_few": (
             "Decided (Andrej, 2026-11-19): the seven months June to December are all the data holds, each held out "
             "once; testing one unseen month at a time is the split, and each fold still scores 288 to 2,998 visits."
@@ -170,17 +166,6 @@ class OnlineShoppersPurchasingIntentionDataset(AbstractCuratedDataset):
         # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
         df = decode(df, {self.target: {"False": "No", "True": "Yes"}})
         return df.drop(columns=["SpecialDay"]).reset_index(drop=True)
-
-    def _make_splits(self, df: pd.DataFrame) -> SplitPlan:
-        # Leave one month out, one repeat: fold i tests on the i-th month and trains on the other six
-        month = df["Month"].astype(str).to_numpy()
-        splits = {
-            0: {
-                i: (np.flatnonzero(month != m).tolist(), np.flatnonzero(month == m).tolist())
-                for i, m in enumerate(ORDINAL_LEVELS["Month"])
-            }
-        }
-        return SplitPlan(splits=splits)
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(

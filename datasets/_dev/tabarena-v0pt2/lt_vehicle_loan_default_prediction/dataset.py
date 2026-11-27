@@ -133,8 +133,6 @@ class LtVehicleLoanDefaultPrediction(AbstractCuratedDataset):
         splits=TemporalSplits(window=4, unit="days", n_windows=9, min_train_fraction=0.5),
     )
     splits_comment = """
-        Nine adjacent four-day test windows of issued loans, newest first, from 2018-09-26 through 2018-10-31
-        (exclusive final boundary 2018-11-01), each trained on every loan disbursed before its start, without a gap.
         The oldest train holds 117,490 of 233,154 rows (50.39%); five-day windows allow only seven windows above that
         floor. The source's November test is unlabeled. The four-day width follows the coverage, not the first
         instalment's due date, which the release does not give. Inferred from the monthly instalment, it falls due at

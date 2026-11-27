@@ -13,6 +13,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import pydantic
 import pytest
 
 import data_foundry.definition.dataset as dataset_module
@@ -34,6 +35,7 @@ from data_foundry.definition import (
     Grouping,
     Metric,
     RowBudget,
+    ScoringColumn,
     Source,
     TaskSummary,
     Temporal,
@@ -148,6 +150,13 @@ def warehouse(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     return root
 
 
+TOY_CV = (
+    "Repeated 3-fold cross-validation over the rows, stratified on `y`: 20 repeat(s) x 3 folds, 60 splits, the "
+    "repeats set by the 600 rows (SPLIT-33)."
+)
+"""The generated description of the toy definition's splits."""
+
+
 def write_definition(root: Path, name: str = "toy_ds", *, comment: str = "Toy data.", body: str | None = None) -> Path:
     """Write ``<root>/<name>/dataset.py`` and return the folder."""
     folder = root / name
@@ -233,7 +242,7 @@ def test_check_writes_a_deterministic_report(tmp_path: Path, warehouse: Path) ->
     assert fm["checksum"] == result.container.checksum
     assert fm["splits"]["n_repeats"] == 20  # 600 rows: 20-repeated 3-fold
     assert fm["splits"]["random_state"] == 4267
-    assert result.container.experiment_metadata.splits_comment == "Default splits."
+    assert result.container.experiment_metadata.splits_comment == TOY_CV
 
 
 def test_readme_explains_the_folder(tmp_path: Path, warehouse: Path) -> None:
@@ -430,6 +439,8 @@ def _define(**attrs: object) -> type[AbstractCuratedDataset]:
         ({"SPLIT_RANDOM_STATE": 1}, "fixed for the whole benchmark"),
         ({"data_tags": "Spatial"}, "tuple of tags"),
         ({"data_tags": ("2ndTierData",)}, "retired"),
+        ({"data_tags": ("IID", "Spatial")}, "derives the regime tags"),
+        ({"data_tags": ("Non-IID", "Grouped")}, "derives the regime tags"),
         ({"time_basis": TimeBasis("ForcedGroupedFromTemporal", "x")}, "holds out whole groups"),
         (
             {
@@ -445,7 +456,7 @@ def _define(**attrs: object) -> type[AbstractCuratedDataset]:
             },
             "marks an IID split",
         ),
-        ({"data_tags": ("Retrospective",)}, "declare (it|the time basis) as `time_basis = TimeBasis"),
+        ({"data_tags": ("RetrospectiveFillIn",)}, "declare (it|the time basis) as `time_basis = TimeBasis"),
         (
             {"time_basis": TimeBasis("RetrospectiveFillIn", "x"), "data_tags": ("ForcedIIDFromTemporal",)},
             "drop `ForcedIIDFromTemporal` from `data_tags`",
@@ -462,7 +473,6 @@ def _define(**attrs: object) -> type[AbstractCuratedDataset]:
             "this split is temporal",
         ),
         ({"time_basis": "RetrospectiveFillIn"}, "must be a `TimeBasis"),
-        ({"time_basis": TimeBasis("Retrospective", "x")}, "is the old name of `RetrospectiveFillIn`"),
         ({"time_basis": TimeBasis("DelayedTarget", "x")}, "is no time basis"),
         ({"time_basis": TimeBasis("Timeless", "x", set_by="Lennart")}, "go together"),
         ({"time_basis": TimeBasis("Timeless", "x", set_by="Lennart", on="2026-13-01")}, "is not a date"),
@@ -958,8 +968,8 @@ def test_a_dataset_without_a_budget_keeps_the_full_cross_validation(tmp_path: Pa
     write_definition(tmp_path / "datasets")
     ds = get_dataset(tmp_path / "datasets", "toy_ds")
     plan = ds.make_splits()
-    assert plan.splits == ds._cross_validation(plan.df)  # nothing sampled, nothing capped
-    assert plan.comment == "Default splits."
+    assert plan.splits == ds._cross_validation(plan.df)[0]  # nothing sampled, nothing capped
+    assert plan.comment == TOY_CV  # the generated description alone: the definition gives no reason
     assert ds.to_container().experiment_metadata.row_budget is None
 
 
@@ -974,8 +984,9 @@ def test_a_version_tests_on_its_budget_and_trains_on_every_other_row(tmp_path: P
         for train, test in folds.values():
             assert not set(train) & set(test)
     assert plan.comment == (
-        "Default splits. Each fold tests on at most 0.05k rows of its third and trains on every other row; a benchmark "
-        "sub-samples the train side to 0.2k rows (by default rows drawn at random, `subsample_train`)."
+        f"{TOY_CV} Each fold tests on at most 0.05k rows of its third and trains on "
+        "every other row; a benchmark sub-samples the train side to 0.2k rows (by default rows drawn at random, "
+        "`subsample_train`)."
     )
 
 
@@ -984,7 +995,7 @@ def test_a_version_whose_train_sides_exceed_the_budget_keeps_its_folds(tmp_path:
     ds = make_version(tmp_path / "datasets", budget="RowBudget(train=200, test=500)")
     plan = ds.make_splits()
     assert len(plan.df) == 600
-    assert plan.splits == ds._cross_validation(plan.df)  # no test side is over 500; the train sides of 400 are N's
+    assert plan.splits == ds._cross_validation(plan.df)[0]  # no test side is over 500; the train sides of 400 are N's
 
 
 def test_a_version_keeps_whole_groups_and_trains_on_the_rest_of_its_fold(tmp_path: Path, warehouse: Path) -> None:
@@ -1016,7 +1027,8 @@ def test_a_version_with_a_frame_within_budget_still_samples_its_test_sides(tmp_p
     plan = make_version(tmp_path / "datasets", "toy_ds_0p5k", budget="RowBudget(train=500, test=100)").make_splits()
     assert len(plan.df) == 600
     assert fold_sizes(plan.splits) == {(500, 100)}  # the train sides keep to 500 by themselves
-    assert plan.comment.startswith("Default splits. Each fold tests on at most 0.1k rows of its third")
+    assert plan.comment.startswith("Repeated 3-fold cross-validation over the rows")
+    assert "Each fold tests on at most 0.1k rows of its third" in plan.comment
 
 
 def test_a_version_records_its_budget_and_is_held_to_it(tmp_path: Path, warehouse: Path) -> None:
@@ -1088,7 +1100,7 @@ def test_a_collection_dataset_within_the_budget_keeps_its_full_splits(tmp_path: 
     write_definition(root)
     ds = get_dataset(root, "toy_ds")
     plan = ds.make_splits()
-    assert plan.splits == ds._cross_validation(plan.df)
+    assert plan.splits == ds._cross_validation(plan.df)[0]
     assert ds.to_container().experiment_metadata.row_budget is None  # nothing applied, nothing recorded
 
 
@@ -1546,7 +1558,8 @@ def test_a_multi_line_splits_comment_is_dedented(tmp_path: Path, warehouse: Path
     )
     write_definition(tmp_path / "datasets", body=body)
     result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
-    assert result.container.experiment_metadata.splits_comment == "First line.\nSecond line."
+    # the generated description first, then the definition's reason, dedented
+    assert result.container.experiment_metadata.splits_comment == f"{TOY_CV}\n\nFirst line.\nSecond line."
 
 
 def test_report_lists_feature_types_read_from_dtypes(tmp_path: Path, warehouse: Path) -> None:
@@ -1996,13 +2009,16 @@ def test_a_spectrum_with_missing_intensities_is_flagged(tmp_path: Path, warehous
 
 
 @pytest.mark.parametrize("tag", ["Timeless", "RetrospectiveFillIn"])
-def test_a_time_basis_adds_its_tag_and_renders_its_line(tag: str) -> None:
-    """`time_basis` adds the tag to `data_tags` and the `Time basis:` bullet to the curation comments (SPLIT-32)."""
+def test_a_time_basis_adds_its_tag_and_is_stored_as_data(tag: str) -> None:
+    """`time_basis` adds the tag to `data_tags` and is stored as the dataset metadata's `time_basis`, its reason on one
+    line; the curation comments stay as written (SPLIT-32).
+    """
     cls = _define(time_basis=TimeBasis(tag, "one census on\n    1 April 1990."), curation_comments="- Read the CSV.")
-    assert cls.dataset_metadata.data_tags == ["IID", tag]
-    assert cls.dataset_metadata.curation_comments.endswith(
-        f"- Read the CSV.\n- Time basis: {tag}: one census on 1 April 1990."
-    )
+    meta = cls.dataset_metadata
+    assert meta.data_tags == ["IID", tag]
+    assert meta.time_basis == TimeBasis(tag, "one census on 1 April 1990.")
+    assert meta.group_basis is None
+    assert meta.curation_comments == "- Read the CSV."
 
 
 STATIONARY = TimeBasis(
@@ -2024,26 +2040,21 @@ def test_a_stationary_relation_needs_a_person_and_the_measurement() -> None:
         _define(time_basis=dataclasses.replace(STATIONARY, reason="flat."))
     cls = _define(time_basis=STATIONARY)
     assert cls.dataset_metadata.data_tags == ["IID", "StationaryRelation"]
-    assert (
-        "- Time basis: StationaryRelation (Andrej, 2026-11-20): the stationary"
-        in cls.dataset_metadata.curation_comments
-    )
+    assert (cls.dataset_metadata.time_basis.set_by, cls.dataset_metadata.time_basis.on) == ("Andrej", "2026-11-20")
 
 
-def test_a_time_basis_note_renders_after_its_date() -> None:
-    """A note on the basis's history renders in the brackets after the date and reads back (``time_basis.parse``)."""
+def test_the_readme_line_of_a_time_basis() -> None:
+    """The README's line names the tag, the person, the date and the note in brackets, then the reason."""
     from data_foundry import time_basis as basis_rules
 
     basis = dataclasses.replace(STATIONARY, note="`ForcedIIDFromTemporal` before")
-    comments = _define(time_basis=basis).dataset_metadata.curation_comments
-    assert "(Andrej, 2026-11-20; `ForcedIIDFromTemporal` before): the stationary" in comments
-    line = basis_rules.parse(comments)
-    assert (line.tag, line.set_by, line.on, line.note) == (
-        "StationaryRelation",
-        "Andrej",
-        "2026-11-20",
-        "`ForcedIIDFromTemporal` before",
+    assert basis_rules.line(basis).startswith(
+        "Time basis: StationaryRelation (Andrej, 2026-11-20; `ForcedIIDFromTemporal` before): the stationary"
     )
+    assert basis_rules.line(TimeBasis("Timeless", "a fixed\n property.")) == "Time basis: Timeless: a fixed property."
+    assert basis_rules.line(GroupBasis("no structure.")) == "Group basis: ForcedIIDFromGrouped: no structure."
+    attributed = GroupBasis("no structure.", set_by="Andrej", on="2026-11-16")
+    assert basis_rules.line(attributed) == "Group basis: ForcedIIDFromGrouped (Andrej, 2026-11-16): no structure."
 
 
 def test_a_group_basis_sits_beside_the_time_basis() -> None:
@@ -2055,7 +2066,8 @@ def test_a_group_basis_sits_beside_the_time_basis() -> None:
         _define(data_tags=("ForcedIIDFromGrouped",), curation_comments="- Group basis: no structure.")
     cls = _define(time_basis=TimeBasis("Timeless", "a property of the molecule."), group_basis=basis)
     assert cls.dataset_metadata.data_tags == ["IID", "Timeless", "ForcedIIDFromGrouped"]
-    assert cls.dataset_metadata.curation_comments.endswith("- Group basis: no structure, so no series can be held out.")
+    assert cls.dataset_metadata.group_basis == basis
+    assert cls.dataset_metadata.group_basis.tag == "ForcedIIDFromGrouped"
 
 
 def test_assumed_stationary_relation_needs_a_person_and_a_reason() -> None:
@@ -2205,3 +2217,90 @@ def test_the_data_checks_are_the_tables_the_readme_renders(tmp_path: Path, wareh
     write_definition(tmp_path / "datasets")
     tables = get_dataset(tmp_path / "datasets", "toy_ds").run_all_checks()
     assert set(tables) == {"summary", "numeric_stats", "cat_stats", "target"}
+
+
+def _weight(**changes: object) -> ScoringColumn:
+    fields = {"column": "w", "role": "weight", "used_by": "rmse", "description": "1 over the plot's rows"}
+    return ScoringColumn(**{**fields, **changes})
+
+
+def test_the_scoring_columns_give_the_metric_inputs_and_the_weights() -> None:
+    """A weight is declared once, on its scoring column: the metric's inputs come from the roles, `fit` gives the
+    task's `sample_weight`, `unit` its `unit_weight`; the container's scoring columns carry neither flag.
+    """
+    task = _define(scoring_columns=(_weight(fit=True),)).task_metadata
+    assert task.objective_metric.inputs == {"weight": "w"}
+    assert task.sample_weight == "w"
+    assert task.unit_weight is None
+    assert type(task.scoring_columns[0]) is not ScoringColumn
+    assert not hasattr(task.scoring_columns[0], "fit")
+    unit = _define(scoring_columns=(_weight(unit="plot"),)).task_metadata
+    assert (unit.unit_weight.column, unit.unit_weight.unit, unit.sample_weight) == ("w", "plot", None)
+    alone = _weight(fit=True, used_by="training", description="replicates behind the mean label")
+    training = _define(scoring_columns=(alone,)).task_metadata
+    assert (training.objective_metric.inputs, training.sample_weight) == ({}, "w")
+    named = _define(metric=Metric.fallback(reason="none", inputs={"weight": "w"}), scoring_columns=(_weight(),))
+    assert named.task_metadata.objective_metric.inputs == {"weight": "w"}
+
+
+NAMED_V = Metric.fallback(reason="none", inputs={"weight": "v"})
+
+
+@pytest.mark.parametrize(
+    ("attrs", "match"),
+    [
+        ({"metric": NAMED_V, "scoring_columns": (_weight(),)}, "drop `inputs`"),
+        ({"metric": NAMED_V, "scoring_columns": (_weight(column="v", fit=True, used_by="training"),)}, "alone"),
+        ({"scoring_columns": (_weight(fit=True, unit="plot"),)}, "never `fit`"),
+        ({"scoring_columns": (_weight(column="g", role="group", fit=True),)}, "its role is 'group'"),
+        ({"scoring_columns": (_weight(used_by="training"),)}, "declare it `fit=True`"),
+        ({"scoring_columns": (_weight(fit=True), _weight(column="v", fit=True))}, "a task has one"),
+        ({"scoring_columns": (_weight(), _weight(column="v"))}, "the metric reads one 'weight'"),
+        ({"sample_weight": "w"}, "declared on its scoring column"),
+        ({"unit_weight": "w"}, "declared on its scoring column"),
+    ],
+)
+def test_contradicting_weight_declarations_are_refused(attrs: dict, match: str) -> None:
+    """Inputs that contradict the scoring columns, misplaced or repeated `fit` / `unit`, and the old attributes."""
+    with pytest.raises(DatasetDefinitionError, match=match):
+        _define(**attrs)
+
+
+def test_a_time_basis_survives_the_container_round_trip(tmp_path: Path) -> None:
+    """The dataset metadata's `time_basis` and `group_basis` save and load as data; a metadata without them saves
+    no key for them (the omitted fields of an older container).
+    """
+    from data_foundry.utils.checksum import encode_pydantic_metadata
+
+    basis = dataclasses.replace(STATIONARY, note="`Timeless` before")
+    cls = _define(time_basis=basis, group_basis=GroupBasis("no structure."))
+    meta = cls.dataset_metadata
+    adapter = pydantic.TypeAdapter(type(meta))
+    loaded = adapter.validate_python(adapter.dump_python(meta, mode="json"))
+    assert (loaded.time_basis, loaded.group_basis) == (basis, GroupBasis("no structure."))
+    assert b"time_basis" not in encode_pydantic_metadata(_define().dataset_metadata)
+    with pytest.raises(pydantic.ValidationError, match="always 'ForcedIIDFromGrouped'"):
+        adapter.validate_python({**adapter.dump_python(meta, mode="json"), "group_basis": {"reason": "x", "tag": "y"}})
+
+
+def test_the_readme_shows_the_time_basis_under_the_curation_notes() -> None:
+    """The README's curation notes end with the time basis and group basis lines, rendered from the stored fields."""
+    from types import SimpleNamespace
+
+    from data_foundry.definition.report import _curation_notes_section
+
+    cls = _define(
+        curation_comments="- Read the CSV.",
+        time_basis=TimeBasis("Timeless", "a property of\n    the molecule."),
+        group_basis=GroupBasis("no structure."),
+    )
+    result = SimpleNamespace(container=SimpleNamespace(dataset_metadata=cls.dataset_metadata))
+    assert _curation_notes_section(result) == [
+        "## Curation notes",
+        "",
+        "- Read the CSV.\n- Time basis: Timeless: a property of the molecule.\n"
+        "- Group basis: ForcedIIDFromGrouped: no structure.",
+        "",
+    ]
+    plain = SimpleNamespace(container=SimpleNamespace(dataset_metadata=_define().dataset_metadata))
+    assert _curation_notes_section(plain) == []

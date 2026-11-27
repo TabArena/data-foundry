@@ -284,9 +284,10 @@ def test_parse_names_what_breaks_the_grammar(change: tuple[str, str], message: s
 
 
 def test_placement_problems() -> None:
-    """A definition's split and tag against its leaf; an old tag name counts as its new one."""
+    """A definition's split and tag against its leaf."""
     leaf = parse(TINY).leaf("L-FILL.random")
-    assert placement_problems(leaf, leaf.id, "random", {"Retrospective"}) == []
+    assert placement_problems(leaf, leaf.id, "random", {"RetrospectiveFillIn"}) == []
+    assert "carries `RetrospectiveFillIn`" in placement_problems(leaf, leaf.id, "random", {"Timeless"})[0]
     assert placement_problems(leaf, leaf.id, "grouped", {"RetrospectiveFillIn"}) == [
         "L-FILL.random is a random split, the definition ships a grouped one"
     ]

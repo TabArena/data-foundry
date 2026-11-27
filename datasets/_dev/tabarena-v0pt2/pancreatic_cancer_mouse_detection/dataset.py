@@ -16,7 +16,6 @@ from data_foundry.definition import (
     Spectrum,
     TaskSummary,
     TimeBasis,
-    UnitWeight,
 )
 
 
@@ -126,20 +125,19 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
             "a sample weighs 1 over its mouse's number of samples (`mouse_weight`; 1 to 6 samples per mouse), where "
             "unweighted a mouse bled six times would count as six patients (Lennart, 2026-11-08)."
         ),
-        inputs={"weight": "mouse_weight"},
     )
     scoring_columns = (
         ScoringColumn(
             column="mouse_weight",
             role="weight",
             used_by="roc_auc",
+            unit="mouse_id",
             description=(
                 "1 over the number of serum samples of the row's mouse (from 1/6 to 1), so that each mouse counts "
                 "once in the ROC AUC; for scoring only, never a feature or a training weight"
             ),
         ),
     )
-    unit_weight = UnitWeight(column="mouse_weight", unit="mouse_id")
     grouping = Grouping(
         on="mouse_id",
         labels="per_group",

@@ -130,9 +130,12 @@ domain and source from the record.
 4. The regime: walk the decision tree from the record's data collection type
    ([split_tree.md](../knowledge-curation/references/split_tree.md), SPLIT-36) and implement the leaf you reach: nothing
    for IID, `grouping = Grouping(...)` or `temporal = Temporal(...)`, the leaf's ID in `split_leaf`, and a
-   `splits_comment` saying which leaf and why this window (and any gap, sub-sampling or trimming). The leaf's tag and
+   `splits_comment` saying which leaf and why this window (and any gap, sub-sampling or trimming); the code describes
+   the windows, their sizes and the budget before it, so it never restates them
+   ([definitions.md](../knowledge-data-foundry/references/definitions.md), The splits comment). The leaf's tag and
    its reason go into `time_basis = TimeBasis(tag, reason)` (and `group_basis = GroupBasis(reason)` for
-   `ForcedIIDFromGrouped`), which render the `Time basis:` (and `Group basis:`) line. A forced leaf, a leaf no
+   `ForcedIIDFromGrouped`), which the dataset metadata stores and the README shows as the `Time basis:` (and
+   `Group basis:`) line. A forced leaf, a leaf no
    definition reaches yet, a question only a person answers (the tree's "Who answers"), or a question no answer fits
    goes to the curator as an issue with the split you suggest. The record's collection facts and the
    use-case prototypes of SPLIT-32 ([splits.md](../knowledge-curation/references/splits.md)) are information for the
