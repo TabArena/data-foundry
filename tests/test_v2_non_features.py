@@ -8,9 +8,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+
 from data_foundry.bundle_checks import run_bundle_checks
-from data_foundry.schema import DATA_FOUNDRY_WAREHOUSE_ENV, PredictiveMLTaskMetadataV2
-from data_foundry.v2 import (
+from data_foundry.definition import (
     DatasetDefinitionError,
     dataset as dataset_module,
     get_dataset,
@@ -18,7 +18,7 @@ from data_foundry.v2 import (
     read_files,
     read_report,
 )
-
+from data_foundry.schema import DATA_FOUNDRY_WAREHOUSE_ENV, PredictiveMLTaskMetadataV2
 from tests.test_bundle_checks import make_container, make_spec
 
 SHOPS = """
@@ -27,7 +27,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Grouping,

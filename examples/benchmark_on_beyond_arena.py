@@ -34,10 +34,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
-from data_foundry.collections import BEYOND_ARENA
-from data_foundry.curation_container import feature_columns
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import root_mean_squared_error
+
+from data_foundry.collections import BEYOND_ARENA
+from data_foundry.curation_container import feature_columns
 
 if TYPE_CHECKING:
     from data_foundry.curation_container import CuratedContainer

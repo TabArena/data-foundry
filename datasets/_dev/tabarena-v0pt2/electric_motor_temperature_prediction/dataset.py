@@ -6,7 +6,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary, TimeBasis
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+)
 
 
 class ElectricMotorTemperaturePrediction(AbstractCuratedDataset):

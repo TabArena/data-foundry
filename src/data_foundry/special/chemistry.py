@@ -10,9 +10,9 @@ form a definition ships: RDKit's canonical SMILES, every fragment and the stereo
 published: the largest fragment is no salt stripper (apistox's triclopyr and picloram triethylammonium salts both
 reduce to triethylamine), so salt forms of one compound are a definition's decision (LEAK-19).
 
-:func:`encode_smiles` is the recommended encoding (:data:`DEFAULT_SMILES_ENCODING`): RDKit's 2D descriptors, the
-166 MACCS keys and the ECFP4 counts, one row per molecule, the same for a molecule in every dataset, so a benchmark can cache it by value.
-Its spec id names the RDKit release and a revision; the container records it as the column's
+:func:`encode_smiles` is the recommended encoding (:data:`DEFAULT_SMILES_ENCODING`): RDKit's 2D descriptors, the 166
+MACCS keys and the ECFP4 counts, one row per molecule, the same for a molecule in every dataset, so a benchmark can
+cache it by value. Its spec id names the RDKit release and a revision; the container records it as the column's
 ``recommended_encoding``. A benchmark may use it or its own encoding; the probes of this repository use it
 (``dataset_io.py``). Measured on the SMILES datasets of 2026-11-01: the MACCS keys add 0.02 ROC AUC next to the
 descriptors on drug_induced_autoimmunity_prediction and change the others by -0.006 to +0.009; the ECFP4 counts lift
@@ -39,10 +39,10 @@ from typing import TYPE_CHECKING, ClassVar
 import numpy as np
 import pandas as pd
 
-from data_foundry.v2._optional import import_build_dependency
-from data_foundry.v2.dataset import DatasetDefinitionError
-from data_foundry.v2.encodings import Encoding
-from data_foundry.v2.special import SpecialColumn
+from data_foundry.encodings import Encoding
+from data_foundry.schema import DatasetDefinitionError
+from data_foundry.special import SpecialColumn
+from data_foundry.utils.optional import import_build_dependency
 
 if TYPE_CHECKING:
     from data_foundry.bundle_checks import CheckResult

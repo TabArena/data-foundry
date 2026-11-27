@@ -7,9 +7,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Grouping, Metric, Source, TaskSummary, TimeBasis
 from scipy.sparse import coo_matrix
 from scipy.sparse.csgraph import connected_components
+
+from data_foundry.definition import AbstractCuratedDataset, Grouping, Metric, Source, TaskSummary, TimeBasis
 
 MAX_SHIFT = 39
 """The largest shift, in steps, between two snapshots that the key compares (the groups are 40 columns long)."""

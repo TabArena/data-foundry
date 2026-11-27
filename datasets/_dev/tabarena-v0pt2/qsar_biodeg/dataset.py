@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Grouping,
@@ -97,7 +98,7 @@ class QsarBiodeg(AbstractCuratedDataset):
           356 readily biodegradable, as on UCI.
         - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form
           (`canonical_smiles`; no salts or mixtures here), declared in `special_features`, so a benchmark encodes it as a
-          structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's
+          structure and never as text; the recommended encoding is `data_foundry.special.chemistry.encode_smiles` (RDKit's
           2D descriptors, the 166 MACCS keys and the ECFP4 counts).
         - The authors' 41 descriptors leave (Lennart, 2026-11-01, as for qsar_tid_11: the task goes from the structure
           to a prediction, and the descriptors are one modelling choice of the authors). They were Dragon descriptors

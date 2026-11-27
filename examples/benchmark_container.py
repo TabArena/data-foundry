@@ -24,7 +24,7 @@ says everything a benchmark needs:
   ``string`` (free text), and the special features (``special_features(container)``: a molecule's SMILES column, a
   spectrum's group of columns).
 
-Each type enters the model in the encoding the package recommends (``data_foundry.v2.encodings``): a special feature
+Each type enters the model in the encoding the package recommends (``data_foundry.encodings``): a special feature
 by ``encode_special_feature`` (a SMILES as RDKit's descriptors and fingerprints, never as text; a spectrum by its
 technique and state), a date by skrub's ``DatetimeEncoder`` (seconds since 1970 when skrub is not installed), text by
 TF-IDF and a truncated SVD fitted on each split's training rows, an ordinal by its order. The model is scikit-learn's
@@ -48,11 +48,12 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.curation_container import CuratedContainer, feature_columns, sample_weight, special_features
-from data_foundry.v2.encodings import encode_text_tfidf
-from data_foundry.v2.metrics import scorer
-from data_foundry.v2.splits import subsample_train
 from sklearn.ensemble import HistGradientBoostingClassifier, HistGradientBoostingRegressor
+
+from data_foundry.curation_container import CuratedContainer, feature_columns, sample_weight, special_features
+from data_foundry.encodings import encode_text_tfidf
+from data_foundry.metrics import scorer
+from data_foundry.sampling import subsample_train
 
 MAX_CATEGORIES = 255
 """Histogram gradient boosting takes at most this many levels in a categorical; a wider one enters as its codes."""
@@ -128,7 +129,7 @@ def encoded_frame(container: CuratedContainer) -> tuple[pd.DataFrame, list[str]]
     features = feature_columns(container)
     special = special_features(container)
     if special:  # each in its recommended encoding, in place of its columns
-        from data_foundry.v2.special import encode_special_feature  # noqa: PLC0415 - RDKit or scipy by kind
+        from data_foundry.special import encode_special_feature  # noqa: PLC0415 - RDKit or scipy by kind
 
         before = list(df.columns)
         for feature in special:
@@ -161,7 +162,7 @@ def _encode_datetime(values: pd.Series) -> pd.DataFrame:
     if isinstance(values.dtype, pd.PeriodDtype):
         values = values.dt.to_timestamp()
     try:
-        from data_foundry.v2.encodings import encode_datetime  # noqa: PLC0415 - skrub is optional
+        from data_foundry.encodings import encode_datetime  # noqa: PLC0415 - skrub is optional
 
         return encode_datetime(values, prefix=f"{values.name}_")
     except ImportError:

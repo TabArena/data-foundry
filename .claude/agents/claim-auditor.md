@@ -30,7 +30,7 @@ in `.claude/skills/knowledge-curation/references/metrics.md`). Test it:
 * Is it computable on our data (MET-2)? Its unit of evaluation exists (per row, per patient, per era), every input it
   needs ships as a scoring column and is not a feature, and every test fold holds what it reads (whole stays, several
   eras, enough positives for the top k, every class of the cost matrix). Score a dummy prediction on each fold with
-  `data_foundry.v2.metrics.scorer`, and count the units per test fold.
+  `data_foundry.metrics.scorer`, and count the units per test fold.
 * Does it mean on our task what it meant on the source's (MET-2): same target, same classes, same class balance?
 * A declared `sample_weight` is the metric's row weight (MET-15): the metric reads that column as its `weight` input.
   A rate's realized denominator that is still a feature, or a column that encodes it (an earned premium), is a

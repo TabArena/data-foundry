@@ -1,21 +1,15 @@
-"""The recommended encodings of a spectrum (``data_foundry.v2.spectra``)."""
+"""The recommended encodings of a spectrum (``data_foundry.special.spectra``)."""
 
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry.v2 import (
-    Spectrum,
-    encode_special_feature,
-    encode_spectrum,
-    encodings_for,
-    spectra,
-    spectrum_encoding,
-)
-from data_foundry.v2.encodings import recommended_encodings
-from data_foundry.v2.special import SpecialFeatureError
-from data_foundry.v2.spectra import (
+
+from data_foundry.definition import Spectrum
+from data_foundry.encodings import recommended_encodings
+from data_foundry.special import SpecialFeatureError, encode_special_feature, encodings_for, spectra
+from data_foundry.special.spectra import (
     AS_IS_ENCODING,
     CROMWELL_FILTER,
     CROMWELL_LOG2_ENCODING,
@@ -24,7 +18,9 @@ from data_foundry.v2.spectra import (
     VIBRATIONAL_ALS_SNV_ENCODING,
     VIBRATIONAL_SG1_ENCODING,
     VIBRATIONAL_SNV_ENCODING,
+    encode_spectrum,
     snip_baseline,
+    spectrum_encoding,
 )
 
 pytest.importorskip("scipy")
@@ -96,7 +92,7 @@ def test_the_first_derivative_is_savitzky_golay_over_11_points_of_order_2() -> N
     """The encoding equals scipy's savgol_filter(window 11, order 2, deriv 1, mode "interp") per position, and is
     exact on a quadratic: the derivative of i**2 is 2i at every position, the edges included.
     """
-    from scipy.signal import savgol_filter  # noqa: PLC0415 - scipy is checked at import
+    from scipy.signal import savgol_filter
 
     rng = np.random.default_rng(0)
     values = rng.normal(size=(3, 30)).cumsum(axis=1)

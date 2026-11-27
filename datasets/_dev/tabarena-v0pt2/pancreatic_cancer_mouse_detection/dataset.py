@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Grouping,
@@ -178,7 +179,7 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
                 # Filename format: {id}_{group_id}_{rest}.txt_PQ.csv
                 group_id = filepath.stem.split("_")[1]
 
-                row = dict(zip("M/Z:" + sample["M/Z"].astype(str), sample["Intensity"]))
+                row = dict(zip("M/Z:" + sample["M/Z"].astype(str), sample["Intensity"], strict=False))
                 row["mouse_id"] = group_id
                 row["HasPanIN"] = label
                 rows.append(row)

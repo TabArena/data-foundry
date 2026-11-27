@@ -1,6 +1,6 @@
 """The standard steps of every curated frame: drop columns, cast dtypes, fix the row order.
 
-:class:`~data_foundry.v2.dataset.AbstractCuratedDataset` applies ``cast_dtypes`` (from the ``FeatureTypes`` that
+:class:`~data_foundry.definition.dataset.AbstractCuratedDataset` applies ``cast_dtypes`` (from the ``FeatureTypes`` that
 ``_feature_types`` returns), ``canonical_dtypes`` and ``canonical_nans`` (so pandas 2 and 3 and every platform
 build the same container) and ``order_rows`` (the rows in the order of their content, then a stable sort by the
 time column, else a shuffle) after ``_clean``. ``drop_columns`` is for ``_clean`` (it fails on a misspelled name),
@@ -21,7 +21,7 @@ import pandas as pd
 from data_foundry.utils.dtypes import is_str_dtype
 
 if TYPE_CHECKING:
-    from data_foundry.v2.dataset import NonFeature
+    from data_foundry.definition.dataset import NonFeature
 
 SHUFFLE_RANDOM_STATE = 42
 """The seed of the final shuffle of IID and grouped data (the collection has always used 42)."""
@@ -355,7 +355,7 @@ def read_files(
 
 def provenance_columns() -> tuple[NonFeature, ...]:
     """The non-feature declarations of the columns :func:`read_files` adds, for ``non_features``."""
-    from data_foundry.v2.dataset import NonFeature  # noqa: PLC0415 - the dataset module imports this one
+    from data_foundry.definition.dataset import NonFeature  # noqa: PLC0415 - the dataset module imports this one
 
     return (
         NonFeature("source_file", "provenance", "The raw file the row comes from."),

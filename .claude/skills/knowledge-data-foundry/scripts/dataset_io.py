@@ -13,12 +13,12 @@ The task's training weight (``sample_weight``: a scoring column of role ``weight
 claims-per-year target) leaves ``df`` with them; ``ProbeInput.weights`` holds its values, row by row of ``df``, so the
 probes fit every model with it, and ``ProbeInput.weight_column`` names it. ``ProbeInput.metric`` is the declared
 metric (the spec), and ``ProbeInput.scoring`` the values of every scoring column, row by row of ``df``:
-``metric_inputs(rows)`` gives the metric's inputs by role (``data_foundry.v2.metrics.score(spec, y, p, **inputs)``),
+``metric_inputs(rows)`` gives the metric's inputs by role (``data_foundry.metrics.score(spec, y, p, **inputs)``),
 and ``declared_metric()`` the metric as the probe library takes it (``curation_probes.weights``), scored as the
 benchmark scores it.
 
 A special feature (``task.special_features``) enters the probes in its recommended encoding
-(``data_foundry.v2.special.encode_special_feature``), as a benchmark would give it to a model: a SMILES column as its
+(``data_foundry.special.encode_special_feature``), as a benchmark would give it to a model: a SMILES column as its
 descriptor and fingerprint columns (``<column>__rdkit_<name>``, ``<column>__maccs_<i>``, ``<column>__ecfp4_<i>``),
 never as text; a spectrum's columns with the encoded values. ``encode_special=False`` keeps the values as shipped (the
 blind reviewer's clean room). ``ProbeInput.special_features`` lists them by name.
@@ -45,14 +45,15 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import pandas as pd
+
 from data_foundry.curation_container import CuratedContainer, non_feature_columns
+from data_foundry.definition import discover_datasets, load_definition, read_report
+from data_foundry.metrics import row_weight_column, scorer
 from data_foundry.schema import as_column_list, resolve_warehouse_dir
-from data_foundry.v2 import discover_datasets, load_definition, read_report
-from data_foundry.v2.metrics import row_weight_column, scorer
 
 if TYPE_CHECKING:
+    from data_foundry.definition import AbstractCuratedDataset
     from data_foundry.schema import Grouping
-    from data_foundry.v2 import AbstractCuratedDataset
 
 
 @dataclass
@@ -127,7 +128,7 @@ class ProbeInput:
 
     def metric_inputs(self, rows: Any) -> dict[str, np.ndarray]:
         """The declared metric's input values on ``rows`` (positions into ``df``), by role:
-        ``data_foundry.v2.metrics.score(data.metric, y, p, **data.metric_inputs(rows))``.
+        ``data_foundry.metrics.score(data.metric, y, p, **data.metric_inputs(rows))``.
         """
         rows = np.asarray(rows)
         out = {}
@@ -138,7 +139,7 @@ class ProbeInput:
 
     def declared_metric(self) -> dict | None:
         """The declared metric as the probe library takes it (``curation_probes.weights``), scored as the benchmark
-        scores it (``data_foundry.v2.metrics.scorer``: a group's rows aggregated, the input columns read by row), or
+        scores it (``data_foundry.metrics.scorer``: a group's rows aggregated, the input columns read by row), or
         None: a format-1 container, or a metric whose code only the definition holds (``kind="local"``).
         """
         fields = _spec_fields(self.metric)
@@ -267,7 +268,7 @@ def _with_encoded_special_features(
     names = tuple(f.name for f in features)
     if not encode or not features:
         return df, names
-    from data_foundry.v2.special import encode_special_feature  # noqa: PLC0415 - RDKit only for SMILES datasets
+    from data_foundry.special import encode_special_feature  # noqa: PLC0415 - RDKit only for SMILES datasets
 
     for feature in features:
         df = encode_special_feature(df, feature)

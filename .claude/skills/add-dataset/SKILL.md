@@ -152,7 +152,7 @@ domain and source from the record.
    for a standard metric, a general one for a custom metric (MET-12). Every column the metric reads (a group, a time,
    a weight) stays in the frame and is declared in `scoring_columns = (ScoringColumn(column=..., role=..., used_by=...,
    description=...),)`; it is never a feature. A custom metric that is not yet in `METRICS` is added to
-   `src/data_foundry/v2/metrics.py` in the same change (MET-13, definitions.md, "Metrics"): the fastest well-tested
+   `src/data_foundry/metrics.py` in the same change (MET-13, definitions.md, "Metrics"): the fastest well-tested
    implementation (scikit-learn or scipy, otherwise vectorised numpy; for a competition whose official code is slow,
    look for the faster versions in its Kaggle discussions and notebooks and check them), tested in
    `tests/test_v2_metrics_custom.py` to equal the official code on random inputs, on one hand-computed case, and timed

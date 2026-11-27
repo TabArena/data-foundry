@@ -32,7 +32,7 @@ from collections import Counter
 from pathlib import Path
 
 from data_foundry.curation.store import load_all
-from data_foundry.v2 import load_definition, read_report
+from data_foundry.definition import load_definition, read_report
 
 DF_YES = "DF: Yes"
 NEVER_THIN = frozenset({"other"})

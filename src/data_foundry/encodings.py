@@ -10,12 +10,12 @@ see what a model would see. A benchmark may use these encodings, take inspiratio
 ========  ========================================  ==========================================================
 kind      recommended (:func:`recommended_encodings`)  what it computes
 ========  ========================================  ==========================================================
-smiles    ``rdkit2d-maccs-ecfp4`` (:func:`~data_foundry.v2.chemistry.encode_smiles`)  RDKit's 2D descriptors, the 166
-          MACCS keys and the ECFP4 counts, per molecule
+smiles    ``rdkit2d-maccs-ecfp4`` (:func:`~data_foundry.special.chemistry.encode_smiles`)  RDKit's 2D descriptors,
+          the 166 MACCS keys and the ECFP4 counts, per molecule
 datetime  ``skrub-datetime`` (:func:`encode_datetime`)  skrub's ``DatetimeEncoder(add_weekday=True,
           periodic_encoding="circular")``, as BeyondArena and TabArena's ``tabarena_default`` pipeline
 text      ``tfidf-svd`` (:func:`encode_text_tfidf`) and ``e5-small-v2`` (:func:`encode_text_e5`): check both
-spectrum  by technique and state (:func:`~data_foundry.v2.special.encodings_for`): a raw mass spectrum
+spectrum  by technique and state (:func:`~data_foundry.special.encodings_for`): a raw mass spectrum
           ``ms-sqrt-sg21-snip100-tic`` (MALDIquant's steps; DRIAMS's and Cromwell's chains the candidates to
           compare), any other ``spectrum-as-is``; for a vibrational spectrum the candidates to compare are
           ``vib-als-snv`` (RamanBench's linear-model default), ``vib-snv`` and ``vib-sg11-d1`` (a first derivative)
@@ -29,7 +29,7 @@ Each encoding has an :class:`Encoding` spec whose ``id`` names it, the library r
 there is one, and a revision: a cache of encoded values is keyed by it. Its ``scope`` says what a cache holds: one row
 per distinct ``value`` (SMILES, dates, e5), one per ``row`` with no fitting (spectra), or a fit per ``split`` on its
 training rows (TF-IDF). A special feature is encoded through one entry point,
-:func:`~data_foundry.v2.special.encode_special_feature`, whatever its kind. The libraries are optional:
+:func:`~data_foundry.special.encode_special_feature`, whatever its kind. The libraries are optional:
 RDKit is in the ``build`` extra, skrub and sentence-transformers in the ``encodings`` extra.
 """
 
@@ -41,6 +41,8 @@ from typing import TYPE_CHECKING, Literal
 
 import numpy as np
 import pandas as pd
+
+from data_foundry.utils.optional import import_build_dependency
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -123,10 +125,10 @@ TEXT_E5_ENCODING = Encoding(
 def recommended_encodings() -> dict[str, tuple[Encoding, ...]]:
     """Every registered encoding by kind: ``datetime`` and ``text`` (by dtype), ``smiles`` and ``spectrum`` (special
     features). Text has two to compare. Which encodings fit one special feature, the recommended one first, depends on
-    it (a spectrum's technique and state): :func:`~data_foundry.v2.special.encodings_for`.
+    it (a spectrum's technique and state): :func:`~data_foundry.special.encodings_for`.
     """
-    from data_foundry.v2.chemistry import DEFAULT_SMILES_ENCODING  # noqa: PLC0415 - chemistry imports this module
-    from data_foundry.v2.spectra import (  # noqa: PLC0415 - spectra imports this module
+    from data_foundry.special.chemistry import DEFAULT_SMILES_ENCODING  # noqa: PLC0415 - chemistry imports this module
+    from data_foundry.special.spectra import (  # noqa: PLC0415 - spectra imports this module
         AS_IS_ENCODING,
         CROMWELL_LOG2_ENCODING,
         DRIAMS_ENCODING,
@@ -152,23 +154,12 @@ def recommended_encodings() -> dict[str, tuple[Encoding, ...]]:
     }
 
 
-def _optional(module: str, extra: str = "encodings"):
-    """Import ``module``, or say which extra installs it."""
-    import importlib  # noqa: PLC0415
-
-    try:
-        return importlib.import_module(module)
-    except ImportError as exc:
-        msg = f"This encoding needs `{module}`: install the `{extra}` extra (`pip install data-foundry[{extra}]`)."
-        raise ImportError(msg) from exc
-
-
 def encode_datetime(values: pd.Series, *, prefix: str | None = None) -> pd.DataFrame:
     """A ``datetime`` column in the recommended encoding (:data:`DATETIME_ENCODING`), on the index of ``values``.
 
     The columns are skrub's, named ``<column>_<part>``; ``prefix`` replaces the column name in them.
     """
-    skrub = _optional("skrub")
+    skrub = import_build_dependency("skrub", extra="encodings")
     encoder = skrub.DatetimeEncoder(add_weekday=True, periodic_encoding="circular")
     name = values.name if values.name is not None else "datetime"
     out = encoder.fit_transform(values.rename(name))
@@ -244,7 +235,7 @@ def encode_text_e5(
     ``sentence_transformers.SentenceTransformer``; tests pass a stub).
     """
     if model_factory is None:
-        model_factory = _optional("sentence_transformers").SentenceTransformer
+        model_factory = import_build_dependency("sentence_transformers", extra="encodings").SentenceTransformer
     text = values.astype("string").fillna("")
     unique = pd.Index(pd.unique(text), dtype="object")
     model = model_factory(E5_MODEL)

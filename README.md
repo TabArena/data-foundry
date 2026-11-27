@@ -10,7 +10,7 @@
 **Data Foundry** is the data layer behind the next generation of [TabArena](https://tabarena.ai/) datasets. It provides:
 
 - A small, opinionated **schema** for tabular datasets, tasks (IID / temporal non-IID / grouped non-IID), and outer CV splits — aligned with OpenML where possible, extended where it had to be.
-- A **curation toolkit** so a curator turns a raw download into a reproducible artifact: one `dataset.py` definition per dataset (`data_foundry.v2`), with the split protocol, sanity checks, bundle checks and a generated evidence page built in.
+- A **curation toolkit** so a curator turns a raw download into a reproducible artifact: one `dataset.py` definition per dataset (`data_foundry.definition`), with the split protocol, sanity checks, bundle checks and a generated evidence page built in.
 - A **collections API** that pins datasets (defined by ``(unique_name, uuid)``) to immutable curated containers and resolves them against a local warehouse or directly against Hugging Face, as for the [BeyondArena Datasets](https://huggingface.co/datasets/TabArena/BeyondArena). It is how every collection ships, BeyondArena today and TabArena v0.2 next.
 - A git-native **curation log + dashboard** — the dataset backlog lives as **one markdown record per candidate dataset** under [`curation/records/`](curation/records), edited locally through a Sheets-like dashboard (`data-foundry-curation serve`) with a built-in **Guidelines** tab, and published as a read-only public site on [GitHub Pages](https://tabarena.github.io/data-foundry/). It replaces the old curation spreadsheet; a new dataset is added simply by creating a markdown file.
 
@@ -106,7 +106,7 @@ of the `experiment_metadata.row_budget` a `_1m` version records: no size limit w
 
 **Row budget.** A format-2 container with a `row_budget` (a `<name>_1m` version) tests on at most `row_budget.test`
 rows per split, and its train sides keep every row they may use (all earlier rows of a temporal window). A benchmark
-fits on at most `row_budget.train` of them: `subsample_train(container, repeat, fold)` (`data_foundry.v2`) draws them
+fits on at most `row_budget.train` of them: `subsample_train(container, repeat, fold)` (`data_foundry.sampling`) draws them
 by the default sampler the container records in `experiment_metadata.train_sampling` (for a temporal side the newest
 year, extended back in time until it holds that many rows, sampled at random; whole groups of a grouped one,
 stratified rows otherwise), and returns the train side whole for a container without a budget. A numeric time column
@@ -159,7 +159,7 @@ shortened:
 
 ```python
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Source
+from data_foundry.definition import AbstractCuratedDataset, Source
 
 
 class BloodTransfusion(AbstractCuratedDataset):
@@ -293,7 +293,7 @@ git clone https://github.com/TabArena/data-foundry.git
 cd data-foundry
 uv pip install -e ".[dev]"
 pytest                                 # run the test suite
-ruff check . && ruff format --check .  # lint + format
+uvx ruff@0.15.15 check . && uvx ruff@0.15.15 format --check .  # lint + format, as CI does
 ```
 
 Loading and using a container needs only the core install. The `build` extra adds what building a dataset from its
@@ -308,11 +308,15 @@ containers; the lock stays on pandas 2 because AutoGluon (and so TabArena) requi
 
 ```
 data-foundry/
-├── src/data_foundry/         # the package — schema, container, collections, checks, splits
-│   ├── v2/                   # v2 dataset definitions: AbstractCuratedDataset, split protocol, checks, README report
-│   ├── schema.py             # DatasetMetadata, PredictiveMLTaskMetadata (format 1) / V2 (+ Grouping), PredictiveMLSplitsMetadata
-│   ├── curation_container.py # CuratedContainer (save/load + describe + checksum)
+├── src/data_foundry/         # the package
+│   ├── curation_container.py # CuratedContainer (save/load + describe + checksum), feature_columns and the other helpers
 │   ├── collections/          # BEYOND_ARENA, DatasetCollection, HuggingFaceSource, cache helpers
+│   ├── schema.py             # the format-2 metadata: DatasetMetadataV2, PredictiveMLTaskMetadataV2 (+ Grouping, MetricSpec)
+│   ├── metrics.py            # every metric of a metric spec and the scorer of a container
+│   ├── sampling.py           # subsample_train: the default sampler of a train side under a row budget
+│   ├── special/, encodings.py   # special features (SMILES, spectra) and the recommended encodings
+│   ├── definition/           # the definition API (`dataset.py` classes): AbstractCuratedDataset, split protocol, README report
+│   ├── v1/                   # the format-1 metadata of the shipped BeyondArena containers
 │   ├── dataset_checks.py     # run_all_checks(...) — sanity stats, rendered in each dataset's README
 │   ├── bundle_checks.py      # run_bundle_checks(...) / verify_saved_container(...) — bundle integrity
 │   ├── curation/             # curation log toolkit — CurationRecord, store, dashboard (serve), import/export, build-site

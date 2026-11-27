@@ -2,14 +2,13 @@ from __future__ import annotations
 
 import pydantic
 import pytest
+
 from data_foundry.schema import (
     DATA_FOUNDRY_WAREHOUSE_ENV,
     DEFAULT_LOCAL_DATA_DIR,
-    DatasetMetadata,
     DatasetMetadataV2,
     Grouping,
     PredictiveMLSplitsMetadata,
-    PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2,
     RowBudget,
     Source,
@@ -18,7 +17,7 @@ from data_foundry.schema import (
     resolve_warehouse_dir,
 )
 from data_foundry.utils.checksum import encode_pydantic_metadata
-
+from data_foundry.v1 import DatasetMetadata, PredictiveMLTaskMetadata
 from tests.test_bundle_checks import make_spec
 
 
@@ -381,7 +380,7 @@ def test_predictive_splits_metadata_row_budget_is_left_out_of_the_checksum_while
 
 
 def test_train_sampling_needs_a_row_budget_and_is_left_out_while_unset():
-    from data_foundry.schema import TrainSampling  # noqa: PLC0415
+    from data_foundry.schema import TrainSampling
 
     splits = {0: {0: ([0, 1], [2, 3])}}
     sampling = TrainSampling(default="newest_year", unit="time_values")

@@ -17,6 +17,7 @@ from pathlib import Path
 
 import pytest
 import yaml
+
 from data_foundry.curation import claims
 from data_foundry.curation._paths import DATA_FOUNDRY_CURATION_ENV
 from data_foundry.curation.app import CurationHandler

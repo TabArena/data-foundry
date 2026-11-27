@@ -1,8 +1,8 @@
 """The generated ``README.md`` of a dataset folder: the dataset card, the evidence and the build record.
 
 GitHub shows a folder's ``README.md`` below its file list, so this page is what a visitor of the folder sees.
-It is generated, never edited by hand: :meth:`~data_foundry.v2.dataset.AbstractCuratedDataset.check`
-rewrites it, and only :meth:`~data_foundry.v2.dataset.AbstractCuratedDataset.build` writes a new build record.
+It is generated, never edited by hand: :meth:`~data_foundry.definition.dataset.AbstractCuratedDataset.check`
+rewrites it, and only :meth:`~data_foundry.definition.dataset.AbstractCuratedDataset.build` writes a new build record.
 
 The YAML frontmatter is the machine-readable part: the build record (UUID, checksum, provenance), the data and
 split shape, the grouping of a grouped task, and the bundle-check outcome. GitHub renders it as a table at the top
@@ -26,9 +26,8 @@ import yaml
 
 from data_foundry.curation._paths import records_dir, resolve_curation_root
 from data_foundry.curation_container import feature_columns
-from data_foundry.schema import resolve_warehouse_dir, rows_text, training_only_weight
-from data_foundry.v2 import group_checks
-from data_foundry.v2.dataset import (
+from data_foundry.definition import group_checks
+from data_foundry.definition.dataset import (
     CLI_COMMAND,
     DEFINITION_FILENAME,
     REPORT_FILENAME,
@@ -36,10 +35,11 @@ from data_foundry.v2.dataset import (
     raw_name,
     split_summary,
 )
-from data_foundry.v2.windows import Window, window_stats
+from data_foundry.definition.windows import Window, window_stats
+from data_foundry.schema import resolve_warehouse_dir, rows_text, training_only_weight
 
 if TYPE_CHECKING:
-    from data_foundry.v2.dataset import AbstractCuratedDataset, CurationResult
+    from data_foundry.definition.dataset import AbstractCuratedDataset, CurationResult
 
 REPORT_FORMAT = "data-foundry-report-v2"
 """Identifies the frontmatter layout, for readers that parse it."""
@@ -537,7 +537,7 @@ def _metric_block(task: Any) -> list[str]:
             "",
             "Kept in the frame for the metric; do not use them as features. Drop them from the inputs "
             "(`feature_columns(container)`), then pass the test rows' values to the scorer "
-            "(`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).",
+            "(`data_foundry.metrics.scorer(container)(y_test, y_pred, test_idx)`).",
             "",
             _table(table, full=True),
             "",

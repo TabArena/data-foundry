@@ -15,8 +15,9 @@ from pathlib import Path
 
 import pytest
 import yaml
+
 from data_foundry.curation.store import load_record, save_record
-from data_foundry.v2.splits import Temporal, TemporalSplits
+from data_foundry.definition.splits import Temporal, TemporalSplits
 
 pytest.importorskip("markdown_it", reason="the review page needs markdown-it-py (the `curation` extra)")
 
@@ -65,7 +66,7 @@ def brp():
 
 
 @pytest.fixture(scope="module")
-def crv(brp):  # noqa: ARG001 - the builder is loaded first: the collector imports it
+def crv(brp):
     """The collector script, imported as a module (it imports the builder)."""
     return _import("collect_reviews", COLLECTOR)
 

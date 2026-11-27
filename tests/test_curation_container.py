@@ -7,21 +7,20 @@ import pandas as pd
 import pandas.testing as pdt
 import pydantic
 import pytest
+
 from data_foundry.bundle_checks import verify_saved_container
 from data_foundry.curation_container import CuratedContainer, non_feature_columns
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE, splits_from_row_table, splits_to_row_table
 from data_foundry.schema import (
-    DatasetMetadata,
     DatasetMetadataV2,
     Grouping,
     PredictiveMLSplitsMetadata,
-    PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2,
     RowBudget,
     Source,
 )
 from data_foundry.utils.checksum import encode_pydantic_metadata
-
+from data_foundry.v1 import DatasetMetadata, PredictiveMLTaskMetadata
 from tests.test_bundle_checks import make_spec
 
 
@@ -752,9 +751,9 @@ def test_a_row_table_must_match_the_data(tmp_path):
 
 
 def test_a_format_2_container_keeps_its_metric_spec_and_scoring_columns(tmp_path):
+    from data_foundry.definition.dataset import metric_spec
+    from data_foundry.metrics import Metric
     from data_foundry.schema import ScoringColumn
-    from data_foundry.v2.dataset import metric_spec
-    from data_foundry.v2.metrics import Metric
 
     spec = metric_spec(
         Metric.stand_in("roc_auc", original="per-site AUC", reason="toy", reference="https://example.org"),
@@ -977,7 +976,8 @@ def test_the_test_set_has_its_own_checksum_inside_the_container_checksum(tmp_pat
     path = container.save(save_dir=tmp_path)
     assert json.loads((path / "container_metadata.json").read_text())["test_dataset_checksum"]
     loaded = CuratedContainer.load(path)  # the test set is not loaded: the stored checksum stands for it
-    assert loaded.test_dataset is None and loaded.verify()
+    assert loaded.test_dataset is None
+    assert loaded.verify()
     with_test = CuratedContainer.load(path, load_test_data=True)
     assert isinstance(with_test.test_dataset.index, pd.RangeIndex)  # saved without its index
     assert with_test.verify()

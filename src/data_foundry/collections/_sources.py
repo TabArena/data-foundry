@@ -215,7 +215,7 @@ class HuggingFaceSource(DataSource):
                 return cached
 
         try:
-            from huggingface_hub import snapshot_download
+            from huggingface_hub import snapshot_download  # noqa: PLC0415 - not imported on a warm cache
         except ImportError as exc:
             raise ImportError(
                 "HuggingFaceSource requires the `huggingface_hub` package. Install with: pip install huggingface_hub",
@@ -254,7 +254,7 @@ class HuggingFaceSource(DataSource):
                 return [c for c in cached if c is not None]
 
         try:
-            from huggingface_hub import snapshot_download
+            from huggingface_hub import snapshot_download  # noqa: PLC0415 - not imported on a warm cache
         except ImportError as exc:
             raise ImportError(
                 "HuggingFaceSource requires the `huggingface_hub` package. Install with: pip install huggingface_hub",

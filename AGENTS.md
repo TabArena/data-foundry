@@ -27,9 +27,10 @@ Data Foundry is the data-layer toolkit behind
   and resolves them against a local warehouse or a Hugging Face mirror, with cache + force-download semantics
   (`collections/`). It is how every collection ships, both container formats: BeyondArena today, the TabArena v0.2
   collection next;
-* the **v2 dataset format** (`v2/`): one `dataset.py` class per dataset, its split protocol, checks and generated
-  README, on top of the exploratory data checks (`dataset_checks.py`) and the post-hoc bundle integrity checks
-  (`bundle_checks.py`);
+* the **v2 dataset format** (`definition/`): one `dataset.py` class per dataset, its split protocol, checks and
+  generated README, on top of the exploratory data checks (`dataset_checks.py`) and the post-hoc bundle integrity
+  checks (`bundle_checks.py`). The consumer side (`metrics.py`, `sampling.py`, `special/`, `encodings.py`) loads none
+  of it;
 * a git-native **curation backlog** (`src/data_foundry/curation/`) that replaces
   the legacy curation Google Sheet. The source of truth is **one markdown record
   per candidate dataset** (YAML front-matter for the structured/dropdown fields +
@@ -86,11 +87,11 @@ Guidelines page renders the skills README and the two knowledge skills.
 
 When changing core code:
 
-* **Tests live in `tests/`.** Run `pytest -q` after any change. The suite
-  is fast (~2s); there is no excuse for not running it.
-* **Linting:** `ruff check .` and `ruff format .`. Settings are in
-  `pyproject.toml` (`[tool.ruff]`). `from __future__ import annotations`
-  is mandatory in every file; 120-char lines; Google-style docstrings.
+* **Tests live in `tests/`.** Run `pytest -q` after any change (about two to five minutes; a single file with
+  `pytest tests/test_x.py` while iterating).
+* **Linting:** `uvx ruff@0.15.15 check .` and `uvx ruff@0.15.15 format .` (the pinned version CI runs; the frozen v1
+  trees are excluded in `pyproject.toml`). `from __future__ import annotations` is mandatory in every file; 120-char
+  lines; Google-style docstrings.
 * **Examples in `examples/` are part of the docs surface.** When you add a
   feature, add or update the matching example, and (only if it's a major
   use case) link it from `README.md`.
@@ -113,7 +114,7 @@ When changing core code:
 | creation-time | `schema.py` `__post_init__` | coherence of *one* metadata object, no DataFrame needed (e.g. `group_labels` requires `group_on`, `time_horizon` requires its unit, a `Grouping` with `prediction_unit="group"` needs an aggregation). Runs on every `CuratedContainer.load`, so a new rule here **must hold for every already-shipped container** — verify against the BeyondArena collection before making one hard. |
 | exploratory | `dataset_checks.run_all_checks(...)` | statistics a human reads while curating. Returns five DataFrames, rendered in each dataset's README (and committed in the v1 notebooks) — don't change its output shape lightly. |
 | post-hoc / bundle | `bundle_checks.py` | *cross-referential* checks over the assembled bundle (DataFrame + task + splits + dataset metadata) and, after export, the save/load round-trip. It also checks the shipped format-1 containers: keep its format-1 behaviour unchanged. The split protocol follows the container format: format 1 by the v1 protocol checks here, format 2 by `v2.splits.protocol_checks` (called from here). |
-| v2 definition | `src/data_foundry/v2/` (`_validate_definition` and `_definition_checks` in `dataset.py`, `splits.protocol_checks`, `group_checks.py`, `task_checks.py`) | rules of the v2 protocol and the v2 definition format, run by `dataset check` / `dataset build` next to the bundle checks. The default home for a new v2 rule. |
+| v2 definition | `src/data_foundry/definition/` (`_validate_definition` and `_definition_checks` in `dataset.py`, `splits.protocol_checks`, `group_checks.py`, `task_checks.py`) | rules of the v2 protocol and the v2 definition format, run by `dataset check` / `dataset build` next to the bundle checks. The default home for a new v2 rule. |
 
 * `bundle_checks.run_bundle_checks(container)` returns a `BundleCheckReport`
   (errors / warnings / infos, each with a stable `slug`). `dataset build` raises on errors before saving and runs
@@ -124,7 +125,7 @@ When changing core code:
   keep O(rows x cols) work behind the `heavy_cell_budget` guard.
 * `dataset_checks.run_all_checks(...)` returns five DataFrames; the dtype categorization of a container's features
   is `CuratedContainer._feature_dtype_counts`.
-* Splits: definitions use `src/data_foundry/v2/splits.py` (the v2 protocol, declarative `TemporalSplits`). The v1
+* Splits: definitions use `src/data_foundry/definition/splits.py` (the v2 protocol, declarative `TemporalSplits`). The v1
   helpers of the BeyondArena notebooks were removed on 2026-11-12 (in git at `6cc3c945`;
   [`DATA_FOUNDRY_V1.md`](DATA_FOUNDRY_V1.md)).
 
@@ -198,10 +199,10 @@ bump versions or publish without explicit human authorization.
 | Container save/load + describe | [`src/data_foundry/curation_container.py`](src/data_foundry/curation_container.py) |
 | Bundle integrity checks (post-hoc + post-export) | [`src/data_foundry/bundle_checks.py`](src/data_foundry/bundle_checks.py) |
 | Collections + cache helpers | [`src/data_foundry/collections/`](src/data_foundry/collections/) |
-| Add a dataset: its v2 folder, checks, probes and the review panel ("is X ready?" too) | [`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md) · [`src/data_foundry/v2/`](src/data_foundry/v2/) |
+| Add a dataset: its v2 folder, checks, probes and the review panel ("is X ready?" too) | [`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md) · [`src/data_foundry/definition/`](src/data_foundry/definition/) |
 | Review a batch of added datasets (the review page) | [`.claude/skills/review-added-datasets/SKILL.md`](.claude/skills/review-added-datasets/SKILL.md) |
 | Rebuild the TabArena v0.2 working copy and verify the build | [`rebuild.md`](.claude/skills/knowledge-data-foundry/references/rebuild.md) |
-| Load / browse / benchmark shipped datasets (format 2: score by `objective_metric` with `data_foundry.v2.metrics.scorer`, inputs from `feature_columns`, which drops the scoring columns; a task with a training weight names it, `sample_weight(container)`, and every model is fitted with it as the row weight, never as a feature; a weight column's test-row values are for the scorer only, never read when predicting; a container with a row budget, a `_1m` version, keeps every training row and a model fits on `subsample_train(container, repeat, fold)`; format 1: `objective_metric_name`) | [`CLAUDE.md`](CLAUDE.md) (*Using shipped datasets*) · [`examples/`](examples) · [`src/data_foundry/v2/metrics.py`](src/data_foundry/v2/metrics.py) |
+| Load / browse / benchmark shipped datasets (format 2: score by `objective_metric` with `data_foundry.metrics.scorer`, inputs from `feature_columns`, which drops the scoring columns; a task with a training weight names it, `sample_weight(container)`, and every model is fitted with it as the row weight, never as a feature; a weight column's test-row values are for the scorer only, never read when predicting; a container with a row budget, a `_1m` version, keeps every training row and a model fits on `subsample_train(container, repeat, fold)`; format 1: `objective_metric_name`) | [`CLAUDE.md`](CLAUDE.md) (*Using shipped datasets*) · [`examples/`](examples) · [`src/data_foundry/metrics.py`](src/data_foundry/metrics.py) |
 | Pull requests: the body, one PR per independent change, stacked PRs with `gh stack` | [`pull_requests.md`](.claude/skills/knowledge-data-foundry/references/pull_requests.md) |
 | Dataset template | [`datasets/_template/`](datasets/_template/) |
 | Examples (use-case anchors) | [`examples/`](examples) · [`examples/README.md`](examples/README.md) |

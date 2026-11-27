@@ -6,7 +6,8 @@ from pathlib import Path
 
 import arff
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -252,7 +253,7 @@ class QsarTid11(AbstractCuratedDataset):
         - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01): ChEMBL 17's SMILES in RDKit's
           canonical form (`canonical_smiles`; the 549 salts as ChEMBL records them), declared in `special_features`, so a
           benchmark encodes it as a structure and never as text; the recommended encoding is
-          `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). The source's
+          `data_foundry.special.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). The source's
           1,024 FCFP6 bits leave (Lennart, 2026-11-01: "the real task here is going from smiles to a prediction, the
           bits are just one possible modelling choice by the authors"). RDKit computes the same kind of fingerprint, but
           not these columns: with its closest settings (radius 3, feature invariants, 1,024 bits) no source bit is

@@ -213,9 +213,9 @@ The task is going from the structure to a prediction (Lennart, 2026-11-01). So:
     (`_clean`)", step 6, and the `special_features` bullet of "Field mapping".
 * **The container** records the column in `task_metadata.special_features` (kind `smiles`, layout `column`, encoding
   required, the recommended encoding's id); `special_features(container, "smiles")` lists it, and
-  `encode_special_feature(df, feature)` (`data_foundry.v2.special`) encodes it.
-* **Encodings:** `encode_smiles` and `DEFAULT_SMILES_ENCODING` (`data_foundry.v2.chemistry`); the date and text
-  encodings and `recommended_encodings()` are in `data_foundry.v2.encodings`.
+  `encode_special_feature(df, feature)` (`data_foundry.special`) encodes it.
+* **Encodings:** `encode_smiles` and `DEFAULT_SMILES_ENCODING` (`data_foundry.special.chemistry`); the date and text
+  encodings and `recommended_encodings()` are in `data_foundry.encodings`.
 * **Checks:** the bundle check `dataset_smiles_column` parses every value with the pinned RDKit, and a SMILES column
   raises no `dataset_identifier_column`.
 * **Probes:** they see the column in the recommended encoding (`dataset_io.py`); the blind reviewer's clean room keeps

@@ -4,6 +4,7 @@ import dataclasses
 from pathlib import Path
 
 import pytest
+
 from data_foundry.collections import (
     BEYOND_ARENA,
     DATA_FOUNDRY_CACHE_ENV,
@@ -21,7 +22,6 @@ from data_foundry.collections import (
 from data_foundry.collections._sources import has_core_files
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
 from data_foundry.schema import PredictiveMLSplitsMetadata, RowBudget, TrainSampling
-
 from tests.test_bundle_checks import make_container, make_iid_splits
 
 

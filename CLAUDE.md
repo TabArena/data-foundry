@@ -27,7 +27,7 @@ gotchas that look like blockers but aren't — lives in
     the local dashboard (`.venv/bin/python -m data_foundry.curation.cli serve`) on its Screening queue,
   * add a dataset — `/add-dataset`
     ([`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md)): the v2 folder (`dataset.py`
-    class + generated `README.md`, API in `src/data_foundry/v2/`), checks and probes, then a review
+    class + generated `README.md`, API in `src/data_foundry/definition/`), checks and probes, then a review
     panel of agents (`.claude/agents/`); the open questions go into the record's `## Review`; also "is X ready?",
   * the curator reviews what was added — `/review-added-datasets`
     ([`.claude/skills/review-added-datasets/SKILL.md`](.claude/skills/review-added-datasets/SKILL.md)): the review
@@ -39,7 +39,8 @@ gotchas that look like blockers but aren't — lives in
 * **Builds** happen only on the curator's ask
   ([`rebuild.md`](.claude/skills/knowledge-data-foundry/references/rebuild.md)). Otherwise you touch code to extend
   the package (`src/data_foundry/`) and update examples (`examples/`) when an API changes.
-* **Before changes land:** `pytest -q && ruff check . && ruff format --check .`
+* **Before changes land:** `pytest -q && uvx ruff@0.15.15 check . && uvx ruff@0.15.15 format --check .` (CI runs the
+  same; the pinned ruff, since another version formats differently)
 * **Conventions:** `from __future__ import annotations` is mandatory; lines
   ≤120 chars; Google-style docstrings; no commits/pushes without explicit
   human ask.
@@ -83,7 +84,7 @@ both container formats.
 * **Fit a model:** iterate `container.experiment_metadata.splits` as `{repeat: {fold: (train_idx,
   test_idx)}}` and never re-split or shuffle; the splits encode the regime (IID / temporal / grouped).
   Format 2 (`container.format_version == 2`): score by the spec `task_metadata.objective_metric` with
-  `data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`, and take the inputs from
+  `data_foundry.metrics.scorer(container)(y_test, y_pred, test_idx)`, and take the inputs from
   `feature_columns(container)` (`data_foundry.curation_container`), which drops the target, the group and the
   scoring columns (`task_metadata.scoring_columns`: metric inputs such as an era, never features; a weight column's
   test-row values are for the scorer only, never read when predicting) and a time column that dates the label
@@ -93,15 +94,15 @@ both container formats.
   names it (`sample_weight(container)` from `data_foundry.curation_container`, `None` otherwise): fit every model
   with it as the row weight, never as a feature. A container with a row budget (`experiment_metadata.row_budget`, a
   `_1m` version) keeps every row a train side may use: fit on `subsample_train(container, repeat, fold)`
-  (`data_foundry.v2`), at most `row_budget.train` rows drawn by the default sampler the container records
+  (`data_foundry.sampling`), at most `row_budget.train` rows drawn by the default sampler the container records
   (`train_sampling`: for a temporal side the newest year, extended back until it holds that many rows, sampled at
   random; whole groups of a grouped one). A numeric time column's calendar is `task_metadata.time_unit` (numerai's
   eras count weeks). Format 1
   (BeyondArena): score with `task_metadata.objective_metric_name` (`rmse`, `roc_auc`, `log_loss`). Features can be
   categorical, string or datetime, so pick a model that takes mixed dtypes. A special feature
   (`special_features(container)`: a SMILES column, a spectrum's group of columns) is encoded by its kind:
-  `data_foundry.v2.special.encode_special_feature(df, feature)` (or your own), a SMILES never as text;
-  `data_foundry.v2.encodings` has the recommended encodings of dates and text too. See
+  `data_foundry.special.encode_special_feature(df, feature)` (or your own), a SMILES never as text;
+  `data_foundry.encodings` has the recommended encodings of dates and text too. See
   `examples/benchmark_container.py` (format 2) and `examples/benchmark_on_beyond_arena.py` (BeyondArena); without Data
   Foundry, `examples/read_metric_without_data_foundry.py`.
 

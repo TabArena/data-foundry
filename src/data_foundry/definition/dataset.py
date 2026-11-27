@@ -22,7 +22,7 @@ follows TabArena's model interface: declarative class attributes plus a small se
 
 From a notebook next to ``dataset.py``::
 
-    from data_foundry.v2 import workbench
+    from data_foundry.definition import workbench
 
     ds = workbench()      # this folder's dataset; picks up edits to dataset.py automatically
     ds.df.head()          # the curated frame
@@ -63,9 +63,27 @@ from data_foundry.bundle_checks import (
 from data_foundry.collections import collection_file_budget
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.dataset_checks import run_all_checks
+from data_foundry.definition import (
+    group_checks,
+    splits as protocol,
+    task_checks,
+)
+from data_foundry.definition.preprocessing import (
+    PANDAS_3,
+    SHUFFLE_RANDOM_STATE,
+    canonical_dtypes,
+    canonical_nans,
+    cast_dtypes,
+    order_positions,
+    order_rows,
+)
+from data_foundry.definition.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, Temporal, TemporalSplits
+from data_foundry.definition.windows import Window, candidate_windows, window_stats
+from data_foundry.metrics import Metric
 from data_foundry.schema import (
     GROUP_BASIS_TAGS,
     RETIRED_DATA_TAGS,
+    DatasetDefinitionError,
     DatasetMetadataV2,
     Grouping,
     MetricSpec,
@@ -83,29 +101,12 @@ from data_foundry.schema import (
     rows_text,
 )
 from data_foundry.time_basis import GroupBasis, TimeBasis
-from data_foundry.v2 import (
-    group_checks,
-    splits as protocol,
-    task_checks,
-)
-from data_foundry.v2.metrics import Metric
-from data_foundry.v2.preprocessing import (
-    PANDAS_3,
-    SHUFFLE_RANDOM_STATE,
-    canonical_dtypes,
-    canonical_nans,
-    cast_dtypes,
-    order_positions,
-    order_rows,
-)
-from data_foundry.v2.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, Temporal, TemporalSplits
-from data_foundry.v2.windows import Window, candidate_windows, window_stats
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
     from data_foundry.schema import SpecialFeature
-    from data_foundry.v2.special import SpecialFeatureSpec
+    from data_foundry.special import SpecialFeatureSpec
 
 DEFINITION_FILENAME = "dataset.py"
 """The file that holds a dataset's definition, one per dataset folder."""
@@ -341,8 +342,9 @@ class NonFeature:
     Attributes:
         column: The column of the frame.
         reason: ``"outcome"`` (a result measured with or after the target: a sibling target), ``"provenance"`` (where
-            the row comes from: a file, a row number, an id; :func:`~data_foundry.v2.preprocessing.provenance_columns`),
-            ``"identifier"`` (a key with no meaning as an input, sequential ids among them) or ``"other"``.
+            the row comes from: a file, a row number, an id;
+            :func:`~data_foundry.definition.preprocessing.provenance_columns`), ``"identifier"`` (a key with no meaning
+            as an input, sequential ids among them) or ``"other"``.
         description: What the column is and why it is no feature; required for ``"other"``.
     """
 
@@ -361,7 +363,7 @@ class CurationResult:
         bundle_report: The bundle-check report, with the checks of the definition merged in.
         data_checks: The tables of :func:`~data_foundry.dataset_checks.run_all_checks`, by name.
         decisions: The curation decisions of :meth:`AbstractCuratedDataset._decisions`, with their evidence.
-        group_stats: The group statistics of a grouped task (:mod:`data_foundry.v2.group_checks`), else None.
+        group_stats: The group statistics of a grouped task (:mod:`data_foundry.definition.group_checks`), else None.
         saved_path: Where the container was saved, or None for a check without saving.
         created_at: When the result was produced (UTC).
     """
@@ -384,10 +386,6 @@ class CurationResult:
     def saved(self) -> bool:
         """Whether the container was saved (only :meth:`AbstractCuratedDataset.build` saves)."""
         return self.saved_path is not None
-
-
-class DatasetDefinitionError(TypeError):
-    """A dataset class is missing a declaration or declares an inconsistent one."""
 
 
 class AbstractCuratedDataset(ABC):
@@ -455,7 +453,7 @@ class AbstractCuratedDataset(ABC):
     problem_type: ClassVar[str]
     """``binary_classification``, ``multiclass_classification`` or ``regression``."""
     metric: ClassVar[Metric]
-    """Required: the metric that scores the task (:class:`~data_foundry.v2.metrics.Metric`). The source's metric
+    """Required: the metric that scores the task (:class:`~data_foundry.metrics.Metric`). The source's metric
     when it defines one (``Metric.source("rmse", original="RMSE", reference=...)``), the closest computable one to an
     original that cannot be computed (``Metric.stand_in(...)``), else ``Metric.fallback(reason=...)`` (roc_auc /
     log_loss / rmse by problem type, and where we looked)."""
@@ -477,12 +475,12 @@ class AbstractCuratedDataset(ABC):
     tests that each unit's weights sum to 1. Downstream tools read it to weight their validation loss alike."""
     special_features: ClassVar[tuple[SpecialFeatureSpec, ...]] = ()
     """Model inputs that need handling beyond their dtype, declared like the target. Each entry is one special
-    feature, in one of two layouts (:mod:`data_foundry.v2.special`):
+    feature, in one of two layouts (:mod:`data_foundry.special`):
 
-    * one column (:class:`~data_foundry.v2.special.SpecialColumn`): ``Smiles(column="SMILES")``, a molecule's
-      structure (CLEAN-24), cast to ``string``; ship the form :func:`~data_foundry.v2.chemistry.canonical_smiles`
+    * one column (:class:`~data_foundry.special.SpecialColumn`): ``Smiles(column="SMILES")``, a molecule's
+      structure (CLEAN-24), cast to ``string``; ship the form :func:`~data_foundry.special.chemistry.canonical_smiles`
       gives;
-    * a group of columns that hold one object together (:class:`~data_foundry.v2.special.SpecialColumnGroup`):
+    * a group of columns that hold one object together (:class:`~data_foundry.special.SpecialColumnGroup`):
       ``Spectrum(name="serum_ms", prefix="M/Z:", unit="m/z", technique=..., state=..., description=...)``, one column
       per position on a spectrum's axis, named ``<prefix><position>`` (CLEAN-26); never process them in ``_clean``.
 
@@ -495,11 +493,11 @@ class AbstractCuratedDataset(ABC):
     context=..., time_on=...)`` (:class:`~data_foundry.schema.Grouping`). The ``definition`` (what a group is, why
     it is held out, the use case with its source) is required and may be indented like code. Stored in the container."""
     temporal: ClassVar[Temporal | None] = None
-    """A temporal task: ``Temporal(on=..., splits=TemporalSplits(...))`` (:class:`~data_foundry.v2.splits.Temporal`),
-    plus ``horizon=..., horizon_unit=...`` when the windows do not fix the horizon, and ``time_of="label"`` when the
-    time column dates the label rather than the prediction point (it then orders and splits the rows but is no model
-    input), with ``prediction_time=...`` naming the column of the prediction point when there is one. Neither
-    ``grouping`` nor ``temporal``: an IID task."""
+    """A temporal task: ``Temporal(on=..., splits=TemporalSplits(...))``
+    (:class:`~data_foundry.definition.splits.Temporal`), plus ``horizon=..., horizon_unit=...`` when the windows do not
+    fix the horizon, and ``time_of="label"`` when the time column dates the label rather than the prediction point (it
+    then orders and splits the rows but is no model input), with ``prediction_time=...`` naming the column of the
+    prediction point when there is one. Neither ``grouping`` nor ``temporal``: an IID task."""
 
     # --- splits -------------------------------------------------------------------------------------
     splits_comment: ClassVar[str | None] = None
@@ -536,9 +534,9 @@ class AbstractCuratedDataset(ABC):
         ``raw`` is a copy of the cached output of :meth:`_load_raw`, so it can be changed in place; it runs under
         pandas copy-on-write, so the copy costs memory only for the columns that change (write
         ``df.loc[mask, "a"] = x``, not the chained ``df["a"][mask] = x``, which does not write). All
-        column work happens here: renames, derived columns, and drops (:func:`~data_foundry.v2.drop_columns`
+        column work happens here: renames, derived columns, and drops (:func:`~data_foundry.definition.drop_columns`
         fails on a misspelled name). Leave the final dtypes to :meth:`_feature_types` (cast mid-way with
-        :func:`~data_foundry.v2.cast_dtypes` only when a later step needs it) and do not shuffle or sort:
+        :func:`~data_foundry.definition.cast_dtypes` only when a later step needs it) and do not shuffle or sort:
         the base class does both afterwards. Return a ``(dataset, test_dataset)`` pair when the source
         ships an unlabeled test set kept for inference.
         """
@@ -561,7 +559,7 @@ class AbstractCuratedDataset(ABC):
     def _make_splits(self, df: pd.DataFrame) -> Splits | SplitPlan:
         """Build the outer splits for ``df`` (already in its final row order).
 
-        The default is the v2 protocol (:mod:`data_foundry.v2.splits`): the windows of ``temporal.splits`` for a
+        The default is the v2 protocol (:mod:`data_foundry.definition.splits`): the windows of ``temporal.splits`` for a
         temporal task, else the recommended IID or grouped 3-fold cross-validation, both fitted to the row budget of a
         sub-sampled version (:func:`effective_row_budget`). Override it only for a split none of these express, and
         return a :class:`SplitPlan` when the split step reduces the frame or computes its comment.
@@ -654,7 +652,7 @@ class AbstractCuratedDataset(ABC):
         and module constants they read (:func:`_code_hash`), so iterating on ``_clean`` or the declarations never
         re-reads the files.
         """
-        from data_foundry.v2.registry import load_definition  # noqa: PLC0415 - the registry imports this module
+        from data_foundry.definition.registry import load_definition  # noqa: PLC0415 - the registry imports this module
 
         old = type(self)
         file = definition_file(old)
@@ -922,7 +920,7 @@ class AbstractCuratedDataset(ABC):
         Raises:
             DatasetDefinitionError: A special feature does not find its columns in ``df``.
         """
-        from data_foundry.v2.special import SpecialFeatureError  # noqa: PLC0415 - special imports this module's users
+        from data_foundry.special import SpecialFeatureError  # noqa: PLC0415 - special imports this module's users
 
         try:
             return [spec.record(df.columns) for spec in self.special_features]
@@ -936,7 +934,7 @@ class AbstractCuratedDataset(ABC):
         return [c for spec in specs for c in self._resolve(spec, names)]
 
     def _resolve(self, spec: SpecialFeatureSpec, names: list[str]) -> list[str]:
-        from data_foundry.v2.special import SpecialFeatureError  # noqa: PLC0415
+        from data_foundry.special import SpecialFeatureError  # noqa: PLC0415
 
         try:
             return spec.resolve(names)[0]
@@ -954,9 +952,10 @@ class AbstractCuratedDataset(ABC):
         """The curated frame (after the standard steps), cached.
 
         The cache is cleared by :meth:`reload`. An edit of ``dataset.py`` is picked up on the next access only with
-        ``auto_reload`` on (:func:`~data_foundry.v2.workbench.workbench` turns it on); otherwise the frame stays as
-        first computed until :meth:`reload`. Explore it freely: it is a copy that shares no memory with the cached raw
-        data, and :meth:`check` and :meth:`build` rebuild the frame from the raw data and never use this cached copy.
+        ``auto_reload`` on (:func:`~data_foundry.definition.workbench.workbench` turns it on); otherwise the frame stays
+        as first computed until :meth:`reload`. Explore it freely: it is a copy that shares no memory with the cached
+        raw data, and :meth:`check` and :meth:`build` rebuild the frame from the raw data and never use this cached
+        copy.
         """
         self._refresh()
         if self._df_cache is None:
@@ -991,15 +990,15 @@ class AbstractCuratedDataset(ABC):
 
     # --- splits -------------------------------------------------------------------------------------
     def default_splits(self, df: pd.DataFrame) -> SplitPlan:
-        """The default of :meth:`_make_splits`: the v2 split protocol (:mod:`data_foundry.v2.splits`).
+        """The default of :meth:`_make_splits`: the v2 split protocol (:mod:`data_foundry.definition.splits`).
 
         The splits are the declarative temporal windows, or the recommended IID / grouped 3-fold cross-validation, on
         the full frame. A version with a row budget (:func:`effective_row_budget`) samples only its test sides to
         ``row_budget.test``: a temporal version each test window
-        (:func:`~data_foundry.v2.splits.sample_temporal_splits`, the frame keeps the rows a split uses), an IID or
-        grouped one each fold's test third, whose left-out rows train in that fold
-        (:func:`~data_foundry.v2.splits.fit_splits_to_budget`). The train sides keep every row available to them; a
-        benchmark sub-samples them to ``row_budget.train`` (:func:`~data_foundry.v2.splits.subsample_train`).
+        (:func:`~data_foundry.definition.splits.sample_temporal_splits`, the frame keeps the rows a split uses), an IID
+        or grouped one each fold's test third, whose left-out rows train in that fold
+        (:func:`~data_foundry.definition.splits.fit_splits_to_budget`). The train sides keep every row available to
+        them; a benchmark sub-samples them to ``row_budget.train`` (:func:`~data_foundry.sampling.subsample_train`).
         """
         task = self.task_metadata
         temporal = task.time_on is not None
@@ -1216,8 +1215,8 @@ class AbstractCuratedDataset(ABC):
         walking back from the newest data while every train side keeps ``min_train_fraction`` of the rows. The
         definition's own windows are marked ``chosen``; one that no candidate matches (a cutoff on another date) is
         listed as a row of its own. Statistics of the data only, never of a model
-        (:func:`~data_foundry.v2.windows.window_stats`): the dates and months, the sizes and train share, the target,
-        and the drift of the features from the train side. ``dataset windows <name>`` prints the table.
+        (:func:`~data_foundry.definition.windows.window_stats`): the dates and months, the sizes and train share, the
+        target, and the drift of the features from the train side. ``dataset windows <name>`` prints the table.
         """
         if self.temporal is None:
             msg = f"{type(self).__name__}: window statistics are for a temporal task (`temporal = Temporal(...)`)."
@@ -1360,7 +1359,7 @@ class AbstractCuratedDataset(ABC):
 
         This is the only step that mints a UUID. The report records the UUID, checksum and provenance.
         """
-        from data_foundry.v2.report import read_report  # noqa: PLC0415 - report imports this module
+        from data_foundry.definition.report import read_report  # noqa: PLC0415 - report imports this module
 
         if self.folder is None:
             msg = f"{type(self).__name__} is defined outside a `{DEFINITION_FILENAME}`: write it into one to build it."
@@ -1688,7 +1687,7 @@ class AbstractCuratedDataset(ABC):
 
     def _raw_file_findings(self, manifest: list[RawFile]) -> list[CheckResult]:
         """A source's file pattern that matches nothing, and raw files changed since the README was written."""
-        from data_foundry.v2.report import read_report  # noqa: PLC0415 - report imports this module
+        from data_foundry.definition.report import read_report  # noqa: PLC0415 - report imports this module
 
         findings = []
         unmatched = getattr(self, "_unmatched_raw_files", [])
@@ -1724,7 +1723,7 @@ class AbstractCuratedDataset(ABC):
         return findings
 
     def _write_report(self, result: CurationResult) -> Path:
-        from data_foundry.v2.report import write_report  # noqa: PLC0415 - report imports this module
+        from data_foundry.definition.report import write_report  # noqa: PLC0415 - report imports this module
 
         return write_report(result, self.report_path)
 
@@ -2230,7 +2229,7 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         fail("`sample_weight` names one scoring column (a string), or is None.")
     if cls.unit_weight is not None and not isinstance(cls.unit_weight, UnitWeight):
         fail("`unit_weight` is a `UnitWeight(column=..., unit=...)`, or None.")
-    from data_foundry.v2.special import SpecialFeatureSpec  # noqa: PLC0415 - the kinds import this module
+    from data_foundry.special import SpecialFeatureSpec  # noqa: PLC0415 - the kinds import this module
 
     specs = cls.special_features
     if not isinstance(specs, tuple) or not all(isinstance(s, SpecialFeatureSpec) for s in specs):

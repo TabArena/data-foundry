@@ -14,7 +14,7 @@ script imports nothing from ``data_foundry``. It:
    ``feature_columns``;
 4. scores a dummy prediction on the test side of the first split with the scikit-learn function of a standard
    metric. A custom metric (``kind: "custom"``) is implemented from its ``definition`` and ``params``, or by copying
-   ``src/data_foundry/v2/metrics.py`` (numpy, pandas, scikit-learn and scipy only) into your code. A regression
+   ``src/data_foundry/metrics.py`` (numpy, pandas, scikit-learn and scipy only) into your code. A regression
    target may ship on a modelling scale (``target_transform``: ``log``, ``log1p``, ``log10``); the metric is
    computed after the inverse of both the true values and the predictions. A deviance floors the predictions at its
    ``min_prediction`` param and weights the rows by its ``weight`` input (scikit-learn's ``sample_weight``).
@@ -208,7 +208,7 @@ def main(path: Path) -> float | None:
     if spec.get("kind") != "standard" or spec["name"] not in STANDARD:
         print(
             f"`{spec['name']}` is a {spec.get('kind')} metric: implement it from its definition and params, or copy "
-            "src/data_foundry/v2/metrics.py; its inputs are the test rows' values of the scoring columns: "
+            "src/data_foundry/metrics.py; its inputs are the test rows' values of the scoring columns: "
             f"{ {role: df[col].iloc[test_idx].head(3).tolist() for role, col in (spec.get('inputs') or {}).items()} }"
         )
         return None

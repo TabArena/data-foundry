@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import pytest
 import yaml
+
 from data_foundry.curation import consistency
 from data_foundry.curation._paths import records_dir, resolve_curation_root
 from data_foundry.curation.consistency import COLLECTION_TYPES, collection_type_problems, is_typed
@@ -29,7 +30,8 @@ PENDING: dict[str, str] = {
 
 def _records() -> dict[str, set[str]]:
     """The tags of every definition record the check reads, by unique name: every one once
-    ``consistency.STRICT_COLLECTION_TYPES`` is set, until then those with a collection type or a collection fact."""
+    ``consistency.STRICT_COLLECTION_TYPES`` is set, until then those with a collection type or a collection fact.
+    """
     out = {}
     for record in load_all(records_dir()):
         if not record.v2_path or not (REPO / record.v2_path).exists():

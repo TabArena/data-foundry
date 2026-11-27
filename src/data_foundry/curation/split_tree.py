@@ -172,7 +172,7 @@ def parse(text: str) -> SplitTree:
     names = [c.partition("\n")[0].strip() for c in chunks]
     types = {t.lower() for t in COLLECTION_TYPES}
     sections: dict[str, Section] = {}
-    for name, chunk in zip(names, chunks):
+    for name, chunk in zip(names, chunks, strict=False):
         body = chunk.partition("\n")[2]
         kind = "type" if name.lower() in types else "step" if name.lower().endswith(" step") else "text"
         if kind == "text":
@@ -291,7 +291,7 @@ def _parse_table(text: str) -> list[dict[str, str]]:
     if len(rows) < 2:
         return []
     header = [h.lower() for h in _cells(rows[0])]
-    return [dict(zip(header, _cells(row))) for row in rows[2:]]
+    return [dict(zip(header, _cells(row), strict=False)) for row in rows[2:]]
 
 
 def _cells(row: str) -> list[str]:

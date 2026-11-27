@@ -1,3 +1,7 @@
+"""A curated container: the frame, its metadata and its splits, saved and loaded as files; and the helpers that
+say which columns are model inputs (``feature_columns``), split columns, weights and special features.
+"""
+
 from __future__ import annotations
 
 import dataclasses
@@ -24,12 +28,10 @@ from data_foundry.row_table import (
     table_metadata,
 )
 from data_foundry.schema import (
-    DatasetMetadata,
     DatasetMetadataV2,
     Grouping,
     MultilineStr,
     PredictiveMLSplitsMetadata,
-    PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2,
     SpecialFeature,
     UnitWeight,
@@ -46,6 +48,7 @@ from data_foundry.utils.checksum import (
     omit_unset_fields,
 )
 from data_foundry.utils.dtypes import is_str_dtype
+from data_foundry.v1 import DatasetMetadata, PredictiveMLTaskMetadata
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +64,7 @@ FORMAT_VERSIONS = {
     PredictiveMLTaskMetadataV2.type_adapter_id: 2,
 }
 """The container format of each task metadata class: 1 for the v1 notebooks (and the shipped BeyondArena
-containers), 2 for the v2 definitions (:mod:`data_foundry.v2`)."""
+containers), 2 for the v2 definitions (:mod:`data_foundry.definition`)."""
 NoIndentMetadata = [
     PredictiveMLSplitsMetadata.type_adapter_id,
 ]
@@ -153,7 +156,7 @@ def validation_weight(container: CuratedContainer) -> str | None:
     """
     if getattr(container, "format_version", 1) != 2:
         return None
-    from data_foundry.v2.metrics import row_weight_column  # noqa: PLC0415 - data_foundry.v2 imports this module
+    from data_foundry.metrics import row_weight_column  # noqa: PLC0415 - data_foundry.definition imports this module
 
     return row_weight_column(container.task_metadata.objective_metric)
 
@@ -162,7 +165,7 @@ def special_features(container: CuratedContainer, kind: str | None = None) -> li
     """The model inputs that need handling beyond their dtype (:class:`~data_foundry.schema.SpecialFeature`): every
     one, or those of ``kind`` (``smiles``, ``spectrum``). Each is one column (a SMILES, ``layout == "column"``) or a
     group of columns encoded together (a spectrum, ``layout == "group"``); its columns are in ``feature.columns``.
-    Encode one with ``data_foundry.v2.special.encode_special_feature(container.dataset, feature)``; where
+    Encode one with ``data_foundry.special.encode_special_feature(container.dataset, feature)``; where
     ``feature.encoding_required`` the raw values are no model input. A format-1 container has none.
     """
     features = getattr(container.task_metadata, "special_features", None) or ()

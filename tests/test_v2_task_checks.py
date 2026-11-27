@@ -1,4 +1,4 @@
-"""Tests for the cheap scorability checks of v2 tasks (``data_foundry.v2.task_checks``)."""
+"""Tests for the cheap scorability checks of v2 tasks (``data_foundry.definition.task_checks``)."""
 
 from __future__ import annotations
 
@@ -7,11 +7,12 @@ import warnings
 
 import numpy as np
 import pandas as pd
-from data_foundry.curation_container import CuratedContainer
-from data_foundry.schema import DatasetMetadata, PredictiveMLSplitsMetadata, PredictiveMLTaskMetadataV2
-from data_foundry.v2.metrics import METRICS
-from data_foundry.v2.task_checks import _classification_findings, one_class_undefined, task_findings
 
+from data_foundry.curation_container import CuratedContainer
+from data_foundry.definition.task_checks import _classification_findings, one_class_undefined, task_findings
+from data_foundry.metrics import METRICS
+from data_foundry.schema import PredictiveMLSplitsMetadata, PredictiveMLTaskMetadataV2
+from data_foundry.v1 import DatasetMetadata
 from tests.test_bundle_checks import make_spec
 
 
@@ -56,7 +57,7 @@ def test_binary_folds_with_one_class_or_few_positives() -> None:
 
 def test_a_single_class_fold_is_an_error_only_under_a_metric_it_leaves_undefined() -> None:
     """SPLIT-16: one class cannot be ranked; other metrics score the fold, a warning."""
-    from data_foundry.v2.task_checks import _classification_findings
+    from data_foundry.definition.task_checks import _classification_findings
 
     target = pd.Series([0] * 90 + [1] * 10)
     folds = [("r0f0", np.arange(50))]
@@ -98,7 +99,9 @@ def test_every_binary_metric_one_class_leaves_undefined_says_so() -> None:
             undefined.add(name)
     assert undefined.issuperset({"roc_auc", "average_precision", "normalized_early_detection_utility"})
     assert undefined.issubset(flagged)
-    assert one_class_undefined("a_local_metric") and one_class_undefined(None) and not one_class_undefined("log_loss")
+    assert one_class_undefined("a_local_metric")
+    assert one_class_undefined(None)
+    assert not one_class_undefined("log_loss")
 
 
 def test_balanced_binary_folds_pass() -> None:

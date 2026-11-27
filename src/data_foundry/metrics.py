@@ -1427,7 +1427,7 @@ def _custom(name, problem_types, prediction, greater_is_better, fn, definition, 
         prediction=prediction,
         greater_is_better=greater_is_better,
         fn=fn,
-        implementation=f"data_foundry.v2.metrics.{fn.__name__}",
+        implementation=f"data_foundry.metrics.{fn.__name__}",
         definition=definition,
         kind="custom",
         reference=reference,
@@ -1739,7 +1739,7 @@ def _unknown_name_message(name: str) -> str:
     close = difflib.get_close_matches(str(name).lower(), METRICS, n=3)
     hint = f" Did you mean {', '.join(close)}?" if close else ""
     return (
-        f"unknown metric {name!r}.{hint} A custom metric is added to data_foundry.v2.metrics under a general name; "
+        f"unknown metric {name!r}.{hint} A custom metric is added to data_foundry.metrics under a general name; "
         f"the known names are {sorted(METRICS)}."
     )
 

@@ -7,7 +7,7 @@ A spectrum ships as the source publishes it: one column per position on its axis
 :class:`~data_foundry.schema.SpectrumDetails` (their positions, the unit, the technique and what the source did to the
 values: ``raw``, ``processed`` or ``peaks``). Each column stays a numeric feature, so a model can read the bins as they
 are; a benchmark that knows the feature encodes the spectrum row by row instead, with the recommended encoding or its
-own (:func:`~data_foundry.v2.special.encode_special_feature`). The processing has free choices (window, baseline
+own (:func:`~data_foundry.special.encode_special_feature`). The processing has free choices (window, baseline
 method), so it belongs in the benchmark, where every method gets the same default and a method can switch it off, not
 in the data (PR #21, Andrej Tschalzev, 2026-10-21).
 
@@ -83,10 +83,10 @@ from typing import TYPE_CHECKING, ClassVar
 import numpy as np
 import pandas as pd
 
+from data_foundry.encodings import Encoding
 from data_foundry.schema import SpectrumDetails, SpectrumState, SpectrumTechnique
-from data_foundry.v2._optional import import_build_dependency
-from data_foundry.v2.encodings import Encoding
-from data_foundry.v2.special import SpecialColumnGroup, SpecialFeatureError
+from data_foundry.special import SpecialColumnGroup, SpecialFeatureError
+from data_foundry.utils.optional import import_build_dependency
 
 if TYPE_CHECKING:
     from data_foundry.bundle_checks import CheckResult
@@ -479,7 +479,7 @@ def _snv(values: np.ndarray) -> np.ndarray:
 def encode_spectrum(frame: pd.DataFrame, axis: Sequence[float], encoding: Encoding | str) -> pd.DataFrame:
     """A spectrum in ``encoding``: the same rows and columns as ``frame`` (its columns in axis order), new values.
 
-    ``encoding`` is an :class:`~data_foundry.v2.encodings.Encoding` of this module or its spec id (a container's
+    ``encoding`` is an :class:`~data_foundry.encodings.Encoding` of this module or its spec id (a container's
     ``SpecialFeature.recommended_encoding``). A row with a missing value comes out missing, except as it is.
 
     Raises:

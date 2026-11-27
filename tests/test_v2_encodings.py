@@ -1,12 +1,13 @@
-"""Tests for the recommended encodings of date, text and SMILES columns (``data_foundry.v2.encodings``)."""
+"""Tests for the recommended encodings of date, text and SMILES columns (``data_foundry.encodings``)."""
 
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry.v2 import encodings
-from data_foundry.v2.encodings import (
+
+from data_foundry import encodings
+from data_foundry.encodings import (
     DATETIME_ENCODING,
     TEXT_E5_ENCODING,
     TEXT_TFIDF_ENCODING,

@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Grouping,
@@ -99,7 +100,7 @@ class QsarAquaticToxicity(AbstractCuratedDataset):
     curation_comments = """
         We start with the data from UCI and add the structures from the authors' own workbook.
 
-        - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form (`canonical_smiles`; no salts or mixtures here), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts).
+        - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form (`canonical_smiles`; no salts or mixtures here), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.special.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts).
         - The authors' 8 descriptors leave (Lennart, 2026-11-01, as for qsar_tid_11: the task goes from the structure to a prediction, and the descriptors are one modelling choice of the authors). This also settles the kept potential leak the record and `fit_reason` named: a genetic algorithm chose the eight by their fit to the measured toxicity of chemicals that sit in our test folds (LEAK-31), and with the structure shipped no such selection reaches the features.
         - The structures come from the authors' own workbook, which the UCI copy left out. It is the same 546 rows in the same order: all 8 descriptors and LC50 are identical on every row, so the link is exact and needs no key. All 546 SMILES parse, and no two are the same chemical, with or without stereochemistry.
         - Split (CLEAN-24, SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold of the structure (`scaffold_groups`); chemicals without a ring, and those of a scaffold holding more than a tenth of the set, are groups of their own. An assessor estimates the toxicity of an untested chemical, often of a series not yet measured, so whole series are held out; qsar_bioconcentration, qsar_oral_toxicity, qsar_fish_toxicity and qsar_tid_11 group the same way. The source split at random.

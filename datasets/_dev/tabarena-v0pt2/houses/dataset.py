@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary, TimeBasis
+
+from data_foundry.definition import AbstractCuratedDataset, Metric, Source, TaskSummary, TimeBasis
 
 
 class Houses(AbstractCuratedDataset):

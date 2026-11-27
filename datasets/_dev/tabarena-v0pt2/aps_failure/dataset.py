@@ -6,9 +6,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Grouping, Metric, Source, TaskSummary, TimeBasis
 from scipy.sparse import coo_matrix
 from scipy.sparse.csgraph import connected_components
+
+from data_foundry.definition import AbstractCuratedDataset, Grouping, Metric, Source, TaskSummary, TimeBasis
 
 TARGET = "AirPressureSystemFailure"
 RARE_MAX = 5  # a value held by 2 to 5 rows in its column is rare

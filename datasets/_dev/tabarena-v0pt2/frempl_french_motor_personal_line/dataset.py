@@ -6,7 +6,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+from scipy.sparse import coo_matrix
+from scipy.sparse.csgraph import connected_components
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -18,8 +21,6 @@ from data_foundry.v2 import (
     TimeBasis,
     drop_columns,
 )
-from scipy.sparse import coo_matrix
-from scipy.sparse.csgraph import connected_components
 
 # The five samples of the portfolio that share one schema (CASdatasets freMPL5 to freMPL9).
 FILES = (5, 6, 7, 8, 9)

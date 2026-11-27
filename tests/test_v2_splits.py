@@ -1,4 +1,4 @@
-"""Tests for the v2 split protocol (``data_foundry.v2.splits``).
+"""Tests for the v2 split protocol (``data_foundry.definition.splits``).
 
 The cross-validation builders are pinned by a checksum of their splits: a change to them would change the splits,
 and so the checksum, of every container built since.
@@ -12,7 +12,19 @@ import json
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry import bundle_checks
+
+from data_foundry import bundle_checks, sampling
+from data_foundry.definition import splits as protocol
+from data_foundry.definition.splits import (
+    fit_splits_to_budget,
+    grouped_splits,
+    iid_splits,
+    protocol_checks,
+    recommended_dimensions,
+    sample_temporal_splits,
+)
+from data_foundry.metrics import Metric
+from data_foundry.sampling import sample_train_positions, subsample_train
 from data_foundry.schema import (
     Grouping,
     PredictiveMLSplitsMetadata,
@@ -20,19 +32,6 @@ from data_foundry.schema import (
     RowBudget,
     TrainSampling,
 )
-from data_foundry.v2 import splits as protocol
-from data_foundry.v2.metrics import Metric
-from data_foundry.v2.splits import (
-    fit_splits_to_budget,
-    grouped_splits,
-    iid_splits,
-    protocol_checks,
-    recommended_dimensions,
-    sample_temporal_splits,
-    sample_train_positions,
-    subsample_train,
-)
-
 from tests.test_bundle_checks import make_container, make_iid_frame, make_spec
 
 
@@ -543,7 +542,7 @@ def test_temporal_test_parts_that_share_a_training_side_count_once() -> None:
 
 
 def test_a_missing_build_dependency_names_the_extra() -> None:
-    from data_foundry.v2._optional import BUILD_INSTALL, import_build_dependency
+    from data_foundry.utils.optional import BUILD_INSTALL, import_build_dependency
 
     assert import_build_dependency("sklearn.model_selection").__name__ == "sklearn.model_selection"
     with pytest.raises(ImportError, match=r"needs `no_such_package`.*data-foundry\[build\]") as error:
@@ -566,7 +565,7 @@ def test_several_group_columns_make_one_group_per_combination() -> None:
     for folds in fitted.values():
         for train, test in folds.values():
             assert not set(key.iloc[train]) & set(key.iloc[test])  # the sampled test sides keep combinations whole
-    single, _ = protocol.one_group_column(df, "a")
+    single, _ = sampling.one_group_column(df, "a")
     assert single is df  # one column: the frame and its splits are as before
 
 
@@ -594,7 +593,7 @@ def test_cutoffs_must_test_the_newest_data(unit: str, window: int, cutoffs: list
 def test_a_stratified_test_side_samples_up_to_one_row_under_its_size() -> None:
     """A cap one row under the side's size left one row out of three classes, which `train_test_split` refused."""
     df = pd.DataFrame({"y": np.random.default_rng(0).choice(list("abc"), 1_000)})
-    kept = protocol._sample_positions(df, np.arange(1_000), 999, group_on=None, stratify_on="y", random_state=1)
+    kept = sampling._sample_positions(df, np.arange(1_000), 999, group_on=None, stratify_on="y", random_state=1)
     assert len(kept) == 999
     assert len(np.unique(kept)) == 999
     shares = df["y"].iloc[kept].value_counts()
@@ -620,9 +619,9 @@ def test_whole_groups_that_all_exceed_the_cap_raise() -> None:
     """No group fits under the cap: the side would be empty, so sampling raises."""
     df = pd.DataFrame({"g": np.repeat(np.arange(5), 20)})
     with pytest.raises(ValueError, match="No whole group of `g` fits under the cap of 10 rows"):
-        protocol._sample_positions(df, np.arange(100), 10, group_on="g", stratify_on=None, random_state=0)
+        sampling._sample_positions(df, np.arange(100), 10, group_on="g", stratify_on=None, random_state=0)
     with pytest.raises(ValueError, match="fits under the cap"):
-        protocol.sample_train_positions(df, np.arange(100), 10, group_on="g")
+        sampling.sample_train_positions(df, np.arange(100), 10, group_on="g")
 
 
 def test_a_unique_cutoff_must_be_a_value_of_the_time_column() -> None:

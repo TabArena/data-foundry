@@ -12,6 +12,7 @@ from collections import Counter
 from pathlib import Path
 
 import pytest
+
 from data_foundry.curation._paths import records_dir, resolve_curation_root
 from data_foundry.curation.notebooks import V2_TREE, required_tree, shipped_uuids, sync_notebook_paths, sync_v2_paths
 from data_foundry.curation.record import (
@@ -361,8 +362,8 @@ def test_exception_lines_name_a_defined_rule_and_serve_a_principle(records):
     """Every ``**Exception to <ID> (...)**`` line names a rule the knowledge files define and gives a reason with a
     "Serves" part (the ID check waits until the knowledge files define rule IDs at all).
     """
-    import importlib.util  # noqa: PLC0415 - the parser lives in a skill script, not in the package
-    import sys  # noqa: PLC0415
+    import importlib.util
+    import sys
 
     skills = Path(__file__).resolve().parents[1] / ".claude" / "skills"
     path = skills / "knowledge-data-foundry" / "scripts" / "decision_register.py"

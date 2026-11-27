@@ -5,6 +5,7 @@ import dataclasses
 import numpy as np
 import pandas as pd
 import pytest
+
 from data_foundry import bundle_checks
 from data_foundry.bundle_checks import (
     BundleCheckError,
@@ -19,18 +20,17 @@ from data_foundry.curation_container import (
     unit_weight,
     validation_weight,
 )
+from data_foundry.definition.report import _metric_block
 from data_foundry.schema import (
-    DatasetMetadata,
     MetricSpec,
     PredictiveMLSplitsMetadata,
-    PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2,
     RowBudget,
     ScoringColumn,
     UnitWeight,
 )
 from data_foundry.utils.checksum import encode_pydantic_metadata
-from data_foundry.v2.report import _metric_block
+from data_foundry.v1 import DatasetMetadata, PredictiveMLTaskMetadata
 
 BIBTEX = """@misc{toy2025dataset,
   author = {Toy Author},
@@ -43,8 +43,8 @@ BIBTEX = """@misc{toy2025dataset,
 
 def make_spec(problem_type: str = "binary_classification", metric=None) -> MetricSpec:
     """A format-2 metric spec: ``metric`` (a `Metric`), or a fallback with a reason, for ``problem_type``."""
-    from data_foundry.v2.dataset import metric_spec
-    from data_foundry.v2.metrics import Metric
+    from data_foundry.definition.dataset import metric_spec
+    from data_foundry.metrics import Metric
 
     return metric_spec(metric or Metric.fallback(reason="test data"), problem_type)
 
@@ -1012,7 +1012,7 @@ def metric_findings(container: CuratedContainer) -> dict[str, str]:
 
 
 def _spec(name: str = "roc_auc", **fields) -> MetricSpec:
-    from data_foundry.v2.metrics import METRICS
+    from data_foundry.metrics import METRICS
 
     definition = METRICS.get(name)
     base = {
@@ -1061,7 +1061,7 @@ def test_metric_that_does_not_compute_on_a_split_is_an_error():
 
 @pytest.fixture
 def group_metric(monkeypatch: pytest.MonkeyPatch) -> str:
-    from data_foundry.v2.metrics import METRICS, MetricDef
+    from data_foundry.metrics import METRICS, MetricDef
 
     def mean_group_accuracy(y_true, y_pred, *, group, **_):
         frame = pd.DataFrame({"hit": np.asarray(y_true) == np.asarray(y_pred), "g": group})
@@ -1151,7 +1151,7 @@ def test_weight_that_is_also_a_feature_ships_a_scoring_copy_that_weighs_the_scor
     and a copy ships as the scoring column the metric reads (MET-2); the copy is no duplicate column to drop.
     """
     from data_foundry.curation_container import feature_columns
-    from data_foundry.v2.metrics import score, scorer
+    from data_foundry.metrics import score, scorer
 
     df = make_iid_frame()
     rng = np.random.default_rng(1)

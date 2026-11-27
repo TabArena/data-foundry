@@ -58,11 +58,11 @@ except ImportError:  # pragma: no cover - depends on the environment
 
 from data_foundry import time_basis as basis_rules
 from data_foundry.curation.consistency import COLLECTION_TYPES, collection_type_problems, time_basis_problems
+from data_foundry.definition.dataset import DEFAULT_SPLITS_COMMENT, TaskSummary
+from data_foundry.definition.registry import load_definition
+from data_foundry.definition.report import read_report
+from data_foundry.metrics import Metric
 from data_foundry.schema import FORCED_TIME_TAGS, GROUP_BASIS_TAGS, TIME_BASIS_TAGS
-from data_foundry.v2.dataset import DEFAULT_SPLITS_COMMENT, TaskSummary
-from data_foundry.v2.metrics import Metric
-from data_foundry.v2.registry import load_definition
-from data_foundry.v2.report import read_report
 
 HERE = Path(__file__).resolve().parent
 TEMPLATE = HERE.parent / "assets" / "review_page.html"

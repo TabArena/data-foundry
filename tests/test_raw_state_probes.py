@@ -11,8 +11,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry.v2 import get_dataset
 
+from data_foundry.definition import get_dataset
 from tests.test_v2_dataset import DEFINITION, warehouse, write_definition  # noqa: F401 - the fixture is used by name
 
 pytest.importorskip("lightgbm")  # curation_probes.leak imports it

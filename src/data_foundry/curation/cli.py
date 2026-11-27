@@ -7,7 +7,7 @@ Subcommands::
     data-foundry-curation validate                      # check records against the vocab
     data-foundry-curation sync-notebooks [--check]      # refresh each record's notebook_path and v2_path
     data-foundry-curation export --format csv OUT.csv   # flat snapshot (csv|xlsx)
-    data-foundry-curation dataset {list,check,build,new}   # v2 dataset folders (see data_foundry.v2.cli)
+    data-foundry-curation dataset {list,check,build,new}   # v2 dataset folders (see data_foundry.definition.cli)
     data-foundry-curation claims {list,claim,release,renew,check,init}   # live claims board
 
 Run ``python -m data_foundry.curation.cli <subcommand> -h`` for details.
@@ -28,7 +28,7 @@ from data_foundry.curation.notebooks import sync_notebook_paths, sync_v2_paths
 from data_foundry.curation.record import ACCEPTED_SUGGESTIONS, load_vocabularies
 from data_foundry.curation.site import build_site
 from data_foundry.curation.store import load_all, load_index
-from data_foundry.v2.cli import add_dataset_parser
+from data_foundry.definition.cli import add_dataset_parser
 
 
 def _cmd_serve(args: argparse.Namespace) -> int:
