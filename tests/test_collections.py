@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import dataclasses
 from pathlib import Path
 
@@ -19,6 +20,7 @@ from data_foundry.collections import (
     list_collections,
     resolve_cache_dir,
 )
+from data_foundry.collections._registry import BEYOND_ARENA_UUIDS
 from data_foundry.collections._sources import has_core_files
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
 from data_foundry.schema import PredictiveMLSplitsMetadata, RowBudget, TrainSampling
@@ -187,6 +189,28 @@ def test_dataset_collection_rejects_duplicate_unique_names():
 def test_beyond_arena_has_unique_names():
     names = BEYOND_ARENA.unique_names
     assert len(set(names)) == len(names), "duplicate unique_names in BEYOND_ARENA"
+
+
+def _name_and_uuid(path: str) -> tuple[str, str]:
+    """``(unique_name, uuid)`` of a ``<unique_name>/[versions/]<uuid>`` pointer."""
+    return path.split("/", 1)[0], path.rsplit("/", 1)[-1]
+
+
+def test_beyond_arena_pins_match_the_notebook_tree():
+    """The registry and ``datasets/beyond_iid/final_uuid_list.py`` pin the same (name, uuid) pairs.
+
+    The notebook tree's list is parsed, not imported: it is outside the package and its folder holds the v1 notebooks.
+    """
+    path = Path(__file__).resolve().parents[1] / "datasets" / "beyond_iid" / "final_uuid_list.py"
+    pinned = []
+    for node in ast.parse(path.read_text(encoding="utf-8")).body:
+        if isinstance(node, ast.Assign) and isinstance(node.value, ast.List):
+            pinned += ast.literal_eval(node.value)
+    assert len(pinned) == len(set(pinned)), "a pointer is listed twice in final_uuid_list.py"
+    registry = {_name_and_uuid(p) for p in BEYOND_ARENA_UUIDS}
+    notebooks = {_name_and_uuid(p) for p in pinned}
+    only_registry, only_notebooks = sorted(registry - notebooks), sorted(notebooks - registry)
+    assert registry == notebooks, f"only in the registry: {only_registry}; only in final_uuid_list.py: {only_notebooks}"
 
 
 # --- HuggingFaceSource caching ---

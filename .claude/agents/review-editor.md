@@ -30,7 +30,8 @@ Check:
 * The review is only in the record: flag a `REVIEW.md` in the dataset folder (`datasets/_dev/tabarena-v0pt2/<folder>/`)
   or an `**Open issues (AI, <date>):**` block in the record's `## Comments`, for the main session to move into the
   `## Review`.
-* The style of AGENTS.md, "AI Writing Tropes to Avoid".
+* The style rules of
+  [`style.md`](../skills/knowledge-curation/references/style.md) ("AI Writing Tropes to Avoid").
 
 Never edit a file. Return a list of concrete edits (quote the old text, give the new), most important first, and a
 one-line verdict on whether the review is ready for the curator.

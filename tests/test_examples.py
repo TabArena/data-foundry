@@ -348,6 +348,24 @@ def test_minimal_adapter_fits_and_scores_every_fold_of_both_toys(format_version,
     assert container.dataset_metadata.unique_name in capsys.readouterr().out
 
 
+def test_load_curated_container_example_runs_on_both_toys(capsys):
+    """The inspection example prints every part of a container, for the format-1 and the format-2 toy."""
+    example = _example("load_curated_container")
+    for format_version in (1, 2):
+        example.main(get_toy_container_path(format_version))
+        out = capsys.readouterr().out
+        assert "-- Dataset metadata --" in out
+        assert f"container format:   {format_version}" in out
+
+
+def test_curation_records_example_runs_on_the_repository(capsys):
+    """The backlog example reads the records, round-trips a draft in a temporary folder and snapshots them."""
+    _example("curation_records").main()
+    out = capsys.readouterr().out
+    assert "round-trips cleanly" in out
+    assert "Flat snapshot:" in out
+
+
 @pytest.mark.parametrize("path", sorted(EXAMPLES.rglob("*.py")), ids=lambda p: p.relative_to(EXAMPLES).as_posix())
 def test_every_example_parses(path):
     """An example that does not run in the tests (it needs the network) must still be valid Python."""

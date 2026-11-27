@@ -56,8 +56,8 @@ notebook (`subsample_split_to_budget`). IID and grouped splits come from `get_re
 `get_recommended_grouped_splits`; temporal splits were written by hand in each notebook. Until 2026-11-12
 `run_bundle_checks` judged a format-1 container by this protocol (`splits_dimensions_off_protocol`, the 250k
 `splits_test_over_budget`); the pinned containers cannot change, so those checks went with the helpers. v2 has its
-own protocol (always 3 folds, repeats by the units at any size; no row budget except a version's, 1M train and 500k
-test rows for the `_1m` versions of TabArena v0.2, set by the working copy's `collection.py`).
+own protocol (always 3 folds, repeats by the units at any size, a row budget only for a `_1m` version):
+[`split_protocol.md`](.claude/skills/knowledge-data-foundry/references/split_protocol.md).
 
 ## The notebook pipeline
 

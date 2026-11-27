@@ -18,7 +18,8 @@ implements. The overview for people is the [skills README](../README.md).
 | The curation records: editing through the store API, comment lines (`CC`, `Assessment`, `Counter-argument`), the `## Review` section (a dataset's review) and how to edit it, AI triage, fields and vocabulary, claims, duplicates and retirements, the review queue, the definition pointers | [records.md](references/records.md) | before reading or writing any record |
 | Claims: the live board of who works on which dataset (a git branch), the `claims` commands, the hook (the record carries no claim) | [claims.md](references/claims.md) | before working on records or folders, and when a claim warning shows |
 | The dashboard: running and restarting it, its filters, pills, pins and links | [dashboard.md](references/dashboard.md) | starting it or explaining it to a curator |
-| The v2 definition: the folder, `dataset.py`, the base class, `task_summary`, field mapping, `curation_comments`, the `_clean` recipe, `Grouping` / `Temporal` / `TemporalSplits`, `_1m` versions, traps, bundle-check slugs, `_decisions`, recording decisions, reference definitions, the harness | [definitions.md](references/definitions.md) | writing or reviewing a `dataset.py` |
+| The v2 definition: the folder, `dataset.py`, the base class, `task_summary`, `curation_comments`, the `_clean` recipe, `Grouping` / `Temporal` / `TemporalSplits`, `_1m` versions, traps, bundle-check slugs, `_decisions`, recording decisions, reference definitions, the harness | [definitions.md](references/definitions.md) | writing or reviewing a `dataset.py` |
+| The definition's fields, one by one, from the record: `unique_name`, `domain`, `sources`, `data_tags` and the time basis, `problem_type`, the metric, weights and scoring columns, `special_features` and the rest | [definition_fields.md](references/definition_fields.md) | filling in or checking an attribute of a `dataset.py` |
 | The split protocol at a glance: a decision tree from a definition to the fit (regime, units, repeats, the 1M / 500k row budget and the `_1m` versions, the sampling at fit time), worked examples, the guards, where each number is set | [split_protocol.md](references/split_protocol.md) | explaining or checking how a dataset is split, or whether it needs a `_1m` version |
 | Running `dataset check` and the probes, and the checks only Data Foundry has (pointers, template, README) | [checks_and_probes.md](references/checks_and_probes.md) | verifying a definition |
 | Every check slug: its severities, the stage it runs at, whether a definition may accept it (generated from `src/data_foundry/checks/registry.py`) | [check_slugs.md](references/check_slugs.md) | a finding's slug is unfamiliar, or before accepting one |
@@ -48,10 +49,10 @@ The probes are in the package (`data_foundry.probes`) and run as one command,
 Every workflow follows these; each comes from a curator's decision.
 
 * No commit or push without the curator's explicit ask. A commit ends with the attribution line the session gives.
-* A pull request targets `main` unless it needs another unmerged PR; then it joins that PR in a GitHub stack
-  (`gh stack link`), never a bare chain of base branches. Its body opens with a short summary for the curator (what
-  changes and why, what to decide, what to know before merging) and folds the details
-  ([pull_requests.md](references/pull_requests.md)).
+* A pull request follows [pull_requests.md](references/pull_requests.md); read it before opening, updating, stacking
+  or merging one.
+* Prose a person reads (docstrings, docs, records, commit messages, PR bodies) follows the knowledge-curation
+  [style.md](../knowledge-curation/references/style.md).
 * No `dataset build` without an explicit ask; `dataset check` verifies without saving.
 * Never delete raw files, a UUID pinned in `src/data_foundry/collections/_registry.py`, or a retired dataset's
   containers without asking. Superseded working-copy containers may go after a verified rebuild

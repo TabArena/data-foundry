@@ -275,8 +275,8 @@ known when the model is trained (past periods, all closed) and when it is scored
 not at the prediction point, where a quote prices the period before it runs. The model therefore predicts the rate,
 which does not depend on the length still to come, and the length multiplies the rate afterwards: in the score, as in a
 premium earned pro rata. The training rows' weights shape the fit; the test rows' are read by the scorer only, never
-when predicting (LEAK-41; [definitions.md](../../knowledge-data-foundry/references/definitions.md), `sample_weight`
-under "Field mapping"). The task summary says so in `known_at_scoring` (Lennart, 2026-11-09).
+when predicting (LEAK-41; [definition_fields.md](../../knowledge-data-foundry/references/definition_fields.md),
+`sample_weight`). The task summary says so in `known_at_scoring` (Lennart, 2026-11-09).
 
 **MET-16 (Should; 2026-11-06, Lennart; amended 2026-11-12, Lennart).** A survey or design weight is never a feature.
 The task is scored unweighted unless the use case is a population estimate; then one weight ships as a scoring column
@@ -387,4 +387,5 @@ decided.
 
 How a definition declares the metric (`Metric.source`, `Metric.stand_in`, `Metric.fallback`), the scoring columns and
 the spec in the container, and how to add a custom metric to `src/data_foundry/metrics.py` and test it:
-[definitions.md](../../knowledge-data-foundry/references/definitions.md), "Field mapping" and "Metrics".
+[definition_fields.md](../../knowledge-data-foundry/references/definition_fields.md) (`metric`) and
+[definitions.md](../../knowledge-data-foundry/references/definitions.md), "Metrics".

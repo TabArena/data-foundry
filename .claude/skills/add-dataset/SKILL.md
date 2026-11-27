@@ -88,7 +88,7 @@ also point to checks; in the review of 98 v0.2 definitions they found more leaks
   (eryhemato_squamous_disease's two file parts); the time probe looks for them.
 * A catalogue: which identifier a parent source could date its items by (qsar_tid_11 through ChEMBL).
 
-Then map the fields (definitions.md, "Field mapping"); for a grouped task note what one real-world
+Then map the fields (definition_fields.md, "Field mapping"); for a grouped task note what one real-world
 prediction is and what is known about a new group.
 
 Find the metric the source scored before falling back (MET-1): the competition's evaluation page (Kaggle's Evaluation
@@ -148,7 +148,7 @@ domain and source from the record.
    target rate with earlier periods.
 5. The metric: `metric = Metric.source(name, original=..., reference=..., params=..., inputs=...)`,
    `Metric.stand_in(name, original=..., reason=..., reference=...)` or `Metric.fallback(reason=<where we looked, and
-   which source metric was rejected and why>)` (definitions.md, "Field mapping", `metric`; MET-11). A standard name
+   which source metric was rejected and why>)` (definition_fields.md, `metric`; MET-11). A standard name
    for a standard metric, a general one for a custom metric (MET-12). Every column the metric reads (a group, a time,
    a weight) stays in the frame and is declared in `scoring_columns = (ScoringColumn(column=..., role=..., used_by=...,
    description=...),)`; it is never a feature. A custom metric that is not yet in `METRICS` is added to

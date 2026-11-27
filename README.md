@@ -21,7 +21,6 @@
 
 ```bash
 pip install data-foundry
-python examples/load_curated_container.py
 ```
 
 ```python
@@ -33,7 +32,7 @@ print(container.dataset.shape)       # the actual DataFrame
 print(container.task_metadata.split_regime)  # "iid", "temporal_non_iid", or "grouped_non_iid"
 ```
 
-That's the whole API surface in three lines. See [`examples/benchmark_on_beyond_arena.py`](examples/benchmark_on_beyond_arena.py) for benchmarking Random Forest on the data! 
+The scripts in [`examples/`](examples) (for example [`examples/benchmark_on_beyond_arena.py`](examples/benchmark_on_beyond_arena.py), a Random Forest on the data) are not part of the PyPI package: run them from a clone ([From source](#-installation)).
 
 ## 🕹️ Use Cases
 
@@ -102,14 +101,9 @@ layout, every side in row order. `run_bundle_checks` judges each
 format by its own split protocol (v1: the repeat ladder, 1M train and 250k test rows; v2: 3 folds, and the test cap
 of the `experiment_metadata.row_budget` a `_1m` version records: no size limit without one).
 
-**Row budget.** A format-2 container with a `row_budget` (a `<name>_1m` version) tests on at most `row_budget.test`
-rows per split, and its train sides keep every row they may use (all earlier rows of a temporal window). A benchmark
-fits on at most `row_budget.train` of them: `fold.train` of `container.task().folds()`, which
-`subsample_train(container, repeat, fold)` (`data_foundry.sampling`) draws
-by the default sampler the container records in `experiment_metadata.train_sampling` (for a temporal side the newest
-year, extended back in time until it holds that many rows, sampled at random; whole groups of a grouped one,
-stratified rows otherwise), and returns the train side whole for a container without a budget. A numeric time column
-carries its calendar in `task_metadata.time_unit` (numerai's `era` counts weeks). A benchmark that samples by its own rule keeps the unit `train_sampling` names.
+**Row budget.** A format-2 container with a `row_budget` (a `<name>_1m` version) caps its test sides and keeps every
+train row, and `fold.train` of `container.task().folds()` is the sample of at most `row_budget.train` rows a benchmark
+fits on; the details are in [docs/benchmark_integration.md](docs/benchmark_integration.md).
 
 **Checksums.** `container.verify()` recomputes a container's checksum and compares it with the stored one (with
 `get_dataset(..., verify=True)` a collection does it on load). A container built since 2026-10-06 has a version-2
@@ -242,9 +236,10 @@ regenerated automatically from `curation/records/` on every push to `main` (no i
 network round-trip to Hugging Face; search, sort, filter, and pin all run in the browser).
 Note this makes every record's comments, reviewer names, and decision notes public.
 
-Working with Claude Code? The repo ships four curation commands and two knowledge skills (in `.claude/skills/`); start
+Working with Claude Code? The repo ships five curation commands and two knowledge skills (in `.claude/skills/`); start
 with [`.claude/skills/README.md`](.claude/skills/README.md), which the dashboard also shows as "Start here". In each of
-the two stages the AI works and the curator verifies:
+the two stages the AI works and the curator verifies (the fifth command, `/review-split-tree`, shows the split decision
+tree for review):
 
 | Stage | The AI works | The curator verifies |
 |---|---|---|
@@ -255,7 +250,8 @@ The knowledge skills, [`knowledge-curation`](.claude/skills/knowledge-curation/S
 ranked rules) and [`knowledge-data-foundry`](.claude/skills/knowledge-data-foundry/SKILL.md) (how this repo implements
 it), hold what every command applies; builds and commits happen only when the curator asks.
 
-Loading, browsing and benchmarking shipped datasets needs no command; `CLAUDE.md` and `examples/` cover it.
+Loading, browsing and benchmarking shipped datasets needs no command;
+[docs/benchmark_integration.md](docs/benchmark_integration.md) and `examples/` cover it.
 
 </details>
 
@@ -336,7 +332,8 @@ data-foundry/
 ├── .claude/skills/           # Claude Code skills; each skill's scripts/ holds the tools it runs
 │   ├── knowledge-curation/   # curation knowledge (references/)
 │   ├── knowledge-data-foundry/  # this repo's conventions (references/), the pipeline and rebuild scripts
-│   └── <command>/            # screen-candidates, review-screened-candidates, add-dataset, review-added-datasets
+│   └── <command>/            # screen-candidates, review-screened-candidates, add-dataset, review-added-datasets,
+│                             #   review-split-tree
 ├── .claude/agents/           # the agents of screening and of the review panel
 ├── tests/                    # pytest test suite
 └── local-data-warehouse/     # gitignored — curators write raw + saved containers here
@@ -351,8 +348,8 @@ The short version (v2):
 2. Run `.venv/bin/python -m data_foundry.curation.cli dataset check <folder>` until there are no errors and every
    warning is fixed or accepted with a reason; it writes the folder's `README.md`. The checks and their slugs are in
    `src/data_foundry/checks/` ([`check_slugs.md`](.claude/skills/knowledge-data-foundry/references/check_slugs.md)).
-   Then run the probes in `.claude/skills/knowledge-data-foundry/scripts/` (leak, task and, for a grouped task, group
-   probes).
+   Then run the probes: `data-foundry probe leak <unique_name>`, `probe task` and, for a grouped task, `probe group`
+   (the `probes` extra).
 3. Open a PR; a curator runs `dataset build`, which saves the container and records its UUID.
 
 The long version is [**CONTRIBUTING_DATASETS.md**](CONTRIBUTING_DATASETS.md); a first contribution to TabArena v0.2

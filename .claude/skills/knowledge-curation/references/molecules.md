@@ -210,7 +210,8 @@ The task is going from the structure to a prediction (Lennart, 2026-11-01). So:
     qsar_tid_11 (structures recovered from a ChEMBL release), drug_induced_autoimmunity_prediction (stereo pairs),
     nci_aids_antiviral_screen (an SD file, salts, unreadable records), apistox (a temporal molecule task).
   * The recipe: [definitions.md](../../knowledge-data-foundry/references/definitions.md), "The preprocessing recipe
-    (`_clean`)", step 6, and the `special_features` bullet of "Field mapping".
+    (`_clean`)", step 6, and the `special_features` bullet of
+    [definition_fields.md](../../knowledge-data-foundry/references/definition_fields.md).
 * **The container** records the column in `task_metadata.special_features` (kind `smiles`, layout `column`, encoding
   required, the recommended encoding's id); `special_features(container, "smiles")` lists it, and
   `encode_special_feature(df, feature)` (`data_foundry.special`) encodes it.
