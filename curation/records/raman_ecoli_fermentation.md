@@ -108,13 +108,10 @@ data confirms each. Its open point, which copy to read, is settled in issue 3.
 
    * **Recommendation:** C if the benchmark takes a two-target regression, otherwise A with the floor named in the notes, as it is. The use case is glucose, and dropping it to escape a censored target would ship a task the source does not have. **Decision:** A, B or C?
 
-   **Resolved (2026-11-27, Andrej):** `ok`, A as implemented: glucose ships, with the floor named in the notes and
-   now in the accepted warnings. The `Multi-target` tag stays on the record so the second target is not lost.
+   **Andrej (2026-11-27, discuss):** "We currently don't have multi-target in the benchmark, but you could add
+   the appropriate tag for that. What target did RamanBench use?"
 
-   **Answer (2026-11-27):** "We currently don't have multi-target in the benchmark, but you could add the
-   appropriate tag for that. What target did RamanBench use?"
-
-   Both, and glucose first. The benchmark does not choose between the targets of a release: it makes one prediction
+   **Answer (AI, 2026-11-27):** both, and glucose first. The benchmark does not choose between the targets of a release: it makes one prediction
    task per target, 163 of them over its 53 regression datasets, and this dataset gives it two. Its own table reports
    "E. Coli Fermentation - Glucose" with TabPFN v2 at R2 0.971 and "- Acetate" with the same model at 0.491. So the
    target we ship is its first one, and the one it reads best; acetate is the weaker of the two there, which is an
@@ -125,6 +122,9 @@ data confirms each. Its open point, which copy to read, is settled in issue 3.
    visible for a round where the benchmark can take one. The floor is a separate matter and earns no tag: the
    two-regime marker is for a lowest value independent of the rest of the distribution, and a reporting floor was
    ruled out as a second regime when the tag was written.
+
+   **Resolved (2026-11-27, Andrej):** `ok`, A as implemented: glucose ships, with the floor named in the notes and
+   now in the accepted warnings. The `Multi-target` tag stays on the record so the second target is not lost.
 
 
    [^e18]: **CLEAN-18**: a release with several targets ships one and names the rest; the tag goes when the dataset

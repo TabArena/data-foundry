@@ -295,9 +295,9 @@ for byte (issue 1 for the rest).
 
    * **Recommendation:** A, the source's split. **Decision:** A or B?
 
-   **Answer (2026-11-27, open):** "One split only is not an option. Assess what we can do otherwise."
+   **Andrej (2026-11-27, discuss):** "One split only is not an option. Assess what we can do otherwise."
 
-   What the data can carry. The test side holds two independent units, the gabbro slab and the granite slab, and
+   **Answer (AI, 2026-11-27):** what the data can carry. The test side holds two independent units, the gabbro slab and the granite slab, and
    nothing in the release adds a third. The 35 reference maps are not units: the paper's Table 1 gives one hand
    sample per mineral, so the 3 albite, 6 quartz, 4 hornblende and 3 biotite maps are the same specimen measured
    again at another integration time, which our own rule holds together in one group; and anorthite, enstatite,
@@ -335,24 +335,13 @@ for byte (issue 1 for the rest).
    check, and the authors can be asked for further slabs; either would give a third and a fourth test rock and
    with them a split worth repeating.
 
-   * **Options, re-stated after the measurement:**
+   On that reading the recommendation was to keep the source's single fold and to chase more rocks. The next turn
+   replaces it.
 
-     | | Option | What it does | Pro | Con |
-     |---|---|---|---|---|
-     | A | The source's split, scored per rock (implemented) | one fold, the two rocks read apart | honest about what the data holds; no exploit, no artefact | one fold, and the 1x1 warning to accept |
-     | B | One fold per rock, the other rock in training | two folds | a fold score per rock | the training rock tells the test rock's class set: the best honest model's log loss falls 0.666 to 0.477 with no test row seen |
-     | C | The same fold written as two or four cells | 1x2 or 1x4, same training side | the per-rock and per-dust scores become first class and the 1x1 warning clears | one split written in parts: the folds share a training side, so the spread between them is not a repeat measurement, and the same model is fitted two or four times |
-     | D | Repeats that vary the library | n draws of the reference maps | a spread over the training side | refuted above: log loss 0.95 to 4.83 over three draws, driven by which integration time survives |
-     | E | More rocks, then a real split | a third and a fourth test rock from ODR or the authors | the only way to more than one split | not in this release; depends on issue 1's file list or an ask to the authors |
+   **Andrej (2026-11-27, discuss):** "One split is against the rules. This is still not an option - we want to
+   test train and test data variance, why do you still suggest that?"
 
-   * **Recommendation:** A as it stands and E pursued, with C if you want the folds visible on the page and accept
-     that they are one split in parts. B and D are refuted by the numbers above, not by preference. **Decision:**
-     A with E, C with E, or B?
-
-   **Answer (2026-11-27, applied):** "One split is against the rules. This is still not an option - we want to test
-   train and test data variance, why do you still suggest that?"
-
-   Because the only way I had tried of varying the training side was dropping whole reference maps, which collapses
+   **Answer (AI, 2026-11-27):** because the only way I had tried of varying the training side was dropping whole reference maps, which collapses
    the score through the integration time, and from that I concluded too quickly that nothing honest was left. The
    conclusion was wrong. Drawing **inside** each map instead keeps every mineral and every integration time in the
    training side and still changes it, which is the ordinary meaning of a repeat: in plain three-fold cross
@@ -382,14 +371,14 @@ for byte (issue 1 for the rest).
 
      | | Option | What it does | Pro | Con |
      |---|---|---|---|---|
-     | F | Five repeats of two folds, the library drawn inside each map (implemented) | 10 fits; the test side is one slab, the training side four fifths of every reference map | both sides vary; no slab trains for the other; every integration time stays in | the repeat spread is library sampling, not new-rock noise; the rock spread still rests on two units |
-     | A | The source's single fold | one fit | the source's own design | one split, which the protocol does not allow |
-     | B | One fold per rock, the other rock in training | two folds | more training data | the training rock tells the test rock's class set |
-     | D | Repeats that drop whole maps | n draws | a large spread | the spread is which integration time survived |
-     | E | More rocks, then a real split | a third and a fourth test rock | the only way to more test units | not in this release |
+     | a | Five repeats of two folds, the library drawn inside each map (implemented) | 10 fits; the test side is one slab, the training side four fifths of every reference map | both sides vary; no slab trains for the other; every integration time stays in | the repeat spread is library sampling, not new-rock noise; the rock spread still rests on two units |
+     | b | Five repeats of one fold, both rocks tested together | 5 fits | the training-side variance, and a fold's class coverage stays whole | no per-rock fold, so the test side does not vary |
+     | c | The source's single fold | one fit | the source's own design | one split, which the protocol does not allow |
+     | d | One fold per rock, the other rock in training | two folds | more training data | the training rock tells the test rock's class set |
+     | e | Repeats that drop whole maps | n draws | a large spread | the spread is which integration time survived |
 
-   * **Recommendation:** F, now shipped, with E still the thing to chase. **Decision:** keep F, or change the five
-     repeats or the fifth that is held out?
+   * **Recommendation:** (a), now shipped; more rocks stays the only way to make the between-rock number rest on
+     more than two units. **Decision:** keep (a), take (b), or change the five repeats or the fifth held out?
 
    **What the change cost, measured after it was made.** `dataset check` stays at 0 errors. The task probe on the
    shipped splits: a linear model reaches log loss 0.913 against the class shares' 2.622, better on 100% of the
@@ -399,8 +388,7 @@ for byte (issue 1 for the rest).
    different minerals, so each fold lacks up to 9 of the 15 classes where the old single fold lacked only gypsum,
    and the probe raises its few-minority flag for the same reason. No scored row is lost and no class is thinned:
    the same 34,857 test spectra are scored, split between the two folds by rock. If you would rather keep a fold's
-   class coverage whole, the variant is five repeats of one fold, both rocks tested together, which keeps the
-   training-side variance and gives up the per-rock fold.
+   class coverage whole, that is option (b) below.
 
    **Notes for the AI:** on C, `_make_splits` returns one repeat with two folds (`specimen` is the rock) or four
    (rock and dust level from the file names), the `splits_dimensions_off_protocol` text says they share one

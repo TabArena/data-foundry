@@ -197,7 +197,11 @@ log loss on 2026-10-21). Priority 4 becomes 3 (the fit is approximate).
 
    * **Recommendation:** A: the mildest remedy that follows the rule as written. **Decision:** A, B or C?
 
-   **Answer (2026-11-25):** the hierarchy, counted on the built frame (78,500 rows).
+   **Andrej (2026-11-25, discuss):** "Explain the sampling hierarchy to me? Is it an equal number of patients
+   per target class of which each have an equal no. of measurements (with the same label but varying spectral
+   measurement)? How much of each do we have?"
+
+   **Answer (AI, 2026-11-25):** the hierarchy, counted on the built frame (78,500 rows).
 
    | | units | spectra | per unit |
    |---|---|---|---|
@@ -236,7 +240,9 @@ log loss on 2026-10-21). Priority 4 becomes 3 (the fit is approximate).
 
    * **Recommendation:** A: the source pre-trains on all eight groups, and dropping them mostly shifts the level. **Decision:** A or B?
 
-   **Answer (2026-11-25, corrected 2026-11-27):** because they are not patients of this study. The 30 reference isolates are the source's own library: a fixed, labelled set grown from stock on blood agar before each measurement, where the laboratory already knows what every one of them is. Putting one in a test fold would score the model on naming an organism it was handed with its name, not on the clinical decision. The test unit is a patient's isolate, where the species and the treatment are what nobody knows yet.
+   **Andrej (2026-11-25, discuss):** "I don't understand why they are never tested?"
+
+   **Answer (AI, 2026-11-27):** because they are not patients of this study. The 30 reference isolates are the source's own library: a fixed, labelled set grown from stock on blood agar before each measurement, where the laboratory already knows what every one of them is. Putting one in a test fold would score the model on naming an organism it was handed with its name, not on the clinical decision. The test unit is a patient's isolate, where the species and the treatment are what nobody knows yet.
 
    Where the strains came from, the paper does not say. Methods names only "30 bacterial and yeast isolates, including multiple isolates of Gram-negative and Gram-positive bacteria, as well as Candida species" and points at a supplementary table whose pages are images; it says they "represent over 94% of the most common infections seen at Stanford Hospital in the years 2016-17", which is coverage and not origin, and that "unique isolates are available from the authors upon reasonable request". The source's code names its mapping `ATCC_GROUPINGS`, which points at a culture collection, but that is a variable name and not a statement. An earlier version of this answer called them ATCC type strains as though the paper said so; it does not. What is measured here, not assumed, is that no patient of the 50 is one of the 30: each patient's closest reference isolate separates from it at ROC AUC 0.83 to 1.00 (median 0.998), where two cultures of one reference strain separate at a median of 0.81.
 
