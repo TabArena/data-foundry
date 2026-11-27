@@ -1,5 +1,25 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-27, breast_cancer_prediction: the radiologist's assessment dropped (task change; container not rebuilt)
+
+- `breast_cancer_prediction` drops `birads_assessment`, Andrej's decision (review issue 2, B): the assessment is the
+  follow-up decision through which most cancers are found (women read 0, 4 or 5 hold 87% of them), so as a feature it
+  made the score the read's accuracy (ROC AUC 0.93). The task is now the risk at the screening visit, before the read,
+  as in `bcsc_risk_estimation` on other exams; fit approximate. Untuned task probe: linear ROC AUC 0.580, ahead of the
+  dummy on every split. README regenerated.
+
+## 2026-11-27, bcsc_risk_estimation added (new dataset; container not built)
+
+- `bcsc_risk_estimation`: the BCSC Risk Estimation Dataset (Barlow et al. 2006), the one-exam-per-woman file:
+  1,007,660 women, 7,319 cancers within one year after the exam, twelve risk factors known at the screening visit
+  before the radiologist assesses the mammogram (density is read from it). Aggregated cells expanded by their count;
+  `invasive` and the source's 75/25 `training` flag dropped; code 9 missing, except the age band 75-79 and a "not
+  menopausal" level for surgical menopause and hormone therapy. Random 3-fold IID splits, `ForcedIIDFromTemporal`
+  (leaf `L-FORCED.random`); metric ROC AUC (the paper's c statistic); fit approximate. Full review panel: ship after
+  changes, applied; three questions in the record's review.
+- Andrej's decisions (2026-11-27): the forced time tag stays; `Outdated` as a note in the record; the BibTeX note
+  also carries the main page's required citation sentence (P01CA154292, download date).
+
 ## 2026-11-23, every definition names its split-tree leaf; `RetrospectiveFillIn` and `Target: Fixed Delay` in use (no container built)
 
 - `split_leaf` in all 174 definitions: the leaf of `split_tree.md` the split comes from. Where the tree names the
