@@ -28,11 +28,16 @@ With ``raw=True``, ``from_definition`` also gives the raw state: ``ProbeInput.ra
 of ``process(lineage=True)``), or None when the rows cannot be traced (``ProbeInput.raw_note`` says why). The probes of
 the raw state (``leak_probes.py --raw``) read row order, the rows ``_clean`` removed, the columns it dropped and the
 copies before deduplication from them.
+
+Rows without a target are dropped from every input (``df``, the splits, the weights, the scoring values and the raw
+positions), since no probe can fit or score them; ``ProbeInput.target_note`` says how many, and the loader prints it
+to stderr.
 """
 
 from __future__ import annotations
 
 import dataclasses
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
@@ -82,6 +87,7 @@ class ProbeInput:
         weight_column: The training weight's column, or None.
         metric: The declared metric (the ``objective_metric`` spec), or None (a format-1 container).
         scoring: The values of every scoring column, row by row of ``df`` (index 0 to n - 1), or None.
+        target_note: How many rows without a target were dropped, or empty when none.
     """
 
     df: pd.DataFrame
@@ -104,6 +110,7 @@ class ProbeInput:
     weight_column: str | None = None
     metric: Any = None
     scoring: pd.DataFrame | None = None
+    target_note: str = ""
 
     @property
     def group_cols(self) -> list[str]:
@@ -173,6 +180,35 @@ def _spec_fields(spec: Any) -> dict:
     if spec is None:
         return {}
     return dataclasses.asdict(spec) if dataclasses.is_dataclass(spec) else dict(spec)
+
+
+def without_missing_target(data: ProbeInput) -> ProbeInput:
+    """``data`` without the rows whose target is missing, the splits' row positions moved to the rows kept; the
+    same object when every row has a target.
+    """
+    missing = data.df[data.target].isna().to_numpy()
+    if not missing.any():
+        return data
+    kept = np.flatnonzero(~missing)
+    position = np.full(len(missing), -1)
+    position[kept] = np.arange(len(kept))
+
+    def remap(idx: Any) -> np.ndarray:
+        moved = position[np.asarray(idx, dtype=int)]
+        return moved[moved >= 0]
+
+    splits = {r: {f: (remap(tr), remap(te)) for f, (tr, te) in folds.items()} for r, folds in data.splits.items()}
+    note = f"{int(missing.sum()):,} of {len(missing):,} rows without a target dropped"
+    print(f"{data.target}: {note}", file=sys.stderr)
+    return dataclasses.replace(
+        data,
+        df=data.df.iloc[kept].reset_index(drop=True),
+        splits=splits,
+        raw_rows=None if data.raw_rows is None else np.asarray(data.raw_rows)[kept],
+        weights=None if data.weights is None else np.asarray(data.weights)[kept],
+        scoring=None if data.scoring is None else data.scoring.iloc[kept].reset_index(drop=True),
+        target_note=note,
+    )
 
 
 def dataset_names(root: Path | str) -> list[str]:
@@ -252,7 +288,7 @@ def from_definition(
     df, special = _with_encoded_special_features(df, task, encode=encode_special)
     excluded = _excluded_columns(task)
     table, rows, note = _raw_state(ds, plan.df) if raw else (None, None, "")
-    return ProbeInput(
+    data = ProbeInput(
         df=df,
         target=task.target_column_name,
         problem_type=task.problem_type,
@@ -271,6 +307,7 @@ def from_definition(
         raw_note=note,
         **_weight_and_metric(plan.df, task),
     )
+    return without_missing_target(data)
 
 
 def _raw_state(ds: AbstractCuratedDataset, frame: pd.DataFrame) -> tuple[pd.DataFrame | None, np.ndarray | None, str]:
@@ -311,7 +348,7 @@ def from_container(container: CuratedContainer, origin: str, *, encode_special: 
     task = container.task_metadata
     df, scoring = _without_scoring_columns(container.dataset, task)
     df, special = _with_encoded_special_features(df, task, encode=encode_special)
-    return ProbeInput(
+    data = ProbeInput(
         df=df,
         target=task.target_column_name,
         problem_type=task.problem_type,
@@ -327,6 +364,7 @@ def from_container(container: CuratedContainer, origin: str, *, encode_special: 
         feature_cols=tuple(c for c in df.columns if c not in _excluded_columns(task)),
         **_weight_and_metric(container.dataset, task),
     )
+    return without_missing_target(data)
 
 
 def built_container(name: str, root: Path | str) -> tuple[CuratedContainer, str]:
@@ -357,15 +395,17 @@ def from_built(container: CuratedContainer, origin: str, *, encode_special: bool
         return from_container(container, origin, encode_special=encode_special)
     task = container.task_metadata
     grouping = SimpleNamespace(on=task.group_on, labels=task.group_labels, time_on=None) if task.group_on else None
-    return ProbeInput(
-        df=container.dataset,
-        target=task.target_column_name,
-        problem_type=task.problem_type,
-        regime=task.split_regime,
-        splits=container.experiment_metadata.splits,
-        grouping=grouping,
-        time_on=task.time_on,
-        origin=origin,
+    return without_missing_target(
+        ProbeInput(
+            df=container.dataset,
+            target=task.target_column_name,
+            problem_type=task.problem_type,
+            regime=task.split_regime,
+            splits=container.experiment_metadata.splits,
+            grouping=grouping,
+            time_on=task.time_on,
+            origin=origin,
+        )
     )
 
 

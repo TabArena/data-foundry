@@ -27,7 +27,7 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from data_foundry.v2.splits import SPLIT_RANDOM_STATE, TemporalSplits, window_bounds
+from data_foundry.v2.splits import SPLIT_RANDOM_STATE, TemporalSplits, derived_window, window_bounds
 
 PSI_BINS = 10
 """A numeric feature's population stability index compares the train side's deciles."""
@@ -71,14 +71,22 @@ def candidate_windows(
     """The windows of ``windows``' length, gap and step, walking back from the newest data, newest first.
 
     Every train side keeps at least ``min_train_fraction`` of the rows (SPLIT-14's lower bound, 30%; the newest
-    window and one other keep 50%). ``windows.cutoffs`` and
-    ``windows.n_windows`` are ignored: these are the candidates, not the choice. Each side is a range of positions, so
-    a frame of tens of millions of rows needs no index lists.
+    window and one other keep 50%). ``windows.cutoffs`` and ``windows.n_windows`` do not pick windows: these are the
+    candidates, not the choice. Each side is a range of positions, so a frame of tens of millions of rows needs no
+    index lists.
+
+    ``window=None`` (``unit="unique"`` or ``"rows"``) takes the length it resolves to in the definition's splits
+    (:func:`~data_foundry.v2.splits.derived_window`): the newest ``1 - windows.min_train_fraction`` of the axis cut
+    into ``windows.n_windows`` windows, ``min_train_fraction`` standing in when ``windows`` states none.
     """
+    window = windows.window
+    if window is None:
+        fraction = windows.min_train_fraction if windows.min_train_fraction is not None else min_train_fraction
+        window = derived_window(df[time_on], windows.unit, windows.n_windows, fraction)
     bounds = window_bounds(
         df,
         time_on=time_on,
-        window=windows.window,
+        window=window,
         unit=windows.unit,
         step=windows.step,
         gap=windows.gap,

@@ -542,6 +542,7 @@ def check_frame(
     raw: pd.DataFrame | None = None,
     raw_rows: np.ndarray | None = None,
     order_known: bool = True,
+    feature_cols: list[str] | tuple[str, ...] | None = None,
 ) -> dict:
     """Run the checks of the module docstring and set the flags.
 
@@ -555,8 +556,12 @@ def check_frame(
         raw_rows: The raw position of each row of ``df``, to read the order in the source's order.
         order_known: False when the row order of ``df`` is not the source's and ``raw_rows`` cannot restore it (a
             built container, whose rows were shuffled): the checks of the row order are then not run.
+        feature_cols: The model inputs, when not every column but the target and ``exclude`` is one (a time column
+            that dates the label, the unit of a unit weight): the other columns are left out too.
     """
     skip = {target, *exclude}
+    if feature_cols is not None:
+        skip |= {c for c in df.columns if c not in set(feature_cols)}
     result: dict = {"problem_type": problem_type, "rows": len(df)}
     result["time_columns"] = time_columns(df, skip)
     if raw is not None:

@@ -71,19 +71,26 @@ def set_missing(df: pd.DataFrame, codes: Mapping[str, Iterable]) -> pd.DataFrame
 def decode(df: pd.DataFrame, labels: Mapping[str, Mapping]) -> pd.DataFrame:
     """Replace each column's codes by the words its codebook gives them (CLEAN-12), such as 1 by "almost entirely
     fatty". A code matches its label by how it is written (1, 1.0 and "1" are one code). Missing values stay missing;
-    run `set_missing` first for the codes that mean unknown. A code without a label, or a column that is not in the
-    frame, is an error.
+    run `set_missing` first for the codes that mean unknown. A code without a label, a column that is not in the
+    frame, or two keys of a codebook written as one code ("01" and "1") are errors.
 
     Raises:
         KeyError: A column is not in the frame.
-        ValueError: A code of a column has no label.
+        ValueError: A code of a column has no label, or two keys of its codebook are one code.
     """
     missing = _missing(df, labels)
     if missing:
         raise KeyError(f"Cannot decode columns that are not in the frame: {missing}")
     df = df.copy(deep=not copy_on_write_enabled())
     for col, mapping in labels.items():
-        by_code = {_code(k): v for k, v in mapping.items()}
+        by_code: dict[str, object] = {}
+        keys: dict[str, list] = {}
+        for key, label in mapping.items():
+            by_code[_code(key)] = label
+            keys.setdefault(_code(key), []).append(key)
+        same = [found for found in keys.values() if len(found) > 1]
+        if same:
+            raise ValueError(f"Codebook keys of {col!r} that are one code: {same[:10]}; keep one key per code.")
         codes = df[col].astype(object).map(lambda v: None if pd.isna(v) else _code(v))
         unlabelled = sorted({c for c in codes.dropna().unique() if c not in by_code})
         if unlabelled:

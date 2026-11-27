@@ -896,6 +896,7 @@ def run(
     time_on: str | None = None,
     splits: list | None = None,
     n_jobs: int = 4,
+    feature_cols: list[str] | tuple[str, ...] | None = None,
 ) -> dict:
     """Run the probe of the module docstring on one frame and return its numbers.
 
@@ -908,8 +909,14 @@ def run(
         time_on: The time column of a temporal task: no split gap, the recurrence across ``splits`` instead.
         splits: For a temporal task, the ``(train_idx, test_idx)`` row positions of each split.
         n_jobs: Threads per LightGBM model.
+        feature_cols: The model inputs, when not every column but the target, the known groups and the time column
+            is one (a time column that dates the label, the unit of a unit weight): the other columns are dropped
+            first, and the known group and time columns kept.
     """
     temporal = time_on is not None
+    if feature_cols is not None:
+        keep = {*feature_cols, target, *known, *([time_on] if temporal else [])}
+        df = df[[c for c in df.columns if c in keep]]
     labels_of = df[target]
     if problem_type == "regression":
         y, n_classes = labels_of.to_numpy(dtype=float), 0

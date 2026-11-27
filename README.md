@@ -63,15 +63,17 @@ Download a single BeyondArena container by name (or UUID) and iterate its outer 
 
 ```python
 from data_foundry.collections import BEYOND_ARENA
+from data_foundry.curation_container import feature_columns
 
 container = BEYOND_ARENA.get_dataset("airfoil_self_noise")
 df = container.dataset
 target = container.task_metadata.target_column_name
+features = feature_columns(container)  # every column but the target, group and scoring columns
 
 for repeat_id, folds in container.experiment_metadata.splits.items():
     for fold_id, (train_idx, test_idx) in folds.items():
-        X_train, y_train = df.iloc[train_idx].drop(columns=target), df.iloc[train_idx][target]
-        X_test,  y_test  = df.iloc[test_idx].drop(columns=target),  df.iloc[test_idx][target]
+        X_train, y_train = df.iloc[train_idx][features], df.iloc[train_idx][target]
+        X_test,  y_test  = df.iloc[test_idx][features],  df.iloc[test_idx][target]
         # ... fit, evaluate ...
 ```
 
@@ -92,8 +94,8 @@ with Data Foundry v1 ([DATA_FOUNDRY_V1.md](DATA_FOUNDRY_V1.md)); a format-2 cont
 `group_on`, `group_labels` and `group_time_on`. Format 2 stores the group fields once, in a `Grouping`
 (`data_foundry.schema.Grouping`), and `container.grouping` returns it: the prediction unit (a row, or one prediction
 per group with an aggregation such as `mean` or `any`), what a model may know about a group when predicting, and the
-definition of a group with its source. A format-1 container has no such block, so `container.grouping` raises
-there. The group column is split and scoring metadata, never a model feature. A format-2 container keeps its outer
+definition of a group with its source. A format-1 container has no such block, so `container.grouping` returns
+None there. The group column is split and scoring metadata, never a model feature. A format-2 container keeps its outer
 splits in a row table, `rows.parquet`: one row per row of `dataset.parquet`, one column per split
 (`split_r<repeat>_f<fold>`) holding `train`, `test` or nothing, so it opens in any Parquet reader next to the data
 ([`examples/read_metric_without_data_foundry.py`](examples/read_metric_without_data_foundry.py) reads it without Data

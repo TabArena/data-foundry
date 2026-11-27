@@ -68,6 +68,7 @@ from typing import TYPE_CHECKING, Any, ClassVar
 import numpy as np
 import pandas as pd
 
+from data_foundry import time_basis as basis_rules
 from data_foundry.bundle_checks import (
     SEVERITY_ORDER,
     BundleCheckReport,
@@ -100,6 +101,7 @@ from data_foundry.schema import (
     resolve_warehouse_dir,
     rows_text,
 )
+from data_foundry.time_basis import GroupBasis, TimeBasis
 from data_foundry.utils.checksum import encode_dataset_v2
 from data_foundry.v2 import (
     group_checks,
@@ -117,8 +119,6 @@ from data_foundry.v2.preprocessing import (
     order_positions,
     order_rows,
 )
-from data_foundry import time_basis as basis_rules
-from data_foundry.time_basis import GroupBasis, TimeBasis
 from data_foundry.v2.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, Temporal, TemporalSplits
 from data_foundry.v2.windows import Window, candidate_windows, window_stats
 
@@ -686,8 +686,8 @@ class AbstractCuratedDataset(ABC):
         Each :class:`Decision` pairs a statement and its reasoning with a table or a figure computed from
         the data, and ``check`` renders them into the "Decisions" section of ``README.md`` (figures as PNGs
         under ``figures/``). Good candidates are the decisions a reviewer would question: why a column is a
-        leak, why the split is temporal and not grouped, why duplicates are kept. ``raw`` is the cached
-        output of ``_load_raw`` (do not change it), ``df`` the curated frame.
+        leak, why the split is temporal and not grouped, why duplicates are kept. ``raw`` is a copy of the
+        output of ``_load_raw`` (an edit in place does not reach the cache), ``df`` the curated frame.
         """
         del raw, df
         return []
@@ -698,8 +698,8 @@ class AbstractCuratedDataset(ABC):
         if "unique_name" not in vars(cls) and inspect.isabstract(cls):
             return  # a helper base class, not a definition
         _validate_definition(cls)
-        # the source as loaded: `reload` compares against it (the file may already hold the edited text)
-        cls._loaded_sources = {name: _source(cls, name) for name in ("_load_raw", "_prepare_raw_files")}
+        # the code as loaded: `reload` compares against it (the file may already hold the edited text)
+        cls._loaded_code = {name: _code_hash(cls, name) for name in ("_load_raw", "_prepare_raw_files")}
 
     def __init__(self) -> None:
         """Create the dataset; nothing is read until :attr:`raw` or :attr:`df` is first used."""
@@ -708,6 +708,23 @@ class AbstractCuratedDataset(ABC):
         self._df_cache: tuple[pd.DataFrame, pd.DataFrame | None] | None = None
         self.auto_reload = False
         self._source_mtime = self._definition_mtime()
+        self._reset_process_state()
+        self._reset_container_state()
+        self._time_changed_in_split = 0
+
+    def _reset_process_state(self) -> None:
+        """Forget what the last :meth:`process` recorded, before a run records it again; a run that does not set a
+        value (no ``source_file`` column, a parent) then reads the default, never a value from an earlier run.
+        """
+        self._rows_per_file: dict[str, int] | None = None
+        self._dropped_non_features: list[NonFeature] = []
+        self._applied_feature_types: FeatureTypes | None = None
+
+    def _reset_container_state(self) -> None:
+        """Forget what the last :meth:`to_container` recorded for the checks, before a run records it again."""
+        self._frame_rows: int | None = None
+        self._newest_rate: tuple[float, float, float] | None = None
+        self._unmatched_raw_files: list[str] = []
 
     def __repr__(self) -> str:
         return f"<{type(self).__name__} {self.unique_name!r} from {self.folder}>"
@@ -747,8 +764,9 @@ class AbstractCuratedDataset(ABC):
     def reload(self) -> AbstractCuratedDataset:
         """Re-import ``dataset.py`` in place. Returns ``self``.
 
-        The cached raw data is kept when ``_load_raw`` and ``_prepare_raw_files`` are unchanged, so
-        iterating on ``_clean`` or the declarations never re-reads the files.
+        The cached raw data is kept when ``_load_raw`` and ``_prepare_raw_files`` are unchanged, with the helpers
+        and module constants they read (:func:`_code_hash`), so iterating on ``_clean`` or the declarations never
+        re-reads the files.
         """
         from data_foundry.v2.registry import load_definition  # noqa: PLC0415 - the registry imports this module
 
@@ -757,8 +775,8 @@ class AbstractCuratedDataset(ABC):
         if file is None:  # a class defined in a notebook: re-run its cell instead
             return self
         new = load_definition(file)  # imports the parents again too (`import_definition`)
-        loaded = getattr(old, "_loaded_sources", {})
-        keep_raw = all(loaded.get(name) == new._loaded_sources[name] for name in new._loaded_sources)
+        loaded = getattr(old, "_loaded_code", {})
+        keep_raw = all(loaded.get(name) == new._loaded_code[name] for name in new._loaded_code)
         self.__class__ = new
         if not keep_raw:
             self._raw_cache, self._raw_loaded = None, False
@@ -815,6 +833,7 @@ class AbstractCuratedDataset(ABC):
         """
         if lineage:
             return self._process_with_lineage()
+        self._reset_process_state()
         with _copy_on_write():
             cleaned = self._clean(_copy(self.raw))
             df, test = cleaned if isinstance(cleaned, tuple) else (cleaned, None)
@@ -852,6 +871,7 @@ class AbstractCuratedDataset(ABC):
     def _clean_traced(self, raw: pd.DataFrame, how: str) -> tuple[pd.DataFrame, pd.DataFrame | None, np.ndarray] | None:
         """:meth:`process` on ``raw`` tagged by a lineage column or index; None when ``_clean`` drops the tag."""
         n = len(raw)
+        self._reset_process_state()
         with _copy_on_write():
             tagged = _copy(raw)
             if how == "column":
@@ -1061,10 +1081,12 @@ class AbstractCuratedDataset(ABC):
 
     @property
     def df(self) -> pd.DataFrame:
-        """The curated frame (after the standard steps), cached until the definition changes.
+        """The curated frame (after the standard steps), cached.
 
-        Explore it freely: it is a copy that shares no memory with the cached raw data, and :meth:`check` and
-        :meth:`build` rebuild the frame from the raw data and never use this cached copy.
+        The cache is cleared by :meth:`reload`. An edit of ``dataset.py`` is picked up on the next access only with
+        ``auto_reload`` on (:func:`~data_foundry.v2.workbench.workbench` turns it on); otherwise the frame stays as
+        first computed until :meth:`reload`. Explore it freely: it is a copy that shares no memory with the cached raw
+        data, and :meth:`check` and :meth:`build` rebuild the frame from the raw data and never use this cached copy.
         """
         self._refresh()
         if self._df_cache is None:
@@ -1090,6 +1112,8 @@ class AbstractCuratedDataset(ABC):
                     target_feature=self.target,
                     problem_type=self.problem_type,
                     print_report=False,
+                    duplicate_row_check=False,  # printed only, never returned, and slow on a large frame
+                    duplicate_column_check=False,
                 )
         except (TypeError, ValueError) as error:  # an object column or a wrong class count: the bundle checks say so
             return {"error": pd.DataFrame({"data checks not run": [f"{type(error).__name__}: {error}"]})}
@@ -1267,6 +1291,7 @@ class AbstractCuratedDataset(ABC):
         Every split side comes in row order: a side is a set of rows, and the container's row table stores it so.
         """
         df = self.df if df is None else df
+        self._time_changed_in_split = 0
         if self.temporal is not None:
             self._check_time_unit(df[self.temporal.on])
         plan = self._make_splits(df)
@@ -1276,7 +1301,7 @@ class AbstractCuratedDataset(ABC):
         plan.splits = _in_row_order(plan.splits)
         if plan.df is None:
             plan.df = df
-        elif plan.df is not df and self._make_splits is not AbstractCuratedDataset._make_splits:
+        elif plan.df is not df and type(self)._make_splits is not AbstractCuratedDataset._make_splits:
             plan.df = _drop_unused_categories(plan.df)  # a custom split step that drops rows keeps old levels
             self._time_changed_in_split = _time_values_changed(df, plan.df, self.task_metadata.time_on)
         if self.splits_comment is not None:
@@ -1336,13 +1361,17 @@ class AbstractCuratedDataset(ABC):
                 f"{type(self).__name__}: the splits are custom (`_make_splits`); give the candidates' window and unit."
             )
             raise DatasetDefinitionError(msg)
+        # A declared window of None is derived from `n_windows` and the declared train fraction: the candidates take
+        # the same length, and `min_train_fraction` stays the floor they are listed down to.
+        derived = window is None and declared is not None and declared.window is None
         candidates = TemporalSplits(
             window=window if window is not None else declared.window,
             unit=unit if unit is not None else declared.unit,
             gap=gap if gap is not None else (declared.gap if declared is not None else 0),
             gap_unit=gap_unit if gap_unit is not None else (declared.gap_unit if declared is not None else None),
             step=step if step is not None else (declared.step if declared is not None else None),
-            min_train_fraction=min_train_fraction,
+            n_windows=declared.n_windows if derived else None,
+            min_train_fraction=declared.min_train_fraction if derived else min_train_fraction,
         )
         df = self.df
         task = self.task_metadata
@@ -1407,6 +1436,7 @@ class AbstractCuratedDataset(ABC):
     # --- pipeline -----------------------------------------------------------------------------------
     def to_container(self) -> CuratedContainer:
         """Rebuild the frame from the raw data, split it and attach the metadata. Nothing is saved."""
+        self._reset_container_state()
         df, test = self.process()
         plan = self.make_splits(df)
         self._frame_rows = len(df)  # the floor counts every row, also those a row budget leaves out of the container
@@ -1454,7 +1484,7 @@ class AbstractCuratedDataset(ABC):
                 container=container,
                 bundle_report=self._run_bundle_checks(container, verbose=verbose, group_stats=stats),
                 data_checks=self.run_all_checks(container.dataset),
-                decisions=list(self._decisions(self.raw, container.dataset)),
+                decisions=list(self._decisions(_copy(self.raw), container.dataset)),
                 group_stats=stats,
             )
         if write_report and self.report_path is not None:
@@ -2029,31 +2059,48 @@ PREPARED_MARKER = ".prepared_raw_files.json"
 
 
 def _prepare_code_hash(cls: type) -> str:
-    """A hash of ``_prepare_raw_files`` and of the functions, classes and methods of its module it calls, directly
+    """The code hash of ``_prepare_raw_files`` (:func:`_code_hash`), kept with the prepared files."""
+    return _code_hash(cls, "_prepare_raw_files")
+
+
+def _code_hash(cls: type, hook: str) -> str:  # noqa: C901 - one walk over the code the hook reaches
+    """A hash of the method ``hook`` and of the functions, classes and methods of its module it calls, directly
     or through each other, and of the module-level assignments they read (an edit of a helper or of a constant such
-    as a list of files makes the prepared files stale too). Constants are hashed as written, not by their value, so
+    as a list of files counts as an edit of the hook). Constants are hashed as written, not by their value, so
     module state that changes at run time does not count.
+
+    A module-level function or class not yet defined when this runs (one written below the class, hashed while the
+    module is still being imported) is read from the module's source instead.
     """
-    owner = next((k for k in cls.__mro__ if "_prepare_raw_files" in vars(k)), cls)  # the family root, if inherited
+    owner = next((k for k in cls.__mro__ if hook in vars(k)), cls)  # the family root, if inherited
     cls = owner
     module = inspect.getmodule(cls)
     assignments = _module_assignments(module)
+    definitions = _module_definitions(module)
     sources: dict[str, str] = {}
     constants: dict[str, str] = {}
-    pending = [("_prepare_raw_files", cls._prepare_raw_files)]
+    pending: list[tuple[str, Any]] = [(hook, getattr(cls, hook))]
     while pending:
         name, obj = pending.pop()
         if name in sources:
             continue
-        try:
-            sources[name] = inspect.getsource(obj)
-        except (OSError, TypeError):
-            continue
-        code = getattr(obj, "__code__", None)
-        for used in _names_used(code) if code is not None else ():
-            target = getattr(module, used, None) or getattr(cls, used, None)
+        if isinstance(obj, tuple):  # (source, names read) of a definition not yet bound in the module
+            sources[name], names = obj
+        else:
+            try:
+                sources[name] = inspect.getsource(obj)
+            except (OSError, TypeError):
+                continue
+            code = getattr(obj, "__code__", None)
+            names = _names_used(code) if code is not None else set()
+        for used in names:
+            target = getattr(module, used, None)  # not `or`: a module constant may be an array
+            if target is None:
+                target = getattr(cls, used, None)
             if callable(target) and inspect.getmodule(target) is module and used not in sources:
                 pending.append((used, target))
+            elif target is None and used in definitions and used not in sources:
+                pending.append((used, definitions[used]))
             elif used in assignments:
                 _add_constant(used, assignments, constants)
     text = "\n".join(f"{name}\n{source}" for name, source in sorted(sources.items()))
@@ -2068,8 +2115,49 @@ def _module_assignments(module: Any) -> dict[str, tuple[str, set[str]]]:
         source = inspect.getsource(module)
     except (OSError, TypeError):
         return {}
-    out: dict[str, tuple[str, set[str]]] = {}
+    return _module_parts(source)[0]
+
+
+def _module_definitions(module: Any) -> dict[str, tuple[str, set[str]]]:
+    """The module-level functions and classes of ``module``: name -> (the definition as written, the names it reads)."""
+    try:
+        source = inspect.getsource(module)
+    except (OSError, TypeError):
+        return {}
+    return _module_parts(source)[1]
+
+
+_SOURCE_LINE = re.compile(r"[^\r\n]*(?:\r\n|\r|\n)|[^\r\n]+\Z")
+"""A line of source with its ending, split as the parser splits it (form feeds stay inside a line)."""
+
+
+@functools.lru_cache(maxsize=512)
+def _module_parts(
+    source: str,
+) -> tuple[dict[str, tuple[str, set[str]]], dict[str, tuple[str, set[str]]]]:
+    """The module-level assignments and definitions of ``source``, parsed once per source (callers do not mutate them).
+
+    Each statement's text is what ``ast.get_source_segment`` returns, sliced from lines split once: that function
+    splits the whole source again on every call, which made loading a large definition take minutes on Python 3.10.
+    """
+    lines = _SOURCE_LINE.findall(source)
+
+    def segment(node: ast.AST) -> str:
+        start, end = node.lineno - 1, node.end_lineno - 1
+        if start == end:
+            return lines[start].encode()[node.col_offset : node.end_col_offset].decode()
+        first = lines[start].encode()[node.col_offset :].decode()
+        last = lines[end].encode()[: node.end_col_offset].decode()
+        return "".join([first, *lines[start + 1 : end], last])
+
+    assignments: dict[str, tuple[str, set[str]]] = {}
+    definitions: dict[str, tuple[str, set[str]]] = {}
     for node in ast.parse(source).body:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            reads = {n.id for n in ast.walk(node) if isinstance(n, ast.Name)}
+            reads |= {n.attr for n in ast.walk(node) if isinstance(n, ast.Attribute)}
+            definitions[node.name] = (segment(node), reads)
+            continue
         if isinstance(node, ast.Assign):
             targets, value = node.targets, node.value
         elif isinstance(node, ast.AnnAssign) and node.value is not None:
@@ -2079,8 +2167,8 @@ def _module_assignments(module: Any) -> dict[str, tuple[str, set[str]]]:
         reads = {n.id for n in ast.walk(value) if isinstance(n, ast.Name)}
         for target in targets:
             if isinstance(target, ast.Name):
-                out[target.id] = (ast.get_source_segment(source, node) or "", reads)
-    return out
+                assignments[target.id] = (segment(node), reads)
+    return assignments, definitions
 
 
 def _add_constant(name: str, assignments: dict[str, tuple[str, set[str]]], constants: dict[str, str]) -> None:
@@ -2114,13 +2202,6 @@ def _categories_like(test: pd.DataFrame, train: pd.DataFrame) -> pd.DataFrame:
             new = [c for c in test[col].cat.categories if c not in set(known)]
             test[col] = test[col].cat.set_categories(known + new)
     return test
-
-
-def _source(cls: type, name: str) -> str | None:
-    try:
-        return inspect.getsource(getattr(cls, name))
-    except (OSError, TypeError):
-        return None
 
 
 def _time_values_changed(before: pd.DataFrame, after: pd.DataFrame, time_on: str | None) -> int:

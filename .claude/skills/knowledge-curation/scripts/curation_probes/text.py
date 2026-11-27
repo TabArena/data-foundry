@@ -4,9 +4,9 @@ Tooling-independent (pandas, NumPy and scikit-learn); the probes of this package
 enters every probe the same way.
 
 * ``features``: the numeric model inputs of a frame. Categoricals enter as their codes, a missing value as one more
-  code after the levels (a median code would depend on the order of the levels); datetimes and periods as seconds;
-  a missing number as the column's median (0 for a column without values). String columns are left out and returned
-  by name.
+  code after the levels (a median code would depend on the order of the levels); datetimes, periods and durations as
+  seconds (``seconds``); a missing number or date as the column's median (0 for a column without values). String
+  columns are left out and returned by name.
 * ``encode_text``: each text column as ``TEXT_COMPONENTS`` TF-IDF + SVD components fitted on the train rows only:
   words for prose, character 2- to 5-grams for strings that are mostly one token (a SMILES, a code, a URL), where
   words would only match whole repeated values.
@@ -25,6 +25,27 @@ ONE_TOKEN_SHARE = 0.9
 """A text column whose values are a single token in at least this share of rows is encoded by character n-grams."""
 
 
+def seconds(values: pd.Series) -> pd.Series:
+    """A datetime, period or duration column as float seconds (a datetime since 1970, UTC for one with a time zone);
+    a missing value stays NaN. Casting to ``int64`` would turn a missing date into -9.2e9 seconds (pandas 2) or
+    raise (pandas 3).
+    """
+    if isinstance(values.dtype, pd.PeriodDtype):
+        values = values.dt.to_timestamp()
+    if pd.api.types.is_timedelta64_dtype(values):
+        return values / pd.Timedelta(seconds=1)
+    return (values - pd.Timestamp(0, tz=values.dt.tz)) / pd.Timedelta(seconds=1)
+
+
+def is_time(values: pd.Series) -> bool:
+    """Whether ``seconds`` takes the column: a datetime (with or without a time zone), a period or a duration."""
+    return (
+        pd.api.types.is_datetime64_any_dtype(values)
+        or pd.api.types.is_timedelta64_dtype(values)
+        or isinstance(values.dtype, pd.PeriodDtype)
+    )
+
+
 def features(df: pd.DataFrame, drop: list[str]) -> tuple[pd.DataFrame, list[str], list[str]]:
     """Numeric model inputs (columns ``f0``, ``f1``, ...), their original names, and the text columns."""
     X = df.drop(columns=[c for c in drop if c in df.columns])
@@ -33,10 +54,8 @@ def features(df: pd.DataFrame, drop: list[str]) -> tuple[pd.DataFrame, list[str]
     for col in X.columns:
         if isinstance(X[col].dtype, pd.CategoricalDtype):
             X[col] = X[col].cat.codes.replace(-1, len(X[col].cat.categories))
-        elif pd.api.types.is_datetime64_any_dtype(X[col]):
-            X[col] = X[col].astype("int64") // 10**9
-        elif isinstance(X[col].dtype, pd.PeriodDtype):
-            X[col] = X[col].dt.to_timestamp().astype("int64") // 10**9
+        elif is_time(X[col]):
+            X[col] = seconds(X[col])
     X = X.astype(float)
     names = list(X.columns)
     X = X.fillna(X.median()).fillna(0.0)

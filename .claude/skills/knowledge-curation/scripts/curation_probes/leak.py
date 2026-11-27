@@ -70,9 +70,9 @@ distinct patterns are screened the same way. The all-feature, shallow-tree and d
 
 A multiclass ROC AUC is the mean of the one-vs-rest ROC AUCs over the classes present in the test fold (a grouped or
 temporal fold can lack a class); a class the training side lacks gets probability 0. String and datetime columns
-are not inputs of the other fits, group columns are not features, and train and test rows are capped at
-``max_rows`` each. The numbers are indicative (untuned models, a few splits) and meant for comparing the data with a
-suspected fix.
+are not inputs of the other fits (a duration enters as seconds), group columns are not features, and train and test
+rows are capped at ``max_rows`` each. The numbers are indicative (untuned models, a few splits) and meant for
+comparing the data with a suspected fix.
 """
 
 from __future__ import annotations
@@ -87,7 +87,7 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from curation_probes import weights
-from curation_probes.text import encode_text
+from curation_probes.text import encode_text, seconds
 
 BINS = 10
 """Quantile bins of the screen's step function; a categorical of more levels is scored by ``level_score``."""
@@ -319,10 +319,36 @@ def keep_most_informative(data: pd.DataFrame, y: pd.Series, rows: np.ndarray, li
 
 def neighbour_space(X: pd.DataFrame) -> np.ndarray:
     """Standardised numeric columns plus one-hot categoricals with at most 50 levels."""
-    num = X.select_dtypes("number")
+    # booleans as 0/1 numbers: get_dummies passes a bool column through, and a nullable one's missing values with it
+    num = X.select_dtypes(["number", "bool", "boolean"]).astype(float)
     cats = [c for c in X.columns if c not in num and X[c].nunique() <= 50]
     parts = [((num - num.mean()) / num.std()).fillna(0), pd.get_dummies(X[cats], dummy_na=True) if cats else None]
     return pd.concat(parts, axis=1).to_numpy(dtype=float)
+
+
+def model_inputs(features: pd.DataFrame) -> pd.DataFrame:
+    """The columns the fits read: no string or datetime column, a duration as seconds (a missing one kept missing;
+    LightGBM and the trees take no timedelta).
+    """
+    # pandas keeps timezone-aware datetimes apart ("datetimetz"); "datetime" alone lets them through to LightGBM
+    X = features.select_dtypes(exclude=["string", "object", "datetime", "datetimetz"])
+    durations = X.select_dtypes("timedelta").columns
+    if len(durations):
+        X = X.copy()
+        for col in durations:
+            X[col] = seconds(X[col])
+    return X
+
+
+def without_strongest(X: pd.DataFrame, strongest: list, fit) -> dict:
+    """The score of ``fit`` on ``X`` without each column of ``strongest``; none with one column, whose drop leaves
+    nothing to fit.
+    """
+    out = {}
+    for col in strongest if X.shape[1] > 1 else []:
+        out[col] = fit(X.drop(columns=[col]))
+        say(f"without {col}: {out[col]:.3f}")
+    return out
 
 
 def say(line: str) -> None:
@@ -2267,8 +2293,7 @@ def run(  # noqa: PLR0913
     y = df[target]
     weight = None if sample_weight is None else np.asarray(sample_weight, dtype=float)
     features = df[list(feature_cols)] if feature_cols is not None else df.drop(columns=[target, *group_cols])
-    # pandas keeps timezone-aware datetimes apart ("datetimetz"); "datetime" alone lets them through to LightGBM
-    X = features.select_dtypes(exclude=["string", "object", "datetime", "datetimetz"])
+    X = model_inputs(features)
     rng = np.random.default_rng(0)
     cap = lambda idx: np.sort(rng.choice(idx, min(len(idx), max_rows), replace=False))
     pairs = [(cap(tr), cap(te)) for tr, te in splits][:n_splits]
@@ -2279,6 +2304,11 @@ def run(  # noqa: PLR0913
 
     weighted = ", every fit and score weighted by the training weight" if weight is not None else ""
     say(f"{name}: {len(df):,} rows, {X.shape[1]} features probed, {len(pairs)} splits{weighted}")
+    if X.shape[1] == 0:
+        result["skipped"] = "no numeric, categorical or boolean feature: only string and datetime columns"
+        say(f"no model fits: {result['skipped']} (the task probes encode the strings as text)")
+        result.update(string_checks(features, X, y, pairs, regression=regression, n_jobs=n_jobs, weight=weight))
+        return result
     result["all_features"] = fit(X)
     say(f"all features: {result['all_features']:.3f}")
     shallow = [tree_score(X, y, pairs, regression=regression, depth=d, weight=weight) for d in (2, 3)]
@@ -2325,10 +2355,7 @@ def run(  # noqa: PLR0913
                 f"number format alone (decimals written, {len(floats)} float columns): {result['format_alone']:.3f}; "
                 f"best columns: {result['format_single']}"
             )
-    result["without"] = {}
-    for col in single.index[:3]:
-        result["without"][col] = fit(X.drop(columns=[col]))
-        say(f"without {col}: {result['without'][col]:.3f}")
+    result["without"] = without_strongest(X, list(single.index[:3]), fit)
 
     result["exact_copies"] = copy_counts(profile_codes(X), y, splits)
     result["exact_copy_share"] = result["exact_copies"]["matched"]
@@ -2368,7 +2395,10 @@ def run(  # noqa: PLR0913
     if not regression and y.nunique() == 2:
         rows = np.union1d(tr, te)
         d_all = NearestNeighbors(n_neighbors=2).fit(Z[rows]).kneighbors(Z[rows])[0][:, 1]
-        positive = y.cat.categories[1] if isinstance(y.dtype, pd.CategoricalDtype) else np.unique(y.dropna())[1]
+        # the second observed class: a categorical's levels can include one no row holds
+        observed = set(y.dropna())
+        levels = y.cat.categories if isinstance(y.dtype, pd.CategoricalDtype) else np.unique(y.dropna())
+        positive = [c for c in levels if c in observed][1]
         distance_auc = roc_auc_score(y.iloc[rows] == positive, -d_all, sample_weight=weights.take(weight, rows))
         result["distance_auc"] = max(distance_auc, 1 - distance_auc)
         say(f"nearest-neighbour distance alone (label-free), AUC: {result['distance_auc']:.3f}")

@@ -40,7 +40,8 @@ def probe(name: str, root: Path, *, built: bool, n_jobs: int, include_grouped: b
     """Run the probe of ``curation_probes.hidden_groups`` on one dataset."""
     started = time.time()
     data = dataset_io.load(name, root, built=built)
-    regime = "temporal" if data.time_on is not None else "grouped" if data.grouping is not None else "iid"
+    # the task's regime, not its time column: a grouped task can name a time column too
+    regime = {"temporal_non_iid": "temporal", "grouped_non_iid": "grouped"}.get(data.regime, "iid")
     result: dict = {"name": name, "regime": regime, "origin": data.origin}
     if regime == "grouped" and not include_grouped:
         return result | {"skipped": f"{regime} task"}
@@ -49,9 +50,10 @@ def probe(name: str, root: Path, *, built: bool, n_jobs: int, include_grouped: b
         data.target,
         data.problem_type,
         known=data.group_cols,
-        time_on=data.time_on,
+        time_on=data.time_on if regime == "temporal" else None,
         splits=data.flat_splits(),
         n_jobs=n_jobs,
+        feature_cols=data.feature_cols,
     )
     result["seconds"] = round(time.time() - started)
     return result

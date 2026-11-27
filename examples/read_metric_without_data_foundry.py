@@ -8,7 +8,10 @@ script imports nothing from ``data_foundry``. It:
    in format 1 (BeyondArena);
 2. lists the scoring columns (format 2: ``scoring_columns``), the columns the metric needs, which are never features,
    and the training weight (``sample_weight``, one of them): fit every model with it as each row's weight;
-3. takes the features as every column but the target, the group column(s) and the scoring columns;
+3. takes the features as every column but the target, the group column(s), the scoring columns (the training weight
+   among them), the unit of a unit weight (``unit_weight.unit``) and a time column that dates the label
+   (``time_on`` or ``grouping.time_on`` with ``time_of: "label"``), the same set as Data Foundry's
+   ``feature_columns``;
 4. scores a dummy prediction on the test side of the first split with the scikit-learn function of a standard
    metric. A custom metric (``kind: "custom"``) is implemented from its ``definition`` and ``params``, or by copying
    ``src/data_foundry/v2/metrics.py`` (numpy, pandas, scikit-learn and scipy only) into your code. A regression
@@ -109,6 +112,27 @@ def group_columns(task: dict) -> list[str]:
     return [on] if isinstance(on, str) else list(on)
 
 
+def non_feature_columns(task: dict) -> set[str]:
+    """The columns that are never model inputs, as Data Foundry's ``curation_container.non_feature_columns`` decides.
+
+    The target, the group column(s), the scoring columns and the training weight, the unit of a unit weight, and a
+    time that dates the label (``time_on``, or the order inside a group ``grouping.time_on``, with ``time_of:
+    "label"``): the actor does not hold it at the prediction point.
+    """
+    excluded = {task["target_column_name"], *group_columns(task)}
+    excluded.update(c["column"] for c in task.get("scoring_columns") or ())
+    if task.get("sample_weight"):
+        excluded.add(task["sample_weight"])
+    if task.get("unit_weight"):
+        excluded.add(task["unit_weight"]["unit"])
+    if task.get("time_on") is not None and task.get("time_of") == "label":
+        excluded.add(task["time_on"])
+    grouping = task.get("grouping") or {}
+    if grouping.get("time_on") is not None and grouping.get("time_of") == "label":
+        excluded.add(grouping["time_on"])
+    return excluded
+
+
 def dummy_prediction(prediction: str, y_train: pd.Series, n: int, classes: list) -> np.ndarray:
     """A prediction of the kind the metric takes (not a baseline): random probabilities, a label drawn from the
     training side, or the training mean as the value (valid for every regression metric, a Poisson mean included).
@@ -164,9 +188,9 @@ def main(path: Path) -> float | None:
         if spec.get(key):
             print(f"  {key}: {spec[key]}")
 
-    scoring = print_scoring_columns(task)
+    print_scoring_columns(task)
     target = task["target_column_name"]
-    not_features = {target, *group_columns(task), *(c["column"] for c in scoring)}
+    not_features = non_feature_columns(task)
     features = [c for c in df.columns if c not in not_features]
     print(f"Features: {len(features)} of {df.shape[1]} columns")
 

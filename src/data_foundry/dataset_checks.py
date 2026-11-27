@@ -108,7 +108,7 @@ def run_all_checks(
             )
 
     # Check if we have constant features (1 unique value, even with nans)
-    constant_cols = [c for c in data.columns if data[c].eq(data[c].iloc[0]).all()]
+    constant_cols = [] if data.empty else [c for c in data.columns if data[c].eq(data[c].iloc[0]).all()]
     if constant_cols:
         print(
             f"Warning: Found {len(constant_cols)} constant feature(s) with 1 or "

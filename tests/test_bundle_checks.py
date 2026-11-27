@@ -495,6 +495,64 @@ def test_non_datetime_time_on_needs_no_calendar_horizon():
     )
 
 
+def _numeric_time_v2_container(*, time_unit, horizon: int) -> CuratedContainer:
+    df = pd.DataFrame({"year": np.arange(2000, 2040), "feat_num": np.arange(40.0), "target": np.arange(40.0)})
+    task = PredictiveMLTaskMetadataV2(
+        target_column_name="target",
+        problem_type="regression",
+        objective_metric=make_spec("regression"),
+        time_on="year",
+        time_unit=time_unit,
+    )
+    splits = PredictiveMLSplitsMetadata(
+        splits_comment="s",
+        splits={0: {0: (list(range(30)), list(range(30, 40)))}},
+        time_horizon=horizon,
+        time_horizon_unit="years",
+    )
+    return make_temporal_container(dataset=df, task_metadata=task, experiment_metadata=splits, uuid="u")
+
+
+def test_format_2_time_unit_lets_the_horizon_be_cross_checked():
+    """A numeric time column whose `time_unit` is declared has a calendar: the horizon is checked against it."""
+    assert not {"meta_time_horizon_unit", "meta_time_horizon_mismatch"} & set(
+        slugs_of(_numeric_time_v2_container(time_unit="years", horizon=10))
+    )
+    assert "meta_time_horizon_mismatch" in slugs_of(_numeric_time_v2_container(time_unit="years", horizon=100))
+    assert "meta_time_horizon_mismatch" in slugs_of(_numeric_time_v2_container(time_unit="months", horizon=10))
+    undeclared = run_bundle_checks(_numeric_time_v2_container(time_unit=None, horizon=10), verbose=False)
+    (finding,) = [r for r in undeclared.results if r.slug == "meta_time_horizon_unit"]
+    assert "time_unit=" in finding.hint
+
+
+def _with_missing_dates(df: pd.DataFrame, column: str, rows: list[int], *, period: bool = False) -> pd.DataFrame:
+    df = df.copy()
+    if period:
+        df[column] = df[column].dt.to_period("D")
+    df.loc[rows, column] = pd.NaT
+    return df
+
+
+@pytest.mark.parametrize("period", [False, True])
+def test_a_missing_date_in_time_on_is_an_error_and_no_leak(period):
+    """A NaT in the time column is a missing value, never a date far in the past that sorts first."""
+    df = _with_missing_dates(make_temporal_container().dataset, "ts", [5, 35], period=period)
+    found = slugs_of(make_temporal_container(dataset=df))
+    assert "task_time_on_missing_values" in found
+    assert "splits_temporal_leakage" not in found
+    assert "task_time_on_not_sorted" not in found
+
+
+def test_a_label_time_copy_with_missing_dates_is_found():
+    """An exact copy of the label time is found when a third of its dates are missing."""
+    df = make_temporal_container().dataset
+    df["copy_date"] = df["ts"] + pd.Timedelta(days=1)
+    df.loc[::3, "copy_date"] = pd.NaT
+    ctx = bundle_checks._Ctx(container=make_temporal_container(dataset=df), heavy_cell_budget=10**9)
+    copies = bundle_checks._label_time_copies(ctx, "ts", set(), np.arange(len(df)))
+    assert any(c.startswith("copy_date ") for c in copies)
+
+
 # --- Grouped tasks -------------------------------------------------------------------
 def make_grouped_container(**overrides) -> CuratedContainer:
     df = pd.DataFrame(
@@ -526,6 +584,16 @@ def make_grouped_container(**overrides) -> CuratedContainer:
 def test_clean_grouped_bundle_has_no_errors():
     report = run_bundle_checks(make_grouped_container(), verbose=False)
     assert report.ok, report.summary()
+
+
+def test_a_missing_group_key_says_the_split_builder_refuses_it():
+    """The hint tells the curator to fill or drop the rows, since the grouped split builder refuses them."""
+    df = make_grouped_container().dataset
+    df.loc[3, "group"] = np.nan
+    report = run_bundle_checks(make_grouped_container(dataset=df), verbose=False)
+    (finding,) = [r for r in report.results if r.slug == "task_group_on_missing_values"]
+    assert "refuses" in finding.hint
+    assert "artificial group" not in finding.hint
 
 
 def test_group_leakage_is_an_error():

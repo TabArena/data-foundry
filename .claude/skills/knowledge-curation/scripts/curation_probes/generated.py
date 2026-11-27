@@ -53,6 +53,8 @@ from scipy.stats import chi2_contingency, kstest, norm, rankdata
 from sklearn.linear_model import QuantileRegressor
 from sklearn.tree import DecisionTreeClassifier
 
+from curation_probes.text import is_time, seconds
+
 MAX_ROWS = 20_000
 MAX_LEVELS = 20
 MAX_TERMS = 200
@@ -87,8 +89,8 @@ FLAG_RULES = {
 
 
 def design(df: pd.DataFrame, drop: list[str], *, codes: bool = False) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Numeric features (datetimes as seconds, booleans as 0/1) and one-hot categoricals of few levels; with
-    ``codes``, a categorical of more levels enters as its codes (for the tree).
+    """Numeric features (datetimes, periods and durations as seconds, booleans as 0/1) and one-hot categoricals of
+    few levels; with ``codes``, a categorical of more levels enters as its codes (for the tree).
     """
     X = df.drop(columns=[c for c in drop if c in df.columns])
     numeric, binary = {}, {}
@@ -103,8 +105,8 @@ def design(df: pd.DataFrame, drop: list[str], *, codes: bool = False) -> tuple[p
                 numeric[col] = pd.Series(pd.factorize(values.astype(object))[0], index=X.index).astype(float)
         elif pd.api.types.is_bool_dtype(values):
             binary[col] = values.astype(float)
-        elif pd.api.types.is_datetime64_any_dtype(values):
-            numeric[col] = values.astype("int64") // 10**9
+        elif is_time(values):
+            numeric[col] = seconds(values)
         elif pd.api.types.is_numeric_dtype(values):
             if values.nunique() == 2:
                 binary[col] = (values == values.max()).astype(float)
@@ -219,22 +221,18 @@ def rule_check(X: pd.DataFrame, y: np.ndarray, rng: np.random.Generator) -> dict
 def encode(df: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
     """Each usable column as floats for the independence checks, and the nominal ones among them.
 
-    Numeric, boolean, datetime (as seconds) and timedelta columns keep their order, and so do ordered categoricals.
-    Any other categorical or text column enters as codes (a missing value is a level of its own) and is nominal when it
-    has more than two levels. Constant columns and text columns with a distinct value in more than half the rows (an
-    id, free text) are left out.
+    Numeric, boolean, datetime, period and timedelta columns (as seconds) keep their order, and so do ordered
+    categoricals. Any other categorical or text column enters as codes (a missing value is a level of its own) and is
+    nominal when it has more than two levels. Constant columns and text columns with a distinct value in more than half
+    the rows (an id, free text) are left out.
     """
     out, nominal = {}, []
     for col in df.columns:
         values = df[col]
-        if isinstance(values.dtype, pd.PeriodDtype):
-            values = values.dt.to_timestamp()
         if pd.api.types.is_bool_dtype(values):
             out[col] = values.astype(float)
-        elif pd.api.types.is_datetime64_any_dtype(values):
-            out[col] = (values - pd.Timestamp(0, tz=values.dt.tz)) / pd.Timedelta(seconds=1)
-        elif pd.api.types.is_timedelta64_dtype(values):
-            out[col] = values / pd.Timedelta(seconds=1)
+        elif is_time(values):
+            out[col] = seconds(values)
         elif pd.api.types.is_numeric_dtype(values):
             out[col] = values.astype(float)
         elif isinstance(values.dtype, pd.CategoricalDtype) and values.dtype.ordered:
@@ -378,18 +376,31 @@ def class_check(X: pd.DataFrame, y: pd.Series, problem_type: str) -> dict:
     }
 
 
-def check_frame(df: pd.DataFrame, target: str, problem_type: str, group_cols: list[str]) -> dict:
-    """Run the checks of the module docstring on one table of features, target and group columns, and set the flags."""
+def check_frame(
+    df: pd.DataFrame,
+    target: str,
+    problem_type: str,
+    group_cols: list[str],
+    *,
+    feature_cols: list[str] | tuple[str, ...] | None = None,
+) -> dict:
+    """Run the checks of the module docstring on one table of features, target and group columns, and set the flags.
+
+    ``feature_cols`` names the model inputs when not every column but the target and the groups is one (a time
+    column that dates the label, the unit of a unit weight); the other columns are left out of every check.
+    """
     rng = np.random.default_rng(0)
     if len(df) > MAX_ROWS:
         df = df.iloc[np.sort(rng.choice(len(df), MAX_ROWS, replace=False))].reset_index(drop=True)
-    X = df.drop(columns=[target, *group_cols])
+    if feature_cols is None:
+        feature_cols = [c for c in df.columns if c != target and c not in group_cols]
+    X = df[[c for c in feature_cols if c != target]]
     result = {"problem_type": problem_type, "rows": len(df)}
     if problem_type == "regression":
         result |= formula_check(X, df[target].to_numpy(dtype=float), rng)
     else:
         result |= rule_check(X, df[target].astype(str).to_numpy(), rng)
-    result |= independence_check(df.drop(columns=group_cols), target)
+    result |= independence_check(pd.concat([X, df[target]], axis=1), target)
     labelled = df[target].notna().to_numpy()
     y = df[target] if problem_type == "regression" else df[target].astype(str)
     result |= class_check(X[labelled], y[labelled], problem_type)

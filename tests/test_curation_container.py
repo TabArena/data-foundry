@@ -620,8 +620,7 @@ def test_a_format_1_container_keeps_its_checksum_and_files(tmp_path):
     path = container.save(save_dir=tmp_path)
     assert set(json.loads((path / "container_metadata.json").read_text())) == {"uuid", "checksum", "version_comment"}
     assert CuratedContainer.load(path).format_version == 1
-    with pytest.raises(NotImplementedError, match="format-1 container has no grouping"):
-        _ = container.grouping
+    assert container.grouping is None  # format 1 has no grouping block (only group_on / group_labels)
 
 
 def test_a_format_2_container_round_trips(tmp_path):

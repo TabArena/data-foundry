@@ -1074,11 +1074,11 @@ class PredictiveMLTaskMetadataV2:
     weeks). ``None`` for a date column, whose calendar is its own, and for a time that is only an order."""
     time_of: TimeOf | None = None
     """What ``time_on`` dates (:data:`TimeOf`). ``None`` (every container built before the field, and every temporal
-    definition that does not declare ``Temporal(time_of=...)``) and ``"prediction"``: the prediction point, which the
-    actor knows, so the column is a model input. ``"label"``: the moment the label became known, after the prediction
-    point, so the column orders and splits the rows (every training label was known at a window's start) and is no
-    model input (:func:`~data_foundry.curation_container.feature_columns` leaves it out). Only a temporal task sets
-    it."""
+    definition that does not declare ``Temporal(time_of=...)``) and ``"prediction"`` (stored as ``None``): the
+    prediction point, which the actor knows, so the column is a model input. ``"label"``: the moment the label became
+    known, after the prediction point, so the column orders and splits the rows (every training label was known at a
+    window's start) and is no model input (:func:`~data_foundry.curation_container.feature_columns` leaves it out).
+    Only a temporal task sets it."""
     prediction_time: str | None = None
     """The column of the prediction point when ``time_on`` is a label time (``time_of="label"``): the time the actor
     holds when predicting, a model input (california_house_prices_2020's ``Listed On`` beside its sale order).
@@ -1116,6 +1116,8 @@ class PredictiveMLTaskMetadataV2:
 
     def __post_init__(self):
         """Validate the regime, and the rules between the grouping and the target."""
+        if self.time_of == "prediction":  # the default, stored unset as in Grouping: one meaning, one JSON
+            self.time_of = None
         if not (self.target_column_name or "").strip():
             raise ValueError("target_column_name must name the target column.")
         self._check_time()

@@ -20,7 +20,8 @@ def workbench(path: Path | str | None = None, *, wide_display: bool = True) -> A
 
     Returns:
         The dataset. Every access to ``ds.raw`` / ``ds.df`` / ``ds.check()`` first re-imports
-        ``dataset.py`` if it changed on disk; the raw data stays cached while ``_load_raw`` is unchanged.
+        ``dataset.py`` if it changed on disk; the raw data stays cached while the code ``_load_raw`` runs is
+        unchanged (with the helpers and module constants it reads).
     """
     folder = Path.cwd() if path is None else Path(path)
     definition = folder if folder.name == DEFINITION_FILENAME else folder / DEFINITION_FILENAME

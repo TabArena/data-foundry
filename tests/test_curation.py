@@ -6,6 +6,7 @@ import http.client
 import json
 import os
 import threading
+import time
 from collections.abc import Iterator
 from functools import partial
 from http.server import ThreadingHTTPServer
@@ -18,6 +19,7 @@ from data_foundry.curation import exporter, notebooks
 from data_foundry.curation._paths import DATA_FOUNDRY_CURATION_ENV
 from data_foundry.curation.app import (
     GUIDELINE_SKILLS,
+    MTIME_KEY,
     START_DOC,
     START_REPO_PATH,
     START_SECTION,
@@ -27,6 +29,7 @@ from data_foundry.curation.app import (
     _schema_payload,
     _version_payload,
 )
+from data_foundry.curation.cli import main as cli_main
 from data_foundry.curation.notebooks import resolve_notebook, sync_notebook_paths
 from data_foundry.curation.record import (
     FIELDS,
@@ -36,6 +39,7 @@ from data_foundry.curation.record import (
 )
 from data_foundry.curation.site import build_site
 from data_foundry.curation.store import (
+    RecordFormatError,
     load_all,
     load_record,
     markdown_to_record,
@@ -224,6 +228,74 @@ def test_missing_front_matter_raises() -> None:
     """A markdown file without front matter is not a record."""
     with pytest.raises(ValueError, match="front-matter"):
         markdown_to_record("# just a body\n\nno front matter here")
+
+
+_HEAD = "---\nunique_name: x\nname: X\ntype_adapter_id: curation-record-v1\n---\n"
+
+
+def test_text_before_the_first_section_is_an_error_not_dropped(tmp_path: Path) -> None:
+    """Stray text between the front matter and the first section used to vanish on the next save."""
+    path = tmp_path / "x.md"
+    path.write_text(_HEAD + "\nA stray note.\n\n## Comments\n\nhi\n", encoding="utf-8")
+    with pytest.raises(RecordFormatError, match=r"x\.md: text before the first section \(line 7\)"):
+        load_record(path)
+
+
+def test_a_section_heading_twice_is_an_error(tmp_path: Path) -> None:
+    """A second ``## Review`` used to overwrite the first, and a heading line inside the comments cut them there."""
+    path = tmp_path / "x.md"
+    path.write_text(_HEAD + "\n## Review\n\nold\n\n## Comments\n\nc\n\n## Review\n\nnew\n", encoding="utf-8")
+    with pytest.raises(RecordFormatError, match=r"x\.md: the heading '## Review' appears twice \(lines 7 and 15\)"):
+        load_record(path)
+    rec = _record("x", comments="intro\n\n## Review\n\nquoted old review", review="REAL REVIEW")
+    with pytest.raises(RecordFormatError, match="comments text has a line '## Review'"):
+        save_record(rec, tmp_path)
+    assert "REAL" not in path.read_text(encoding="utf-8")  # refused before anything was written
+    other = _record("y", comments="### Review of the source\n\n## Reviewed by\n\nok")  # not a section heading
+    assert load_record(save_record(other, tmp_path)) == other
+
+
+def test_a_crlf_record_loads() -> None:
+    """A record saved with Windows line endings parses like the LF one."""
+    text = _HEAD + "\n## Comments\n\nline one\nline two\n\n## Reference\n\nref\n"
+    rec = markdown_to_record(text.replace("\n", "\r\n"))
+    assert rec == markdown_to_record(text)
+    assert rec.comments == "line one\nline two"
+
+
+def test_a_reader_never_sees_a_half_written_record(tmp_path: Path) -> None:
+    """Records are written through a temporary file and a rename, so a reader during a write sees one whole file."""
+    rec = _record("x", review="r" * 300_000)
+    save_record(rec, tmp_path)
+    stop = threading.Event()
+
+    def writer() -> None:
+        while not stop.is_set():
+            save_record(rec, tmp_path)
+
+    thread = threading.Thread(target=writer)
+    thread.start()
+    failures, reads, end = 0, 0, time.monotonic() + 1.0
+    try:
+        while time.monotonic() < end:
+            reads += 1
+            try:
+                assert load_record(tmp_path / "x.md") == rec
+            except (AssertionError, RecordFormatError):
+                failures += 1
+    finally:
+        stop.set()
+        thread.join()
+    assert failures == 0, f"{failures} of {reads} reads saw a partial file"
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["x.md"]  # no temporary file left behind
+
+
+def test_export_to_a_file_needs_an_output_path(capsys: pytest.CaptureFixture[str]) -> None:
+    """``export --format csv`` without a path is a usage error, not a TypeError."""
+    with pytest.raises(SystemExit) as exc:
+        cli_main(["export", "--format", "csv"])
+    assert exc.value.code == 2
+    assert "the output path is required for --format csv" in capsys.readouterr().err
 
 
 def test_unknown_vocab_values(sample_record: CurationRecord) -> None:
@@ -639,6 +711,67 @@ def test_server_saves_a_priority(server: int, guideline_repo: Path, sample_recor
 
     assert _put(server, "/api/records/musk", {"priority": None})[0] == 200
     assert "priority:" not in path.read_text(encoding="utf-8")
+
+
+def test_server_edits_one_record_even_when_another_is_broken(server: int, guideline_repo: Path) -> None:
+    """An edit reads only its own record (it used to load all of them, and failed on any broken file)."""
+    records = guideline_repo / "curation" / "records"
+    path = save_record(_record("a"), records)
+    (records / "broken.md").write_text("no front matter", encoding="utf-8")
+    status, body = _put(server, "/api/records/a", {"priority": 2})
+    assert (status, body["priority"]) == (200, 2)
+    assert "priority: 2\n" in path.read_text(encoding="utf-8")
+    assert _put(server, "/api/records/missing", {"priority": 2})[0] == 404
+
+
+def test_server_refuses_to_edit_the_review(server: int, guideline_repo: Path, sample_record: CurationRecord) -> None:
+    """The review is read-only in the dashboard: a PUT that changes it answers 400 and leaves the file alone."""
+    path = save_record(sample_record, guideline_repo / "curation" / "records")
+    before = path.read_text(encoding="utf-8")
+    status, body = _put(server, "/api/records/musk", {"review": ""})
+    assert status == 400
+    assert "review" in body["error"]
+    assert path.read_text(encoding="utf-8") == before
+
+
+def test_server_refuses_an_edit_of_a_record_changed_since_it_was_read(
+    server: int, guideline_repo: Path, sample_record: CurationRecord
+) -> None:
+    """An edit with a stale mtime answers 409, so two tabs (or a tab and an agent) do not overwrite each other."""
+    path = save_record(sample_record, guideline_repo / "curation" / "records")
+    (row,) = json.loads(_get(server, "/api/records")[2])
+    seen = row[MTIME_KEY]
+    assert seen == str(path.stat().st_mtime_ns)  # a string: a JavaScript number would round the nanoseconds
+
+    sample_record.comments = "An agent's note."
+    save_record(sample_record, path.parent)
+    os.utime(path, ns=(int(seen) + 1_000_000, int(seen) + 1_000_000))  # a different mtime even on a coarse clock
+    status, body = _put(server, "/api/records/musk", {"priority": 1, MTIME_KEY: seen})
+    assert status == 409
+    assert "changed on disk" in body["error"]
+    assert load_record(path).comments == "An agent's note."
+
+    (row,) = json.loads(_get(server, "/api/records")[2])
+    status, body = _put(server, "/api/records/musk", {"priority": 1, MTIME_KEY: row[MTIME_KEY]})
+    assert status == 200
+    assert body[MTIME_KEY] == str(path.stat().st_mtime_ns)  # the tab's next edit sends this one
+    assert load_record(path).comments == "An agent's note."
+    assert _put(server, "/api/records/musk", {"priority": 2, MTIME_KEY: body[MTIME_KEY]})[0] == 200
+
+
+def test_the_edit_check_survives_a_javascript_number(
+    server: int, guideline_repo: Path, sample_record: CurationRecord
+) -> None:
+    """The page holds the mtime it sends back as JavaScript would: a string stays exact, a number (a double) is
+    rounded to 53 bits and fails the check for almost every real mtime.
+    """
+    path = save_record(sample_record, guideline_repo / "curation" / "records")
+    mtime = 1_795_686_619_839_148_732  # a real record's mtime_ns; a double rounds it to ...148800
+    os.utime(path, ns=(mtime, mtime))
+    (row,) = json.loads(_get(server, "/api/records")[2])
+    as_javascript = json.loads(json.dumps(row), parse_int=float)[MTIME_KEY]  # numbers parsed as doubles
+    assert as_javascript == str(mtime)
+    assert _put(server, "/api/records/musk", {"priority": 3, MTIME_KEY: as_javascript})[0] == 200
 
 
 @pytest.mark.parametrize(

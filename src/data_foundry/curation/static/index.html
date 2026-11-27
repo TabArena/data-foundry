@@ -392,6 +392,10 @@ const PRIMARY = [
 ];
 const EXTRA = ["original_source", "collections", "required_split", "problem_type", "original_data_state"];
 const HIDDEN = new Set(["data_modality", "usable_task_type", "given_task_type"]);
+// Shown but never edited in the grid (the server refuses them too): the review is long and is never deleted.
+const READ_ONLY = new Set(["review"]);
+// The record file's mtime when this tab read it; an edit sends it back and the server answers 409 if the file changed.
+const MTIME_KEY = "record_mtime_ns";
 const FROZEN = new Set(["_status", "checked_by", "unique_name"]);
 const YEARS = Array.from({ length: 2027 - 1950 + 1 }, (_, i) => String(2027 - i));  // recent first; also free-text
 // Number fields: the values their editor and column filter offer (the record schema allows exactly these).
@@ -1301,11 +1305,19 @@ async function confirmVerify() {
 }
 
 async function putRecord(id, patch) {
+  const row = table.getRow(id);
+  const base = row ? row.getData()[MTIME_KEY] : undefined;
   const res = await fetch("/api/records/" + encodeURIComponent(id), {
-    method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(patch),
+    method: "PUT", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(base === undefined ? patch : { ...patch, [MTIME_KEY]: base }),
   });
   const data = await res.json();
+  if (res.status === 409) {
+    refreshPending = true;  // the poll reloads the rows once no editor is open
+    throw new Error(`${id} was changed elsewhere since this page loaded it. Reload the page, then edit again.`);
+  }
   if (data.error) throw new Error(data.error);
+  if (row && data[MTIME_KEY] !== undefined) row.update({ [MTIME_KEY]: data[MTIME_KEY] });  // our own write
   syncVersion();  // our own write moves the change token; don't reload for it
   return data;
 }
@@ -1455,7 +1467,8 @@ function columnDefs() {
     }
     else if (f.kind === "links") { c.editor = "textarea"; c.editorParams = { shiftEnterSubmit: true }; c.formatter = linksFmt; c.width = 240; c.variableHeight = true; }
     else if (f.kind === "body") {
-      c.editor = "textarea"; c.editorParams = { shiftEnterSubmit: true };
+      c.editor = READ_ONLY.has(name) ? false : "textarea";
+      if (c.editor) c.editorParams = { shiftEnterSubmit: true };
       if (name === "comments") { c.width = 340; c.variableHeight = true; c.formatter = commentsFmt; }
       else { c.width = 200; c.cssClass = "single-line"; c.tooltip = true; c.formatter = cell => escapeHtml(String(cell.getValue() || "")); }
     }

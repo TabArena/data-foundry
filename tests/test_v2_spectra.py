@@ -264,3 +264,13 @@ def test_cromwell_denoises_and_ends_on_a_log2_scale_free_of_the_intensity_scale(
     np.testing.assert_allclose(values[0], values[3], atol=1e-6)
     with pytest.raises(ValueError, match="too few"):
         encode_spectrum(frame.iloc[:, :300], axis[:300], CROMWELL_LOG2_ENCODING)
+
+
+@pytest.mark.parametrize("dtype", [bool, "boolean"])
+def test_a_spectrum_of_booleans_is_not_numeric(dtype) -> None:
+    """Both the numpy and the nullable boolean dtype are flags, not intensities."""
+    spectrum = Spectrum(name="s", prefix="cm_", unit="cm-1", technique="raman", state="raw", description="d")
+    frame = pd.DataFrame({"cm_1": [1.0, 2.0], "cm_2": pd.Series([True, False], dtype=dtype)})
+    feature = spectrum.record(frame.columns)
+    findings = list(Spectrum.check(frame, feature))
+    assert [(f.slug, f.severity) for f in findings] == [("dataset_spectrum", "error")]

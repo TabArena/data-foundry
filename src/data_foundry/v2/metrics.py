@@ -192,9 +192,19 @@ def _binary_truth(y_true: np.ndarray, labels: Any) -> np.ndarray:
 
 
 def _positive_label(y_true: np.ndarray, y_pred: np.ndarray, labels: Any) -> Any:
+    """The positive class of F1, precision and recall: ``labels[-1]``, else the sorted-last of exactly two classes.
+
+    Without ``labels`` the classes are those in ``y_true`` and ``y_pred``; a fold that holds one class (truth and
+    prediction all negative) cannot tell which one is positive, so it raises instead of scoring that class as positive.
+    """
     if labels is not None:
         return list(labels)[-1]
-    classes = sorted(pd.unique(pd.Series(np.concatenate([y_true, y_pred]))))
+    classes = sorted(pd.unique(pd.Series(np.concatenate([y_true, y_pred])).dropna()))
+    if len(classes) != 2:
+        raise ValueError(
+            f"the positive class is ambiguous: y_true and y_pred hold {len(classes)} class(es) {classes[:10]}, not "
+            "two; pass `labels` (the classes, the positive one last)."
+        )
     return classes[-1]
 
 
@@ -248,9 +258,14 @@ def _roc_auc_multiclass(multi_class: str) -> Callable:
     return fn
 
 
-def _label_metric(func_name: str, **kwargs: Any) -> Callable:
-    def fn(y_true, y_pred, **_):
-        return getattr(_sklearn_metrics(), func_name)(y_true, y_pred, **kwargs)
+def _label_metric(func_name: str, *, takes_labels: bool = False, **kwargs: Any) -> Callable:
+    """A scikit-learn metric of predicted labels; ``takes_labels`` passes ``labels`` on, so an average over the classes
+    (F1 macro, weighted) counts every class of the task, also one a fold's truth and prediction both lack.
+    """
+
+    def fn(y_true, y_pred, *, labels=None, **_):
+        extra = {"labels": list(labels)} if takes_labels and labels is not None else {}
+        return getattr(_sklearn_metrics(), func_name)(y_true, y_pred, **kwargs, **extra)
 
     return fn
 
@@ -597,7 +612,7 @@ METRICS: dict[str, MetricDef] = {
             _MULTI,
             "label",
             _HIGHER,
-            _label_metric("f1_score", average="macro", zero_division=0.0),
+            _label_metric("f1_score", takes_labels=True, average="macro", zero_division=0.0),
             "sklearn.metrics.f1_score(average='macro')",
             "unweighted mean of the per-class F1",
         ),
@@ -606,7 +621,7 @@ METRICS: dict[str, MetricDef] = {
             _MULTI,
             "label",
             _HIGHER,
-            _label_metric("f1_score", average="micro", zero_division=0.0),
+            _label_metric("f1_score", takes_labels=True, average="micro", zero_division=0.0),
             "sklearn.metrics.f1_score(average='micro')",
             "F1 of the pooled counts (equals accuracy for single-label data)",
         ),
@@ -615,7 +630,7 @@ METRICS: dict[str, MetricDef] = {
             _MULTI,
             "label",
             _HIGHER,
-            _label_metric("f1_score", average="weighted", zero_division=0.0),
+            _label_metric("f1_score", takes_labels=True, average="weighted", zero_division=0.0),
             "sklearn.metrics.f1_score(average='weighted')",
             "mean of the per-class F1 weighted by class support",
         ),

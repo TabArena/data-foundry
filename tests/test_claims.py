@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import datetime as dt
 import http.client
+import importlib.util
 import json
 import os
 import subprocess
@@ -276,6 +277,7 @@ def test_hook_warns_before_editing_a_dataset_someone_else_holds(
     assert "permissionDecision" not in out["hookSpecificOutput"]  # warn only, never allow or deny
     assert "claimed by Andrej" in out["hookSpecificOutput"]["additionalContext"]
     assert "Andrej" in edit("datasets/_dev/tabarena-v0pt2/a/dataset.py")["systemMessage"]
+    assert "Andrej" in edit("datasets/_dev/tabarena-v0pt2/a_1m/dataset.py")["systemMessage"]  # budget folder
     assert edit("curation/records/b.md") is None
     assert edit("datasets/_dev/tabarena-v0pt2/c/REVIEW.md") is None
     assert edit("src/data_foundry/curation/claims.py") is None
@@ -284,6 +286,26 @@ def test_hook_warns_before_editing_a_dataset_someone_else_holds(
     context = start["hookSpecificOutput"]["additionalContext"]
     assert "Andrej (1): a" in context
     assert "Yours (1): b" in context
+
+
+def test_hook_maps_a_budget_folder_to_its_record(tmp_path: Path) -> None:
+    """A ``<name>_<budget>`` folder belongs to the record ``<name>``, unless a record has the folder's own name."""
+    spec = importlib.util.spec_from_file_location("claims_hook", HOOK)
+    hook = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(hook)
+    tree = tmp_path / "datasets" / "_dev" / "tabarena-v0pt2"
+    for folder, record in [
+        ("aeolus_1m", "aeolus"),
+        ("taxi_2p5m", "taxi"),
+        ("small_300k", "small"),
+        ("anes_voting_2026", "anes_voting_2026"),  # a year, not a budget
+        ("plain", "plain"),
+    ]:
+        assert hook.dataset_of(str(tree / folder / "dataset.py")) == record
+    (tmp_path / "curation" / "records").mkdir(parents=True)
+    (tmp_path / "curation" / "records" / "exact_1m.md").write_text("---\n---\n")
+    assert hook.dataset_of(str(tree / "exact_1m" / "dataset.py")) == "exact_1m"
+    assert hook.dataset_of(str(tmp_path / "curation" / "records" / "aeolus_1m.md")) == "aeolus_1m"
 
 
 def test_hook_fails_open(tmp_path: Path) -> None:

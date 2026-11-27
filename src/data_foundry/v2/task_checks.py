@@ -10,7 +10,9 @@ varies.
   a warning under any other registered metric, where few or no positives in a window are part of the task (SPLIT-16).
 * ``splits_test_minority_few`` (warning): a binary test fold holds fewer than :data:`MIN_TEST_MINORITY` rows of its
   rarer class, so its ROC AUC rests on a handful of rows.
-* ``splits_test_class_missing`` (warning): a multiclass test fold lacks one or more classes.
+* ``splits_test_class_missing``: a multiclass test fold lacks one or more classes. An error under a metric that one
+  class leaves undefined (a multiclass ROC AUC, NaN on such a fold) and under a metric the registry does not hold; a
+  warning under any other.
 * ``splits_test_target_constant`` (error): a regression test fold has a constant target, so R^2 is undefined and
   every model scores the same RMSE as the mean of that fold.
 * ``task_target_value_dominant`` (warning): one value holds at least :data:`DOMINANT_VALUE_SHARE` of a regression
@@ -111,14 +113,22 @@ def _classification_findings(
             ),
         )
     if missing:
+        undefined = one_class_undefined(metric)
         findings.append(
             CheckResult(
                 "splits_test_class_missing",
-                "warning",
+                "error" if undefined else "warning",
                 f"{len(missing)} of {len(folds)} multiclass test fold(s) lack at least one class (most: "
-                f"{max(n for _, n in missing)} of {n_classes} missing): {[name for name, _ in missing[:5]]}.",
-                hint="Macro scores skip or break on the missing classes; merge rare classes or accept it with the "
-                "class counts.",
+                f"{max(n for _, n in missing)} of {n_classes} missing)"
+                + (f", so {metric or 'ROC AUC'} is undefined there" if undefined else "")
+                + f": {[name for name, _ in missing[:5]]}.",
+                hint=(
+                    "A per-class ROC AUC needs every class in every test fold: widen the windows, merge rare classes, "
+                    "or score by a metric that one class does not leave undefined."
+                    if undefined
+                    else "Macro scores skip or break on the missing classes; merge rare classes or accept it with the "
+                    "class counts."
+                ),
             ),
         )
     return findings
