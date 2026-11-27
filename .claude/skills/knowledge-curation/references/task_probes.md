@@ -121,6 +121,30 @@ ashrae_great_energy_predictor_iii (2026-10-15), g_research_crypto_forecasting (2
 (2026-10-26). stock and appliances_energy_prediction stay retired: their context and data show forecasting tasks
 (Lennart, 2026-10-22).
 
+**TP-11 (Must).** Check the score against what the field reports. The flags compare a score with our own models
+(`one_feature`) or with a fixed ceiling (`solved`); neither notices a score far above what the question allows. Before
+keeping a dataset, find what the field reports for the same question at the same prediction point: a published model
+of the source or the field, or the measured accuracy of the people who make the decision (a reader, a triage, an
+underwriter). When our best score is clearly above it, explain the gap before keeping the dataset:
+
+* a feature from a stage after the decision the task models, or the decision itself as a feature (USE-4);
+* a label observed through the action a feature records, so that rows the feature sends one way are never checked
+  (a screening read that decides who is worked up, and so whose cancer is found: breast_cancer_prediction; an
+  operation that decides whose appendicitis is graded: regensburg_pediatric_appendicitis);
+* a leak (the LEAK rule of the mechanism found): a feature window that ends at the outcome (iranian_churn), a
+  follow-up time that death ends (heart_failure_followup_survival), classes processed apart (prostate_cancer_detection);
+* rows selected so that the classes differ more than in the population the use case serves (selection.md, "Selection
+  bias"; early_stage_diabetes_risk_prediction);
+* a label computed from the inputs (SEL-5, TP-4).
+
+A gap with no explanation holds the dataset until one is found. A score in line with the field needs nothing more; when
+the field reports nothing for the question, the review says so. The field's number is a lead, not a proof: where it
+spans a wide range, a score at its top says little, and the source's account of how rows, features and labels were
+collected settles it (iranian_churn). The explanation decides the change and the marker, not the gap: there is no
+marker for a high score, and an explained gap can end in a keep (regensburg_pediatric_appendicitis). How to check:
+Methods, "A score above the field". Cases: breast_cancer_prediction, heart_failure_followup_survival,
+prostate_cancer_detection, early_stage_diabetes_risk_prediction, iranian_churn, regensburg_pediatric_appendicitis.
+
 ## Methods
 
 How to check a flag, how to test a forecasting-like panel, what each flag computes, and the hidden-group and
@@ -183,6 +207,12 @@ generated-data probes with their calibrations.
 * **A `solved` task** (TP-6, USE-4): look for a stage the source describes and test the task there (eryhemato: "first
   evaluated clinically with 12 features. Afterwards, skin samples were taken"; macro AUC 0.999 after the biopsy, 0.98
   before).
+* **A score above the field** (TP-11): name the question, the prediction point and the actor; look up the field's
+  number for them and quote it with its source and population; compare it with the best tuned score and with the
+  strongest single feature. For a gap, read what the strongest feature records and when, and whether the label can be
+  observed without the action that feature leads to: the target's rate by the feature's levels, and the share of
+  positives that pass through the action (breast_cancer_prediction: 87% of the cancers come from the reads that send
+  a woman to further work-up). Then test the task at the stage before that feature (TP-6, USE-4).
 * **Robustness over splits**: the share of splits on which the models beat the dummy and the standard error of the
   mean skill, not the spread of one split's score (coffee: 13 of 13 windows, standard error 0.03).
 
@@ -397,6 +427,12 @@ task-probe flags the decision answers. The decisions on metrics (2026-10-21) are
 
 | Rule | Dataset | Flags | Decision | Decisive evidence | Kind |
 |---|---|---|---|---|---|
+| TP-11 | breast_cancer_prediction | none (a field check) | the read dropped; the task is the risk before it | the screening read (BI-RADS assessment) alone reaches ROC AUC 0.914, the models 0.929, for cancer within a year of a screening mammogram; without the radiologist's readings logistic regression reaches 0.58, in line with published risk models at the screening visit (Barlow et al. 2006: c statistic 0.62-0.63). The read decides who is worked up: 2,915 of 36,714 women are read as needing further imaging or as suspicious, and they hold 214 of the 246 cancers (87%; first exam per woman in file order). Without the readings the task probe gives linear ROC AUC 0.580, in line with the field | applied |
+| TP-11 | heart_failure_followup_survival | none (a leak audit) | the follow-up time dropped | LightGBM ROC AUC 0.90 for death during follow-up, above the Seattle Heart Failure Model's 0.63-0.81 over 14 validation cohorts (Alba et al. 2013, Circ Heart Fail 6:881); the follow-up time alone reached 0.84, as follow-up ends at death (LEAK-10). Without it 0.75, inside the field's range | applied |
+| TP-11 | prostate_cancer_detection | none (a leak audit) | retired | serum spectra that score above PSA, the field's test (ROC AUC 0.678 for any cancer at biopsy, Thompson et al. 2005, JAMA 294:66): the 109 channels below m/z 1, where no ion exists, tell benign from no-evidence-of-disease (both negative) at 0.99 and cancer from the rest at 0.83, while the paper's own seven peaks reach 0.62-0.70 on the label: the classes were processed apart (LEAK-15) | applied |
+| TP-11 | early_stage_diabetes_risk_prediction | none (a rule check) | retired, `Selection Bias`, `Not Representative` | TabPFN 3.5 ROC AUC 0.972 and an untrained symptom rule 0.905, against 0.77-0.79 for published self-assessment scores of undiagnosed diabetes (Bang et al. 2009, Ann Intern Med 151:775: 0.79 in development; the ADA score 0.77 on NHANES 2009-12, Poltavskiy et al. 2016); the rows come from a diabetes hospital (69% diabetic, late symptoms such as partial paresis in 57% of the positives). The retirement rests on the sample and on USE-2 (no testing decision is made from symptoms); the score was the lead | applied |
+| TP-11 | iranian_churn | none (a leak audit) | retired, `Data Quality Issue` | LightGBM ROC AUC 0.986, above the best of 21 techniques on each of the nine non-public telecom churn datasets of Verbeke et al. 2012 (EJOR 218:211; the AUC table, Table 4.6 of Verbeke's thesis of the same year: 0.61-0.97, median of the bests 0.82); the score alone was weak evidence, as one operator reached 0.97. The source settles it: "The end of the observation period for each customer is the month in which the customer churns" (Keramati and Ardabili 2011, Sec. 4.1), so the features describe customers already leaving (LEAK-10) | applied |
+| TP-11 | regensburg_pediatric_appendicitis | none (a field check) | kept, with the format leaks fixed | TabPFN 3.5 ROC AUC 0.939 for complicated appendicitis, against 0.77-0.91 in published studies scored on operated children with a tissue diagnosis (Reismann 2019, Aydin 2020, Erman 2025, Akay 2026, Ma 2026); among the 284 operated children 0.815, inside that range. The gap comes from the label: only operated children are graded, and a model of the decision to operate ranks the label at 0.904. Kept, as children not operated were observed in hospital and discharged once they improved, so their label is an outcome, not the surgeon's decision; an explained gap need not retire | applied |
 | TP-4 | fitness_club | one_feature | retired, `Trivial` (2026-10-05) | `months_as_member` alone, chosen on all 30 training sides, AUC 0.822, above all 37 configurations; `days_before` = 2 × weekday in 1,251 of 1,500 rows (generated) | applied |
 | TP-4 | audiology_diagnosis | none (a rule check) | retired, `Trivial` (2026-11-10, Andrej) | the textbook definition, not fitted: conductive or mixed for an air-bone gap or a tympanogram other than type A, sensorineural for abnormal air conduction or any of the audiogram's 40 pattern codes, otherwise normal; 194 of 195 cases (accuracy 0.995) against 0.968 for the best of logistic regression, random forest and gradient boosting; reading air conduction alone it reached 0.764, as the coarse code reads normal for 45 high-frequency losses that the pattern codes carry; rechecked with tuned methods (2026-11-11, Lennart): on the 60 v2 splits the rule, calibrated once per training side for log loss, beats tuned logistic regression, RealMLP and tuned LightGBM on every split (log loss 0.047 against 0.187 at best, accuracy 0.995 against 0.940) | applied |
 | TP-4 | ljubljana_breast_cancer | none (a rule check) | retired, `Trivial` and `Outdated` (2026-11-10, Andrej); the proof restated (2026-11-12, Lennart and Andrej) | the Nottingham Prognostic Index (Haybittle 1982: 0.2 × size in cm + grade + node stage), published and not fitted: ROC AUC 0.725 against 0.721 for TabDPT-1.3 on the 60 v2 splits, paired -0.004 (sd 0.028), TabDPT-1.3 ahead on 55%; on BeyondArena's folds 0.726, at or above all 37 methods on average, TabDPT-1.3 and LimiX-2 level with it (-0.004, ahead on half of their 34 folds); a match, so a candidate, and the curator retired it. The first proof, a 3-item score (0.710), had a node cut-off of unrecorded source, and TabDPT-1.3 beats it (+0.011, ahead on 65%) | applied |
