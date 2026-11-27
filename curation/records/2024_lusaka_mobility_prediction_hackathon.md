@@ -101,10 +101,10 @@ tail written into the notes, and an untuned LightGBM's RMSE is about 18% below a
 non-trivial signal). Quality: CLEAN-11 on long and impossibly fast trips (issues 4 and 5). The wording fixes the panel
 agreed on are in `dataset.py`; the three changes to the rows or the join were decided on 2026-11-05 (issues 3-5, B).
 
-**Main points:** Nothing open. Settled 2026-11-05 (B each): the weather join lags 3 hours instead of 1 (issue 3);
+**Main points:** Re-audited on 2026-11-27: the 120 km/h filter is applied as recorded, and no end-of-trip field ships. One issue open: the gap and the unaccepted count warning (11). Earlier, nothing open. Settled 2026-11-05 (B each): the weather join lags 3 hours instead of 1 (issue 3);
 the 20 trips over 3 hours (issue 4) and the 19 trips faster than 120 km/h in a straight line (issue 5) are dropped.
 
-**Issues for Lennart:**
+**Issues for Andrej and Lennart:**
 
 3. **Lag the weather join by 3 hours instead of 1?**
 
@@ -226,6 +226,34 @@ the 20 trips over 3 hours (issue 4) and the 19 trips faster than 120 km/h in a s
    **Resolved (2026-11-05, Lennart):** B. The 19 trips over 120 km/h in a straight line leave (`MAX_STRAIGHT_LINE_KMH`,
    as pkdd); none overlaps the 20 long trips: 110,375 to 110,336 rows. Sendy keeps its fast legs because its late pickup
    mark shows in the inputs; here neither cut leaves a mark there.
+
+11. **Shorten the gap to three hours, which makes room for a fourth window, and accept the count warning?**
+
+   * **Problem:**
+     - The check warns that the dataset ships three windows against a target of nine, and the definition accepts nothing.
+     - The one-day gap is what stops a fourth window, and it has no source: the longest kept trip lasts 175 minutes, so every label is known within three hours of its trip's start.
+     - With a three-hour gap, four windows clear the training floor.
+   * **Effect on the task:** One more test window, and a gap that matches the real label delay. The scores barely move: the gap shifts RMSE by at most 0.04 in any window.
+   * **Experiments:** four-day windows, a step of four days, LightGBM.
+
+     | Gap | Windows | Smallest training share | RMSE, 17 / 21 / 25 / 29 January |
+     |---|---|---|---|
+     | 1 day (implemented) | 3 | 0.597 | not tested / 8.576 / 9.343 / 9.119 |
+     | 3 hours | 4 | 0.506 | 9.071 / 8.567 / 9.334 / 9.079 |
+
+   * **Consistency:** `nyc_taxi_trip_duration` has the same over-long gap, and its review recommends keeping the day with an operational reason, for consistency with pkdd. The fact that sets this dataset apart is that here the shorter gap buys a window the count needs; there it would only return the rows of one day.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the one-day gap and accept the warning  | three windows; the warning accepted with its reason | no change to the split | the gap has no source and blocks a fourth window |
+     | B | A three-hour gap, four windows, accept the warning | the gap follows the measured label delay | one more window; an honest gap | the smallest training share falls to 0.506, just above the floor |
+     | C | Overlapping windows, a step of two days | six windows | closest to the target of nine | windows share test rows |
+     | D | Leave it as it is (implemented) | three windows, warning unaccepted | no work | the check warns on every build |
+
+   * **Recommendation:** B, then accept the warning with the count named in the splits comment. **Decision:** A, B, C or D?
+
+   **Notes for the AI:** B is a split change (`gap=3, gap_unit="hours"`, the new windows, `dataset check`), its own pull request. Under A, the acceptance text names the count and the floor as what stops more windows. Either way, add a sentence that the last partial day is short night trips in local time, not censoring.
 
 **Review panel:** ship after changes (mediator). Tier full, a second pass after Lennart's review of PR #33
 (2026-11-04): seven evidence agents, the advocate and the critic with one rebuttal each, and the mediator. Claims: 25

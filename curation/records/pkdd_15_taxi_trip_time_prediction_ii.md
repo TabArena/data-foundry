@@ -121,7 +121,7 @@ CC (2026-11-11, Lennart): the declared horizon (calendar months, a one-day gap, 
 calendar months (H, B) and February, April and June 2014 as the test months (issue 1, B); both are applied and nothing
 is left open.
 
-**Main points:** Settled on 2026-11-11: the test windows are the calendar months February, April and June 2014, as one
+**Main points:** Re-audited 2026-11-27 against the UCI file (sha256 matches): the 1,636,276 trips, the 120 km/h filter (7,344 trips dropped, kept maximum 119.98 km/h), the windows (train 57.7% / 73.4% / 90.7%) and the notes' R^2 figures reproduce; no train/test copies, dummy RMSLE 0.605 on every fold. Open: issue 2 (the one-day gap's reason). The committed README still documents the superseded 30-day windows and needs a regeneration with the next rebuild. Earlier: Settled on 2026-11-11: the test windows are the calendar months February, April and June 2014, as one
 model trained on the trips so far serves for months, and one window falls in the winter.
 
 **Horizon:**
@@ -189,7 +189,7 @@ and 122,831 trips, train 1,484,039, 1,200,383 and 943,912 (90.7%, 73.4%, 57.7% o
 May 2014, the newest window's gap day, lie in no split. The record has the horizon CC line. `dataset check`: 0 errors,
 0 warnings (README not regenerated).
 
-**Issues for Lennart:**
+**Issues for Andrej and Lennart:**
 
 1. **Test on February, April and June 2014 instead of April, May and June?**
 
@@ -254,3 +254,30 @@ May 2014, the newest window's gap day, lie in no split. The record has the horiz
    to 151,406. The decision table of recurring taxis follows the test months (100%, 99.93% and 100% of the February,
    April and June trips by taxis seen before), and the notes' R^2 figures are dated as measured on the April-June
    windows. The record has the decision CC line. `dataset check`: 0 errors, 0 warnings.
+
+2. **Restate the one-day gap's reason as the refit's latency, as on nyc_taxi_trip_duration?**
+
+   * **Problem:**
+     - `splits_comment` says the gap exists because a trip lasts up to 3 hours, so the last trips before a refit have no travel time yet; the longest overhang past a window start is 0.45 h (June), 0.18 h (April) and 0.56 h (February).
+   * **Effect on the task:** None on the folds; a 3-hour gap would remove the same trips, so the stated reason justifies 3 hours, not a day, and costs the 5,523 trips of 31 May.
+   * **Experiments:**
+
+     | Gap | Training trips ending after the window start (Jun / Apr / Feb) | Trips in no split |
+     |---|---|---|
+     | none | 47 / 7 / 21 | 0 |
+     | 1 hour | 1 / 0 / 0 | about 230 |
+     | 3 hours | 0 / 0 / 0 | about 700 |
+     | 1 day (now) | 0 / 0 / 0 | 5,523 |
+
+   * **Consistency:** nyc_taxi_trip_duration's same question was resolved on 2026-11-27 (A): its day stays and `splits_comment` gives the refit's latency (collect, fit, check, deploy) as the reason.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the day, text as now (implemented) | nothing changes | no work | the stated reason does not support a day |
+     | B | Keep the day, restate the reason | `splits_comment` names the monthly refit's latency as the reason, keeps the overhang counts as a second fact | same folds; consistent with nyc_taxi_trip_duration | text change only |
+     | C | 3-hour gap | `gap=3, gap_unit="hours"`; about 4,800 trips of 31 May return to train | the gap matches the measured overhang | rebuild and its own PR; departs from nyc_taxi_trip_duration |
+
+   * **Recommendation:** B, the same answer as nyc_taxi_trip_duration's, as a text change. **Decision:** A, B or C?
+
+   **Notes for the AI:** text fixes to make with B, measured 2026-11-27: `taxi_id` adds 0.005 to 0.016 R^2 on the shipped windows (notes say 0.008 to 0.014); `changes` says the challenge asked for the "remaining time", while the record's Comments say it scored the total travel time from a partial trajectory (source behind a Kaggle login, unverified); 1,962 kept trips imply more than 80 km/h in a straight line (probably missing GPS points), not tested. Full audit: `local-data-warehouse/_runs/2026-11-26_review33/pkdd_15_taxi_trip_time_prediction_ii/`.

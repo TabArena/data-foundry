@@ -74,7 +74,7 @@ CC (2026-11-18, Andrej): time basis `AssumedStationaryRelation` in place of `Sta
 
 **Outcome:** added. The time basis went from `ForcedIIDFromTemporal` to `DelayedTarget` (2026-11-13), to `StationaryRelation` when `DelayedTarget` was retired (2026-11-16), and to `AssumedStationaryRelation` (2026-11-18).
 
-**Main points:** The time basis is `AssumedStationaryRelation` (Andrej, 2026-11-18); issue 1 was resolved on 2026-11-13
+**Main points:** Re-audited 2026-11-27 against both Mendeley v4 files (sha256 match): nothing needs a decision. Only the 2020 file ships, one row per transformer, so no unit is on both sides of a split; among the kept columns the 2019 and 2020 first-burn groups look alike, so no kept attribute shows a post-failure recording (self_protected, power_kva and installation_type are already dropped). The burn counts, the burn_rate identity, the forward against random comparison (0.644 against 0.640) and the accepted urban warning reproduce. Text fixes: the time-basis bullet of `curation_comments` skips `DelayedTarget` (2026-11-13 to 11-16), and the README is stale (still shows `ForcedIIDFromTemporal`). Earlier: The time basis is `AssumedStationaryRelation` (Andrej, 2026-11-18); issue 1 was resolved on 2026-11-13
 as `DelayedTarget`, changed on 2026-11-16 and 2026-11-18 (CC lines).
 
 **Issues for Andrej:**

@@ -76,9 +76,9 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
 
 **Outcome:** added. The record gained `Target: Later` on 2026-11-13.
 
-**Main points:** Nothing open: issue 1 resolved on 2026-11-13 (`Target: Later` recorded). Issue 2 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
+**Main points:** Re-audited 2026-11-27 against the Kaggle file (sha256 matches): the record's numbers reproduce (random forest ROC AUC 0.815, 0.805 above 5 calls), no copies, no flagged dtypes, `roc_auc` computable on all 30 folds. Open: issue 3 (the September columns). Earlier: nothing open: issue 1 resolved on 2026-11-13 (`Target: Later` recorded). Issue 2 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
 
-**Issues for Andrej:**
+**Issues for Andrej and Lennart:**
 
 1. **Record `Target: Later`?**
 
@@ -140,6 +140,33 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity r
    **Andrej (2026-11-18, ok):** as implemented.
 
    **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (Telecom churn is driven by a competitive market and the data already show a network-mix shift; the closest measured churn set is not flat.)
+
+3. **Keep the September columns, and correct the Decision that the shift follows activity?**
+
+   * **Problem:**
+     - At equal numbers of calls, active subscribers name ufone as their September favourite far more often than churners (0.40 to 0.93 against 0.18 to 0.80 over five call groups), while in August the two classes match.
+     - The Decision "Favourite networks kept, although September shifts towards ufone" says the shift follows activity, not a recording that differs by class, which this refutes as worded.
+     - No column dates the churn, so whether some churners left inside September cannot be tested.
+   * **Effect on the task:** If churners left inside September, `sep_fav_a` and `sep_user_type` record the outcome; dropping both costs 0.002 ROC AUC (0.816 to 0.814, random forest), and the usage totals carry the same exposure and cannot be dropped.
+   * **Experiments:**
+
+     | Check | Active | Churned |
+     |---|---|---|
+     | Sep favourite is ufone, five call groups low to high | 0.40 / 0.60 / 0.79 / 0.89 / 0.93 | 0.18 / 0.36 / 0.53 / 0.63 / 0.80 |
+     | Aug favourite is ufone, same groups | 0.30 / 0.30 / 0.25 / 0.19 / 0.16 | 0.21 / 0.27 / 0.19 / 0.23 / 0.20 |
+     | 3G in August, 2G in September | 2.6% | 6.0% (Fisher p = 0.009) |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep all columns, Decision as now (implemented) | nothing changes | no work | the Decision states something the data refute |
+     | B | Drop `sep_fav_a` and `sep_user_type` | two columns fewer, Decision rewritten | less exposure to a churn inside September, at 0.002 AUC | the usage totals keep the same exposure |
+     | C | Keep all columns, rewrite the Decision | the Decision gives the class gap at equal calls and that it fits both churners using less before leaving and some leaving in September | honest at no cost | the possible exposure stays |
+
+   * **Recommendation:** C: the gap is equally consistent with a pre-churn signal, and B removes little while the totals keep the exposure. **Decision:** A, B or C?
+
+   **Notes for the AI:** with B or C, also change "near-inactive subscribers are almost all churners" to four in five (124 of 157 at 5 calls or fewer). Untested: the "six short runs, 54 rows" claim (another segmentation). Full audit: `local-data-warehouse/_runs/2026-11-26_review33/churn_telco_south_asia/findings_audit.md`.
 
 ## Reference
 
