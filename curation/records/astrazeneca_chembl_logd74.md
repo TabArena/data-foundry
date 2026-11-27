@@ -15,6 +15,7 @@ tags:
 - 'Time: Dated'
 collections:
 - ChemPile
+- TabBench-Bio
 original_source: Other
 year: '2015'
 domain: chemistry & material science
@@ -159,6 +160,10 @@ CC (2026-11-26, Andrej): issue 7 settled, and every measured number in the notes
   substance rather than the compound.
 - The fold figures and the split counts are restated on the shipped data, where the split bullet had still carried
   issue 6's pre-drop 2,413 groups over 4,195 compounds.
+
+CC (2026-11-27, Andrej): `TabBench-Bio` added to `collections`, beside `ChemPile`.
+- The record is one of the benchmark's 40 and its External collections line already named it, but the field did not, so a filter on the collection returned 41 records and missed this one, which is one of the three the benchmark's screen actually produced.
+- Nothing else changes: the dataset, its verdict and its review are untouched.
 
 ## Review
 
