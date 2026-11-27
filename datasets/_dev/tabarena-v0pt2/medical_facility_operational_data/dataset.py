@@ -54,7 +54,7 @@ class MedicalFacilityOperationalData(AbstractCuratedDataset):
         row="One of 82,001 visits of the three scheduled facilities F1-F3, with the facility as context.",
         predicted="The exam start minus the scheduled time, in minutes, signed: an exam that starts early has a negative delay.",
         known="Facility, how many minutes before or after the appointment this patient arrived, the current queue and resource state, histories of completed exams, the source's time features, counts of booked visits from the schedule and the source's per-exam-type delay and duration estimates, whose making is not documented. This patient's exam type is not an input.",
-        split="Nine two-week windows of later visits in time order, as the source tests two weeks after six months of training; each window trains on all visits whose exam had begun before it. The anonymised timestamps are one shift of the real clock for all facilities, and every window has thousands of training visits of each facility.",
+        split="Nine two-week windows of later visits in time order, the newest ending at the last arrival day, as the source tests two weeks after six months of training; each window trains on all visits whose exam had begun before it. The anonymised timestamps are one shift of the real clock for all facilities, and every window has thousands of training visits of each facility.",
         changes="Only the scheduled facilities: the walk-in facility F4 measures another quantity (the wait from arrival) and is left out. The raw timestamps are dropped; their arrival rank is the time column and an input. How many minutes before the appointment this patient arrived, which the source's features lack, is derived from them and added as an input. Summaries of an empty set, 0 in the source, are missing.",
         fit="approximate",
         fit_reason="The source's own delay task on the facilities' own records, in real time order, with this patient's arrival against the appointment added. The gap: the source's aggregation removed this patient's exam type, contrast and inpatient status, so the other inputs describe the facility's state for whoever comes next. Kept on purpose as potential leaks: the expected-delay table, of undocumented origin, and the schedule fields, which reflect the final schedule.",
@@ -129,7 +129,7 @@ class MedicalFacilityOperationalData(AbstractCuratedDataset):
           - Effect: untuned LightGBM (L1 loss, 500 trees) on this frame and the nine 14-day windows scores MAE 13.681 with the source's values and 13.698 with the missing values (+0.017, mean of 9 windows and 2 seeds, lower in 6 of 18 fits; a window's MAE differs by 0.05 between seeds on average; on the earlier windows 13.565 and 13.577): no measurable change. The flags stay as inputs.
         - Source MAE is deliberate in the author challenge (its goal is an MAE reduction against the intercept model) and in the paper's comparisons, which evaluate it per facility (author code WTModel.m; Crowley et al. 2020, Tables 2 and 6). We score per-visit MAE in each window and the equal mean of the nine window scores (Myunghwan, 2026-10-28), not an official source aggregation. The author code labels an RMSE calculation MSE; our RMSE uses the standard definition.
         - CC (2026-11-05, Lennart): the declared metric (the source's MAE in minutes, per window, the equal mean of the nine windows) is checked and stays as declared.
-        - CC (2026-11-05, Lennart): the source's two-week test windows (SPLIT-12, SPLIT-19): nine 14-day windows, each from the first whole day at or after the start of one of the nine equal-count windows shipped before (42 to 53 days long), so the folds stay nine and the test visits go from 40,995 to 12,408. The training side stays expanding (the source trained on six months; here 50.1% to 94.6% of the visits, so SPLIT-14's floor and its three windows hold). The day comes from the arrival timestamp in `_clean`, since the time column is the arrival rank, and leaves with the timestamps in `_make_splits`. The planned exception to SPLIT-19 is dropped: the split follows the source. The longer windows had cost nothing measurable (two-week windows 14.40 against 14.42 on the same weeks). The MAE figures in these notes are re-measured on the new windows, with the earlier figures beside them.
+        - CC (2026-11-05, Lennart): the source's two-week test windows (SPLIT-12, SPLIT-19): nine 14-day windows, each from the first whole day at or after the start of one of the nine equal-count windows shipped before (42 to 53 days long), so the folds stay nine and the test visits go from 40,995 to 12,408 (12,435 since 2026-11-27, when the newest window moved to the last 14 days). The training side stays expanding (the source trained on six months; here 50.1% to 94.6% of the visits, so SPLIT-14's floor and its three windows hold). The day comes from the arrival timestamp in `_clean`, since the time column is the arrival rank, and leaves with the timestamps in `_make_splits`. The planned exception to SPLIT-19 is dropped: the split follows the source. The longer windows had cost nothing measurable (two-week windows 14.40 against 14.42 on the same weeks). The MAE figures in these notes were re-measured on the new windows, with the earlier figures beside them; they were measured with the newest window ending 28 days before the last arrival, as shipped until 2026-11-27, and were not measured again on the window that now ends at the last arrival.
         - All source negatives, repeated operational states and missing values remain.
     """
     target = "Wait"
@@ -145,23 +145,33 @@ class MedicalFacilityOperationalData(AbstractCuratedDataset):
     splits_comment = """
         Expanding windows in the common arrival order of F1-F3, newest window first. The source trains on six months
         and tests on "a further consecutive two weeks" (Crowley et al. 2020), so each test window is 14 whole days.
-        The nine windows start on the first whole day at or after nine points that divide the distinct arrival instants
+        Eight windows start on the first whole day at or after eight points that divide the distinct arrival instants
         after the training floor into equal parts; before the first, at least half of all visits have arrived and begun
-        their exams. They start 44 to 53 days apart and do not tile the period: 12,408 test visits in all, 1,140 to
-        1,540 per window, and the 2,921 visits after the newest window are in no split. Each window trains on every
-        visit that arrived and began its exam before its first day: 41,048 to 77,557 of 82,001 (50.1% to 94.6%). No
-        exam begins on a later day than its arrival, and no visit arrives between 22:00 and 07:00, so a day boundary
-        cuts no visit. Every window has training visits of each facility (at least 24,478 of F1, 8,339 of F2 and 8,231
-        of F3) and 217 to 688 test visits of each. The timestamps are one shift of the real clock for all facilities,
-        so the order is real time. F3 starts later than F1 and F2: about eight months and 8,231 visits of F3 history
-        precede the oldest window. Each test visit is predicted from the training rows and its own features only; no
-        feature or model step may use other test rows. No held-out-facility or new-patient guarantee is asserted.
+        their exams. The newest window is anchored to the end of the data (Andrej, 2026-11-27): it covers the last 14
+        days, ending at the last arrival day, so the newest visits, which a deployed model would serve, are tested. Until
+        then it started at the ninth equal-count point and the last 28 days were in no split. The first eight
+        windows start 43 to 51 days apart, the newest 72 days after the eighth, and they do not tile the period: 12,435
+        test visits in all, 1,140 to 1,550 per window, and no visit is left out of every split, since every visit before the newest window is in
+        its training side. Each window trains on every visit that arrived and began its exam before its first day: 41,048
+        to 80,451 of 82,001 (50.1% to 98.1%). No exam begins on a later day than its arrival, and no visit arrives
+        between 22:00 and 07:00, so a day boundary cuts no visit. Every window has training visits of each facility (at
+        least 24,478 of F1, 8,339 of F2 and 8,231 of F3) and 217 to 688 test visits of each. The timestamps are one shift
+        of the real clock for all facilities, so the order is real time. F3 starts later than F1 and F2: about eight
+        months and 8,231 visits of F3 history precede the oldest window. Each test visit is predicted from the training
+        rows and its own features only; no feature or model step may use other test rows. No held-out-facility or
+        new-patient guarantee is asserted.
+        The waiting time falls across the windows (Andrej, 2026-11-27): the mean `Wait` of the test visits is 10.01
+        minutes in the oldest window and 1.32 in the newest. `Wait` is the time from arrival to the start of the exam
+        minus how early the patient checked in; the time from arrival to start stays flat (36.9 minutes in the oldest
+        window, 36.4 in the newest) and patients check in about eight minutes earlier (26.9 to 35.1), mostly at two of
+        the three facilities. The fall is a change in behaviour and not in how arrivals were recorded (the monthly
+        series shows it, and a fixed facility mix does not remove it). The level a model must hit moves from about ten
+        minutes to about one while the score stayed flat on the earlier newest window (LightGBM MAE 14.47 in the
+        oldest window, 13.49 in the newest; mean bias -0.75, range -2.1 to +0.5), so the windows' scores are not on
+        one level of target. The MAE and bias figures were measured before 2026-11-27, when the newest window ended 28
+        days before the last arrival; they were not measured again on the window that now ends at the last arrival.
     """
-    accepted_check_warnings = {
-        "splits_rows_unused": "By design (Lennart, 2026-11-05): the nine 14-day windows start at the nine "
-        "equal-count points of the arrival instants and do not tile the period, so the 2,921 visits after the newest "
-        "window's last day are in no split; every visit before it is in a training side.",
-    }
+    accepted_check_warnings = {}
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         tables = pd.read_excel(
@@ -201,7 +211,7 @@ class MedicalFacilityOperationalData(AbstractCuratedDataset):
         begun = df["x_BeginDTTM"]
         day = df["x_ArrivalDay"]
         first_day = arrivals.min().normalize()
-        # Nine starts that divide the arrival instants after the 50% training floor into equal parts.
+        # Eight starts, and the newest window's equal-count start, divide the arrival instants after the 50% training floor.
         instants = np.sort(arrivals.unique())
         floor = (len(df) + 1) // 2
         first = int(np.searchsorted(instants, np.sort(arrivals.to_numpy())[floor], side="left"))
@@ -214,6 +224,9 @@ class MedicalFacilityOperationalData(AbstractCuratedDataset):
             start_day = int(day[arrivals.eq(instants[edge])].iloc[0])
             if arrivals[day.eq(start_day)].lt(instants[edge]).any():
                 start_day += 1
+            if chronological == len(edges) - 1:
+                # The newest window ends at the last arrival day (Andrej, 2026-11-27): its start is the 14th day back.
+                start_day = int(day.max()) - WINDOW_DAYS + 1
             start = first_day + pd.Timedelta(days=start_day)
             train = np.flatnonzero((arrivals.lt(start) & begun.lt(start)).to_numpy())
             assert len(train) >= floor, (start_day, len(train))

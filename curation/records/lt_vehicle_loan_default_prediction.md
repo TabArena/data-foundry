@@ -101,6 +101,12 @@ CC (2026-11-05, Lennart): ship. Every issue of the second-pass review is settled
 
 CC (2026-11-17, Andrej): the declared split (temporal on `DisbursalDate`, windows of 4 days, up to 9 windows while training keeps 50% of the rows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-27, Andrej): Review issue 8, ok: every row stays and the late-October rise is described as measured. Review issue 10, B ("Option B: Seven days, five windows."): the declared horizon (7 days, no gap, 5 windows starting 2018-09-27, 10-04, 10-11, 10-18 and 10-25) is checked: a week is the only feasible length with a reason independent of the window count (it holds each weekday once and removes the weekday mix), at the cost of 5 windows against the 9 of an IID split and 3% of the test rows (112,550 of 115,664); the oldest training side holds 51.73% of the rows. Review issue 11, ok: the seven guarantor-account columns stay with the note.
+
+CC (2026-11-27, Andrej): Review issue 9, B: the split rule's case row for this dataset is corrected (no borrower identifier recurs; on a four-field rebuilt key 10.43% of test rows match a training row and a prior default separates them weakly, 30.6% against 26.8%, +0.0009 as a feature, inside noise), and the rule's clause now asks for a measured link to the row's own entity rather than an asserted absence. Gap 0 stays.
+
+**Assessment (AI, 2026-11-27):** applied issue 10 (B): `temporal` declares 5 windows of 7 days; test 11,466 to 37,512 rows per window (112,550 in all, 2,550 to 9,860 defaults), train 120,604 to 195,642 rows (51.73% to 83.91%); with a 30-day gap the training side would hold 21% to 49% of the rows and the loans of its last 30 days are 41.6% to 59.3% of each training side; 56.7% of the test rows (63,762) fall in 20-31 October. `dataset check`: 0 errors, the new warning on 5 windows against 9 accepted. The model measurements of 2026-11-05 on the nine four-day windows are dated to them and were not re-run.
+
 ## Review
 
 **Outcome:** added. Second-pass panel after Lennart's PR #33 review of 2026-11-04: ship after changes, with the data,
@@ -119,14 +125,16 @@ refuted: "nothing through the dealer or staff codes", "about 90% training size",
 `Selection Bias` marker (USE-8), mark the 2026-10-23 "Exception to SPLIT-10" line as history, correct this dataset's
 row in the SPLIT-10 Cases table, and in the record correct the 2026-11-04 Assessment ("about 90%", "20-53%
 (SPLIT-14)"), the pointer to "REVIEW.md issue 1" (now issues 4 and 5) and "review panel (none) ... all are settled".
-These record corrections were applied on 2026-11-04 (Assessment), and issues 4 to 7 were settled on 2026-11-05.
+These record corrections were applied on 2026-11-04 (Assessment), and issues 4 to 7 were settled on 2026-11-05. On 2026-11-27 the nine four-day windows became five windows of seven days (issue 10, B), so the nine-window figures above describe the earlier split.
 
-**Main points:** Nothing open. Settled on 2026-11-05 (Lennart): the recent default rates of dealer, branch, employee
+**Main points:** Re-reviewed on 2026-11-26 (focused panel). Settled on 2026-11-27 (Andrej): the late-October rise
+stays with the corrected account (issue 8, A); the windows are five whole weeks of seven days in place of nine of four
+(issue 10, B); the guarantor-account columns stay with their note (issue 11, A). The split rule's case row is corrected and its clause now asks for a measured link to the row's own entity (issue 9, B). Earlier: Settled on 2026-11-05 (Lennart): the recent default rates of dealer, branch, employee
 and postcode codes are no shortcut and gap 0 stays with the nine windows (issue 4, A); gap 0 is an application of
 SPLIT-10, not an exception (issue 5, B); lt names the issued-loan selection as a gap while its credit siblings hold the
 data they want to use (issue 6, C); `Current_pincode_ID` ships as a number (issue 7, B).
 
-**Issues for Lennart:**
+**Issues for Andrej and Lennart:**
 
 4. **Is the recent default rate of a dealer, branch, employee or postcode a shortcut that the split must remove?**
 
@@ -376,6 +384,136 @@ data they want to use (issue 6, C); `Current_pincode_ID` ships as a number (issu
 
    **Resolved (2026-11-05, Lennart):** (a). `Current_pincode_ID` ships as a number, one column; a CLEAN-14 Cases row;
    `dataset check` clean.
+
+8. **Is the late-October rise in the default rate drift, or partly a label artifact?**
+
+   * **Problem:**
+     - The daily default rate climbs to 0.2965 on 31 October against 0.2144 over 1-19 October, roughly three times the ordinary month-end lift.
+     - Two mechanisms raise a rate: real drift, or a first instalment not yet settled when the file was extracted and coded as missed; the notes assert the first without covering the size.
+     - The release gives no label extraction date and no first-EMI due-date rule, and the organiser's November file is unlabeled, so the comparison the rule prescribes cannot be run.
+   * **Effect on the task:** About nothing on the scores, since the metric ranks within a window, each window spans at most four days, and the true daily rate ranks a window at only 0.503 to 0.530. What is at stake is what the last windows mean.
+   * **Experiments:** a pseudo-default is a real negative turned positive, so it must dilute the ranking; simulating that on 31 October's excess bounds how much of it could be artifact.
+
+     | Relabelled share of 31 October's excess | Simulated ranking |
+     |---|---|
+     | none | 0.6338 |
+     | a quarter | 0.6221 |
+     | a half | 0.6123 |
+     | all of it | 0.5969 |
+
+     | Day | Rows | Rate | Observed ranking |
+     |---|---|---|---|
+     | 1-19 October | 34,602 | 0.2144 | 0.6338 |
+     | 20-31 October | 63,762 | 0.2464 | 0.6296 |
+     | 31 October | 8,826 | 0.2965 | 0.6289 |
+
+     The observed 0.6289 puts the artifact share at about an eighth, with an upper bound near a half. The same test on a mature month-end, 31 August scored by a model fitted on September and October, gives 0.6384 against a reference 0.6439, so the terminal day's labels rank no worse than a mature month-end's.
+   * **Background:** Volume does not explain the size. Across mature days the rate does not rise with volume, which leaves 31 October with a residual of +0.096 where an ordinary month-end carries about +0.034.
+   * **Panel:** The split auditor read four checks as drift; the claim auditor agreed the censoring direction is refuted but found the stated cause does not cover the size; the task gamer, which sees none of our notes, held both readings open. The mediator overturned one of the four checks, since within October both the bureau-scored and the no-bureau groups rise.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep every row, correct the account (implemented) | the notes say what is measured instead of naming month-end and the festive season as the cause | the rule reads a rise as drift; the score effect is nil; the newest period is the deployment period | the size of the terminal excess stays unexplained |
+     | B | Drop 31 October | 8,826 rows go; nine windows still clear the floor | removes the one day where an artifact could be material | cuts the deployment day with no evidence it is censored; the same shape is present on 23-30 October |
+     | C | Drop 20-31 October | the file ends on the 19th | the conservative reading | discards 55% of the test rows and the whole surge for an unproven artifact |
+     | D | Hold until the extraction date and the due-date rule are found | the one fact that decides it | decisive if obtainable | the contest is closed and the leaderboard unarchived; no second download exists |
+
+   * **Recommendation:** A. The measured direction and the rank consistency both say drift, and the mildest remedy that resolves it is a documented note. **Decision:** A, B, C or D?
+
+   **Andrej (2026-11-27, ok):** As implemented (A).
+
+   **Resolved (2026-11-27, Andrej):** A. Every row stays and the notes say what is measured about the late-October rise (the rise holds in every risk decile; the share of it that could be a label artifact is bounded near an eighth, at most about a half); no row or column changed.
+
+9. **Correct the rule's own case row, which rests on a fact this dataset does not support?**
+
+   * **Problem:**
+     - The split rule on a row's own entity was amended on 2026-11-05 citing this dataset, and its case row offers "no borrower recurs" as the distinguishing fact.
+     - No borrower identifier recurs, but on a rebuilt key about a tenth of test rows match a training row, well above chance, and a prior default separates them.
+     - The next dataset to reach this question will cite that row.
+   * **Effect on the task:** None here. The contrast is small and, fed back as a feature, it is worth less than the noise floor. The effect is on the rule.
+   * **Experiments:**
+
+     | Measure | Value |
+     |---|---|
+     | Rows in multi-row groups on the rebuilt key | 12.56%, against 1.59% with the postcode shuffled |
+     | Test rows matching a training row | 10.43% (9.4 to 11.9% per window) |
+     | Default rate among them, prior default against none | 30.6% against 26.8% (base 21.7%) |
+     | The same prior fed back as a feature | +0.0009, inside noise |
+     | The sibling the rule contrasts | 95.1% against 2.3% |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Correct the case row, keep the decision | it reads "no borrower identifier recurs", with the measured contrast | the rule's operative test survives measurement | this dataset stops being an example of no link to the row's own entity |
+     | B | A, and reword the rule's clause so it asks for a measured link rather than an asserted absence | the next case gets a test it can run | an amendment, with the register re-read it requires |
+     | C | Treat the rebuilt-key match as a shortcut and re-split | drops matched rows or groups them | the literal reading | the key is ours, not the source's; one key finds below-chance agreement; the exploit is inside noise |
+     | D | Leave the case row as it is (implemented) | nothing changes here or in the rule file | no work | the next dataset to reach this question cites a fact this one does not support |
+
+   * **Recommendation:** B, since the clause is what made the refuted sentence load-bearing; A is the minimum. **Decision:** A, B or C?
+
+   **Notes for the AI:** the two audits disagree on the key. A two-field key gives label agreement below chance; the four-field key gives the numbers above. Settle one key before writing the case row.
+
+   **Andrej (2026-11-27, change):** Option B: A, and reword the rule's clause so it asks for a measured link rather than an asserted absence.
+
+   **Resolved (2026-11-27, Andrej):** B. The key is settled as the four-field one (birth date, postcode, state, employment type), the key behind the issue's numbers; the two-field key's below-chance agreement is named beside it. The split rule's case row now reads "no borrower identifier recurs" with the measured contrast (10.43% of test rows match a training row, 30.6% against 26.8% default after a prior default, +0.0009 as a feature, against the sibling's 95.1% against 2.3%). The rule's clause no longer asks for "no link to the row's own entity": it asks for the link to be measured on the id or a rebuilt key, the match share and the separation given, a strong link being the shortcut and a weak one, worth no more than noise, not. The decision on this dataset (gap 0, not a shortcut) stands.
+
+10. **Re-decide the window length under the rule as it now reads?**
+
+   * **Problem:**
+     - The notes say the four-day length was chosen as the widest equal windows fitting the recommended nine above the training floor, so the length followed the count.
+     - The rule was amended on 2026-11-10 to forbid exactly that order, five days after this dataset's windows were settled, and the later blind walk checked the leaf rather than the length.
+     - No sign-off of the horizon exists for this dataset, which the same amendment requires.
+   * **Effect on the task:** With no forecast lead the window length is the assumed refit cadence. Four days is a cadence no lender runs and is the most optimistic point in the design space: a model fitted thirty days earlier scores 0.0142 lower. Each four-day window also draws only three or four weekdays, while volume varies 2.71 times and the rate two points by weekday.
+   * **Experiments:** coverage only, never a score comparison.
+
+     | Length | Windows above the floor | Oldest training share | Smallest test window | Test rows | Whole weeks |
+     |---|---|---|---|---|---|
+     | 4 days (implemented) | 9 | 50.39% | 4,402 | 115,664 | no |
+     | 7 days | 5 | 51.73% | 11,466 | 112,550 | yes |
+     | 10 days | 3 | 57.81% | 16,010 | 98,364 | no |
+     | 14 days | 2, or 4 with the floor exception | 58.71% | 29,126 | 96,263 | yes |
+     | 1 calendar month, the source's own | 1 | 57.81% | 98,364 | 98,364 | no |
+
+   * **Consistency:** Two datasets decided on the same rule took their length from the use case and let the count follow. This dataset is the case the amendment was written against, and the amendment procedure asks for a re-read whenever a stated reason rests on the old wording.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep four days, sign the cadence off explicitly (implemented) | the comment says the source's horizon is a month and that four days was chosen to reach nine | most windows and test rows; smallest change | the stated reason is the one the rule now forbids; no lender refits every four days; each window sees three or four weekdays |
+     | B | Seven days, five windows | a re-split, and the settled measurements re-run | the only length with a reason independent of the count; a whole week removes the weekday mix; keeps 97% of the test rows and raises the smallest window to 11,466 | five windows against a target of nine; the 11-05 measurements must be redone |
+     | C | Ten days, three windows | the longest the floor allows | closest feasible step to the source's month | exactly at the minimum; loses 15% of the test rows; ten days means nothing in the use case either |
+     | D | Fourteen days, four windows | needs the floor exception for two of them | the only option reaching into early September | a floor exception for a dataset that does not need one |
+     | E | One calendar month, the source's own | one window | the source's actual horizon | fails the three-window minimum outright |
+
+   * **Recommendation:** B. The use case gives no horizon, so the cadence is ours to choose, and of the feasible cadences only a week has a reason that is not the count; it costs 3% of the test rows. A stays acceptable only with your explicit sign-off of a four-day cadence. **Decision:** A, B, C, D or E?
+
+   **Andrej (2026-11-27, change):** Option B: Seven days, five windows.
+
+   **Resolved (2026-11-27, Andrej):** B. `temporal` declares `window=7, unit="days", n_windows=5, min_train_fraction=0.5`: five whole weeks from 2018-09-27 to 2018-10-31, 112,550 test rows (11,466 to 37,512 per window, 2,550 to 9,860 defaults), each trained on every earlier loan (51.73% to 83.91% of the 233,154 rows, the oldest at 120,604). `splits_comment`, `task_summary.split`, `curation_comments` and the generated horizon note are rewritten for the weekly windows; the figures of the earlier nine four-day windows (the cost of a 30-day gap, the recent code rates) are dated to them and were not measured again. The new warning on 5 windows against the 9 of an IID split is accepted, with the numbers. `dataset check`: 0 errors, 1 warning, the accepted one.
+
+11. **Keep the guarantor-account columns, which stop being recorded inside the evaluation period?**
+
+   * **Problem:**
+     - All seven columns describing a co-applicant's accounts change regime on 5 October 2018: their non-zero share falls from 3.51% to 1.07% in one day and never recovers.
+     - It is a recording change, not a change of mix: it is uniform across every state, manufacturer and large branch, and it is worse among the rows that have a bureau file at all.
+     - Seven of the nine windows test after the break while their training sides are almost entirely before it, and the association with the label reverses across it.
+   * **Effect on the task:** Every training side teaches that a guarantor account means lower risk, 17 to 19% against 20 to 21%; the post-break test sides say the opposite, 26.8% against 23.6%. About 1.1% of post-break test rows carry a non-zero value, so the score effect is small and the faithfulness effect is the point.
+   * **Background:** No check caught it. The missing-column check needs 95% missing and these columns are zero-coded, and the drift statistic returns nothing when more than 95% of values are zero.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the columns with a note (implemented) | the notes name the seven columns, the date, the fall and the reversal | follows the standing decision of 2026-11-11 on seven other datasets, the data as the deployed model met it | a model trained before the break is scored on a column that changed meaning mid-evaluation |
+     | B | Drop the seven columns | 38 features become 31 | removes a block not comparable across the evaluation period | drops real information recorded before the break |
+     | C | Start the data at the break | the history goes | no mixed regime | destroys the task: 26 days of data and the floor unreachable |
+
+   * **Recommendation:** A, the standing precedent. Do not convert the post-break zeros to missing: a zero is then ambiguous between no secondary account and not pulled. **Decision:** A, B or C?
+
+   **Andrej (2026-11-27, ok):** As implemented (A).
+
+   **Resolved (2026-11-27, Andrej):** A. The seven guarantor-account columns stay with the note; nothing changed in `dataset.py`.
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after Lennart's PR #33 review of 2026-11-04
 (claim, column and split auditors, domain practitioner, precedent checker, blind reviewer, task gamer, advocate and

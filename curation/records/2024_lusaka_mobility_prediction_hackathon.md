@@ -46,7 +46,7 @@ The pinned participant copy identifies this exact Yango/Zindi Lusaka challenge. 
 
 At trip start, recorded destination and straight-line distance stand in for the requested destination; capture timing is unverified. Weather uses floor(trip_start) minus one hour, without future fill or year/timezone shifting: 112,716 rides have exact preceding-hour matches, and 23 out-of-coverage rides retain missing weather (superseded 2026-11-05: the join lags 3 hours; the 175 trips that start on 1 January before 03:00 have no weather row). Earlier-hour measurement does not establish publication latency. These limitations were explicitly accepted as an approximation, not certified as prospectively available facts.
 
-Use the competition's RMSE on actual minutes with identity target transform. Three chronological four-day test windows have a one-day training gap. All observed durations are below one day, so observed training trip ends precede refit; additional reporting delay and cohort-extraction maturity remain unknown. The final test includes a partial final day. This same-release city/month task does not establish all-season or other-city generalization. Source reuse restrictions remain separate from scientific acceptance.
+Use the competition's RMSE on actual minutes with identity target transform. Three chronological four-day test windows have a one-day training gap (superseded 2026-11-27: nine one-day windows, from 03:00 to 03:00, 23 to 31 January, the same gap). All observed durations are below one day, so observed training trip ends precede refit; additional reporting delay and cohort-extraction maturity remain unknown. The final test includes a partial final day (superseded 2026-11-27: the newest window ends at the last trip, 02:09 on 1 February, 23 hours of its day). This same-release city/month task does not establish all-season or other-city generalization. Source reuse restrictions remain separate from scientific acceptance.
 
 The current measured findings and accepted task above supersede the source-only counts and provisional framing in the historical screening notes below. Priority 3 is retained for the traceable source and specified ride-time use case; approximate timing and source/calendar limits remain explicit.
 
@@ -87,12 +87,16 @@ CC (2026-11-05, Lennart): ship. Every issue of the second-pass review is settled
 
 CC (2026-11-17, Andrej): the declared split (temporal on `trip_start`, windows of 4 days, 3 windows at fixed cutoffs, gap 1 day) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-27, Andrej): Review issue 11, E ("Option E: Nine one-day windows (23 to 31 January, days from 03:00), gap 1 day."): the declared split (temporal on `trip_start`, windows of 1 day, 9 windows at fixed cutoffs from 2023-01-23 03:00 to 2023-01-31 03:00, gap 1 day) is checked and changed from three four-day windows: a daily refit is a cadence an operator can run, the count warning goes away without an accepted warning, and each weekday is tested.
+
+**Assessment (AI, 2026-11-27):** `dataset check`: 0 errors, 0 warnings. The nine windows hold 3,223 to 4,444 test trips (Monday 23 January 3,223; Friday 27 January 4,444; Tuesday 31 January 3,558, ending at the last trip, 02:09 on 1 February) and train on 73,465 to 103,313 of 110,336 trips (0.666 to 0.936), far above the half-data floor. The days run from 03:00 because the file ends at 02:09 on 1 February: a midnight boundary would leave the newest 70 trips outside every window. Model figures of the earlier notes (RMSE, tail shares) were measured on the four-day windows and are dated in the definition, not measured again.
+
 ## Review
 
 **Outcome:** added. A second-pass review panel (full) after Lennart's review of PR #33 on 2026-11-04 recommends
 shipping after changes. Validity: LEAK-10 triggered and fixed for the distance actually driven (dropped; Zindi's
 Test.csv shipped it), SPLIT-1, SPLIT-9 and SPLIT-14 hold (three four-day windows, a one-day gap against a longest trip
-of 788 minutes), USE-7 is applied (the 100 m cut, as nyc and pkdd), and USE-8 stays approximate, now naming that no
+of 788 minutes; since 2026-11-27 nine one-day windows, issue 11), USE-7 is applied (the 100 m cut, as nyc and pkdd), and USE-8 stays approximate, now naming that no
 routing-engine route or ETA ships. USE-3/LEAK-1 is weak: the recorded endpoint is sometimes the actual drop-off, so the
 straight-line distance carries some post-trip location in those rows; kept with a note, since a filter on driven
 distance would select on the outcome. SPLIT-20: the windows hold different weekday mixes, kept with a note. The weather
@@ -101,10 +105,10 @@ tail written into the notes, and an untuned LightGBM's RMSE is about 18% below a
 non-trivial signal). Quality: CLEAN-11 on long and impossibly fast trips (issues 4 and 5). The wording fixes the panel
 agreed on are in `dataset.py`; the three changes to the rows or the join were decided on 2026-11-05 (issues 3-5, B).
 
-**Main points:** Nothing open. Settled 2026-11-05 (B each): the weather join lags 3 hours instead of 1 (issue 3);
+**Main points:** Re-audited on 2026-11-27: the 120 km/h filter is applied as recorded, and no end-of-trip field ships. Settled on 2026-11-27 (Andrej): nine one-day windows with a one-day gap replace the three four-day windows (11, E). Earlier, nothing open. Settled 2026-11-05 (B each): the weather join lags 3 hours instead of 1 (issue 3);
 the 20 trips over 3 hours (issue 4) and the 19 trips faster than 120 km/h in a straight line (issue 5) are dropped.
 
-**Issues for Lennart:**
+**Issues for Andrej and Lennart:**
 
 3. **Lag the weather join by 3 hours instead of 1?**
 
@@ -226,6 +230,65 @@ the 20 trips over 3 hours (issue 4) and the 19 trips faster than 120 km/h in a s
    **Resolved (2026-11-05, Lennart):** B. The 19 trips over 120 km/h in a straight line leave (`MAX_STRAIGHT_LINE_KMH`,
    as pkdd); none overlaps the 20 long trips: 110,375 to 110,336 rows. Sendy keeps its fast legs because its late pickup
    mark shows in the inputs; here neither cut leaves a mark there.
+
+11. **Shorten the gap to three hours, which makes room for a fourth window, and accept the count warning?**
+
+   * **Problem:**
+     - The check warns that the dataset ships three windows against a target of nine, and the definition accepts nothing.
+     - The one-day gap is what stops a fourth window, and it has no source: the longest kept trip lasts 175 minutes, so every label is known within three hours of its trip's start.
+     - With a three-hour gap, four windows clear the training floor.
+   * **Effect on the task:** One more test window, and a gap that matches the real label delay. The scores barely move: the gap shifts RMSE by at most 0.04 in any window.
+   * **Experiments:** four-day windows, a step of four days, LightGBM.
+
+     | Gap | Windows | Smallest training share | RMSE, 17 / 21 / 25 / 29 January |
+     |---|---|---|---|
+     | 1 day (implemented) | 3 | 0.597 | not tested / 8.576 / 9.343 / 9.119 |
+     | 3 hours | 4 | 0.506 | 9.071 / 8.567 / 9.334 / 9.079 |
+
+   * **Consistency:** `nyc_taxi_trip_duration` has the same over-long gap, and its review recommends keeping the day with an operational reason, for consistency with pkdd. The fact that sets this dataset apart is that here the shorter gap buys a window the count needs; there it would only return the rows of one day.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the one-day gap and accept the warning  | three windows; the warning accepted with its reason | no change to the split | the gap has no source and blocks a fourth window |
+     | B | A three-hour gap, four windows, accept the warning | the gap follows the measured label delay | one more window; an honest gap | the smallest training share falls to 0.506, just above the floor |
+     | C | Overlapping windows, a step of two days | six windows | closest to the target of nine | windows share test rows |
+     | D | Leave it as it is (implemented) | three windows, warning unaccepted | no work | the check warns on every build |
+
+   * **Recommendation:** B, then accept the warning with the count named in the splits comment. **Decision:** A, B, C or D?
+
+   **Notes for the AI:** B is a split change (`gap=3, gap_unit="hours"`, the new windows, `dataset check`), its own pull request. Under A, the acceptance text names the count and the floor as what stops more windows. Either way, add a sentence that the last partial day is short night trips in local time, not censoring.
+
+   **Andrej (2026-11-27, discuss):** To get to 9 splits, wouldn't it be more realistic to assume a one-day gap but also a one day forecasting window? Isn't that more realistic for the use case?
+
+   **Answer (AI, 2026-11-27):**
+   * You asked whether nine one-day windows with the one-day gap fit the use case better than three four-day windows.
+   * Yes, for the actor: a ride-hailing arrival-time model is a model a provider can refit daily, and nothing in the source names the four-day cadence (the notes call it a benchmark choice). The day keeps the gap's operational reason and matches the day kept on `nyc_taxi_trip_duration` and `pkdd_15_taxi_trip_time_prediction_ii`.
+   * Measured on the shipped frame (110,336 trips, 1 January to 1 February 02:09), untuned LightGBM, one seed. The days run from 03:00 to 03:00, so that the newest window holds the last rows (the data ends at 02:09 on 1 February, and a midnight boundary leaves those 70 trips outside every window, which the check refuses).
+
+     | Windows | Test trips per window | Training share | RMSE per window | Mean RMSE |
+     |---|---|---|---|---|
+     | three of four days, gap 1 day (implemented) | 11,138 to 16,055 | 0.597 to 0.860 | 8.61 / 9.39 / 9.11 | 9.04 |
+     | nine of one day from 23 to 31 January, gap 1 day | 3,223 to 4,444 | 0.666 to 0.936 | 7.00 (Sunday 29th) to 10.86 (Monday 30th) | 9.32 |
+
+   * The count warning goes away, the training floor is far from binding (0.666), and each weekday is tested at least once, which removes the uneven weekday mix the splits comment now has to explain. The cost: each window is a single day of about 3,500 trips, so the per-window scores spread more (7.0 to 10.9 against 8.6 to 9.4), and the mean is over different days than today's.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the one-day gap and accept the warning | three four-day windows | no change to the split | a cadence with no source; the count warning accepted |
+     | B | A three-hour gap, four windows, accept the warning | the gap follows the measured label delay | one more window | still four of nine; floor at 0.506 |
+     | C | Overlapping windows, a step of two days | six windows | closer to nine | windows share test rows |
+     | D | Leave it as it is (implemented) | three windows, warning unaccepted | no work | the check warns on every build |
+     | E | Nine one-day windows (23 to 31 January, days from 03:00), gap 1 day | a daily refit; the use case says "refit every day" | nine windows, no warning, every weekday tested, the day's gap kept | about 3,500 trips per window; per-day scores spread more |
+
+   * **Recommendation:** E. It meets the window count without overlap or an accepted warning and states a cadence an operator would use. **Decision:** A, B, C, D or E?
+
+   **Notes for the AI:** E is a split change: `window=1`, cutoffs 2023-01-23 03:00 to 2023-01-31 03:00, `gap=1`; the use case, `splits_comment` (cadence, the 03:00 boundary, the counts above) and the record's split line change; `dataset check`. Lands in this round's pull request.
+
+   **Andrej (2026-11-27, change):** Option E: Nine one-day windows (23 to 31 January, days from 03:00), gap 1 day.
+
+   **Resolved (2026-11-27, Andrej):** E. `temporal` is nine one-day windows with cutoffs 2023-01-23 03:00 to 2023-01-31 03:00 (one per day) and the one-day gap, the floor 0.5 unchanged. The use case now says a model is refit every day; `splits_comment` gives the cadence, why the days run from 03:00 (the file ends at 02:09 on 1 February and the newest window must hold the newest rows), the counts (3,223 to 4,444 test trips per window, a training share of 0.666 to 0.936) and that each weekday is tested; `task_summary.split` and the notes' split and scope lines follow. The RMSE and tail figures measured on the four-day windows are dated there, not measured again. `dataset check`: 0 errors, 0 warnings, so nothing is accepted.
 
 **Review panel:** ship after changes (mediator). Tier full, a second pass after Lennart's review of PR #33
 (2026-11-04): seven evidence agents, the advocate and the critic with one rebuttal each, and the mediator. Claims: 25
