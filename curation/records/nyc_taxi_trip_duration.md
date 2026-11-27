@@ -3,7 +3,6 @@ unique_name: nyc_taxi_trip_duration
 name: NYC Taxi Trip Duration
 checked_by:
 - Lennart
-- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -19,7 +18,7 @@ collections:
 - New (BeyondArena)
 original_source: GOV Website
 year: '2016'
-collection_period: Apr 2016 - Jun 2016
+collection_period: Jan 2016 - Jun 2016
 domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)
@@ -108,31 +107,14 @@ CC (2026-11-10, Lennart): the declared horizon (7 days, a one-day gap, windows s
 
 CC (2026-11-17, Andrej): the declared split (temporal on `pickup_datetime`, windows of 7 days, 3 windows at fixed cutoffs, gap 1 day) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
-CC (2026-11-27, Andrej): rebuilt from the TLC's open-data release (NYC Open Data, "2016 Yellow Taxi Trip Data") instead of the Kaggle sample. Input data changed.
-- **Changes made:**
-  1. **Problem:** the Kaggle sample (1.46M trips over six months) left the April window 766,626 training trips, under the 1M budget, and lacks the rate code. **Change:** every trip picked up from 21 April to 30 June 2016 (26.8M; 26.1M after cleaning), with `ratecodeid` as a feature; each train side holds 13.3M to 23.3M trips.
-  2. **Problem:** with the data starting in late April, the April test week cannot be kept. **Change:** the windows are 24-30 June, the Memorial Day week (27 May-2 June) and 10-16 June; the start date is the first that leaves the Memorial Day window half the trips (51.8%).
-  3. **Problem:** trips faster than 120 km/h in a straight line have an impossible target. **Change:** dropped (644), as in the two sibling taxi datasets.
-- **Not changed:** the filters, the target, the metric, the one-day gap and the weekly window length.
-
-CC (2026-11-27, Andrej): the declared metric (RMSLE on trip duration in seconds, the competition's, after the inverse of the `log1p` target) is checked and stays as declared.
-
-CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27), as rebuilt from the TLC open-data release (issue 4, C).
-
 ## Review
 
 **Outcome:** added as `nyc_taxi_trip_duration_1m`. Verdict ship on 2026-10-22; under the rule on test windows
 rewritten on 2026-11-10 you chose B (issue 1): the test windows are the newest June week, the Memorial Day week and a
-week in April, and the 7-day length stays with a new reason. Re-reviewed on 2026-11-26 (focused panel): the split,
-the metric, the provenance and the absence of leakage all hold on re-measurement, and the recommendation is to ship
-after changes, all of them to the text. Settled on 2026-11-27: trips above 120 km/h are dropped as in the sibling taxi
-datasets (2, B), the gap keeps its day with an operational reason (3, A), and the data come from the TLC's open-data
-release instead of the Kaggle sample: every trip of 21 April to 30 June 2016, with the rate code, and the April test
-week replaced by 10-16 June (4, C). Nothing is open; issue 1's change of window is Lennart's to confirm.
+week in April, and the 7-day length stays with a new reason. Nothing is left open.
 
-**Main points:** Settled on 2026-11-10: the test weeks were 24-30 June, 27 May-2 June and 8-14 April 2016 (issue 1,
-B), and the declared horizon is checked. Settled on 2026-11-27: the 120 km/h filter (2), the gap's reason (3) and the
-rebuild from the open-data release (4), which replaces the April week by 10-16 June.
+**Main points:** Settled on 2026-11-10: the test weeks are 24-30 June, 27 May-2 June and 8-14 April 2016 (issue 1,
+B), and the declared horizon is checked.
 
 **Horizon:**
 
@@ -163,7 +145,7 @@ rebuild from the open-data release (4), which replaces the April week by 10-16 J
 sense and is justifiable keep it and resolve them"); the record's CC line says the declared horizon is checked, and
 `splits_comment`, `task_summary.split` and the notes' `Split:` bullet give the new reason.
 
-**Issues for Andrej and Lennart:**
+**Issues for Lennart:**
 
 1. **Test on the newest June week, the Memorial Day week and a week in April instead of the last three weeks of June?**
 
@@ -225,132 +207,3 @@ sense and is justifiable keep it and resolve them"); the record's CC line says t
    cleaned trips (the task summary's 1,447,167 predated the 100 m cut); the April train side (766,644) is under the 1M
    budget and is fitted whole. The record has the decision and the horizon CC lines. `dataset check`: 0 errors, 0
    warnings (README not regenerated).
-
-   **Changed (2026-11-27, Andrej):** by issue 4 (C), the data start on 21 April 2016, so the April week cannot be tested
-   any more; the windows are 24-30 June, 27 May-2 June (Memorial Day, kept) and 10-16 June. The window rule's 50% floor
-   sets the start: the Memorial Day window trains on 51.8% of the trips. For Lennart to confirm.
-
-2. **Keep the 46 trips that imply more than 100 km/h, or filter them as the sibling taxi datasets do?**
-
-   * **Problem:**
-     - The notes keep these trips on the grounds that they "cannot be told from real trips with certainty", and they can: 32 exceed 120 km/h in a straight line, 11 exceed 200 and the worst covers 19.95 km in 51 seconds, 1,408 km/h.
-     - A straight line is shorter than any route and the region's legal maximum is about 105 km/h, so each of these rows has a broken clock or a broken GPS fix, which makes the target impossible rather than merely unusual.
-     - Two sibling datasets decided the same mechanism the other way, so the collection is inconsistent on it.
-   * **Effect on the task:** Five of the 46 fall in a test window, three of them above 120 km/h, and together they hold at most 0.0001 of a window's squared target spread, so no score moves; what changes is whether a shipped definition states something false and whether the three taxi datasets apply one rule.
-   * **Experiments:**
-
-     | Straight-line speed | Kept trips | Of them scored |
-     |---|---|---|
-     | above 100 km/h | 46 | 5 |
-     | above 120 km/h | 32 | 3 |
-     | above 200 km/h | 11 | 0 |
-     | above 300 km/h | 7 | 0 |
-
-     | Window | Share of squared target spread held by the rows above 120 km/h |
-     |---|---|
-     | 24-30 June | 0.00008 |
-     | 27 May-2 June | 0.00010 |
-     | 8-14 April | 0.00000 |
-
-   * **Consistency:** pkdd_15_taxi_trip_time_prediction_ii_1m ships a 120 km/h straight-line filter, and 2024_lusaka_mobility_prediction_hackathon adopted the same constant on 2026-11-05 for the same reason, that a wrong duration or a wrong endpoint makes the target impossible. This dataset keeps what both of them drop.
-   * **Panel:** The claim and column auditors read the sentence as false and the rows as broken records; the mediator holds that the cleaning rule's default is to blank an impossible value and keep the row, which cannot be done here because the broken column cannot be identified.
-   * **Options:**
-
-     | | Option | What it does | Pro | Con |
-     |---|---|---|---|---|
-     | A | Keep the 46, correct the sentence (implemented) | the bullet says each row has a broken clock or GPS fix and stays because the broken column cannot be identified | no data change; no rebuild | differs from pkdd and lusaka on the same mechanism; 1,408 km/h stays in the task |
-     | B | Add the sibling's 120 km/h filter and correct the sentence | drops 32 rows, 3 of them scored | one rule across the three taxi and mobility datasets; impossible targets leave | a task change, so a rebuild and its own pull request; the 14 rows between 100 and 120 km/h still stay |
-     | C | Blank the four coordinates of the 46 | keeps the rows, sets the suspect features missing | the cleaning rule's default remedy | the duration may be the broken column, so a wrong target can remain with no features to explain it; no sibling does this |
-
-   * **Recommendation:** B, because it follows the two precedents, costs three scored rows and ends with the same constant as the sibling. A is defensible only as a deliberate exception, and then needs the fact that sets this dataset apart from lusaka. The correction to the sentence is needed under either. **Decision:** A, B or C?
-
-   **Notes for the AI:** B is a task change: add `MAX_STRAIGHT_LINE_KMH = 120` in the shape pkdd uses, rebuild, and open it as its own pull request. Under A or C, rewrite the anomaly bullet of `curation_comments` so it no longer claims the rows cannot be told apart.
-
-   **Andrej (2026-11-27, change):** Option B: Add the sibling's 120 km/h filter and correct the sentence.
-
-   **Resolved (2026-11-27, Andrej):** B. `MAX_STRAIGHT_LINE_KMH = 120` (pkdd's constant) drops the trips whose straight line from pickup to drop-off implies more than 120 km/h, after the 100 m filter: 32 trips, 2 in the 24-30 June window and 1 in 27 May-2 June. The 14 trips at 100-120 km/h stay (fastest kept 117.6 km/h). The anomaly bullet of `curation_comments` is replaced by a bullet on the filter, and `task_summary.changes` names it. Recounted: 1,442,619 trips after cleaning; train 1,381,986, 1,169,750 and 766,626 (95.8%, 81.1%, 53.1%); test 52,605, 49,283 and 59,653. `dataset check`: 0 errors, 0 warnings; README regenerated.
-
-   On the open-data rebuild of the same day (issue 4, C), the filter drops 644 of 26.8M trips (up to 2,104 km/h); 235 trips at 100-120 km/h stay.
-
-3. **State the one-day gap's reason as the refit's own latency instead of the label delay?**
-
-   * **Problem:**
-     - The splits comment justifies the one-day gap by the label delay, saying a trip lasts up to three hours so the last trips before a refit have no duration yet.
-     - Measured, a three-hour gap already removes every unmatured training label, so the day is eight times the delay it cites.
-     - The day costs the 8,028 trips of 23 June, which land in no split at all, and half a point of the newest window's training share.
-   * **Effect on the task:** None on honesty, since the gap errs on the safe side and no score is inflated. What is wrong is the stated reason, and a reader checking the gap against the label delay will find the arithmetic does not support it.
-   * **Experiments:**
-
-     | Gap | Training trips still under way at the window start (27 May-2 June) | (8-14 April) |
-     |---|---|---|
-     | none | 112 | 100 |
-     | 3 hours | 0 | 0 |
-     | 1 day (implemented) | 0 | 0 |
-
-   * **Consistency:** pkdd_15_taxi_trip_time_prediction_ii_1m ships the same one-day gap on the same kind of label and states the same reason, so a change here reopens that dataset too.
-   * **Options:**
-
-     | | Option | What it does | Pro | Con |
-     |---|---|---|---|---|
-     | A | Keep the day, restate the reason (implemented) | the comment says the gap covers the latency of a refit, which is not instantaneous, rather than the three-hour label delay | no data change; one gap across this dataset and pkdd | the 8,028 trips of 23 June stay in no split |
-     | B | Shorten the gap to three hours | the gap matches the measured label delay exactly | every cleaned trip enters the frame and the clause about trips in no split disappears | a task change for 0.56% of the rows, so a rebuild and its own pull request; diverges from pkdd |
-
-   * **Recommendation:** A, because the honest fix is the sentence rather than the split: the day is already safe, and B buys 0.56% of the rows at the cost of a rebuild and a divergence from the sibling. **Decision:** A or B?
-
-   **Andrej (2026-11-27, ok):** As implemented (A).
-
-   **Resolved (2026-11-27, Andrej):** A. The gap stays one day; `splits_comment` now gives the refit's latency as its reason (a weekly refit collects the week's trips, fits, checks and deploys the model, so the model serving a week was trained on the trips up to a day before it) and says that the label delay alone needs less: without a gap 77, 112 and 100 train trips per window end after the window start, with a gap of 3 hours none. No data change. pkdd_15_taxi_trip_time_prediction_ii_1m states the label-delay reason for its own one-day gap and is not changed here. README not regenerated.
-
-4. **Say that the Kaggle sample's eleven columns define the task, with `ratecodeid` left to a rebuild?**
-
-   * **Problem:**
-     - NYC Open Data serves the same trips with `ratecodeid`, which is set when the meter is engaged and so is known at the prediction point.
-     - The Kaggle sample we ship does not carry it, and nothing in the definition says that the choice of copy, rather than the prediction point, is what leaves it out.
-     - The other fields that copy adds (trip distance, payment type, the fares) are all end-of-trip values and are correctly absent.
-   * **Effect on the task:** A legitimate pickup-time input is missing, which makes the task slightly harder than the data allows; a reader cannot tell from the definition whether that was judged or overlooked.
-   * **Options:**
-
-     | | Option | What it does | Pro | Con |
-     |---|---|---|---|---|
-     | A | Say the Kaggle sample defines the task (implemented) | a half-sentence that enriching from the open-data release would be a separate rebuild | the published competition is the task as the source framed it; reproducible from one file | the benchmark lacks an input the actor has |
-     | B | Rebuild from the open-data release | adds `ratecodeid` and whatever else is known at pickup | a fuller task | a new dataset rather than a fix, with its own provenance and checks |
-
-   * **Recommendation:** A, since B is a new dataset rather than a correction and the Kaggle sample is the published task. **Decision:** A or B?
-
-   **Andrej (2026-11-27, discuss):** I tend towards B, but wouldn't that also mean having millions of samples then?
-
-   **Answer (AI, 2026-11-27):** No: B can keep the same 1,458,644 trips and only add `ratecodeid` to them.
-     - The open-data release ("2016 Yellow Taxi Trip Data") holds 69,406,520 trips from January to June 2016, so the Kaggle sample is about 2.1% of it. A rebuild from the full release would have about 69M rows, and the 1M-row budget would sub-sample each train side again.
-     - The trips can be matched one to one instead. Measured on one hour (12 April 2016, 08:00-08:59): all 503 Kaggle trips of that hour match an open-data trip on vendor, pickup time, drop-off time and the four coordinates (23,540 open-data trips that hour; 9 keys occur twice, one of them a Kaggle trip whose two open-data records, a charge and a dispute, carry the same `ratecodeid`). The row count, the split and the windows stay as they are.
-     - What the column adds is small. `ratecodeid`, the fare rule the driver sets when the meter starts, is 1 (standard) for 97.3% of the half-year's trips, 2 (the JFK flat fare) for 2.1%, and 3 (Newark), 4 (Nassau or Westchester), 5 (negotiated) or 6 (group ride) for the rest. In the matched hour, 493 of 503 were standard. The JFK and Newark trips are already visible from the coordinates, so the new information is mainly the 0.3% of negotiated, out-of-city and group fares. Its effect on a score was not measured.
-     - Cost: the join needs the key columns of the 69M open-data trips (a download of several GB), and a second source to cite. The Kaggle rules forbid passing their file on, and that does not change. Adding a feature changes the task, so it would get its own pull request.
-
-     | | Option | Rows | What it adds | Cost |
-     |---|---|---|---|---|
-     | A | Say the Kaggle sample defines the task (implemented) | 1,442,651 after cleaning | a half-sentence naming the choice of copy | none |
-     | B1 | Join `ratecodeid` onto the same trips | unchanged | the fare rule set at pickup (2.7% of trips not standard) | several-GB download and a join; a second source; its own pull request |
-     | B2 | Rebuild from the full open-data release | about 69M, sub-sampled to 1M per train side | `ratecodeid`, a longer pool to draw from | a new dataset, with its own provenance, checks and review |
-
-     Recommendation: B1 if the column is worth having, as it keeps every decision made so far. A otherwise: most of what `ratecodeid` says is already in the coordinates. **Decision:** A, B1 or B2?
-
-   **Andrej (2026-11-27, change):** A third way between B1 and B2: download only the newest trips of the open-data release, about 10M, and make three splits that each get the full 1M training budget, which the Kaggle sample cannot give (its April window trained on 766,626).
-
-   **Answer (AI, 2026-11-27):** The newest 10M (4-30 June) leave the third weekly window 19% of the trips for training, under the 30% the window rule allows at most as an exception. Three ways keep the rule:
-
-     | | Option | Download | Test weeks | Pro | Con |
-     |---|---|---|---|---|---|
-     | A | One-day windows | 10.0M (4-30 June) | 30, 25 and 19 June | the smallest download | a daily refit instead of the weekly one of the use case |
-     | B | Three June weeks | about 16.5M (from 17 May) | 24-30, 17-23 and 10-16 June | weekly windows | three alike early-summer weeks, the choice issue 1 rejected |
-     | C | Keep the holiday | about 26.5M (from 21 April) | 24-30 June, 27 May-2 June (Memorial Day), 10-16 June | keeps the holiday week of issue 1 | the April week of issue 1 goes; the largest download |
-
-     Recommendation: C. **Decision:** A, B or C?
-
-   **Andrej (2026-11-27, change):** C.
-
-   **Resolved (2026-11-27, Andrej):** C. The definition reads NYC Open Data's "2016 Yellow Taxi Trip Data", one CSV per pickup day from 21 April to 30 June 2016 (26,818,607 trips; every file's row count matches the API's count for its day; 4.2 GB, about 2 hours with six requests at a time). The Kaggle sample is no longer used.
-     - Cleaning as before, recounted: 11,591 exact copies, 154,235 trips under 30 s and 41,787 over 3 h, 316,554 with an end outside the box, 162,491 ending within 100 m of the pickup, 644 faster than 120 km/h; 26,131,305 trips remain. The daylight-saving fix is gone, as the period holds no switch.
-     - `ratecodeid` is a feature (97.4% standard rate, 2.2% JFK; 236 trips with the undefined code 99 set to missing). The data dictionary calls it the rate code in effect at the end of the trip; the codes follow from the pickup, the destination and a fare agreed before the ride, and the decision table shows them.
-     - Windows: 24-30 June, 27 May-2 June and 10-16 June (2.47M, 2.30M and 2.54M trips, each sampled to 500,000); train sides 23.3M, 13.3M and 18.3M trips (90.4%, 51.8%, 70.9%), each fitted on a random 1M. The gap keeps its day; without it 4,588 to 5,393 train trips would end after a window start, with 3 hours none.
-     - The container holds 23,784,905 rows. `dataset check` peaks at 22 GB and takes about 5 minutes on a compute node.
-
-**Review panel:** ship after changes (mediator, focused tier: claim auditor, column auditor, split auditor; the task gamer was still running when the mediator settled, so a participant-style shortcut is not covered, though the leak probe finds no exact feature copy across the split and no column reaching the target). Claims: 53 tested, 44 hold, 5 refuted on wording, 4 untestable. Split: right with notes, the blind tree walk reaches the leaf that ships. Agreed: the metric, the provenance, the absence of leakage. Disputed: the speed filter (issue 2).

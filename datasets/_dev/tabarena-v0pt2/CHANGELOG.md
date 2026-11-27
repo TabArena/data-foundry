@@ -1,85 +1,24 @@
 # Changelog: TabArena v0.2 working copy
 
-## 2026-11-27, nyc_taxi_trip_duration: rebuilt from the TLC's open-data release (task change; container not shipped)
-
-- `nyc_taxi_trip_duration_1m` reads NYC Open Data's "2016 Yellow Taxi Trip Data" (one CSV per pickup day, 21 April
-  to 30 June 2016, 26,818,607 trips) instead of the Kaggle competition's sample of 1,458,644 trips: every train side
-  now holds over 1M trips (13.3M to 23.3M; the April window of the sample held 766,626).
-- `ratecodeid` is a new feature (the TLC's rate code, named as in its data dictionary; the code 99 is missing).
-- The windows are 24-30 June, 27 May-2 June and 10-16 June; the April week is outside the period. Each test window
-  keeps a random 500,000 trips; the container holds 23,784,905 rows.
-- The filters stay (the 120 km/h filter of the entry below drops 644 trips here); the daylight-saving fix and the
-  Kaggle id are gone. 26,131,305 trips after cleaning; README regenerated.
-
-## 2026-11-27, breast_cancer_prediction: the radiologist's assessment dropped (task change; container not rebuilt)
-
-- `breast_cancer_prediction` drops `birads_assessment`, Andrej's decision (review issue 2, B): the assessment is the
-  follow-up decision through which most cancers are found (women read 0, 4 or 5 hold 87% of them), so as a feature it
-  made the score the read's accuracy (ROC AUC 0.93). The task is now the risk at the screening visit, before the read,
-  as in `bcsc_risk_estimation` on other exams; fit approximate. Untuned task probe: linear ROC AUC 0.580, ahead of the
-  dummy on every split. README regenerated.
-
-## 2026-11-27, review of the 33 unreviewed datasets: Andrej's second marks (containers not rebuilt)
-
-- `aeolus_rebuilt_1m` gains nine airport-traffic inputs known at the prediction point: flights scheduled at the
-  origin and destination in the coming hour, and the departures and arrivals of the hour before with their mean
-  delay and share late. +0.0061 ROC AUC on average over the three windows (untuned LightGBM, 1M training rows); the
-  same columns read one hour later score higher, so the honest ones use nothing after the prediction point. Rows and
-  splits unchanged.
-- `2024_lusaka_mobility_prediction_hackathon`: nine one-day windows (23 to 31 January, days from 03:00, gap one day),
-  a daily refit, in place of three four-day windows; training share 0.666 to 0.936.
-- `medical_facility_operational_data`: the newest 14-day window ends at the last arrival; no visit is left out of
-  every split (12,435 test visits).
-- `mortgage`: interest rate, maturity, credit score, LTV and property type take each loan's first recorded value
-  (33,457 rows differed).
-- Text only: `chicago_traffic_crashes` (the collision type's share in the fit reason, the corridor ranking in the
-  metric's reason), `perth_house_prices` (what a missing garage count means before and after October 2019),
-  `bias_correction_r_bias_correction_r_2` (the newest-summer windows kept as an exception).
-- Kept or shipped as defined: zillow_prize (kept as it is), bemtpl97, caracas_cervical_cancer, college_scorecard,
-  numerai28_6.
-
 ## 2026-11-27, review of the 33 unreviewed datasets: Andrej's marks applied (containers not rebuilt)
 
-- `lt_vehicle_loan_default_prediction`: five whole-week test windows (27 September to 31 October 2018, 112,550 test
-  rows, oldest training side 51.73%) in place of nine four-day windows; the 5-of-9 count warning accepted. The split
-  rule's case row for this dataset is corrected, and its clause now asks for a measured link to the row's own entity.
+- The split rule on a row's own entity now asks for a measured link rather than an asserted absence, and its case row
+  for `lt_vehicle_loan_default_prediction` is corrected (the dataset's window change is in its own pull request).
 - `g_research_crypto_forecasting_1m` declares the ordinary windows leaf; the crash window stays as a window choice.
 - Text only, no data or split change: `ames_housing` prices a recorded sale given its type and condition (its
   13-window warning accepted); `bias_correction_r_bias_correction_r_2` names the next-day-row channel with a protocol
-  line; `churn_telco_south_asia` corrects its Decision on the September columns; `college_scorecard` gets the
-  `Selection Bias` marker and a narrower actor; `house_sales` softens "declared by the parties" and fixes two stale
-  counts; `pkdd_15_taxi_trip_time_prediction_ii_1m` restates its one-day gap as the refit's latency;
-  `rain_in_australia` adds a protocol line against reading other test rows and names the three stations that stop
-  reporting; `medical_facility_operational_data` explains the falling target level across its windows.
-- Eleven records shipped as defined with their metric and split checks (brazilian_ecommerce, diabetes_3,
+  line and keeps its newest-summer windows as an exception; `churn_telco_south_asia` corrects its Decision on the
+  September columns; `college_scorecard` gets the `Selection Bias` marker and a narrower actor; `house_sales` softens
+  "declared by the parties" and fixes two stale counts; `pkdd_15_taxi_trip_time_prediction_ii_1m` restates its
+  one-day gap as the refit's latency; `rain_in_australia` adds a protocol line against reading other test rows and
+  names the three stations that stop reporting; `chicago_traffic_crashes` states the collision type's share in the fit
+  reason and the corridor ranking in the metric's reason; `perth_house_prices` says what a missing garage count means
+  before and after October 2019.
+- Shipped as defined with their metric and split checks: brazilian_ecommerce, diabetes_3,
   differentiated_thyroid_cancer_recurrence, distribution_transformers_at_cauca_department, expresso_churn_prediction,
   fraud_detection_in_electricity_and_gas_consumption, huntprohibited, melbourne_housing_market, mobile_churn,
-  onlinenewspopularity, tunisian_fraud_detection_challenge).
-
-## 2026-11-27, bcsc_risk_estimation added (new dataset; container not built)
-
-- `bcsc_risk_estimation`: the BCSC Risk Estimation Dataset (Barlow et al. 2006), the one-exam-per-woman file:
-  1,007,660 women, 7,319 cancers within one year after the exam, twelve risk factors known at the screening visit
-  before the radiologist assesses the mammogram (density is read from it). Aggregated cells expanded by their count;
-  `invasive` and the source's 75/25 `training` flag dropped; code 9 missing, except the age band 75-79 and a "not
-  menopausal" level for surgical menopause and hormone therapy. Random 3-fold IID splits, `ForcedIIDFromTemporal`
-  (leaf `L-FORCED.random`); metric ROC AUC (the paper's c statistic); fit approximate. Full review panel: ship after
-  changes, applied; three questions in the record's review.
-- Andrej's decisions (2026-11-27): the forced time tag stays; `Outdated` as a note in the record; the BibTeX note
-  also carries the main page's required citation sentence (P01CA154292, download date).
-
-## 2026-11-27, nyc_taxi_trip_duration: trips faster than 120 km/h dropped (task change; container not rebuilt)
-
-- `nyc_taxi_trip_duration_1m` drops the 32 trips whose straight line from pickup to drop-off implies more than
-  120 km/h (up to 1,408 km/h): a broken clock or GPS fix makes the target impossible. Same constant as
-  pkdd_15_taxi_trip_time_prediction_ii_1m and 2024_lusaka_mobility_prediction_hackathon. 3 of the rows were in a test
-  window. 1,442,619 trips after cleaning; README regenerated.
-
-## 2026-11-27, nyc_taxi_trip_duration: the one-day gap's reason (no data change)
-
-- `nyc_taxi_trip_duration_1m`'s `splits_comment` gives the latency of a weekly refit as the reason for the one-day
-  gap, and says the label delay alone (trips of at most 3 hours) would need a gap of 3 hours. The gap, the windows and
-  the frame are unchanged; README not regenerated.
+  onlinenewspopularity, tunisian_fraud_detection_challenge, bemtpl97, caracas_cervical_cancer, college_scorecard,
+  numerai28_6; zillow_prize kept as it is.
 
 ## 2026-11-23, every definition names its split-tree leaf; `RetrospectiveFillIn` and `Target: Fixed Delay` in use (no container built)
 

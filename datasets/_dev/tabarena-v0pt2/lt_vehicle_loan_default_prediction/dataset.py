@@ -40,7 +40,7 @@ class LtVehicleLoanDefaultPrediction(AbstractCuratedDataset):
             "account scope remain unverified (D2), with no demonstrated leakage."
         ),
         split=(
-            "Five seven-day windows of later issued loans, September 27-October 31, 2018, each trained on all earlier "
+            "Nine four-day windows of later issued loans, September 26-October 31, 2018, each trained on all earlier "
             "disbursals with no gap. The outcomes of at least the last month's training loans were not yet known at "
             "a window's start; measured, they add little, a small part through recent default rates of the same "
             "dealer, branch, employee or postcode."
@@ -48,7 +48,7 @@ class LtVehicleLoanDefaultPrediction(AbstractCuratedDataset):
         changes=(
             "Exclude the forbidden customer identifier and constant mobile flag; repair birth-date chronology, "
             "numeric history durations and missing bureau scores. The previously inspected supplied November test is unlabeled. "
-            "The generated seven-day prediction-horizon label means evaluation-window width here, not a supplied due-date lag."
+            "The generated four-day prediction-horizon label means evaluation-window width here, not a supplied due-date lag."
         ),
         fit="approximate",
         fit_reason=(
@@ -109,9 +109,9 @@ class LtVehicleLoanDefaultPrediction(AbstractCuratedDataset):
         - The dictionary dates PRI/SEC account counts, balances and sanctioned/disbursed totals to disbursement, and NEW.ACCTS.IN.LAST.SIX.MONTHS to the preceding six months. The freeze dates and account scope of weakly anchored score, instalment, delinquency, inquiry and duration fields remain unverified (D2). No later-populated predictor or leakage is demonstrated; names and correlations cannot establish timing. The bureau record does not count this loan: all 116,950 rows without bureau history are 0 on every PRI field and 94.1% of them have no enquiries, and the overdue and delinquency fields score flat by disbursal month.
         - Curator decision (2026-10-26, Myunghwan): retain the currently supplied bureau predictors, including fields with unverified snapshot timing/account scope. Retention is not verification of prediction-time availability. Reopen only for new concrete source or actual-data evidence demonstrating incompatible field timing or a leakage mechanism.
         - No exact feature duplicates or conflicting feature-vector labels occur in the labeled source. UniqueID does not recur; this does not prove distinct real borrowers. No guessed customer grouping is introduced.
-        - Temporal evaluation (Andrej, 2026-11-27): five whole-week windows of seven days, 27 September to 31 October 2018, 112,550 test rows (11,466 to 37,512 per window, 2,550 to 9,860 defaults), each trained on every earlier loan (51.73% to 83.91% of the 233,154 rows). A week is the only length with a reason that does not follow the window count: it holds each weekday once, where volume varies 2.71 times and the default rate two points by weekday, and it is a cadence a lender can refit on. The source gives no horizon (its November test is unlabeled and the first instalment's due date is not given). Until 2026-11-27 the windows were nine of four days, the widest equal windows that fitted the nine; the count followed the length there, which the rule on window length no longer allows. Full-table constant detection approximates the pipeline at each refit.
-        - The generated "Prediction horizon: 7 days" denotes only evaluation-cohort width here; the first-instalment due-date lag is not supplied.
-        - Zero gap (the figures below were measured on the earlier nine four-day windows, 2026-11-05, and not measured again on the weekly windows of 2026-11-27; an application of SPLIT-10 as amended 2026-11-04 and reworded 2026-11-05, Lennart): the release gives no due date. Inferred from "monthly instalment", the first instalment falls due at least about a month after disbursement (1-2 months under fixed EMI dates), so a refit at a window's start would not yet know the outcomes of the loans disbursed in the 30 days before it, 40-60% of each training side. Measured on the nine windows: no gap scores 0.007-0.017 ROC AUC above a 30-day gap, depending on the learner (untuned LightGBM, three seeds: 0.0167, 0.009-0.033 per window). A random draw of the no-gap side at the gap side's size keeps 0.0018 to 0.0051 of it across four learners, 11-44% of the gap's cost; the rest is training size. A small part runs through recent labels of the same supplier, branch, employee or postcode: at equal pool size their last-30-day default rates add 0.0026 ROC AUC (0.0005-0.0051, positive in 9 of 9 windows) beyond the older rates on top of a gap model, at most about 0.005 in other encodings; it does not grow in the newest windows, and no borrower recurs. Not through the higher default level of late October: ROC AUC is per window, the true daily default rate ranks a window's loans at only 0.503-0.530, and without the codes and the disbursal-date features the equal-size gain is 0.0019. On these nine windows a 30-day gap would leave 20-53% of the rows for training (SPLIT-14); three two-day windows from 26 October would meet the 50% floor (50.39-56.27%) with three windows instead of nine (SPLIT-15), all in the month-end surge, and at a 45-day lag no three-window design meets it (best 38.8%). Gap 0 widens the margin between learners (gradient boosting over logistic 0.0035 with a 30-day gap, 0.0079 without; the sign changes in 3 of 9 windows); the mean order holds.
+        - Temporal evaluation: nine four-day windows, the widest whole-day equal windows fitting the recommended nine above the 50% train floor. Length follows coverage, not scores or an assumed due-date lag. Full-table constant detection approximates the pipeline at each refit.
+        - The generated "Prediction horizon: 4 days" denotes only evaluation-cohort width here; the first-instalment due-date lag is not supplied.
+        - Zero gap (an application of SPLIT-10 as amended 2026-11-04 and reworded 2026-11-05, Lennart): the release gives no due date. Inferred from "monthly instalment", the first instalment falls due at least about a month after disbursement (1-2 months under fixed EMI dates), so a refit at a window's start would not yet know the outcomes of the loans disbursed in the 30 days before it, 40-60% of each training side. Measured on the nine windows: no gap scores 0.007-0.017 ROC AUC above a 30-day gap, depending on the learner (untuned LightGBM, three seeds: 0.0167, 0.009-0.033 per window). A random draw of the no-gap side at the gap side's size keeps 0.0018 to 0.0051 of it across four learners, 11-44% of the gap's cost; the rest is training size. A small part runs through recent labels of the same supplier, branch, employee or postcode: at equal pool size their last-30-day default rates add 0.0026 ROC AUC (0.0005-0.0051, positive in 9 of 9 windows) beyond the older rates on top of a gap model, at most about 0.005 in other encodings; it does not grow in the newest windows, and no borrower recurs. Not through the higher default level of late October: ROC AUC is per window, the true daily default rate ranks a window's loans at only 0.503-0.530, and without the codes and the disbursal-date features the equal-size gain is 0.0019. On these nine windows a 30-day gap would leave 20-53% of the rows for training (SPLIT-14); three two-day windows from 26 October would meet the 50% floor (50.39-56.27%) with three windows instead of nine (SPLIT-15), all in the month-end surge, and at a 45-day lag no three-window design meets it (best 38.8%). Gap 0 widens the margin between learners (gradient boosting over logistic 0.0035 with a 30-day gap, 0.0079 without; the sign changes in 3 of 9 windows); the mean order holds.
         - CC (2026-11-05, Lennart): the recent default rates of the supplier, branch, employee and postcode codes are not a shortcut, and gap 0 stays with the nine windows (SPLIT-9 as amended 2026-11-05). They add +0.0026 ROC AUC at equal pool size (up to +0.0057 in other encodings), the size of the effect alfa_battle_2_0_task_2 removed, but by another mechanism: each code is shared by many borrowers and no borrower recurs, so no test row is linked to its own client's earlier label, and the effect does not grow at the release end. The scores sit 0.007-0.017 above an operational refit with a 30-day gap.
         - CC (2026-11-05, Lennart): gap 0 is an application of SPLIT-10, not an exception (SPLIT-10 as reworded 2026-11-05). The single due date and the labels final at release remove the selection by the outcome, not the delay: the newest training labels were unknown at a window's start, and the "Zero gap" note gives what they add. Myunghwan's "Exception to SPLIT-10" of 2026-10-23 in the record is history.
         - CC (2026-11-05, Lennart): `Current_pincode_ID` ships as a number (CLEAN-14's zip-prefix clause): the masking kept the geographic order (consecutive IDs share their most common state in 99.2% of cases, 10.3% shuffled). On the 9 windows, untuned LightGBM scores ROC AUC 0.6436 with the number against 0.6387 as a category (+0.0049, ahead 9 of 9); a label-free region from the code order (53 runs, about the states) or a second column added nothing. One column, not two (CLEAN-22).
@@ -129,32 +129,21 @@ class LtVehicleLoanDefaultPrediction(AbstractCuratedDataset):
     split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="DisbursalDate",
-        splits=TemporalSplits(window=7, unit="days", n_windows=5, min_train_fraction=0.5),
+        splits=TemporalSplits(window=4, unit="days", n_windows=9, min_train_fraction=0.5),
     )
-    accepted_check_warnings = {
-        "splits_below_target": (
-            "Signed off (Andrej, 2026-11-27): 5 weekly windows against the 9 an IID split gets. The source gives no "
-            "horizon and a week is the length with a reason that does not follow the count; seven-day windows keep 5 "
-            "above the 50% floor (oldest train 51.73%), ten days 3, fourteen days 2 and a calendar month 1."
-        ),
-    }
     splits_comment = """
-        Five adjacent seven-day test windows of issued loans, newest first, from 2018-09-27 through 2018-10-31
-        (exclusive final boundary 2018-11-01), each trained on every loan disbursed before its start, without a gap
-        (Andrej, 2026-11-27). The source gives no horizon (its November test is unlabeled), so the window is the refit
-        cadence we assume: a week, which holds each weekday once (volume varies 2.71 times and the default rate two
-        points by weekday) and has a reason that does not follow the window count. Seven days leave 5 windows above the
-        50% training floor, against the 9 splits an IID split of this size gets (SPLIT-15 accepts fewer); ten days
-        leave 3, fourteen days 2 (4 with a floor exception) and the source's calendar month 1. The oldest train holds
-        120,604 of 233,154 rows (51.73%) and the newest 195,642 (83.91%); the test windows hold 112,550 rows in all
-        (11,466 to 37,512 per window, 2,550 to 9,860 defaults). The first instalment's due date is not given.
-        Inferred from the monthly instalment, it falls due at least about a month after disbursement, so 41.6-59.3% of
-        each training side (the loans of its last 30 days) holds outcomes a refit at the window's start would not yet
-        know. Measured on the earlier nine four-day windows (2026-11-05), they add little, a small part of it through
-        recent default rates of the dealer, branch, staff and postcode codes, with no row-level link (curation notes,
-        "Zero gap"). A 30-day gap would leave 21-49% of the rows for training on these windows. Every test window
-        starts the day after the newest training labels, and 56.7% of the test rows (63,762) fall in the 20-31 October
-        month-end and festive surge, where defaults run above the earlier months. The newest cohorts stay untrimmed.
+        Nine adjacent four-day test windows of issued loans, newest first, from 2018-09-26 through 2018-10-31
+        (exclusive final boundary 2018-11-01), each trained on every loan disbursed before its start, without a gap.
+        The oldest train holds 117,490 of 233,154 rows (50.39%); five-day windows allow only seven windows above that
+        floor. The source's November test is unlabeled. The four-day width follows the coverage, not the first
+        instalment's due date, which the release does not give. Inferred from the monthly instalment, it falls due at
+        least about a month after disbursement, so 40-60% of each training side holds outcomes a refit at the
+        window's start would not yet know. Measured, they add little, a small part of it through recent default rates
+        of the dealer, branch, staff and postcode codes, with no row-level link (curation notes, "Zero gap"). A 30-day
+        gap would leave 20-53% of the rows for training on these windows; three two-day windows would meet the floor
+        but give up six of the nine. Every test window starts the day after the newest training labels, and 55% of
+        the test rows fall in the 20-31 October month-end and festive surge, where defaults run 1.19-1.36 times what
+        a model fitted on August-September predicts. The newest cohorts stay untrimmed.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

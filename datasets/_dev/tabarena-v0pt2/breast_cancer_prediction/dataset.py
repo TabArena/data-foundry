@@ -16,6 +16,7 @@ from data_foundry.v2 import (
     TimeBasis,
     decode,
     drop_columns,
+    set_missing,
 )
 
 TARGET = "cancer_within_one_year"
@@ -62,6 +63,13 @@ ORDINAL_LEVELS = {
         "heterogeneously dense",
         "extremely dense",
     ],
+    "birads_assessment": [
+        "1: Negative",
+        "2: Benign finding(s)",
+        "3: Probably benign",
+        "4: Suspicious abnormality",
+        "5: Highly suggestive of malignancy",
+    ],
 }
 
 
@@ -80,13 +88,12 @@ CODE_LABELS = {
 class BreastCancerPrediction(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question=(
-            "Will a woman who comes for a screening mammogram be diagnosed with breast cancer within a year, judged "
-            "from her risk factors and her breast density, before the radiologist assesses the mammogram?"
+            "Will a woman whose screening mammogram has just been read be diagnosed with breast cancer within a year?"
         ),
         use_case=(
-            "At a woman's screening visit, a screening programme of the Breast Cancer Surveillance Consortium "
-            "estimates her short-term breast cancer risk from her risk factors and her breast density, to tailor "
-            "screening and prevention."
+            "Once a screening mammogram has been read, the screening programme estimates the woman's chance of a "
+            "breast cancer diagnosis within a year from her risk factors and the radiologist's assessment (the "
+            "source's own question), for example to decide on follow-up."
         ),
         row=(
             "One screening mammogram of a woman aged 60 to 89 in the US Breast Cancer Surveillance Consortium, 2005 "
@@ -98,23 +105,22 @@ class BreastCancerPrediction(AbstractCuratedDataset):
         ),
         known=(
             "Age, BMI, family history, earlier biopsy and mammogram, hormone therapy, whether an earlier mammogram "
-            "was at hand for comparison, film or digital imaging, and the breast density the radiologist records from "
-            "this mammogram; not the radiologist's assessment of it."
+            "was at hand for comparison, film or digital imaging, the breast density and the radiologist's "
+            "assessment."
         ),
         split=(
             "Random folds over the women: every row is a different woman, so the test data stands for other women's "
             "exams."
         ),
         changes=(
-            "We drop the cancer type, which is recorded at diagnosis and encodes the label, and the radiologist's "
-            "assessment, the follow-up decision through which most cancers are found; we keep one exam per woman, "
-            "her earliest (3,133 women have 2 to 4)."
+            "We drop the cancer type, which is recorded at diagnosis and encodes the label, and keep one exam per "
+            "woman, her earliest (3,133 women have 2 to 4)."
         ),
-        fit="approximate",
+        fit="direct",
         fit_reason=(
-            "The task of the BCSC's risk models, before the read. Two gaps: the one-year label, mostly this screen's "
-            "own detections, stands in for the longer invasive risk that prevention decides on; and density read "
-            "from this mammogram stands in for the prior exam's."
+            "Everything the model sees is known once the mammogram is read, and the label covers a fixed year after "
+            "it. The radiologist's assessment carries most of the signal (ROC AUC 0.914 alone, about 0.015 less than "
+            "the models), as in screening."
         ),
     )
 
@@ -167,10 +173,10 @@ class BreastCancerPrediction(AbstractCuratedDataset):
     curation_comments = """
         We start with the BCSC Digital Mammography Dataset (`mammography.csv`, 40,000 rows) from the Breast Cancer Surveillance Consortium: a random sample of 20,000 digital and 20,000 film screening mammograms of women aged 60-89, January 2005 to December 2008.
 
-        - Prediction point: the woman comes for her screening mammogram; the intake answers, the exam facts and the breast density the radiologist records from this mammogram are known; the radiologist's assessment of it is not (review issue 2, B, Andrej 2026-11-27). This is the task of the BCSC's risk models (Barlow et al. 2006), the same question as `bcsc_risk_estimation` on other exams (2005-2008 against 1996-2002), other inputs and a far smaller sample. The source's own example question (a model 'using patient characteristics and mammography assessment') is a teaching exercise on the read's accuracy.
+        - Prediction point: the screening mammogram has just been read, so the radiologist's BI-RADS assessment and density, the intake answers and the exam facts are known. This is the source's own question (BCSC exam question 4): a model "to predict occurrence of any cancer using patient characteristics and mammography assessment".
         - Target: `cancer_c` as `cancer_within_one_year` (Yes / No), a breast cancer diagnosis (DCIS or invasive) within one year after the exam: 239 cancers in 36,714 women (0.65%). We drop `CaTypeO` (cancer type), which is recorded at the diagnosis and encodes the label (8 = no cancer).
-        - The BI-RADS assessment is dropped: it is the follow-up decision (0 more imaging, 4-5 biopsy, 1-2 routine screening), and the cancers are found through it, so as a feature it made the score the read's accuracy (ROC AUC 0.914 alone, 0.93 with the models). Women read 0, 4 or 5 (8%) hold 87% of the cancers.
-        - Without the assessment the signal is modest: logistic regression ROC AUC 0.606, LightGBM 0.563 (one exam per woman, 3 x 3 folds, 2026-11-27; the untuned task probe: linear 0.580, ahead of the dummy on every split, LightGBM and random forest 0.544); the BCSC's published risk model reaches a c statistic of 0.62-0.63 on 2.4M exams.
+        - The BI-RADS assessment stays a feature: the radiologist gives it at the exam, and the source's question uses it as a predictor. It is categorical because assessment 0 (needs additional imaging) is a positive screen; its values are the codebook's labels prefixed with the BI-RADS number ("4: Suspicious abnormality").
+        - The assessment carries most of the signal (task probe flag `one_feature`, decision table): alone it reaches ROC AUC 0.914. We keep it as the core of the task, and the task is not `Trivial`: regularised LightGBM and a random forest beat it on 8 of 9 splits, by 0.015 and 0.013 (task_probes.md, rule 4). The readings are valid tabular inputs: screening programmes run tabular risk models on BI-RADS readings and risk factors (the BCSC Risk Calculator takes the BI-RADS density), so the image-scoring rule does not apply (Lennart, 2026-10-15).
         - `birads_breast_density` 1-4 stays numeric, since the order is the meaning (1 almost entirely fatty, 4 extremely dense).
         - The codebook's 9 = missing in the five yes/no answers and -99 = missing in `bmi` become NaN. `mammogram_type` 1 and 2 become film and digital. `RENAME` maps the codebook names to ours.
         - One exam per woman, her earliest in the sample (lowest age; two age ties keep the file's order), so the folds are IID (Lennart, 2026-10-15): 3,133 of the 36,714 women contribute 2-4 exams, and the use case is one woman's screening read. The 20 women with cancer and several exams are positive only on their last exam, so 20 of the 259 cancers go. Untuned LightGBM scores alike either way (ROC AUC 0.928 earliest exam, 0.923 latest, 0.925 all exams grouped by woman). The file's two exact copies go with it.
@@ -197,8 +203,13 @@ class BreastCancerPrediction(AbstractCuratedDataset):
     )
 
     accepted_check_warnings = {
+        "dataset_pure_feature_value": (
+            "BI-RADS 1 (Negative: 23,856 women, 15 cancers), BI-RADS 2 (Benign finding(s): 9,823, 12) and density 1 "
+            "(almost entirely fatty: 4,961) are the low-risk results of the screening read, given at the exam before "
+            "the outcome; at a 99.35% base rate of no cancer they are ordinary category effects, not a leak."
+        ),
         "dataset_duplicate_rows": (
-            "Each row is a different woman (one exam per woman); the nine features are coarse (age in years, BI-RADS "
+            "Each row is a different woman (one exam per woman); the ten features are coarse (age in years, BI-RADS "
             "categories, yes/no answers), so many women share a profile; their outcomes are independent, so a copy "
             "in train tells nothing about the test woman beyond her profile."
         ),
@@ -223,13 +234,19 @@ class BreastCancerPrediction(AbstractCuratedDataset):
         # cancer type is recorded at the diagnosis: 8 = no cancer, so it encodes the label
         df = drop_columns(df, ["cancer_type"])
         df[TARGET] = df[TARGET].map({0: "No", 1: "Yes"})
-        # the radiologist's assessment is the follow-up decision, and most cancers are found through it (review
-        # issue 2, B, Andrej 2026-11-27): the task is the risk before it
-        df = drop_columns(df, ["birads_assessment"])
+        df["birads_assessment"] = df["birads_assessment"].map(ASSESSMENT)
         df["mammogram_type"] = df["mammogram_type"].map({1: "film", 2: "digital"})
         # codebook sentinels: 9 = missing for the yes/no answers, -99 for BMI
         df[YES_NO_MISSING] = df[YES_NO_MISSING].replace(9, np.nan)
         df["bmi"] = df["bmi"].replace(-99, np.nan)
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
+        df = set_missing(
+            df,
+            {
+                "birads_assessment": ["0: Needs additional imaging"],
+            },
+        )
         # the codebook's words for its codes (CLEAN-12)
         df = decode(df, CODE_LABELS)
         return df
@@ -243,16 +260,13 @@ class BreastCancerPrediction(AbstractCuratedDataset):
             "prior_mammogram",
             "family_history_breast_cancer",
         ]
-        return FeatureTypes(ordinal=ORDINAL_LEVELS, categorical=["mammogram_type", *flags])
+        return FeatureTypes(ordinal=ORDINAL_LEVELS, categorical=["birads_assessment", "mammogram_type", *flags])
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
-        women = raw.rename(columns=RENAME).sort_values(["patient_id", "age"], kind="stable")
-        women = women.drop_duplicates("patient_id", keep="first")
         by_assessment = (
-            women.assign(birads_assessment=women["birads_assessment"].map(ASSESSMENT))
-            .groupby("birads_assessment")[TARGET]
-            .agg(women="size", cancers="sum")
-            .assign(share_of_cancers=lambda t: (t["cancers"] / t["cancers"].sum()).round(3))
+            df.groupby("birads_assessment", observed=True)[TARGET]
+            .agg(exams="size", cancers=lambda s: int((s == "Yes").sum()))
+            .assign(cancer_rate=lambda t: (t["cancers"] / t["exams"]).round(4))
             .reindex(list(ASSESSMENT.values()))  # BI-RADS 0 to 5
         )
         exams = raw.rename(columns=RENAME).drop_duplicates()
@@ -274,11 +288,9 @@ class BreastCancerPrediction(AbstractCuratedDataset):
         )
         return [
             Decision(
-                "The radiologist's assessment is dropped",
-                "It is the follow-up decision: 0 sends a woman to more imaging, 4-5 to a biopsy, 1-2 back to routine "
-                "screening, and the cancers are found through it (assessments 0, 4 and 5 hold most of them). As a "
-                "feature it made the task the read's own accuracy (ROC AUC 0.91 alone); the task is the risk before "
-                "it (review issue 2, B). Women by the dropped assessment, one exam each.",
+                "The radiologist's assessment is a feature and carries most of the signal",
+                "It is given at the exam, and the source asks for a model 'using patient characteristics and "
+                "mammography assessment'. Assessments 0, 4 and 5 are the positive screens (recall).",
                 by_assessment,
             ),
             Decision(

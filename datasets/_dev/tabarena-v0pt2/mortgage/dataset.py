@@ -57,10 +57,6 @@ REAL_ESTATE_FLAGS = {
 }
 """The one-hot real-estate flags of the data page; a row with none of them set is `other`."""
 
-ORIGINATION_FIELDS = ["Interest_Rate_orig_time", "mat_time", "FICO_orig_time", "LTV_orig_time"]
-"""Origination fields that change within a loan (the interest rate in 2,313 loans, the maturity in 807, the credit
-score in 366, the LTV in 18); each row takes the loan's first recorded value."""
-
 
 def deduplicated(raw: pd.DataFrame) -> pd.DataFrame:
     """The raw rows with period 51's doubled records removed, keeping the event copy where two copies differ only in
@@ -108,8 +104,8 @@ class Mortgage(AbstractCuratedDataset):
         changes=(
             "We use each loan's state at its previous observation (and its balance at the one before) and the economic "
             "figures as published by the quarter's start, since the own-quarter values partly record the event or come "
-            "out later. Origination fields keep the loan's first value. We add the balance ratio and the market "
-            "mortgage rate (FRED), and drop the last row of loans that leave early without a recorded event."
+            "out later. We add the balance ratio and the market mortgage rate (FRED), and drop the last row of loans "
+            "that leave early without a recorded event."
         ),
         fit="direct",
         fit_reason=(
@@ -198,7 +194,7 @@ class Mortgage(AbstractCuratedDataset):
         - Ids 35310 and 3020 equal ids 35309 and 3018 in every column over 15 and 8 quarters: we drop them (23 rows, periods 24 to 41; one would fall in the test window of period 38). Kept: 12 rows from 6 pairs of ids that match in one quarter only, separate loans on the same terms (2 pairs differ in the status).
         - The three real-estate flags (at most one set per row) become one category `real_estate_type`, `other` where none is set.
         - Note: `time`, `orig_time`, `first_time` and `mat_time` stay period numbers; the periods are quarters from 2000 Q2 to 2015 Q1.
-        - Origination fields held at the loan's first recorded value (Andrej, 2026-11-27): the source rewrites `Interest_Rate_orig_time`, `mat_time`, `FICO_orig_time`, `LTV_orig_time` and the property type inside a loan, and on 3,108 of the 3,269 changed rates the new value is the row's own-quarter rate, the value the lagged columns leave out. Each row now takes the loan's first recorded (non-missing) value of the four numeric fields and the loan's first property type, so the rate's missing flag no longer moves within a loan (it moved in 1,397 loans, and payoff was 7.95% on those flip rows against 2.52% on the loan's other rows). Before the change, 33,457 of the 621,653 rows (3,084 loans; 3,450 of the 33,356 test rows) held a value of one of these five fields that differs from the loan's first recorded one: 24,190 rows for the interest rate (2,313 loans), 8,988 for `mat_time` (807), 4,248 for the credit score (366), 297 for the LTV (18) and 766 for the property type (54 loans). Loans whose rate is missing on every row stay missing. The LightGBM figures of these notes were measured before this change.
+        - Kept as recorded: origination fields that change within a loan (`Interest_Rate_orig_time` in 3,540 loans, where the new value equals the row's own-quarter rate on 2,703 rows; `mat_time` in 814 loans). Freezing them, with the credit score and LTV at origination, at the previous observation changes LightGBM's log loss by -0.0001 to -0.0002 (periods 58 to 60), so they stay.
         - Impossible balances become missing (CLEAN-11; Lennart, 2026-10-22): 38 rows whose source `LTV_time` is above 300% (up to 803.5%) carry a balance far above the loan's original balance (570,000 on an original 60,495). We mask the balance before it is lagged, so the 37 `LTV_time_lag_1` values above 300% and the lag-2 balances and ratios built from those balances are missing; the highest LTV left is 261.4%.
         - Note: unlike the book's retired HMEQ data (homeq_default_prediction), the loans show no generation artefacts (label-free nearest-neighbour distance: ROC AUC 0.52 for default, HMEQ 0.92).
         - Split: temporal, one quarter per window, like the book's out-of-time backtest: periods 60, 49 and 38, the calm years, the recovery and the crisis (CC 2026-11-11; splits comment). Train and test are a closed book that ages, with a pool of 1,728 seasoned loans added at period 52, so a test window stands for a run-off book, not a lender's book with new loans.
@@ -263,14 +259,6 @@ class Mortgage(AbstractCuratedDataset):
         for column in ["Interest_Rate_orig_time", "balance_orig_time", "interest_rate_time"]:
             df[column] = df[column].mask(df[column] == 0)
         df["interest_rate_time"] = df["interest_rate_time"].mask(df["interest_rate_time"] == PLACEHOLDER_RATE)
-
-        # The origination fields hold the loan's first recorded value on every row: the source rewrites them inside a
-        # loan (on 3,108 of the 3,269 changed rates the new value is the row's own-quarter rate), and whether the rate
-        # is filled moves with the outcome. A loan's property type is its first row's, as it cannot change mid-life.
-        df = df.sort_values(["loan", "time"], kind="stable")
-        by_loan = df.groupby("loan", sort=False)
-        for column in [*ORIGINATION_FIELDS, *REAL_ESTATE_FLAGS]:
-            df[column] = by_loan[column].transform("first")
 
         # A balance that puts the source's own LTV above 300% conflicts with the original balance (570,000 on an
         # original 60,495): impossible, so it becomes missing before it is lagged (CLEAN-11).
