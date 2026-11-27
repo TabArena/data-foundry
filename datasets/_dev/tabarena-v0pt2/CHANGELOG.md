@@ -1,5 +1,12 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-27, nyc_taxi_trip_duration: trips faster than 120 km/h dropped (task change; container not rebuilt)
+
+- `nyc_taxi_trip_duration_1m` drops the 32 trips whose straight line from pickup to drop-off implies more than
+  120 km/h (up to 1,408 km/h): a broken clock or GPS fix makes the target impossible. Same constant as
+  pkdd_15_taxi_trip_time_prediction_ii_1m and 2024_lusaka_mobility_prediction_hackathon. 3 of the rows were in a test
+  window. 1,442,619 trips after cleaning; README regenerated.
+
 ## 2026-11-27, nyc_taxi_trip_duration: the one-day gap's reason (no data change)
 
 - `nyc_taxi_trip_duration_1m`'s `splits_comment` gives the latency of a weekly refit as the reason for the one-day
