@@ -14,12 +14,16 @@ tags:
 - Many features
 - Non-IID (Grouped)
 - Spectral Data
+- 'Samples: Unknown'
+- 'Entities: Recur'
+- Clinical Study
 collections:
 - RamanBench
 original_source: Github
 domain: medical & healthcare
 required_split:
 - Grouped (NON-IID)
+collection_period: Unknown
 problem_type: Binary Classification
 source_links:
 - https://doi.org/10.1016/j.compbiomed.2024.108028

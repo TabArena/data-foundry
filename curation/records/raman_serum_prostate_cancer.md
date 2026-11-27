@@ -3,7 +3,8 @@ unique_name: raman_serum_prostate_cancer
 name: Prostate Cancer SERS Serum
 checked_by:
 - AI (UNVERIFIED)
-suggestion: TBD -> 2nd Tier
+- Andrej
+suggestion: TBD -> Yes
 priority: 3
 decision_markers:
 - Selection Bias
@@ -13,6 +14,9 @@ tags:
 - Tiny Data
 - Many features
 - Spectral Data
+- 'Samples: Unknown'
+- 'Entities: Recur'
+- Clinical Study
 collections:
 - RamanBench
 original_source: Other
@@ -20,6 +24,7 @@ year: '2024'
 domain: medical & healthcare
 required_split:
 - Grouped (NON-IID)
+collection_period: Unknown
 problem_type: Multiclass Classification
 source_links:
 - https://doi.org/10.1016/j.xcrm.2024.101579
@@ -32,6 +37,8 @@ type_adapter_id: curation-record-v1
 ---
 
 ## Comments
+
+CC (2026-11-25, Andrej): `TBD -> 2nd Tier` becomes `TBD -> Yes`. Selection and confounding are the only reasons the screening held it back: gap, use case and source are all plus, and the shape is 62 participants with about 200 spectra each. The controls from a check-up centre against patients from urology, a possible batch by class and the public subset of 424 participants are questions a probe settles while the dataset is added, not before. The `Selection Bias` marker stays until it is.
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from the source's pages and papers (and, where the block says so, a preview of the files), NOT from building the data. A human must verify everything before relying on it.**
 

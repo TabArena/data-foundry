@@ -9,8 +9,12 @@ decision_markers:
 tags:
 - AI-Filled (Verify)
 - Spectral Data
+- 'Samples: Unknown'
+- 'Entities: Recur'
+- Clinical Study
 collections:
 - RamanBench
+collection_period: Unknown
 source_links:
 - https://doi.org/10.1038/s42256-025-01027-5
 - https://figshare.com/articles/dataset/ComFilE_for_AD/28107578

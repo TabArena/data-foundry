@@ -3,7 +3,8 @@ unique_name: raman_rruff_mineral_raw
 name: RRUFF Minerals (Raw)
 checked_by:
 - AI (UNVERIFIED)
-suggestion: TBD -> 2nd Tier
+- Andrej
+suggestion: TBD -> Yes
 priority: 2
 decision_markers:
 - TBD
@@ -13,12 +14,16 @@ tags:
 - Many features
 - Many class
 - Spectral Data
+- 'Samples: No Time Dimension'
+- 'Entities: Recur'
+- Expanding Science Catalogue
 collections:
 - RamanBench
 original_source: Website
 domain: chemistry & material science
 required_split:
 - Grouped (NON-IID)
+collection_period: Unknown
 problem_type: Multiclass Classification
 source_links:
 - https://doi.org/10.1515/9783110417104-003
@@ -30,6 +35,8 @@ type_adapter_id: curation-record-v1
 ---
 
 ## Comments
+
+CC (2026-11-25, Andrej): `TBD -> 2nd Tier` becomes `TBD -> Yes`, to be built from rruff.info rather than from RamanBench's bundle. The screening's objections are both properties of the cut, not of the source: the third-party bundle carries no specimen id and about 15 spectra per species. The RRUFF project publishes the spectra with their RRUFF ids, which are the specimen keys a grouped split needs, and far more of them. If the rebuild cannot recover the specimen ids, the record returns to `2nd Tier`.
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from the source's pages and papers (and, where the block says so, a preview of the files), NOT from building the data. A human must verify everything before relying on it.**
 

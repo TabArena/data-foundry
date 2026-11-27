@@ -3,20 +3,24 @@ unique_name: raman_microplastics_weathered
 name: Weathered Microplastics
 checked_by:
 - AI (UNVERIFIED)
-suggestion: TBD -> 2nd Tier
-priority: 2
+- Andrej
+suggestion: 'No'
 decision_markers:
-- TBD
+- No Good Target (yet)
 tags:
 - AI-Filled (Verify)
 - Tiny Data
 - Many features
 - Spectral Data
+- 'Samples: No Time Dimension'
+- 'Entities: Recur'
+- Experimental Results
 collections:
 - RamanBench
 original_source: Other
 year: '2020'
 domain: environmental science & climate
+collection_period: Unknown
 problem_type: Multiclass Classification
 source_links:
 - https://doi.org/10.1016/j.scitotenv.2020.139990
@@ -29,6 +33,17 @@ type_adapter_id: curation-record-v1
 ---
 
 ## Comments
+
+CC (2026-11-25, Andrej): `No`, marker `No Good Target (yet)`, on the source check below: the polymer label of 140 of the 173 rows is a commercial spectral-library match of the same spectrum a model would be given, and the 14 rows with an independent method are too few for any split.
+
+CC (2026-11-25, Andrej): the source release was checked, and it settles the record against the dataset rather than for it. Recommendation: `No`, marker `No Good Target (yet)`; the verdict is not changed here.
+
+- The cut was the smaller problem and the source does fix it: Mendeley 10.17632/kpygrf9fg6 holds one text file per spectrum with its own id (`sta-1` to `sta-18`, `wea-1` to `wea-155`) and a `content.xlsx` of 173 usable rows, against the 77 spectra of the benchmark's copy.
+- The label is not independent of the spectrum. `content.xlsx` carries a "Score from KnowItAll" for 140 of the 173 rows (45.6 to 99.5), and for those 140 rows no other method is named: the polymer was read off a commercial spectral-library match of the same spectrum a model would be given. A model would be learning to reproduce that matching program, not to identify a polymer.
+- Only 14 rows name an independent method (11 ATR-FTIR, 1 Py-GC-MS, 2 verified by ATR-FTIR), 10 more say "identified subjectively based on Raman", and 9 say the polymer could not be identified at all (8 of them typed `/`).
+- Restricting the task to the independently identified rows leaves 14, far below any split.
+- The classes are also steeply imbalanced over 10 polymers: PE 74, PP 54, PET 16, PVC 9, `/` 8, PA 6, PC 2, PS 2, NC 1, ABS 1.
+
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from the source's pages and papers (and, where the block says so, a preview of the files), NOT from building the data. A human must verify everything before relying on it.**
 

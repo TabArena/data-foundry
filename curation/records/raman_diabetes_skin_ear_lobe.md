@@ -13,11 +13,14 @@ tags:
 - Tiny Data
 - Many features
 - Spectral Data
+- 'Samples: Unknown'
+- Clinical Study
 collections:
 - RamanBench
 original_source: Kaggle
 year: '2018'
 domain: medical & healthcare
+collection_period: Unknown
 problem_type: Binary Classification
 source_links:
 - https://doi.org/10.1364/BOE.9.004998

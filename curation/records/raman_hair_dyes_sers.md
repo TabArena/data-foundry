@@ -12,12 +12,16 @@ tags:
 - Many features
 - Non-IID (Grouped)
 - Spectral Data
+- 'Samples: No Time Dimension'
+- 'Entities: Recur'
+- Experimental Results
 collections:
 - RamanBench
 original_source: Other
 year: '2026'
 required_split:
 - Grouped (NON-IID)
+collection_period: Unknown
 problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:

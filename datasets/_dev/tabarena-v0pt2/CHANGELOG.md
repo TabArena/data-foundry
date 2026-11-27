@@ -1,5 +1,97 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-27, raman_mlrod not shipped either (no container built)
+
+- The curator's call on the review's open question about the field's own model, taken without waiting for the run:
+  the source's spectrum CNN reaches 1.00 accuracy on the clean slabs where untuned tabular models reach 0.93, so a
+  spectrum dataset where the field's tool is far ahead does not belong. The record goes to `No` with
+  `Wrong Domain / Source Modality` and the folder leaves the working copy.
+- Recorded against the decision, for a later round: the CNN's 1.00 is partly self-confirming, because the slab
+  labels were set by hand in three passes and revised wherever a person and that CNN disagreed. The dataset's own
+  resolution is also coarse: a fold is one rock, the gabbro's score rests on 12 mineral blocks, and a per-row
+  standard error understates a fold's noise 4 to 13 times.
+- The working copy keeps the three Raman definitions that ship: `raman_fuel_benchtop`, `raman_ecoli_fermentation`
+  and `raman_adenine_interlaboratory`.
+
+## 2026-11-27, bacteria_id_raman retired (`Too Small`), raman_mlrod's split settled
+
+- `bacteria_id_raman` is removed from the working copy. The curator's call on the review's size question: the task
+  is scored on 50 patients, 10 of each treatment group, with 25 in a test fold, where one patient carries 13% to
+  34% of a fold's loss and the patient-bootstrap standard error of a fold is 0.032 on a mean of 0.120. The record
+  goes to `No` with the `Too Small` marker and keeps the whole definition's design and its measured numbers.
+- `raman_mlrod` keeps the split added earlier today: five repeats of two folds, a rock slab per fold and a fifth of
+  every reference map held out of each training side.
+
+## 2026-11-27, raman_mlrod gets a split whose two sides both vary (no container built)
+
+- The single fold of the source's design is replaced by five repeats of two folds. A fold tests one rock slab, with
+  the other slab never in its training side, so the class-set exploit stays closed; a repeat holds a different fifth
+  of every reference map out of the training side, drawn inside the map, so each training side is 72,310 of the
+  90,387 library spectra and every mineral and every integration time stays in it.
+- Why not whole maps: dropping one reference map per mineral collapses the score through the integration time
+  (log loss 0.95 to 4.83 over three draws, where both slabs are measured at 0.15 s). Drawing inside each map moves
+  it by about 0.04 on the gabbro and 0.16 on the granite.
+- Checks and probes on the new plan: 0 errors; a linear model reaches log loss 0.913 against the class shares' 2.622
+  on 100% of the splits and leads the random forest by 0.882 (paired SE 0.122). Two warnings change shape: the
+  dimensions are 5x2 against the protocol's 3x3, and each fold now lacks the classes its rock does not hold.
+- The three verdicts of the day are recorded: `raman_fuel_benchtop`, `raman_ecoli_fermentation` and
+  `raman_adenine_interlaboratory` ship.
+
+## 2026-11-27, the curator's second round on the Raman definitions (no container built)
+
+- `raman_adenine_interlaboratory`: the substrate and the laser leave the inputs (the curator's decision on the
+  review's issue 4). Each substrate was prepared with its own concentration series, so the pair bounded the answer
+  before a band was read. Re-measured on the new definition: a random forest at RMSE 2.196 against the mean
+  predictor's 2.794 on 30 of 30 splits, R2 0.281 across held-out laboratories where the full input set gave 0.488,
+  no single band above the mean predictor, no flag. The record's verdict becomes `Yes`.
+- `raman_ecoli_fermentation`: the four check warnings are accepted in `dataset.py` with the group probe's numbers
+  and the censored target's reason. Nothing open; the verdict becomes `Yes`.
+- `raman_fuel_benchtop`: nothing in the definition changes; the verdict becomes `Yes`. The shipped splits were
+  checked for the curator: 20 repeats of 3 folds, all 60 test sides and all 60 training sides distinct.
+- `raman_mlrod`: a note added on the reference library's integration times, which the split assessment measured
+  (holding out the only 0.15-second map of a mineral costs most of the score, where both slabs are 0.15 s).
+
+## 2026-11-27, the curator's decisions on the three new Raman definitions (no container built)
+
+- `raman_adenine_colloidal_gold` is renamed `raman_adenine_interlaboratory`: the folder, the class, the record, its
+  `v2_path` and the warehouse folder. The old name was the 225-spectrum colloidal-gold cut it was screened as; the
+  definition is the whole study over all four substrates and 15 laboratories.
+- `raman_fuel_benchtop`: one bullet added to the notes, naming the ethanol content on 164 of the 179 samples as a
+  companion task for a later round. No change to the data.
+- `raman_ecoli_fermentation`: unchanged; the question on its censored target is still open, with the benchmark's own
+  two targets (glucose and acetate) written into the review.
+
+## 2026-11-25, three RamanBench definitions added: fuel, E. coli fermentation and the adenine interlaboratory study (no container built)
+
+- `raman_fuel_benchtop`: 179 commercial gasolines, the research octane number from two Raman spectra of the same
+  sample (benchtop 961 bands, handheld 1,900). The two releases are row-aligned on the same samples, so they ship
+  as one row with two declared spectra. Rows 42 and 96 are one fuel measured twice, held together by `sample`.
+  The eleven other laboratory properties are dropped: none is known when the spectrum is taken.
+- `raman_ecoli_fermentation`: 373 at-line spectra from 24 fed-batch cultivations, glucose from the supernatant's
+  spectrum. Built from the authors' Hugging Face release, not from the paper's repository file, which is the
+  model-training matrix: harmonised onto an eight-instrument grid and padded with 2,261 spectra of another
+  dataset. The source's three random groups of eight cultivations are the split.
+- `raman_adenine_interlaboratory`: the whole European interlaboratory SERS study from its own Zenodo table, 3,512
+  spectra over 15 laboratories, with whole laboratories held out. The benchmark's four per-substrate files carry
+  only the concentration, so the study's own question cannot be built from them. The record's name is now
+  historical and a rename is an issue for the curator.
+- Checks: 0 errors for all three. Probes: no exact copies across any split; real signal everywhere (fuel RMSE
+  0.904 against the dummy's 2.471, ecoli MAE 0.3202 against 1.1903, both on 100% of splits). Fuel carries the
+  `no_spread` flag, ecoli no flag.
+
+## 2026-11-25, bacteria_id_raman and raman_mlrod: the two RamanBench definitions ported (no container built)
+
+- The two Raman definitions of the large add run move onto this branch with their reviews. Each dataset's review is
+  now the `## Review` section of its record, as the house rule asks, and the `REVIEW.md` of its folder is gone.
+- Both definitions declare their provenance as `sources` (`Source(role=...)`), which replaced the `year`, `source`,
+  `source_url`, `license` and `bibtex` fields after they were written. raman_mlrod also declares the raman-data
+  mirror it reads as a `copy` source beside the ODR deposit.
+- The raw files were downloaded again: both archives match the sha256 the definitions record (mlrod.zip
+  10178a4a..., bacteria data.zip 05f0978e...), 41 map files and 11 arrays.
+- The record of each keeps the `Spectral Data` tag, which the tag run added after the definitions were written.
+- Across datasets: covertype's MET-6 Cases row still names it as a kept paper accuracy, though it ships the fallback
+  log loss; the item is in `REVIEW.md`.
+
 ## 2026-11-25 (evening), fugaku_hpc_job_failure_1m: every source row prepared (no container built)
 
 - The preparation writes every source row and `_make_splits` caps the test windows at 500,000 rows, so the training
