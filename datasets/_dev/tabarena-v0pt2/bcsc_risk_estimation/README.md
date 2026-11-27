@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bcsc_risk_estimation
 container_format: 2
-checksum: v2:6d9b99b9b3c4acb66f33c1abbb5044c1cf89d784af81c22c406cbd451412d571
+checksum: v2:64fba948f8b93b8f0d96ce29b2adccd311eac2b67d25e0fafe4d7a7fc9f45b92
 build: null
 build_stale: false
 data:
@@ -63,25 +63,25 @@ decisions:
 
 Binary classification of `cancer_within_one_year`, scored with `roc_auc` on IID splits. 1,007,660 rows and 12 features. Source: GOV Website (2006).
 
-Not built yet. The current definition gives checksum `v2:6d9b99b9b3c4acb66f33c1abbb5044c1cf89d784af81c22c406cbd451412d571`.
+Not built yet. The current definition gives checksum `v2:64fba948f8b93b8f0d96ce29b2adccd311eac2b67d25e0fafe4d7a7fc9f45b92`.
 
 ## In brief
 
-**Question.** Will a woman who comes for a screening mammogram be diagnosed with breast cancer within a year, judged from her risk factors before the mammogram is read?
+**Question.** Will a woman who comes for a screening mammogram be diagnosed with breast cancer within a year, judged from her risk factors and her breast density, before the radiologist assesses the mammogram?
 
-**Use case.** At a woman's screening visit, a screening programme estimates her short-term breast cancer risk from self-reported risk factors, her breast density and the result of her last mammogram, to tailor screening and prevention (the source's published risk model).
+**Use case.** At a woman's screening visit, the screening programmes of the Breast Cancer Surveillance Consortium estimate the short-term breast cancer risk of their later women from self-reported risk factors, her breast density and the result of her last mammogram, to tailor screening and prevention (the source's published risk model).
 
 **One row.** One screening mammogram of a woman aged 35 to 84 in the US Breast Cancer Surveillance Consortium, 1996 to 2002, with a mammogram in the five years before: each of 1,007,660 women once.
 
 **Predicted.** Whether breast cancer (in situ or invasive) is diagnosed within one year after the exam; 0.73% of the women.
 
-**Known at prediction time.** Age group, menopause and how it came about, race and ethnicity, BMI group, age at first birth, the number of first-degree relatives with breast cancer, an earlier breast procedure, the result of the last mammogram, current hormone therapy and the breast density; not the read of this mammogram.
+**Known at prediction time.** Age group, menopause and how it came about, race and ethnicity, BMI group, age at first birth, the number of first-degree relatives with breast cancer, an earlier breast procedure, the result of the last mammogram, current hormone therapy, and the breast density the radiologist records from this mammogram; not the radiologist's assessment of it.
 
 **What the test data stands for.** Random folds over the women: every row is a different woman.
 
-**Our changes to the source.** We expand the source's aggregated cells by their count, drop `invasive` (part of the target) and the source's `training` flag (a prescribed random split), and set the code for unknown to missing.
+**Our changes to the source.** We expand the source's aggregated cells by their count, drop `invasive` (part of the target) and the source's `training` flag (a prescribed random split), and set the code for unknown to missing, except in the age group, where it is the band 75-79; premenopausal women get a level "not menopausal" in surgical menopause and hormone therapy.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The rows, features and label are those of the source's published risk model (Barlow et al. 2006, c statistic 0.62-0.63), taken before the mammogram is read.
+> **Use case fit: approximate (a stand-in with a known gap).** The rows, features and label are those of the source's published risk model (Barlow et al. 2006). Two gaps: the one-year label, mostly this screen's own detections, stands in for the longer invasive risk that prevention decides on; and density read from this mammogram stands in for the prior exam's.
 
 ## Files in this folder
 
@@ -157,7 +157,7 @@ Only curators run `build`, when the dataset ships.
 <summary>Feature types: 9 categorical, 4 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (9): `menopausal_status`, `race`, `hispanic`, `age_at_first_birth`, `prior_breast_procedure`, `last_mammogram_result`, `surgical_menopause`, `current_hormone_therapy`, `cancer_within_one_year`
-- ordinal (4): `age_group (35-39 < 40-44 < 45-49 < 50-54 < 55-59 < 60-64 < 65-69 < 70-74 < 75-79 < 80-84)`, `birads_breast_density (almost entirely fatty < scattered fibroglandular densities < heterogeneously dense < extremely dense)`, `bmi_group (10-24.99 < 25-29.99 < 30-34.99 < 35 or more)`, `first_degree_relatives_with_breast_cancer (0 < 1 < 2 or more)`
+- ordinal (4): `age_group (35-39 < 40-44 < 45-49 < 50-54 < 55-59 < 60-64 < 65-69 < 70-74 < 75-79 < 80-84)`, `birads_breast_density (almost entirely fatty < scattered fibroglandular densities < heterogeneously dense < extremely dense)`, `bmi_group (10-24.99 < 25-29.99 < 30-34.99 < 35 or more)`, `first_degree_relatives_with_breast_cancer (0 < 1 (or positive, number unknown) < 2 or more)`
 - string (0): none
 - datetime (0): none
 
@@ -192,21 +192,24 @@ The first 5 of 1,007,660 rows of the final frame (random rows: the frame is shuf
 
 | cancer_within_one_year | menopausal_status | age_group | birads_breast_density | race | hispanic | bmi_group | age_at_first_birth | first_degree_relatives_with_breast_canc… | prior_breast_procedure | last_mammogram_result | surgical_menopause |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | nan | 40-44 | scattered fibroglandular densities | white | no | 10-24.99 | nan | 0 | no | negative | nan |
-| No | postmenopausal or age 55 or older | 65-69 | scattered fibroglandular densities | black | no | nan | nan | 0 | no | negative | natural |
-| No | postmenopausal or age 55 or older | 55-59 | nan | white | no | nan | nulliparous | 0 | no | negative | natural |
-| No | postmenopausal or age 55 or older | 50-54 | heterogeneously dense | white | no | nan | nan | 0 | no | negative | natural |
-| No | premenopausal | 45-49 | scattered fibroglandular densities | white | no | nan | nan | 0 | no | negative | nan |
+| No | postmenopausal or age 55 or older | 50-54 | heterogeneously dense | white | nan | 10-24.99 | under 30 | 0 | no | negative | natural |
+| No | premenopausal | 45-49 | heterogeneously dense | nan | no | nan | nan | 0 | no | nan | not menopausal |
+| No | postmenopausal or age 55 or older | 45-49 | scattered fibroglandular densities | white | no | 35 or more | nan | 1 (or positive, number unknown) | no | nan | natural |
+| No | nan | 45-49 | nan | white | no | nan | nan | nan | yes | negative | nan |
+| No | postmenopausal or age 55 or older | 75-79 | almost entirely fatty | white | no | nan | under 30 | 0 | no | negative | surgical |
 
 ## Curation notes
 
 We start with the BCSC Risk Estimation Dataset, the data of the BCSC's published risk model (Barlow et al. 2006): screening mammograms of 1996-2002 from women aged 35-84 without earlier breast cancer and with a mammogram in the five years before, linked to cancer registries and pathology. The file is aggregated: one row per combination of risk factors and outcome, with a `count`.
 
-- Prediction point: the woman comes for a screening mammogram; the intake answers, the breast density and the result of her last mammogram are known; the read of this mammogram is not in the data ("The index mammogram's assessment is not included"). This is the step before `breast_cancer_prediction`, where the read is a feature.
+- Prediction point: the woman comes for a screening mammogram; the intake answers, the result of her last mammogram and the breast density the radiologist records from this mammogram are known; the radiologist's assessment of this mammogram is not in the data ("The index mammogram's assessment is not included"). This is the step before `breast_cancer_prediction`, where the read is a feature.
 - Target: `cancer` (invasive or DCIS within one year after the exam), the paper's outcome. `invasive` is a part of it and goes.
 - Version: the one-exam-per-woman file (`risk_rand.txt`, added in August 2012; "All population and other characteristics remain the same"), 1,007,660 women, 7,319 cancers (0.73%). The page does not say how the exam was chosen (the name suggests at random). The all-exams file (`risk.txt`, 2,392,998 exams, 11,638 cancers, 0.49%, the paper's data) has no woman id in its cells, so random folds would put one woman's exams on both sides; it is not used. The cancer share is higher with one exam per woman because women with a cancer leave follow-up at the diagnosis and so contribute fewer exams.
 - `training` (a "75% random sample" for the paper's development, 25% validation; 75.0% in this file too, assignment not described for it) goes: we declare our own folds.
-- Unknown (code 9) becomes missing in every coded column; density 9 also covers "different measurement system".
+- Unknown (code 9) becomes missing in every coded column except the age group, where 9 is the band 75-79 (56,233 women, 1.15% cancers) and no code means unknown. Density 9 also covers "different measurement system"; surgical menopause and hormone therapy 9 is "unknown or not menopausal": it holds all 280,205 premenopausal women, which `menopausal_status` tells apart.
+- Density is the radiologist's reading of this mammogram ("judged by the radiologist from the screening mammogram"), recorded before the exam's assessment, which the source leaves out; the BCSC risk calculator takes it as an input. It is worth 0.016 ROC AUC (untuned LightGBM 0.653 with it, 0.638 without). Women with an unknown density or last mammogram result have a 1.2-1.4 times higher cancer share within an age band, a fact fixed at the visit.
+- Surgical menopause and hormone therapy: code 9 becomes "not menopausal" for the 280,205 premenopausal women and stays missing for the others (CLEAN-12). The relatives level 1 also holds a positive family history with the number unknown (codebook), and says so.
+- Metric: ROC AUC is the paper's c statistic, but its 0.631 and 0.624 are per menopausal group; logistic regression gives 0.62-0.63 per group here and 0.649 pooled. AUC does not score calibration, which a clinical user of absolute risk needs.
 - Codes carry the codebook's words (CLEAN-12); age group, density, BMI group and the number of relatives are ordered (CLEAN-14).
 - Repeated feature vectors: every row of a cell is a copy of the others (181,903 cells for 1,007,660 women), as the twelve features are coarse categories; they are different women with independent outcomes.
 - Size: 3 folds give 671,773 training and 335,887 test rows, under the collection's 1M / 500k row budget, so the dataset ships whole (no `_1m` version).
@@ -255,18 +258,18 @@ Accepted on purpose:
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| surgical_menopause | category | 567734 | 56.34 | 2 | natural, surgical |
 | bmi_group | category | 566646 | 56.23 | 4 | 10-24.99, 25-29.99, 30-34.99, 35 or more |
 | age_at_first_birth | category | 566207 | 56.19 | 3 | under 30, nulliparous, 30 or older |
-| current_hormone_therapy | category | 465837 | 46.23 | 2 | no, yes |
 | last_mammogram_result | category | 326797 | 32.43 | 2 | negative, false positive |
+| surgical_menopause | category | 287529 | 28.53 | 3 | not menopausal, natural, surgical |
 | birads_breast_density | category | 276138 | 27.4 | 4 | scattered fibroglandular densities, heterogeneously dense, almost entirely fatt… |
 | hispanic | category | 207357 | 20.58 | 2 | no, yes |
+| current_hormone_therapy | category | 185632 | 18.42 | 3 | no, not menopausal, yes |
 | race | category | 171531 | 17.02 | 5 | white, black, Asian or Pacific Islander, Native American, other or mixed |
-| first_degree_relatives_with_breast_cancer | category | 159999 | 15.88 | 3 | 0, 1, 2 or more |
+| first_degree_relatives_with_breast_cancer | category | 159999 | 15.88 | 3 | 0, 1 (or positive, number unknown), 2 or more |
 | prior_breast_procedure | category | 109052 | 10.82 | 2 | no, yes |
 | menopausal_status | category | 88739 | 8.81 | 2 | postmenopausal or age 55 or older, premenopausal |
-| age_group | category | 56233 | 5.58 | 9 | 45-49, 50-54, 40-44, 55-59, 60-64, 65-69, 70-74, 80-84, 35-39 |
+| age_group | category | 0 | 0 | 10 | 45-49, 50-54, 40-44, 55-59, 60-64, 65-69, 70-74, 75-79, 80-84, 35-39 |
 | cancer_within_one_year | category | 0 | 0 | 2 | No, Yes |
 
 </details>
@@ -285,58 +288,60 @@ No numeric features to summarize.
 ### Categorical features
 
 <details>
-<summary>Show the table (48 rows)</summary>
+<summary>Show the table (50 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| age_at_first_birth | 1 | &lt;NA> | 56573 | 56.14 |
-| age_at_first_birth | 2 | under 30 | 30154 | 29.92 |
-| age_at_first_birth | 3 | nulliparous | 8128 | 8.07 |
-| age_at_first_birth | 4 | 30 or older | 5911 | 5.87 |
-| age_group | 1 | 45-49 | 17576 | 17.44 |
-| age_group | 2 | 50-54 | 17120 | 16.99 |
-| age_group | 3 | 40-44 | 15646 | 15.53 |
-| age_group | 4 | 55-59 | 12813 | 12.72 |
-| age_group | 5 | 60-64 | 9835 | 9.76 |
-| birads_breast_density | 1 | scattered fibroglandular densities | 32637 | 32.39 |
-| birads_breast_density | 2 | heterogeneously dense | 28230 | 28.02 |
-| birads_breast_density | 3 | &lt;NA> | 27572 | 27.36 |
-| birads_breast_density | 4 | almost entirely fatty | 6221 | 6.17 |
-| birads_breast_density | 5 | extremely dense | 6106 | 6.06 |
-| bmi_group | 1 | &lt;NA> | 56695 | 56.26 |
-| bmi_group | 2 | 10-24.99 | 20941 | 20.78 |
-| bmi_group | 3 | 25-29.99 | 13533 | 13.43 |
-| bmi_group | 4 | 30-34.99 | 6201 | 6.15 |
-| bmi_group | 5 | 35 or more | 3396 | 3.37 |
-| cancer_within_one_year | 1 | No | 100050 | 99.29 |
-| cancer_within_one_year | 2 | Yes | 716 | 0.71 |
-| current_hormone_therapy | 1 | &lt;NA> | 46664 | 46.31 |
-| current_hormone_therapy | 2 | no | 29059 | 28.84 |
-| current_hormone_therapy | 3 | yes | 25043 | 24.85 |
-| first_degree_relatives_with_breast_cancer | 1 | 0 | 73035 | 72.48 |
-| first_degree_relatives_with_breast_cancer | 2 | &lt;NA> | 15818 | 15.7 |
-| first_degree_relatives_with_breast_cancer | 3 | 1 | 11363 | 11.28 |
-| first_degree_relatives_with_breast_cancer | 4 | 2 or more | 550 | 0.55 |
-| hispanic | 1 | no | 72742 | 72.19 |
-| hispanic | 2 | &lt;NA> | 20824 | 20.67 |
-| hispanic | 3 | yes | 7200 | 7.15 |
-| last_mammogram_result | 1 | negative | 66557 | 66.05 |
-| last_mammogram_result | 2 | &lt;NA> | 32628 | 32.38 |
-| last_mammogram_result | 3 | false positive | 1581 | 1.57 |
-| menopausal_status | 1 | postmenopausal or age 55 or older | 63732 | 63.25 |
-| menopausal_status | 2 | premenopausal | 28311 | 28.1 |
-| menopausal_status | 3 | &lt;NA> | 8723 | 8.66 |
-| prior_breast_procedure | 1 | no | 73480 | 72.92 |
-| prior_breast_procedure | 2 | yes | 16418 | 16.29 |
-| prior_breast_procedure | 3 | &lt;NA> | 10868 | 10.79 |
-| race | 1 | white | 70963 | 70.42 |
-| race | 2 | &lt;NA> | 17122 | 16.99 |
-| race | 3 | black | 5565 | 5.52 |
-| race | 4 | Asian or Pacific Islander | 4452 | 4.42 |
-| race | 5 | Native American | 1592 | 1.58 |
-| surgical_menopause | 1 | &lt;NA> | 56732 | 56.3 |
-| surgical_menopause | 2 | natural | 27380 | 27.17 |
-| surgical_menopause | 3 | surgical | 16654 | 16.53 |
+| age_at_first_birth | 1 | &lt;NA> | 56618 | 56.19 |
+| age_at_first_birth | 2 | under 30 | 30198 | 29.97 |
+| age_at_first_birth | 3 | nulliparous | 8115 | 8.05 |
+| age_at_first_birth | 4 | 30 or older | 5835 | 5.79 |
+| age_group | 1 | 45-49 | 17487 | 17.35 |
+| age_group | 2 | 50-54 | 17236 | 17.1 |
+| age_group | 3 | 40-44 | 15531 | 15.41 |
+| age_group | 4 | 55-59 | 12745 | 12.65 |
+| age_group | 5 | 60-64 | 9889 | 9.81 |
+| birads_breast_density | 1 | scattered fibroglandular densities | 32359 | 32.11 |
+| birads_breast_density | 2 | heterogeneously dense | 28260 | 28.05 |
+| birads_breast_density | 3 | &lt;NA> | 27635 | 27.42 |
+| birads_breast_density | 4 | almost entirely fatty | 6500 | 6.45 |
+| birads_breast_density | 5 | extremely dense | 6012 | 5.97 |
+| bmi_group | 1 | &lt;NA> | 56386 | 55.96 |
+| bmi_group | 2 | 10-24.99 | 21482 | 21.32 |
+| bmi_group | 3 | 25-29.99 | 13384 | 13.28 |
+| bmi_group | 4 | 30-34.99 | 6087 | 6.04 |
+| bmi_group | 5 | 35 or more | 3427 | 3.4 |
+| cancer_within_one_year | 1 | No | 100024 | 99.26 |
+| cancer_within_one_year | 2 | Yes | 742 | 0.74 |
+| current_hormone_therapy | 1 | no | 29280 | 29.06 |
+| current_hormone_therapy | 2 | not menopausal | 27843 | 27.63 |
+| current_hormone_therapy | 3 | yes | 25247 | 25.06 |
+| current_hormone_therapy | 4 | &lt;NA> | 18396 | 18.26 |
+| first_degree_relatives_with_breast_cancer | 1 | 0 | 72885 | 72.33 |
+| first_degree_relatives_with_breast_cancer | 2 | &lt;NA> | 15967 | 15.85 |
+| first_degree_relatives_with_breast_cancer | 3 | 1 (or positive, number unknown) | 11329 | 11.24 |
+| first_degree_relatives_with_breast_cancer | 4 | 2 or more | 585 | 0.58 |
+| hispanic | 1 | no | 72847 | 72.29 |
+| hispanic | 2 | &lt;NA> | 20643 | 20.49 |
+| hispanic | 3 | yes | 7276 | 7.22 |
+| last_mammogram_result | 1 | negative | 66507 | 66 |
+| last_mammogram_result | 2 | &lt;NA> | 32603 | 32.36 |
+| last_mammogram_result | 3 | false positive | 1656 | 1.64 |
+| menopausal_status | 1 | postmenopausal or age 55 or older | 64056 | 63.57 |
+| menopausal_status | 2 | premenopausal | 27843 | 27.63 |
+| menopausal_status | 3 | &lt;NA> | 8867 | 8.8 |
+| prior_breast_procedure | 1 | no | 73675 | 73.11 |
+| prior_breast_procedure | 2 | yes | 16304 | 16.18 |
+| prior_breast_procedure | 3 | &lt;NA> | 10787 | 10.7 |
+| race | 1 | white | 71366 | 70.82 |
+| race | 2 | &lt;NA> | 17077 | 16.95 |
+| race | 3 | black | 5339 | 5.3 |
+| race | 4 | Asian or Pacific Islander | 4401 | 4.37 |
+| race | 5 | Native American | 1576 | 1.56 |
+| surgical_menopause | 1 | &lt;NA> | 28667 | 28.45 |
+| surgical_menopause | 2 | not menopausal | 27843 | 27.63 |
+| surgical_menopause | 3 | natural | 27510 | 27.3 |
+| surgical_menopause | 4 | surgical | 16746 | 16.62 |
 
 </details>
 

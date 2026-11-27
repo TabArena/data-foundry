@@ -129,15 +129,15 @@ class BcscRiskEstimation(AbstractCuratedDataset):
         split="Random folds over the women: every row is a different woman.",
         changes=(
             "We expand the source's aggregated cells by their count, drop `invasive` (part of the target) and the "
-            "source's `training` flag (a prescribed random split), and set the code for unknown to missing."
+            "source's `training` flag (a prescribed random split), and set the code for unknown to missing, except "
+            "in the age group, where it is the band 75-79; premenopausal women get a level \"not menopausal\" in "
+            "surgical menopause and hormone therapy."
         ),
         fit="approximate",
         fit_reason=(
-            "The rows, features and label are those of the source's published risk model (Barlow et al. 2006, c "
-            "statistic 0.62-0.63, per menopausal group), taken before the mammogram's assessment. Two gaps: the "
-            "one-year label (in situ or invasive, mostly this screen's own detections) stands in for the five-year or "
-            "lifetime invasive risk that prevention and supplemental screening decide on; and density read from this "
-            "mammogram stands in for the prior exam's density a model at the visit would take (worth 0.016 ROC AUC)."
+            "The rows, features and label are those of the source's published risk model (Barlow et al. 2006). Two "
+            "gaps: the one-year label, mostly this screen's own detections, stands in for the longer invasive risk "
+            "that prevention decides on; and density read from this mammogram stands in for the prior exam's."
         ),
     )
 

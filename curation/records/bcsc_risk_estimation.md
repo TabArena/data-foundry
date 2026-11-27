@@ -56,22 +56,22 @@ CC (2026-11-27, Andrej): add it. It is the risk task before the mammogram is rea
 
 ## Review
 
-**Outcome:** added. The BCSC Risk Estimation Dataset, one exam per woman: 1,007,660 women, 7,319 cancers within a year (0.73%), twelve risk factors known at the screening visit, before the radiologist assesses the mammogram; the risk task `breast_cancer_prediction` cannot carry (its review issue 2, open). The full review panel recommends shipping after changes, all applied: the age band 75-79 restored (it had been set to missing), the fit set to approximate, a "not menopausal" level, and corrected notes.
+**Outcome:** added. The BCSC Risk Estimation Dataset, one exam per woman: 1,007,660 women, 7,319 cancers within a year (0.73%), twelve risk factors known at the screening visit, before the radiologist assesses the mammogram; the risk task `breast_cancer_prediction` cannot carry (its review issue 2, open). The full review panel recommends shipping after changes, all applied: the age band 75-79 restored (it had been set to missing), the fit set to approximate, a "not menopausal" level, and corrected notes. Logistic regression and regularised LightGBM beat age alone by 0.04 to 0.05 ROC AUC on every fold, and nothing leaks: the 91.2% of test women whose exact profile is in training gain nothing from those women's outcomes.
 
-**Main points:** Keep the forced time tag (1), mark the 1996-2002 exams `Outdated` as a note (2), and add the source page's second citation wording (3)? Values on the shipped folds, after the fixes: logistic regression ROC AUC 0.648, regularised LightGBM 0.658, untuned LightGBM 0.635, age alone 0.610; the methods beat age on 3 of 3 folds. The paper's c statistic (0.631 / 0.624) is per menopausal group; logistic regression gives 0.62-0.63 per group here, 0.649 pooled. Nothing leaks: 91.2% of the test women share their exact profile with training women, and looking up those women's outcomes adds nothing (-0.010, SE 0.004); the blind task gamer found no exploit. Density is read from this mammogram (worth 0.016 ROC AUC), which the fit names. The one-exam-per-woman file is a strict subset of the all-exams file; the all-exams file has no woman id, so random folds would put one woman's exams on both sides, and it is not used. The source's 75/25 flag scores as one random split (0.648 / 0.657) and is dropped for our folds.
+**Main points:** Keep the forced time tag (1), mark the 1996-2002 exams `Outdated` as a note (2), and add the source page's second citation wording (3)?
 
 **Issues for Andrej:**
 
 1. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
 
    * **Problem:**
-     - The exams are from 1996-2002 and the file carries no dates, so nothing can be measured over time.
-     - The use case scores women decades later.
+     - The folds are random either way; the question is which tag explains why they may stand for later women: `ForcedIIDFromTemporal` (the dates are lost, so random folds are forced) or `AssumedStationaryRelation` (you judge that the risk relation has not changed, a tag only a person sets[^split32]).
+     - The exams are from 1996-2002, the file carries no dates and the use case scores women decades later, so nothing can be measured over time.
      - Hormone therapy use, the BI-RADS density scale and the imaging that finds the cancers have all changed since.
-   * **Background:** 24.8% of the women were on hormone therapy, before its use fell after the Women's Health Initiative trial[^whi]; density was redefined in the BI-RADS editions of 2003 and 2013; digital mammography and tomosynthesis replaced film. No dated BCSC file has the outcome (the Risk Factors summary of 2005-2017 has none).
+   * **Background:** 24.8% of the women were on hormone therapy, before its use fell after the Women's Health Initiative trial[^whi], though among postmenopausal women with a known answer it barely separates the cancers (ROC AUC 0.510); density was redefined in the BI-RADS editions of 2003 and 2013; digital mammography and tomosynthesis replaced film. No dated BCSC file has the outcome (the Risk Factors summary of 2005-2017 has none).
    * **For a stationary use case:**
      - the BCSC's current risk models use the same factors.
-     - a fixed one-year label window.
+     - the label always covers the same one year after the exam, so its definition does not drift.
    * **Against:**
      - hormone therapy use and the density scale changed after 2002.
      - the imaging that detects the label's cancers changed.
@@ -80,19 +80,21 @@ CC (2026-11-27, Andrej): add it. It is the risk task before the mammogram is rea
      | | Option | What it does | Pro | Con |
      |---|---|---|---|---|
      | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning | Claims only what is known; as `breast_cancer_prediction` and `hepatitis_survival_prediction` | The split stands for later women only as far as the relation holds |
-     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later women | Three known changes after 2002 argue against it |
+     | B | `AssumedStationaryRelation` | The folds stay; you write down why the relation still holds | Documents why random folds stand for later women | Three known changes after 2002 argue against it |
 
-   * **Recommendation:** A, a known mechanism of change and nothing to measure. Confidence: high (the whole panel). **Decision:** A or B?
+   * **Recommendation:** A: the relation is known to have changed after 2002 and nothing dated can show by how much, so stationarity cannot be claimed. Confidence: high (the whole panel). **Decision:** A or B?
 
-   [^whi]: Rossouw JE, Anderson GL, Prentice RL, LaCroix AZ, Kooperberg C, Stefanick ML, Jackson RD, Beresford SA, Howard BV, Johnson KC, Kotchen JM, Ockene J; Writing Group for the Women's Health Initiative Investigators. Risks and benefits of estrogen plus progestin in healthy postmenopausal women: principal results from the Women's Health Initiative randomized controlled trial. JAMA. 2002;288(3):321-333. doi:10.1001/jama.288.3.321. SPLIT-32: the review reasons whether the use case can be taken as stationary; `AssumedStationaryRelation` is set by a person only.
+   [^whi]: Rossouw JE, Anderson GL, Prentice RL, LaCroix AZ, Kooperberg C, Stefanick ML, Jackson RD, Beresford SA, Howard BV, Johnson KC, Kotchen JM, Ockene J; Writing Group for the Women's Health Initiative Investigators. Risks and benefits of estrogen plus progestin in healthy postmenopausal women: principal results from the Women's Health Initiative randomized controlled trial. JAMA. 2002;288(3):321-333. doi:10.1001/jama.288.3.321.
+
+   [^split32]: **SPLIT-32**: the review reasons whether the use case can be taken as stationary; `AssumedStationaryRelation` is set by a person only.
 
 2. **Ship with `Outdated` as a note, or with no marker?**
 
    * **Problem:**
-     - The exams are 24 to 30 years old and the source says the data are static.
+     - The exams are 24 to 30 years old and static; the question is whether the record carries `Outdated`, a note on the data's age that does not keep a dataset out on its own[^sel18].
      - You kept two old medical cohorts with `Outdated` as a note, for the same kind of change of era.
      - No fact found sets this case apart from them.
-   * **Background:** `cirrhosis_patient_survival_prediction` (CC 2026-10-15, 2026-11-05) and `hepatitis_survival_prediction` (CC 2026-11-10, also time lost and forced) ship with the marker; a marker does not leave a dataset out on its own[^sel18], so not adding the dataset for its age alone is not an option.
+   * **Consistency:** `cirrhosis_patient_survival_prediction`[^cirr] and `hepatitis_survival_prediction`[^hep] (also time lost and forced) ship with the marker, so leaving this dataset out for its age alone is not an option; `framingham_heart_study_fhs` (a 1948 cohort) ships without it, but no comment argues why, so it sets no precedent.
    * **Options:**
 
      | | Option | What it does | Pro | Con |
@@ -100,9 +102,13 @@ CC (2026-11-27, Andrej): add it. It is the risk task before the mammogram is rea
      | A | No marker (implemented) | Ships as is | The task is how the field still estimates this risk | Departs from the two precedents with no fact that sets it apart |
      | B | `Outdated` as a note | The marker and a CC line: the risk-factor relation holds; the era's hormone therapy, density scale and imaging differ | Treats like cases alike | – |
 
-   * **Recommendation:** B. Confidence: high (advocate and critic agree). **Decision:** A or B?
+   * **Recommendation:** B: like cases alike, and no fact sets this one apart. Confidence: high (advocate and critic agree). **Decision:** A or B?
 
    [^sel18]: **SEL-18** (Should): `Outdated` alone does not exclude a dataset; a `No` that cites it names other reasons.
+
+   [^cirr]: CC 2026-10-15 and 2026-11-05 on `cirrhosis_patient_survival_prediction`.
+
+   [^hep]: CC 2026-11-10 on `hepatitis_survival_prediction`.
 
 3. **Add the source page's citation wording beside the acknowledgement you asked for?**
 
@@ -117,9 +123,9 @@ CC (2026-11-27, Andrej): add it. It is the risk task before the mammogram is rea
      | B | Add the main page's sentence after it | Both grants and the download line, with our download date (2026-11-27) | Satisfies both pages | One more sentence |
      | C | Replace it with the main page's text | The main page's wording only | One wording | Drops the wording you asked for |
 
-   * **Recommendation:** B. Confidence: medium. **Decision:** A, B or C?
+   * **Recommendation:** B: the main page states the wording it requires of downloaders, and carrying both costs one sentence. Confidence: medium. **Decision:** A, B or C?
 
-**Review panel:** ship after changes (mediator). Tier full: claim, column and split auditors, domain practitioner, precedent checker, blind reviewer, task gamer, advocate and critic with one rebuttal each, mediator. Claims: 28, 23 hold, 5 refuted (all fixed: the age band, the code-9 wording, the hormone therapy share, the sibling's status, the citation wording, now issue 3). Blind review: include with changes (the age band). Task gamer: no exploit; density worth 0.016 as known signal. Agreed: the split, no leak, the metric, the file version. Settled in the debate: fit approximate, not direct.
+**Review panel:** ship after changes (mediator). Tier full: claim, column and split auditors, domain practitioner, precedent checker, blind reviewer, task gamer, advocate and critic with one rebuttal each, mediator. Claims: 28, 23 hold, 5 refuted (4 fixed: the age band, the code-9 wording, the hormone therapy share, the sibling's status; the citation wording is issue 3). Blind review: include with changes (the age band). Task gamer: no exploit beyond this mammogram's density, a known input worth 0.016 ROC AUC that the fit now names. Agreed: the split, no leak, the metric, the file version. Settled in the debate: fit approximate, not direct.
 
 <details><summary>Mediator</summary>
 
@@ -127,7 +133,7 @@ Tier: full (claim, column and split auditors, domain practitioner, precedent che
 advocate and critic with one rebuttal each). No experiment run: no fact is disputed. Numbers are from the rerun after
 the age fix (the task and leak probes and the dataset check) and the phase A reports.
 
-## Judgment record
+**Judgment record**
 
 ```text
 Verdict: ship after changes.
@@ -150,7 +156,7 @@ For the curator: issue 1 (time tag, A recommended), issue 2 (`Outdated` note, B 
   citation wording, B recommended).
 ```
 
-## Changes to make now (no decision needed)
+**Changes to make now (no decision needed)**
 
 | # | Change | Rule | Evidence |
 |---|---|---|---|
@@ -166,9 +172,9 @@ For the curator: issue 1 (time tag, A recommended), issue 2 (`Outdated` note, B 
 | 10 | Review text: main points quote the rerun (linear 0.648, LightGBM untuned 0.635, RF 0.582, age alone 0.610; regularised LightGBM 0.658; profile lookup -0.0097, SE 0.0037; 91.2% of test women share a training profile) and say the paper's c is per stratum | EV-1 | the task and leak probes, the advocate's table |
 | 11 | Issue 3 of the draft (file version) leaves the issue list and becomes a note: the all-exams file cannot be grouped (no woman id), so option B breaks a Must (USE-10, SPLIT-24: one woman on both sides); the one-exam file is a strict subset of it with the paper's flag carried over (0 cells exceed); the selection rule is undocumented and fits one random exam per woman | USE-10, USE-11, SPLIT-24 | split auditor, claim 6, precedent (breast_cancer_prediction, USE-11) |
 
-## Issues for the curator (ranked)
+**Issues for the curator (ranked)**
 
-### 1. Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`? (P4, SPLIT-32; tag set by a person only)
+**1. Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`? (P4, SPLIT-32; tag set by a person only)**
 
 - Problem: exams of 1996-2002, no dates; the use case scores women today.
 - Against stationarity: HT use fell after WHI 2002 (24.8% of these women on HT; today a small minority); BI-RADS density
@@ -179,7 +185,7 @@ For the curator: issue 1 (time tag, A recommended), issue 2 (`Outdated` note, B 
 - Recommendation: A, high. All panel members agree; precedent breast_cancer_prediction issue 1 and
   hepatitis_survival_prediction (Andrej, 2026-11-18).
 
-### 2. Ship with `Outdated` as a note, or with no marker? (P2, SEL-18 Should; like cases alike)
+**2. Ship with `Outdated` as a note, or with no marker? (P2, SEL-18 Should; like cases alike)**
 
 - Problem: the draft recommended no marker because "age matters for a deployed model, not for comparing methods"; the
   same reason held for cirrhosis_patient_survival_prediction (CC 2026-10-15, 2026-11-05) and
@@ -190,7 +196,7 @@ For the curator: issue 1 (time tag, A recommended), issue 2 (`Outdated` note, B 
 - Recommendation: B, high (advocate and critic agree; precedent). A needs a fact that sets this case apart; none found
   (framingham ships without the marker but no CC line argues it).
 
-### 3. Add the rfdataset page's citation wording beside the acknowledgement you asked for? (P5, PROV citation terms)
+**3. Add the rfdataset page's citation wording beside the acknowledgement you asked for? (P5, PROV citation terms)**
 
 - Facts: the BibTeX note carries the documentation page's acknowledgement (NCI-funded BCSC, HHSN261201100031C,
   bcsc-research.org), as you asked. The rfdataset main page asks users for different wording: funded by the NCI
@@ -201,7 +207,7 @@ For the curator: issue 1 (time tag, A recommended), issue 2 (`Outdated` note, B 
 - Recommendation: B, medium: the main page states the required citation for downloaders, and carrying both satisfies
   both pages at the cost of one sentence. Decision: A, B or C?
 
-## Disputed points
+**Disputed points**
 
 None left. The one dispute after the briefs (fit `direct` via a pre-read triage use case, USE-9, against `approximate`,
 USE-8) was conceded by the advocate in rebuttal: in 1996-2002 the radiologist recorded density in the same read as the
@@ -209,7 +215,7 @@ assessment, so no actor acted with density known and the read not done; today's 
 and Ho et al. 2023 predicts recall, not one-year cancer. Under USE-9 that is a use case rephrased to excuse a gap.
 Settled as change 2.
 
-## Task-gamer exploits mapped
+**Task-gamer exploits mapped**
 
 | Exploit | Gain | Rule | Definition's notes / warnings | New or known |
 |---|---|---|---|---|
@@ -222,7 +228,7 @@ Settled as change 2.
 | 75-79 coded missing | no score effect (LightGBM 0.6551 → 0.6557) | CLEAN-12 | fixed | fixed (change 1) |
 | Untuned LightGBM overfits sparse cells | model choice, not task | — | — | not an exploit |
 
-## Agreed facts
+**Agreed facts**
 
 - 1,007,660 women (one exam each, `risk_rand.txt`), 7,319 cancers (0.73%), 181,903 cells; risk.txt 2,392,998 exams,
   11,638 cancers (0.49%), no woman id; `invasive` is a subset of `cancer` (0 exceptions).
@@ -240,7 +246,7 @@ Settled as change 2.
 - No newer open BCSC file with the one-year outcome; the licence page names no licence and no teaching-only clause.
 - `breast_cancer_prediction` is `Yes`; its retirement issue is open.
 
-## Consistency
+**Consistency**
 
 Followed:
 - Forced time tag: breast_cancer_prediction issue 1, hepatitis_survival_prediction (Andrej, 2026-11-18); framingham's
@@ -262,7 +268,7 @@ a feature); a Cases row may be added once shipped.
 
 <details><summary>Claim audit</summary>
 
-## Claims (refuted first)
+**Claims (refuted first)**
 
 | # | Claim | Source | Test | Result | Evidence | Rule |
 |---|---|---|---|---|---|---|
@@ -295,7 +301,7 @@ a feature); a Cases row may be added once shipped.
 | 22 | Licence: registration, citation required, no licence named, no teaching-only clause | Source.license | rfdataset page | Holds | Page has no licence, no teaching or commercial restriction | PROV |
 | 23 | Implicit: every feature known at the screening visit | implied | Codebook | Holds | Density is the reading of the index mammogram (codebook "density" of the index exam); known at the read, before the assessment; the screening block already flags this (SEL-14). Not the assessment | SEL-14 |
 
-## Refuted and untested, ranked
+**Refuted and untested, ranked**
 
 1. **R1, age band 75-79 set to missing (Must, data correctness).** Changes: the shipped `age_group` drops a level and shows 5.6% of women as of unknown age; row and known claims false. Remedy: exclude `age_group` from the 9 → missing replacement (agegrp has no unknown code), rerun `dataset check`. Score unchanged.
 2. **R3, HT evidence in issue 1.** Changes: the Background line; HT's in-data strength among postmenopausal women is AUC 0.51 and the 28.6% is the other file (24.8% here). Remedy: restate the background (24.8%; the 0.567 is the premenopausal missing code); the recommendation still rests on the WHI fact.
@@ -314,7 +320,7 @@ Inputs: `dataset.py`, generated README (check of the current definition), record
 1,007,660 women), BCSC codebook page (rfdataset/dataset), dtype probe (4 of 12 flagged). Tallies are weighted by
 `count`. No model fits run (none needed for these findings).
 
-## Files
+**Files**
 
 | File of the release | Read by `_load_raw` | Reason given |
 |---|---|---|
@@ -323,7 +329,7 @@ Inputs: `dataset.py`, generated README (check of the current definition), record
 
 No file left out without a reason.
 
-## Columns
+**Columns**
 
 | Column | Meaning (codebook) | Known at prediction? | Dtype and cleaning | Verdict | Rule |
 |---|---|---|---|---|---|
@@ -344,7 +350,7 @@ No file left out without a reason.
 | `training` (dropped) | the paper's 75% development flag | - | dropped | right | SPLIT-5 |
 | `count` (consumed) | cell frequency | - | rows repeated by it | right | MET-2 |
 
-## Problems, ranked
+**Problems, ranked**
 
 1. **`age_group` 75-79 set to missing (cleaning bug, Must-level effect on the data; CLEAN-10/CLEAN-12).**
    `_clean` runs `df[coded].replace(9, nan)` over every column of `CODE_LABELS`, `age_group` included, before
@@ -392,7 +398,7 @@ period missingness to audit).
 
 **Verdict: right, with notes.** Random 3-fold on one exam per woman is the split the tree gives for a later-women use case with the time lost (L-FORCED.random), and the source's 75/25 `training` flag scores the same as our folds. Two questions for the curator: should the walk take the place step, and is `AssumedStationaryRelation` the tag? Neither changes the folds. One data bug is outside the split but touches every number: the age band 75-79 is set to missing. The column auditor found it too.
 
-## Tree walk (SPLIT-36)
+**Tree walk (SPLIT-36)**
 
 | Question | Answer, from what | 
 |---|---|
@@ -406,14 +412,14 @@ period missingness to audit).
 | [FORCED.groups] | No. There is one exam per woman, so no unit repeats. Periods can't be grouped because no order exists. |
 | Leaf | **L-FORCED.random, `ForcedIIDFromTemporal`**. This matches `split_leaf`, the shipped regime (iid, 1 repeat x 3 folds, stratified, as SPLIT-33 sets for 1M rows) and the Time basis line. |
 
-## Checks with numbers
+**Checks with numbers**
 
 - **Units across the split.** `risk_rand.txt` holds one exam per woman, by the source's statement, so no woman sits on both sides (USE-10, SPLIT-24/25 do not apply). The paper's all-exams file would put one woman on both sides with no id to group by. The record's issue 3, recommendation A, is right on split grounds.
 - **Shared profiles (probe 23).** 91.2% of test women share their exact 12-feature profile with training women. Looking up those women's outcomes changes AUC by -0.008 (SE 0.005, 0 of 3 splits positive). The nearest-neighbour label agreement is 0.985 against 0.986 by chance. There is no entity leak (LEAK-42: the link is the profile, and the label does not travel with it).
 - **The one-exam file is a subsample of the all-exams file with the paper's flag carried over.** For every (profile, outcome, `training`) cell, the count in `risk_rand.txt` is at most the count in `risk.txt`: 0 cells exceed it. With the flag permuted, about 36,000 cells (about 40,000 exams) exceed it in each of 3 runs. So each kept exam keeps its paper assignment. The flag is balanced: 75.01% training, cancer 0.728% (training) against 0.720% (validation), and no feature share differs by more than 0.21 percentage points. That fits a random flag. Whether the paper assigned it by woman or by exam is not documented (the documentation says only "75% random sample"; the paper's full text was not reachable). It does not matter in the one-exam file.
 - **Labels in flight.** The target is a fixed one-year window after each exam, closed for every row (`Target: Fixed Delay`), and 1996-2002 is complete. No row has an open outcome.
 
-## Alternatives run
+**Alternatives run**
 
 The features are as shipped (age 75-79 missing, see problem 1). Logistic regression is one-hot. LightGBM uses 300 trees, 15 leaves and min_child 200. The test metric is ROC AUC.
 
@@ -428,7 +434,7 @@ The features are as shipped (age 75-79 missing, see problem 1). Logistic regress
 
 The source's split falls inside the spread of random 75/25 draws, at its low end, and within 0.002 of our 3-fold mean. It is one random split of the same rows, so it adds nothing a random fold lacks, and it gives one split where SPLIT-33 asks for 3 folds. Dropping it was right (SPLIT-5: it is a prescribed random split with no other design behind it). The `changes` line and the curation comment say so. The source split was tested first, and it agrees with ours.
 
-## Problems, ranked
+**Problems, ranked**
 
 1. **Not a split problem, but it moves every split number: the age band 75-79 is set to missing (CLEAN-10/CLEAN-12; column auditor issue 1).** `_clean` runs `replace(9, nan)` over every coded column, `age_group` included, and in agegrp the code 9 is 75-79. I measured 56,233 raw exams with agegrp 9 and 56,233 missing `age_group` in the frame, with no 75-79 level left. The scores above, and the record's 0.650 / 0.656 / 0.611, were computed with this bug. Mildest remedy: leave `age_group` out of the unknown replacement, then rerun the check and the probes.
 2. **Leaf question for the curator: does the use case meet other places too ([CLI.meets])?** The data pools 6 registries with no registry column. A programme outside the BCSC is another place, so the walk's rule ("meets both another place and a later time → place step") would lead to [PLACE.several] = no key, then [PLACE.units] = one row per woman, then **L-PLACE.random (Random · `ForcedIIDFromGrouped`)**. No v0.2 definition reaches that leaf yet, so it goes to a human reviewer. The folds would be identical. Only the tags differ: a Group basis line beside the time basis, naming the registry the data cannot key, with the rows of each registry on both sides.
@@ -438,7 +444,7 @@ The source's split falls inside the spread of random 75/25 draws, at its low end
 3. **Time basis: `ForcedIIDFromTemporal` against `AssumedStationaryRelation` (SPLIT-32; the record's issue 1).** I agree with the draft's recommendation A. The facts against a stationary relation are real and named in SPLIT-32's list of reasons against: changed treatments (hormone therapy after the WHI trial in 2002, 28.6% of exams on therapy), changed coding (BI-RADS density, 5th edition 2013), and changed detection (film to digital and tomosynthesis). Only a person sets the tag. Nothing here can be measured, so the forced tag claims only what is known.
 4. **Note: the Time basis line could name what a dated release would test more concretely.** It now says "would test exams later than those used for training". It could add that the BCSC Risk Factors summary (2005-2017) has no outcome, so no dated parent exists. This is wording only. SPLIT-8 asks the line to name the reason, which it does.
 
-## What found nothing
+**What found nothing**
 
 - Recurring women: none, one exam per woman.
 - Hidden groups and copies: profiles are shared by construction (aggregated cells), and the lookup gain is -0.008 (SE 0.005).
@@ -453,7 +459,7 @@ The source's split falls inside the spread of random 75/25 draws, at its low end
 Actor played: a US screening programme's breast-imaging radiologist / high-risk clinic, deciding at a woman's screening
 visit about supplemental screening (MRI, ultrasound), referral for risk-reducing medication, or reading priority.
 
-## Fit: approximate (the declared fit `direct` overstates it)
+**Fit: approximate (the declared fit `direct` overstates it)**
 
 One sentence: the rows, inputs and label are those of a real published research model (Barlow et al. 2006), but no
 actor makes a decision on a 1-year in-situ-or-invasive outcome with this exact information set: density is read off
@@ -467,7 +473,7 @@ ranks exams by short-term cancer probability for reading priority, double readin
 has published exactly this kind of model for recall, Ho et al. 2023). If the dataset's use case were rewritten that
 way, I would accept `direct`. As written ("tailor screening and prevention"), the target is a proxy.
 
-## Decisive finding first: age 75-79 is wiped to missing (a cleaning bug)
+**Decisive finding first: age 75-79 is wiped to missing (a cleaning bug)**
 
 `_clean` replaces code 9 by NaN in every coded column (`coded = list(CODE_LABELS)`), but in `agegrp` the code 9 is
 the level 75-79 (codes 1-10, CODE_LABELS itself says so). The raw file has 56,233 women with `agegrp == 9`, exactly the
@@ -476,7 +482,7 @@ group (1.154% cancer, against 0.73% overall; tally below). An actor always knows
 `age_group` from the code-9 replacement (age has no unknown code in the codebook). The task probes (age_group the best
 single feature, ordinal handling in the linear model) ran on the bugged frame and should be re-run after the fix.
 
-## 1. Inputs at the moment of prediction
+**1. Inputs at the moment of prediction**
 
 | input | do I have it at the visit? | note |
 |---|---|---|
@@ -491,7 +497,7 @@ Tyrer-Cuzick), for today also polygenic score. Missing values: density unknown 2
 measurement system", i.e. some sites; cancer rate 0.816% vs 0.73%), HT unknown 46% (code 9 also = "not menopausal", so
 its missing indicator re-encodes menopause: fine, but users should know).
 
-## 2. Target
+**2. Target**
 
 - `cancer` within one year = invasive or DCIS (80.5% invasive in this file). Within one year of a screening exam most
   cancers are found by that very screen (prevalent, screen-detected), the rest are interval cancers. So the label is
@@ -505,7 +511,7 @@ its missing indicator re-encodes menopause: fine, but users should know).
 - Keeping `cancer` (not `invasive`) is the paper's choice and the right one for triage; for prevention I would want
   invasive. Dropping `invasive` as a part of the target is correct.
 
-## 3. Row and test data
+**3. Row and test data**
 
 - One row = one screening exam of one woman (one drawn per woman); one decision per exam: matches.
 - Population: women with a mammogram in the past 5 years but not the past 9 months, no prior breast cancer, 35-84.
@@ -513,7 +519,7 @@ its missing indicator re-encodes menopause: fine, but users should know).
   partly shares).
 - Test data: random women of the same 1996-2002 cohort. What I would face is women screened today (see section 6).
 
-## 4. Would I use this model?
+**4. Would I use this model?**
 
 Not as is, for a clinical decision. Reasons I would distrust it: (a) c statistic ~0.62-0.65 is the field's ceiling for
 risk-factor models and I accept that, but I would only use it with documented calibration (observed/expected overall
@@ -522,7 +528,7 @@ modality have all changed since 2002; (c) coarse bands (age, BMI) lose informati
 methods on a large, honest, real risk-factor table, it is sound: features known before the outcome, label from
 registry/pathology linkage, independent women.
 
-## 5. Metric: partly
+**5. Metric: partly**
 
 - `roc_auc` is the source's one deliberate measure (abstract: "Concordance ... was assessed by a concordance (c)
   statistic"), so MET-5 keeps it as the source metric, and it is also the MET-8 fallback. It scores ranking, which fits
@@ -537,7 +543,7 @@ registry/pathology linkage, independent women.
   two metrics rank the three methods the same way (linear > LightGBM > RF), so the choice does not change the current
   leaderboard; it changes what a winning model is required to be.
 
-## 6. Does 1996-2002 stand for today's women?
+**6. Does 1996-2002 stand for today's women?**
 
 | change since 2002 | effect on the task |
 |---|---|
@@ -550,7 +556,7 @@ So the relation is not stationary (supports keeping `ForcedIIDFromTemporal`, iss
 one fixed relation the age is tolerable (issue 2 A or B); I would mark it `Outdated` as a concern (B) because a user
 reading "screening risk model" will assume today's practice.
 
-## Gaps ranked by how much they change the task
+**Gaps ranked by how much they change the task**
 
 1. Age 75-79 set to missing (bug; changes the inputs of 5.6% of women, the oldest/highest-risk band). Fix in `_clean`.
 2. Target horizon/composition: a 1-year in-situ-or-invasive outcome, mostly the index screen's own findings, against
@@ -561,7 +567,7 @@ reading "screening risk model" will assume today's practice.
 4. Era (HT, technology, BI-RADS edition): known gap, already raised as issues 1-2.
 5. Metric scores ranking only; calibration matters to the actor.
 
-## What an expert would change
+**What an expert would change**
 
 - Fix the age_group code-9 bug.
 - `known`: "the breast density read from this mammogram, without its assessment" instead of implying density is known
@@ -573,7 +579,7 @@ reading "screening risk model" will assume today's practice.
 - Metric: keep `roc_auc` (source) or move to `log_loss`; whichever, name calibration as what a clinical user would check.
 - Notes: HT code 9 includes "not menopausal"; density code 9 includes other measurement systems.
 
-## Tallies (raw `risk_rand.txt`, cells weighted by `count`)
+**Tallies (raw `risk_rand.txt`, cells weighted by `count`)**
 
 | feature | level | women | cancer % |
 |---|---|---|---|
@@ -590,7 +596,7 @@ reading "screening risk model" will assume today's practice.
 Invasive share of the cancers: 80.5%. Probe log losses (task.json): dummy 0.0429, linear 0.0420, LightGBM 0.0426,
 random forest 0.0558.
 
-## Sources
+**Sources**
 
 - BCSC Risk Estimation Dataset documentation, https://www.bcsc-research.org/index.php/datasets/rfdataset/dataset
   (density "judged by the radiologist from the screening mammogram"; assessment of the index exam excluded; 1996-2002;
@@ -644,7 +650,7 @@ Read: the definition, the record with its draft `## Review` (3 issues), claims.m
 none on this dataset's rules; no drift flag touches SEL-18, SPLIT-32, USE-11 or SPLIT-5), the sibling
 `breast_cancer_prediction`, and the Outdated / forced-tag / duplicate-row / one-row-per-entity precedents below.
 
-## Summary
+**Summary**
 
 | Decision | Verdict | Closest precedents |
 |---|---|---|
@@ -657,9 +663,9 @@ none on this dataset's rules; no drift flag touches SEL-18, SPLIT-32, USE-11 or 
 | Accepting `dataset_duplicate_rows` (coarse categories) | consistent, and set apart from the retirement | sepsis_survival_minimal_clinical_records: duplicates of real patients accepted (CC 2026-10-06, Lennart); retired later (`Trivial` 2026-11-10 Andrej, `Not Representative` 2026-11-12 Lennart) because methods sat within 0.001-0.0024 ROC AUC of age / a clinician's rule |
 | Metric `roc_auc` from the source's c statistic | consistent | MET-5, MET-8; sepsis (roc_auc fallback, CC 2026-10-21) |
 
-## Details
+**Details**
 
-### Issue 1: forced tag (consistent)
+**Issue 1: forced tag (consistent)**
 
 - Same consortium, same mechanism argument, same options: breast_cancer_prediction issue 1 (BCSC 2005-2008, Time:
   Lost, density coding changed 2013) was resolved A by Andrej on 2026-11-18. The same day hepatitis_survival_prediction
@@ -672,7 +678,7 @@ none on this dataset's rules; no drift flag touches SEL-18, SPLIT-32, USE-11 or 
   offered as an option; the sibling's issue did not offer it either, so the draft follows precedent. An agent answers
   no there by rule.
 
-### Issue 2: age of the data (departs without a stated reason)
+**Issue 2: age of the data (departs without a stated reason)**
 
 - Precedent: every kept medical dataset whose era is argued as changed carries `Outdated` as a note. Andrej's own
   decisions: cirrhosis (1974-86 cohort; "the relation between the findings and the risk still holds today; the
@@ -691,7 +697,7 @@ none on this dataset's rules; no drift flag touches SEL-18, SPLIT-32, USE-11 or 
   also says "with `breast_cancer_prediction` retired": that record's issue 2 (retire) has no Resolved line yet, so the
   con assumes an open decision.
 
-### Issue 3: one exam per woman (consistent)
+**Issue 3: one exam per woman (consistent)**
 
 - USE-11 says one row per entity only when the use case is that row. breast_cancer_prediction took each woman's
   earliest exam (Lennart 2026-10-15), IID without grouping. Here the source made the choice (`risk_rand.txt`, one exam
@@ -700,7 +706,7 @@ none on this dataset's rules; no drift flag touches SEL-18, SPLIT-32, USE-11 or 
   forbids inferred groups as the source's key), and the USE-11 cost ("loses rows and signal") buys a split that
   otherwise cannot be built.
 
-### Coarse duplicates and the sepsis precedent (consistent, set apart)
+**Coarse duplicates and the sepsis precedent (consistent, set apart)**
 
 - sepsis_survival_minimal_clinical_records: 110,204 admissions in 975 cells of three fields; kept 2026-10-06 with the
   duplicates as real patients, retired 2026-11-10/12 (TP-4 step 2): TabPFN 3.5 only +0.0024 ROC AUC over age alone,
@@ -713,7 +719,7 @@ none on this dataset's rules; no drift flag touches SEL-18, SPLIT-32, USE-11 or 
   file lacks). Information only, no issue proposed: no precedent retired a dataset with a 0.04 gap over its best
   single feature.
 
-### Count expansion and the 75/25 flag
+**Count expansion and the 75/25 flag**
 
 - No earlier definition expands aggregated cells into rows; MET-2 is met (`count` dropped, not a feature; a row is a
   woman, the paper's unit). A Cases row (cleaning or MET-2) may be worth adding once settled; not a review issue.
@@ -721,7 +727,7 @@ none on this dataset's rules; no drift flag touches SEL-18, SPLIT-32, USE-11 or 
   repeated per SPLIT-33, and the source split was tested first and reproduces the paper. Consistent with SPLIT-5 and
   the practice of testing the source's task before our own.
 
-## Reflection prompt (issue 2)
+**Reflection prompt (issue 2)**
 
 **Mark the 1996-2002 exams `Outdated` as a note, as for cirrhosis and hepatitis_survival, or ship without it?**
 
@@ -752,7 +758,7 @@ none on this dataset's rules; no drift flag touches SEL-18, SPLIT-32, USE-11 or 
 
 **Verdict: include with changes.** It is a real, well-documented screening-risk task with honest features and a large test set. But the preparation turns the 75-79 age group into missing values, and that has to be fixed before the dataset ships.
 
-## Concerns, most to least serious
+**Concerns, most to least serious**
 
 1. **The 75-79 age group was recoded as missing (preparation bug).**
    - The codebook codes `agegrp` as "1 = 35-39 ... 8 = 70-74; 9 = 75-79; 10 = 80-84", and age has no unknown code. The preparation evidently treated 9 as "unknown", the way it is for every other variable.
@@ -795,7 +801,7 @@ none on this dataset's rules; no drift flag touches SEL-18, SPLIT-32, USE-11 or 
    - Random IID 3-fold suits a static, one-row-per-woman registry extract (1996-2002, no dates released). The source's own split is a random 75/25 `training` flag. Dropping that flag from the features is correct.
    - A temporal or by-registry split would mirror deployment better, but the release has no dates or site identifiers, so it cannot be done.
 
-## Task and honesty checks
+**Task and honesty checks**
 
 - **Use:** a woman attends screening mammography. The radiology or primary-care team estimates her near-term breast-cancer risk from questionnaire items and BI-RADS density, to guide supplemental imaging, chemoprevention counselling or the screening interval. This is the BCSC risk model's real use.
 - **Timing:** every feature is known at the index visit. Density is read from the index mammogram. The leaking item, the index mammogram's assessment, is excluded by the source ("no ... assessment (outcome) of the index screening mammogram"). Women with a prior breast cancer are excluded.
@@ -803,7 +809,7 @@ none on this dataset's rules; no drift flag touches SEL-18, SPLIT-32, USE-11 or 
 - **Weight:** `task.md` names no weight column. That is correct: rows are already expanded, so `count` must not be applied a second time.
 - **Licence:** the site offers a free public-use file after a name/institution/email form, and the reference must be cited. No formal licence text is given, so check whether redistribution is allowed.
 
-## What I could not check
+**What I could not check**
 
 - The full 1,007,660-row table (I had only the 200k sample) and the raw `risk.txt`.
 - Which source version and which outcome column were used.
@@ -818,7 +824,7 @@ none on this dataset's rules; no drift flag touches SEL-18, SPLIT-32, USE-11 or 
 
 All scores are ROC AUC on the 3 shipped folds, using all 1,007,660 rows (no subsampling).
 
-## Exploits
+**Exploits**
 
 | # | Exploit | Script | Honest score | Exploited score | Gain (per split, range) | A deployed model has it? | Fix |
 |---|---|---|---|---|---|---|---|
@@ -832,7 +838,7 @@ The noise floor for scale: adding a column of random numbers to the default Ligh
 - What I could not rule out: the radiologist who sees a lesion on the index exam might rate density differently, or leave it missing. Density is missing in 27% of rows. Its missing flag on its own adds 0.002 over dropping density (0.6397 against 0.6375), which is inside the noise floor.
 - What would decide it: the AUC of density taken from the prior exam, which this release does not include.
 
-## Flaws that hurt an honest model
+**Flaws that hurt an honest model**
 
 None in the data. No training rows are mislabelled or out of time; the regime is IID with one row per index mammogram.
 
@@ -849,12 +855,12 @@ The default untuned LightGBM slightly overfits 12 sparse categoricals (71,328 of
 
 For reference, Barlow et al. 2006 report c = 0.631 (premenopausal) and 0.624 (postmenopausal) for separate models. A pooled model gains from age, which differs a lot between the two groups.
 
-## Preparation issues (no score effect)
+**Preparation issues (no score effect)**
 
 - **`age_group` has no `75-79` level.** The source codes 1 to 10 (35-39 to 80-84) with no unknown code. The kit has 9 levels plus 56,233 NaN, and the NaN rows have a cancer rate of 1.154% (70-74: 1.094%, 80-84: 1.092%). So NaN here means 75-79. Trees treat NaN as its own level, so this costs nothing, but the meaning is wrong. **Fix:** map NaN back to `75-79`.
 - **Size and source version.** The kit's size (1,007,660 rows, 7,319 cancers) matches the "1 million women" of the paper and the one-observation-per-woman second release, not the 2,392,998-mammogram first release. I could not confirm this, because the source file is behind a registration form.
 
-## Attacks that found nothing
+**Attacks that found nothing**
 
 | Attack | Result |
 |---|---|
@@ -872,7 +878,7 @@ For reference, Barlow et al. 2006 report c = 0.631 (premenopausal) and 0.624 (po
 | Columns from after the outcome | None. The best single feature is age (0.610). No column comes close to the full model |
 | Web search | No competition, forum or "leak" thread exists for this dataset. It is distributed after a registration form, so I did not try looking rows up in the published file |
 
-## What I could not check
+**What I could not check**
 
 - Whether density measured on the index exam differs from prior-exam density for women later diagnosed (this would need the full BCSC data).
 - Whether the kit is the one-per-woman release. The copy tests found no same-woman leakage, which fits that release.
@@ -899,7 +905,7 @@ the fix's effect at LR 0.6489 -> 0.6489, LightGBM 0.6551 -> 0.6557.
 
 Gain over age alone, per fold: LR +0.037 / +0.038 / +0.043; LightGBM +0.044 / +0.049 / +0.053.
 
-## 1. A real use case, on the source made for it (P3: USE-1 Must, USE-8 Must, USE-9 Should; P5: PROV-7 Must)
+**1. A real use case, on the source made for it (P3: USE-1 Must, USE-8 Must, USE-9 Should; P5: PROV-7 Must)**
 
 - Claim: the rows, inputs and label are those of the BCSC's published risk model (Barlow 2006, JNCI). It is the only
   open source of the risk task *before the read*. The source has no teaching-only clause. Its sibling
@@ -917,7 +923,7 @@ Gain over age alone, per fold: LR +0.037 / +0.038 / +0.043; LightGBM +0.044 / +0
   cannot override USE-9 (Should). If the curator prefers the prevention wording, the fallback is `fit="approximate"`
   with the horizon named. That is still a ship (USE-8).
 
-## 2. Nothing leaks; density is a legitimate input (P4: LEAK-10 Must, LEAK-37 Must, LEAK-42; P2: SEL-14 Must)
+**2. Nothing leaks; density is a legitimate input (P4: LEAK-10 Must, LEAK-37 Must, LEAK-42; P2: SEL-14 Must)**
 
 - Density is the radiologist's reading of this mammogram, recorded before the exam's assessment. The source withholds
   the assessment ("The index mammogram's assessment is not included"). The BCSC calculator takes density as an input.
@@ -931,7 +937,7 @@ Gain over age alone, per fold: LR +0.037 / +0.038 / +0.043; LightGBM +0.044 / +0
 - Missing density or last-mammogram result raises risk 1.2-1.4x within age. Both values are fixed at the visit (site,
   first exam), so LEAK-37 keeps them as inputs. One line in the notes covers it.
 
-## 3. The split is the tree's split, and the source's split was tested first (P4: SPLIT-36, SPLIT-5, SPLIT-32, USE-11)
+**3. The split is the tree's split, and the source's split was tested first (P4: SPLIT-36, SPLIT-5, SPLIT-32, USE-11)**
 
 - Split auditor: the walk reaches L-FORCED.random and `ForcedIIDFromTemporal`, which matches `split_leaf`.
   - One exam per woman, so no unit crosses the split (USE-11, as `breast_cancer_prediction`).
@@ -948,7 +954,7 @@ Gain over age alone, per fold: LR +0.037 / +0.038 / +0.043; LightGBM +0.044 / +0
   scores later women of the same programmes. Keep A as written (split auditor's recommendation). If the curator reads
   the use case as transfer beyond the BCSC, only a tag changes, not the ship.
 
-## 4. Worth benchmarking: a real gain over the best single feature (P6: TP-2 Should, TP-4 Must)
+**4. Worth benchmarking: a real gain over the best single feature (P6: TP-2 Should, TP-4 Must)**
 
 - From the table above:
   - Both methods beat age alone on every fold: LR by +0.037 to +0.043, LightGBM by +0.044 to +0.053. TP-4 step 1
@@ -960,7 +966,7 @@ Gain over age alone, per fold: LR +0.037 / +0.038 / +0.043; LightGBM +0.044 / +0
 - Under triage, the top 10% of exams by LightGBM hold 21.9% of the cancers, against 15.2% by age and 10.9% at random.
   That change in a reading queue is large enough to matter (TP-2 step 2).
 
-## 5. `roc_auc` is the source's deliberate metric and fits the decision (P6: MET-5 Should, MET-8 Should; the source-metric tension row)
+**5. `roc_auc` is the source's deliberate metric and fits the decision (P6: MET-5 Should, MET-8 Should; the source-metric tension row)**
 
 - The abstract names the c statistic as its one measure ("Concordance ... was assessed by a concordance (c)
   statistic"). MET-5 makes it the source metric. It is also MET-8's binary fallback.
@@ -975,7 +981,7 @@ Gain over age alone, per fold: LR +0.037 / +0.038 / +0.043; LightGBM +0.044 / +0
 - Nuance to document (claim auditor 16): the published 0.631 and 0.624 are per menopause stratum, while ours is pooled
   (about 0.65).
 
-## 6. The age of the data is a note, not a reason to drop (P2: SEL-18 Should)
+**6. The age of the data is a note, not a reason to drop (P2: SEL-18 Should)**
 
 - SEL-18: `Outdated` alone does not leave a dataset out. The decision still exists: BCSC builds its current models on
   data of this kind. No newer open BCSC file has the outcome (Risk Factors 2005-2017 has none).
@@ -985,7 +991,7 @@ Gain over age alone, per fold: LR +0.037 / +0.038 / +0.043; LightGBM +0.044 / +0
   ship with `Outdated` as a note for the same kind of era change. Take issue 2 **B**, ship with `Outdated` as a note.
   That is a ship, and it treats like cases alike.
 
-## 7. What is left is cheap P7 cleaning; fix it and ship (P7: CLEAN-12 Should; principles, "a real task against imperfect cleaning")
+**7. What is left is cheap P7 cleaning; fix it and ship (P7: CLEAN-12 Should; principles, "a real task against imperfect cleaning")**
 
 - Hormone therapy and surgical menopause code 9 includes "not menopausal". CLEAN-12 asks to split a mixed level by what
   the data shows, and `menopausal_status` shows it: all 280,205 premenopausal women carry 9 in both columns.
@@ -1017,7 +1023,7 @@ remedy below is a text, tag or label change. None asks to retire the dataset or 
 
 Ordered by principle rank, then strength (principles.md, "What the curator reads first").
 
-## 1. Mark it `Outdated` as a note (issue 2 B, not A). SEL-18 (Should), like cases alike
+**1. Mark it `Outdated` as a note (issue 2 B, not A). SEL-18 (Should), like cases alike**
 
 - **Problem:** the draft recommends shipping with no marker because "the age matters for a deployed model, not for
   comparing methods". The curator decided the opposite on the same facts. In cirrhosis_patient_survival_prediction
@@ -1034,7 +1040,7 @@ Ordered by principle rank, then strength (principles.md, "What the curator reads
   The facts named above are SPLIT-32 reasons against a stationary relation, and I agree with A. Option C as worded
   (`Outdated` alone) would break SEL-18. Rewrite it or drop it.
 
-## 2. The fit is approximate, not direct, as the use case is written. USE-5, USE-8 (Must); USE-9 (Should)
+**2. The fit is approximate, not direct, as the use case is written. USE-5, USE-8 (Must); USE-9 (Should)**
 
 - **Problem:** the use case is "tailor screening and prevention" at the visit, and the record sets `fit="direct"`.
   Two gaps:
@@ -1064,7 +1070,7 @@ Ordered by principle rank, then strength (principles.md, "What the curator reads
   risk that screening and prevention decisions use. If the curator prefers the triage reading, the use case must say
   that density is the radiologist's reading at the start of the read, and the gap still needs naming.
 
-## 3. Decide the place, and write it into the use case. SPLIT-36 [CLI.meets] (Should)
+**3. Decide the place, and write it into the use case. SPLIT-36 [CLI.meets] (Should)**
 
 - **Problem:** the data pools 6 BCSC registries with no registry column. The use case says "a screening programme",
   which does not say whether that means a BCSC programme scoring later women or any programme. The BCSC calculator and
@@ -1076,7 +1082,7 @@ Ordered by principle rank, then strength (principles.md, "What the curator reads
   auditor's A). For any programme, add a group basis line naming the 6 registries the data cannot key. Either way the
   choice should be written down, not left implicit.
 
-## 4. Split the "not menopausal" code, and label the relatives level honestly. CLEAN-12 (Should)
+**4. Split the "not menopausal" code, and label the relatives level honestly. CLEAN-12 (Should)**
 
 - **Problem:** in `surgical_menopause` and `current_hormone_therapy`, code 9 means "unknown or not menopausal". It now
   becomes missing for all 280,205 premenopausal women, mixed with true unknowns: 198,790 and 96,893 postmenopausal
@@ -1090,7 +1096,7 @@ Ordered by principle rank, then strength (principles.md, "What the curator reads
   - `first_degree_relatives_with_breast_cancer` level "1" becomes "1 (or positive, number unknown)", or a note says
     so (codebook).
 
-## 5. Correct the review's facts before the curator decides on them. EV-1, EV-2, EV-6; PROV (citation)
+**5. Correct the review's facts before the curator decides on them. EV-1, EV-2, EV-6; PROV (citation)**
 
 The draft's issues rest partly on wrong numbers.
 
@@ -1109,7 +1115,7 @@ The draft's issues rest partly on wrong numbers.
   (checked in rfdataset.html). Use the required text (R5).
 - **Remedy:** rewrite those lines; no data change.
 
-## Raised in phase A and dropped (no case)
+**Raised in phase A and dropped (no case)**
 
 - **Metric `roc_auc` against log loss.** The abstract names the c statistic as the paper's one measure ("Concordance
   of the predicted with the observed outcomes was assessed by a concordance (c) statistic"). That is a deliberate
@@ -1133,7 +1139,7 @@ The critic and I now agree on every point except the fit, and I concede the fit 
 after changes**. The changes are text, one tag and one categorical level. The folds, rows and target stay. No new
 experiment was needed. The facts below come from the phase A reports and my opening run.
 
-## 1. `Outdated` as a note (issue 2 B): concede
+**1. `Outdated` as a note (issue 2 B): concede**
 
 I conceded this in my opening point 6. SEL-18 (Should) and like cases alike point the same way: cirrhosis
 (2026-10-15 and 2026-11-05) and hepatitis_survival (2026-11-10) are the precedent, and the draft gives no fact that
@@ -1142,7 +1148,7 @@ sets this case apart.
 - Option C as worded breaks SEL-18. Drop it or give it its other reasons.
 - Issue 1 stays at A.
 
-## 2. Fit approximate, not direct: concede (I withdraw the triage rewrite)
+**2. Fit approximate, not direct: concede (I withdraw the triage rewrite)**
 
 My opening argued that USE-9 gives a direct fit through a pre-read triage use case. The critic's objection holds, for
 two reasons.
@@ -1173,7 +1179,7 @@ The size of the density gap is known. Dropping density costs about 0.016 ROC AUC
 The question and `known` already say density comes from this mammogram's read, before its assessment, so only
 `fit` and `fit_reason` change.
 
-## 3. Write the place into the use case: concede the write-down, keep leaf A
+**3. Write the place into the use case: concede the write-down, keep leaf A**
 
 The folds are identical under either reading (split auditor), so this is a SPLIT-36 documentation step, not a split
 change.
@@ -1183,14 +1189,14 @@ change.
   goes to a human reviewer.
 - Either way the sentence goes into `use_case`.
 
-## 4. CLEAN-12, "not menopausal" level and the relatives label: concede
+**4. CLEAN-12, "not menopausal" level and the relatives label: concede**
 
 This is the same as my opening point 7 (CLEAN-12, Should): the data shows the state through `menopausal_status`.
 - Code 9 becomes "not menopausal" for premenopausal women and stays missing otherwise.
 - The relatives level "1" says "or positive, number unknown".
 - Score effect nil. These are cheap, safe P7 fixes.
 
-## 5. Correct the draft's facts: concede, with the rerun values
+**5. Correct the draft's facts: concede, with the rerun values**
 
 Agreed on all of them: R3 (24.8% on hormone therapy; 0.567 is the menopause code; HT yes vs no AUC 0.510), R4
 (sibling not retired), claim 16 (pooled against per-stratum c statistic) and R5 (P01CA154292 and the "Downloaded"
@@ -1214,12 +1220,12 @@ Still, the record should quote the rerun check's README once it lands.
 Per-stratum wording: "per menopause stratum our LR reaches 0.62-0.63 (claim auditor), the published 0.631 / 0.624;
 pooled, 0.649".
 
-## On the critic's dropped points
+**On the critic's dropped points**
 
 I agree with all four: metric `roc_auc` (MET-5), issue 3 A, value (TP-2 and TP-4: +0.037 to +0.053 over age on 3 of 3
 folds), and duplicates, flag and time tag as implemented. Nothing remains to dispute.
 
-## Joint judgment record (proposed for the mediator)
+**Joint judgment record (proposed for the mediator)**
 
 **Verdict:** ship after changes.
 
@@ -1239,7 +1245,7 @@ We agree on the verdict: ship after changes. We agree on `Outdated` as a note (i
 the file version (issue 3 A), the "not menopausal" level, and the text fixes R3-R5. One dispute is left: whether the
 fit is `direct` (advocate's point 1).
 
-## Disputed: point 1, fit `direct` via a pre-read triage use case (USE-8 Must, USE-9 Should)
+**Disputed: point 1, fit `direct` via a pre-read triage use case (USE-8 Must, USE-9 Should)**
 
 The advocate concedes the gap: "`direct` overstates 'tailor screening and prevention'". The only question is whether
 the triage rewrite makes the fit direct. It does not.
@@ -1267,7 +1273,7 @@ the triage rewrite makes the fit direct. It does not.
   fallback for the prevention wording.
 - Under USE-8, approximate is still a ship. The cost is one honest field.
 
-## Conceded
+**Conceded**
 
 | Advocate's point | Concession |
 |---|---|
@@ -1282,7 +1288,7 @@ Caveat on the advocate's table: it was run on the frame with the 75-79 band stil
 the effect of the fix as nil (LightGBM 0.6551 to 0.6557), so the table stands. The record should cite the rerun's
 numbers, not these.
 
-## Proposed judgment record
+**Proposed judgment record**
 
 - **Verdict:** ship after changes.
 - **Validity:**
