@@ -297,7 +297,7 @@ sense and is justifiable keep it and resolve them"); the record's CC line says t
 
    **Andrej (2026-11-27, discuss):** I tend towards B, but wouldn't that also mean having millions of samples then?
 
-   **Reply (2026-11-27):** No: B can keep the same 1,458,644 trips and only add `ratecodeid` to them.
+   **Answer (AI, 2026-11-27):** No: B can keep the same 1,458,644 trips and only add `ratecodeid` to them.
      - The open-data release ("2016 Yellow Taxi Trip Data") holds 69,406,520 trips from January to June 2016, so the Kaggle sample is about 2.1% of it. A rebuild from the full release would have about 69M rows, and the 1M-row budget would sub-sample each train side again.
      - The trips can be matched one to one instead. Measured on one hour (12 April 2016, 08:00-08:59): all 503 Kaggle trips of that hour match an open-data trip on vendor, pickup time, drop-off time and the four coordinates (23,540 open-data trips that hour; 9 keys occur twice, one of them a Kaggle trip whose two open-data records, a charge and a dispute, carry the same `ratecodeid`). The row count, the split and the windows stay as they are.
      - What the column adds is small. `ratecodeid`, the fare rule the driver sets when the meter starts, is 1 (standard) for 97.3% of the half-year's trips, 2 (the JFK flat fare) for 2.1%, and 3 (Newark), 4 (Nassau or Westchester), 5 (negotiated) or 6 (group ride) for the rest. In the matched hour, 493 of 503 were standard. The JFK and Newark trips are already visible from the coordinates, so the new information is mainly the 0.3% of negotiated, out-of-city and group fares. Its effect on a score was not measured.
