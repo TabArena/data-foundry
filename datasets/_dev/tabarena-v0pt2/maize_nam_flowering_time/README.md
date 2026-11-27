@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: maize_nam_flowering_time
 container_format: 2
-checksum: v2:e89b4441bcce5a750e1c53ffb9f7e7093bed7eeb0987f765c7ee5215f797cf60
+checksum: v2:171a463fe26084e8c33318c780e0bb4d86b03d6640b2775f84f7c3ec72c0f8d1
 build: null
 build_stale: false
 raw_files:
@@ -58,13 +58,14 @@ bundle_checks:
   infos:
   - task_metric_input_is_model_input
   accepted:
-    groups_test_groups_few: '25 families, 8 or 9 per test fold and about 1,566 lines
-      scored per fold. The signal across groups is measured, not assumed: on the nine
-      shipped splits ridge scores a per-family r of 0.348 and an untuned LightGBM
-      0.256, where the training mean is undefined per family because it is constant
-      there, and a predictor given each test family''s true mean scores exactly 0.
-      The task is a breeder''s own: the families are the crosses a breeder makes,
-      and a few of them is what a breeding programme holds.'
+    groups_test_groups_few: '25 families, 8 or 9 per test fold and 1,442 to 1,729
+      lines scored per fold. The signal across groups is measured, not assumed: over
+      all 60 shipped splits ridge scores a per-family r of 0.351 (SE 0.005) and is
+      positive on 60 of them, and an untuned LightGBM 0.258 over the 12 measured,
+      where the training mean is undefined per family because it is constant there,
+      and a predictor given each test family''s true mean scores exactly 0. The task
+      is a breeder''s own: the families are the crosses a breeder makes, and a few
+      of them is what a breeding programme holds.'
 decisions: []
 ---
 
@@ -74,7 +75,7 @@ decisions: []
 
 Regression of `days_to_anthesis`, scored with `mean_group_pearsonr` on grouped splits by `family`. 4,699 rows and 1,106 features. Source: Other (2009).
 
-Not built yet. The current definition gives checksum `v2:e89b4441bcce5a750e1c53ffb9f7e7093bed7eeb0987f765c7ee5215f797cf60`.
+Not built yet. The current definition gives checksum `v2:171a463fe26084e8c33318c780e0bb4d86b03d6640b2775f84f7c3ec72c0f8d1`.
 
 ## In brief
 
@@ -169,7 +170,7 @@ Only curators run `build`, when the dataset ships.
 | name | `mean_group_pearsonr` (custom; takes value; higher is better) |
 | origin | context: obvious from the task: the source defines no metric |
 | definition | mean over groups of the Pearson correlation within the group; method='numerai_corr' transforms first as Numerai's CORR |
-| reason | The decision is which lines of one new cross to advance, a ranking inside the cross, and the split holds out whole families. The field's own criterion, which the papers on genomic prediction in these panels report, is the correlation pooled over the held-out lines; it is the original here, from context rather than from this source, since Buckler et al. map flowering-time QTL and declare no prediction metric at all. MET-18 is what makes the declaration per family: 69.3% of the variance of the line values lies between the 25 families, and a predictor that knows nothing but each test family's own true mean scores a pooled r of 0.814, against 0.211 for ridge and 0.236 for an untuned LightGBM on the markers, while the same predictor scores exactly 0 within a family, because it is constant there. A pooled score would therefore rank models by how well they recover a ranking of the crosses that the breeder reads off the parents, not the ranking inside a cross that genomic selection is bought for. Per family the same two models score 0.348 and 0.256, so the declared metric does not flatter them; it scores what the breeder buys. |
+| reason | The decision is which lines of one new cross to advance, a ranking inside the cross, and the split holds out whole families. The field's own criterion, which the papers on genomic prediction in these panels report, is the correlation pooled over the held-out lines; it is the original here, from context rather than from this source, since Buckler et al. map flowering-time QTL and declare no prediction metric at all. MET-18 is what makes the declaration per family: 69.3% of the variance of the line values lies between the 25 families, and a predictor that knows nothing but each test family's own true mean scores a pooled r of 0.793, against 0.209 for ridge and 0.231 for an untuned LightGBM on the markers, while the same predictor scores exactly 0 within a family, because it is constant there. A pooled score would therefore rank models by how well they recover a ranking of the crosses that the breeder reads off the parents, not the ranking inside a cross that genomic selection is bought for. Per family the same two models score 0.351 and 0.258, ridge on all 60 of the shipped splits and positive on every one of them, so the declared metric does not flatter them; it scores what the breeder buys. |
 | inputs | group: `family` |
 
 <details>
@@ -261,8 +262,8 @@ linkage-map markers and flowering time measured over eight environments in 2006 
 
 ## Splits
 
-The default repeated grouped protocol on the 25 families, 3 repeats of 3 folds: each test fold holds 8 or 9
-whole families and about 1,566 of the 4,699 lines. It replaces the random holdout over lines that the
+The default repeated grouped protocol on the 25 families, 20 repeats of 3 folds, 60 splits: each test fold
+holds 8 or 9 whole families and 1,442 to 1,729 of the 4,699 lines. It replaces the random holdout over lines that the
 benchmarking work on these panels uses, which was designed for a different question, comparing algorithms
 inside a population that is already phenotyped, and is a habit rather than a choice for ours (SPLIT-5): a
 random split puts the full siblings of every test line in the training data, which a breeder ranking a new
@@ -270,16 +271,18 @@ cross does not have. A test family's own feature rows are all on the test side a
 (`context="all_rows"`, the grouping definition). Leaf L-EXP.kind of the split tree. The repeats reuse the
 same 25 families, so the spread over repeats is descriptive, not 25 independent crosses.
 
-What the grouped split costs, and why a pooled R^2 reads as no signal here. Over the nine splits an untuned
-LightGBM scores R^2 0.233 on folds of random lines and 0.047 on folds of whole families, a gap of 0.186,
-and the group probe's learnability figures are negative for every family tried (ridge -0.500,
-random forest -0.028, LightGBM -0.025, 5-NN -0.222). That is not an absence of signal: 69.3% of the
-target's variance is between the families, a pooled R^2 is mostly a test of predicting the family mean,
-and no model predicts an unseen cross's mean from markers alone. The signal is inside the family, which is
-where the decision and the declared metric are: on the same splits a random forest scores a per-family
-correlation of 0.303 and beats the dummy on 100% of the folds by +0.3026 (SE 0.0087), while a predictor
-handed each test family's true mean scores exactly 0 there. A reader who scores this dataset with a pooled
-R^2 will conclude the task is unlearnable; that is the metric's choice being skipped, not the task.
+What the grouped split costs, and why a pooled R^2 reads as no signal here. Over the nine splits the group
+probe runs, three of the twenty repeats, an untuned LightGBM scores R^2 0.233 on folds of random lines and
+0.047 on folds of whole families, a gap of 0.186, and its learnability figures across unseen families are
+negative for every model tried (ridge -0.500, random forest -0.028, LightGBM -0.025, 5-NN -0.222). That is
+not an absence of signal: 69.3% of the target's variance is between the families, a pooled R^2 is mostly a
+test of predicting the family mean, and no model predicts an unseen cross's mean from markers alone. The
+signal is inside the family, which is where the decision and the declared metric are: over all 60 shipped
+splits ridge scores a per-family correlation of 0.351 (SE 0.005) and is positive on 60 of 60, over the 30
+the task probe runs a random forest scores 0.303 and beats the dummy on 100% of them by +0.3026 (SE
+0.0087), and a predictor handed each test family's true mean scores exactly 0 there against a pooled r of
+0.793. A reader who scores this dataset with a pooled R^2 will conclude the task is unlearnable; that is
+the metric's choice being skipped, not the task.
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 2,970 to 3,257 rows, test 1,442 to 1,729 rows.
 
@@ -389,7 +392,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 Accepted on purpose:
 
-- `groups_test_groups_few`: 25 families, 8 or 9 per test fold and about 1,566 lines scored per fold. The signal across groups is measured, not assumed: on the nine shipped splits ridge scores a per-family r of 0.348 and an untuned LightGBM 0.256, where the training mean is undefined per family because it is constant there, and a predictor given each test family's true mean scores exactly 0. The task is a breeder's own: the families are the crosses a breeder makes, and a few of them is what a breeding programme holds.
+- `groups_test_groups_few`: 25 families, 8 or 9 per test fold and 1,442 to 1,729 lines scored per fold. The signal across groups is measured, not assumed: over all 60 shipped splits ridge scores a per-family r of 0.351 (SE 0.005) and is positive on 60 of them, and an untuned LightGBM 0.258 over the 12 measured, where the training mean is undefined per family because it is constant there, and a predictor given each test family's true mean scores exactly 0. The task is a breeder's own: the families are the crosses a breeder makes, and a few of them is what a breeding programme holds.
 
 ## Data checks
 

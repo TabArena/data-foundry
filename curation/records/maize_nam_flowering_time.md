@@ -115,7 +115,8 @@ a best linear unbiased prediction across eight environments, so no value is comp
 with 0 errors and 0 warnings over 28 checks and nothing is built. The leak, task, dtype, generated and
 hidden-group probes are clean: no test row has an exact feature copy in training, the 1-NN R^2 is negative, the
 best single marker is worth 0.050 on the declared metric against a random forest's 0.303, and no column is
-flagged. The review panel has not run; these three issues are what a build of this definition raises.
+flagged. Over all 60 shipped splits ridge scores a per-family correlation of 0.351 and is positive on every
+one of them. The review panel has not run; these three issues are what a build of this definition raises.
 
 **Main points:** which genotype the dataset ships on, which of the three flowering traits is the target, and
 whether the breeder's cross is new (which decides the split and the few-groups warning with it).
@@ -189,18 +190,20 @@ target's variance is 69.3%, higher than the soy dataset's 55.7%.
    - The definition holds out whole families, which is a breeder ranking the progeny of a cross nobody has grown.
    - A breeder who has already phenotyped part of a cross and wants the rest ranked is a different and equally
      real use case, and it is a random split over lines.
-   - The choice decides the few-groups warning with it, since 25 families give 8 or 9 per test fold.
+   - The choice decides the few-groups warning with it, since 25 families give 8 or 9 per test fold over the 60
+     shipped splits.
 
    **Effect on the task:** under a random split every test line has full siblings in training, and the scores rise
    steeply; the declared per-family metric would then be scoring a much easier question.
 
    **Experiments:**
 
-   | Measured on the nine splits | Folds of random lines | Whole families held out |
-   |---|---|---|
-   | LightGBM, pooled R^2 | 0.233 (SE 0.015) | 0.047 (SE 0.047) |
-   | random forest, per-family correlation (the declared metric) | not measured | 0.303, beating the dummy on 100% of folds by +0.3026 (SE 0.0087) |
-   | a predictor given each test family's true mean | not measured | pooled r 0.814, per-family exactly 0 |
+   | | Folds of random lines | Whole families held out | Splits measured |
+   |---|---|---|---|
+   | LightGBM, pooled R^2 | 0.233 (SE 0.015) | 0.047 (SE 0.047) | 9 of 60, the group probe's three repeats |
+   | ridge, per-family correlation (the declared metric) | not measured | 0.351 (SE 0.005), positive on 60 of 60 | all 60 |
+   | random forest, per-family correlation | not measured | 0.303, beating the dummy on 100% of folds by +0.3026 (SE 0.0087) | 30 of 60, the task probe |
+   | a predictor given each test family's true mean | not measured | pooled r 0.793, per-family exactly 0 | all 60 |
 
    The group probe's learnability figures are negative for every family tried on unseen crosses (ridge -0.500,
    random forest -0.028, LightGBM -0.025, 5-NN -0.222), which is the same fact read on a pooled R^2: 69.3% of the
@@ -212,7 +215,7 @@ target's variance is 69.3%, higher than the soy dataset's 55.7%.
 
    | | Option | What it does | Pro | Con |
    |---|---|---|---|---|
-   | A | Hold out whole families (implemented), accepting the few-groups warning | 3 x 3 splits over the 25 families, 8 or 9 per test fold | the harder and more useful question, and the one genomic selection is bought for; the warning is inherent to it and the signal across families is measured | 25 groups is few, and the repeats reuse them, so the spread over repeats is descriptive |
+   | A | Hold out whole families (implemented), accepting the few-groups warning | 20 x 3 splits over the 25 families, 8 or 9 per test fold | the harder and more useful question, and the one genomic selection is bought for; the warning is inherent to it and the signal across families is measured | 25 groups is few, and the repeats reuse them, so the spread over repeats is descriptive |
    | B | Random split over lines | siblings of a test line are in training | more folds, no few-groups warning | a breeder ranking a new cross does not have its siblings' values; the score mostly measures family membership |
    | C | Both, as two datasets | A and B as separate folders | both use cases served | two datasets of one table, and the easier one would read as the better result |
 

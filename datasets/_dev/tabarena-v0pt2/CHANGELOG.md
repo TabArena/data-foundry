@@ -5,11 +5,12 @@
 - New folder. The maize Nested Association Mapping population as its own project released it for Buckler et al.
   2009: 4,699 recombinant inbred lines of 25 families, each a cross of B73 with one other founder, 1,106 imputed
   linkage-map markers, and days to anthesis as the published line value across eight environments, 66.02 to 91.23
-  days (mean 77.16, SD 3.68). Grouped 3x3 splits holding out whole families (8 or 9 per test fold, about 1,566
-  lines), leaf `L-EXP.kind`, `UnseenGroup`. The metric is `mean_group_pearsonr` on the family from context under
+  days (mean 77.16, SD 3.68). Grouped 20x3 splits holding out whole families (60 splits, 8 or 9 families and
+  1,442 to 1,729 lines per test fold), leaf `L-EXP.kind`, `UnseenGroup`. The metric is `mean_group_pearsonr` on the family from context under
   the per-group rule adopted earlier today: 69.3% of the target's variance lies between the 25 families, and a
-  predictor given each test family's true mean scores a pooled r of 0.814 against ridge's 0.211 and an untuned
-  LightGBM's 0.236, while scoring exactly 0 within a family. Per family the same two score 0.348 and 0.256.
+  predictor given each test family's true mean scores a pooled r of 0.793 against ridge's 0.209 and an untuned
+  LightGBM's 0.231, while scoring exactly 0 within a family. Per family the same two score 0.351 (SE 0.005,
+  positive on 60 of 60 splits) and 0.258.
 - Two facts were measured rather than assumed, and both are asserted in `_clean`. The genotype table's marker
   columns are unnamed (`i0` to `i1105`); the released marker list's fourth column is the global index, a
   permutation, and sorting on it gives linkage order, which the data confirms, since adjacent columns correlate at
@@ -29,13 +30,20 @@
   the closest tenth and -1.009 over all, the best single marker is worth 0.050 on the declared metric against a
   random forest's 0.303, a random forest beats the dummy on 100% of the splits by +0.3026 (SE 0.0087), no column
   is flagged by the dtype probe, and the generated-data probe finds identity at 5.0% against 5.0% shuffled.
-- The group probe, run after the rest: over the nine splits an untuned LightGBM scores a pooled R^2 of 0.233 on
-  folds of random lines and 0.047 on folds of whole families, a gap of 0.186, and the learnability figures across
+- The group probe, run after the rest over nine of the sixty splits (three of the twenty repeats): an untuned
+  LightGBM scores a pooled R^2 of 0.233 on folds of random lines and 0.047 on folds of whole families, a gap of 0.186, and the learnability figures across
   unseen families are negative for every model tried (ridge -0.500, random forest -0.028, LightGBM -0.025, 5-NN
   -0.222). That is the between-family component, not an absence of signal: 69.3% of the variance sits between the
   families, no model predicts an unseen cross's mean from markers alone, and the declared metric does not ask it
-  to, scoring 0.303 per family on the same splits. The split comment now says so, because a reader who scores this
+  to, while ridge scores 0.351 per family over all 60 splits and a random forest 0.303 over the 30 the task probe
+  runs. The split comment now says so, because a reader who scores this
   dataset with a pooled R^2 would conclude the task is unlearnable.
+- A correction made the same day, before the review panel: the first version of this entry, the split comment and
+  the review said the dataset ships 3 repeats of 3 folds and quoted every model figure as measured on those nine
+  splits. It ships 20 repeats of 3 folds, 60 splits; the figures were measured on a split set built by hand with
+  the recommended dimensions rather than on the definition's own. Re-measured on the shipped splits the numbers
+  move little (ridge per family 0.348 to 0.351, LightGBM 0.256 to 0.258, the oracle's pooled r 0.814 to 0.793),
+  so nothing it argued changes, but every count and figure now names the splits it was measured on.
 - `accepted_check_warnings` carries `groups_test_groups_few` with that evidence: 25 families is few, and it is
   inherent to the split the use case asks for.
 - `dataset check`: 0 errors, 0 warnings, 1 info over 28 checks; README generated. Nothing built. The record's
