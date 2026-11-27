@@ -55,7 +55,7 @@ When two files disagree, the one named here wins for its topic; the other is cor
 | What the dataset is: data, target, splits, notes | the definition, `dataset.py` | the generated README (rewrite it with `dataset check`), the record's prose |
 | The verdict, the status, the claim, the priority | the record's front matter | the review's outcome, a chat message not yet applied |
 | The curator's decisions and their reasons | `CC` lines in the record, `Exception to` lines | an AI assessment |
-| What is still open | the record's `## Review`, and the working copy's cross-dataset `REVIEW.md` | the review page and its report (snapshots of these), a run folder |
+| What is still open | the record's `## Review`; across datasets, a GitHub issue | the review page and its report (snapshots of these), a run folder |
 | The rules | the knowledge skills | memory (pointers and preferences only), an old run report |
 | A build | the README's build record and the CHANGELOG | the warehouse folder names |
 

@@ -1,20 +1,17 @@
 # Review format
 
-A dataset's review lives in its curation record, the one source of its curation (Lennart, 2026-11-11); only the items
-that span datasets have a file of their own:
+A dataset's review lives in the `## Review` section of its curation record (`curation/records/<unique_name>.md`,
+between `## Comments` and `## Reference`), the one source of its curation (Lennart, 2026-11-11): the review of an added
+dataset, or of a record without a folder (not added). A point that spans datasets has no review file: a standing rule
+goes into the knowledge skills as a draft for the curator to confirm, open work becomes a GitHub issue (Lennart,
+2026-11-25).
 
-| Where | What |
-|---|---|
-| the `## Review` section of `curation/records/<unique_name>.md`, between `## Comments` and `## Reference` | the review of one record: an added dataset, or a record without a folder (not added) |
-| `datasets/_dev/tabarena-v0pt2/REVIEW.md` (optional) | items that span datasets |
-
-`scripts/collect_reviews.py` reads both and writes one report; `scripts/build_review_page.py` turns that report into
-the review page. The report and the page stay in the local run folder and are never committed: they are the only files
-between the record and the board. When a review breaks a rule below, the collector stops and names the record (or the
-cross-dataset file) and the line, counted in that file. Fix the record, not the scripts. The collector also stops on a
-`REVIEW.md` in a dataset folder and on an `**Open issues (AI, <date>):**` block in a record's `## Comments`, both
-retired on 2026-11-11; `scripts/move_reviews_to_records.py` moves a folder's `REVIEW.md` into its record (`--check`
-lists what it would move), and an open-issues block is moved by hand ("A record without a folder", below).
+`scripts/collect_reviews.py` reads the records' reviews and writes one report; `scripts/build_review_page.py` turns
+that report into the review page. The report and the page stay in the local run folder and are never committed: they
+are the only files between the record and the board. When a review breaks a rule below, the collector stops and names
+the record and the line, counted in that file. Fix the record, not the scripts. The collector also stops on a
+`REVIEW.md` anywhere in the working copy and on an `**Open issues (AI, <date>):**` block in a record's `## Comments`,
+both retired on 2026-11-11; either is moved by hand into the record's `## Review`, in the format below.
 
 A record's review keeps every issue, so the page shows how each dataset was decided. When the curator settles an
 issue, the decision goes to the definition and to the record's `## Comments` (a `CC` line), and the issue stays in the
@@ -27,7 +24,7 @@ have no issue and no field row: the panel found nothing for the curator, who onl
 is no evidence) is in
 [`../../knowledge-curation/references/writing.md`](../../knowledge-curation/references/writing.md); the record's
 sections in [`../../knowledge-data-foundry/references/records.md`](../../knowledge-data-foundry/references/records.md),
-and the working copy with its cross-dataset file in
+and the working copy in
 [`../../knowledge-data-foundry/references/working_copy.md`](../../knowledge-data-foundry/references/working_copy.md).
 
 ## Editing a record's review
@@ -96,15 +93,15 @@ row and the row the `**Recommendation:**` names by its letter. A rule ID belongs
 a footnote or the notes for the AI, never in the bullets or the title. The page shows the problem, then every other
 bullet before the options in a closed box "Details" (its summary lists their leads), then the options and the
 recommendation. It shows the footnotes in a closed box "Rules and references" (a click on a reference opens it) and the
-notes in a closed box "Notes for the AI". The same holds for the review of a record without a folder and for a
-cross-dataset item. The collector warns (and still writes the report) for an open issue without the three required
-bullets or the table, with a table that has no `(implemented)` row, with a problem of more than three bullets or a
-bullet of more than one sentence, or with a rule ID in its text.
+notes in a closed box "Notes for the AI". The same holds for the review of a record without a folder. The collector
+warns (and still writes the report) for an open issue without the three required bullets or the table, with a table
+that has no `(implemented)` row, with a problem of more than three bullets or a bullet of more than one sentence, or
+with a rule ID in its text.
 
 An issue keeps the public links to its evidence. An answer to the curator's question goes into the issue as
 `**Answer (AI, <date>):**`; it does not close the issue. Write the curator's note that prompted it just before, at the
-start of a line, as `**Lennart (<date>, <mark>):** <the note, in their words>`. The page shows an issue or a
-cross-dataset item as a conversation: the original text, then one box per turn, each starting at a line that opens
+start of a line, as `**Lennart (<date>, <mark>):** <the note, in their words>`. The page shows an issue as a
+conversation: the original text, then one box per turn, each starting at a line that opens
 with one of these labels:
 `**Answer (AI, <date>):**`, `**Consistency check (AI, <date>):**`, `**<curator> (<date>[, <mark>]):**`,
 `**Resolved (<date>[, <who>]):**` or `**Deferred (<date>):**`. An open item whose last turn is the AI's is marked
@@ -225,29 +222,6 @@ retired. Move one by hand: its lead becomes the `**Outcome:**` (the first senten
 `**Main points:**` (the rest, or the question the issues put), its issues go under `**Issues for <curator>:**`, and
 the block leaves `## Comments`.
 
-## Items across datasets
-
-The working copy's own `REVIEW.md` holds the items that span datasets: one decision for many datasets at once (a
-rule, a framework change, a family stance). It is the only review file outside the records. A choice taken per
-dataset goes into each record's review as an issue, one per dataset, even when one scan found it in several; a
-cross-dataset item then covers only the rule or code change itself, if any (Lennart, 2026-11-08: "too many per dataset
-choice in the across dataset tab"):
-
-```markdown
-# Across datasets
-
-### Framework (`src/data_foundry/v2/`)
-
-- **`dataset new` leaves `domain` as `"TODO"`.** A fresh scaffold then fails to import. Proposal: fill it from the
-  record.
-```
-
-After the title come only `### <section>` headings, each with items written as top-level `- ` bullets. An item runs
-from its bullet to the next one; its title is its bold lead or its first sentence. The page stores the curator's
-mark under the id `x<section>-<item>`, both counted from 0 in file order. So while a page is in use, close a settled
-item with a `**Resolved (<date>):**` label (the page hides it) instead of deleting it, and add new items at the end
-of a section and new sections at the end. Closed items stay, so the decisions remain on the page.
-
 ## The collected report
 
 ```bash
@@ -256,7 +230,7 @@ of a section and new sections at the end. Closed items stay, so the decisions re
     [--title <text>] [--date <YYYY-MM-DD>]
 ```
 
-The report is generated from the records' reviews and the cross-dataset file: never edit or commit it.
+The report is generated from the records' reviews: never edit or commit it.
 `build_review_page.py` parses it as follows; the collector checks that every issue it read arrives there.
 
 ```text
@@ -264,7 +238,6 @@ The report is generated from the records' reviews and the cross-dataset file: ne
 <header>
 ## Summary per record                                   one row per record: | [`name`](#name) | outcome | points |
 ## Record fields that disagree with the definition      one bullet per record: - `name`: field `x`, definition `y`; ...
-## Across datasets                                      the working copy's REVIEW.md
 ## Per dataset                                          one `### <unique_name>` section per record
 ```
 
@@ -273,8 +246,9 @@ The report is generated from the records' reviews and the cross-dataset file: ne
   `collect_reviews.py --metric-marks`, names the records whose declared metric the page shows and marks; without it
   the page shows no metric. `**Horizon marks:**`, from `--horizon-marks`, does the same for the horizon and test
   windows of a temporal task, and `**Split marks:**`, from `--split-marks`, for the declared split.
-* The `##` sections are recognised by how their heading starts (`## Summary`, `## Record fields`,
-  `## Across datasets`); every other `##` section holds `### <unique_name>` sections.
+* The `##` sections are recognised by how their heading starts (`## Summary`, `## Record fields`); every other `##`
+  section holds `### <unique_name>` sections. A report without a record row has nothing to review and stops the
+  builder.
 * The outcome cell sets the category: starting with `not added`, Not added (no folder); containing `recommended`,
   Rec. not to ship; otherwise To ship. `added as `<folder>`` names the folder. A folder gone from the working copy is
   shown from the last commit that still had its `dataset.py`, marked retired; its review is in the record, so a
@@ -285,7 +259,7 @@ The report is generated from the records' reviews and the cross-dataset file: ne
   reads (`**Data:**`, `**Definition:**`, `**Checks:**`, `**Probes:**`, `**Verification:**`, `**Fix round:**`,
   `**Recommendation:**`, `**Task:**`, `**Split:**`, `**Source and licence:**`, `**Final critic:**`). A label may
   carry a tail in parentheses. Any other bold text at the start of a line is text of the current block.
-* An issue or cross-dataset item with a `Resolved` or `Deferred` label, or whose title starts with either word, is
+* An issue with a `Resolved` or `Deferred` label, or whose title starts with either word, is
   closed: the page hides it behind a toggle.
 * The collector copies a review's `**Review panel:**` block unchanged after the record's issues. The builder
   takes everything from that label (outside fenced code) to the end of the record section as the panel and reads
@@ -315,14 +289,12 @@ Its tabs, in this order:
 5. `dataset.py`, 6. `README.md`, 7. Curation record: the files as of the build.
 
 The verdict box follows the tabs; for a record with a panel, a line "Panel: <recommendation>" stands under its
-heading. The Across datasets view holds the cross-dataset items, and the Summary view all verdicts, the report's
-header, and the decisions as text or JSON.
+heading. The Summary view holds all verdicts, the report's header, and the decisions as text or JSON.
 
 ## Example
 
 The test fixtures in `tests/fixtures/review_files/` are a complete example: a record whose review has a review panel
-(`tests/fixtures/review_files/records/airfoil_self_noise.md`), the working copy's cross-dataset file
-(`working_copy/REVIEW.md`, the item above) and a record without a folder
+(`tests/fixtures/review_files/records/airfoil_self_noise.md`) and a record without a folder
 (`tests/fixtures/review_files/records/churn_telco_south_asia_duplicate.md`, the review above). The first record's
 review reads:
 

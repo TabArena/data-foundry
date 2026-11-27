@@ -7,13 +7,12 @@ Usage, from the repository root::
         [--records curation/records]
 
 Reads the ``## Review`` section of every curation record (a dataset's review, open and settled: Lennart, 2026-11-11,
-the record is the one source of a dataset's curation) and the optional ``<root>/REVIEW.md`` (items across datasets),
-and writes one report that ``build_review_page.py`` turns into the review page. The format of a review, of the
-cross-dataset file and of the report is ``references/review_file_format.md``; a review that breaks it stops the
-collector with the record and the line. A ``REVIEW.md`` in a dataset folder stops it too
-(``move_reviews_to_records.py`` moves it into the record), and so does an open-issues block left in a record's
-comments (moved by hand into its ``## Review``). The report is checked with the builder's
-own parser before the collector reports success.
+the record is the one source of a dataset's curation), and writes one report that ``build_review_page.py`` turns into
+the review page. The format of a review and of the report is ``references/review_file_format.md``; a review that
+breaks it stops the collector with the record and the line. A ``REVIEW.md`` anywhere in the working copy stops it too
+(a dataset's review belongs in its record), and so does an open-issues block left in a record's comments (moved by
+hand into its ``## Review``). The report is checked with the builder's own parser before the collector reports
+success.
 
 Needs markdown-it-py (the ``curation`` extra), as the builder does.
 """
@@ -36,7 +35,7 @@ if str(HERE) not in sys.path:
 import build_review_page as brp  # noqa: E402 - the builder sits next to this script, not in a package
 
 REVIEW_FILE = "REVIEW.md"
-"""The working copy's cross-dataset review file; a dataset's review is its record's ``## Review`` section."""
+"""A review file, which the working copy no longer holds: a dataset's review is its record's ``## Review`` section."""
 REVIEW_SECTION_RE = re.compile(r"^## Review\s*$", re.MULTILINE)
 FORMAT = HERE.parent / "references" / "review_file_format.md"
 
@@ -107,11 +106,9 @@ class Entry:
 
 @dataclass
 class Collected:
-    """Everything the report holds: the records, sorted by unique name, and the cross-dataset sections."""
+    """Everything the report holds: the records, sorted by unique name."""
 
     entries: list[Entry]
-    across: str = ""
-    across_items: int = 0
     settled: list[str] = field(default_factory=list)
     """Records left out because nothing on them waits for the curator (:func:`is_settled`)."""
     metric_marks: set[str] | None = None
@@ -318,36 +315,6 @@ def parse_review_file(path: Path, folder: str, text: str | None = None) -> Entry
     )
 
 
-def parse_across(path: Path) -> tuple[str, int]:
-    """The working copy's REVIEW.md: its ``###`` sections as text and the number of items.
-
-    Raises:
-        ReviewFileError: The file holds more than its title and ``###`` sections of ``- `` items.
-    """
-    lines = path.read_text().splitlines()
-    if not lines or not lines[0].startswith("# "):
-        raise ReviewFileError(path, 0, "the file starts with a `# <title>` line")
-    heads = [i for i, ln in enumerate(lines) if ln.startswith("### ")]
-    first = heads[0] if heads else len(lines)
-    stray = next((i for i in range(1, first) if lines[i].strip()), None)
-    if stray is not None or not heads:
-        raise ReviewFileError(path, stray, "after the title come only `### <section>` headings with `- ` items")
-    n_items = 0
-    for k, h in enumerate(heads):
-        end = heads[k + 1] if k + 1 < len(heads) else len(lines)
-        body = [i for i in range(h + 1, end) if lines[i].strip()]
-        items = [i for i in body if lines[i].startswith("- ")]
-        if not items:
-            raise ReviewFileError(path, h, "a section without items; each item is a top-level `- ` bullet")
-        if body[0] != items[0]:
-            raise ReviewFileError(path, body[0], "text before the first item of the section")
-        heading = next((i for i in body if lines[i].startswith("#")), None)
-        if heading is not None:
-            raise ReviewFileError(path, heading, "a heading inside a section; sections are `### ` headings")
-        n_items += len(items)
-    return "\n".join(lines[first:]).strip(), n_items
-
-
 def _record_folder(record_path: Path, name: str, review: str) -> str | None:
     """The record's dataset folder: from ``v2_path``; for a retired dataset (no ``v2_path``), the folder its outcome
     names (``added as `<folder>` ``, else the unique name); None for a record that was not added.
@@ -389,9 +356,9 @@ def parse_record_review(path: Path) -> Entry | None:
         raise ReviewFileError(path, index, error.detail) from None
 
 
-def folder_review_files(root: Path) -> list[Path]:
-    """A ``REVIEW.md`` in a dataset folder of the working copy: none may exist, the review is in the record."""
-    return [p for p in sorted(root.glob(f"*/{REVIEW_FILE}")) if not p.parent.name.startswith(("_", "."))]
+def review_files(root: Path) -> list[Path]:
+    """A ``REVIEW.md`` anywhere in the working copy: none may exist, a dataset's review is in its record."""
+    return sorted(root.rglob(REVIEW_FILE))
 
 
 def _problem_shape(text: str) -> list[str]:
@@ -457,18 +424,15 @@ def collect(root: Path, records: Path, names: list[str] | None = None) -> Collec
     """Read the review files of the working copy ``root`` and the records in ``records``.
 
     Raises:
-        ReviewFileError: A review breaks the format, or a dataset folder holds a review file.
+        ReviewFileError: A review breaks the format, or the working copy holds a review file.
     """
     for folder, option in ((root, "--root"), (records, "--records")):
         if not folder.is_dir():
             raise ReviewFileError(folder, None, f"no such folder; run from the repository root or pass {option}")
-    stray = folder_review_files(root)
+    stray = review_files(root)
     if stray:
         raise ReviewFileError(
-            stray[0],
-            None,
-            "a review file in a dataset folder: the review lives in the record's `## Review` (run "
-            "move_reviews_to_records.py)",
+            stray[0], None, "a review file in the working copy: a dataset's review lives in its record's `## Review`"
         )
     entries: dict[str, Entry] = {}
     for path in sorted(records.glob("*.md")):
@@ -485,8 +449,7 @@ def collect(root: Path, records: Path, names: list[str] | None = None) -> Collec
         if unknown:
             raise ReviewFileError(records, None, f"no review in the records of {unknown}")
         entries = {n: e for n, e in entries.items() if n in names}
-    across, n_across = parse_across(root / REVIEW_FILE) if (root / REVIEW_FILE).is_file() else ("", 0)
-    return Collected(entries=[entries[n] for n in sorted(entries)], across=across, across_items=n_across)
+    return Collected(entries=[entries[n] for n in sorted(entries)])
 
 
 CLOSING_RE = re.compile(r"\*\*(Resolved|Deferred) \(")
@@ -563,22 +526,17 @@ def render_report(collected: Collected, *, title: str, date: str) -> str:
     """The report in the format build_review_page.py reads."""
     entries = collected.entries
     n_records = len(entries) - collected.n_folders
-    sources = [
-        f"the records' reviews of {_plural(collected.n_folders, 'added dataset')}",
-        f"of {_plural(n_records, 'record')} without a folder",
-    ]
-    if collected.across:
-        sources.append("the working copy's REVIEW.md")
     n_issues = sum(len(e.numbers) for e in entries)
     n_fields = sum(len(e.fields) for e in entries)
     out = [
         f"# {title} ({date})",
         "",
-        f"Open review issues, collected by `collect_reviews.py` on {date} from {', '.join(sources[:-1])} and "
-        f"{sources[-1]}. Edit those files, not this report.",
+        f"Open review issues, collected by `collect_reviews.py` on {date} from the records' reviews of "
+        f"{_plural(collected.n_folders, 'added dataset')} and of {_plural(n_records, 'record')} without a folder. "
+        "Edit those records, not this report.",
         "",
         f"**Open:** {_plural(len(entries), 'record')}, {_plural(n_issues, 'issue')}, "
-        f"{_plural(n_fields, 'record field')}, {_plural(collected.across_items, 'cross-dataset item')}.",
+        f"{_plural(n_fields, 'record field')}.",
         "",
         *_settled_lines(collected),
         "## Summary per record",
@@ -593,8 +551,6 @@ def render_report(collected: Collected, *, title: str, date: str) -> str:
             if e.fields:
                 parts = "; ".join(f"{key} `{rec}`, definition `{dfn}`" for key, rec, dfn in e.fields)
                 out.append(f"- `{e.name}`: {parts}.")
-    if collected.across:
-        out += ["", "## Across datasets", "", collected.across]
     out += _per_dataset_lines(entries)
     return "\n".join(out) + "\n"
 
@@ -622,7 +578,7 @@ def check_report(path: Path, collected: Collected) -> None:
 
     Raises:
         brp.ReportFormatError: The builder cannot parse the report.
-        ReviewFileError: The builder sees other issues, fields or items than the collector read.
+        ReviewFileError: The builder sees other issues, fields or panel sections than the collector read.
     """
     report = brp.parse_report(path)
     for e in collected.entries:
@@ -637,11 +593,6 @@ def check_report(path: Path, collected: Collected) -> None:
             raise ReviewFileError(
                 e.source, None, f"the page would show the panel sections {got_roles}, the file has {e.panel_sections}"
             )
-    n_items = sum(len(s["items"]) for s in report["crosscut"])
-    if n_items != collected.across_items:
-        raise ReviewFileError(
-            path, None, f"the page would show {n_items} cross-dataset items, not {collected.across_items}"
-        )
 
 
 def _marks(value: str | None) -> set[str] | None:
@@ -714,9 +665,12 @@ def main(argv: list[str] | None = None) -> int:
             ]
             collected.entries = [e for e in collected.entries if e.name not in settled]
             collected.settled = settled
-        if not collected.entries and not collected.across_items:
-            names = ", ".join(collected.settled)
-            print(f"nothing left to decide for {names}: no report written (--keep-settled writes one)")
+        if not collected.entries:
+            if collected.settled:
+                names = ", ".join(collected.settled)
+                print(f"nothing left to decide for {names}: no report written (--keep-settled writes one)")
+            else:
+                print("no record has a review to show: no report written")
             return 0
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(render_report(collected, title=args.title, date=args.date))
@@ -728,7 +682,7 @@ def main(argv: list[str] | None = None) -> int:
     print(
         f"records {len(entries)} ({collected.n_folders} with a folder, {len(entries) - collected.n_folders} "
         f"without), issues {sum(len(e.numbers) for e in entries)}, "
-        f"field rows {sum(len(e.fields) for e in entries)}, cross-dataset items {collected.across_items}, "
+        f"field rows {sum(len(e.fields) for e in entries)}, "
         f"review panels {sum(1 for e in entries if e.panel)}"
     )
     if collected.settled:

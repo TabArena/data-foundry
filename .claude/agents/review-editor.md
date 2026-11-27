@@ -29,7 +29,7 @@ Check:
   section).
 * The review is only in the record: flag a `REVIEW.md` in the dataset folder (`datasets/_dev/tabarena-v0pt2/<folder>/`)
   or an `**Open issues (AI, <date>):**` block in the record's `## Comments`, for the main session to move into the
-  `## Review` (`move_reviews_to_records.py` moves a folder's file).
+  `## Review`.
 * The style of AGENTS.md, "AI Writing Tropes to Avoid".
 
 Never edit a file. Return a list of concrete edits (quote the old text, give the new), most important first, and a

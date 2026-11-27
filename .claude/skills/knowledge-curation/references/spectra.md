@@ -101,7 +101,7 @@ spectra, so they are no per-row default.
   differences in classification accuracy"). There are two published traditions, the square root (MALDIquant, DRIAMS)
   and the log (Cromwell, Ciphergen, and PR #21's chain). MALDIquant's steps stay the placeholder until the benchmark
   compares the three registered candidates on every raw mass-spectrum dataset and three model families, by a rule
-  fixed in advance (`BENCHMARK_CHANGES_TODO.md`, "Spectra").
+  fixed in advance (`BENCHMARK_CHANGES_TODO.md`, decision D).
 * **Mass spectra: candidates not registered yet.** The three raw candidates are the published pipelines of the two
   traditions. MALDIquant documents further per-spectrum steps a comparison could add: the log, log2 or log10 in place
   of the square root, a moving average in place of Savitzky-Golay, the TopHat, convex-hull or median baseline in place
@@ -127,7 +127,7 @@ spectra, so they are no per-row default.
   2026-11-04.)
   The run computed SNV and the derivative as `vib-snv-r1` and `vib-sg11-d1-r1` do; no foundation model was run. So the
   default stays the spectrum as it is, and the benchmark compares the four on every vibrational dataset
-  (`BENCHMARK_CHANGES_TODO.md`, "Spectra").
+  (`BENCHMARK_CHANGES_TODO.md`, decision E).
 * **Width.** The encodings keep every bin (pancreatic: 6,771 columns). Averaging adjacent bins costs little (PR #21:
   TabPFN 0.733 against 0.725 with 8-bin averages), but the width is left to the benchmark's feature-limit step.
 
@@ -161,4 +161,4 @@ spectra, so they are no per-row default.
 * The bundle check `dataset_spectrum`: the columns are numeric and finite; missing values are a warning.
 * The probes see a spectrum in its recommended encoding; the blind reviewer's clean room sees it as shipped
   ([checks_and_probes.md](../../knowledge-data-foundry/references/checks_and_probes.md)).
-* What TabArena still has to do: `datasets/_dev/tabarena-v0pt2/BENCHMARK_CHANGES_TODO.md`, "Spectra".
+* What TabArena still has to do: `datasets/_dev/tabarena-v0pt2/BENCHMARK_CHANGES_TODO.md`, item 6 and decisions D and E.

@@ -8,14 +8,15 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
   [`split_protocol.md`](../../../.claude/skills/knowledge-data-foundry/references/split_protocol.md) of the knowledge-data-foundry skill.
 - **Every change is logged** in [`CHANGELOG.md`](CHANGELOG.md): edits, added or removed files, re-runs that change a
   container.
-- Changes the benchmark harness (TabArena) needs for these datasets, for example scoring grouped tasks per group, are
-  in [`BENCHMARK_CHANGES_TODO.md`](BENCHMARK_CHANGES_TODO.md).
+- [`BENCHMARK_CHANGES_TODO.md`](BENCHMARK_CHANGES_TODO.md) is the hand-off to the benchmark harness (TabArena):
+  what it has to change to use these datasets as curated.
 - Each dataset folder has a `README.md` that `.venv/bin/python -m data_foundry.curation.cli dataset check` generates
   from its `dataset.py`: links to the curation record and the source, how to rebuild, and the evidence.
 - A dataset's review, the questions for the curator and how each was settled, is the `## Review` section of its
   curation record (`curation/records/<name>.md`), never a file in its folder; the review page of
-  `/review-added-datasets` is built from these sections. [`REVIEW.md`](REVIEW.md) here holds only the items that span
-  datasets. The decisions are in the records, the definitions and the `CHANGELOG.md` entries. How curation works
+  `/review-added-datasets` is built from these sections. An item that spans datasets becomes a draft rule in the
+  knowledge skills or a GitHub issue. The decisions are in the records, the definitions and the `CHANGELOG.md`
+  entries. How curation works
   here: the knowledge skills [`knowledge-curation`](../../../.claude/skills/knowledge-curation/SKILL.md) and
   [`knowledge-data-foundry`](../../../.claude/skills/knowledge-data-foundry/SKILL.md).
 

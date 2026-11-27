@@ -1,8 +1,8 @@
 # Added datasets: issues (2026-10-01)
 
-Open review issues, collected by `collect_reviews.py` on 2026-10-01 from the records' reviews of 1 added dataset, of 1 record without a folder and the working copy's REVIEW.md. Edit those files, not this report.
+Open review issues, collected by `collect_reviews.py` on 2026-10-01 from the records' reviews of 1 added dataset and of 1 record without a folder. Edit those records, not this report.
 
-**Open:** 2 records, 2 issues, 1 record field, 1 cross-dataset item.
+**Open:** 2 records, 2 issues, 1 record field.
 
 ## Summary per record
 
@@ -14,13 +14,6 @@ Open review issues, collected by `collect_reviews.py` on 2026-10-01 from the rec
 ## Record fields that disagree with the definition
 
 - `airfoil_self_noise`: year `2014`, definition `1989`.
-
-## Across datasets
-
-### Framework (`src/data_foundry/v2/`)
-
-- **`dataset new` leaves `domain` as `"TODO"`.** A fresh scaffold then fails to import. Proposal: fill it from the
-  record.
 
 ## Per dataset
 

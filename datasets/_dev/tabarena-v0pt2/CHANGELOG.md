@@ -1,5 +1,14 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-25, the cross-dataset REVIEW.md removed; the benchmark hand-off rewritten (no container built)
+
+- `REVIEW.md` deleted: its 37 items were all settled, their decisions in the knowledge skills, the definitions and
+  the entries below. An item that spans datasets now becomes a draft rule in the knowledge skills or a GitHub issue
+  (Lennart, 2026-11-25); the review page of `/review-added-datasets` has no across-datasets tab any more.
+- `BENCHMARK_CHANGES_TODO.md` rewritten as the hand-off to the TabArena refactor: the changes in the order an adapter
+  meets them, the open decisions apart, and every dataset list recomputed from the 174 definitions (the metric table
+  of 2026-10-21 was out of date: 26 metric names in use, 19 tasks on `rmsle`).
+
 ## 2026-11-23, every definition names its split-tree leaf; `RetrospectiveFillIn` and `Target: Fixed Delay` in use (no container built)
 
 - `split_leaf` in all 174 definitions: the leaf of `split_tree.md` the split comes from. Where the tree names the
