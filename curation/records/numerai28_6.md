@@ -69,7 +69,9 @@ CC (2026-11-13, Andrej): collection fact `Target: Later` (Review issue 1, C): an
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 3, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Financial markets with adaptive participants are the clearest case against ASR, and the same source's dated data is measured not flat.
 
-CC (2026-11-27, Andrej): the declared metric (mean binary log loss, the source's) and the declared split (random, 3 folds, forced IID from temporal) are checked and stay as declared. Ship as defined (review of 2026-11-27).
+CC (2026-11-27, Andrej): the declared metric (mean binary log loss, the source's) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): the declared split (random, 3 folds, forced IID from temporal) is checked and stays as declared. Ship as defined (review of 2026-11-27).
 
 ## Review
 

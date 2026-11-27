@@ -77,7 +77,9 @@ CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words w
 
 CC (2026-11-17, Andrej): the declared split (temporal on `transaction_month`, windows of 1 month, 9 windows, gap 1 month) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
-CC (2026-11-27, Andrej): Review issue 1: D, as implemented: "I don't want to change anything about this dataset for now, it is good as it is." Not retired. The declared metric (MAE of logerror, the source's) is checked and stays as declared. Ship as defined (review of 2026-11-27).
+CC (2026-11-27, Andrej): Review issue 1: D, as implemented: "I don't want to change anything about this dataset for now, it is good as it is." Not retired. Ship as defined (review of 2026-11-27).
+
+CC (2026-11-27, Andrej): the declared metric (MAE of logerror, the source's) is checked and stays as declared.
 
 ## Review
 

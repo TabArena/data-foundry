@@ -115,7 +115,9 @@ CC (2026-11-11, Lennart): the declared horizon (calendar months, a one-day gap, 
 
 **Assessment (AI, 2026-11-11):** applied issue 1 (B) and the horizon (B): `temporal` declares calendar months from 2014-06-01, 2014-04-01 and 2014-02-01 with a one-day gap; test 146,714, 130,112 and 122,831 trips, train 1,484,039, 1,200,383 and 943,912 (90.7%, 73.4% and 57.7% of the 1,636,276 trips); without the gap 47, 7 and 21 training trips would end after the window start, with it none; 100%, 99.93% and 100% of the June, April and February trips are by taxis seen before. The R^2 figures of the notes stay those of the April-June windows, dated as such. `dataset check`: 0 errors, 0 warnings.
 
-CC (2026-11-27, Andrej): ship as defined after one change (review of 2026-11-27); the declared split (temporal on `start_time`, calendar-month windows June, April and February 2014, a one-day gap) is checked and stays as declared. Review issue 2, B ("Option B: Keep the day, restate the reason."): the gap stays and `splits_comment` names the monthly refit's latency as its reason, with the measured overhang of unfinished trips as the second fact; text fixes from the notes: `taxi_id` adds 0.005 to 0.016 R^2, the challenge scored the total travel time from a partial trajectory, and 1,962 kept trips above 80 km/h are untested.
+CC (2026-11-27, Andrej): the declared split (temporal on `start_time`, calendar-month windows June, April and February 2014, a one-day gap) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined after one change (review of 2026-11-27). Review issue 2, B ("Option B: Keep the day, restate the reason."): the gap stays and `splits_comment` names the monthly refit's latency as its reason, with the measured overhang of unfinished trips as the second fact; text fixes from the notes: `taxi_id` adds 0.005 to 0.016 R^2, the challenge scored the total travel time from a partial trajectory, and 1,962 kept trips above 80 km/h are untested.
 
 ## Review
 
