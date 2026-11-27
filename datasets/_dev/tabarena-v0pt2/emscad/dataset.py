@@ -213,7 +213,7 @@ class Emscad(AbstractCuratedDataset):
         "dataset_pure_feature_value": "Large legitimate clients (e.g. one company profile with 539 ads) and their "
         "locations, departments and industries are all legitimate at a 95% base rate; the grouped split keeps each "
         "client on one side, so these values do not leak across the split.",
-        "groups_labels_constant": "The labels were assigned per client (Vidros et al. 2017, Sec. 5), so 4,439 of the "
+        "task_group_labels_mismatch": "The labels were assigned per client (Vidros et al. 2017, Sec. 5), so 4,439 of the "
         "4,441 posters have one label; 2 posters (34 ads) have both, so the labels are not one per group.",
     }
 

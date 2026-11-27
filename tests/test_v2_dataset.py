@@ -16,7 +16,10 @@ import pandas as pd
 import pytest
 
 import data_foundry.definition.dataset as dataset_module
-from data_foundry.bundle_checks import run_bundle_checks
+from data_foundry.checks import (
+    protocol as split_protocol,
+    run_bundle_checks,
+)
 from data_foundry.curation_container import (
     CuratedContainer,
     feature_columns,
@@ -49,6 +52,7 @@ from data_foundry.definition import (
     splits as protocol,
     workbench,
 )
+from data_foundry.definition.checks import definition_findings
 from data_foundry.definition.cli import add_dataset_parser
 from data_foundry.definition.dataset import (
     PREPARED_MARKER,
@@ -204,9 +208,9 @@ def test_definition_checks_warn_on_a_time_column_changed_in_the_split(tmp_path: 
     del warehouse
     write_definition(tmp_path / "datasets")
     ds = get_dataset(tmp_path / "datasets", "toy_ds")
-    assert "definition_time_changed_in_split" not in {r.slug for r in ds._definition_checks()}
+    assert "definition_time_changed_in_split" not in {r.slug for r in definition_findings(ds)}
     ds._time_changed_in_split = 5
-    found = {r.slug: r for r in ds._definition_checks()}
+    found = {r.slug: r for r in definition_findings(ds)}
     assert found["definition_time_changed_in_split"].severity == "warning"
     assert "Coarsen" in found["definition_time_changed_in_split"].hint
 
@@ -1263,11 +1267,15 @@ def test_a_grouped_definition_reports_its_group_structure(tmp_path: Path, wareho
 
 
 def test_a_placeholder_license_is_an_error(tmp_path: Path, warehouse: Path) -> None:
+    """A `TODO` license and a `TODO(verify)` marker are one finding: the scaffold's placeholders are left."""
     del warehouse
     body = DEFINITION.format(name="toy_ds", comment="x").replace('license="CC0"', 'license="TODO"')
-    write_definition(tmp_path / "datasets", body=body)
+    write_definition(tmp_path / "datasets", body=body + "\n# TODO(verify): the step\n")
     result = get_dataset(tmp_path / "datasets", "toy_ds").check(write_report=False, verbose=False)
-    assert "definition_license_placeholder" in {r.slug for r in result.bundle_report.errors}
+    found = [r for r in result.bundle_report.errors if r.slug == "meta_placeholder_left"]
+    assert len(found) == 1
+    assert "sources[0].license" in found[0].message
+    assert "TODO(verify)" in found[0].message
 
 
 def test_cli_list_fails_when_a_definition_does_not_import(tmp_path: Path) -> None:
@@ -1720,7 +1728,8 @@ def test_a_metric_group_cut_across_iid_folds_leaves_the_repeats_to_the_rows(
 ) -> None:
     """An IID split cuts the metric's 6 eras across folds: the default splits and the protocol check count the rows."""
     del warehouse
-    monkeypatch.setattr(protocol, "REPEATS_BY_TRAIN_SIZE", ((5, 20), (2_500, 10), (250_000, 3)))  # 4 of 6 eras: 20
+    repeats = ((5, 20), (2_500, 10), (250_000, 3))  # 4 of 6 eras: 20
+    monkeypatch.setattr(split_protocol, "REPEATS_BY_TRAIN_SIZE", repeats)
     body = (
         _with_metric(SCORING.format(metric=era_metric))
         .replace("import AbstractCuratedDataset,", "import ScoringColumn, AbstractCuratedDataset,")
@@ -2191,15 +2200,8 @@ def test_cli_check_without_report_leaves_readme_alone(tmp_path: Path, warehouse:
     assert (folder / "README.md").exists()
 
 
-def test_the_data_checks_skip_the_duplicate_passes(
-    tmp_path: Path, warehouse: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """Their results are printed only, never returned, and they read the full frame."""
+def test_the_data_checks_are_the_tables_the_readme_renders(tmp_path: Path, warehouse: Path) -> None:
     del warehouse
-    seen = {}
-    real = dataset_module.run_all_checks
-    monkeypatch.setattr(dataset_module, "run_all_checks", lambda **kwargs: seen.update(kwargs) or real(**kwargs))
     write_definition(tmp_path / "datasets")
     tables = get_dataset(tmp_path / "datasets", "toy_ds").run_all_checks()
-    assert (seen["duplicate_row_check"], seen["duplicate_column_check"]) == (False, False)
-    assert set(tables) == {"head", "summary", "numeric_stats", "cat_stats", "target"}
+    assert set(tables) == {"summary", "numeric_stats", "cat_stats", "target"}

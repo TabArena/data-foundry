@@ -89,7 +89,7 @@ from data_foundry.special import SpecialColumnGroup, SpecialFeatureError
 from data_foundry.utils.optional import import_build_dependency
 
 if TYPE_CHECKING:
-    from data_foundry.bundle_checks import CheckResult
+    from data_foundry.checks.results import CheckResult
     from data_foundry.schema import SpecialFeature
 
 MS_HALF_WINDOW = 10
@@ -322,7 +322,7 @@ class Spectrum(SpecialColumnGroup):
     @classmethod
     def check(cls, df: pd.DataFrame, feature: SpecialFeature) -> Iterator[CheckResult]:
         """Every column is numeric and finite; a missing value is flagged, a negative raw mass intensity noted."""
-        from data_foundry.bundle_checks import CheckResult  # noqa: PLC0415 - bundle_checks loads the kinds lazily
+        from data_foundry.checks.results import CheckResult  # noqa: PLC0415 - the bundle checks load the kinds lazily
 
         values = df[feature.columns]
         not_numeric = [

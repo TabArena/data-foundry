@@ -227,7 +227,7 @@ class WisconsinLocalGovernmentPropertyInsuranceFund(AbstractCuratedDataset):
             "Decided (Lennart, 2026-11-11): `NoClaimCredit` is missing in 2006 and 2007 by "
             "construction, so the 2008 window trains on years without it (curation_comments)."
         ),
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Three windows, against the 9 an IID split of 5,639 member-years would get: the release has five years, "
             "and a 2007 window would train on 2006 alone, 20.5% of the rows, under the 30% floor (Andrej, 2026-11-19)."
         ),

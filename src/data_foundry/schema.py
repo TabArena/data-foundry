@@ -1126,7 +1126,7 @@ class PredictiveMLSplitsMetadata:
         Deliberately cheap: only checks that need neither the dataset nor the task
         metadata, so loading a container stays O(#folds) here. Everything that needs
         the data (index bounds, train/test overlap, leakage, coverage) is checked by
-        :mod:`data_foundry.bundle_checks`.
+        :mod:`data_foundry.checks.bundle`.
         """
         if not self.splits:
             raise ValueError("splits must contain at least one repeat with one train/test split.")

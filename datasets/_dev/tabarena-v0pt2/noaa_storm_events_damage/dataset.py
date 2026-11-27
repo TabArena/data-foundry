@@ -258,10 +258,6 @@ class NoaaStormEventsDamage(AbstractCuratedDataset):
     )
     unit_weight = UnitWeight(column=CELL_WEIGHT, unit=CELL)
     accepted_check_warnings = {
-        "splits_rows_unused": (
-            "By design: the 4,257 entries of October to December 2024 lie in the three-month gap before the newest "
-            "window (2025) and in no other window (Lennart, 2026-11-11)."
-        ),
         "task_target_value_dominant": (
             "Zero-inflated: 68% of the entries are $0, kept as entered; part of the zeros are unestimated damage "
             "(13 of 121 EF4 and EF5 tornado segments at $0; kept under LEAK-25 as amended, Andrej, 2026-11-02)."

@@ -408,7 +408,7 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
             "entry, not the moment the label became known, and the gap is not redundant with it "
             "(Andrej, 2026-11-19)."
         ),
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Three windows against the nine an IID split of 8,967 patients would get (SPLIT-33). A fourth window, "
             "the first half of 1992, would train only on phase I (4,232 patients, 47%), below the floor of half the "
             "data, and the study enrolled no one from mid-1991 to January 1992. The splits comment names the target, "

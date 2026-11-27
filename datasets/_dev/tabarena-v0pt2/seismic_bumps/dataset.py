@@ -193,7 +193,7 @@ class SeismicBumps(AbstractCuratedDataset):
         splits=TemporalSplits(window=84, unit="rows", min_train_fraction=0.5),
     )
     accepted_check_warnings = {
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "15 of the 30 windows an IID split of this size would get: windows of four weeks (84 shifts) fit 15 times "
             "within the newest half, so the window length and the 50% training floor stop more; overlapping windows "
             "are not used, so each test shift is scored once (Andrej, 2026-11-20)."

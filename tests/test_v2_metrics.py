@@ -17,10 +17,8 @@ from sklearn import metrics as skm
 from sklearn.dummy import DummyClassifier
 from sklearn.linear_model import LinearRegression, LogisticRegression
 
-from data_foundry import (
-    bundle_checks,
-    metrics as m,
-)
+from data_foundry import metrics as m
+from data_foundry.checks import bundle as bundle_checks
 from data_foundry.definition.dataset import metric_spec
 from data_foundry.metrics import METRICS, Metric, row_weight_column, score, scorer, to_sklearn_scorer
 from data_foundry.schema import MetricSpec, PredictiveMLTaskMetadataV2, ScoringColumn

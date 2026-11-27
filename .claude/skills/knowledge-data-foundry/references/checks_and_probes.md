@@ -16,17 +16,20 @@ POLARS_MAX_THREADS=2`) and keep `--n-jobs` small ([agent_runs.md](agent_runs.md)
 .venv/bin/python -m data_foundry.curation.cli dataset check datasets/_dev/tabarena-v0pt2/<folder>
 ```
 
-runs the whole pipeline, the data checks, the bundle checks (`data_foundry.bundle_checks`, judged by the v2 split
-protocol for a format-2 container) and `_decisions`, without saving (no UUID), and rewrites the folder's `README.md`.
+runs the whole pipeline, the data checks, the bundle checks (`data_foundry.checks`, judged by the v2 split
+protocol for a format-2 container, `data_foundry.checks.protocol`), the checks that need the definition class
+(`data_foundry.definition.checks`) and `_decisions`, without saving (no UUID), and rewrites the folder's `README.md`.
 Compare the README with the committed one: an unexpected diff (checksum, split sizes, new findings) means the
 definition drifted from its evidence. Then:
 
 * every error blocks a PR;
 * for every warning, say whether it is a real problem for this dataset or correct as it is; a warning the curator
-  accepts goes into `accepted_check_warnings` with the reason (propose the exact edit);
+  accepts goes into `accepted_check_warnings` with the reason (propose the exact edit); an error cannot be accepted,
+  except the ones [check_slugs.md](check_slugs.md) lists with the rule that allows it;
 * do not restate passing checks: "Bundle checks: 0 errors, 3 warnings (2 accepted)" is the right level.
 
-The slug-by-slug actions are in [definitions.md](definitions.md), "Bundle checks". Never run `dataset build` to verify:
+The slug-by-slug actions are in [definitions.md](definitions.md), "Bundle checks"; every slug with its severity and
+whether it may be accepted is in [check_slugs.md](check_slugs.md). Never run `dataset build` to verify:
 it mints a new UUID, and a build is the curator's call (or an explicit ask). A task with a training weight has its own
 checks (`task_sample_weight_not_metric_weight`, `task_weight_invalid`, `task_rate_count_not_whole`), and two warnings
 say a weight may be missing (`task_metric_weight_without_sample_weight`, `task_feature_looks_like_exposure`):

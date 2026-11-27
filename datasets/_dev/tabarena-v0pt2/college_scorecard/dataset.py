@@ -297,9 +297,6 @@ class CollegeScorecard(AbstractCuratedDataset):
         time_unit="years",
     )
     accepted_check_warnings = {
-        "splits_rows_unused": "By design: the cohorts of 2013 and 2014 (3,676 rows) lie in the five-year label gap of "
-        "every window (the newest window trains on 2001-2012) and before the oldest test window (2015, the last one "
-        "whose train side keeps half of the cohorts).",
         "splits_feature_missing_in_test": (
             "Decided (Lennart, 2026-11-11): `DISTANCEONLY` is recorded from the 2011 cohort on, so "
             "the 2015 and 2016 windows train on cohorts without it (curation_comments)."

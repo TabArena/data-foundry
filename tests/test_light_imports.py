@@ -17,4 +17,4 @@ def test_the_consumer_modules_load_nothing_of_the_build_side() -> None:
     loaded = run.stdout.split()
     heavy = [m for m in loaded if m.startswith(("data_foundry.definition", "data_foundry.curation."))]
     assert not heavy
-    assert "data_foundry.bundle_checks" not in loaded
+    assert not [m for m in loaded if m.startswith("data_foundry.checks")]

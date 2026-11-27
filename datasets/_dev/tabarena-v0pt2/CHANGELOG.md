@@ -1,5 +1,20 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-26, overlapping checks merged; accepted slugs renamed (no container built)
+
+- One finding per cause (Lennart, 2026-11-26): the checks that reported one cause under several slugs are merged, 177
+  slugs to 165 (`check_slugs.md`). In `accepted_check_warnings`, `splits_below_target` is now
+  `splits_dimensions_off_protocol` (17 definitions), `splits_test_class_missing` is `splits_class_missing`
+  (cardiotocography, ecoli_proteins, force_2020_...), `groups_labels_constant` is `task_group_labels_mismatch`
+  (allstate_claim_prediction_challenge_1m, emscad). bank_marketing's acceptance of `dataset_sequential_id_column` is
+  removed: it had not fired since `time_index` stopped being a model input (2026-11-21). `task_group_count_low` is part of `groups_test_groups_few`: in heart_disease,
+  lung_cancer_epithelial_genexp, online_shoppers_purchasing_intention_dataset and sendy_logistics_challenge its
+  reason joins that entry.
+- `splits_rows_unused` is an info on a temporal split (the gap, history no window trains on), so its acceptance is
+  removed from the 13 temporal definitions that had one; their READMEs list it as an info at the next rebuild.
+- `dataset check` on 60 definitions (30 temporal, 17 grouped, 13 IID) before and after: every finding maps to one
+  after, none lost. The READMEs change at the next rebuild.
+
 ## 2026-11-26, the benchmark hand-off names the task view (no container built)
 
 - `BENCHMARK_CHANGES_TODO.md` names the task view (`container.task()`, `data_foundry.task`) where it named the helpers:

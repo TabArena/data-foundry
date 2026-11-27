@@ -13,16 +13,14 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from data_foundry import bundle_checks, sampling
-from data_foundry.definition import splits as protocol
-from data_foundry.definition.splits import (
-    fit_splits_to_budget,
-    grouped_splits,
-    iid_splits,
-    protocol_checks,
-    recommended_dimensions,
-    sample_temporal_splits,
+from data_foundry import sampling
+from data_foundry.checks import (
+    bundle as bundle_checks,
+    protocol as protocol_rules,
 )
+from data_foundry.checks.protocol import protocol_checks, recommended_dimensions
+from data_foundry.definition import splits as protocol
+from data_foundry.definition.splits import fit_splits_to_budget, grouped_splits, iid_splits, sample_temporal_splits
 from data_foundry.metrics import Metric
 from data_foundry.sampling import sample_train_positions, subsample_train
 from data_foundry.schema import (
@@ -159,9 +157,9 @@ def test_scored_units_that_cut_across_groups_count_rows() -> None:
     df["year"] = df["instance"] % 15  # 15 years, each across many instances and all 10 classes
     assert recommended_dimensions(df, group_on="instance", group_labels="per_sample", scored_unit_on="year") == (3, 3)
     assert recommended_dimensions(df, scored_unit_on="instance") == (3, 3)  # IID: every instance cut across folds
-    assert protocol.scored_units_within_groups(df, "cls", "instance")
-    assert not protocol.scored_units_within_groups(df, "cls", "year")
-    assert not protocol.scored_units_within_groups(df, None, "instance")
+    assert protocol_rules.scored_units_within_groups(df, "cls", "instance")
+    assert not protocol_rules.scored_units_within_groups(df, "cls", "year")
+    assert not protocol_rules.scored_units_within_groups(df, None, "instance")
 
 
 def test_one_label_per_group_counts_the_groups_before_the_scored_units() -> None:
@@ -177,8 +175,8 @@ def test_scored_unit_column_is_the_metrics_group_input() -> None:
     task = PredictiveMLTaskMetadataV2(
         target_column_name="target", problem_type="regression", objective_metric=make_spec("regression", par10)
     )
-    assert protocol.scored_unit_column(task) == "instance"
-    assert protocol.scored_unit_column(V2_TASK) is None  # a metric that scores rows
+    assert protocol_rules.scored_unit_column(task) == "instance"
+    assert protocol_rules.scored_unit_column(V2_TASK) is None  # a metric that scores rows
 
 
 # --- fitting the cross-validation to a row budget ---------------------------------------------------------------
@@ -506,8 +504,9 @@ def test_protocol_checks_hold_the_container_to_its_row_budget(
     assert findings.get("splits_train_sampling_missing", "error") == "error"
 
 
-@pytest.mark.parametrize(("n_windows", "flagged"), [(1, True), (3, False)])
-def test_protocol_checks_want_three_temporal_windows(*, n_windows: int, flagged: bool) -> None:
+@pytest.mark.parametrize(("n_windows", "under_three"), [(1, True), (3, False)])
+def test_protocol_checks_want_three_temporal_windows(*, n_windows: int, under_three: bool) -> None:
+    """Fewer than three windows, and fewer than SPLIT-33's count (60 for 60 rows), are one finding."""
     df = make_iid_frame(60).assign(t=pd.date_range("2024-01-01", periods=60, freq="D"))
     windows = protocol.temporal_window_splits(df, time_on="t", window=5, unit="days", n_windows=n_windows)
     task = PredictiveMLTaskMetadataV2(
@@ -520,7 +519,8 @@ def test_protocol_checks_want_three_temporal_windows(*, n_windows: int, flagged:
             splits_comment="x", splits=windows, time_horizon=5, time_horizon_unit="days"
         ),
     )
-    assert ("splits_too_few" in slugs(container)) is flagged
+    (found,) = [r for r in protocol_checks(container) if r.slug == "splits_dimensions_off_protocol"]
+    assert ("at least 3" in found.message) is under_three
 
 
 def test_temporal_test_parts_that_share_a_training_side_count_once() -> None:
@@ -538,7 +538,8 @@ def test_temporal_test_parts_that_share_a_training_side_count_once() -> None:
             splits_comment="x", splits=shared, time_horizon=5, time_horizon_unit="days"
         ),
     )
-    assert "splits_too_few" in slugs(container)
+    (found,) = [r for r in protocol_checks(container) if r.slug == "splits_dimensions_off_protocol"]
+    assert found.message.startswith("1 test window(s) with their own training side (3 test parts)")
 
 
 def test_a_missing_build_dependency_names_the_extra() -> None:

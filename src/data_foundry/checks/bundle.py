@@ -5,8 +5,8 @@ Where the other two check layers sit:
 * :mod:`data_foundry.schema` — *coherence of one metadata object*, enforced in
   ``__post_init__`` at creation time (e.g. ``group_labels`` requires ``group_on``).
   Cheap, no DataFrame needed, so a broken combination cannot even be constructed.
-* :mod:`data_foundry.dataset_checks` — *exploratory* report on the DataFrame
-  (``run_all_checks``): statistics a human reads while curating.
+* :mod:`data_foundry.checks.tables` — the summary tables of the DataFrame
+  (``run_all_checks``) that each dataset's README shows.
 * this module — *cross-referential* checks that need the whole bundle at once:
   the DataFrame, the task metadata, the splits, and the dataset metadata together.
   These are the ones that can only run at the end: "does ``time_on`` name a real
@@ -21,11 +21,11 @@ Usage in a curation notebook — build the container, check it, then save::
     save_path = curated_data.save()
     verify_saved_container(save_path, container=curated_data).raise_if_errors()
 
-Every finding carries a stable ``slug``; pass ``ignore=["slug", ...]`` to accept a
-finding on purpose (the notebook then documents the accepted deviation).
+Every finding carries a stable ``slug``, listed in :mod:`data_foundry.checks.registry`; pass
+``ignore=["slug", ...]`` to accept a finding on purpose (the notebook then documents the accepted deviation).
 
 A format-2 container (the v2 definitions) is also judged by the v2 split protocol,
-:func:`data_foundry.definition.splits.protocol_checks` (always 3 folds, and the row budget the container records, if
+:func:`data_foundry.checks.protocol.protocol_checks` (always 3 folds, and the row budget the container records, if
 any). Format 1 (the v1 notebooks, the shipped BeyondArena containers, frozen) has no split-protocol check left: its
 containers are pinned and never rebuilt. Every other check is the same for both formats.
 """
@@ -37,14 +37,17 @@ import json
 import math
 import re
 import warnings
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
 
 from data_foundry import time_basis as basis_rules
+from data_foundry.checks.groups import CONSTANT_LABEL_SHARE, MIN_TEST_GROUPS
+from data_foundry.checks.protocol import protocol_checks
+from data_foundry.checks.results import SEVERITY_ORDER, BundleCheckReport, CheckResult, run_guarded
 from data_foundry.curation_container import CuratedContainer, non_feature_columns
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
 from data_foundry.schema import TIME_BASIS_TAGS, as_column_list, current_tag, training_only_weight
@@ -62,10 +65,6 @@ if TYPE_CHECKING:
         Source,
         UnitWeight,
     )
-
-Severity = Literal["error", "warning", "info"]
-
-SEVERITY_ORDER: dict[Severity, int] = {"error": 0, "warning": 1, "info": 2}
 
 DEFAULT_HEAVY_CELL_BUDGET = 50_000_000
 """Cell budget (``n_rows * n_cols``) above which O(rows x cols) checks are skipped.
@@ -180,135 +179,6 @@ PLACEHOLDER_PATTERNS: tuple[str, ...] = (r"\bTODO\b", r"\bFIXME\b", r"xxx\.csv",
 """Scaffolding markers (regexes) that must not survive into a shipped bundle."""
 
 
-class BundleCheckError(RuntimeError):
-    """Raised by :meth:`BundleCheckReport.raise_if_errors` when a bundle has errors."""
-
-
-@dataclass(frozen=True)
-class CheckResult:
-    """One finding of a bundle check.
-
-    Attributes:
-        slug: Stable identifier of the check (use it in ``ignore=[...]``).
-        severity: ``"error"`` (must fix), ``"warning"`` (look at it), or ``"info"``.
-        message: What was found, including the offending values.
-        hint: Optional "what to do about it" follow-up.
-    """
-
-    slug: str
-    severity: Severity
-    message: str
-    hint: str | None = None
-
-    def __str__(self) -> str:
-        text = f"[{self.slug}] {self.message}"
-        return f"{text}\n    -> {self.hint}" if self.hint else text
-
-
-@dataclass
-class BundleCheckReport:
-    """The findings of :func:`run_bundle_checks` for one bundle.
-
-    Print it (``print(report)`` / just evaluate it in a notebook cell) for the
-    human-readable report, use :meth:`raise_if_errors` to fail a notebook run, and
-    :meth:`to_dict` to persist a machine-readable record of what was checked.
-    """
-
-    unique_name: str
-    results: list[CheckResult] = field(default_factory=list)
-    ignored: tuple[str, ...] = ()
-    n_checks_run: int = 0
-
-    def by_severity(self, severity: Severity) -> list[CheckResult]:
-        """Return all findings of one severity, in the order they were produced."""
-        return [r for r in self.results if r.severity == severity]
-
-    @property
-    def errors(self) -> list[CheckResult]:
-        """Findings that must be fixed before the bundle is saved/shipped."""
-        return self.by_severity("error")
-
-    @property
-    def warnings(self) -> list[CheckResult]:
-        """Findings that need a human call (often fine, sometimes a real defect)."""
-        return self.by_severity("warning")
-
-    @property
-    def infos(self) -> list[CheckResult]:
-        """Informational findings, including checks skipped for cost reasons."""
-        return self.by_severity("info")
-
-    @property
-    def ok(self) -> bool:
-        """Whether the bundle produced no errors (warnings are allowed)."""
-        return not self.errors
-
-    @property
-    def slugs(self) -> list[str]:
-        """The slugs of all findings, in report order."""
-        return [r.slug for r in self.results]
-
-    def raise_if_errors(self) -> BundleCheckReport:
-        """Raise :class:`BundleCheckError` if any finding is an error, else return self."""
-        if self.ok:
-            return self
-        details = "\n".join(f"  - {r}" for r in self.errors)
-        raise BundleCheckError(
-            f"{len(self.errors)} bundle check error(s) for {self.unique_name!r}:\n{details}\n"
-            "Fix the bundle, or pass `ignore=[<slug>, ...]` to accept a finding on purpose.",
-        )
-
-    def to_dict(self) -> dict:
-        """Return a JSON-serializable record of the report."""
-        return {
-            "unique_name": self.unique_name,
-            "n_checks_run": self.n_checks_run,
-            "ignored": list(self.ignored),
-            "counts": {
-                "error": len(self.errors),
-                "warning": len(self.warnings),
-                "info": len(self.infos),
-            },
-            "findings": [
-                {"slug": r.slug, "severity": r.severity, "message": r.message, "hint": r.hint} for r in self.results
-            ],
-        }
-
-    def to_json(self, path: Path | str) -> Path:
-        """Write :meth:`to_dict` to ``path`` (as an audit trail next to the bundle)."""
-        path = Path(path)
-        with path.open("w") as f:
-            json.dump(self.to_dict(), f, indent=2)
-        return path
-
-    def summary(self) -> str:
-        """Return the human-readable report (same text as ``str(report)``)."""
-        head = (
-            f"Bundle checks — {self.unique_name}: "
-            f"{len(self.errors)} error(s), {len(self.warnings)} warning(s), {len(self.infos)} info "
-            f"({self.n_checks_run} checks run"
-            + (f", {len(self.ignored)} ignored: {', '.join(self.ignored)}" if self.ignored else "")
-            + ")"
-        )
-        if not self.results:
-            return f"{head}\nAll checks passed. ✓"
-
-        lines = [head]
-        for severity, label in (("error", "ERRORS"), ("warning", "WARNINGS"), ("info", "INFO")):
-            found = self.by_severity(severity)  # type: ignore[arg-type]
-            if not found:
-                continue
-            lines.append(f"\n{label}")
-            lines.extend(f"  {r}" for r in found)
-        return "\n".join(lines)
-
-    def __str__(self) -> str:
-        return self.summary()
-
-    def __repr__(self) -> str:
-        return self.summary()
-
-
 # --- Shared, precomputed view of the bundle ------------------------------------------
 @dataclass
 class _Ctx:
@@ -316,6 +186,8 @@ class _Ctx:
 
     container: CuratedContainer
     heavy_cell_budget: int
+    from_definition: bool = False
+    """The container was built from a definition just now, which refused at import what some checks look for."""
 
     @property
     def df(self) -> pd.DataFrame:
@@ -393,13 +265,17 @@ class _Ctx:
         return None
 
     def group_codes(self) -> np.ndarray | None:
-        """Return one integer code per row identifying its group, or None if ungrouped."""
-        group_columns = self.columns_of(self.task.group_on)
-        if not group_columns or any(not self.has_column(c) for c in group_columns):
-            return None
-        frame = self.df[group_columns].astype("string").fillna("<NA>")
-        joined = frame.iloc[:, 0] if len(group_columns) == 1 else frame.agg("\x1f".join, axis=1)
-        return pd.factorize(joined, use_na_sentinel=False)[0]
+        """Return one integer code per row identifying its group, or None if ungrouped (computed once)."""
+        if self._group_codes is None:
+            group_columns = self.columns_of(self.task.group_on)
+            if not group_columns or self.df is None or any(not self.has_column(c) for c in group_columns):
+                return None
+            frame = self.df[group_columns].astype("string").fillna("<NA>")
+            joined = frame.iloc[:, 0] if len(group_columns) == 1 else frame.agg("\x1f".join, axis=1)
+            self._group_codes = pd.factorize(joined, use_na_sentinel=False)[0]
+        return self._group_codes
+
+    _group_codes: np.ndarray | None = None
 
 
 _CHECKS: list[Callable[[_Ctx], Iterable[CheckResult]]] = []
@@ -529,24 +405,7 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa:
             f"{len(constant)} constant column(s) (1 distinct non-null value): {constant[:5]}.",
             hint="Drop them unless the constant is meaningful for the task.",
         )
-    if id_like:
-        yield CheckResult(
-            "dataset_identifier_column",
-            "warning",
-            f"{len(id_like)} column(s) have one distinct value per row: {id_like[:5]}.",
-            hint="Uninformative sample identifiers should be dropped (curation guidelines); keep and process only "
-            "informative ones (e.g. a time index).",
-        )
-    if sequential:
-        yield CheckResult(
-            "dataset_sequential_id_column",
-            "warning",
-            f"{len(sequential)} integer column(s) hold one value per row, densely numbered like a running id: "
-            f"{sequential[:5]}.",
-            hint="A running id often encodes the order of collection (time) or the origin (a prefix per source), which "
-            "a model then learns. Drop it, declare it `NonFeature(column, 'identifier')` in the parent, or, where it "
-            "is the rebuilt order the split cuts on, declare it `Temporal(..., time_of='label')`.",
-        )
+    yield from _identifier_findings(ctx, id_like, sequential)
     if unused_categories:
         formatted = ", ".join(f"{c} (+{n})" for c, n in unused_categories[:5])
         yield CheckResult(
@@ -573,6 +432,46 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa:
             hint="If it encodes 'missing', replace it with `np.nan` (curation guidelines); if it is a real value, "
             "ignore this finding.",
         )
+
+
+def _identifier_findings(ctx: _Ctx, id_like: list[str], sequential: list[str]) -> Iterator[CheckResult]:
+    """One finding for the columns that identify a row: category or string columns with one value per row, integer
+    columns numbered densely like a running id, and a group key with one group per row (an error: a grouped split
+    needs repeated group values).
+    """
+    group_columns = ctx.columns_of(ctx.task.group_on)
+    codes = ctx.group_codes()
+    group_per_row = codes is not None and ctx.n_rows > 0 and int(codes.max()) + 1 == ctx.n_rows
+    if not (id_like or sequential or group_per_row):
+        return
+    parts, hints = [], []
+    if group_per_row:
+        parts.append(f"`group_on={ctx.task.group_on!r}` has one group per row ({ctx.n_rows} groups)")
+        hints.append("A grouped split needs repeated group values: this group key is a sample identifier.")
+    id_like = [c for c in id_like if not (group_per_row and c in group_columns)]
+    sequential = [c for c in sequential if not (group_per_row and c in group_columns)]
+    if id_like:
+        parts.append(f"{len(id_like)} column(s) have one distinct value per row: {id_like[:5]}")
+        hints.append(
+            "Uninformative sample identifiers should be dropped (curation guidelines); keep and process only "
+            "informative ones (e.g. a time index)."
+        )
+    if sequential:
+        parts.append(
+            f"{len(sequential)} integer column(s) hold one value per row, densely numbered like a running id: "
+            f"{sequential[:5]}"
+        )
+        hints.append(
+            "A running id often encodes the order of collection (time) or the origin (a prefix per source), which a "
+            "model then learns. Drop it, declare it `NonFeature(column, 'identifier')` in the parent, or, where it is "
+            "the rebuilt order the split cuts on, declare it `Temporal(..., time_of='label')`."
+        )
+    yield CheckResult(
+        "dataset_identifier_column",
+        "error" if group_per_row else "warning",
+        "; ".join(parts) + ".",
+        hint=" ".join(hints),
+    )
 
 
 @_check
@@ -611,12 +510,12 @@ def _check_dataset_duplicates(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901
             "dataset_duplicates_skipped",
             "info",
             f"Skipped duplicate-column/row checks: {df.size:,} cells exceed the budget of {ctx.heavy_cell_budget:,}.",
-            hint="Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.",
+            hint="Raise `heavy_cell_budget=` to run them; nothing else checks duplicate rows and columns.",
         )
         return
 
     hashes: dict[int, str] = {}
-    duplicate_pairs: list[tuple[str, str]] = []
+    duplicate_pairs: list[tuple[str, str]] = []  # (the first column of a set of copies, a later copy)
     for column in df.columns:
         digest = int(pd.util.hash_pandas_object(df[column].astype("string"), index=False).sum())
         first = hashes.get(digest)
@@ -625,24 +524,24 @@ def _check_dataset_duplicates(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901
         else:
             hashes.setdefault(digest, column)
 
-    target_duplicates = [(a, b) for a, b in duplicate_pairs if ctx.target in (a, b)]
+    # the copies of the target, whichever column of their set comes first: one cause, one finding
+    target_set = next((a for a, b in duplicate_pairs if ctx.target in (a, b)), None)
+    leaking = [c for a, b in duplicate_pairs if a == target_set for c in (a, b) if c != ctx.target]
+    leaking = list(dict.fromkeys(leaking))
     # a scoring column may be a copy of a feature the metric also needs (MET-2): not a duplicate to drop
     scoring = {c.column for c in getattr(ctx.task, "scoring_columns", None) or ()}
-    other_duplicates = [(a, b) for a, b in duplicate_pairs if ctx.target not in (a, b) and not ({a, b} & scoring)]
-    if target_duplicates:
-        leaking = [b if a == ctx.target else a for a, b in target_duplicates]
-        yield CheckResult(
-            "dataset_feature_equals_target",
-            "error",
-            f"Feature column(s) are identical to the target {ctx.target!r}: {leaking}.",
-            hint="This is target leakage — drop the column(s).",
-        )
-    if other_duplicates:
+    other_duplicates = [(a, b) for a, b in duplicate_pairs if a != target_set and not ({a, b} & scoring)]
+    if leaking or other_duplicates:
+        parts = [f"Feature column(s) identical to the target {ctx.target!r}: {leaking}"] if leaking else []
+        if other_duplicates:
+            parts.append(f"{len(other_duplicates)} duplicated column pair(s): {other_duplicates[:5]}")
+        hints = ["A copy of the target is target leakage: drop it."] if leaking else []
+        hints += ["Keep one column of each pair."] if other_duplicates else []
         yield CheckResult(
             "dataset_duplicate_columns",
-            "warning",
-            f"{len(other_duplicates)} duplicated column pair(s): {other_duplicates[:5]}.",
-            hint="Keep one of each pair.",
+            "error" if leaking else "warning",
+            "; ".join(parts) + ".",
+            hint=" ".join(hints),
         )
 
     # the model's inputs: a scoring column (a weight, an era) is no feature, so rows that differ only there are copies
@@ -870,19 +769,6 @@ def _check_target(ctx: _Ctx) -> Iterator[CheckResult]:
                 "error",
                 f"`problem_type='multiclass_classification'` but the target has only {n_classes} distinct classes.",
                 hint="Use `binary_classification` for a 2-class target.",
-            )
-
-        counts = target.value_counts(dropna=True)
-        n_splits_max = max((len(folds) for folds in ctx.splits_metadata.splits.values()), default=1)
-        rare = counts[counts < max(5, n_splits_max)]
-        if len(rare):
-            formatted = ", ".join(f"{k}={int(v)}" for k, v in list(rare.items())[:5])
-            yield CheckResult(
-                "task_target_rare_class",
-                "warning",
-                f"{len(rare)} class(es) have fewer samples than folds/5: {formatted}.",
-                hint="Rare classes break stratification and can leave a fold whose test set holds a class the "
-                "train set never saw — merge or drop them.",
             )
     elif not pd.api.types.is_numeric_dtype(target) or pd.api.types.is_bool_dtype(target):
         yield CheckResult(
@@ -1483,7 +1369,10 @@ def _check_time_column(ctx: _Ctx) -> Iterator[CheckResult]:
 
 @_check
 def _check_group_columns(ctx: _Ctx) -> Iterator[CheckResult]:
-    """Group structure sanity, including the ``group_labels='per_group'`` contract."""
+    """Group structure sanity: how many groups a test fold holds, missing group keys, and whether the declared
+    ``group_labels`` fit the data. A group key with one group per row is an identifier
+    (:func:`_identifier_findings`).
+    """
     task = ctx.task
     group_columns = ctx.columns_of(task.group_on)
     if not group_columns or ctx.df is None:
@@ -1495,20 +1384,7 @@ def _check_group_columns(ctx: _Ctx) -> Iterator[CheckResult]:
     if codes is None:
         return
     n_groups = int(codes.max()) + 1 if len(codes) else 0
-    if n_groups == ctx.n_rows:
-        yield CheckResult(
-            "task_group_on_unique_per_row",
-            "error",
-            f"`group_on={task.group_on!r}` has one group per row ({n_groups} groups).",
-            hint="A grouped split needs repeated group values; this column is a sample identifier.",
-        )
-    elif n_groups < 10:
-        yield CheckResult(
-            "task_group_count_low",
-            "warning",
-            f"`group_on={task.group_on!r}` yields only {n_groups} groups.",
-            hint="Few groups make grouped CV coarse and high-variance.",
-        )
+    yield from _test_group_findings(ctx, codes, n_groups)
 
     n_missing = int(ctx.df[group_columns].isna().any(axis=1).sum())
     if n_missing:
@@ -1520,18 +1396,81 @@ def _check_group_columns(ctx: _Ctx) -> Iterator[CheckResult]:
             "those rows in the definition.",
         )
 
-    if task.group_labels == "per_group" and ctx.has_column(ctx.target):
-        target_codes = pd.factorize(ctx.df[ctx.target].astype("string"), use_na_sentinel=False)[0]
-        per_group_unique = pd.Series(target_codes).groupby(codes, observed=True).nunique()
+    if ctx.has_column(ctx.target):
+        yield from _group_label_findings(ctx, codes, n_groups)
+
+
+MIN_GROUPS = 10
+"""Fewer groups in all make a grouped split coarse: every fold holds a handful of them."""
+
+
+def _test_group_findings(ctx: _Ctx, codes: np.ndarray, n_groups: int) -> Iterator[CheckResult]:
+    """Few groups: fewer than :data:`MIN_GROUPS` in all, or a test fold of a format-2 grouped split with fewer than
+    :data:`~data_foundry.checks.groups.MIN_TEST_GROUPS`. One cause, one finding: few groups in all leave every fold
+    few.
+    """
+    per_fold = (
+        [len(np.unique(codes[test])) for _r, _f, _train, test in ctx.flat_splits]
+        if ctx.container.grouping is not None
+        else []
+    )
+    low, high = (min(per_fold), max(per_fold)) if per_fold else (None, None)
+    few_in_all = n_groups < min(MIN_GROUPS, ctx.n_rows)  # one group per row is an identifier, reported apart
+    few_per_fold = low is not None and low < MIN_TEST_GROUPS
+    if not (few_in_all or few_per_fold):
+        return
+    parts = [f"`group_on={ctx.task.group_on!r}` yields only {n_groups} groups"] if few_in_all else []
+    if few_per_fold:
+        parts.append(
+            f"a test fold holds {low} groups ({low}-{high} per fold, {n_groups} groups in all): a score per group "
+            "rests on few independent units, and a score per row on not many more"
+        )
+    message = "; ".join(parts)
+    yield CheckResult(
+        "groups_test_groups_few",
+        "warning",
+        message[:1].upper() + message[1:] + ".",
+        hint="Few groups make a grouped split coarse and its scores vary. Keep the dataset only if its signal across "
+        "groups is real (`.claude/skills/knowledge-data-foundry/scripts/group_probes.py`), and accept the warning "
+        "with that reason.",
+    )
+
+
+def _group_label_findings(ctx: _Ctx, codes: np.ndarray, n_groups: int) -> Iterator[CheckResult]:
+    """The declared ``group_labels`` against the data: ``per_group`` with groups of several labels (an error), or a
+    format-2 ``per_sample`` grouping whose groups with two or more rows nearly all hold a single label (a warning).
+    """
+    labels = ctx.task.group_labels
+    grouping = ctx.container.grouping
+    per_sample = grouping is not None and grouping.labels == "per_sample"
+    if labels != "per_group" and not per_sample:
+        return
+    target_codes = pd.factorize(ctx.df[ctx.target].astype("string"), use_na_sentinel=False)[0]
+    per_group_unique = pd.Series(target_codes).groupby(codes, observed=True).nunique()
+    if labels == "per_group":
         n_multi = int((per_group_unique > 1).sum())
         if n_multi:
             yield CheckResult(
-                "task_group_labels_per_group_violated",
+                "task_group_labels_mismatch",
                 "error",
                 f"`group_labels='per_group'` but {n_multi:,} of {n_groups:,} groups carry more than one target value.",
                 hint="Either the task has one label per sample (`group_labels='per_sample'`) or the group column "
                 "is wrong.",
             )
+        return
+    # a single-row group has one label by construction: only groups with two or more rows count
+    sizes = np.bincount(codes)
+    multi_row = per_group_unique[sizes[per_group_unique.index] > 1]
+    share = float((multi_row <= 1).mean()) if len(multi_row) else 1.0
+    if share >= CONSTANT_LABEL_SHARE:
+        yield CheckResult(
+            "task_group_labels_mismatch",
+            "warning",
+            f"`labels='per_sample'`, yet {share:.1%} of the groups with two or more rows have a single label "
+            f"({int((multi_row > 1).sum()):,} of {len(multi_row):,} have several).",
+            hint="If the label is one per group by construction, declare `labels='per_group'`; otherwise say in the "
+            "definition why it may differ within a group.",
+        )
 
 
 # --- 3. Splits against the DataFrame -------------------------------------------------
@@ -1597,14 +1536,16 @@ def _check_splits_coverage(ctx: _Ctx) -> Iterator[CheckResult]:
     n_unused = int((~used).sum())
     if n_unused:
         share = n_unused / ctx.n_rows
-        severity: Severity = "warning" if ctx.regime == "temporal_non_iid" else "error"
+        temporal = ctx.regime == "temporal_non_iid"
         yield CheckResult(
             "splits_rows_unused",
-            severity,
+            "info" if temporal else "error",
             f"{n_unused:,} row(s) ({share:.1%}) appear in no train and no test set.",
-            hint="Expected for temporal splits (rows inside a planning gap or before the earliest train cut); "
-            "for IID/grouped splits it means the splits do not cover the data — consider dropping the unused "
-            "rows so the shipped frame matches what is evaluated.",
+            hint="Expected of a temporal split (the rows of a gap, history no window trains on, rows a filter keeps "
+            "out of every training side); say why in `splits_comment`."
+            if temporal
+            else "An IID or grouped split covers every row: drop the unused rows so the shipped frame matches what "
+            "is evaluated, or fix the split.",
         )
 
     # Only k-fold-shaped splits (>1 fold per repeat) promise to test every row; a single
@@ -1626,47 +1567,26 @@ def _check_splits_coverage(ctx: _Ctx) -> Iterator[CheckResult]:
 
 @_check
 def _check_splits_class_coverage(ctx: _Ctx) -> Iterator[CheckResult]:
-    """Every fold's train set must cover the classes of its test set."""
+    """Every fold holds the classes its metric and its model need, and no class is too rare to spread over the
+    folds: ``splits_test_single_class`` and ``splits_class_missing``
+    (:func:`data_foundry.checks.task.fold_class_findings`).
+    """
+    from data_foundry.checks.task import fold_class_findings  # noqa: PLC0415 - the metrics registry imports this
+
     task = ctx.task
     if not task.is_classification or ctx.df is None or not ctx.has_column(ctx.target):
         return
-    target = ctx.df[ctx.target]
-    codes = (
-        target.cat.codes.to_numpy()
-        if isinstance(target.dtype, pd.CategoricalDtype)
-        else pd.factorize(target.astype("string"), use_na_sentinel=True)[0]
+    spec = getattr(task, "objective_metric", None)
+    metric = spec.name if spec is not None else getattr(task, "objective_metric_name", None)
+    n_folds_max = max((len(folds) for folds in ctx.splits_metadata.splits.values()), default=1)
+    folds = [(f"r{repeat}f{fold}", train, test) for repeat, fold, train, test in ctx.flat_splits]
+    yield from fold_class_findings(
+        ctx.df[ctx.target],
+        folds,
+        binary=task.problem_type == "binary_classification",
+        metric=metric,
+        min_rows=max(5, n_folds_max),
     )
-    n_classes_total = len(np.unique(codes[codes >= 0]))
-
-    unseen: list[str] = []
-    changed_problem_type: list[str] = []
-    for repeat_i, fold_i, train, test in ctx.flat_splits:
-        train_classes = np.unique(codes[train])
-        test_classes = np.unique(codes[test])
-        train_classes = train_classes[train_classes >= 0]
-        test_classes = test_classes[test_classes >= 0]
-        if np.setdiff1d(test_classes, train_classes).size:
-            unseen.append(f"r{repeat_i}f{fold_i}")
-        n_fold_classes = max(len(train_classes), len(test_classes))
-        if (n_fold_classes <= 2) != (n_classes_total <= 2):
-            changed_problem_type.append(f"r{repeat_i}f{fold_i} ({n_fold_classes} of {n_classes_total})")
-
-    if unseen:
-        yield CheckResult(
-            "splits_test_class_unseen_in_train",
-            "error",
-            f"{len(unseen)} fold(s) have a test class that never occurs in train: {unseen[:5]}.",
-            hint="Stratify the splits or merge/drop rare classes — a model cannot predict a class it never saw, "
-            "and probabilistic metrics break on the missing column.",
-        )
-    if changed_problem_type:
-        yield CheckResult(
-            "splits_fold_problem_type_differs",
-            "error",
-            f"{len(changed_problem_type)} fold(s) flip binary/multiclass relative to the full dataset: "
-            f"{changed_problem_type[:5]}.",
-            hint="TabArena asserts that every split has the same problem type as the task.",
-        )
 
 
 @_check
@@ -1905,11 +1825,9 @@ def _check_splits_groups(ctx: _Ctx) -> Iterator[CheckResult]:
 
 @_check
 def _check_splits_protocol_v2(ctx: _Ctx) -> Iterator[CheckResult]:
-    """Format 2: the v2 split protocol (:func:`data_foundry.definition.splits.protocol_checks`)."""
+    """Format 2: the v2 split protocol (:func:`data_foundry.checks.protocol.protocol_checks`)."""
     if ctx.container.format_version < 2:
         return
-    from data_foundry.definition.splits import protocol_checks  # noqa: PLC0415 - the definition side imports this
-
     yield from protocol_checks(ctx.container)
 
 
@@ -2102,6 +2020,9 @@ _TIME_BASIS_HINTS = {
 def _check_time_basis(ctx: _Ctx) -> Iterator[CheckResult]:
     """A format-2 split says why it is not temporal: its time basis (``data_foundry.time_basis``) checked as the
     definition checks it, and the date columns of data that is not split by time.
+
+    A container just built from a definition gets the infos only: the definition refuses every error of
+    :func:`~data_foundry.time_basis.problems` at import, so they are left to a container read from disk.
     """
     if ctx.container.format_version < 2:
         return
@@ -2111,7 +2032,8 @@ def _check_time_basis(ctx: _Ctx) -> Iterator[CheckResult]:
     temporal = ctx.regime == "temporal_non_iid"
     grouped = getattr(task, "grouping", None) is not None
     for slug, severity, message in basis_rules.problems(tags, comments, temporal=temporal, grouped=grouped):
-        yield CheckResult(slug, severity, message, hint=_TIME_BASIS_HINTS.get(slug))
+        if not (ctx.from_definition and severity == "error"):
+            yield CheckResult(slug, severity, message, hint=_TIME_BASIS_HINTS.get(slug))
     if temporal or ctx.df is None:
         return
     prototypes = {current_tag(t) for t in tags} & set(TIME_BASIS_TAGS)
@@ -2330,7 +2252,8 @@ def _check_dataset_metadata_completeness(ctx: _Ctx) -> Iterator[CheckResult]:
             "meta_placeholder_left",
             "error",
             f"Scaffolding placeholders left in metadata: {placeholders}.",
-            hint="Fill in the template TODOs before exporting.",
+            hint="Fill in the template TODOs before exporting; a source's license is the one it states, or None "
+            "when it states none.",
         )
 
 
@@ -2399,6 +2322,7 @@ def run_bundle_checks(
     ignore: Iterable[str] = (),
     heavy_cell_budget: int = DEFAULT_HEAVY_CELL_BUDGET,
     verbose: bool = True,
+    from_definition: bool = False,
 ) -> BundleCheckReport:
     """Run every cross-referential check on a curated bundle.
 
@@ -2406,7 +2330,7 @@ def run_bundle_checks(
     and before :meth:`~data_foundry.curation_container.CuratedContainer.save`, so a
     broken bundle never reaches the warehouse. See the module docstring for how this
     layer relates to the schema's ``__post_init__`` validation and to
-    :func:`data_foundry.dataset_checks.run_all_checks`.
+    :func:`data_foundry.checks.tables.run_all_checks`.
 
     Args:
         container: The bundle to check. Its ``dataset`` must be loaded.
@@ -2415,26 +2339,19 @@ def run_bundle_checks(
         heavy_cell_budget: Cell budget (``n_rows * n_cols``) above which O(rows x cols)
             checks (duplicate rows/columns) are skipped with an ``info`` finding.
         verbose: Print the report when done.
+        from_definition: The container was just built from a v2 definition
+            (:func:`~data_foundry.definition.checks.run_definition_checks`): the time basis errors are skipped, since
+            the definition refuses them at import; a container read from disk keeps them.
 
     Returns:
         The :class:`BundleCheckReport`. Call ``.raise_if_errors()`` to fail loudly.
     """
     ignored = tuple(dict.fromkeys(ignore))
-    ctx = _Ctx(container=container, heavy_cell_budget=heavy_cell_budget)
+    ctx = _Ctx(container=container, heavy_cell_budget=heavy_cell_budget, from_definition=from_definition)
     results: list[CheckResult] = []
 
     for check in _CHECKS:
-        try:
-            results.extend(check(ctx))
-        except Exception as error:  # noqa: BLE001 - a broken check must not hide the other findings
-            results.append(
-                CheckResult(
-                    "check_crashed",
-                    "error",
-                    f"Check `{check.__name__}` raised {type(error).__name__}: {error}",
-                    hint="This is a bug in the check or an unexpected bundle shape — report it.",
-                ),
-            )
+        results += run_guarded(check.__name__, lambda check=check: check(ctx))
 
     results = [r for r in results if r.slug not in ignored]
     results.sort(key=lambda r: SEVERITY_ORDER[r.severity])

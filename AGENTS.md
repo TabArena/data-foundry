@@ -27,10 +27,13 @@ Data Foundry is the data-layer toolkit behind
   and resolves them against a local warehouse or a Hugging Face mirror, with cache + force-download semantics
   (`collections/`). It is how every collection ships, both container formats: BeyondArena today, the TabArena v0.2
   collection next;
-* the **v2 dataset format** (`definition/`): one `dataset.py` class per dataset, its split protocol, checks and
-  generated README, on top of the exploratory data checks (`dataset_checks.py`) and the post-hoc bundle integrity
-  checks (`bundle_checks.py`). The consumer side (`task.py`, the task view; `metrics.py`, `sampling.py`, `special/`,
-  `encodings.py`) loads none of it;
+* the **v2 dataset format** (`definition/`): one `dataset.py` class per dataset, its split protocol, the checks
+  that need the definition class (`checks.py`) and generated README;
+* the **checks** (`checks/`): the bundle checks of a container and the round trip of a saved one (`bundle.py`), the
+  checks of a v2 task (`task.py`, `groups.py`), the split protocol's numbers and checks (`protocol.py`), the README's
+  summary tables (`tables.py`), and the registry of every check slug (`registry.py`). `checks/` imports nothing of
+  `definition/` (a test holds it); `definition/` uses `checks/`. The consumer side (`task.py`, the task view;
+  `metrics.py`, `sampling.py`, `special/`, `encodings.py`) loads none of `definition/` and `checks/`;
 * a git-native **curation backlog** (`src/data_foundry/curation/`) that replaces
   the legacy curation Google Sheet. The source of truth is **one markdown record
   per candidate dataset** (YAML front-matter for the structured/dropdown fields +
@@ -107,24 +110,28 @@ When changing core code:
 
 ### Curation tooling work (checks, recommended splits, helpers)
 
-**There are four check layers; put a new check in the right one.**
+**There are four check layers; put a new check in the right one.** Every finding's slug is listed in
+`src/data_foundry/checks/registry.py` with its severities, stage and whether a definition may accept it; a new slug
+goes there too (a test fails otherwise), and the page
+[`check_slugs.md`](.claude/skills/knowledge-data-foundry/references/check_slugs.md) is regenerated from it.
 
 | Layer | Where | Scope |
 |---|---|---|
 | creation-time | `schema.py` `__post_init__` | coherence of *one* metadata object, no DataFrame needed (e.g. `group_labels` requires `group_on`, `time_horizon` requires its unit, a `Grouping` with `prediction_unit="group"` needs an aggregation). Runs on every `CuratedContainer.load`, so a new rule here **must hold for every already-shipped container** — verify against the BeyondArena collection before making one hard. |
-| exploratory | `dataset_checks.run_all_checks(...)` | statistics a human reads while curating. Returns five DataFrames, rendered in each dataset's README (and committed in the v1 notebooks) — don't change its output shape lightly. |
-| post-hoc / bundle | `bundle_checks.py` | *cross-referential* checks over the assembled bundle (DataFrame + task + splits + dataset metadata) and, after export, the save/load round-trip. It also checks the shipped format-1 containers: keep its format-1 behaviour unchanged. The split protocol follows the container format: format 1 by the v1 protocol checks here, format 2 by `v2.splits.protocol_checks` (called from here). |
-| v2 definition | `src/data_foundry/definition/` (`_validate_definition` and `_definition_checks` in `dataset.py`, `splits.protocol_checks`, `group_checks.py`, `task_checks.py`) | rules of the v2 protocol and the v2 definition format, run by `dataset check` / `dataset build` next to the bundle checks. The default home for a new v2 rule. |
+| summary tables | `checks/tables.py` `run_all_checks(...)` | the tables of each dataset's README ("Data checks": feature summary, numeric and categorical statistics, the target). Statistics, no findings. |
+| post-hoc / bundle | `checks/bundle.py` | *cross-referential* checks over the assembled bundle (DataFrame + task + splits + dataset metadata) and, after export, the save/load round-trip. It also checks the shipped format-1 containers: keep its format-1 behaviour unchanged. The split protocol follows the container format: format 2 by `checks/protocol.py` `protocol_checks` (called from here). |
+| v2 definition | `definition/checks.py`, `checks/task.py`, `checks/groups.py`, `checks/protocol.py`, `_validate_definition` in `definition/dataset.py` | rules of the v2 protocol and the v2 definition format, run by `dataset check` / `dataset build` next to the bundle checks. The default home for a new v2 rule. `_validate_definition` refuses a malformed definition before anything runs. |
 
-* `bundle_checks.run_bundle_checks(container)` returns a `BundleCheckReport`
+* `checks.run_bundle_checks(container)` returns a `BundleCheckReport`
   (errors / warnings / infos, each with a stable `slug`). `dataset build` raises on errors before saving and runs
-  `verify_saved_container` after it. A check that fires on a legitimately unusual dataset is accepted with a reason:
-  `accepted_check_warnings = {slug: reason}` in the definition.
+  `verify_saved_container` after it. A warning that fires on a legitimately unusual dataset is accepted with a
+  reason: `accepted_check_warnings = {slug: reason}` in the definition. An error is accepted only when the registry
+  lists it in `ACCEPTABLE_ERRORS` with the rule that allows the exception.
 * When adding a check, calibrate it against the shipped collection before
   choosing its severity (`error` only for "no consumer can use this"), and
   keep O(rows x cols) work behind the `heavy_cell_budget` guard.
-* `dataset_checks.run_all_checks(...)` returns five DataFrames; the dtype categorization of a container's features
-  is `CuratedContainer._feature_dtype_counts`.
+* `checks.run_all_checks(...)` returns the four README tables by name; the dtype categorization of a container's
+  features is `CuratedContainer._feature_dtype_counts`.
 * Splits: definitions use `src/data_foundry/definition/splits.py` (the v2 protocol, declarative `TemporalSplits`). The v1
   helpers of the BeyondArena notebooks were removed on 2026-11-12 (in git at `6cc3c945`;
   [`DATA_FOUNDRY_V1.md`](DATA_FOUNDRY_V1.md)).
@@ -197,7 +204,7 @@ bump versions or publish without explicit human authorization.
 | Screen candidates (quick pass, priority) and review the screening (dashboard) | [`.claude/skills/screen-candidates/SKILL.md`](.claude/skills/screen-candidates/SKILL.md) · [`.claude/skills/review-screened-candidates/SKILL.md`](.claude/skills/review-screened-candidates/SKILL.md) |
 | Leak checks and the probes | [`leak_checks.md`](.claude/skills/knowledge-curation/references/leak_checks.md) · [`checks_and_probes.md`](.claude/skills/knowledge-data-foundry/references/checks_and_probes.md) |
 | Container save/load + describe | [`src/data_foundry/curation_container.py`](src/data_foundry/curation_container.py) |
-| Bundle integrity checks (post-hoc + post-export) | [`src/data_foundry/bundle_checks.py`](src/data_foundry/bundle_checks.py) |
+| The checks (bundle, task, definition, saved files) and the registry of their slugs | [`src/data_foundry/checks/`](src/data_foundry/checks/) · [`check_slugs.md`](.claude/skills/knowledge-data-foundry/references/check_slugs.md) |
 | Collections + cache helpers | [`src/data_foundry/collections/`](src/data_foundry/collections/) |
 | Add a dataset: its v2 folder, checks, probes and the review panel ("is X ready?" too) | [`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md) · [`src/data_foundry/definition/`](src/data_foundry/definition/) |
 | Review a batch of added datasets (the review page) | [`.claude/skills/review-added-datasets/SKILL.md`](.claude/skills/review-added-datasets/SKILL.md) |

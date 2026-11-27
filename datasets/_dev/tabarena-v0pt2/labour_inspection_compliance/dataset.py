@@ -143,7 +143,7 @@ class LabourInspectionCompliance(AbstractCuratedDataset):
         leaves room for three (Andrej, 2026-11-20).
     """
     accepted_check_warnings = {
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Three of the nine windows an IID split of this size would get: the order resolves time to about 10,000 "
             "rows, so windows are a sixth of the rows, and the half-data floor leaves room for three (Andrej, "
             "2026-11-20)."

@@ -202,7 +202,7 @@ class AllstateClaimPredictionChallenge1m(AbstractCuratedDataset):
 
     # Splits: the `_1m` version gets the collection's row budget (`collection.py`) by its name.
     accepted_check_warnings = {
-        "groups_labels_constant": (
+        "task_group_labels_mismatch": (
             "The label is one per vehicle-year and claims are rare (0.82%), so 98.2% of the households with two or "
             "more rows of the 2006 renewal book have a single label (2026-11-03; restated 2026-11-08)."
         ),

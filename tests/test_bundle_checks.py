@@ -6,13 +6,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from data_foundry import bundle_checks
-from data_foundry.bundle_checks import (
-    BundleCheckError,
+from data_foundry.checks import bundle as bundle_checks
+from data_foundry.checks.bundle import (
     canonical_metric_name,
     run_bundle_checks,
     verify_saved_container,
 )
+from data_foundry.checks.results import BundleCheckError
 from data_foundry.curation_container import (
     CuratedContainer,
     feature_columns as model_inputs,
@@ -164,8 +164,14 @@ def test_constant_and_identifier_columns_are_warnings():
 
 def test_feature_identical_to_target_is_leakage():
     df = make_iid_frame()
-    df["copy_of_target"] = df["target"]
-    assert "dataset_feature_equals_target" in slugs_of(make_container(df))
+    df.insert(0, "copy_of_target", df["target"])  # before the target: its pair with a second copy is the same cause
+    df["second_copy"] = df["target"]
+    found = [
+        r for r in run_bundle_checks(make_container(df), verbose=False).results if r.slug.startswith("dataset_dup")
+    ]
+    assert [(r.slug, r.severity) for r in found] == [("dataset_duplicate_columns", "error")]
+    assert "['copy_of_target', 'second_copy']" in found[0].message
+    assert "pair" not in found[0].message
 
 
 def make_pure_value_frame(n: int = 1_000, positive_share: float = 0.5, n_pure: int = 150) -> pd.DataFrame:
@@ -363,7 +369,14 @@ def test_test_class_unseen_in_train_is_an_error():
         splits_comment="s",
         splits={0: {0: (list(range(8)), [8, 9])}},
     )
-    assert "splits_test_class_unseen_in_train" in slugs_of(make_container(df, experiment_metadata=splits))
+    # the test fold holds only `b`, which its train side lacks: one error, not one per symptom
+    report = run_bundle_checks(make_container(df, experiment_metadata=splits), verbose=False)
+    found = {r.slug: r for r in report.results}
+    assert found["splits_test_single_class"].severity == "error"
+    assert "lacks that class" in found["splits_test_single_class"].message
+    # `b` is also too rare for the folds (2 rows), a warning that does not repeat the fold
+    assert found["splits_class_missing"].severity == "warning"
+    assert "never occurs in train" not in found["splits_class_missing"].message
 
 
 # --- Temporal tasks ------------------------------------------------------------------
@@ -608,14 +621,28 @@ def test_per_group_labels_must_be_constant_within_a_group():
     container = make_grouped_container()
     df = container.dataset.copy()
     df.loc[0, "target"] = "yes" if df.loc[0, "target"] == "no" else "no"
-    assert "task_group_labels_per_group_violated" in slugs_of(make_grouped_container(dataset=df))
+    assert "task_group_labels_mismatch" in slugs_of(make_grouped_container(dataset=df))
 
 
 def test_group_per_row_is_an_error():
     container = make_grouped_container()
     df = container.dataset.copy()
     df["group"] = pd.Categorical([f"g{i}" for i in range(len(df))])
-    assert "task_group_on_unique_per_row" in slugs_of(make_grouped_container(dataset=df))
+    found = [r for r in run_bundle_checks(make_grouped_container(dataset=df), verbose=False).results]
+    identifiers = [r for r in found if r.slug == "dataset_identifier_column"]
+    assert [r.severity for r in identifiers] == ["error"]  # the group key is the id column: one finding
+    assert "one group per row" in identifiers[0].message
+    assert "groups_test_groups_few" not in {r.slug for r in found}
+
+
+def test_few_groups_in_all_are_one_finding():
+    container = make_grouped_container()
+    df = container.dataset.copy()
+    df["group"] = pd.Categorical([f"g{i % 6}" for i in range(len(df))])
+    found = [r for r in run_bundle_checks(make_grouped_container(dataset=df), verbose=False).results]
+    few = [r for r in found if r.slug == "groups_test_groups_few"]
+    assert len(few) == 1
+    assert "yields only 6 groups" in few[0].message
 
 
 # --- Dataset metadata coherence ------------------------------------------------------
@@ -966,7 +993,7 @@ def test_a_budget_explains_the_rows_its_test_samples_leave_out():
 
 
 def test_round_trip_comparison_sees_category_order_but_not_string_storage():
-    from data_foundry.bundle_checks import _compare_frames
+    from data_foundry.checks.bundle import _compare_frames
 
     df = pd.DataFrame(
         {

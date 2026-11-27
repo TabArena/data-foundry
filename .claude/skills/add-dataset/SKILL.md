@@ -45,8 +45,8 @@ You have not seen the data until it is downloaded. Pre-fill structure, never fac
   plausible guess is not. `domain`, a source's `platform` and `problem_type` take fixed values, so pick the closest
   match and say so.
 
-The markers are enforced: `meta_placeholder_left`, `definition_license_placeholder` and `definition_todo_left` are
-errors, and `dataset build` refuses to save while any remains.
+The markers are enforced: `meta_placeholder_left` (a `TODO` in the metadata, the license included, or a
+`TODO(verify)` in `dataset.py`) is an error, and `dataset build` refuses to save while any remains.
 
 ## Step 0: Gather inputs and claim
 
@@ -160,10 +160,10 @@ domain and source from the record.
 6. `accepted_check_warnings` stays empty: the curator fills it once the warnings are known, one reason per slug. A
    temporal task with a window under half the rows (`splits_train_under_half`) always gets an issue in the record's
    review for the curator's exception: the windows and their shares, the reason for each, and an option without them
-   (SPLIT-14); one with fewer windows than an IID split would get (`splits_below_target`) names the target, the count
-   and what stops more in the splits comment, and where only overlapping windows would reach it, offers them as an
-   option. So does a feature that stops or starts being recorded within the history (`splits_feature_missing_in_test`)
-   and a newest period cut short (`time_newest_period_short`).
+   (SPLIT-14); one with fewer windows than an IID split would get (`splits_dimensions_off_protocol`) names the
+   target, the count and what stops more in the splits comment, and where only overlapping windows would reach it,
+   offers them as an option. So does a feature that stops or starts being recorded within the history
+   (`splits_feature_missing_in_test`) and a newest period cut short (`time_newest_period_short`).
 7. `_decisions` only when there is something to show.
 
 Then point the record at the definition:

@@ -1,15 +1,15 @@
-"""The v2 split protocol: how every v2 dataset is split, and the checks that hold it.
+"""The v2 split protocol: how every v2 dataset is split.
 
 * IID and grouped data get repeated 3-fold cross-validation on the full frame. The number of repeats follows the
   size of the train side in units: the groups of ``per_group`` labels, else the scored units (the metric's ``group``
-  input) when all rows of each are in one group of the split, else the rows (:func:`recommended_dimensions`): 20, 10,
-  3 or 1, at any size of the frame, so every IID or grouped task has at least 3 splits.
+  input) when all rows of each are in one group of the split, else the rows
+  (:func:`~data_foundry.checks.protocol.recommended_dimensions`): 20, 10, 3 or 1, at any size of the frame, so every
+  IID or grouped task has at least 3 splits.
 * Temporal data gets at least 3 expanding windows (:class:`TemporalSplits`).
 * Data Foundry sets no row budget: by default the splits use the full frame and no side is capped. A collection sets
   one (``row_budget = RowBudget(train=..., test=...)`` in a ``collection.py`` next to the dataset folders,
   :class:`~data_foundry.schema.RowBudget`), and a sub-sampled version named after its train budget (``<name>_1m``)
-  gets it by that name; the container records it
-  (``experiment_metadata.row_budget``) and the split checks hold the container to it (:func:`protocol_checks`).
+  gets it by that name; the container records it (``experiment_metadata.row_budget``).
   TabArena v0.2 sub-samples its larger datasets to ``RowBudget(train=1_000_000, test=500_000)``.
 * A budget applies after the split. The folds or windows are drawn on the full frame, then each test side keeps at
   most ``test`` rows: :func:`fit_splits_to_budget` for IID and grouped data (rows stratified, or whole groups; the
@@ -17,18 +17,21 @@
   values with ``TemporalSplits(sample_by="time")``, for data whose rows at one time form a cross-section; the frame
   keeps only the rows some split uses). The train sides keep every row available to them: a benchmark sub-samples
   each to ``train`` rows before a fit (:func:`subsample_train`), as the container's ``train_sampling`` says.
+
+The protocol's numbers (the folds, the repeats by size, the least number of windows) and the checks that hold a
+container to them and to its row budget are in :mod:`data_foundry.checks.protocol`, so the bundle checks reach them
+without this package.
 """
 
 from __future__ import annotations
 
-import hashlib
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any, Literal
+from typing import Any, Literal
 
 import numpy as np
 import pandas as pd
 
-from data_foundry.bundle_checks import CheckResult
+from data_foundry.checks.protocol import N_FOLDS
 from data_foundry.sampling import (
     SPLIT_RANDOM_STATE,
     STEPS_PER_YEAR,
@@ -36,29 +39,13 @@ from data_foundry.sampling import (
     _first_values_in_order,
     _sample_positions,
     _sampling_columns,
-    one_group_column,
 )
-from data_foundry.schema import RowBudget, TimeOf, TimeUnit, TrainSampling, as_column_list
+from data_foundry.schema import RowBudget, TimeOf, TimeUnit, as_column_list
 from data_foundry.utils.optional import import_build_dependency
-
-if TYPE_CHECKING:
-    from collections.abc import Iterable, Sequence
-
-    from data_foundry.curation_container import CuratedContainer
-    from data_foundry.schema import PredictiveMLTaskMetadataV2
 
 Splits = dict[int, dict[int, tuple[list[int], list[int]]]]
 """Outer splits: ``{repeat: {fold: (train_positions, test_positions)}}``."""
 
-
-N_FOLDS = 3
-"""Every IID and grouped split is 3-fold cross-validation."""
-
-MIN_TEMPORAL_SPLITS = 3
-"""A temporal task needs at least this many test windows."""
-
-REPEATS_BY_TRAIN_SIZE = ((500, 20), (2_500, 10), (250_000, 3))
-"""``(train-size limit, repeats)``: a train side below the limit gets that many repeats; larger ones get 1."""
 
 TemporalUnit = Literal["days", "weeks", "months", "years", "unique", "rows"]
 """How :class:`TemporalSplits` measures a test window.
@@ -83,95 +70,6 @@ SampleBy = Literal["rows", "time"]
 * ``"rows"``: rows, in one random order of the frame (the default).
 * ``"time"``: whole values of the time column, in one random order of the values; every row of a drawn value is kept.
 """
-
-
-# --- split dimensions -----------------------------------------------------------------------------------------
-
-
-def scored_unit_column(task: PredictiveMLTaskMetadataV2) -> str | None:
-    """The column of the task's scored units, the rows its metric combines into one term of its score: the metric's
-    ``group`` input (an instance, a patient, an era). ``None`` for a metric that scores rows, one row a unit.
-    """
-    return task.objective_metric.inputs.get("group")
-
-
-def scored_units_within_groups(df: pd.DataFrame, group_on: str | list[str] | None, scored_unit_on: str) -> bool:
-    """Whether all rows of each scored unit are in one group of the split, so a test fold holds the unit whole: the
-    unit is the group or sits inside one (an instance inside its problem class). ``False`` for an IID split, which
-    cuts every unit across the folds.
-    """
-    if group_on is None:
-        return False
-    keyed, key = one_group_column(df, group_on)
-    return bool(keyed.groupby(scored_unit_on, dropna=False, observed=True)[key].nunique(dropna=False).max() <= 1)
-
-
-def repeats_for(n_units: int) -> int:
-    """SPLIT-33's repeats of 3-fold cross-validation for ``n_units`` units: by the units on the train side (two thirds
-    of them), 20, 10, 3 or 1.
-    """
-    n_train = int(n_units * 2 / 3)
-    return next((repeats for limit, repeats in REPEATS_BY_TRAIN_SIZE if n_train < limit), 1)
-
-
-def split_count(n_units: int) -> int:
-    """The number of splits SPLIT-33 gives a dataset of ``n_units`` scored units: repeats x folds."""
-    return repeats_for(n_units) * N_FOLDS
-
-
-def training_sides(trains: Iterable[Sequence[int]]) -> int:
-    """The number of distinct training sides among ``trains`` (the train positions of each split): test parts that
-    share one training side test one model, so they count as one split (SPLIT-14, SPLIT-15). Sides that differ in
-    length or at an end are told apart at once; only sides that agree there are hashed whole.
-    """
-    by_shape: dict[tuple[int, int, int], list[np.ndarray]] = {}
-    for t in trains:
-        side = np.asarray(t, dtype=np.int64)
-        shape = (len(side), int(side.min()) if len(side) else -1, int(side.max()) if len(side) else -1)
-        by_shape.setdefault(shape, []).append(side)
-    count = 0
-    for sides in by_shape.values():
-        if len(sides) == 1:
-            count += 1
-        else:
-            count += len({hashlib.blake2b(np.sort(s).tobytes(), digest_size=16).digest() for s in sides})
-    return count
-
-
-def recommended_dimensions(
-    df: pd.DataFrame,
-    *,
-    group_on: str | list[str] | None = None,
-    group_labels: str | None = None,
-    scored_unit_on: str | None = None,
-) -> tuple[int, int]:
-    """``(n_repeats, n_folds)`` for IID or grouped cross-validation on ``df``.
-
-    The repeats follow the units on the train side of a 3-fold split (2/3 of them): below 500 20 repeats, below
-    2,500 10, below 250k 3, and 1 above, however many rows the frame has. The units, in order: the groups for
-    ``per_group`` labels (one label covers a group, so the scored units inside it add none); else the scored units
-    when all rows of each are in one group (one PAR10 per instance over a row per instance and solver, the instances
-    held out or inside held-out classes); else the rows. A scored unit cut across groups (a survey year over held-out
-    stations) is scored on part of its rows in every fold, so its count says little about the noise and the rows
-    count. A row budget does not change the count: it caps the sides after the split (:func:`fit_splits_to_budget`).
-
-    Args:
-        df: The frame to split.
-        group_on: The split's group column(s), for grouped data.
-        group_labels: The grouping's labels; ``"per_group"`` counts the groups of ``group_on``.
-        scored_unit_on: The column of the scored units (:func:`scored_unit_column`); they are counted when all rows
-            of each are in one group of ``group_on``.
-
-    Returns:
-        ``(n_repeats, n_folds)``.
-    """
-    n = len(df)
-    if group_on is not None and group_labels == "per_group":
-        df, group_on = one_group_column(df, group_on)
-        n = df[group_on].nunique()
-    elif scored_unit_on is not None and scored_units_within_groups(df, group_on, scored_unit_on):
-        n = df[scored_unit_on].nunique(dropna=False)
-    return repeats_for(n), N_FOLDS
 
 
 # --- cross-validation -----------------------------------------------------------------------------------------
@@ -938,98 +836,6 @@ def sample_temporal_splits(
         for repeat, folds in sampled.items()
     }
     return reduced, remapped, trimmed
-
-
-# --- checks -----------------------------------------------------------------------------------------------------
-
-
-def protocol_checks(container: CuratedContainer) -> list[CheckResult]:
-    """The split-protocol checks of a format-2 container; :func:`~data_foundry.bundle_checks.run_bundle_checks` runs
-    them for every format-2 container.
-
-    * ``splits_test_over_budget`` (warning): a split tests on more rows than the container's
-      ``experiment_metadata.row_budget.test``. A container without a budget has no size limit; the train sides are
-      sub-sampled by a benchmark, not in the container.
-    * ``splits_train_sampling_missing`` (error): a container with a row budget records no ``train_sampling``.
-    * ``splits_dimensions_off_protocol`` (warning): IID or grouped splits other than :func:`recommended_dimensions`.
-    * ``splits_too_few`` (warning): a temporal task with fewer than :data:`MIN_TEMPORAL_SPLITS` test windows.
-    """
-    task = container.task_metadata
-    splits = container.experiment_metadata.splits
-    flat = [(r, f, train, test) for r, folds in splits.items() for f, (train, test) in folds.items()]
-    meta = container.experiment_metadata
-    findings = _budget_findings(flat, meta.row_budget, getattr(meta, "train_sampling", None))
-
-    if task.time_on is not None:
-        n_sides = training_sides(train for _r, _f, train, _test in flat)
-        if n_sides < MIN_TEMPORAL_SPLITS:
-            shared = f" ({len(flat)} test parts)" if n_sides < len(flat) else ""
-            findings.append(
-                CheckResult(
-                    "splits_too_few",
-                    "warning",
-                    f"{n_sides} test window(s) with their own training side{shared}; the v2 protocol wants at least "
-                    f"{MIN_TEMPORAL_SPLITS}.",
-                    hint="Declare more windows, e.g. `TemporalSplits(window=7, unit='days', n_windows=3)` or three "
-                    "`cutoffs`.",
-                ),
-            )
-        return findings
-
-    folds_per_repeat = {len(folds) for folds in splits.values()}
-    if not flat or len(folds_per_repeat) != 1:
-        return findings
-    actual = (len(splits), folds_per_repeat.pop())
-    recommended = recommended_dimensions(
-        container.dataset,
-        group_on=task.group_on,
-        group_labels=task.group_labels,
-        scored_unit_on=scored_unit_column(task),
-    )
-    if actual != recommended:
-        findings.append(
-            CheckResult(
-                "splits_dimensions_off_protocol",
-                "warning",
-                f"Splits are {actual[0]}x{actual[1]} but the v2 protocol for this size is "
-                f"{recommended[0]}x{recommended[1]}.",
-                hint="Deviating is allowed when the task demands it; record why in `splits_comment`.",
-            ),
-        )
-    return findings
-
-
-def _budget_findings(
-    flat: list[tuple[int, int, list[int], list[int]]], budget: RowBudget | None, sampling: TrainSampling | None
-) -> list[CheckResult]:
-    """The test sides over the container's test budget (warning), and a budget without its train sampling (error)."""
-    if budget is None:
-        return []
-    findings: list[CheckResult] = []
-    over = [(r, f, len(test)) for r, f, _train, test in flat if len(test) > budget.test]
-    if over:
-        largest = max(n for *_, n in over)
-        findings.append(
-            CheckResult(
-                "splits_test_over_budget",
-                "warning",
-                f"{len(over)} split(s) test on more than {budget.test:,} rows, the container's test budget (largest: "
-                f"{largest:,}); first: {[(r, f) for r, f, _ in over[:5]]}.",
-                hint="A definition with `row_budget` samples its test sides to it in `default_splits`; splits built "
-                "another way must keep to the budget they record.",
-            ),
-        )
-    if sampling is None:
-        findings.append(
-            CheckResult(
-                "splits_train_sampling_missing",
-                "error",
-                "The container records a row budget but no `train_sampling`: a benchmark cannot tell how to "
-                "sub-sample the train sides to the train budget.",
-                hint="Build it from a v2 definition, which records both.",
-            ),
-        )
-    return findings
 
 
 def _require_range_index(df: pd.DataFrame) -> None:

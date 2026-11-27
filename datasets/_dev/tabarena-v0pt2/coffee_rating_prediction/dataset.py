@@ -120,7 +120,7 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
             "reviews published at least a month before it starts (Andrej, 2026-11-18). The gap is "
             "the publication delay the split cannot read off the dates, not a second copy of it."
         ),
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "12 two-month windows against the 30 an IID split of 2,367 reviews would get (SPLIT-33). Monthly windows "
             "would reach 25, but some months hold only 2 to 10 reviews, which makes a per-window RMSE of noise; the "
             "window length and the gap follow the use case and are not shortened to reach the count (SPLIT-15). The "

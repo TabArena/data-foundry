@@ -140,10 +140,6 @@ class BankMarketing(AbstractCuratedDataset):
         "dataset_missing_value_sentinel": "pdays = -1 is the source's code for 'client was not previously contacted' "
         "(UCI codebook), not a missing value: it matches previous == 0 row for row (36,954 rows), so it stays as a "
         "code with a meaning (CLEAN-10).",
-        "dataset_sequential_id_column": "`time_index` is the record's position in the file, which the source orders "
-        'by the date of the last contact: it is the declared temporal order (`Temporal(on="time_index", '
-        'time_of="label")`), it sets the test windows, and since 2026-11-21 it is no model input. It is kept in '
-        "the frame because the split needs it and the file holds no date.",
     }
     split_leaf = "L-ORDER.windows"
     # Splits: ten windows of unequal length from `WINDOW_STARTS` (`_make_splits`); declared windows have one length

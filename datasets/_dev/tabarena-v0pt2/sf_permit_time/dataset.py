@@ -194,8 +194,6 @@ class SfPermitTime(AbstractCuratedDataset):
     accepted_check_warnings = {
         "dataset_constant_column": "The flagged columns are Y-or-missing flags (e.g. Fire Only Permit: Y in 12,204 rows); "
         "missing means the flag is not set, so they are not constant.",
-        "splits_rows_unused": "193 permits filed before 2020 (1,306 to 3,428 days to issue) are in no split: they were "
-        "filed before the oldest test window and were still open when the newest one started.",
     }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

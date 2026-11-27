@@ -149,10 +149,6 @@ class BrazilianEcommerce(AbstractCuratedDataset):
     """
     split_leaf = "L-ORDER.windows"
     temporal = Temporal(on="order_purchase_timestamp", horizon=1, horizon_unit="months", gap=1, gap_unit="months")
-    accepted_check_warnings = {
-        "splits_rows_unused": "Four orders placed in January and February 2018 (148 to 208 days to delivery) are in no "
-        "split: they were placed before the oldest test window and were still in transit when the newest one started.",
-    }
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         return {

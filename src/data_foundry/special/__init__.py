@@ -34,7 +34,7 @@ import pandas as pd
 from data_foundry.schema import SpecialFeature, SpectrumDetails
 
 if TYPE_CHECKING:
-    from data_foundry.bundle_checks import CheckResult
+    from data_foundry.checks.results import CheckResult
     from data_foundry.encodings import Encoding
 
 
