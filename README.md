@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-27 16:52 UTC: 237 claim(s) (Andrej 206, Lennart 12, Myunghwan 19).
+As of 2026-11-27 17:24 UTC: 236 claim(s) (Andrej 205, Lennart 12, Myunghwan 19).
 
 ## Andrej
 
@@ -165,7 +165,6 @@ As of 2026-11-27 16:52 UTC: 237 claim(s) (Andrej 206, Lennart 12, Myunghwan 19).
 | `raman_adenine_interlaboratory` | add | 2026-11-27 | 2026-12-04 | add-dataset: interlaboratory reframing (was raman_adenine_colloidal_gold) |
 | `raman_ecoli_fermentation` | add | 2026-11-25 | 2026-12-02 | add-dataset |
 | `raman_fuel_benchtop` | add | 2026-11-25 | 2026-12-02 | add-dataset |
-| `raman_mlrod` | review | 2026-11-25 | 2026-12-02 | Curator review of the two RamanBench definitions; taken over from Lennart by agreement |
 | `ready_biodegradability_huang_zhang` | add | 2026-11-25 | 2026-12-02 | add-dataset (better-data replacements, 2026-11-25) |
 | `regensburg_pediatric_appendicitis` | review | 2026-11-10 | 2026-11-17 (expired) | BeyondArena v0.2 review page (Andrej) |
 | `riboflavin` | triage | 2026-11-25 | 2026-12-02 | TabBench-Bio re-screening on the current rules (Andrej) |
