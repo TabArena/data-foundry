@@ -79,7 +79,7 @@ CC (2026-11-17, Andrej): the declared split (temporal on `Date`, windows of 3 va
 campaign as the length's reason and the count of nine and the inner-suburbs-only file before 27 May 2017 as the
 reasons for walking back from the newest.
 
-**Main points:** Settled on 2026-11-11: the nine windows of three sheets stay (issue 10, A), and the declared
+**Main points:** Re-audited on 2026-11-27: nothing to decide. No leak, no censoring at the newest sheet, the split tree's leaf matches what ships, and only 28 of 9,513 test rows have their address in the training side. Two text fixes need no decision: the note that a land size of 0 marks a unit without land holds only for the training side, since from the sheet of 19 August 2017 units carry no zeros and 95-97% blanks, a scraper change, measured to cost nothing (dropping the column costs 0.0067, blanking the zeros +0.0001); and the notes' model figures (0.182, 0.200, 0.185) recompute as 0.1856, 0.2084 and 0.1862, with each claim's direction holding. Earlier: Settled on 2026-11-11: the nine windows of three sheets stay (issue 10, A), and the declared
 horizon of three weekly sheets without a gap is checked.
 
 **Horizon:**

@@ -113,7 +113,7 @@ CC (2026-11-17, Andrej): the declared split (temporal on `publication_date`, win
 2014, with the one-week gap (issue 11, B, nine windows by reply (a)), every train side above half, and kept the
 two-week horizon (Horizon, A).
 
-**Main points:** Settled on 2026-11-11: nine windows spread over March to December 2014 (issue 11) and the two-week
+**Main points:** Re-audited on 2026-11-27: nothing to decide. Both suspected leaks were tested and cleared. Every share count was read at one crawl on 8 January 2015, so the newest articles were only 12 to 31 days old, yet their mean log shares (7.376) match the eight weeks before (7.369, SE 0.029): no right-censoring. The keyword features never exceed the running maximum of shares up to the row's own date (0 of 39,565 rows), so they are causal at the date level. Three text fixes need no decision: the committed README still shows the windows before 2026-11-10; the R2 figures re-measure on the shipped windows as 0.154 with all features, 0.130 without the keyword statistics and 0.137 without the self-reference ones; and the share of empty-body articles rises from 0.8% to 9.7% inside the history, a real shift to video and gallery pages rather than a crawl failure. Earlier: Settled on 2026-11-11: nine windows spread over March to December 2014 (issue 11) and the two-week
 horizon with its one-week gap. Settled on 2026-11-17: the expanding windows stay instead of the paper's 29 sliding
 windows (issue 12, A). Nothing is left open.
 

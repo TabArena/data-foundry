@@ -76,3 +76,50 @@ CC (2026-10-26, Lennart): verdict ship.
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 7 coded columns carry their words.
 
 CC (2026-11-17, Andrej): the declared split (temporal on `transaction_month`, windows of 1 month, 9 windows, gap 1 month) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
+
+## Review
+
+**Outcome:** added. Re-audited on 2026-11-27: the data reproduce (all five checksums match, `dataset check` clean),
+no leak was found, and the split tree's leaf matches what ships. The property snapshot question is small and already
+disclosed: the 2017 file is a snapshot of October 2017, so every 2017 sale's building facts were looked up after it,
+but only 3.37% of the 62,876 kept 2017 sales have a fact that differs from the 2016 file, flat by sale month, and
+every tax field predates its sale. One issue is open, and it is about the task's value.
+
+**Main points:** One for you: the claim that the gain comes from the features does not hold on the declared metric,
+and the model barely beats the median (1).
+
+**Issues for Andrej:**
+
+1. **The model barely beats a constant on the declared metric. Correct the claim, run the tuned check, or retire?**
+
+   * **Problem:**
+     - The notes say a constant training median loses to the mean in all nine windows "so the gain comes from the features"; on the declared metric, mean absolute error, the median beats the mean in six of the nine.
+     - Against the median, the right constant for that metric, an L1 LightGBM gains only 0.00008, about 0.1% of the error and 1.6 standard errors, winning five windows, losing three and tying one.
+     - The task probes flag no signal, a drift baseline as good as the models, and unstable rankings, and no tuned run exists, which the signal rule requires before any of that decides.
+   * **Effect on the task:** The benchmark may be scoring noise around a constant: if the signal is not real, methods are ranked on chance, and the task belongs with the datasets retired for having none.
+   * **Experiments:** untuned L1 LightGBM, two seeds, the nine shipped windows.
+
+     | Comparison | Result |
+     |---|---|
+     | model against the training mean | better in 9 of 9 windows |
+     | training median against the training mean | better in 6 of 9 |
+     | model against the training median, pooled | +0.00008 MAE (SE 0.00005) |
+     | model against the median, by window | 5 wins, 3 losses, 1 tie |
+     | the same without the location columns | +0.00033 (SE 0.00004) |
+
+     That the model does better without the location columns suggests a small real signal may exist and is being diluted, which only a tuned run can settle.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Correct the claim and keep | the notes compare with the median and state the small gain | honest at once | leaves open whether the signal is real |
+     | B | Run the tuned check first | tuned methods of several families against shuffled labels on the shipped windows, as the signal rule requires | the only test that can retire or keep the task | costs a round of tuned fits |
+     | C | Retire with `No Signal` | the task leaves the working copy | removes a task that may rank noise | the rule forbids retiring on untuned results |
+     | D | Leave it as it is (implemented) | nothing changes | no work | the notes claim a gain the declared metric does not show |
+
+   * **Recommendation:** A now and B before any decision to retire, since the signal rule makes a tuned run the only ground for `No Signal`. **Decision:** A, B, C or D?
+
+**Review panel:** ship after changes (re-audit against the source, 2026-11-27; no separate mediator). Claims: every
+count recomputed on the shipped frame holds except the median claim. Columns: the five flagged codes are already
+categorical; the property snapshot postdates the 2017 sales, disclosed and small. Split: the tree reaches the leaf
+that ships, nine windows with the smallest training share 53.4%. Disputed: whether the signal is real (issue 1).

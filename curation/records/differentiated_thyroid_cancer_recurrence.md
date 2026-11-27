@@ -74,7 +74,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
 
 **Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below (issue 1, A, 2026-11-18).
 
-**Main points:** `ForcedIIDFromTemporal` stays (issue 1, A, 2026-11-18). Nothing is left open.
+**Main points:** Re-audited on 2026-11-27: nothing to decide. `Response`, assessed during follow-up and in its structural category the outcome itself (89 of 91 such patients recurred), is already dropped and among none of the 15 features. Every kept clinical column is a finding at surgery, and the kept-on-purpose note on `Risk` reproduces (without it the score falls by only 0.011 ROC AUC, so the model does not rest on it). The raw file is sorted by outcome rather than time (nearly all recurrences sit in its last hundred rows), which is harmless under stratified random folds and would matter only to someone who took its first rows as a test set. Earlier: `ForcedIIDFromTemporal` stays (issue 1, A, 2026-11-18). Nothing is left open.
 
 **Issues for Andrej:**
 

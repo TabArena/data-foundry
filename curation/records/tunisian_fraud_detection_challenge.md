@@ -120,7 +120,7 @@ Weighed: the source's actor (the audit planner) and the L&T move of 2026-11-04 a
 framing. Value: MET-2, MET-3 and MET-4 hold; RF 5.970 against a dummy at 7.056 on 3 of 3 splits. Quality: CLEAN-1
 (`TVA_CRDFIN` is the closing credit) and the stale counts after the 2018 cut are fixed in the notes.
 
-**Main points:** All five issues settled (Lennart, 2026-11-05): the taxpayer's previous-year label ships as held
+**Main points:** Re-audited on 2026-11-27: nothing to decide, and nothing blocks moving the record on from triage. The data reproduce bit-exactly from the participant mirror the record documents (both checksums match; identity with the Zindi file still rests on the statement of 2026-11-04, since Zindi needs a login), `dataset check` is clean, and every count in the record reproduces. The newest cohort, 2017, is complete and tested: its rows fall in the source itself, since the unlabelled contest test file takes the same 26% of each year through 2017. No column starts or stops being recorded across 2013-2017, and every test row's previous label comes from strictly earlier years. One optional code fix: `_clean` still asserts the raw shape, which breaks the leak probe's raw mode. Earlier: All five issues settled (Lennart, 2026-11-05): the taxpayer's previous-year label ships as held
 history, `previous_target` and `years_since_previous_target` (1, B); `CTR_CESSAT` (2) and `TVA_RESTIT` (3) dropped;
 `Selection Bias` set (4); the refund and registry fields kept under LEAK-38 as amended (5). The three cohort-year
 windows, below the target of nine, stay (Andrej, 2026-11-20). Nothing open.

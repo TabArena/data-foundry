@@ -64,7 +64,7 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
 
 **Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below (issue 1, A, 2026-11-18).
 
-**Main points:** `ForcedIIDFromTemporal` stays (issue 1, A, 2026-11-18). Nothing is left open.
+**Main points:** Re-audited on 2026-11-27: nothing to decide. The values are raw, not standardised (age 19-79, glucose 58-124), so read as mg/dL no glucose reaches the diabetes threshold of 126, as the definition says. The derived columns hold (the Friedewald LDL matches on 438 of 442 rows), the number formats carry no target signal, and the best method beats the best single feature on all 60 splits. The sex codes have no sourced mapping; HDL and blood pressure fit 1 = female and 2 = male, but that is an inference, so keeping them unlabelled is right. Earlier: `ForcedIIDFromTemporal` stays (issue 1, A, 2026-11-18). Nothing is left open.
 
 **Issues for Andrej:**
 
