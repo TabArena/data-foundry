@@ -1,5 +1,24 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-27, review of the 33 unreviewed datasets: Andrej's second marks (containers not rebuilt)
+
+- `aeolus_rebuilt_1m` gains nine airport-traffic inputs known at the prediction point: flights scheduled at the
+  origin and destination in the coming hour, and the departures and arrivals of the hour before with their mean
+  delay and share late. +0.0061 ROC AUC on average over the three windows (untuned LightGBM, 1M training rows); the
+  same columns read one hour later score higher, so the honest ones use nothing after the prediction point. Rows and
+  splits unchanged.
+- `2024_lusaka_mobility_prediction_hackathon`: nine one-day windows (23 to 31 January, days from 03:00, gap one day),
+  a daily refit, in place of three four-day windows; training share 0.666 to 0.936.
+- `medical_facility_operational_data`: the newest 14-day window ends at the last arrival; no visit is left out of
+  every split (12,435 test visits).
+- `mortgage`: interest rate, maturity, credit score, LTV and property type take each loan's first recorded value
+  (33,457 rows differed).
+- Text only: `chicago_traffic_crashes` (the collision type's share in the fit reason, the corridor ranking in the
+  metric's reason), `perth_house_prices` (what a missing garage count means before and after October 2019),
+  `bias_correction_r_bias_correction_r_2` (the newest-summer windows kept as an exception).
+- Kept or shipped as defined: zillow_prize (kept as it is), bemtpl97, caracas_cervical_cancer, college_scorecard,
+  numerai28_6.
+
 ## 2026-11-27, review of the 33 unreviewed datasets: Andrej's marks applied (containers not rebuilt)
 
 - `lt_vehicle_loan_default_prediction`: five whole-week test windows (27 September to 31 October 2018, 112,550 test

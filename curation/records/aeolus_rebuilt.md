@@ -70,12 +70,16 @@ CC (2026-11-17, Andrej): Review issue 2, A, as implemented: Three 14-day windows
 
 CC (2026-11-17, Andrej): the declared split (temporal on `FL_DATE`, windows of 14 days, 3 windows at fixed cutoffs, gap 1 day) is checked: confirmed in the blind split walk.
 
+CC (2026-11-27, Andrej): Review issue 3, B, "Add the airports' state in the hour before the prediction point.": nine columns added (flights scheduled to leave and land in the coming hour; departures from the origin and arrivals at the destination in the hour before the prediction point, with their mean delay and share late), measured first: +0.0061 ROC AUC on average over the three windows.
+
+**Assessment (AI, 2026-11-27):** untuned LightGBM, 1M training rows (random, newest year of the train side), seed 0, ROC AUC without / with the nine columns: 18 December 0.8344 / 0.8417 (+0.0073), 3 July 0.8349 / 0.8413 (+0.0064), 13 March 0.8334 / 0.8381 (+0.0047). The four delay and late-share columns carry the gain; the counts add under 0.001. The same columns read one hour after the prediction point score higher (all nine 0.8401-0.8457), so the shipped version holds nothing from after it. Values checked against a plain filter of the flight files for 400 random flights: no difference. `dataset check`: 0 errors, 0 warnings (README not regenerated).
+
 ## Review
 
 **Outcome:** added as `aeolus_rebuilt_1m`. Under the rule on choosing test windows, rewritten on 2026-11-10, you chose
 B (issue 1): the test fortnights are 18-31 December, 3-16 July and 13-26 March 2024 instead of the newest six weeks,
-and the 14-day length and the one-day gap stay with a new reason. Open: issue 3, the airports' state at the
-prediction point as new inputs (your question of 2026-11-27).
+and the 14-day length and the one-day gap stay with a new reason. Issue 3 (2026-11-27, B): nine inputs for the airports' state at the
+prediction point were added, worth 0.0061 ROC AUC on average.
 
 **Main points:** Re-audited on 2026-11-27: nothing to decide. All 25 flight files and the station history match their checksums, and the frame rebuilt from today's live station files still matches the record exactly (13,690,703 rows; test windows of 264,245, 278,071 and 267,477 flights). Every number in the splits comment recomputes on the shipped windows, and the newest window ends on the last day of the data. Text fixes need no decision: the committed README still describes the windows before 2026-11-10; the probe figures in the notes were measured on those old windows and recompute slightly higher (LightGBM 0.826 against 0.819); two source files, the carrier code table and the weather station database, come from live downloads whose declared hashes no longer reproduce; and two weather columns go missing for about 16,000 rows a month in August-September and December 2024, though never in a test window. Earlier: Settled on 2026-11-10: the test windows are the holiday peak, the summer peak and a spring fortnight
 of 2024 (issue 1, B), and the declared horizon is checked. Settled on 2026-11-17: the three 14-day windows stay
@@ -246,3 +250,15 @@ sense and is justifiable keep it and resolve them"); the record's CC line says t
    * You asked why there are so few inputs, whether the release's time and graph parts should add more, and whether this should be a `_1m` dataset.
    * The size: it already is the `_1m` version. The folder is `aeolus_rebuilt_1m`, and the container holds all 13,690,703 operated flights of 2023-2024 that a split uses. The test windows keep all of their 264,245 to 278,071 flights, and a benchmark sub-samples each training side to 1M flights before a fit. The source has nothing more for these years; adding 2025 would be a separate rebuild.
    * The inputs: the time part is covered by the aircraft's previous flight. The graph part is missing, and this issue proposes it (above).
+
+   **Andrej (2026-11-27, change):** Option B: Add the airports' state in the hour before the prediction point.
+
+   **Resolved (2026-11-27, Andrej):** B, after the measurement the recommendation asked for. Nine inputs were added (`AIRPORT_STATE`): the flights scheduled to leave and to land at the origin in the hour starting at the prediction point, those scheduled to land at the destination in the scheduled arrival hour, and, for the hour before the prediction point, the departures from the origin and the arrivals at the destination that had already happened, with their mean delay and share late (15 minutes or more). A cancelled flight counts as scheduled but never departed, a diverted one as departed but not arrived, the flight itself is not counted, all times are UTC. Untuned LightGBM, 1M training rows, ROC AUC:
+
+   | Window | Without | With the nine | Gain | Nine read one hour later (leak probe) |
+   |---|---|---|---|---|
+   | 18-31 Dec 2024 | 0.8344 | 0.8417 | +0.0073 | 0.8448 |
+   | 3-16 Jul 2024 | 0.8349 | 0.8413 | +0.0064 | 0.8457 |
+   | 13-26 Mar 2024 | 0.8334 | 0.8381 | +0.0047 | 0.8401 |
+
+   The mean gain is 0.0061, above the 0.005 line. Per column (alone, honest / read one hour later, over the three windows): origin mean departure delay 0.64-0.66 / 0.65-0.68, origin share late 0.64-0.67 / 0.65-0.68, destination mean arrival delay 0.62-0.63 / 0.63-0.65, destination share late 0.62-0.63 / 0.63-0.64; the five count columns score 0.51-0.56 alone and add under 0.001 each. Each of the four delay and late-share columns scores lower with the honest hour than with the hour after, as an hour of the past should, so none holds an event after the prediction point (a plain filter of the flight files reproduces 3,600 values of 400 flights exactly); the scheduled counts do not depend on what happens. The gain is modest and sits in the four delay and late-share columns; the counts stay for the congestion the release's graph carries. `dataset.py`: the columns, `task_summary` (use case, known) and the note in `curation_comments`. `dataset check`: 0 errors, 0 warnings.
