@@ -222,8 +222,7 @@ Apply that mark only once the curator has answered; apply the others now. Never 
   the issue is resolved.
 * **ship:** the definition stays; apply the item marks; the dataset joins the accepted set and is built later. The
   claim stays until the work goes to `main`: the PR that takes it there sets `DF: Yes`, and `claims release <name>`
-  ([claims.md](../knowledge-data-foundry/references/claims.md)) clears the board and the record's `WIP (DF)` and
-  `claimed_by` in that PR.
+  ([claims.md](../knowledge-data-foundry/references/claims.md)) clears the board when it merges.
 * **changes:** apply the changes, run `dataset check` and the probes they touch
   ([verification.md](../knowledge-curation/references/verification.md)), and put the record back to the curator with
   what changed: the issues that stay open stay open in the record's review. A change of the windows, the length or the

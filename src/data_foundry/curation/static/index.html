@@ -387,7 +387,7 @@ const RECORDS_URL = STATIC ? "./records.json" : "/api/records";
 // ----------------------------------------------------------------------------
 // Layout config — tweak freely.
 const PRIMARY = [
-  "checked_by", "unique_name", "data_foundry_status", "claimed_by", "suggestion", "priority", "decision_markers",
+  "checked_by", "unique_name", "data_foundry_status", "claim_holder", "suggestion", "priority", "decision_markers",
   "tags", "name", "source_links", "comments", "year", "domain", "reference",
 ];
 const EXTRA = ["original_source", "collections", "required_split", "problem_type", "original_data_state"];
@@ -440,7 +440,7 @@ const CUSTOM = {
   },
 };
 const SEMANTIC = {
-  data_foundry_status: { "DF: Yes": "good", "DF: Suspended": "warn", "WIP (DF)": "warn", "WIP (Triage)": "warn", "DF: Much work": "warn" },
+  data_foundry_status: { "DF: Yes": "good", "DF: Suspended": "warn", "DF: Much work": "warn" },
   suggestion: { "Yes": "good", "Yes (Disagreement)": "warn", "No": "bad", "No (Retired)": "bad", "TBD -> Yes": "warn", "TBD -> 2nd Tier": "warn", "Disagreement": "bad" },
   decision_markers: {
     // bad / disqualifying -> red
@@ -695,11 +695,9 @@ function rowStatus(d) {
   // A claim names its holder in the tooltip: others leave the dataset alone until it is released. The live
   // board's claim (live_claim) carries the stage, the expiry and the note.
   const lc = d.live_claim;
-  if (lc) {
-    const until = lc.expired ? `expired ${lc.expires_at.slice(0, 10)}` : `until ${lc.expires_at.slice(0, 10)}`;
-    return { ...st, t: `${st.t} · claimed by ${lc.holder} (${lc.stage}, ${until})` + (lc.note ? `: ${lc.note}` : "") };
-  }
-  return d.claimed_by ? { ...st, t: st.t + " · claimed by " + d.claimed_by } : st;
+  if (!lc) return st;
+  const until = lc.expired ? `expired ${lc.expires_at.slice(0, 10)}` : `until ${lc.expires_at.slice(0, 10)}`;
+  return { ...st, t: `${st.t} · claimed by ${lc.holder} (${lc.stage}, ${until})` + (lc.note ? `: ${lc.note}` : "") };
 }
 function rowStatusOf(d) {
   const sugg = d.suggestion, df = d.data_foundry_status || [], rev = (d.needs_review || []);
@@ -1442,7 +1440,8 @@ function columnDefs() {
       }
     }
     else if (f.kind === "select") {
-      c.editor = "list"; c.cssClass = "dd-cell"; c.titleFormatter = addBtnTitle(f.label, name);
+      c.editor = "list"; c.cssClass = "dd-cell";
+      if (!f.board) c.titleFormatter = addBtnTitle(f.label, name);  // the board's curators are not a vocabulary
       c.editorParams = listEditorParams(name, false);
       c.formatter = selectChip(name);
       // Tri-state popover: require (✓) / exclude (✕) any number of values. The state lives
@@ -1473,7 +1472,7 @@ function columnDefs() {
       else { c.width = 200; c.cssClass = "single-line"; c.tooltip = true; c.formatter = cell => escapeHtml(String(cell.getValue() || "")); }
     }
     if (name === "data_foundry_status") c.width = 170;  // multiselect: DF state + benchmark tags
-    if (name === "claimed_by") c.width = 110;
+    if (name === "claim_holder") c.width = 110;
     cols.push(c);
   }
   cols.push({
@@ -1524,7 +1523,7 @@ async function onEdit(cell) {
     cell.restoreOldValue();
     return;
   }
-  if (f === "claimed_by") return claimEdit(cell, value);  // a claim goes to the live board, not only the record
+  if (f === "claim_holder") return claimEdit(cell, value);  // a claim goes to the live board, never to the record
   try {
     if (spec.kind !== "number") await registerNew(spec.vocab, asArray(value));  // a number has no vocabulary
     const updated = await putRecord(cell.getRow().getData().unique_name, { [f]: value });
@@ -1539,8 +1538,8 @@ async function onEdit(cell) {
 
 // ---- claims (the live board) --------------------------------------------------
 // The Claimed by column shows the live claims board (a git branch every curator pushes to), refreshed by the
-// server every 20 s. Picking your own name claims the dataset, emptying the cell releases it; the server pushes the
-// change to the board and mirrors it into the record. Someone else's name cannot be picked: they claim for themselves.
+// server every 20 s; it is not a record field. Picking your own name claims the dataset, emptying the cell releases
+// it; the server pushes the change to the board. Someone else's name cannot be picked: they claim for themselves.
 let CLAIMS = { me: null };
 async function refreshClaimsInfo() {
   try { CLAIMS = await (await fetch(STATIC ? "./claims.json" : "/api/claims", { cache: "no-store" })).json(); }
@@ -1579,7 +1578,7 @@ async function claimEdit(cell, value) {
     if (data.error) throw new Error(data.error);
     cell.getRow().update(toRow(data));
     cell.getRow().reformat();
-    syncVersion();  // our own push and record write moved the token
+    syncVersion();  // our own push moved the token
     updateCount(); applyFilters(); refreshClaimsInfo();
     toast(action === "claim" ? `Claimed ${id}: on the board for everyone` : `Released ${id}`);
   } catch (e) { cell.restoreOldValue(); toast((action === "claim" ? "Claim" : "Release") + " failed: " + e.message, true); }

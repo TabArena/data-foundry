@@ -55,7 +55,9 @@ def env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict[str, Path]:
         repos[who] = repo
     root = repos["lennart"] / "curation"
     (root / "records").mkdir(parents=True)
-    (root / "vocabularies.yaml").write_text(yaml.safe_dump({"claimed_by": ["Lennart", "Andrej"]}))
+    (root / "vocabularies.yaml").write_text(
+        yaml.safe_dump({"curators": ["Lennart", "Andrej"], "checked_by": ["Lennart", "Andrej", "AI (UNVERIFIED)"]})
+    )
     monkeypatch.setenv(DATA_FOUNDRY_CURATION_ENV, str(root))
     claims._CACHE_MEMO.clear()
     return {"remote": remote, "root": root, **repos}
@@ -192,41 +194,10 @@ def test_current_curator_needs_a_known_name(env: dict[str, Path], monkeypatch: p
         claims.current_curator(env["lennart"])
     git(env["lennart"], "config", claims.CURATOR_GIT_KEY, "Lennart")
     assert claims.current_curator(env["lennart"]) == "Lennart"
-    monkeypatch.setenv(claims.CURATOR_ENV, "Mallory")
-    with pytest.raises(claims.ClaimsError, match="not in vocabularies"):
-        claims.current_curator(env["lennart"])
-
-
-def test_mirror_sets_and_clears_the_records_claims(env: dict[str, Path]) -> None:
-    """The records' claimed_by and WIP value follow the board, both ways."""
-    root = env["root"]
-    _record(root, "a", suggestion="Yes")
-    _record(root, "b", suggestion="TBD -> Yes")
-    _record(root, "c", suggestion="Yes", claimed_by="Andrej", data_foundry_status=["WIP (DF)", "BeyondArena"])
-    claims.claim(["a", "b"], stage="add", holder="Lennart", repo=env["lennart"])
-    board = claims.fetch(env["lennart"])
-    assert set(claims.mirror_to_records(board, write=False)) == {"a", "b", "c"}
-    changed = claims.mirror_to_records(board)
-    assert changed == {"a": (None, "Lennart"), "b": (None, "Lennart"), "c": ("Andrej", None)}
-    a, b, c = (load_record(root / "records" / f"{n}.md") for n in "abc")
-    assert (a.claimed_by, a.data_foundry_status) == ("Lennart", ["WIP (DF)"])
-    assert b.data_foundry_status == ["WIP (Triage)"]  # work on a record whose verdict is still open
-    assert (c.claimed_by, c.data_foundry_status) == (None, ["BeyondArena"])
-    assert not {"wip_unclaimed", "claim_without_wip"} & set(a.needs_review + c.needs_review)
-    assert claims.mirror_to_records(board) == {}
-
-
-def test_import_from_records(env: dict[str, Path]) -> None:
-    """The records' claims move onto the board in their holders' names, once."""
-    root = env["root"]
-    _record(root, "a", suggestion="Yes", claimed_by="Lennart", data_foundry_status=["WIP (DF)"])
-    _record(root, "b", suggestion="TBD -> Yes", claimed_by="Andrej", data_foundry_status=["WIP (Triage)"])
-    out = claims.import_from_records(repo=env["lennart"])
-    assert out.changed == ["a", "b"]
-    board = claims.fetch(env["andrej"])
-    assert (board.claims["a"].holder, board.claims["a"].stage) == ("Lennart", "add")
-    assert (board.claims["b"].holder, board.claims["b"].stage) == ("Andrej", "triage")
-    assert claims.import_from_records(repo=env["lennart"]).changed == []
+    for name in ("Mallory", "AI (UNVERIFIED)"):  # only the curators list claims
+        monkeypatch.setenv(claims.CURATOR_ENV, name)
+        with pytest.raises(claims.ClaimsError, match="not in vocabularies"):
+            claims.current_curator(env["lennart"])
 
 
 def test_save_record_warns_only_on_another_curators_claim(
@@ -315,24 +286,25 @@ def test_hook_fails_open(tmp_path: Path) -> None:
     assert _hook({"hook_event_name": "Nonsense"}) is None
 
 
-def test_cli_claim_check_and_sync(
+def test_cli_claim_check_and_release(
     env: dict[str, Path], monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    """The CLI claims, checks, syncs and releases, and turns a missing name into one error line."""
+    """The CLI claims, checks and releases on the board alone, and turns a missing name into one error line."""
     root, repo = env["root"], env["lennart"]
     _record(root, "a", suggestion="Yes")
     monkeypatch.setenv(claims.CURATOR_ENV, "Lennart")
     monkeypatch.setattr(claims, "repo_root", lambda: repo)
+    before = (root / "records" / "a.md").read_text(encoding="utf-8")
     assert cli_main(["claims", "claim", "a", "--note", "testing"]) == 0
-    assert load_record(root / "records" / "a.md").claimed_by == "Lennart"
+    assert claims.fetch(repo).claims["a"].holder == "Lennart"
     assert cli_main(["claims", "claim", "nope"]) == 2  # no record
     assert cli_main(["claims", "check", "a", "z"]) == 0
     out = capsys.readouterr().out
     assert "a: yours" in out
     assert "z: free" in out
-    assert cli_main(["claims", "sync", "--check"]) == 0
     assert cli_main(["claims", "release", "a"]) == 0
-    assert load_record(root / "records" / "a.md").claimed_by is None
+    assert "a" not in claims.fetch(repo).claims
+    assert (root / "records" / "a.md").read_text(encoding="utf-8") == before  # the record never carries the claim
     monkeypatch.delenv(claims.CURATOR_ENV)
     assert cli_main(["claims", "claim", "a"]) == 2  # no curator name: one error line, no traceback
     assert "Name yourself" in capsys.readouterr().err
@@ -357,19 +329,21 @@ def test_dashboard_claims_and_releases_through_the_board(env: dict[str, Path], m
 
     try:
         rows = {r["unique_name"]: r for r in call("GET", "/api/records")[1]}
-        assert rows["b"]["claimed_by"] == "Andrej"  # from the board, not the record
+        assert rows["b"]["claim_holder"] == "Andrej"  # from the board, not the record
         assert rows["b"]["live_claim"]["stage"] == "triage"
-        assert rows["a"]["claimed_by"] is None
+        assert rows["a"]["claim_holder"] is None
         assert call("GET", "/api/claims")[1]["me"] == "Lennart"
         status, row = call("POST", "/api/claims/a", {"action": "claim"})
         assert status == 200
-        assert (row["claimed_by"], row["live_claim"]["stage"]) == ("Lennart", "add")
-        assert load_record(root / "records" / "a.md").data_foundry_status == ["WIP (DF)"]
+        assert (row["claim_holder"], row["live_claim"]["stage"]) == ("Lennart", "add")
+        assert load_record(root / "records" / "a.md").data_foundry_status == []  # the claim is on the board only
         assert claims.fetch(env["andrej"]).claims["a"].holder == "Lennart"
         status, err = call("POST", "/api/claims/b", {"action": "claim"})
         assert status == 409
         assert "Andrej" in err["error"]
-        assert call("POST", "/api/claims/a", {"action": "release"})[1]["claimed_by"] is None
-        assert load_record(root / "records" / "a.md").claimed_by is None
+        assert call("POST", "/api/claims/a", {"action": "release"})[1]["claim_holder"] is None
+        schema = call("GET", "/api/schema")[1]
+        assert schema["fields"][-1]["name"] == "claim_holder"
+        assert schema["vocabularies"]["claim_holder"] == ["Lennart", "Andrej"]  # the curators, without the AI
     finally:
         server.shutdown()

@@ -5,8 +5,6 @@ checked_by:
 - Andrej
 data_foundry_status:
 - 'DF: Yes'
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)

@@ -3,9 +3,6 @@ unique_name: wisconsin_local_government_property_insurance_fund
 name: 'Wisconsin Local Government Property Insurance Fund (LGPIF), building and contents, 2006-2010 (Frees, Loss Data Analytics: PropertyFundInsample.csv)'
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 4
 tags:

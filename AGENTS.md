@@ -122,10 +122,8 @@ When changing core code:
 * When adding a check, calibrate it against the shipped collection before
   choosing its severity (`error` only for "no consumer can use this"), and
   keep O(rows x cols) work behind the `heavy_cell_budget` guard.
-* `dataset_checks.run_all_checks(...)` returns five DataFrames — see
-  `simple_metadata_exploration_v2.py` (in `scripts/beyond_arena/`) for how
-  the warehouse-wide stats are computed; that file's dtype categorization
-  is the reference for `CuratedContainer._feature_dtype_counts`.
+* `dataset_checks.run_all_checks(...)` returns five DataFrames; the dtype categorization of a container's features
+  is `CuratedContainer._feature_dtype_counts`.
 * Splits: definitions use `src/data_foundry/v2/splits.py` (the v2 protocol, declarative `TemporalSplits`). The v1
   helpers of the BeyondArena notebooks were removed on 2026-11-12 (in git at `6cc3c945`;
   [`DATA_FOUNDRY_V1.md`](DATA_FOUNDRY_V1.md)).

@@ -295,7 +295,7 @@ def test_export_to_a_file_needs_an_output_path(capsys: pytest.CaptureFixture[str
     with pytest.raises(SystemExit) as exc:
         cli_main(["export", "--format", "csv"])
     assert exc.value.code == 2
-    assert "the output path is required for --format csv" in capsys.readouterr().err
+    assert "the following arguments are required: output" in capsys.readouterr().err
 
 
 def test_unknown_vocab_values(sample_record: CurationRecord) -> None:
@@ -306,25 +306,10 @@ def test_unknown_vocab_values(sample_record: CurationRecord) -> None:
     assert "domain" not in unknown  # this value is allowed
 
 
-def test_a_wip_state_and_its_claim_go_together() -> None:
-    """A WIP state without a claim, or a claim without a WIP state, puts the record in the Review queue."""
-    vocab = {"claimed_by": ["Lennart"], "data_foundry_status": ["WIP (DF)"], "suggestion": ["Yes"]}
-    claimed = _record("a", suggestion="Yes", data_foundry_status=["WIP (DF)"], claimed_by="Lennart")
-    unclaimed = _record("b", suggestion="Yes", data_foundry_status=["WIP (DF)"])
-    left_behind = _record("c", suggestion="Yes", claimed_by="Lennart")
-
-    assert claimed.review_reasons(vocab) == []
-    assert unclaimed.review_reasons(vocab) == ["wip_unclaimed"]
-    assert left_behind.review_reasons(vocab) == ["claim_without_wip"]
-
-
-def test_claimed_by_sits_next_to_the_wip_state_in_the_front_matter() -> None:
-    """The claim is written right after the Data Foundry state and survives a round trip."""
-    record = _record("a", suggestion="Yes", data_foundry_status=["WIP (DF)"], claimed_by="Lennart")
-    text = record_to_markdown(record)
-
-    assert text.index("data_foundry_status:") < text.index("claimed_by: Lennart") < text.index("suggestion:")
-    assert markdown_to_record(text).claimed_by == "Lennart"
+def test_a_record_carries_no_claim() -> None:
+    """Claims live on the claims board only: a record refuses a ``claimed_by`` field."""
+    with pytest.raises(pydantic.ValidationError, match="claimed_by"):
+        markdown_to_record("---\nunique_name: a\nname: a\nclaimed_by: Lennart\n---\n")
 
 
 def test_repo_vocabularies_load() -> None:
@@ -353,7 +338,7 @@ def test_exporter_dataframe(tmp_path, sample_record: CurationRecord) -> None:
 
 
 def test_exporter_keeps_priority_an_integer_column(tmp_path, sample_record: CurationRecord) -> None:
-    """Priority and Source Row stay nullable integers: empty where unset, and the Parquet export still writes."""
+    """Priority and Source Row stay nullable integers: empty where unset, and the XLSX export still writes."""
     records = tmp_path / "records"
     save_record(sample_record, records)
     save_record(_record("unscreened"), records)
@@ -367,8 +352,8 @@ def test_exporter_keeps_priority_an_integer_column(tmp_path, sample_record: Cura
     csv = exporter.export_csv(tmp_path / "out.csv", records).read_text(encoding="utf-8").splitlines()
     header = csv[0].split(",")
     assert csv[1].split(",")[header.index("Priority")] == "4"
-    pytest.importorskip("pyarrow")
-    back = pd.read_parquet(exporter.export_parquet(tmp_path / "out.parquet", records))
+    pytest.importorskip("openpyxl")
+    back = pd.read_excel(exporter.export_xlsx(tmp_path / "out.xlsx", records))
     assert back.set_index("unique_name").loc["musk", "Priority"] == 4
 
 

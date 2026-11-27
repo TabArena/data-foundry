@@ -973,15 +973,7 @@ def _metric_spec_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901, PL
     if not name:
         yield CheckResult("task_metric_empty", "error", "`objective_metric.name` is empty.")
         return
-    if spec.kind == "local":
-        yield CheckResult(
-            "task_metric_local",
-            "warning",
-            f"Metric {name!r} is local: its code is only in the definition, so a reader of the container cannot "
-            "compute it and `build` refuses it.",
-            hint="For a shipped dataset, add the metric to data_foundry.v2.metrics under a general name.",
-        )
-    elif name not in METRICS:
+    if name not in METRICS:
         canonical = canonical_metric_name(name)
         if canonical != name and canonical in METRICS:
             yield CheckResult(
@@ -1336,29 +1328,19 @@ def _weight_column_findings(ctx: _Ctx, column: str, *, scored: bool) -> Iterator
             )
 
 
-def metric_computes_findings(container: CuratedContainer, metric: object) -> list[CheckResult]:
-    """Whether ``metric`` (a :class:`~data_foundry.v2.metrics.Metric`, e.g. a local one, or a spec) computes a finite
-    value on a random prediction of each split's test side of a format-2 ``container``.
-    """
-    return list(_metric_computes_findings(_Ctx(container=container, heavy_cell_budget=0), metric))
-
-
-def _metric_computes_findings(ctx: _Ctx, metric: object | None = None) -> Iterator[CheckResult]:
+def _metric_computes_findings(ctx: _Ctx) -> Iterator[CheckResult]:
     """The metric computes a finite value on domain-valid test predictions for each split."""
     from data_foundry.v2.metrics import METRICS, dummy_prediction, is_finite, score  # noqa: PLC0415
 
-    task = ctx.task
-    spec = task.objective_metric if metric is None else metric
-    if metric is None and (spec.kind == "local" or spec.name not in METRICS):
+    spec = ctx.task.objective_metric
+    if spec.name not in METRICS:
         return
     if any(c not in ctx.df.columns for c in [ctx.target, *spec.inputs.values()]):
         return
     target = ctx.df[ctx.target]
     labels = list(target.cat.categories) if isinstance(target.dtype, pd.CategoricalDtype) else None
     prediction = spec.prediction
-    domain = (
-        getattr(METRICS.get(spec.name), "prediction_domain", None) if getattr(spec, "kind", None) != "local" else None
-    )
+    domain = METRICS[spec.name].prediction_domain
     y = target.to_numpy()
     failures = []
     for repeat, fold, train_idx, test_idx in ctx.flat_splits:

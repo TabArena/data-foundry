@@ -337,16 +337,6 @@ def test_cost_matrix_takes_its_own_labels_with_named_probabilities() -> None:
     assert scorer(container)(y, pd.DataFrame({"good": 1 - p_bad, "bad": p_bad})) == pytest.approx(expected)
 
 
-def test_local_metric_scores_with_its_own_code_but_its_spec_does_not() -> None:
-    local = Metric.local(lambda y, p, **_: float(np.max(np.abs(y - p))), name="max_error", prediction="value",
-                         greater_is_better=False)  # fmt: skip
-    assert score(local, Y_REG, P_REG) == pytest.approx(np.max(np.abs(Y_REG - P_REG)))
-    spec = metric_spec(local, "regression")
-    assert spec.kind == "local"
-    with pytest.raises(ValueError, match="local"):
-        score(spec, Y_REG, P_REG)
-
-
 def test_to_sklearn_scorer_matches_cross_validation_use() -> None:
     x = RNG.normal(size=(200, 3))
     y = np.where(x[:, 0] + RNG.normal(size=200) > 0, "yes", "no")

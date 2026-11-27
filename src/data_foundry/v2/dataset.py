@@ -13,28 +13,12 @@ turns the raw download into the curated frame lives in a few hooks:
   declarative windows of ``temporal`` and the recommended IID/grouped splits do not cover.
 * :meth:`~AbstractCuratedDataset._prepare_raw_files` (optional): a heavy one-off step that writes
   intermediate files into the raw directory (listed in ``prepared_raw_files``).
-* :meth:`~AbstractCuratedDataset._extra_checks` (optional): dataset-specific checks, such as a leak test.
 
 The base class runs the rest the same way for every dataset: after ``_clean`` it casts the columns
 ``_feature_types`` names (and a classification target to ``category``), and fixes the row order (the rows in the
 order of their content, then a stable sort by the time column for temporal tasks, else a shuffle with seed 42);
 then it builds the splits with the benchmark seed, the container, the bundle checks and the report. The pattern
 follows TabArena's model interface: declarative class attributes plus a small set of hooks.
-
-Several tasks on the same data form a family: a parent definition (no ``target``; a :class:`DataSummary` instead of a
-:class:`TaskSummary`) holds the shared metadata and code, and each task subclasses it in its own folder::
-
-    ExamScores = import_definition("exam_scores")      # the sibling folder's class
-
-
-    class ExamScoresMath(ExamScores):
-        unique_name = "exam_scores_math"               # <parent>_<variant>
-        derivation = "The math score as the target."   # how it differs from its parent
-        target = "math_score"
-        ...
-
-A child may override any hook and call ``super()``; it reads its family's raw files and records its parent in the
-container (``derived_from``). A parent is checked as data (:meth:`AbstractCuratedDataset.check_parent`), never built.
 
 From a notebook next to ``dataset.py``::
 
@@ -73,7 +57,6 @@ from data_foundry.bundle_checks import (
     SEVERITY_ORDER,
     BundleCheckReport,
     CheckResult,
-    metric_computes_findings,
     run_bundle_checks,
     verify_saved_container,
 )
@@ -81,10 +64,8 @@ from data_foundry.collections import collection_file_budget
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.dataset_checks import run_all_checks
 from data_foundry.schema import (
-    FORCED_TIME_TAGS,
     GROUP_BASIS_TAGS,
     RETIRED_DATA_TAGS,
-    TIME_BASIS_TAGS,
     DatasetMetadataV2,
     Grouping,
     MetricSpec,
@@ -102,7 +83,6 @@ from data_foundry.schema import (
     rows_text,
 )
 from data_foundry.time_basis import GroupBasis, TimeBasis
-from data_foundry.utils.checksum import encode_dataset_v2
 from data_foundry.v2 import (
     group_checks,
     splits as protocol,
@@ -115,7 +95,6 @@ from data_foundry.v2.preprocessing import (
     canonical_dtypes,
     canonical_nans,
     cast_dtypes,
-    content_order,
     order_positions,
     order_rows,
 )
@@ -227,7 +206,7 @@ class RawLineage:
     note: str
 
 
-_TEXT_FIELDS = ("download_description", "curation_comments", "splits_comment", "derivation")
+_TEXT_FIELDS = ("download_description", "curation_comments", "splits_comment")
 _SPLIT_LEAF = re.compile(r"L-[A-Z]+\.[a-z0-9-]+")
 """The form of a leaf ID of the split tree (``data_foundry.curation.split_tree``)."""
 
@@ -348,30 +327,6 @@ class TaskSummary:
         return {name: clean_text(getattr(self, name)) or "" for name in names}
 
 
-@dataclass(frozen=True)
-class DataSummary:
-    """What the data is, in plain words and independent of one task: the summary of a parent definition.
-
-    A parent (a definition without a ``target``) declares it; its children inherit it, and their ``README.md`` shows
-    it above their own :class:`TaskSummary`. Not stored in the container.
-
-    Attributes:
-        data: What was measured or recorded, by whom, where and when.
-        row: What one row is.
-        goals: The use cases the data serves, independent of one task: who would predict what from it, and why.
-        limits: Known gaps and biases a task built on it inherits ("" when there are none).
-    """
-
-    data: str
-    row: str
-    goals: str
-    limits: str = ""
-
-    def fields(self) -> dict[str, str]:
-        """The text fields, dedented, in display order."""
-        return {name: clean_text(getattr(self, name)) or "" for name in ("data", "row", "goals", "limits")}
-
-
 NON_FEATURE_REASONS = ("outcome", "provenance", "identifier", "other")
 """Why a column is kept but never a feature (:class:`NonFeature`)."""
 
@@ -380,9 +335,8 @@ NON_FEATURE_REASONS = ("outcome", "provenance", "identifier", "other")
 class NonFeature:
     """A column a definition keeps in its frame but no task may use as a feature, with the reason.
 
-    A parent declares them in ``non_features``; its children inherit the declarations, and every task drops the
-    declared columns after ``_clean`` unless it gives one a role (its target, its group key, a scoring or weight
-    column). A child may extend the declarations, never remove one.
+    A definition declares them in ``non_features``, and drops the declared columns after ``_clean`` unless it gives
+    one a role (its target, its group key, a scoring or weight column).
 
     Attributes:
         column: The column of the frame.
@@ -404,7 +358,7 @@ class CurationResult:
     Attributes:
         dataset: The dataset definition that produced this result.
         container: The curated container (a fresh UUID unless it was saved).
-        bundle_report: The bundle-check report, with the definition and extra checks merged in.
+        bundle_report: The bundle-check report, with the checks of the definition merged in.
         data_checks: The tables of :func:`~data_foundry.dataset_checks.run_all_checks`, by name.
         decisions: The curation decisions of :meth:`AbstractCuratedDataset._decisions`, with their evidence.
         group_stats: The group statistics of a grouped task (:mod:`data_foundry.v2.group_checks`), else None.
@@ -432,34 +386,6 @@ class CurationResult:
         return self.saved_path is not None
 
 
-@dataclass
-class ParentCheckResult:
-    """The outcome of :meth:`AbstractCuratedDataset.check_parent`: a parent checked as data.
-
-    Attributes:
-        dataset: The parent definition.
-        frame: Its frame, in content order.
-        data_checksum: :func:`data_checksum` of the frame.
-        findings: The definition findings (markers, nondeterminism, summary, a parent without children).
-        children: The ``unique_name`` of each definition that derives from it directly, found next to it.
-        raw_files: The raw-file manifest of its sources (:meth:`AbstractCuratedDataset.raw_manifest`).
-        created_at: When the result was produced (UTC).
-    """
-
-    dataset: AbstractCuratedDataset
-    frame: pd.DataFrame
-    data_checksum: str
-    findings: list[CheckResult] = field(default_factory=list)
-    children: list[str] = field(default_factory=list)
-    raw_files: list[RawFile] = field(default_factory=list)
-    created_at: dt.datetime = field(default_factory=lambda: dt.datetime.now(dt.timezone.utc))
-
-    @property
-    def ok(self) -> bool:
-        """Whether no finding is an error."""
-        return not any(f.severity == "error" for f in self.findings)
-
-
 class DatasetDefinitionError(TypeError):
     """A dataset class is missing a declaration or declares an inconsistent one."""
 
@@ -476,25 +402,18 @@ class AbstractCuratedDataset(ABC):
     # --- in brief ---------------------------------------------------------------------------------
     task_summary: ClassVar[TaskSummary | None] = None
     """What the dataset simulates, in plain words, and how closely (:class:`TaskSummary`); first in the README."""
-    data_summary: ClassVar[DataSummary | None] = None
-    """What the data is, independent of one task (:class:`DataSummary`): required on a parent (a definition without
-    a ``target``), inherited by its children."""
 
-    # --- family -------------------------------------------------------------------------------------
+    # --- never features -----------------------------------------------------------------------------
     non_features: ClassVar[tuple[NonFeature, ...]] = ()
-    """Columns kept in the frame that no task may use as a feature (:class:`NonFeature`): the outcomes a task does not
-    predict, provenance, identifiers. Inherited; every task drops them after ``_clean`` unless it gives one a role (its
-    target, group key, scoring or weight column)."""
-    derivation: ClassVar[str | None] = None
-    """For a child (a class derived from another definition, ``class Math(import_definition("exam_scores"))``): how it
-    differs from its parent, in one or two sentences (another target, split or preprocessing). Required on a child,
-    refused on a definition without a parent."""
+    """Columns ``_clean`` returns that are no feature (:class:`NonFeature`): the outcomes the task does not predict,
+    provenance, identifiers. Dropped after ``_clean`` unless the task gives one a role (its target, group key, scoring
+    or weight column)."""
 
     # --- dataset ------------------------------------------------------------------------------------
     unique_name: ClassVar[str]
-    """Snake-case name; equal to the folder name. A version sub-sampled to a row budget is named ``<name>_<suffix>``
-    after its train budget (``_1m``, ``_10m``) and reads the raw files of ``<name>``; in a collection with a budget
-    (:func:`collection_row_budget`) the suffix alone makes the version."""
+    """Snake-case name; equal to the folder name. In a collection with a row budget (:func:`collection_row_budget`), a
+    version sub-sampled to it is named ``<name>_<suffix>`` after its train budget (``_1m``) and reads the raw files of
+    ``<name>``."""
     domain: ClassVar[str]
     """One of :data:`data_foundry.schema.Domain`."""
     sources: ClassVar[tuple[Source, ...]]
@@ -582,32 +501,9 @@ class AbstractCuratedDataset(ABC):
     input), with ``prediction_time=...`` naming the column of the prediction point when there is one. Neither
     ``grouping`` nor ``temporal``: an IID task."""
 
-    # --- row order ----------------------------------------------------------------------------------
-    shuffle: ClassVar[bool] = True
-    """Put the rows in the order of their content, then shuffle IID and grouped data (seed 42) as the last step;
-    temporal data is sorted by time, ties in content order. False keeps the order ``_clean`` returns."""
-
     # --- splits -------------------------------------------------------------------------------------
     splits_comment: ClassVar[str | None] = None
     """What the splits simulate. None: the default comment for recommended or declarative splits."""
-    row_budget: ClassVar[RowBudget | None] = None
-    """The benchmark's row budget, for data larger than it. None (the default): no budget, the splits use the full
-    frame and no side is capped.
-
-    ``RowBudget(train=..., test=...)`` makes a version named ``<name>_<suffix>`` after its train budget
-    (:attr:`~data_foundry.schema.RowBudget.suffix`), and the container records the budget
-    (``experiment_metadata.row_budget``) with how to sub-sample to it (``experiment_metadata.train_sampling``,
-    :meth:`train_sampling`). Only the test sides are sampled in the container: each temporal test window, or each
-    IID / grouped fold's test third, keeps at most ``test`` rows (whole groups, stratified; whole time values with
-    ``TemporalSplits(sample_by="time")``). The train sides keep every row available to them, all history before a
-    window, and a benchmark sub-samples them to ``train`` rows before a fit
-    (:func:`~data_foundry.v2.splits.subsample_train`: the newest year at random for temporal data). TabArena v0.2 uses
-    ``RowBudget(train=1_000_000, test=500_000)``; a budget that changes nothing (no test side over ``test`` and no
-    train side over ``train``) is refused (take the dataset fully).
-
-    A collection sets its budget once instead (:func:`collection_row_budget`, ``row_budget`` in the ``collection.py``
-    next to the dataset folders): a definition in it leaves this out, a ``<name>_<suffix>`` version gets the budget by
-    its name (:func:`effective_row_budget`), and the build refuses a name that does not match what the splits need."""
 
     # --- checks and raw files ----------------------------------------------------------------------
     accepted_check_warnings: ClassVar[dict[str, str]] = {}
@@ -666,19 +562,14 @@ class AbstractCuratedDataset(ABC):
         """Build the outer splits for ``df`` (already in its final row order).
 
         The default is the v2 protocol (:mod:`data_foundry.v2.splits`): the windows of ``temporal.splits`` for a
-        temporal task, else the recommended IID or grouped 3-fold cross-validation, both fitted to the
-        :attr:`row_budget` of a sub-sampled version. Override it only for a split none of these express, and return a
-        :class:`SplitPlan` when the split step reduces the frame or computes its comment.
+        temporal task, else the recommended IID or grouped 3-fold cross-validation, both fitted to the row budget of a
+        sub-sampled version (:func:`effective_row_budget`). Override it only for a split none of these express, and
+        return a :class:`SplitPlan` when the split step reduces the frame or computes its comment.
         """
         return self.default_splits(df)
 
     def _prepare_raw_files(self, raw_dir: Path) -> None:  # noqa: B027 - an optional hook, empty on purpose
         """Write the files listed in :attr:`prepared_raw_files` into ``raw_dir`` (optional, heavy, one-off)."""
-
-    def _extra_checks(self, container: CuratedContainer) -> list[CheckResult]:
-        """Return dataset-specific findings, for example a leak test (optional)."""
-        del container
-        return []
 
     def _decisions(self, raw: Any, df: pd.DataFrame) -> list[Decision]:
         """Return the curation decisions worth showing evidence for (optional).
@@ -714,7 +605,7 @@ class AbstractCuratedDataset(ABC):
 
     def _reset_process_state(self) -> None:
         """Forget what the last :meth:`process` recorded, before a run records it again; a run that does not set a
-        value (no ``source_file`` column, a parent) then reads the default, never a value from an earlier run.
+        value (no ``source_file`` column) then reads the default, never a value from an earlier run.
         """
         self._rows_per_file: dict[str, int] | None = None
         self._dropped_non_features: list[NonFeature] = []
@@ -730,15 +621,9 @@ class AbstractCuratedDataset(ABC):
         return f"<{type(self).__name__} {self.unique_name!r} from {self.folder}>"
 
     @property
-    def is_task(self) -> bool:
-        """Whether this definition is a task (it declares a ``target``), not a parent of tasks."""
-        return is_task(type(self))
-
-    @property
     def folder(self) -> Path | None:
         """The folder holding this dataset's ``dataset.py`` (and any sibling files it reads); None for a class defined
-        elsewhere (a notebook, a script). A parent's hooks that read a file next to the parent's own ``dataset.py``
-        use ``Path(__file__).parent``, since ``folder`` is the folder of the class that runs them.
+        elsewhere (a notebook, a script).
         """
         file = definition_file(type(self))
         return None if file is None else file.parent
@@ -755,9 +640,10 @@ class AbstractCuratedDataset(ABC):
 
     # --- reloading ----------------------------------------------------------------------------------
     def _definition_mtime(self) -> tuple[float, ...] | None:
-        """The modification times of the definition files of the class and its parents (:func:`definition_files`)."""
+        """The modification time of the class's ``dataset.py`` (None for a class defined elsewhere)."""
+        file = definition_file(type(self))
         try:
-            return tuple(file.stat().st_mtime for file in definition_files(type(self)))
+            return None if file is None else (file.stat().st_mtime,)
         except OSError:
             return None
 
@@ -774,7 +660,7 @@ class AbstractCuratedDataset(ABC):
         file = definition_file(old)
         if file is None:  # a class defined in a notebook: re-run its cell instead
             return self
-        new = load_definition(file)  # imports the parents again too (`import_definition`)
+        new = load_definition(file)
         loaded = getattr(old, "_loaded_code", {})
         keep_raw = all(loaded.get(name) == new._loaded_code[name] for name in new._loaded_code)
         self.__class__ = new
@@ -793,8 +679,7 @@ class AbstractCuratedDataset(ABC):
         """Run :meth:`_prepare_raw_files` when a file in :attr:`prepared_raw_files` is missing, when its code changed
         since the files were written, or with ``force``.
 
-        The hash of the code is kept in :data:`PREPARED_MARKER` next to the files; files without one (written before
-        2026-10-06) count as written by other code, so the step runs once more.
+        The hash of the code is kept in :data:`PREPARED_MARKER` next to the files.
         """
         if not self.prepared_raw_files:
             return
@@ -905,19 +790,15 @@ class AbstractCuratedDataset(ABC):
     def _drop_non_features(
         self, df: pd.DataFrame, test: pd.DataFrame | None
     ) -> tuple[pd.DataFrame, pd.DataFrame | None]:
-        """Check the columns this class declares as non-features, count the rows per raw file, and for a task drop
-        every declared non-feature it gives no role (:attr:`non_features`).
+        """Check the columns declared as non-features, count the rows per raw file, and drop every declared
+        non-feature the task gives no role (:attr:`non_features`).
         """
-        own = vars(type(self)).get("non_features", ())
-        inherited = {nf.column for k in type(self).__mro__[1:] for nf in vars(k).get("non_features", ())}
-        missing = [nf.column for nf in own if nf.column not in inherited and nf.column not in df.columns]
+        missing = [nf.column for nf in self.non_features if nf.column not in df.columns]
         if missing:
             msg = f"{type(self).__name__}: `non_features` names {missing}, which `_clean` does not return."
             raise DatasetDefinitionError(msg)
         if "source_file" in df.columns:  # the rows each raw file gave, for the manifest
             self._rows_per_file = {str(k): int(v) for k, v in df["source_file"].value_counts(sort=False).items()}
-        if not self.is_task:
-            return df, test
         roles = self._column_roles()
         dropped = [nf for nf in self.non_features if nf.column in df.columns and nf.column not in roles]
         self._dropped_non_features = dropped
@@ -928,7 +809,7 @@ class AbstractCuratedDataset(ABC):
 
     @property
     def dropped_non_features(self) -> list[NonFeature]:
-        """The declared non-features the last run of :meth:`process` dropped (a task's; a parent drops none)."""
+        """The declared non-features the last run of :meth:`process` dropped."""
         return list(getattr(self, "_dropped_non_features", ()))
 
     def _column_roles(self) -> set[str]:
@@ -944,9 +825,6 @@ class AbstractCuratedDataset(ABC):
 
     def _check_declared_columns(self, df: pd.DataFrame) -> None:
         """Fail with the attribute's name when a declared column is missing, or a split key has missing values."""
-        if not self.is_task:  # a parent declares no task columns
-            self.special_feature_records(df)
-            return
         task = self.task_metadata
         declared = {"target": [task.target_column_name], "stratify_on": as_column_list(task.stratify_on)}
         if self.temporal is not None:
@@ -999,13 +877,10 @@ class AbstractCuratedDataset(ABC):
         df = canonical_nans(canonical_dtypes(df))
         if not order:
             return df.reset_index(drop=True)
-        if not self.is_task:  # a parent's frame: in the order of its content, which no task order depends on
-            at = content_order(df)
-            return (df.iloc[at].reset_index(drop=True), at) if positions else df.iloc[at].reset_index(drop=True)
         if positions:
-            at = order_positions(df, time_on=self.task_metadata.time_on, shuffle=self.shuffle)
+            at = order_positions(df, time_on=self.task_metadata.time_on, shuffle=True)
             return df.iloc[at].reset_index(drop=True), at
-        return order_rows(df, time_on=self.task_metadata.time_on, shuffle=self.shuffle)
+        return order_rows(df, time_on=self.task_metadata.time_on, shuffle=True)
 
     def feature_types(self, df: pd.DataFrame | None = None) -> FeatureTypes:
         """:meth:`_feature_types` for ``df`` (default: the cleaned frame), with a classification target added."""
@@ -1032,12 +907,7 @@ class AbstractCuratedDataset(ABC):
                 "(`special_features`), which types it; leave it out of `_feature_types`."
             )
             raise DatasetDefinitionError(msg)
-        if (
-            self.is_task
-            and self.problem_type != "regression"
-            and self.target not in listed
-            and self.target in df.columns
-        ):
+        if self.problem_type != "regression" and self.target not in listed and self.target in df.columns:
             types = FeatureTypes(
                 categorical=(*types.categorical, self.target),
                 string=types.string,
@@ -1124,9 +994,10 @@ class AbstractCuratedDataset(ABC):
         """The default of :meth:`_make_splits`: the v2 split protocol (:mod:`data_foundry.v2.splits`).
 
         The splits are the declarative temporal windows, or the recommended IID / grouped 3-fold cross-validation, on
-        the full frame. A version with a :attr:`row_budget` samples only its test sides to ``row_budget.test``: a
-        temporal version each test window (:func:`~data_foundry.v2.splits.sample_temporal_splits`, the frame keeps the
-        rows a split uses), an IID or grouped one each fold's test third, whose left-out rows train in that fold
+        the full frame. A version with a row budget (:func:`effective_row_budget`) samples only its test sides to
+        ``row_budget.test``: a temporal version each test window
+        (:func:`~data_foundry.v2.splits.sample_temporal_splits`, the frame keeps the rows a split uses), an IID or
+        grouped one each fold's test third, whose left-out rows train in that fold
         (:func:`~data_foundry.v2.splits.fit_splits_to_budget`). The train sides keep every row available to them; a
         benchmark sub-samples them to ``row_budget.train`` (:func:`~data_foundry.v2.splits.subsample_train`).
         """
@@ -1177,13 +1048,9 @@ class AbstractCuratedDataset(ABC):
         if not trimmed and longest_train <= budget.train:
             msg = (
                 f"{type(self).__name__}: the frame has {len(df):,} rows and no split side exceeds the row budget "
-                f"({train_budget} train, {test_budget} test rows). Take the dataset fully: "
-                + (
-                    f"drop `row_budget` and the `_{budget.suffix}` version."
-                    if type(self).row_budget is not None
-                    else f"drop the `_{budget.suffix}` suffix from the folder and `unique_name` (the collection's "
-                    "budget applies only to a version named after it)."
-                )
+                f"({train_budget} train, {test_budget} test rows). Take the dataset fully: drop the `_{budget.suffix}` "
+                "suffix from the folder and `unique_name` (the collection's budget applies only to a version named "
+                "after it)."
             )
             raise DatasetDefinitionError(msg)
         return SplitPlan(splits=splits, df=df, comment=comment)
@@ -1326,7 +1193,7 @@ class AbstractCuratedDataset(ABC):
             raise DatasetDefinitionError(msg)
         if unit is None and not dated and effective_row_budget(type(self)) is not None:
             msg = (
-                f"{name}: a benchmark samples the train sides of a version with a `row_budget` from their newest year, "
+                f"{name}: a benchmark samples the train sides of a version with a row budget from their newest year, "
                 f"and `{times.name}` is no date: declare what one step of it counts, `Temporal(..., time_unit=...)` "
                 "(numerai's weekly eras: `time_unit='weeks'`)."
             )
@@ -1466,16 +1333,13 @@ class AbstractCuratedDataset(ABC):
                 test_dataset=test,
             )
 
-    def check(self, *, write_report: bool = True, verbose: bool = True) -> CurationResult | ParentCheckResult:
+    def check(self, *, write_report: bool = True, verbose: bool = True) -> CurationResult:
         """Run the full pipeline and the bundle checks without saving (no UUID is kept).
 
         Writes ``README.md`` unless ``write_report`` is False (or the class is defined in a notebook). The build record
-        of an earlier :meth:`build` in the report is kept, and marked stale when the checksum no longer matches. A
-        parent (no ``target``) is checked as data only: :meth:`check_parent`.
+        of an earlier :meth:`build` in the report is kept, and marked stale when the checksum no longer matches.
         """
         self._refresh()
-        if not self.is_task:
-            return self.check_parent(write_report=write_report, verbose=verbose)
         with _copy_on_write():  # a hook that writes in place must not reach the cached raw data
             container = self.to_container()
             stats = group_checks.group_stats(container)
@@ -1491,84 +1355,15 @@ class AbstractCuratedDataset(ABC):
             self._write_report(result)
         return result
 
-    def check_parent(self, *, write_report: bool = True, verbose: bool = True) -> ParentCheckResult:
-        """Check a parent (a definition without a ``target``) as data: its frame, its checksum and its definition.
-
-        A parent is never built. Its ``README.md`` describes the data its children start from: the data summary, the
-        sources, the columns, a checksum of the frame (in content order) and the children found next to it.
-
-        Raises:
-            DatasetDefinitionError: The parent is partial (no ``_load_raw`` or a missing declaration), or a task.
-        """
-        name = type(self).__name__
-        if self.is_task:
-            raise DatasetDefinitionError(f"{name} declares a `target`: a task, checked with `check()`.")
-        missing = [a for a in _REQUIRED_DATA if not hasattr(self, a)]
-        if inspect.isabstract(type(self)):
-            missing.append("_load_raw")
-        if missing:
-            msg = (
-                f"{name} is a partial parent, which shares code only; its data cannot be checked without "
-                f"{', '.join(missing)}."
-            )
-            raise DatasetDefinitionError(msg)
-        with _copy_on_write():
-            frame, _ = self.process()
-        children = family_children(type(self))
-        manifest = self.raw_manifest(getattr(self, "_rows_per_file", None))
-        findings = self._definition_checks() + self._raw_file_findings(manifest)
-        if not children:
-            findings.append(
-                CheckResult(
-                    "parent_without_children",
-                    "warning",
-                    f"`{self.unique_name}` declares no `target`, so it is a parent, but no definition derives from it.",
-                    hint="Declare the task (`target`, `problem_type`, `metric`), or add a child: `class "
-                    f'X(import_definition("{self.unique_name}"))` in `{self.unique_name}_<variant>/dataset.py`.',
-                ),
-            )
-        result = ParentCheckResult(
-            dataset=self,
-            frame=frame,
-            data_checksum=data_checksum(frame),
-            findings=sorted(findings, key=lambda r: SEVERITY_ORDER[r.severity]),
-            children=children,
-            raw_files=manifest,
-        )
-        if verbose:
-            print(
-                f"{self.unique_name}: a parent of {len(children)} definition(s); data checksum {result.data_checksum}"
-            )
-            for finding in result.findings:
-                print(f"  {finding.severity}: {finding.slug}: {finding.message}")
-        if write_report and self.report_path is not None:
-            from data_foundry.v2.report import write_parent_report  # noqa: PLC0415 - report imports this module
-
-            write_parent_report(result, self.report_path)
-        return result
-
-    def build(self, *, verbose: bool = True, allow_local_metric: bool = False) -> CurationResult:
+    def build(self, *, verbose: bool = True) -> CurationResult:
         """Run :meth:`check`, fail on bundle-check errors, save the container and verify the export.
 
-        This is the only step that mints a UUID. The report records the UUID, checksum and provenance. A local
-        metric (``Metric.local``: code only this definition holds) is refused unless ``allow_local_metric`` is True,
-        which only a user's own, never shipped, dataset should pass: a reader of the container could not compute it.
+        This is the only step that mints a UUID. The report records the UUID, checksum and provenance.
         """
         from data_foundry.v2.report import read_report  # noqa: PLC0415 - report imports this module
 
-        name = type(self).__name__
-        if not self.is_task:
-            msg = f"{name} is a parent (no `target`): it is never built; build its children (`dataset list`)."
-            raise DatasetDefinitionError(msg)
         if self.folder is None:
-            msg = f"{name} is defined outside a `{DEFINITION_FILENAME}`: write it into one to build it."
-            raise DatasetDefinitionError(msg)
-        if _declared_metric(type(self)).is_local and not allow_local_metric:
-            msg = (
-                f"{type(self).__name__}: the metric is local (`Metric.local`), so a reader of the container cannot "
-                "compute it. A shipped dataset adds its metric to data_foundry.v2.metrics under a general name; for "
-                "your own unshipped dataset, pass `build(allow_local_metric=True)`."
-            )
+            msg = f"{type(self).__name__} is defined outside a `{DEFINITION_FILENAME}`: write it into one to build it."
             raise DatasetDefinitionError(msg)
         result = self.check(write_report=False, verbose=verbose)
         result.bundle_report.raise_if_errors()
@@ -1602,13 +1397,10 @@ class AbstractCuratedDataset(ABC):
         report = run_bundle_checks(container, verbose=False)  # a format-2 container: the v2 protocol checks included
         shared = report.results
         own: list[CheckResult] = []
-        metric = _declared_metric(type(self))
         for name, run in (
             ("definition", self._definition_checks),
-            ("metric", lambda: metric_computes_findings(container, metric) if metric.is_local else []),
             ("group", lambda: group_checks.group_findings(container, group_stats)),
             ("task", lambda: task_checks.task_findings(container)),
-            ("extra", lambda: self._extra_checks(container)),
             ("raw files", lambda: self._raw_file_findings(container.dataset_metadata.raw_files)),
             ("floor", lambda: self._floor_findings(container)),
             ("newest period", self._newest_period_findings),
@@ -1796,33 +1588,13 @@ class AbstractCuratedDataset(ABC):
             )
         return findings
 
-    def _data_summary_checks(self) -> list[CheckResult]:
-        """Findings about :attr:`data_summary`: a field too long to read at a glance."""
-        if self.data_summary is None:
-            return []
-        long = {
-            name: len(text.split())
-            for name, text in self.data_summary.fields().items()
-            if len(text.split()) > SUMMARY_MAX_WORDS
-        }
-        if not long:
-            return []
-        return [
-            CheckResult(
-                "definition_summary_long",
-                "warning",
-                f"`data_summary` field(s) over {SUMMARY_MAX_WORDS} words: {long}.",
-                hint="Keep each field to one or two plain sentences; the evidence belongs in `curation_comments`.",
-            ),
-        ]
-
     def _definition_checks(self) -> list[CheckResult]:
-        """Findings about the definition files (this class's and its parents'): scaffold markers, a placeholder
-        license, nondeterministic code, and the summaries.
+        """Findings about the definition file: scaffold markers, a placeholder license, nondeterministic code, and the
+        summary.
         """
         findings = []
-        for file in definition_files(type(self)):
-            label = _file_label(file, definition_file(type(self)))
+        file = definition_file(type(self))
+        if file is not None:
             text = file.read_text()
             todo = [i for i, line in enumerate(text.splitlines(), start=1) if "TODO(verify)" in line]
             if todo:
@@ -1830,7 +1602,8 @@ class AbstractCuratedDataset(ABC):
                     CheckResult(
                         "definition_todo_left",
                         "error",
-                        f"{label} still has {len(todo)} `TODO(verify)` marker(s), on line(s) {todo[:20]}.",
+                        f"{DEFINITION_FILENAME} still has {len(todo)} `TODO(verify)` marker(s), on line(s) "
+                        f"{todo[:20]}.",
                         hint="Resolve each marker (check the data, then write the step or delete the stub).",
                     ),
                 )
@@ -1841,14 +1614,14 @@ class AbstractCuratedDataset(ABC):
                     CheckResult(
                         "definition_nondeterministic",
                         "error",
-                        f"{label} has {len(unstable)} call(s) whose result can change between runs or machines: "
-                        f"{listed}.",
+                        f"{DEFINITION_FILENAME} has {len(unstable)} call(s) whose result can change between runs or "
+                        f"machines: {listed}.",
                         hint="Seed every random step (`random_state=`, a seeded `default_rng`, `anonymize_ids` for "
                         'ids), sort with `kind="stable"`, wrap file listings in `sorted(...)`, and use '
                         "`maintain_order=True` in a polars `group_by`.",
                     ),
                 )
-        findings += self._summary_checks() if self.is_task else self._data_summary_checks()
+        findings += self._summary_checks()
         changed = getattr(self, "_time_changed_in_split", 0)
         if changed:
             time_on = self.task_metadata.time_on
@@ -2072,7 +1845,7 @@ def _code_hash(cls: type, hook: str) -> str:  # noqa: C901 - one walk over the c
     A module-level function or class not yet defined when this runs (one written below the class, hashed while the
     module is still being imported) is read from the module's source instead.
     """
-    owner = next((k for k in cls.__mro__ if hook in vars(k)), cls)  # the family root, if inherited
+    owner = next((k for k in cls.__mro__ if hook in vars(k)), cls)  # a helper base class, if inherited
     cls = owner
     module = inspect.getmodule(cls)
     assignments = _module_assignments(module)
@@ -2246,9 +2019,9 @@ def _gap(cls: type[AbstractCuratedDataset]) -> tuple[int | None, str | None]:
 
 
 def _validate_time_basis(cls: type[AbstractCuratedDataset], fail: Callable[[str], None]) -> None:
-    """The time basis of a task (SPLIT-8, SPLIT-32, SPLIT-35): ``time_basis`` and ``group_basis`` well formed, the
-    old way only while :data:`~data_foundry.time_basis.ALLOW_UNSTRUCTURED` lets it, and the rendered tags and lines
-    free of the errors of :func:`~data_foundry.time_basis.problems`, which the bundle check reads on a container.
+    """The time basis of a task (SPLIT-8, SPLIT-32, SPLIT-35): ``time_basis`` and ``group_basis`` well formed, never
+    a tag in ``data_tags`` or a line in ``curation_comments`` by hand, and the rendered tags and lines free of the
+    errors of :func:`~data_foundry.time_basis.problems`, which the bundle check reads on a container.
     """
     if (cls.grouping is not None and not isinstance(cls.grouping, Grouping)) or (
         cls.temporal is not None and not isinstance(cls.temporal, Temporal)
@@ -2269,28 +2042,20 @@ def _validate_time_basis(cls: type[AbstractCuratedDataset], fail: Callable[[str]
         if by_hand:
             fail(f"`time_basis` and `group_basis` add the tag and the line; drop {' and '.join(by_hand)}.")
     elif listed or handwritten:
-        if not basis_rules.ALLOW_UNSTRUCTURED:
-            fail(
-                "declare the time basis as `time_basis = TimeBasis(...)` (and `group_basis = GroupBasis(...)`), not "
-                "by a tag in `data_tags` and a line in `curation_comments` (SPLIT-32)."
-            )
-        early = [t for t in listed if t not in FORCED_TIME_TAGS]
-        if early:
-            fail(
-                f"`data_tags` {early}: declare it as `time_basis = TimeBasis(...)` or `group_basis = GroupBasis(...)`."
-            )
-    old_way = cls.time_basis is None and cls.group_basis is None and bool(listed or handwritten)
-    spared = basis_rules.OLD_WAY_TOLERATED if old_way and basis_rules.ALLOW_UNSTRUCTURED else frozenset()
-    for slug, severity, message in basis_rules.problems(
+        fail(
+            "declare the time basis as `time_basis = TimeBasis(...)` (and `group_basis = GroupBasis(...)`), not "
+            "by a tag in `data_tags` and a line in `curation_comments` (SPLIT-32)."
+        )
+    for _slug, severity, message in basis_rules.problems(
         _regime_tags(cls), _rendered_comments(cls), temporal=cls.temporal is not None, grouped=cls.grouping is not None
     ):
-        if severity == "error" and slug not in spared:
+        if severity == "error":
             fail(message)
 
 
 def _regime_tags(cls: type[AbstractCuratedDataset]) -> list[str]:
     tags = list(dict.fromkeys([*cls.data_tags, *basis_rules.tags_of(cls.time_basis, cls.group_basis)]))
-    if not is_task(cls) or any(tag in REGIME_TAGS for tag in tags):  # a parent has no split, so no regime
+    if any(tag in REGIME_TAGS for tag in tags):
         return tags
     if cls.temporal is not None:
         regime = ["Non-IID", "Temporal"]
@@ -2299,27 +2064,6 @@ def _regime_tags(cls: type[AbstractCuratedDataset]) -> list[str]:
     else:
         regime = ["IID"]
     return regime + tags
-
-
-def is_task(cls: type) -> bool:
-    """Whether a definition class is a task (it declares a ``target``, itself or through a parent), not a parent."""
-    return hasattr(cls, "target")
-
-
-def lineage(cls: type) -> list[type[AbstractCuratedDataset]]:
-    """``cls`` and the definitions it derives from, nearest first: the classes of its MRO that declare their own
-    ``unique_name`` (a helper base class without one is no definition).
-    """
-    return [
-        k
-        for k in cls.__mro__
-        if k is not AbstractCuratedDataset and issubclass(k, AbstractCuratedDataset) and "unique_name" in vars(k)
-    ]
-
-
-def parent_definition(cls: type) -> type[AbstractCuratedDataset] | None:
-    """The definition ``cls`` derives from directly (its parent in a family), or None."""
-    return next((k for k in lineage(cls) if k is not cls), None)
 
 
 def definition_file(cls: type) -> Path | None:
@@ -2332,53 +2076,6 @@ def definition_file(cls: type) -> Path | None:
     except (TypeError, OSError):
         return None
     return file if file.name == DEFINITION_FILENAME else None
-
-
-def definition_files(cls: type) -> list[Path]:
-    """The files of ``cls`` and of the definitions it derives from, nearest first (each once)."""
-    files = (definition_file(k) for k in [cls, *lineage(cls)])
-    return list(dict.fromkeys(f for f in files if f is not None))
-
-
-def _file_label(file: Path, own: Path | None) -> str:
-    """How a finding names a definition file: ``dataset.py`` for the class's own, ``../<parent>/dataset.py`` else."""
-    return DEFINITION_FILENAME if file == own else f"../{file.parent.name}/{file.name}"
-
-
-def family_children(cls: type[AbstractCuratedDataset]) -> list[str]:
-    """The definitions next to ``cls`` that derive from it directly: ``<unique_name>_<variant>/dataset.py`` folders
-    whose class's parent is ``cls`` (by name). Folders that do not import are skipped.
-    """
-    from data_foundry.v2.registry import load_definition  # noqa: PLC0415 - the registry imports this module
-
-    file = definition_file(cls)
-    if file is None:
-        return []
-    children = []
-    for definition in sorted(file.parent.parent.glob(f"{cls.unique_name}_*/{DEFINITION_FILENAME}")):
-        try:
-            child = load_definition(definition)
-        except Exception:  # noqa: BLE001, S112 - a broken sibling is reported by its own check
-            continue
-        parent = parent_definition(child)
-        if parent is not None and parent.unique_name == cls.unique_name:
-            children.append(child.unique_name)
-    return children
-
-
-def data_checksum(frame: pd.DataFrame) -> str:
-    """A checksum of a frame alone (shape, columns, dtypes, categories, values), as the container checksum hashes it:
-    the identity of a parent's data.
-    """
-    return "v2:" + hashlib.blake2b(encode_dataset_v2(frame), digest_size=32).hexdigest()
-
-
-def raw_owner(cls: type[AbstractCuratedDataset]) -> type[AbstractCuratedDataset]:
-    """The definition whose raw files ``cls`` reads: the topmost one in its family that says how to download them
-    (``download_description``); the family root when it does, a child of a code-only parent when that child does.
-    """
-    chain = lineage(cls) or [cls]
-    return next((k for k in reversed(chain) if "download_description" in vars(k)), chain[-1])
 
 
 def collection_row_budget(cls: type) -> RowBudget | None:
@@ -2397,12 +2094,9 @@ def collection_row_budget(cls: type) -> RowBudget | None:
 
 
 def effective_row_budget(cls: type[AbstractCuratedDataset]) -> RowBudget | None:
-    """The row budget a definition is built with: its own :attr:`~AbstractCuratedDataset.row_budget`, else its
-    collection's (:func:`collection_row_budget`) when its name carries that budget's suffix (``<name>_1m``), else
-    None.
+    """The row budget a definition is built with: its collection's (:func:`collection_row_budget`) when its name
+    carries that budget's suffix (``<name>_1m``), else None.
     """
-    if cls.row_budget is not None:
-        return cls.row_budget
     budget = collection_row_budget(cls)
     if budget is not None and getattr(cls, "unique_name", "").endswith(f"_{budget.suffix}"):
         return budget
@@ -2410,17 +2104,14 @@ def effective_row_budget(cls: type[AbstractCuratedDataset]) -> RowBudget | None:
 
 
 def raw_name(cls: type[AbstractCuratedDataset]) -> str:
-    """The warehouse folder of a definition's raw files.
-
-    The ``unique_name`` of its :func:`raw_owner` (the family root, or itself), without the suffix of that
-    definition's row budget (:func:`effective_row_budget`; ``cooking_time_1m`` reads ``cooking_time``).
+    """The warehouse folder of a definition's raw files: its ``unique_name`` without the suffix of its row budget
+    (:func:`effective_row_budget`; ``cooking_time_1m`` reads ``cooking_time``).
     """
-    root = raw_owner(cls)
-    budget = effective_row_budget(root)
+    budget = effective_row_budget(cls)
     suffix = f"_{budget.suffix}" if budget is not None else ""
-    if suffix and root.unique_name.endswith(suffix):
-        return root.unique_name[: -len(suffix)]
-    return root.unique_name
+    if suffix and cls.unique_name.endswith(suffix):
+        return cls.unique_name[: -len(suffix)]
+    return cls.unique_name
 
 
 def _rendered_comments(cls: type[AbstractCuratedDataset]) -> str | None:
@@ -2436,7 +2127,6 @@ def _clean_source(source: Source) -> Source:
 
 
 def _build_dataset_metadata(cls: type[AbstractCuratedDataset]) -> DatasetMetadataV2:
-    parent = parent_definition(cls)
     return DatasetMetadataV2(
         unique_name=cls.unique_name,
         domain=cls.domain,
@@ -2444,8 +2134,6 @@ def _build_dataset_metadata(cls: type[AbstractCuratedDataset]) -> DatasetMetadat
         download_description=clean_text(cls.download_description),
         data_tags=_regime_tags(cls),
         curation_comments=_rendered_comments(cls),
-        derived_from=None if parent is None else parent.unique_name,
-        derivation=None if parent is None else clean_text(cls.derivation),
     )
 
 
@@ -2486,33 +2174,6 @@ def _declared_metric(cls: type[AbstractCuratedDataset]) -> Metric:
     return cls.metric
 
 
-_FLAT_REGIME_ATTRIBUTES = (
-    "time_on",
-    "group_on",
-    "group_labels",
-    "group_time_on",
-    "temporal_splits",
-    "time_horizon",
-    "time_horizon_unit",
-)
-"""The flat regime attributes of earlier v2 definitions, now declared as `grouping` / `temporal`."""
-
-_REMOVED = {
-    **dict.fromkeys(
-        ("year", "source", "source_url", "license", "bibtex", "bibtex_key"),
-        'declare the provenance as `sources = (Source(role="publication", platform=..., url=..., license=..., '
-        "year=..., bibtex=...),)` (`from data_foundry.v2 import Source`)",
-    ),
-    "version_of": "a version sub-sampled to its `row_budget` is named `<name>_<suffix>` and reads the raw files of "
-    "`<name>`; drop `version_of`",
-    "version_comment": "say how a sub-sampled version differs in `curation_comments`",
-    "raw_data_from": "a definition reads the raw files of its own name (without a row-budget suffix)",
-}
-"""Attributes of earlier v2 definitions, with what replaced them."""
-
-_REQUIRED_DATA = ("unique_name", "domain", "sources", "download_description", "data_summary")
-"""What a parent needs before its data can be checked (a partial parent may lack all but its name and summary)."""
-
 _REQUIRED = (
     "unique_name",
     "domain",
@@ -2532,22 +2193,9 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
     def fail(problem: str) -> None:
         raise DatasetDefinitionError(f"{name}: {problem}")
 
-    removed = [attr for attr in _REMOVED if hasattr(cls, attr)]
-    if removed:
-        fail("; ".join(f"`{attr}` is gone: {_REMOVED[attr]}" for attr in removed) + ".")
-    parent = parent_definition(cls)
-    if "unique_name" not in vars(cls) and parent is not None:
-        fail(
-            f"a child declares its own `unique_name` (`{parent.unique_name}_<variant>`); it inherits "
-            f"`{parent.unique_name}`."
-        )
-    if "dataset_metadata" in vars(cls) or "task_metadata" in vars(cls):
-        fail("declare the metadata as flat attributes (`unique_name = ...`, `target = ...`), not metadata objects.")
-    task = is_task(cls)
-    missing = [attr for attr in (_REQUIRED if task else ("unique_name", "data_summary")) if not hasattr(cls, attr)]
+    missing = [attr for attr in _REQUIRED if not hasattr(cls, attr)]
     if missing:
-        what = "" if task else " (a parent: no `target`)"
-        fail(f"missing required attribute(s){what}: {', '.join(missing)}.")
+        fail(f"missing required attribute(s): {', '.join(missing)}.")
     for seed in ("SHUFFLE_RANDOM_STATE", "SPLIT_RANDOM_STATE"):
         if getattr(cls, seed) != getattr(AbstractCuratedDataset, seed):
             fail(f"`{seed}` is fixed for the whole benchmark; do not override it.")
@@ -2566,24 +2214,9 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
             f"`data_tags` {retired}: retired, kept only so that old containers load. Write the dataset's doubts as a "
             "finding and its fit as `approximate` instead."
         )
-    declared = basis_rules.tags_of(cls.time_basis, cls.group_basis)
-    if not task and (set(cls.data_tags) & {*REGIME_TAGS, *FORCED_TIME_TAGS, *GROUP_BASIS_TAGS} or declared):
-        fail("a parent (no `target`) has no split, so no regime tag; its children get theirs from their task.")
     if cls.split_leaf is not None and not (isinstance(cls.split_leaf, str) and _SPLIT_LEAF.fullmatch(cls.split_leaf)):
         fail('`split_leaf` names a leaf of the split tree by its ID, such as "L-FILL.unit" (SPLIT-36).')
-    if task:
-        _validate_time_basis(cls, fail)
-    moved = [
-        a for a in ("drop_columns", "categorical_features", "string_features", "datetime_features") if a in vars(cls)
-    ]
-    if moved:
-        fail(f"{', '.join(moved)}: drop columns in `_clean` and name dtypes in `_feature_types`.")
-    flat = [a for a in _FLAT_REGIME_ATTRIBUTES if hasattr(cls, a)]
-    if flat:
-        fail(
-            f"{', '.join(flat)}: declare the regime as one object, `grouping = Grouping(on=..., labels=..., "
-            "definition=...)` or `temporal = Temporal(on=..., splits=TemporalSplits(...))`."
-        )
+    _validate_time_basis(cls, fail)
     if cls.grouping is not None and not isinstance(cls.grouping, Grouping):
         fail("`grouping` must be a `Grouping(...)`.")
     metric = getattr(cls, "metric", None)
@@ -2599,9 +2232,6 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         fail("`unit_weight` is a `UnitWeight(column=..., unit=...)`, or None.")
     from data_foundry.v2.special import SpecialFeatureSpec  # noqa: PLC0415 - the kinds import this module
 
-    moved = [a for a in ("smiles_columns", "spectra") if a in vars(cls)]
-    if moved:
-        fail(f"{', '.join(moved)}: declare it in `special_features` (`Smiles(column=...)`, `Spectrum(...)`).")
     specs = cls.special_features
     if not isinstance(specs, tuple) or not all(isinstance(s, SpecialFeatureSpec) for s in specs):
         fail("`special_features` must be a tuple of special features (`Smiles(column=...)`, `Spectrum(...)`).")
@@ -2621,9 +2251,7 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
             "`Grouping(definition=...)` is required: what one group is, why groups are held out, and the use case "
             "with its source."
         )
-    _validate_summary(cls, fail)
     _validate_non_features(cls, fail)
-    _validate_family(cls, parent, fail)
     file = definition_file(cls)
     if file is not None and file.name == DEFINITION_FILENAME and file.parent.name != cls.unique_name:
         fail(f"`unique_name={cls.unique_name!r}` must match its folder name {file.parent.name!r}.")
@@ -2633,9 +2261,6 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         if slug in UNACCEPTABLE_CHECKS:
             fail(f"{slug!r} cannot be accepted: the rules allow no exception to it; fix the definition instead.")
 
-    if not task:
-        _validate_parent(cls, fail)
-        return
     try:
         cls.dataset_metadata, cls.task_metadata = _build_metadata(cls)
     except (ValueError, TypeError) as error:
@@ -2664,20 +2289,6 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
             )
     if custom_splits and cls.temporal is not None and cls.temporal.splits is not None:
         fail("`Temporal(splits=...)` is ignored when the class implements `_make_splits`; declare one of them.")
-    if "subsample_to_budget" in vars(cls):
-        fail(
-            "`subsample_to_budget` is replaced by the budget itself: `row_budget = RowBudget(train=1_000_000, "
-            "test=500_000)` for a `_1m` version (`from data_foundry.v2 import RowBudget`)."
-        )
-    declared = cls.row_budget
-    if declared is not None and not isinstance(declared, RowBudget):
-        fail("`row_budget` must be a `RowBudget(train=..., test=...)`.")
-    collection = collection_row_budget(cls)
-    if declared is not None and collection is not None:
-        fail(
-            f"the collection sets the row budget ({collection}, in its `collection.py`): drop `row_budget`; a "
-            f"`<name>_{collection.suffix}` version gets the collection's budget by its name."
-        )
     budget = effective_row_budget(cls)
     if (
         cls.temporal is not None
@@ -2685,15 +2296,12 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         and cls.temporal.splits.sample_by != "rows"
         and budget is None
     ):
-        fail("`TemporalSplits(sample_by=...)` sets how a version samples to its budget; it needs a `row_budget`.")
-    if budget is not None:
-        if custom_splits:
-            fail("`row_budget` is ignored when the class implements `_make_splits`; sample there instead.")
-        if declared is not None and not cls.unique_name.endswith(f"_{budget.suffix}"):
-            fail(
-                f"a version sub-sampled to `row_budget` is named `<name>_{budget.suffix}` and reads the raw files of "
-                "`<name>`."
-            )
+        fail(
+            "`TemporalSplits(sample_by=...)` sets how a version samples to its budget; it needs the collection's row "
+            "budget (a `<name>_<suffix>` version)."
+        )
+    if budget is not None and custom_splits:
+        fail("the row budget is ignored when the class implements `_make_splits`; sample there instead.")
     if cls.prepared_raw_files and cls._prepare_raw_files is AbstractCuratedDataset._prepare_raw_files:
         fail("`prepared_raw_files` is set but `_prepare_raw_files` is not implemented.")
 
@@ -2707,20 +2315,8 @@ def _validate_year(cls: type[AbstractCuratedDataset], fail: Any) -> None:
         )
 
 
-def _validate_summary(cls: type[AbstractCuratedDataset], fail: Any) -> None:
-    """A :class:`DataSummary` with text in its required fields, when one is declared."""
-    summary = cls.data_summary
-    if summary is None:
-        return
-    if not isinstance(summary, DataSummary):
-        fail("`data_summary` must be a `DataSummary(data=..., row=..., goals=..., limits=...)`.")
-    empty = [name for name, text in summary.fields().items() if name != "limits" and not text]
-    if empty:
-        fail(f"`DataSummary` needs text in: {', '.join(empty)}.")
-
-
 def _validate_non_features(cls: type[AbstractCuratedDataset], fail: Any) -> None:
-    """Valid :class:`NonFeature` declarations, each column once, and a child that keeps every inherited one."""
+    """Valid :class:`NonFeature` declarations, each column once."""
     declared = cls.non_features
     if not isinstance(declared, tuple) or not all(isinstance(nf, NonFeature) for nf in declared):
         fail("`non_features` must be a tuple of `NonFeature(column, reason, description)`.")
@@ -2734,84 +2330,6 @@ def _validate_non_features(cls: type[AbstractCuratedDataset], fail: Any) -> None
     undescribed = [nf.column for nf in declared if nf.reason == "other" and not nf.description.strip()]
     if undescribed:
         fail(f"a `NonFeature(reason='other')` says why in its `description`: {undescribed}.")
-    if "non_features" in vars(cls):
-        base = next((k for k in cls.__mro__[1:] if "non_features" in vars(k)), None)
-        left_out = [nf.column for nf in getattr(base, "non_features", ()) if nf.column not in set(columns)]
-        if left_out:
-            fail(
-                f"a child keeps every non-feature it inherits and may add more (`non_features = "
-                f"(*{base.__name__}.non_features, NonFeature(...))`); it leaves out {left_out}."
-            )
-
-
-def _validate_family(cls: type[AbstractCuratedDataset], parent: type | None, fail: Any) -> None:  # noqa: C901
-    """The rules of a child (a class derived from another definition), and no `derivation` without a parent."""
-    if parent is None:
-        if cls.derivation is not None:
-            fail("`derivation` says how a definition differs from its parent; this one derives from no definition.")
-        return
-    if not cls.unique_name.startswith(f"{parent.unique_name}_"):
-        fail(
-            f"a child of `{parent.unique_name}` is named `{parent.unique_name}_<variant>` after what differs "
-            f"(`_cop`, `_grouped`, `_clf`; a row budget's suffix last), not {cls.unique_name!r}."
-        )
-    if "derivation" not in vars(cls) or not clean_text(cls.derivation or ""):
-        fail(f"a child declares `derivation`: how it differs from `{parent.unique_name}`, in a sentence or two.")
-    ancestors = lineage(cls)[1:]
-    owned = [
-        a
-        for a in ("download_description", "_prepare_raw_files", "prepared_raw_files")
-        if a in vars(cls) and any(a in vars(k) for k in ancestors)
-    ]
-    if owned:
-        root = raw_owner(parent).unique_name
-        fail(
-            f"{', '.join(f'`{a}`' for a in owned)}: the raw files belong to `{root}`, which says how to download "
-            "them and whose files every member of the family reads; change them there."
-        )
-    if not is_task(cls):
-        return
-    for attr in ("task_summary", "splits_comment"):
-        if attr in vars(cls):
-            continue
-        owner = next((k for k in cls.__mro__ if attr in vars(k)), AbstractCuratedDataset)
-        if owner is AbstractCuratedDataset or getattr(owner, attr) is None:
-            continue
-        differs = [
-            a
-            for a in ("target", "problem_type", "grouping", "temporal")
-            if _task_value(owner, a) != _task_value(cls, a)
-        ]
-        if differs:
-            fail(
-                f"`{attr}` is inherited from `{owner.unique_name}`, whose task differs ({', '.join(differs)}); declare "
-                f"this task's own (`dataclasses.replace({owner.__name__}.{attr}, ...)` changes single fields)."
-            )
-
-
-def _task_value(cls: type, attr: str) -> Any:
-    return getattr(cls, attr, None)
-
-
-def _validate_parent(cls: type[AbstractCuratedDataset], fail: Any) -> None:
-    """A parent declares no task of its own; when its data is described in full, its metadata is built."""
-    declared = [a for a in ("row_budget", "task_summary", "splits_comment") if getattr(cls, a, None) is not None]
-    if declared:
-        fail(
-            f"{', '.join(f'`{a}`' for a in declared)}: a parent (no `target`) has no task; declare them on its "
-            "children."
-        )
-    if cls.data_summary is None:
-        fail(
-            "declares no `target`, so it is a parent of tasks, and a parent declares `data_summary = DataSummary(...)`"
-            " (what the data is, independent of one task). For a task, declare `target`, `problem_type` and `metric`."
-        )
-    if all(hasattr(cls, a) for a in _REQUIRED_DATA):
-        try:
-            cls.dataset_metadata = _build_dataset_metadata(cls)
-        except (ValueError, TypeError) as error:
-            fail(f"invalid metadata: {error}")
-        _validate_year(cls, fail)
 
 
 def split_summary(df: pd.DataFrame, splits: Splits, *, time_on: str | None = None) -> pd.DataFrame:

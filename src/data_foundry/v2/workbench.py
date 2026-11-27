@@ -7,7 +7,7 @@ from pathlib import Path
 import pandas as pd
 
 from data_foundry.v2.dataset import DEFINITION_FILENAME, AbstractCuratedDataset
-from data_foundry.v2.registry import instance, load_definition
+from data_foundry.v2.registry import load_definition
 
 
 def workbench(path: Path | str | None = None, *, wide_display: bool = True) -> AbstractCuratedDataset:
@@ -25,7 +25,7 @@ def workbench(path: Path | str | None = None, *, wide_display: bool = True) -> A
     """
     folder = Path.cwd() if path is None else Path(path)
     definition = folder if folder.name == DEFINITION_FILENAME else folder / DEFINITION_FILENAME
-    ds = instance(load_definition(definition))
+    ds = load_definition(definition)()
     ds.auto_reload = True
     if wide_display:
         pd.set_option("display.max_columns", None)

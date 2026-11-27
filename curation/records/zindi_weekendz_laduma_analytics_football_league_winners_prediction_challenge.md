@@ -3,9 +3,6 @@ unique_name: zindi_weekendz_laduma_analytics_football_league_winners_prediction_
 name: zindi-weekendz-laduma-analytics-football-league-winners-prediction-challenge
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Lennart
 suggestion: TBD -> 2nd Tier
 priority: 1
 decision_markers:

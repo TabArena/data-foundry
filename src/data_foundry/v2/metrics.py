@@ -1760,8 +1760,6 @@ class Metric:
       price).
     * :meth:`fallback`: the source defines no metric the task would use in practice, and none is obvious; roc_auc /
       log_loss / rmse by problem type.
-    * :meth:`local`: code only the definition holds, for a user's own dataset that is never shipped (refused by
-      ``build`` unless ``allow_local_metric=True``).
     """
 
     name: str | None
@@ -1772,9 +1770,6 @@ class Metric:
     reason: str | None = None
     params: Mapping[str, Any] = field(default_factory=dict)
     inputs: Mapping[str, str] = field(default_factory=dict)
-    fn: Callable[..., float] | None = field(default=None, compare=False)
-    prediction: str | None = None
-    greater_is_better: bool | None = None
     target_transform: str = "identity"
     """Regression only: the target ships transformed for modelling (``log``, ``log1p``, ``log10``); the metric is
     computed after the inverse of both the true values and the predictions, on the original scale."""
@@ -1785,21 +1780,21 @@ class Metric:
         if self.target_transform not in INVERSE_TRANSFORMS:
             raise ValueError(f"target_transform is one of {TARGET_TRANSFORMS}, not {self.target_transform!r}.")
         if self.target_transform != "identity":
-            prediction = self.prediction
-            if self.fn is None and self.name is not None and self.name in METRICS:
+            prediction = None
+            if self.name is not None and self.name in METRICS:
                 prediction = METRICS[self.name].prediction_for(self.params)
             if prediction is not None and prediction != "value":
                 raise ValueError(
                     f"target_transform={self.target_transform!r} is for a regression metric, not {self.name!r} "
                     f"(it takes {prediction!r})."
                 )
-        if self.fn is None and self.name is not None:
+        if self.name is not None:
             if self.name not in METRICS:
                 raise ValueError(_unknown_name_message(self.name))
             METRICS[self.name].validate(self.params)
         if not isinstance(self.inputs, Mapping) or not all(isinstance(c, str) for c in self.inputs.values()):
             raise ValueError("Metric inputs map each role to a column name: {'group': 'era'}.")
-        if self.fn is None and self.name is not None:
+        if self.name is not None:
             _check_input_roles(self.name, self.inputs)
 
     # --- constructors ---
@@ -1897,54 +1892,7 @@ class Metric:
             name=None, origin="fallback", reason=reason, target_transform=target_transform, inputs=dict(inputs or {})
         )
 
-    @classmethod
-    def local(  # noqa: PLR0913 - the spec's fields, all keyword-only
-        cls,
-        fn: Callable[..., float],
-        *,
-        name: str,
-        prediction: str,
-        greater_is_better: bool,
-        origin: str = "source",
-        original: str | None = None,
-        reference: str | None = None,
-        definition: str | None = None,
-        reason: str | None = None,
-        params: Mapping[str, Any] | None = None,
-        inputs: Mapping[str, str] | None = None,
-        target_transform: str = "identity",
-    ) -> Metric:
-        """A metric whose code only the definition holds: ``fn(y_true, y_pred, *, labels=None, params, **inputs)``.
-
-        For a user's own dataset that is never shipped. The container's spec says ``kind: "local"``, so a reader
-        of the files cannot compute it; ``dataset check`` warns and ``build`` refuses it unless asked
-        (``build(allow_local_metric=True)``). A shipped dataset adds its custom metric to :data:`METRICS` instead.
-        """
-        if prediction not in PREDICTIONS:
-            raise ValueError(f"prediction is one of {PREDICTIONS}, not {prediction!r}.")
-        if not callable(fn):
-            raise ValueError("Metric.local takes the metric function first.")
-        return cls(
-            name=name,
-            origin=origin,
-            original=original,
-            reference=reference,
-            definition=definition,
-            reason=reason,
-            params=dict(params or {}),
-            inputs=dict(inputs or {}),
-            fn=fn,
-            prediction=prediction,
-            greater_is_better=bool(greater_is_better),
-            target_transform=target_transform,
-        )
-
     # --- resolution ---
-    @property
-    def is_local(self) -> bool:
-        """Whether the metric's code is only in the definition."""
-        return self.fn is not None
-
     def resolve(self, problem_type: str) -> Metric:
         """The metric with its name set: a fallback takes the problem type's default."""
         if self.name is not None:
@@ -1960,12 +1908,9 @@ class Metric:
             raise ValueError(
                 f"target_transform={resolved.target_transform!r} is for a regression target, not {problem_type}."
             )
-        if resolved.fn is not None:
-            kind, prediction, greater_is_better = "local", resolved.prediction, resolved.greater_is_better
-        else:
-            definition = METRICS[resolved.name]
-            kind, greater_is_better = definition.kind, definition.greater_is_better
-            prediction = definition.prediction_for(resolved.params)
+        definition = METRICS[resolved.name]
+        kind, greater_is_better = definition.kind, definition.greater_is_better
+        prediction = definition.prediction_for(resolved.params)
         return {
             "name": resolved.name,
             "kind": kind,
@@ -1976,8 +1921,7 @@ class Metric:
             "inputs": dict(resolved.inputs),
             "original": resolved.original,
             "reference": resolved.reference,
-            "definition": resolved.definition
-            or (METRICS[resolved.name].definition_for(resolved.inputs) if resolved.fn is None else None),
+            "definition": resolved.definition or definition.definition_for(resolved.inputs),
             "reason": resolved.reason,
             "target_transform": resolved.target_transform,
         }
@@ -1993,31 +1937,20 @@ def _as_dict(spec: Any) -> dict[str, Any]:
     if isinstance(spec, Metric):
         if spec.name is None:
             raise ValueError("a fallback Metric has no name before it is resolved: use metric.resolve(problem_type).")
-        out = {f.name: getattr(spec, f.name) for f in dataclasses.fields(spec)}
-        if spec.fn is None:
-            definition = METRICS[spec.name]
-            out |= {
-                "kind": definition.kind,
-                "prediction": definition.prediction_for(spec.params),
-                "greater_is_better": definition.greater_is_better,
-            }
-        else:
-            out |= {"kind": "local"}
-        return out
+        definition = METRICS[spec.name]
+        return {f.name: getattr(spec, f.name) for f in dataclasses.fields(spec)} | {
+            "kind": definition.kind,
+            "prediction": definition.prediction_for(spec.params),
+            "greater_is_better": definition.greater_is_better,
+        }
     if dataclasses.is_dataclass(spec):
         return {f.name: getattr(spec, f.name) for f in dataclasses.fields(spec)}
     raise TypeError(f"not a metric spec: {type(spec).__name__}.")
 
 
 def metric_fn(spec: Any) -> Callable[..., float]:
-    """The function that computes ``spec``: the registry's, or the code of a local :class:`Metric`."""
-    if isinstance(spec, Metric) and spec.fn is not None:
-        return spec.fn
+    """The function that computes ``spec``, from the registry (:data:`METRICS`)."""
     fields = _as_dict(spec)
-    if fields.get("kind") == "local":
-        raise ValueError(
-            f"metric {fields['name']!r} is local: its code is only in the dataset's definition, not in the container."
-        )
     if fields["name"] not in METRICS:
         raise ValueError(_unknown_name_message(fields["name"]))
     return METRICS[fields["name"]].fn
@@ -2035,7 +1968,7 @@ def row_weight_column(spec: Any) -> str | None:
     fields = _as_dict(spec)
     column = dict(fields.get("inputs") or {}).get("weight")
     name = fields.get("name")
-    if column is None or fields.get("kind") == "local" or name not in METRICS:
+    if column is None or name not in METRICS:
         return None
     params = dict(fields.get("params") or {})
     if name == "ordered_lorenz_gini":
@@ -2060,7 +1993,7 @@ def score(spec: Any, y_true: Any, y_pred: Any, *, labels: Any = None, **inputs: 
 
     Args:
         spec: A :class:`~data_foundry.schema.MetricSpec`, the ``objective_metric`` dict of the JSON file, or a
-            :class:`Metric` (resolved, or local).
+            :class:`Metric` (resolved).
         y_true: The true values of the scored rows, on the scale the target ships on.
         y_pred: The predictions (see the module docstring for the ``proba`` / ``label`` / ``value`` conventions), on
             the shipped scale; a spec's ``target_transform`` is inverted on both before the metric. There are no
@@ -2077,10 +2010,7 @@ def score(spec: Any, y_true: Any, y_pred: Any, *, labels: Any = None, **inputs: 
     """
     fields = _as_dict(spec)
     fn = metric_fn(spec)
-    if fields.get("kind") == "local":
-        needed, optional = tuple(fields.get("inputs") or {}), ()
-    else:
-        needed, optional = METRICS[fields["name"]].inputs, METRICS[fields["name"]].optional_inputs
+    needed, optional = METRICS[fields["name"]].inputs, METRICS[fields["name"]].optional_inputs
     missing = [role for role in needed if role not in inputs]
     if missing:
         raise ValueError(f"metric {fields['name']!r} needs the input(s) {missing} (pass them by role).")
@@ -2128,7 +2058,7 @@ def scorer(container: Any, *, metric: Any = None) -> Callable[..., float]:
 
     Args:
         container: A format-2 container (anything with ``dataset`` and ``task_metadata.objective_metric``).
-        metric: Score by this spec or :class:`Metric` instead of the container's (e.g. a local metric).
+        metric: Score by this spec or :class:`Metric` instead of the container's.
     """
     task = container.task_metadata
     spec = metric if metric is not None else task.objective_metric

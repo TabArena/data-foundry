@@ -5,9 +5,6 @@ for a group the use case holds out but the data cannot key. The build adds the t
 ``- Time basis:`` (and a ``- Group basis:``) line into ``curation_comments``, so a container carries both without a
 new field. One parser (:func:`parse`) reads the rendered lines back, and one function (:func:`problems`) checks a
 definition, once rendered, and a built container alike.
-
-The old way, a forced tag in ``data_tags`` and a free-text line in ``curation_comments``, is read while the
-definitions move to :class:`TimeBasis` (:data:`ALLOW_UNSTRUCTURED`).
 """
 
 from __future__ import annotations
@@ -18,16 +15,6 @@ from dataclasses import dataclass
 from typing import ClassVar
 
 from data_foundry.schema import FORCED_TIME_TAGS, GROUP_BASIS_TAGS, RENAMED_TAGS, TIME_BASIS_TAGS, current_tag
-
-ALLOW_UNSTRUCTURED = False
-"""Whether a definition may still name its time basis the old way: a forced tag in ``data_tags`` and a free-text
-``Time basis:`` line in ``curation_comments``. True while the definitions move to :class:`TimeBasis`; the change that
-completes the move sets it False, and the definition then refuses the old way. Until then an old-way definition's
-lines are read as notes: their errors (:data:`OLD_WAY_TOLERATED`) do not stop it."""
-
-OLD_WAY_TOLERATED = frozenset({"meta_time_basis_mismatch", "meta_time_basis_lines"})
-"""Line errors an old-way definition is spared while :data:`ALLOW_UNSTRUCTURED` holds: its free text predates the
-rendered form (a line that names a tag the definition does not list yet, two lines)."""
 
 BASIS_TAGS = (*TIME_BASIS_TAGS, *FORCED_TIME_TAGS)
 """Every tag a :class:`TimeBasis` may carry: a use-case prototype or a forced tag; a split has one at most. A

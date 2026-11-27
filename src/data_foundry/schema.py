@@ -277,7 +277,7 @@ class Grouping:
             )
 
 
-MetricKind = Literal["standard", "custom", "local"]
+MetricKind = Literal["standard", "custom"]
 MetricPrediction = Literal["proba", "label", "value"]
 MetricOrigin = Literal["source", "stand_in", "context", "fallback"]
 TargetTransform = Literal["identity", "log", "log1p", "log10"]
@@ -296,8 +296,8 @@ class MetricSpec:
     """A standard name for a standard metric (``rmse``, ``roc_auc``, ``log_loss``, ``f1_weighted``, ...), a general
     one for a custom metric (``cost_matrix``, ``mean_group_pearsonr``); never a dataset's name."""
     kind: MetricKind
-    """``standard`` (the name maps to a scikit-learn / scipy function), ``custom`` (Data Foundry ships the
-    implementation) or ``local`` (code only the definition holds: never in a shipped container)."""
+    """``standard`` (the name maps to a scikit-learn / scipy function) or ``custom`` (Data Foundry ships the
+    implementation)."""
     prediction: MetricPrediction
     """What the scorer takes: ``proba`` (class probabilities), ``label`` (predicted classes) or ``value``."""
     greater_is_better: bool

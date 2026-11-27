@@ -6,8 +6,6 @@ checked_by:
 - Lennart
 data_foundry_status:
 - 'DF: Yes'
-- WIP (DF)
-claimed_by: Lennart
 suggestion: 'Yes'
 priority: 2
 tags:

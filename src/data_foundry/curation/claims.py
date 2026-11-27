@@ -15,12 +15,11 @@ Login is the remote's own: whoever can push to the repository can claim, whoever
 remote works; ``$DATA_FOUNDRY_CLAIMS_REMOTE`` and ``$DATA_FOUNDRY_CLAIMS_BRANCH`` pick another remote or branch.
 
 The curator is named by ``$DATA_FOUNDRY_CURATOR`` or ``git config data-foundry.curator`` and must be one of the
-``claimed_by`` values of ``vocabularies.yaml``. Each fetch caches the board in the git directory
+people of the ``curators`` list in ``vocabularies.yaml``. Each fetch caches the board in the git directory
 (``data-foundry-claims.json``), so the warnings (``save_record``, the Claude Code hook, the dashboard) need no network.
 
 Claims are advisory: nothing refuses a write. A claim expires after ``ttl_days`` (7 by default) unless renewed; an
-expired claim can be taken over with ``steal``. The records keep ``claimed_by`` and the WIP value as a mirror of the
-board (:func:`mirror_to_records`), written in the work branch and merged with the work.
+expired claim can be taken over with ``steal``. The board is the only copy: the records do not carry the claim.
 """
 
 from __future__ import annotations
@@ -39,7 +38,7 @@ from pathlib import Path
 
 import yaml
 
-from data_foundry.curation._paths import records_dir, resolve_curation_root
+from data_foundry.curation._paths import resolve_curation_root
 
 CLAIMS_REMOTE_ENV = "DATA_FOUNDRY_CLAIMS_REMOTE"
 CLAIMS_BRANCH_ENV = "DATA_FOUNDRY_CLAIMS_BRANCH"
@@ -106,7 +105,7 @@ class Claim:
     name: str
     """The dataset's ``unique_name`` (the record's file stem and the v2 folder name)."""
     holder: str
-    """The curator, a ``claimed_by`` value of the vocabulary."""
+    """The curator, a person of the ``curators`` list."""
     stage: str
     """One of :data:`STAGES`."""
     claimed_at: str
@@ -384,21 +383,26 @@ def configured_curator(repo: str | Path | None = None) -> str | None:
     return proc.stdout.strip() or None
 
 
+def curators() -> list[str]:
+    """The people who may claim: the ``curators`` list of ``vocabularies.yaml``."""
+    from data_foundry.curation.record import load_vocabularies  # noqa: PLC0415 - imports nothing from here
+
+    return load_vocabularies().get("curators", [])
+
+
 def current_curator(repo: str | Path | None = None) -> str:
-    """The configured curator name, checked against the ``claimed_by`` vocabulary.
+    """The configured curator name, checked against :func:`curators`.
 
     Raises:
         ClaimsError: no name is configured, or it is not in the vocabulary.
     """
-    from data_foundry.curation.record import load_vocabularies  # noqa: PLC0415 - record imports nothing from here
-
-    allowed = load_vocabularies().get("claimed_by", [])
+    allowed = curators()
     name = configured_curator(repo)
-    hint = f"one of: {', '.join(allowed)}" if allowed else "a name from vocabularies.yaml (claimed_by)"
+    hint = f"one of: {', '.join(allowed)}" if allowed else "a name from vocabularies.yaml (curators)"
     if not name:
         raise ClaimsError(f"Name yourself first: `git config {CURATOR_GIT_KEY} <Name>` (or ${CURATOR_ENV}), {hint}.")
     if allowed and name not in allowed:
-        raise ClaimsError(f"Curator '{name}' is not in vocabularies.yaml (claimed_by); use {hint}.")
+        raise ClaimsError(f"Curator '{name}' is not in vocabularies.yaml (curators); use {hint}.")
     return name
 
 
@@ -529,8 +533,7 @@ def claim(
         note: What is being done (optional).
         ttl_days: Days until the claim expires.
         steal: Take over expired claims of others.
-        holder: Claim in this curator's name (only for importing the records' claims); defaults to the current
-            curator.
+        holder: Claim in this curator's name (for tests and scripts); defaults to the current curator.
         repo: The repository (defaults to the one of the curation root).
 
     Returns:
@@ -645,105 +648,6 @@ def init_branch(repo: str | Path | None = None, *, pages_dispatch: bool = False)
         return {}, {}, "init: the claims board" + (" and the Pages dispatch" if pages_dispatch else "")
 
     return _update(repo, decide, {PAGES_DISPATCH_PATH: PAGES_DISPATCH_WORKFLOW} if pages_dispatch else {})
-
-
-# -- the records' mirror ----------------------------------------------------------------------------------------------
-
-
-def wip_status(stage: str, suggestion: str | None) -> str:
-    """The record's WIP value for a claim: ``WIP (DF)`` for work on an accepted dataset, else ``WIP (Triage)``."""
-    from data_foundry.curation.record import ACCEPTED_SUGGESTIONS  # noqa: PLC0415
-
-    return "WIP (DF)" if stage != "triage" and suggestion in ACCEPTED_SUGGESTIONS else "WIP (Triage)"
-
-
-def mirror_to_records(
-    board: Board,
-    names: Iterable[str] | None = None,
-    directory: str | Path | None = None,
-    *,
-    write: bool = True,
-) -> dict[str, tuple[str | None, str | None]]:
-    """Make the records' ``claimed_by`` and WIP value match the board.
-
-    A record with a live or expired claim gets the holder and the WIP value of :func:`wip_status`; a record that
-    carries a claim or a WIP value the board does not have loses both. Records are reloaded right before each write.
-
-    Args:
-        board: The board to mirror.
-        names: Only these records (default: every record).
-        directory: The records directory (defaults to the standard one).
-        write: ``False`` only reports what would change.
-
-    Returns:
-        ``{name: (claimed_by before, claimed_by after)}`` for every record that differs (or differed).
-    """
-    from data_foundry.curation.record import WIP_STATUSES, load_vocabularies  # noqa: PLC0415
-    from data_foundry.curation.store import load_record, save_record  # noqa: PLC0415 - store imports this module
-
-    target = Path(directory) if directory is not None else records_dir()
-    if names is None:
-        paths = [p for p in sorted(target.glob("*.md")) if not p.name.startswith("_")]
-    else:
-        paths = [target / f"{n}.md" for n in _names(names)]
-    vocab = load_vocabularies() if write else {}
-    changed: dict[str, tuple[str | None, str | None]] = {}
-    for path in paths:
-        if not path.exists():
-            continue
-        record = load_record(path)
-        claim = board.claims.get(record.unique_name)
-        status = list(record.data_foundry_status or [])
-        has_wip = any(s in WIP_STATUSES for s in status)
-        if claim is None and not record.claimed_by and not has_wip:
-            continue
-        kept = [s for s in status if s not in WIP_STATUSES]
-        if claim is None:
-            want_status, want_holder = kept, None
-        else:
-            wip = wip_status(claim.stage, record.suggestion)
-            at = next((i for i, s in enumerate(status) if s in WIP_STATUSES), len(kept))
-            want_status, want_holder = [*kept[:at], wip, *kept[at:]], claim.holder
-        if want_status == status and want_holder == record.claimed_by:
-            continue
-        changed[record.unique_name] = (record.claimed_by, want_holder)
-        if write:
-            record.data_foundry_status = want_status
-            record.claimed_by = want_holder
-            record.needs_review = record.review_reasons(vocab)
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", ClaimWarning)
-                save_record(record, target)
-    return changed
-
-
-def import_from_records(
-    directory: str | Path | None = None,
-    *,
-    ttl_days: float = DEFAULT_TTL_DAYS,
-    repo: str | Path | None = None,
-) -> Outcome:
-    """Put every claim the records carry (``claimed_by``) on the board, in its holder's name; existing ones stay."""
-    from data_foundry.curation.store import load_all  # noqa: PLC0415
-
-    held = [r for r in load_all(directory) if r.claimed_by]
-
-    def decide(board: Board) -> Decision:
-        now = _utcnow()
-        expires = _iso(now + dt.timedelta(days=ttl_days))
-        changes: dict[str, Claim | None] = {}
-        skipped: dict[str, str] = {}
-        for record in held:
-            old = board.claims.get(record.unique_name)
-            if old is not None:
-                skipped[record.unique_name] = f"already on the board: {old.describe()}"
-                continue
-            stage = "triage" if "WIP (Triage)" in (record.data_foundry_status or []) else "add"
-            changes[record.unique_name] = Claim(record.unique_name, record.claimed_by, stage, _iso(now), expires, "")
-        holders = sorted({c.holder for c in changes.values() if c})
-        return changes, skipped, f"import: {len(changes)} claim(s) from the records ({', '.join(holders)})"
-
-    return _update(repo, decide)
 
 
 # -- warnings ---------------------------------------------------------------------------------------------------------

@@ -231,7 +231,7 @@ selection criteria and processing conventions. Other CLI subcommands:
 ```bash
 data-foundry-curation validate                 # check records against the dropdown vocab
 data-foundry-curation sync-notebooks           # refresh each record's notebook_path + v2_path (--check to dry-run)
-data-foundry-curation export --format xlsx out.xlsx   # flat snapshot (csv|parquet|xlsx|gsheet)
+data-foundry-curation export --format xlsx out.xlsx   # flat snapshot (csv|xlsx)
 data-foundry-curation build-site site/          # read-only static copy (e.g. GitHub Pages)
 data-foundry-curation dataset check <folder>    # run a v2 dataset.py + bundle checks, write README.md (no save)
 ```
@@ -325,7 +325,6 @@ data-foundry/
 │   └── beyond_iid/           # the shipped BeyondArena notebooks (v1), pinned by `final_uuid_list.py`
 ├── examples/                 # runnable demos (covers the use-cases above); see examples/README.md
 ├── scripts/                  # one-off tooling (toy container builder, release)
-│   └── beyond_arena/         # BeyondArena-specific scripts and outputs (warehouse stats, plots)
 ├── .claude/skills/           # Claude Code skills; each skill's scripts/ holds the tools it runs
 │   ├── knowledge-curation/   # curation knowledge (references/) and the general probe library (scripts/)
 │   ├── knowledge-data-foundry/  # this repo's conventions (references/), the probe, pipeline and rebuild scripts

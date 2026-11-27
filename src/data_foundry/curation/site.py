@@ -68,7 +68,7 @@ def build_site(
     for row in rows:
         row.pop(MTIME_KEY, None)  # the edit check of the live dashboard: no use in a read-only build
     _write_json(out / "records.json", rows)
-    _write_json(out / "claims.json", _claims_payload())  # the board the records' Claimed by column shows
+    _write_json(out / "claims.json", _claims_payload())  # the board the Claimed by column shows
 
     # Every page gets the read-only flag: index.html drops its write affordances, guidelines.html reads
     # the frozen docs/manifest.json. Cross-links between the pages are relative, so they resolve whether

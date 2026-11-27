@@ -55,8 +55,8 @@ source, the use case, the collection facts and the regime, the risks) and the re
 `Samples:`, `Time:`, `Target:`, `Entities:` and `Features:` tags; SPLIT-32). Verify its claims as you go instead of
 redoing its research; a measurement on the data supersedes what screening read from the page. No record: stop and
 point to `/screen-candidates`. Claim the records first, in the curator's name: `claims claim <names> --stage add
---note "add-dataset"` ([claims.md](../knowledge-data-foundry/references/claims.md)); it pushes the claim to the board
-and writes `WIP (DF)` and `claimed_by` into the records. Never work on a dataset another curator holds: a name the
+--note "add-dataset"` ([claims.md](../knowledge-data-foundry/references/claims.md)); it pushes the claim to the board,
+and the records carry nothing about it. Never work on a dataset another curator holds: a name the
 command skips is left out and reported.
 
 A batch (several names or a dashboard filter) runs one `dataset-builder` agent per source unit for steps 0-6
@@ -156,7 +156,7 @@ domain and source from the record.
    implementation (scikit-learn or scipy, otherwise vectorised numpy; for a competition whose official code is slow,
    look for the faster versions in its Kaggle discussions and notebooks and check them), tested in
    `tests/test_v2_metrics_custom.py` to equal the official code on random inputs, on one hand-computed case, and timed
-   on 1M rows. Never `Metric.local` in the working copy.
+   on 1M rows.
 6. `accepted_check_warnings` stays empty: the curator fills it once the warnings are known, one reason per slug. A
    temporal task with a window under half the rows (`splits_train_under_half`) always gets an issue in the record's
    review for the curator's exception: the windows and their shares, the reason for each, and an option without them
@@ -164,7 +164,7 @@ domain and source from the record.
    and what stops more in the splits comment, and where only overlapping windows would reach it, offers them as an
    option. So does a feature that stops or starts being recorded within the history (`splits_feature_missing_in_test`)
    and a newest period cut short (`time_newest_period_short`).
-7. `_decisions` and `_extra_checks` only when there is something to show or test.
+7. `_decisions` only when there is something to show.
 
 Then point the record at the definition:
 `.venv/bin/python -m data_foundry.curation.cli sync-notebooks` (`--check` must stay clean).

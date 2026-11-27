@@ -153,10 +153,10 @@ latest state, and the TabArena v0.2 collection will ship it.
 
 * A notebook runs only at commit `6cc3c945` (the v1 helpers are gone since).
 * Do not re-run a shipped notebook end to end and re-save: `save()` mints a new UUID and breaks the collection pin.
-  A collection release re-ran notebooks and rewrote `final_uuid_list.py` with
-  [`scripts/beyond_arena/rerun_notebooks_update_uuids.py`](scripts/beyond_arena/rerun_notebooks_update_uuids.py);
-  [`scripts/beyond_arena/export_warehouse_bundle.py`](scripts/beyond_arena/export_warehouse_bundle.py) zips the
-  pinned containers.
+  A collection release re-ran notebooks and rewrote `final_uuid_list.py` with `rerun_notebooks_update_uuids.py`, and
+  `export_warehouse_bundle.py` zipped the pinned containers. Both, with the v1 paper plots and the warehouse stats,
+  were in `scripts/beyond_arena/`, removed on 2026-11-25; they are in the git history
+  (`git log --diff-filter=D -- scripts/beyond_arena` names the commit, check out its parent to get them back).
 * Do not edit committed notebook outputs; they are the evidence. Notebooks must stay valid JSON: edit them with
   `nbformat`, never by hand in the cell `source` arrays.
 * A notebook that moves or is superseded needs its record's `notebook_path` updated in the same change
