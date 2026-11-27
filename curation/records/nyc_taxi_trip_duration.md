@@ -114,8 +114,8 @@ CC (2026-11-17, Andrej): the declared split (temporal on `pickup_datetime`, wind
 rewritten on 2026-11-10 you chose B (issue 1): the test windows are the newest June week, the Memorial Day week and a
 week in April, and the 7-day length stays with a new reason. Re-reviewed on 2026-11-26 (focused panel): the split,
 the metric, the provenance and the absence of leakage all hold on re-measurement, and the recommendation is to ship
-after changes, all of them to the text. Settled on 2026-11-27: the gap keeps its day with an operational reason (3,
-A). Open: the speed filter (2) and the choice of copy (4).
+after changes, all of them to the text. Settled on 2026-11-27: the 32 trips above 120 km/h are dropped as in the sibling taxi
+datasets (2, B) and the gap keeps its day with an operational reason (3, A). Open: the choice of copy (4).
 
 **Main points:** Settled on 2026-11-10: the test weeks are 24-30 June, 27 May-2 June and 8-14 April 2016 (issue 1,
 B), and the declared horizon is checked. Open for you: whether the 46 trips above 100 km/h are filtered as the two
@@ -249,6 +249,10 @@ sense and is justifiable keep it and resolve them"); the record's CC line says t
    * **Recommendation:** B, because it follows the two precedents, costs three scored rows and ends with the same constant as the sibling. A is defensible only as a deliberate exception, and then needs the fact that sets this dataset apart from lusaka. The correction to the sentence is needed under either. **Decision:** A, B or C?
 
    **Notes for the AI:** B is a task change: add `MAX_STRAIGHT_LINE_KMH = 120` in the shape pkdd uses, rebuild, and open it as its own pull request. Under A or C, rewrite the anomaly bullet of `curation_comments` so it no longer claims the rows cannot be told apart.
+
+   **Andrej (2026-11-27, change):** Option B: Add the sibling's 120 km/h filter and correct the sentence.
+
+   **Resolved (2026-11-27, Andrej):** B. `MAX_STRAIGHT_LINE_KMH = 120` (pkdd's constant) drops the trips whose straight line from pickup to drop-off implies more than 120 km/h, after the 100 m filter: 32 trips, 2 in the 24-30 June window and 1 in 27 May-2 June. The 14 trips at 100-120 km/h stay (fastest kept 117.6 km/h). The anomaly bullet of `curation_comments` is replaced by a bullet on the filter, and `task_summary.changes` names it. Recounted: 1,442,619 trips after cleaning; train 1,381,986, 1,169,750 and 766,626 (95.8%, 81.1%, 53.1%); test 52,605, 49,283 and 59,653. `dataset check`: 0 errors, 0 warnings; README regenerated.
 
 3. **State the one-day gap's reason as the refit's own latency instead of the label delay?**
 
