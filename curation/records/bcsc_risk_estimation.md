@@ -3,10 +3,19 @@ unique_name: bcsc_risk_estimation
 name: BCSC Risk Estimation Dataset
 checked_by:
 - AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Andrej
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Andrej
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
+- New IID
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Fixed Delay'
+- Clinical Study
 original_source: GOV Website
 year: '? (2006)'
 domain: medical & healthcare
@@ -20,6 +29,7 @@ source_links:
 - https://doi.org/10.1093/jnci/djj331
 needs_review:
 - ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/bcsc_risk_estimation/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -41,3 +51,70 @@ type_adapter_id: curation-record-v1
 - as published: 2,392,998 screening mammograms (1996-2002) aggregated into 280,660 records, one per combination of risk factors and outcome with a count; two versions (multiple exams per woman, one per woman); 12 ...; target: breast cancer diagnosed within one year of the index screening mammogram (cancer: invasive or DCIS; invasive); access: registration.
 - Why: same publisher and same outcome as breast_cancer_prediction but a different use case: risk estimation before the read, without the index exam's BI-RADS assessment (deliberately left out of the public file); a strong source with a published model
 - Adds: about 60x more screening exams for the same 1-year cancer outcome; caveats: older (1996-2002), aggregated counts (expand by count or use weights), only categorical features
+
+CC (2026-11-27, Andrej): add it. It is the risk task before the mammogram is read, which `breast_cancer_prediction` cannot carry (there the radiologist's read is a feature; its review issue 2).
+
+## Review
+
+**Outcome:** added. The BCSC Risk Estimation Dataset, one exam per woman: 1,007,660 women, 7,319 cancers within a year (0.73%), twelve risk factors known at the screening visit, before the mammogram is read; the risk task that `breast_cancer_prediction` cannot carry (its review issue 2).
+
+**Main points:** Keep the forced time tag (1), ship despite exams of 1996-2002 (2), and take the one-exam-per-woman file (3)? The score is in line with the field: on the paper's own 75/25 split of the all-exams file logistic regression reproduces its c statistic (0.628 and 0.626 against the published 0.631 and 0.624), and on our 3 folds it reaches ROC AUC 0.650, LightGBM 0.656. Methods spread (logistic regression 0.646, LightGBM 0.634, random forest 0.578 in the untuned probes) and the best single feature, the age group, stays below them (0.611). Nothing leaks: 91% of the test women share their exact profile with training women (coarse categories), and looking up those women's outcomes adds nothing (-0.008, SE 0.005).
+
+**Issues for Andrej:**
+
+1. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: Lost: exams 1996-2002, and the file carries no dates.
+     - Use: a screening programme estimates a woman's one-year risk at her visit, decades after 2002.
+     - Mechanism: two of the strongest inputs changed after 2002: hormone therapy use fell after the Women's Health Initiative trial[^whi], and the BI-RADS density categories were redefined in 2013.
+   * **Background:** 28.6% of the exams are of women on hormone therapy; it is the third strongest single feature (ROC AUC 0.567 alone).
+   * **For a stationary use case:**
+     - the risk factors are those of the BCSC's risk models still in use.
+     - a fixed one-year label window.
+   * **Against:**
+     - hormone therapy use and its link to breast cancer changed after 2002.
+     - density coding changed in 2013.
+     - film mammography, now replaced by digital and tomosynthesis, detected the cancers that make the label.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning | Claims only what is known | The split stands for later women only as far as the relation is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later women | hormone therapy and density coding changed after 2002 |
+
+   * **Recommendation:** A, the hormone therapy change after 2002 is a fact against stationarity. Confidence: high. **Decision:** A or B?
+
+   [^whi]: Rossouw JE, Anderson GL, Prentice RL, LaCroix AZ, Kooperberg C, Stefanick ML, Jackson RD, Beresford SA, Howard BV, Johnson KC, Kotchen JM, Ockene J; Writing Group for the Women's Health Initiative Investigators. Risks and benefits of estrogen plus progestin in healthy postmenopausal women: principal results from the Women's Health Initiative randomized controlled trial. JAMA. 2002;288(3):321-333. doi:10.1001/jama.288.3.321. SPLIT-32 asks the review to reason whether the use case can be taken as stationary; `AssumedStationaryRelation` is set by a person only.
+
+2. **Ship it although its exams are from 1996-2002?**
+
+   * **Problem:**
+     - The exams are 24 to 30 years old, film-era, before the 2002 drop in hormone therapy; the source says the data are static.
+     - No newer BCSC file has the outcome: the BCSC Risk Factors summary (2005-2017) has the risk factors but no one-year cancer.
+   * **Background:** the BCSC's own risk calculator and its later model versions are built on BCSC data of the same kind, so the task is how the field estimates this risk.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Ship (implemented) | No marker | The only open source of this task, with a published model to compare; 1M women | Old data; the stationarity of issue 1 is not assumed |
+     | B | Ship with `Outdated` as a concern | The marker records the age; the dataset ships | Makes the age visible to users | A marker on a shipped dataset is only a note |
+     | C | Do not add (`Outdated`) | Not added | No 25-year-old data in the benchmark | Loses the before-the-read risk task, and with `breast_cancer_prediction` retired, the screening question altogether |
+
+   * **Recommendation:** A, the age matters for a deployed model, not for comparing methods on one relation. Confidence: medium. **Decision:** A, B or C?
+
+3. **Take the one-exam-per-woman file, or the all-exams file the paper used?**
+
+   * **Problem:**
+     - The source offers two files: all exams (2,392,998, several per woman, the paper's data) and one exam per woman (1,007,660, added in 2012).
+     - The all-exams cells carry no woman id, so random folds would put one woman's exams on both sides.
+     - The page does not say how the one exam was chosen; its cancer share (0.73% against 0.49%) fits one exam drawn per woman, since women with cancer leave follow-up at the diagnosis.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | One exam per woman (implemented) | `risk_rand.txt`, 1,007,660 rows | Every row a different woman; no row budget needed | Not the paper's exact rows; selection rule not documented |
+     | B | All exams | `risk.txt`, 2,392,998 rows, a `_1m` version | The paper's data | One woman's exams on both sides of a split, which no id can prevent |
+     | C | Both, as two datasets | Two folders | – | The same task twice, one of them with the copies of B |
+
+   * **Recommendation:** A. Confidence: high. **Decision:** A, B or C?
