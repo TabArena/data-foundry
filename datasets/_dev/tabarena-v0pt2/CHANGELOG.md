@@ -1,5 +1,20 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-27, raman_mlrod gets a split whose two sides both vary (no container built)
+
+- The single fold of the source's design is replaced by five repeats of two folds. A fold tests one rock slab, with
+  the other slab never in its training side, so the class-set exploit stays closed; a repeat holds a different fifth
+  of every reference map out of the training side, drawn inside the map, so each training side is 72,310 of the
+  90,387 library spectra and every mineral and every integration time stays in it.
+- Why not whole maps: dropping one reference map per mineral collapses the score through the integration time
+  (log loss 0.95 to 4.83 over three draws, where both slabs are measured at 0.15 s). Drawing inside each map moves
+  it by about 0.04 on the gabbro and 0.16 on the granite.
+- Checks and probes on the new plan: 0 errors; a linear model reaches log loss 0.913 against the class shares' 2.622
+  on 100% of the splits and leads the random forest by 0.882 (paired SE 0.122). Two warnings change shape: the
+  dimensions are 5x2 against the protocol's 3x3, and each fold now lacks the classes its rock does not hold.
+- The three verdicts of the day are recorded: `raman_fuel_benchtop`, `raman_ecoli_fermentation` and
+  `raman_adenine_interlaboratory` ship.
+
 ## 2026-11-27, the curator's second round on the Raman definitions (no container built)
 
 - `raman_adenine_interlaboratory`: the substrate and the laser leave the inputs (the curator's decision on the

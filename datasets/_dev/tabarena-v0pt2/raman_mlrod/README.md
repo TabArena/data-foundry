@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: raman_mlrod
 container_format: 2
-checksum: v2:c94132f273ab5bddc0019ce4ca8ed056c5e86452477b43936ae1262c4e75397b
+checksum: v2:a2f62ecde46d3ce99621ec71246e0a9f696b8fed4ae5f54d679cdd3648b1c604
 build: null
 build_stale: false
 data:
@@ -30,30 +30,31 @@ task:
     context: none
     n_groups: 37
     test_groups_per_fold:
-      min: 2
-      max: 2
+      min: 1
+      max: 1
   special_features:
     raman_spectrum: spectrum, a group of 950 columns (raman, raw, cm-1 150 to 1099);
       numbers a model can read; recommended encoding spectrum-as-is-r1
 splits:
-  n_repeats: 1
-  n_folds: 1
+  n_repeats: 5
+  n_folds: 2
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 90387
-    max: 90387
+    min: 72306
+    max: 72314
   n_test:
-    min: 34857
-    max: 34857
+    min: 16211
+    max: 18646
 bundle_checks:
   ok: true
   errors: []
   warnings:
   - dataset_spectrum
+  - splits_rows_never_tested
   - splits_dimensions_off_protocol
   - groups_test_groups_few
   - splits_test_class_missing
@@ -74,7 +75,7 @@ decisions:
 
 Multiclass classification of `mineral`, scored with `log_loss` on grouped splits by `specimen`. 125,244 rows and 950 features. Source: Other (2022).
 
-Not built yet. The current definition gives checksum `v2:c94132f273ab5bddc0019ce4ca8ed056c5e86452477b43936ae1262c4e75397b`.
+Not built yet. The current definition gives checksum `v2:a2f62ecde46d3ce99621ec71246e0a9f696b8fed4ae5f54d679cdd3648b1c604`.
 
 ## In brief
 
@@ -88,7 +89,7 @@ Not built yet. The current definition gives checksum `v2:c94132f273ab5bddc0019ce
 
 **Known at prediction time.** The spectrum alone, as the instrument read it (no cosmic-ray removal, baseline removal or normalisation), one reading in each of the source's 950 bands of 1 cm-1 from 150 to 1,099 cm-1.
 
-**What the test data stands for.** As in the source: the reference maps train, and one test fold holds both rock slabs, with and without dust, neither seen in training. The score can be read per rock.
+**What the test data stands for.** A rock slab the model has not seen, with and without dust: one fold per slab, the other slab never in training, over five draws of the reference library that train on four fifths of every reference map.
 
 **Our changes to the source.** We drop the 4,817 granite points whose label is dust rather than a mineral, repair the code of the gabbro's plagioclase under dust from microcline to anorthite, move a 46-spectrum powder map named after the gabbro to training, put every map on the source's 1 cm-1 grid with one reading per band, and set the damaged bands of three reference spectra missing.
 
@@ -243,15 +244,24 @@ We start with the 41 map files of the ML Raman Open Dataset (Berlanga, Williams 
 
 ## Splits
 
-One split, as in the source (Spec-CNN `Notebook-CNN-Raw_Data.ipynb`: fit on the reference maps, tested on the slab maps): the 90,387 spectra of the 35 reference and powder maps train, and one test fold holds both slabs, the gabbro (18,646 spectra) and the granite (16,211 after the dust points are dropped), with and without dust. One repeat and one fold: with two rocks there is no other partition that keeps every test rock unseen, and training on one slab to test the other lets the training slab tell which classes the test rock lacks (curation notes). Score the fold by rock too, from the `specimen` group: each rock's score rests on few units (the gabbro on 12 mineral blocks), and the spread between folds understates the noise 4 to 13 times when read per row. The reference maps come from separate hand samples, not from the slabs (paper, Table 1; curation notes).
+Five repeats of two folds over the source's design (Spec-CNN `Notebook-CNN-Raw_Data.ipynb`: fit on the reference maps, tested on the slab maps). A fold tests one rock slab, the gabbro (18,646 spectra) or the granite (16,211 after the dust points are dropped), each with and without dust; the other slab is never in the training side, so the training rock cannot tell which classes the test rock lacks. A repeat holds a different fifth of every reference map out of the training side, drawn inside the map, so each training side is 72,310 of the 90,387 library spectra and every mineral and every integration time is still in it. Both sides therefore vary: the fold changes the rock, the repeat changes the library. Dropping whole maps instead would not do: a mineral that loses its 0.15-second map loses the slabs, which are 0.15 s (curation notes). The spread over repeats is the library's sampling noise, not the noise of meeting a new rock: that one is the difference between the two folds, which is the larger number, and with two rocks it rests on two units. The reference maps come from separate hand samples, not from the slabs (paper, Table 1; curation notes).
 
 Protocol (LEAK-9): each test spectrum is predicted on its own, from the training rows and its own readings only: no use of other test rows (no averaging over neighbouring test spectra, no class prior estimated on the test rows, no self-training on them, no weights from a classifier of training against test rows) and no preprocessing fitted on test rows. A method that does is called out and not benchmarked.
 
-1 repeat(s) x 1 fold(s) with seed 4267; train 90,387 rows, test 34,857 rows.
+5 repeat(s) x 2 fold(s) with seed 4267; train 72,306 to 72,314 rows, test 16,211 to 18,646 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 90387 | 34857 |
+| 0 | 0 | 72306 | 18646 |
+| 0 | 1 | 72306 | 16211 |
+| 1 | 0 | 72307 | 18646 |
+| 1 | 1 | 72307 | 16211 |
+| 2 | 0 | 72309 | 18646 |
+| 2 | 1 | 72309 | 16211 |
+| 3 | 0 | 72312 | 18646 |
+| 3 | 1 | 72312 | 16211 |
+| 4 | 0 | 72314 | 18646 |
+| 4 | 1 | 72314 | 16211 |
 
 ## Group structure
 
@@ -270,7 +280,7 @@ One group is one rock slab (the gabbro, the granite: every map of it, at 0% and 
 | groups | 37 |
 | rows per group (min / median / max) | 46 / 2,300.0 / 18,646 |
 | largest group | 14.9% of the rows |
-| test groups per fold | 2 |
+| test groups per fold | 1 |
 | groups of two or more rows with a single label | 91.9% |
 | nearest neighbour in the same group | 94.0% of the rows (chance: 6.2%) |
 | label variance explained by the group | 0.80 (shuffled groups: 0.00) |
@@ -338,12 +348,13 @@ One split: the reference and powder maps train, both slabs are tested together. 
 
 ## Bundle checks
 
-0 error(s), 4 warning(s), 2 info (28 checks run, plus the dataset's own checks).
+0 error(s), 5 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_spectrum`: Spectrum `raman_spectrum`: 3 row(s) have a missing intensity; the processing encodings return such a spectrum as missing. (hint: Drop the rows or say in the curation notes why they stay.)
-- **warning** `splits_dimensions_off_protocol`: Splits are 1x1 but the v2 protocol for this size is 3x3. (hint: Deviating is allowed when the task demands it; record why in `splits_comment`.)
-- **warning** `groups_test_groups_few`: A test fold holds 2 groups (2-2 per fold, 37 groups in all): a score per group rests on few independent units, and a score per row on not many more. (hint: Keep the dataset only if its signal across groups is real (`.claude/skills/knowledge-data-foundry/scripts/group_probes.py`), and accept the warning with that reason.)
-- **warning** `splits_test_class_missing`: 1 of 1 multiclass test fold(s) lack at least one class (most: 1 of 15 missing): ['r0f0']. (hint: Macro scores skip or break on the missing classes; merge rare classes or accept it with the class counts.)
+- **warning** `splits_rows_never_tested`: 90,387 row(s) (72.2%) are never in a test set, although the splits look like cross-validation. (hint: In k-fold CV every row is tested exactly once per repeat; check the split construction.)
+- **warning** `splits_dimensions_off_protocol`: Splits are 5x2 but the v2 protocol for this size is 3x3. (hint: Deviating is allowed when the task demands it; record why in `splits_comment`.)
+- **warning** `groups_test_groups_few`: A test fold holds 1 groups (1-1 per fold, 37 groups in all): a score per group rests on few independent units, and a score per row on not many more. (hint: Keep the dataset only if its signal across groups is real (`.claude/skills/knowledge-data-foundry/scripts/group_probes.py`), and accept the warning with that reason.)
+- **warning** `splits_test_class_missing`: 10 of 10 multiclass test fold(s) lack at least one class (most: 9 of 15 missing): ['r0f0', 'r0f1', 'r1f0', 'r1f1', 'r2f0']. (hint: Macro scores skip or break on the missing classes; merge rare classes or accept it with the class counts.)
 - **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 119,232,288 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
 - **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 119,232,288 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
 

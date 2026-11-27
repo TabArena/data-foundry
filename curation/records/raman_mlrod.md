@@ -38,6 +38,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
+CC (2026-11-27, Andrej): Review issue 5, the split is rebuilt. The shipped plan is five repeats of two folds: a fold tests one rock slab with the other never in its training side, and a repeat holds a different fifth of every reference map out of the training side, drawn inside the map so every mineral and every integration time stays in. Both sides now vary. Measured on three such draws, the spread is about 0.04 of log loss on the gabbro and 0.16 on the granite, against 0.95 to 4.83 when whole maps are dropped, which is why the earlier assessment was wrong to stop at the source's single fold.
 CC (2026-11-27, Andrej): Review issues 1, 2, 3, 4 and 7 all `ok`, so the record leaves `TBD` (issue 4's run is still owed and comes back as its own item when its table exists). Issue 5 stays open with the assessment you asked for: the data holds two test units and no third can be made, varying the training library is refuted by measurement (log loss 0.95 to 4.83 over three leave-one-map-out draws, driven by which integration time survives), writing the fold as two or four cells is bookkeeping on one training side, and more rocks is the only real answer.
 CC (2026-11-27, Andrej): Review issue 1 rewritten after Andrej asked what is most correct for the task. The mirror stays the read path: ODR needs a browser for every file, so a definition that read it could not be rebuilt by anyone, and three of its files match byte for byte, the one with the spreadsheet damage included, which a re-upload would not reproduce. The unchecked fourth file ships 5,183 of 34,857 test spectra, so its checksum is a provenance note and no longer holds the verdict. ODR's file list is the one check that can still change something, and the answer to a longer list is a new candidate record (new option D), not re-scoping this one: the task is the paper's, bounded by its Table 1.
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from the source's pages and papers (and, where the block says so, a preview of the files), NOT from building the data. A human must verify everything before relying on it.**
@@ -65,9 +66,11 @@ CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of
 
 **Outcome:** added. The ML Raman Open Dataset (Berlanga, Williams and Temiquel 2022): which mineral sits at a point of a
 rock never measured before, from one Raman spectrum (950 bands of 1 cm-1, 150-1,099 cm-1, 15 classes). 125,244 spectra:
-90,387 of 35 reference and powder maps train, and one test fold holds the gabbro slab (18,646) and the granite slab
+90,387 of 35 reference and powder maps train, and the test side is the gabbro slab (18,646) and the granite slab
 (16,211), clean and under 50% basalt dust, as in the source's own split; scored by log loss (our default, since the
-source reports only accuracy), read per rock too. Built from a third-party mirror of the 41 files (ODR refuses this
+source reports only accuracy). The curator asked for a plan whose training and test sides both vary, so it is now
+five repeats of two folds: a fold tests one slab with the other never in its training side, and a repeat holds a
+different fifth of every reference map out of the training side. Built from a third-party mirror of the 41 files (ODR refuses this
 machine); three files you downloaded from ODR match it byte for byte. The AI recommends shipping it after the panel's
 changes, which are made. The paper you supplied settles two of the three gates the panel set (the slabs were labelled by
 hand; the reference maps are separate hand samples), so the record's `TBD` now waits only on your confirmation of
@@ -78,9 +81,9 @@ regression 0.934, so whether tabular models are competitive waits for a tuned ru
 keep). USE-5 holds: the slab labels are a person's calls, checked against the source's CNN (paper, Sec. 4.2; issue 2);
 fit approximate, the gap named in `fit_reason` (a lab microscope for a rover instrument, a closed set with no "no call",
 labels that name the grain in the gabbro and the spot in the granite). SPLIT-1, SPLIT-4, SPLIT-29 hold: grouped by rock,
-IID barred (log loss 0.072 at random against 0.63-1.64 by rock). SPLIT-19 applied: the source's split, train on the
-reference maps and test both rocks in one fold (the draft had one fold per rock with the other rock in training, which
-let the training rock tell the test rock's class set). SPLIT-24 / LEAK-17: the 46-spectrum gypsum and forsterite-albite
+IID barred (log loss 0.072 at random against 0.63-1.64 by rock). SPLIT-19 applied in its membership: the reference maps
+train and the rocks are tested, as the source does, with repeats and folds added for the variance one fold cannot
+show (the first draft put the other rock in training, which let it tell the test rock's class set; that stays out). SPLIT-24 / LEAK-17: the 46-spectrum gypsum and forsterite-albite
 powder map named after the gabbro now trains; the two reference maps that match a slab mineral closely are separate
 specimens by the paper's Table 1 and stay (issue 3). LEAK-9: a protocol line (each spectrum predicted on its own) and a
 kept-on-purpose note with the task gamer's measured gains. LEAK-13: one reading per band in place of the source's band
@@ -94,26 +97,26 @@ code's citation, readings per band, saturation counts, the metric's threshold, t
 shares, the encodings table on the new grid, the licence note).
 Weighed: few groups −, the source's own design +, a real lab and rover task +, a strong spectrum-model incumbent −
 (open).
-Probes on the final definition (one split): task probes, log loss: linear 0.961 against the class shares' 2.603 (62.7%
-lower), LightGBM 2.501 (untuned, it barely beats the class shares: with default settings the trees put near-certain
+Probes on the shipped splits (five repeats of two folds): task probes, log loss: linear 0.913 against the class
+shares' 2.622 (64.8% lower, better on 100% of the splits and ahead of the random forest by 0.882, paired SE 0.122),
+LightGBM 2.515 (untuned, it barely beats the class shares: with default settings the trees put near-certain
 probability on the wrong mineral of a rock they never saw, and log loss punishes that hard; their accuracy is 0.865 on
-the clean slabs, issue 4), random forest 3.102, the best single band 5.498; flags only the small classes
-(forsterite-albite mix 3 test rows, gypsum none). Dtype probe: 0 of 950 bands flagged. Leak probes (macro ROC AUC): all
+the clean slabs, issue 4), random forest 3.258, the best single band 5.599; the flag is the few-minority one, because
+a fold tests one rock and a rock holds only its own minerals. Dtype probe: 0 of 950 bands flagged. Leak probes (macro ROC AUC): all
 bands 0.910, the best band alone 0.661, a depth-3 tree 0.565, the number format 0.496 (0.537 under the band minimum), no
 exact copies across the split. Group probe: LightGBM 1.000 on a random split against 0.905 by rock; across groups
 logistic regression 0.675, LightGBM 0.660 (baseline 0.5). On the source's own labels (code 15 kept, code 9 not repaired,
 the same split): linear 4.217 against 5.642 for the class shares (21.2% lower): the 4,817 code-15 points have no class
 to learn and the 3,540 points labelled microcline are anorthite, which is why the definition drops the one and repairs
 the other.
-For the curator: issue 1 (ODR's file list, and confirming the mirror as the read path), issues 2 and 3 (answered by
-the paper; confirm), issue 4 (SEL-12, after the run), issue 5 (design A, only if you want it), issue 6 (the four warning
-texts, yes or no), issue 7 (the collection type and time basis the walk gives, new on this branch; confirm).
+For the curator: issue 5 (the rebuilt split, to keep or adjust) and issue 6 (the warning texts, rewritten for it).
+Issues 1, 2, 3, 4 and 7 are settled; issue 4's run is still owed and returns on its own.
 
-**Main points:** Issue 1 is the last check before the record leaves `TBD`, and it is ODR's file list: maps beyond the
-41 would be a second dataset, not a correction to this one. The mirror itself is settled by three byte matches, the
-damaged file included, and the fourth file's checksum is a note rather than a gate. Issues 2 and 3 are answered by the paper you supplied (labelled by hand;
-the reference maps are separate hand samples): confirm. Issue 4 waits for a GPU run of the source's CNN against tuned
-tabular models. Issue 5 asks nothing unless you want one fold per rock. Issue 6: the four warning texts, yes or no. Issue 7 confirms the collection type and time basis, new on this branch.
+**Main points:** Issue 5 is the one to read: the split is rebuilt so that both sides vary, five repeats of two folds,
+and the record says what that cost. Issue 6 holds the warning texts, rewritten for it. The rest is settled: the mirror
+stands as the read path, with ODR's file list still worth a browser visit and a longer list making a new record rather
+than changing this one; the slab labels are the authors' own; the augite and muscovite maps are separate specimens;
+and the collection type and time basis are confirmed. Issue 4's run against the source's own model is still owed.
 
 **Record judgment:** valid. A documented laboratory deposit (the paper with its sample table, an ODR deposit with a
 DOI, the source's code on Zenodo) of measured Raman maps for a named identification task. The screening's open
@@ -346,6 +349,59 @@ for byte (issue 1 for the rest).
      that they are one split in parts. B and D are refuted by the numbers above, not by preference. **Decision:**
      A with E, C with E, or B?
 
+   **Answer (2026-11-27, applied):** "One split is against the rules. This is still not an option - we want to test
+   train and test data variance, why do you still suggest that?"
+
+   Because the only way I had tried of varying the training side was dropping whole reference maps, which collapses
+   the score through the integration time, and from that I concluded too quickly that nothing honest was left. The
+   conclusion was wrong. Drawing **inside** each map instead keeps every mineral and every integration time in the
+   training side and still changes it, which is the ordinary meaning of a repeat: in plain three-fold cross
+   validation every model also trains on two thirds of the rows.
+
+   Measured, logistic regression on 100 principal components, the slabs scored apart:
+
+   | Training library | Spectra | Gabbro log loss | Granite log loss | Gabbro accuracy | Granite accuracy |
+   |---|---|---|---|---|---|
+   | all of it | 90,387 | 0.931 | 1.114 | 0.769 | 0.792 |
+   | 80% inside every map, three draws | 72,306 | 0.889 / 0.924 / 0.928 | 1.146 / 1.234 / 1.073 | 0.773 / 0.767 / 0.767 | 0.775 / 0.781 / 0.788 |
+   | 50% inside every map, three draws | 45,189 | 0.908 / 0.920 / 0.927 | 1.112 / 0.915 / 1.083 | 0.771 / 0.766 / 0.765 | 0.798 / 0.796 / 0.795 |
+   | all of it, 80% of the test rows, three draws | 90,387 | 0.938 / 0.939 / 0.926 | 1.116 / 1.126 / 1.128 | 0.770 / 0.770 / 0.769 | 0.792 / 0.790 / 0.791 |
+
+   Dropping whole maps gave 0.95 to 4.83 on the same model; drawing inside them gives a spread of about 0.04 on the
+   gabbro and 0.16 on the granite, which is a sampling noise worth reporting rather than an artefact.
+
+   **The shipped split is now five repeats of two folds.** A fold tests one slab, and the other slab is never in
+   its training side, so the class-set exploit stays closed. A repeat holds a different fifth of every reference
+   map out of the training side, drawn inside the map, so each training side is 72,310 of the 90,387 library
+   spectra. Both sides vary: the fold changes the rock, the repeat changes the library. What the two spreads mean
+   is different and the definition says so: between repeats it is the library's sampling noise, between folds it is
+   the difference between two rocks, which is the larger number and still rests on two units. More rocks (option E)
+   remains the only way to make that second number rest on more.
+
+   * **Options, after the second measurement:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | F | Five repeats of two folds, the library drawn inside each map (implemented) | 10 fits; the test side is one slab, the training side four fifths of every reference map | both sides vary; no slab trains for the other; every integration time stays in | the repeat spread is library sampling, not new-rock noise; the rock spread still rests on two units |
+     | A | The source's single fold | one fit | the source's own design | one split, which the protocol does not allow |
+     | B | One fold per rock, the other rock in training | two folds | more training data | the training rock tells the test rock's class set |
+     | D | Repeats that drop whole maps | n draws | a large spread | the spread is which integration time survived |
+     | E | More rocks, then a real split | a third and a fourth test rock | the only way to more test units | not in this release |
+
+   * **Recommendation:** F, now shipped, with E still the thing to chase. **Decision:** keep F, or change the five
+     repeats or the fifth that is held out?
+
+   **What the change cost, measured after it was made.** `dataset check` stays at 0 errors. The task probe on the
+   shipped splits: a linear model reaches log loss 0.913 against the class shares' 2.622, better on 100% of the
+   splits, and leads the random forest by 0.882 with a paired standard error of 0.122, so the families still
+   separate clearly. Two warnings change shape rather than going away. The dimensions warning now reads 5x2 against
+   the protocol's 3x3 instead of 1x1. The class warning grows: a fold tests one rock, and the two rocks hold
+   different minerals, so each fold lacks up to 9 of the 15 classes where the old single fold lacked only gypsum,
+   and the probe raises its few-minority flag for the same reason. No scored row is lost and no class is thinned:
+   the same 34,857 test spectra are scored, split between the two folds by rock. If you would rather keep a fold's
+   class coverage whole, the variant is five repeats of one fold, both rocks tested together, which keeps the
+   training-side variance and gives up the per-rock fold.
+
    **Notes for the AI:** on C, `_make_splits` returns one repeat with two folds (`specimen` is the rock) or four
    (rock and dust level from the file names), the `splits_dimensions_off_protocol` text says they share one
    training side, `splits_comment` and `task_summary.split` follow, and `dataset check` and the probes re-run. On
@@ -359,8 +415,8 @@ for byte (issue 1 for the rest).
 6. **Accept the four warnings with these texts?**
 
    * **Problem:**
-     - Four checks fire on the shipped definition (the 1x1 split, the two test groups, gypsum missing from the test, the three masked spectra), and each needs a text that says why the task stays as it is.
-     - The texts are in the notes below; on yes they are written into `dataset.py` and the checks count as accepted.
+     - Five checks fire on the shipped definition (the 5x2 dimensions, one rock per test fold, the classes a rock does not hold, the probe's few-minority flag for the same reason, and the three masked spectra), and each needs a text that says why the task stays as it is.
+     - The texts are in the notes below, rewritten for the split as it now stands; on yes they are written into `dataset.py` and the checks count as accepted.
    * **Background:** the texts cite the facts measured here: the source's own split, 34,857 spectra scored one by one, the 4-13x noise of a two-rock test, gypsum in neither rock, and the damaged spectra that ODR's own files hold.
    * **Options:**
 
@@ -369,20 +425,25 @@ for byte (issue 1 for the rest).
      | A | Accept the four texts | written into `dataset.py` on yes | each warning carries its reason; the checks close | none found |
      | B | Leave them unaccepted (implemented) | the four warnings stay open in `dataset check` | none found | the checks stay open with no reason recorded |
 
-   * **Recommendation:** A. **Decision:** accept the four warnings with these texts, yes or no?
+   * **Recommendation:** A. **Decision:** accept the warnings with these texts, yes or no?
 
    **Notes for the AI:** on yes, write these into `accepted_check_warnings` in `dataset.py` and re-run `dataset check`:
 
-     `splits_dimensions_off_protocol`: "1x1, the source's split (Spec-CNN, Notebook-CNN-Raw_Data): the reference maps
-     train and both rock slabs are tested in one fold; with two rocks no other partition keeps every test rock unseen
-     without the training rock telling the test rock's class set (splits comment)."
-     `groups_test_groups_few`: "The two rock slabs are the task's unit of transfer and the source's test set. Each of the
-     34,857 spectra is scored on its own; the smallest tested classes (forsterite-albite mix 3 spectra, forsterite-augite
-     mix 44) are 0.13% of the test rows. The signal carries to unseen rocks (task probes: linear log loss 0.961 against
-     2.603 for the class shares). Per-row standard errors understate the noise 4 to 13 times, and the gabbro's score rests
-     on 12 mineral blocks: read the score per rock."
-     `splits_test_class_missing`: "Gypsum has no test rows: neither rock holds it (its 16 points in the powder map named
-     after the gabbro are a lab mixture, which trains). Every other class is tested in one rock or both."
+     `splits_dimensions_off_protocol`: "5x2 rather than 3x3. The data holds two rock slabs and no third can be made,
+     so a fold tests one slab with the other never in its training side; a repeat holds a different fifth of every
+     reference map out of the training side, so both sides vary (splits comment)."
+     `groups_test_groups_few`: "One rock slab per test fold, which is what the data holds: two. Each of the 34,857
+     spectra is scored on its own, and over the two folds every tested class is scored. The signal carries to unseen
+     rocks (task probes on the shipped splits: a linear model reaches log loss 0.913 against 2.622 for the class
+     shares, on 100% of the splits, and leads the random forest by 0.882 with a paired standard error of 0.122).
+     The spread between repeats is the library's sampling noise and the spread between folds is the difference
+     between two rocks: read the score per rock."
+     `splits_test_class_missing`: "A fold tests one rock, and the two rocks hold different minerals, so each fold
+     lacks most classes (9 of 15 at most); over the two folds every class a rock holds is scored. Gypsum is tested in
+     neither: its 16 points in the powder map named after the gabbro are a lab mixture, which trains."
+     `task_few_minority`: "Same cause: a class absent from a rock has no rows in that rock's fold. No class is
+     thinned by the split, the smallest tested ones are the forsterite-albite mix at 3 spectra and the
+     forsterite-augite mix at 44, and both are scored in the fold of the rock that holds them."
      `dataset_spectrum`: "Three reference spectra are damaged (two cut short, one spreadsheet fill-down, which ODR's own
      file holds too); their damaged bands are set missing as for inner positions, the rows train and are never tested."
 

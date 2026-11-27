@@ -21,6 +21,12 @@ from data_foundry.v2 import (
 
 PREFIX = "raman_"
 
+# The two rock slabs: one test fold each, never in the other's training side.
+SLABS = ("gabbro slab", "granite slab")
+
+# Repeats; each holds a different fifth of every reference map out of the training side.
+N_REPEATS = 5
+
 # The source's own common grid (Spec-CNN `helper.raw_processing`, the input of its raw-spectrum CNN, input layer
 # (950, 1)): the spectrum trimmed to 150-1,100 cm-1 in 950 bands of 1 cm-1 [k, k + 1), named by the band's lower edge.
 # The source takes the minimum of the readings in a band, a cosmic-ray step; we take the one reading nearest the
@@ -124,8 +130,8 @@ class RamanMlrod(AbstractCuratedDataset):
             "normalisation), one reading in each of the source's 950 bands of 1 cm-1 from 150 to 1,099 cm-1."
         ),
         split=(
-            "As in the source: the reference maps train, and one test fold holds both rock slabs, with and without "
-            "dust, neither seen in training. The score can be read per rock."
+            "A rock slab the model has not seen, with and without dust: one fold per slab, the other slab never in "
+            "training, over five draws of the reference library that train on four fifths of every reference map."
         ),
         changes=(
             "We drop the 4,817 granite points whose label is dust rather than a mineral, repair the code of the "
@@ -260,7 +266,7 @@ class RamanMlrod(AbstractCuratedDataset):
         """,
     )
     splits_comment = """
-        One split, as in the source (Spec-CNN `Notebook-CNN-Raw_Data.ipynb`: fit on the reference maps, tested on the slab maps): the 90,387 spectra of the 35 reference and powder maps train, and one test fold holds both slabs, the gabbro (18,646 spectra) and the granite (16,211 after the dust points are dropped), with and without dust. One repeat and one fold: with two rocks there is no other partition that keeps every test rock unseen, and training on one slab to test the other lets the training slab tell which classes the test rock lacks (curation notes). Score the fold by rock too, from the `specimen` group: each rock's score rests on few units (the gabbro on 12 mineral blocks), and the spread between folds understates the noise 4 to 13 times when read per row. The reference maps come from separate hand samples, not from the slabs (paper, Table 1; curation notes).
+        Five repeats of two folds over the source's design (Spec-CNN `Notebook-CNN-Raw_Data.ipynb`: fit on the reference maps, tested on the slab maps). A fold tests one rock slab, the gabbro (18,646 spectra) or the granite (16,211 after the dust points are dropped), each with and without dust; the other slab is never in the training side, so the training rock cannot tell which classes the test rock lacks. A repeat holds a different fifth of every reference map out of the training side, drawn inside the map, so each training side is 72,310 of the 90,387 library spectra and every mineral and every integration time is still in it. Both sides therefore vary: the fold changes the rock, the repeat changes the library. Dropping whole maps instead would not do: a mineral that loses its 0.15-second map loses the slabs, which are 0.15 s (curation notes). The spread over repeats is the library's sampling noise, not the noise of meeting a new rock: that one is the difference between the two folds, which is the larger number, and with two rocks it rests on two units. The reference maps come from separate hand samples, not from the slabs (paper, Table 1; curation notes).
 
         Protocol (LEAK-9): each test spectrum is predicted on its own, from the training rows and its own readings only: no use of other test rows (no averaging over neighbouring test spectra, no class prior estimated on the test rows, no self-training on them, no weights from a classifier of training against test rows) and no preprocessing fitted on test rows. A method that does is called out and not benchmarked.
     """
@@ -328,10 +334,23 @@ class RamanMlrod(AbstractCuratedDataset):
         return FeatureTypes(categorical=["specimen"])
 
     def _make_splits(self, df: pd.DataFrame) -> SplitPlan:
-        # One split: the reference maps train, both slabs are tested together (the source's design).
+        # Five repeats of two folds. A fold tests one rock slab, so the test side varies and no slab is ever in
+        # another slab's training side. A repeat holds a fifth of every reference map out of the training side, so
+        # the training side varies too while every mineral and every integration time stays in it (curation notes).
         specimen = df["specimen"].astype(str).to_numpy()
-        slab = np.isin(specimen, ["gabbro slab", "granite slab"])
-        splits = {0: {0: (np.flatnonzero(~slab).tolist(), np.flatnonzero(slab).tolist())}}
+        library = np.flatnonzero(~np.isin(specimen, SLABS))
+        rng = np.random.default_rng(self.SPLIT_RANDOM_STATE)
+        part = np.empty(len(library), dtype=int)
+        for name in np.unique(specimen[library]):
+            rows = np.flatnonzero(specimen[library] == name)
+            part[rows[rng.permutation(len(rows))]] = np.arange(len(rows)) % N_REPEATS
+        splits = {
+            repeat: {
+                fold: (sorted(library[part != repeat].tolist()), np.flatnonzero(specimen == rock).tolist())
+                for fold, rock in enumerate(SLABS)
+            }
+            for repeat in range(N_REPEATS)
+        }
         return SplitPlan(splits=splits)
 
     def _decisions(self, raw: dict[str, pd.DataFrame], df: pd.DataFrame) -> list[Decision]:

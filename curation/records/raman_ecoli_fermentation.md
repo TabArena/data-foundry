@@ -42,6 +42,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
+CC (2026-11-27, Andrej): verdict `ship`, with the metric and the split marked `ok`: MAE as the paper reports it, and the source's own three random groups of eight cultivations as the split. The record is `Yes` and nothing is open.
 CC (2026-11-27, Andrej): Review issues 1, 2 and 3 all `ok`, so nothing is open. Glucose ships with its floor; the three group warnings and the dominant-value warning are accepted in `dataset.py` with the group probe's numbers; the Hugging Face release is confirmed as the data.
 CC (2026-11-27, Andrej): Review issue 1 stays open, with the question answered. The benchmark makes one task per target and runs both of this release's: glucose (TabPFN v2 at R2 0.971) and acetate (0.491), so the shipped target is its first and its stronger one. The `Multi-target` tag stays on the record although the folder ships one target, to keep the second visible until the benchmark can take a two-target regression.
 
