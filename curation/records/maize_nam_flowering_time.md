@@ -115,11 +115,11 @@ target is the line value it publishes, so no value is computed here. `dataset ch
 warnings over 28 checks and nothing is built. A full review panel ran and found no leak, no copy across a split, no
 artefact in the target and no feature that is unavailable at the prediction point; it corrected a dozen statements
 in the notes, and it left one question that decides the dataset (issue 4) and one that decides how it is served
-(issue 5).
+(issue 5). A reading that the task has no signal across its groups was raised by the panel and then refuted:
+models chosen for the problem all beat the training mean on unseen families.
 
-**Main points:** whether a task whose models all score below the mean on a pooled score has signal across its
-groups (issue 4) is the decision; after it come the genotype to ship on, the flowering trait, the split, and the
-container the benchmark hands a participant.
+**Main points:** whether the headroom is worth a benchmark slot (issue 4) is the decision; after it come the
+genotype to ship on, the flowering trait, the split, and the container the benchmark hands a participant.
 
 **Record judgment:** the screening block holds up on the data and its two open risks are closed, but one of them
 was closed the wrong way round: the genotype table does carry a line identifier, as its first column, so the
@@ -232,50 +232,56 @@ block below.
    alternatives and found none better; the practitioner, playing the breeder, calls A their own decision.
    **Decision:** A, B or C?
 
-4. **Does this dataset have signal across its groups, or is the per-family metric papering over a `No Signal` case?**
+4. **Is the headroom this task offers worth a benchmark slot?**
 
    **Problem:**
-   - Every model scores below the training mean on unseen families at every ridge penalty, pooled R^2 from -0.84
-     to -0.136, which on its face is the rule that retires a grouped task for having no signal across groups[^s28].
-   - The definition answers that with the per-group metric rule[^met18], which sits two ranks lower, so the answer
-     cannot be made silently from below[^rank].
-   - The panel's blind reviewer, judging without our notes, reached "I would not benchmark on this" from the same
-     numbers.
+   - The panel's blind reviewer, judging without our notes, would not benchmark on it: model families are hard to
+     separate on a pooled score, and the effective sample is 25 crosses rather than 4,699 lines.
+   - Read on the declared metric the same data separates models cleanly, from 0.05 for the best single marker to
+     0.42 for the best honest model, with a dummy at 0.
+   - The two readings disagree because a pooled score is mostly a test of predicting an unseen cross's mean, which
+     these features cannot carry and which the breeder reads off the parents anyway.
 
-   **Effect on the task:** the whole dataset. Under the `No Signal` reading it does not ship; under the per-family
-   reading it ships as defined.
+   **Background:** an earlier version of this issue asked whether the dataset has any signal across its groups, on
+   the ground that every model scored below the training mean there[^s28]. That premise was tested again with
+   models chosen for the problem and does not hold, so there is no Must to answer and the question is the narrower
+   one above.
 
-   **Experiments:**
+   **Effect on the task:** the whole dataset, but as a judgment of worth rather than of validity.
 
-   | | value |
-   |---|---|
-   | pooled R^2 on unseen families, every model and penalty | -0.84 to -0.136 |
-   | correlation between predicted and true family means over the 25 families | -0.72 (ridge), -0.78 (random forest) |
-   | ridge at alpha 1,000, per-family r | 0.351, positive on 60 of 60 splits and in 24 of 25 families |
-   | within-family label permutation null, 200 runs | mean 0.0005, SD 0.0068; the observed sits 53 SDs above, none reaching it |
-   | honest ceiling found by the panel's task gamer | 0.421 |
-   | realised gain, earliest fifth of each held-out cross | about 1.0 days, 40% of a perfect ranking, positive in 94% of crosses |
-   | headroom over a constant on pooled RMSE | 2% |
+   **Experiments:** pooled R^2 on unseen families, over 21 of the shipped splits:
+
+   | model | pooled R^2 | folds above 0 | per-family r |
+   |---|---|---|---|
+   | training mean | 0.0000 | 0 of 21 | undefined |
+   | ridge, penalty by inner cross-validation | +0.0445 | 20 of 21 | 0.369 |
+   | ridge on markers centred inside each family | +0.0569 | 21 of 21 | 0.424 |
+   | shrunk LightGBM | +0.0559 | 19 of 21 | 0.298 |
+   | random forest, 300 trees | +0.0468 | 19 of 21 | 0.291 |
+   | HistGradientBoosting | +0.0269 | 16 of 21 | 0.260 |
+   | PLS, 8 components | -0.0066 | 10 of 21 | 0.342 |
+   | an under-regularised ridge, and the group probe's defaults | -0.84 to -0.136 | 0 | 0.164 |
+
+   The field's own GBLUP was attempted and the implementation was mis-scaled, so it is not reported. On the
+   declared metric a within-family label permutation null over 200 runs has mean 0.0005 and SD 0.0068, putting the
+   observed 53 SDs above it, and the breeder's realised gain is about 1.0 days per cycle at a fifth selected, 40%
+   of a perfect ranking, positive in 94% of crosses.
 
    **Options:**
 
    | | Option | What it does | Pro | Con |
    |---|---|---|---|---|
-   | A | Sign off the per-family reading (implemented) | the dataset ships; the splits comment names the rule and gives the permutation null as what refutes it | the null is decisive at 53 SDs; the metric is realised gain up to a constant; the between-family part is unreachable by construction, not missing | a Must answered from a lower rule, which has to be the curator's signature, not ours |
-   | B | Ship, but change the target to the family-centred deviation | the task becomes within-family transfer explicitly | pooled R^2 turns positive (0.161 on held-out families), so every metric agrees and a leaderboard reads straight | the target stops being the source's published value, which is what keeps this dataset clear of the rule the sibling needed an exception to[^rows] |
-   | C | Do not ship: `No Signal` | back to 2nd tier or retired | consistent with reading the rule as written | the null refutes the premise, and the practitioner's realised-gain figures say a breeder would use it |
+   | A | Ship as defined (implemented) | the dataset enters with the per-family metric | signal confirmed on both metrics once the model fits the problem; the metric is realised gain up to a constant; a real decision with a real actor | the pooled headroom is small, and the honest unit is 25 crosses |
+   | B | Ship with the family-centred deviation as the target | the task becomes within-family transfer explicitly | every metric then agrees and a leaderboard reads straight | the target stops being the source's published value, which is what keeps this dataset clear of the rule the sibling needed an exception to[^rows] |
+   | C | Do not ship | back to 2nd tier | spends no slot on a narrow genomic-prediction task | the outside objection rests on a pooled score the task does not declare, and the blind reviewer did not have the metric in its kit |
 
-   **Recommendation:** A. The rule asks whether there is signal across the groups the task is scored over, and the
-   permutation null answers it; what is absent is the between-family mean, which these features cannot carry and
-   which the metric does not score. But this is the first dataset where the two rules meet head-on, the sibling
-   never had to answer it, and the reading belongs to the curator. **Decision:** A, B or C?
+   **Recommendation:** A. The blind reviewer's verdict is the one piece of the panel worth weighing against
+   shipping, and it was reached without the declared metric, which its own report notes was missing from its kit.
+   On the metric the dataset declares, models separate across the full range and the signal survives a permutation
+   null by 53 standard deviations. **Decision:** A, B or C?
 
    [^s28]: the split rule that a regression whose models all score below the mean on unseen groups has no signal
-       across groups, which retires the dataset or sends it back for a use case that allows known groups.
-   [^met18]: the metric rule adopted 2026-11-26: when the scored rows fall into groups the actor does not choose
-       between and a group-mean predictor beats the models pooled, the metric is declared per group.
-   [^rank]: the ranked principles: a Must at a higher rank is not answered by a rule below it without the
-       curator's decision.
+       across groups. Its trigger is not met here once the models are specified for the problem.
    [^rows]: the split rule that a dataset ships the source's own rows; the sibling
        `genomic_prediction_soy_yield` computes its line value from the plots and files an exception for it,
        while this dataset ships the published line value and needs none.

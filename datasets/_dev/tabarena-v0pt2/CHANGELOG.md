@@ -28,9 +28,18 @@
   4.0% by chance, which is what makes the grouped split load-bearing; and the non-recurrent founder's own days to
   tassel predicts its family's mean at r = 0.965, so the pooled ranking the metric declines to score is one the
   breeder already holds.
-- The record's review now carries five issues. Two are new: whether a task whose models all score below the mean
-  on a pooled score has signal across its groups, which is a Must answered here from a lower rule and is the
-  decision that settles the dataset; and whether the benchmark must enforce the per-split refit, since the kit
+- A correction to the panel's own framing, made the same day on the curator's challenge that a no-signal reading
+  should be tested with a better model. It should, and it was: over 21 of the shipped splits a ridge whose penalty
+  is chosen by inner cross-validation scores a pooled R^2 of +0.044 on unseen families (positive on 20 of 21
+  folds), a shrunk LightGBM +0.056, a random forest +0.047, and a ridge on markers centred inside each family
+  +0.057, positive on 21 of 21 and the best model found on the declared metric too, at 0.424. The -0.84 to -0.136
+  figures came from an under-regularised ridge and the group probe's defaults, and the series climbs toward zero as
+  the penalty rises, so the rule's trigger is not met and there is no Must to answer. The field's own GBLUP was
+  attempted and the implementation was mis-scaled, so it is not reported. What remains unreachable is only the
+  unseen cross's mean, which is the reason for the per-family metric rather than a defect.
+- The record's review now carries five issues. Two are new: whether the headroom is worth a benchmark slot
+  (the one piece of the panel that argues against shipping, from the blind reviewer, reached without the
+  declared metric in its kit); and whether the benchmark must enforce the per-split refit, since the kit
   ships every label and a model fitted once on all rows scores a perfect 1.0 against an honest ceiling of 0.421.
 - `dataset check`: 0 errors, 0 warnings, 1 info over 28 checks; README regenerated. Nothing built.
 

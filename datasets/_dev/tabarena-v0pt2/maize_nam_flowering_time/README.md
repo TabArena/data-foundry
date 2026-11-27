@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: maize_nam_flowering_time
 container_format: 2
-checksum: v2:b10477cbc38c120ecc87df4ad89aaa48c2f149deaad5bdfc2b6877aa23431f49
+checksum: v2:e5c4a82b957afe55c2c289a9724a085cd64ffd4f522488f41156aee10e42993f
 build: null
 build_stale: false
 raw_files:
@@ -80,7 +80,7 @@ decisions: []
 
 Regression of `days_to_anthesis`, scored with `mean_group_pearsonr` on grouped splits by `family`. 4,699 rows and 1,106 features. Source: Other (2009).
 
-Not built yet. The current definition gives checksum `v2:b10477cbc38c120ecc87df4ad89aaa48c2f149deaad5bdfc2b6877aa23431f49`.
+Not built yet. The current definition gives checksum `v2:e5c4a82b957afe55c2c289a9724a085cd64ffd4f522488f41156aee10e42993f`.
 
 ## In brief
 
@@ -319,20 +319,26 @@ alternatives were run and none is better: a map-keyed split inside each family i
 lines, a founder's half-sib group is the family itself since B73 is the only common parent, and
 leave-one-germplasm-group-out is markedly harder but has five groups, one of them a single family.
 
-Why a pooled R^2 reads as no signal here, and why that reading is refused. Every model scores below the
-training mean on unseen families at every ridge penalty, pooled R^2 running from -0.84 to -0.136, and the
-group probe's learnability figures are negative for all of them (ridge -0.500, random forest -0.028,
-LightGBM -0.025, 5-NN -0.222). On its face that is SPLIT-28, a task with no signal across its groups. It is
-not: the between-family component is not reachable from these features by construction, since the markers
-are parent-of-origin dosages that name no founder, and models do not merely miss an unseen cross's mean but
-get it backwards, predicting means in a 76.6 to 77.7 band against a true 70.2 to 82.9 and correlating
--0.72 (ridge) and -0.78 (random forest) with it across the 25 families. The signal is inside the family,
-where the decision and the declared metric are, and it is measured rather than asserted: the ridge at alpha
-1,000 scores a per-family 0.351 and is positive on 60 of 60 splits and in 24 of the 25 families, a random
+A pooled R^2 can be made to read as no signal here, and it is worth saying why that reading is wrong,
+because the first models anyone reaches for produce it. An under-regularised ridge and the group probe's
+defaults score below the training mean on unseen families (pooled R^2 down to -0.84; the probe's
+learnability line reads ridge -0.500, random forest -0.028, LightGBM -0.025, 5-NN -0.222), which on its
+face is a task with no signal across its groups. That is mis-specification, not an absence: the figures
+climb monotonically toward zero as the penalty rises, and models that fit the problem clear it. Over 21 of
+the shipped splits, a ridge whose penalty is chosen by inner cross-validation scores +0.044 (positive on
+20 of 21 folds), a shrunk LightGBM +0.056 (19 of 21), a random forest +0.047 (19 of 21), and a ridge on
+markers centred inside each family +0.057, positive on 21 of 21 and the best model found here on the
+declared metric as well, at 0.424. The field's own GBLUP was attempted and the implementation was
+mis-scaled, so it is not reported.
+
+What is genuinely unreachable is narrower, and it is the reason for the metric rather than a defect: no
+model predicts an unseen cross's mean, because the markers are parent-of-origin dosages that name no
+founder. Models do not merely miss those means, they get them backwards, predicting in a 76.6 to 77.7 band
+against a true 70.2 to 82.9 and correlating -0.72 (ridge) and -0.78 (random forest) with them across the
+25 families. The signal is inside the family, where the decision and the declared metric are: the ridge at
+alpha 1,000 scores a per-family 0.351, positive on 60 of 60 splits and in 24 of the 25 families, a random
 forest 0.303, and a null that shuffles the labels inside each test family puts the observed score 53
-standard deviations above it (200 runs, null mean 0.0005, SD 0.0068, none reaching the observed). A reader
-who scores this dataset with a pooled R^2 will conclude the task is unlearnable; that is the metric's
-choice being skipped, not the task. The curator signs that reading off in the record's review.
+standard deviations above it (200 runs, null mean 0.0005, SD 0.0068, none reaching the observed). The curator signs that reading off in the record's review.
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 2,970 to 3,257 rows, test 1,442 to 1,729 rows.
 
