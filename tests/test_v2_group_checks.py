@@ -12,7 +12,7 @@ from data_foundry.curation_container import CuratedContainer
 from data_foundry.definition.splits import grouped_splits
 from data_foundry.schema import Grouping, PredictiveMLSplitsMetadata, PredictiveMLTaskMetadataV2
 from data_foundry.v1 import DatasetMetadata
-from tests.test_bundle_checks import make_spec
+from tests.helpers import make_spec
 
 
 def _container(df: pd.DataFrame, grouping: Grouping | None, problem_type: str = "binary_classification"):

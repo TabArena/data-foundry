@@ -12,7 +12,7 @@ import pandas as pd
 from data_foundry.curation.cli import main as curation_main
 from data_foundry.definition import get_dataset
 from data_foundry.probes import inputs, leak
-from tests.test_v2_dataset import DEFINITION, warehouse, write_definition  # noqa: F401 - the fixture is used by name
+from tests.helpers import DEFINITION, write_definition
 
 PLAIN_CLEAN = '        return drop_columns(df, ["row_id"])'
 
@@ -34,7 +34,7 @@ def _assert_traced(ds, df: pd.DataFrame, rows: np.ndarray) -> None:
 # Lineage
 
 
-def test_lineage_by_the_column_through_a_row_filter_and_the_shuffle(tmp_path, warehouse) -> None:  # noqa: F811
+def test_lineage_by_the_column_through_a_row_filter_and_the_shuffle(tmp_path, warehouse) -> None:
     """A row filter and the shuffle keep the column trace: each row maps to its raw row."""
     del warehouse
     ds = _toy(tmp_path, '        df = df.loc[df["x1"] > -1]\n' + PLAIN_CLEAN)
@@ -46,7 +46,7 @@ def test_lineage_by_the_column_through_a_row_filter_and_the_shuffle(tmp_path, wa
     assert "__raw_row__" not in df.columns
 
 
-def test_lineage_by_the_index_when_clean_selects_columns(tmp_path, warehouse) -> None:  # noqa: F811
+def test_lineage_by_the_index_when_clean_selects_columns(tmp_path, warehouse) -> None:
     """A `_clean` that selects columns drops the tag column; the index trace takes over."""
     del warehouse
     ds = _toy(tmp_path, '        return df.loc[df["x1"] < 1, ["x1", "colour", "y"]]')
@@ -55,7 +55,7 @@ def test_lineage_by_the_index_when_clean_selects_columns(tmp_path, warehouse) ->
     _assert_traced(ds, df, lineage.rows)
 
 
-def test_a_trace_that_changes_what_clean_returns_is_not_used(tmp_path, warehouse) -> None:  # noqa: F811
+def test_a_trace_that_changes_what_clean_returns_is_not_used(tmp_path, warehouse) -> None:
     """A `_clean` that reads the number of columns gives another frame with the tag column: the index trace is used."""
     del warehouse
     ds = _toy(tmp_path, '        df["n_cols"] = float(df.shape[1])\n' + PLAIN_CLEAN)
@@ -64,7 +64,7 @@ def test_a_trace_that_changes_what_clean_returns_is_not_used(tmp_path, warehouse
     _assert_traced(ds, df, lineage.rows)
 
 
-def test_a_clean_that_asserts_the_source_shape_falls_back_to_the_index(tmp_path, warehouse) -> None:  # noqa: F811
+def test_a_clean_that_asserts_the_source_shape_falls_back_to_the_index(tmp_path, warehouse) -> None:
     """A `_clean` that asserts the raw shape fails on the tag column (Tunisian fraud); the index trace is used."""
     del warehouse
     raw = _toy(tmp_path).raw
@@ -74,7 +74,7 @@ def test_a_clean_that_asserts_the_source_shape_falls_back_to_the_index(tmp_path,
     _assert_traced(ds, df, lineage.rows)
 
 
-def test_no_lineage_when_clean_drops_the_column_and_resets_the_index(tmp_path, warehouse) -> None:  # noqa: F811
+def test_no_lineage_when_clean_drops_the_column_and_resets_the_index(tmp_path, warehouse) -> None:
     """Neither trace survives: no lineage, the reason given, the dataset unchanged."""
     del warehouse
     ds = _toy(tmp_path, '        return df.loc[df["x1"] < 1, ["x1", "colour", "y"]].reset_index(drop=True)')
@@ -89,7 +89,7 @@ def test_no_lineage_when_clean_drops_the_column_and_resets_the_index(tmp_path, w
     assert data.raw_note == lineage.note
 
 
-def test_process_without_lineage_is_unchanged(tmp_path, warehouse) -> None:  # noqa: F811
+def test_process_without_lineage_is_unchanged(tmp_path, warehouse) -> None:
     """`process()` without lineage returns the dataset and the test frame as before."""
     del warehouse
     ds = _toy(tmp_path)
@@ -98,7 +98,7 @@ def test_process_without_lineage_is_unchanged(tmp_path, warehouse) -> None:  # n
     assert df.equals(ds.df)
 
 
-def test_from_definition_gives_the_raw_table_and_the_rows(tmp_path, warehouse) -> None:  # noqa: F811
+def test_from_definition_gives_the_raw_table_and_the_rows(tmp_path, warehouse) -> None:
     """`from_definition(raw=True)` gives the raw table and each row's raw position; the default gives none."""
     del warehouse
     ds = _toy(tmp_path, '        df = df.loc[df["x1"] > -1]\n' + PLAIN_CLEAN)
@@ -189,7 +189,7 @@ def test_a_dropped_copy_of_the_target_scores_high_alone() -> None:
     assert lines[0].startswith("each dropped raw column alone (probe 20)")
 
 
-def test_the_cli_runs_the_raw_state_alone(tmp_path, warehouse, capsys) -> None:  # noqa: F811
+def test_the_cli_runs_the_raw_state_alone(tmp_path, warehouse, capsys) -> None:
     """`data-foundry probe leak --raw` runs the probes of the raw state and no model probe."""
     del warehouse
     _toy(tmp_path, '        df = df.loc[df["x1"] > -1]\n' + PLAIN_CLEAN)

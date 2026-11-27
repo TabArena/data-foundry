@@ -30,7 +30,7 @@ from data_foundry.schema import (
     ScoringColumn,
     TrainSampling,
 )
-from data_foundry.v1 import DatasetMetadata
+from tests.helpers import make_v2_container, toy_dataset_metadata, unit_container
 
 
 def test_toy_container_path_exists_inside_package():
@@ -88,22 +88,6 @@ def _example(name: str):
     return module
 
 
-def _format_2_metadata(unique_name: str) -> DatasetMetadata:
-    return DatasetMetadata(
-        unique_name=unique_name,
-        dataset_year="2025",
-        domain_str="finance",
-        dataset_source="Kaggle",
-        original_dataset_source_download_link="http://example",
-        download_description="desc",
-        academic_reference_bibtex="bib",
-        academic_reference_bibtex_key="key",
-        license=None,
-        data_tags=[],
-        curation_comments=None,
-    )
-
-
 def _format_2_toy(tmp_path: Path, extra: dict | None = None, budget: RowBudget | None = None) -> Path:
     """A regression container scored per era (``mean_group_pearsonr`` on the scoring column ``era``); ``extra``
     adds feature columns (name to values), ``budget`` a row budget with the random default sampler.
@@ -137,7 +121,7 @@ def _format_2_toy(tmp_path: Path, extra: dict | None = None, budget: RowBudget |
     splits = {0: {0: (index[index % 2 == 0].tolist(), index[index % 2 == 1].tolist())}}
     container = CuratedContainer(
         dataset=df,
-        dataset_metadata=_format_2_metadata("toy_eras"),
+        dataset_metadata=toy_dataset_metadata(unique_name="toy_eras", data_tags=[]),
         task_metadata=task,
         experiment_metadata=PredictiveMLSplitsMetadata(
             splits_comment="toy",
@@ -255,7 +239,7 @@ def test_benchmark_container_example_scores_an_ordered_target_as_scikit_learn_do
     train, test = index[index % 3 != 0], index[index % 3 == 0]
     container = CuratedContainer(
         dataset=df,
-        dataset_metadata=_format_2_metadata("toy_ordered"),
+        dataset_metadata=toy_dataset_metadata(unique_name="toy_ordered", data_tags=[]),
         task_metadata=task,
         experiment_metadata=PredictiveMLSplitsMetadata(
             splits_comment="toy", splits={0: {0: (train.tolist(), test.tolist())}}
@@ -306,7 +290,7 @@ def _rate_toy(tmp_path: Path) -> Path:
     splits = {0: {0: (index[index % 3 != 0].tolist(), index[index % 3 == 0].tolist())}}
     container = CuratedContainer(
         dataset=df,
-        dataset_metadata=_format_2_metadata("toy_rates"),
+        dataset_metadata=toy_dataset_metadata(unique_name="toy_rates", data_tags=[]),
         task_metadata=task,
         experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="toy", splits=splits),
         uuid="u",
@@ -375,7 +359,6 @@ def test_every_example_parses(path):
 def _parity_containers() -> dict[str, CuratedContainer]:
     """Format-2 toys whose non-features go beyond the target: a label time, a grouping with one, a unit weight."""
     from data_foundry.schema import Grouping
-    from tests.test_bundle_checks import _unit_container, make_v2_container
 
     n = 8
     rows = np.arange(n)
@@ -388,7 +371,7 @@ def _parity_containers() -> dict[str, CuratedContainer]:
     grouped = make_v2_container(
         grouped_frame, grouping=grouping, splits={0: {0: (rows[:4].tolist(), rows[4:].tolist())}}
     )
-    return {"label_time": temporal, "grouped": grouped, "unit_weight": _unit_container()}
+    return {"label_time": temporal, "grouped": grouped, "unit_weight": unit_container()}
 
 
 @pytest.mark.parametrize("kind", ["label_time", "grouped", "unit_weight"])

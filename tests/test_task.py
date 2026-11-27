@@ -33,7 +33,7 @@ from data_foundry.task import (
     task_view_mismatch,
 )
 from data_foundry.v1 import PredictiveMLTaskMetadata
-from tests.test_bundle_checks import _spec, _unit_container, make_container, make_iid_frame, make_v2_container
+from tests.helpers import make_container, make_iid_frame, make_v2_container, source_spec, unit_container
 
 
 def _positions(container: CuratedContainer) -> list[tuple[int, int, list[int], list[int]]]:
@@ -133,7 +133,7 @@ def _grouped_any() -> CuratedContainer:
     fold = df["molecule"].to_numpy() % 3
     rows = np.arange(n)
     splits = {0: {f: (rows[fold != f].tolist(), rows[fold == f].tolist()) for f in range(3)}}
-    return make_v2_container(df, spec=_spec("roc_auc"), grouping=grouping, splits=splits)
+    return make_v2_container(df, spec=source_spec("roc_auc"), grouping=grouping, splits=splits)
 
 
 def test_a_task_scored_per_group_aggregates_the_rows_of_each_group():
@@ -157,7 +157,7 @@ def test_a_training_weight_is_a_fit_weight_and_never_an_input():
     weight = ScoringColumn(column="years", role="weight", used_by="rmse", description="years insured")
     container = make_v2_container(
         df,
-        spec=_spec("rmse", inputs={"weight": "years"}),
+        spec=source_spec("rmse", inputs={"weight": "years"}),
         scoring_columns=[weight],
         sample_weight="years",
         problem_type="regression",
@@ -175,7 +175,7 @@ def test_a_training_weight_is_a_fit_weight_and_never_an_input():
 
 
 def test_a_unit_weight_weights_validation_and_keeps_its_unit_for_the_split():
-    task = _unit_container().task()
+    task = unit_container().task()
     assert task.unit_column == "plot"
     assert task.validation_weight == "plot_weight"
     assert task.sample_weight is None
@@ -234,7 +234,7 @@ def test_classes_are_sorted_whatever_the_declared_order():
 
 def test_a_metric_without_a_fixed_optimum_has_no_error():
     df = make_iid_frame().assign(target=np.linspace(0.0, 5.0, 60))
-    spec = _spec("net_revenue_at_cost", params={"cost": 0.68})
+    spec = source_spec("net_revenue_at_cost", params={"cost": 0.68})
     task = make_v2_container(df, spec=spec, problem_type="regression").task()
     assert task.optimum is None
     value = task.score(task.y([0, 1, 2]), np.array([1.0, 0.0, 3.0]))
@@ -244,7 +244,7 @@ def test_a_metric_without_a_fixed_optimum_has_no_error():
 
 
 def test_a_cost_matrix_optimum_is_its_smallest_cost():
-    spec = _spec("cost_matrix", params={"labels": ["no", "yes"], "matrix": [[0.5, 1.0], [5.0, 2.0]]})
+    spec = source_spec("cost_matrix", params={"labels": ["no", "yes"], "matrix": [[0.5, 1.0], [5.0, 2.0]]})
     task = make_v2_container(spec=spec).task()
     assert task.optimum == 0.5
     assert not task.greater_is_better
@@ -300,7 +300,7 @@ def _wide_task(n: int = 20_000, k: int = 200) -> tuple[BenchmarkTask, np.ndarray
     rows = np.arange(n)
     container = make_v2_container(
         df,
-        spec=_spec("rmse", inputs={"weight": "years"}),
+        spec=source_spec("rmse", inputs={"weight": "years"}),
         scoring_columns=[weight],
         sample_weight="years",
         problem_type="regression",
@@ -358,7 +358,7 @@ def test_the_split_roles_name_the_group_and_the_unit():
     assert set(fit) | set(val) <= set(fold.train)
     assert np.array_equal(*(grouped.validation_split(fold.train, fraction=0.25)[0], fit))  # seeded
 
-    unit = _unit_container().task()
+    unit = unit_container().task()
     assert unit.regime == "iid"
     assert unit.split_roles.unit == "plot"
     assert unit.to_dict()["split_roles"]["unit"] == "plot"

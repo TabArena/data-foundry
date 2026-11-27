@@ -32,12 +32,7 @@ from data_foundry.probes.leak import (
     modes as leak_modes,
 )
 from data_foundry.schema import ScoringColumn
-from tests.test_v2_dataset import (  # noqa: F401 - the fixture is used by name
-    DEFINITION,
-    temporal_body,
-    warehouse,
-    write_definition,
-)
+from tests.helpers import DEFINITION, temporal_body, write_definition
 
 REPO = Path(__file__).resolve().parents[1]
 SCRIPTS = REPO / ".claude" / "skills" / "knowledge-data-foundry" / "scripts"
@@ -400,7 +395,7 @@ def test_participant_kit_on_hepatitis(clean_room, tmp_path):
     assert run.stdout.startswith("r0f0: train ")
 
 
-def test_a_label_time_is_no_input_for_the_probes_and_the_participant(clean_room, tmp_path, warehouse):  # noqa: F811
+def test_a_label_time_is_no_input_for_the_probes_and_the_participant(clean_room, tmp_path, warehouse):
     """The probe kit and the participant kit read the inputs the package decides: a time that dates the label stays
     in the frame to order the rows, and neither a probe nor a participant's ``features()`` fits on it.
     """
@@ -888,7 +883,7 @@ def group_probe():
     return groups
 
 
-def test_probe_input_carries_the_training_weight_and_the_metric(clean_room, tmp_path, warehouse):  # noqa: F811
+def test_probe_input_carries_the_training_weight_and_the_metric(clean_room, tmp_path, warehouse):
     """`from_definition` and `from_container` give the definition's sample weight row by row, never as a feature,
     with the declared metric, its inputs and a scorer that weights the rows as the benchmark does.
     """
@@ -1145,7 +1140,7 @@ def test_weight_proxy_fits_a_gini_scored_rate_with_its_actuarial_objective(leak_
     assert script.fit_params("metric", tweedie, costs, weight) == expected
 
 
-def test_leak_probes_command_runs_the_weight_proxy(leak_probe, tmp_path, warehouse, capsys):  # noqa: F811
+def test_leak_probes_command_runs_the_weight_proxy(leak_probe, tmp_path, warehouse, capsys):
     """`data-foundry probe leak --weight-proxy` reads the task's sample weight and metric from the definition and, by
     default, fits a Poisson deviance's rate with the Poisson objective; `--objective l2` asks for the L2 fit.
     """
@@ -1350,7 +1345,7 @@ def test_outcome_periods_and_period_columns(leak_probe):
     assert [why for _, why in found][:2] == ["dates", "years"]
 
 
-def test_leak_probes_command_runs_the_forced_split_tests(leak_probe, tmp_path, warehouse, capsys):  # noqa: F811
+def test_leak_probes_command_runs_the_forced_split_tests(leak_probe, tmp_path, warehouse, capsys):
     """`data-foundry probe leak --forced-split` runs probe 23 on a split tagged forced from temporal, on the year column
     it finds, and says why it does not run on any other split; the default run of a forced split ends with it.
     """
@@ -1394,7 +1389,7 @@ def test_leak_probes_command_runs_the_forced_split_tests(leak_probe, tmp_path, w
     assert "forced split (probe 23): not run (the split is not tagged" in capsys.readouterr().out
 
 
-def test_clean_rooms_name_the_training_weight(clean_room, tmp_path, warehouse):  # noqa: F811
+def test_clean_rooms_name_the_training_weight(clean_room, tmp_path, warehouse):
     """The participant kit's task.json and task.md name the sample weight, which ships in scoring.parquet; the blind
     reviewer's clean room ships it as the last column of data.parquet, labelled in task.md.
     """

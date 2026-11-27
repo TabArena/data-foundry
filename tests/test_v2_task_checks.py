@@ -12,8 +12,7 @@ from data_foundry.checks.task import fold_class_findings, one_class_undefined, t
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.metrics import METRICS
 from data_foundry.schema import PredictiveMLSplitsMetadata, PredictiveMLTaskMetadataV2
-from data_foundry.v1 import DatasetMetadata
-from tests.test_bundle_checks import make_spec
+from tests.helpers import make_spec, toy_dataset_metadata
 
 
 def _container(y: list, splits: dict, problem_type: str) -> CuratedContainer:
@@ -22,19 +21,7 @@ def _container(y: list, splits: dict, problem_type: str) -> CuratedContainer:
         df["y"] = df["y"].astype("category")
     return CuratedContainer(
         dataset=df,
-        dataset_metadata=DatasetMetadata(
-            unique_name="toy",
-            dataset_year="2025",
-            domain_str="finance",
-            dataset_source="Other",
-            original_dataset_source_download_link="http://example",
-            download_description="d",
-            academic_reference_bibtex="b",
-            academic_reference_bibtex_key="k",
-            license=None,
-            data_tags=["IID"],
-            curation_comments=None,
-        ),
+        dataset_metadata=toy_dataset_metadata(unique_name="toy", dataset_source="Other"),
         task_metadata=PredictiveMLTaskMetadataV2(
             target_column_name="y", problem_type=problem_type, objective_metric=make_spec(problem_type)
         ),

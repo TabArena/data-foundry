@@ -24,7 +24,6 @@ from data_foundry.definition.report import _metric_block
 from data_foundry.schema import (
     DatasetMetadataV2,
     GroupBasis,
-    MetricSpec,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadataV2,
     RowBudget,
@@ -35,81 +34,19 @@ from data_foundry.schema import (
 )
 from data_foundry.utils.checksum import encode_pydantic_metadata
 from data_foundry.v1 import DatasetMetadata, PredictiveMLTaskMetadata
-
-BIBTEX = """@misc{toy2025dataset,
-  author = {Toy Author},
-  title  = {A Toy Dataset},
-  year   = {2025},
-  howpublished = {\\url{https://example.com/toy}}
-}
-"""
-
-
-def make_spec(problem_type: str = "binary_classification", metric=None) -> MetricSpec:
-    """A format-2 metric spec: ``metric`` (a `Metric`), or a fallback with a reason, for ``problem_type``."""
-    from data_foundry.definition.dataset import metric_spec
-    from data_foundry.metrics import Metric
-
-    return metric_spec(metric or Metric.fallback(reason="test data"), problem_type)
-
-
-def make_dataset_metadata(**overrides) -> DatasetMetadata:
-    kwargs = {
-        "unique_name": "toy_ds",
-        "dataset_year": "2025",
-        "domain_str": "finance",
-        "dataset_source": "Kaggle",
-        "original_dataset_source_download_link": "https://example.com/toy",
-        "download_description": "kaggle datasets download toy",
-        "academic_reference_bibtex": BIBTEX,
-        "academic_reference_bibtex_key": "toy2025dataset",
-        "license": "CC BY 4.0",
-        "data_tags": ["IID"],
-        "curation_comments": "Read the CSV.",
-    }
-    kwargs.update(overrides)
-    return DatasetMetadata(**kwargs)
-
-
-def make_iid_frame(n: int = 60) -> pd.DataFrame:
-    rng = np.random.default_rng(0)
-    return pd.DataFrame(
-        {
-            "feat_num": rng.normal(size=n),
-            "feat_cat": pd.Categorical(rng.choice(["a", "b", "c"], size=n)),
-            "target": pd.Categorical(rng.choice(["yes", "no"], size=n)),
-        },
-    )
-
-
-def make_iid_splits(n: int = 60, n_folds: int = 3) -> dict:
-    folds = {}
-    positions = np.arange(n)
-    for fold in range(n_folds):
-        test = positions[fold::n_folds]
-        train = np.setdiff1d(positions, test)
-        folds[fold] = (train.tolist(), test.tolist())
-    return {0: folds}
-
-
-def make_container(df: pd.DataFrame | None = None, **overrides) -> CuratedContainer:
-    df = make_iid_frame() if df is None else df
-    kwargs = {
-        "dataset": df,
-        "dataset_metadata": make_dataset_metadata(),
-        "task_metadata": PredictiveMLTaskMetadata(
-            target_column_name="target",
-            problem_type="binary_classification",
-            objective_metric_name="roc_auc",
-            stratify_on="target",
-        ),
-        "experiment_metadata": PredictiveMLSplitsMetadata(
-            splits_comment="Default splits.",
-            splits=make_iid_splits(len(df)),
-        ),
-    }
-    kwargs.update(overrides)
-    return CuratedContainer(**kwargs)
+from tests.helpers import (
+    BIBTEX,
+    make_container,
+    make_dataset_metadata,
+    make_iid_frame,
+    make_iid_splits,
+    make_spec,
+    make_v2_container,
+    metric_findings,
+    source_spec,
+    unit_container,
+    unit_frame,
+)
 
 
 def slugs_of(container: CuratedContainer, **kwargs) -> list[str]:
@@ -1046,56 +983,13 @@ def test_round_trip_comparison_sees_category_order_but_not_string_storage():
 
 
 # --- Format 2: the metric spec and the scoring columns ------------------------------------------------------------
-def make_v2_container(
-    df: pd.DataFrame | None = None, *, spec=None, scoring_columns=(), dataset_metadata=None, **task
-) -> CuratedContainer:
-    df = make_iid_frame() if df is None else df
-    problem_type = task.pop("problem_type", "binary_classification")
-    splits = task.pop("splits", None)
-    return CuratedContainer(
-        dataset=df,
-        dataset_metadata=dataset_metadata or make_dataset_metadata(),
-        task_metadata=PredictiveMLTaskMetadataV2(
-            target_column_name="target",
-            problem_type=problem_type,
-            objective_metric=spec or make_spec(problem_type),
-            scoring_columns=list(scoring_columns),
-            **task,
-        ),
-        experiment_metadata=PredictiveMLSplitsMetadata(
-            splits_comment="Toy split.", splits=make_iid_splits() if splits is None else splits
-        ),
-        uuid="u",
-    )
-
-
-def metric_findings(container: CuratedContainer) -> dict[str, str]:
-    report = run_bundle_checks(container, verbose=False)
-    return {r.slug: r.severity for r in report.results if r.slug.startswith(("task_metric", "task_scoring"))}
-
-
-def _spec(name: str = "roc_auc", **fields) -> MetricSpec:
-    from data_foundry.metrics import METRICS
-
-    definition = METRICS.get(name)
-    base = {
-        "name": name,
-        "kind": definition.kind if definition else "custom",
-        "prediction": definition.prediction if definition else "proba",
-        "greater_is_better": definition.greater_is_better if definition else True,
-        "origin": "source",
-        "reference": "https://example.org/evaluation",
-    }
-    return MetricSpec(**(base | fields))
-
-
 def test_declared_fallback_and_source_metrics_pass():
     assert metric_findings(make_v2_container()) == {}
-    assert metric_findings(make_v2_container(spec=_spec("roc_auc"))) == {}
+    assert metric_findings(make_v2_container(spec=source_spec("roc_auc"))) == {}
 
 
 def test_undeclared_metric_is_an_error():
-    spec = _spec("roc_auc", origin="fallback", reference=None, reason=None)
+    spec = source_spec("roc_auc", origin="fallback", reference=None, reason=None)
     assert metric_findings(make_v2_container(spec=spec)) == {"task_metric_undeclared": "error"}
 
 
@@ -1112,7 +1006,7 @@ def test_undeclared_metric_is_an_error():
     ],
 )
 def test_metric_spec_errors(spec, slug):
-    assert metric_findings(make_v2_container(spec=_spec(**({"name": "roc_auc"} | spec)))).get(slug) == "error"
+    assert metric_findings(make_v2_container(spec=source_spec(**({"name": "roc_auc"} | spec)))).get(slug) == "error"
 
 
 def test_metric_that_does_not_compute_on_a_split_is_an_error():
@@ -1156,7 +1050,7 @@ def _era(name: str, **fields) -> ScoringColumn:
 
 
 def test_metric_with_a_documented_scoring_column_passes(group_metric):
-    spec = _spec(group_metric, inputs={"group": "era"})
+    spec = source_spec(group_metric, inputs={"group": "era"})
     assert metric_findings(make_v2_container(_with_era(), spec=spec, scoring_columns=[_era(group_metric)])) == {}
 
 
@@ -1164,14 +1058,14 @@ def test_metric_reading_the_task_group_column_is_an_info_and_a_plain_feature_a_w
     """The metric reads the task's own group or time column where it is; a plain feature needs a scoring copy."""
     df = _with_era()
     df["week"] = np.arange(len(df)) // 6  # the task's time column, as blogfeedback's test day
-    on_time = make_v2_container(df, spec=_spec(group_metric, inputs={"group": "week"}), time_on="week")
+    on_time = make_v2_container(df, spec=source_spec(group_metric, inputs={"group": "week"}), time_on="week")
     assert metric_findings(on_time) == {"task_metric_input_is_model_input": "info"}
-    spec = _spec(group_metric, inputs={"group": "era"})
+    spec = source_spec(group_metric, inputs={"group": "era"})
     assert metric_findings(make_v2_container(_with_era(), spec=spec)) == {"task_metric_input_is_feature": "warning"}
 
 
 def test_metric_without_its_input_is_an_error(group_metric):
-    found = metric_findings(make_v2_container(_with_era(), spec=_spec(group_metric)))
+    found = metric_findings(make_v2_container(_with_era(), spec=source_spec(group_metric)))
     assert found["task_metric_input_missing"] == "error"
 
 
@@ -1184,26 +1078,26 @@ def test_metric_without_its_input_is_an_error(group_metric):
     ],
 )
 def test_scoring_column_errors(group_metric, column, slug):
-    spec = _spec(group_metric, inputs={"group": "era"})
+    spec = source_spec(group_metric, inputs={"group": "era"})
     found = metric_findings(make_v2_container(_with_era(), spec=spec, scoring_columns=[_era(group_metric, **column)]))
     assert found.get(slug) == "error"
 
 
 def test_scoring_column_that_models_use_is_an_error(group_metric):
-    spec = _spec(group_metric, inputs={"group": "era"})
+    spec = source_spec(group_metric, inputs={"group": "era"})
     container = make_v2_container(_with_era(), spec=spec, scoring_columns=[_era(group_metric)], stratify_on="era")
     assert metric_findings(container).get("task_scoring_column_is_feature") == "error"
 
 
 def test_placeholder_in_the_metric_reason_is_flagged():
-    spec = _spec("roc_auc", origin="fallback", reference=None, reason="TODO(verify): where we looked")
+    spec = source_spec("roc_auc", origin="fallback", reference=None, reason="TODO(verify): where we looked")
     assert "meta_placeholder_left" in slugs_of(make_v2_container(spec=spec))
 
 
 def test_feature_columns_drop_target_group_and_scoring_columns(group_metric):
     from data_foundry.curation_container import feature_columns
 
-    spec = _spec(group_metric, inputs={"group": "era"})
+    spec = source_spec(group_metric, inputs={"group": "era"})
     container = make_v2_container(_with_era(), spec=spec, scoring_columns=[_era(group_metric)])
     assert feature_columns(container) == ["feat_num", "feat_cat"]
     assert feature_columns(make_grouped_container()) == ["feat_num"]
@@ -1221,13 +1115,13 @@ def test_weight_that_is_also_a_feature_ships_a_scoring_copy_that_weighs_the_scor
     df["size"] = rng.uniform(1.0, 5.0, size=len(df))
     df["target"] = np.where(rng.random(len(df)) < 0.3, rng.exponential(size=len(df)), 0.0)
     plain = make_v2_container(
-        df, spec=_spec("normalized_weighted_gini", inputs={"weight": "size"}), problem_type="regression"
+        df, spec=source_spec("normalized_weighted_gini", inputs={"weight": "size"}), problem_type="regression"
     )
     # a weight that is a function of the features needs no training weight: the MET-15 prompt is accepted then
     no_training_weight = {"task_metric_weight_without_sample_weight": "warning"}
     assert metric_findings(plain) == {"task_metric_input_is_feature": "warning"} | no_training_weight
     df["size_weight"] = df["size"]
-    spec = _spec("normalized_weighted_gini", inputs={"weight": "size_weight"})
+    spec = source_spec("normalized_weighted_gini", inputs={"weight": "size_weight"})
     copy = ScoringColumn(
         column="size_weight", role="weight", used_by="normalized_weighted_gini", description="a copy of size"
     )
@@ -1246,12 +1140,12 @@ def test_target_transform_that_overflows_is_an_error():
     """A log transform on a target whose exp overflows is not the scale the target ships on."""
     df = make_iid_frame()
     df["target"] = 800.0 + np.arange(len(df)) / len(df)  # exp(800) overflows: not a log target
-    spec = _spec("rmse", target_transform="log")
+    spec = source_spec("rmse", target_transform="log")
     found = metric_findings(make_v2_container(df, spec=spec, problem_type="regression"))
     assert found.get("task_metric_transform_overflow") == "error"
     df["target"] = np.log1p(df["feat_num"].abs())
     found = metric_findings(
-        make_v2_container(df, spec=_spec("rmse", target_transform="log1p"), problem_type="regression")
+        make_v2_container(df, spec=source_spec("rmse", target_transform="log1p"), problem_type="regression")
     )
     assert "task_metric_transform_overflow" not in found
 
@@ -1263,7 +1157,7 @@ def test_poisson_computability_uses_valid_means_without_changing_labels(all_zero
     df = make_iid_frame()
     y = np.zeros(len(df)) if all_zero else (np.arange(len(df)) % 10 == 0).astype(float)
     df["target"] = np.log1p(y) if transform == "log1p" else y
-    spec = _spec("mean_poisson_deviance", params={"min_prediction": 1e-6}, target_transform=transform)
+    spec = source_spec("mean_poisson_deviance", params={"min_prediction": 1e-6}, target_transform=transform)
     container = make_v2_container(df, spec=spec, problem_type="regression")
     before = container.dataset.copy(deep=True)
     expected = {"task_metric_deviance_on_transformed_target": "error"} if transform == "log1p" else {}
@@ -1275,7 +1169,7 @@ def test_a_poisson_spec_without_its_floor_is_an_error():
     """``min_prediction`` is required (MET-13): a spec without it is refused before the metric is computed."""
     df = make_iid_frame()
     df["target"] = (np.arange(len(df)) % 10 == 0).astype(float)
-    found = metric_findings(make_v2_container(df, spec=_spec("mean_poisson_deviance"), problem_type="regression"))
+    found = metric_findings(make_v2_container(df, spec=source_spec("mean_poisson_deviance"), problem_type="regression"))
     assert found.get("task_metric_param_invalid") == "error"
 
 
@@ -1292,13 +1186,17 @@ def test_a_mean_deviance_on_a_transformed_target_is_an_error(name, params):
     y = (np.arange(len(df)) % 4) * 100.0
     df["target"] = np.log1p(y)
     found = metric_findings(
-        make_v2_container(df, spec=_spec(name, params=params, target_transform="log1p"), problem_type="regression")
+        make_v2_container(
+            df, spec=source_spec(name, params=params, target_transform="log1p"), problem_type="regression"
+        )
     )
     assert found == {"task_metric_deviance_on_transformed_target": "error"}
     df["target"] = y
-    assert metric_findings(make_v2_container(df, spec=_spec(name, params=params), problem_type="regression")) == {}
+    assert (
+        metric_findings(make_v2_container(df, spec=source_spec(name, params=params), problem_type="regression")) == {}
+    )
     df["target"] = np.log1p(y)  # another metric on the same transform does not warn
-    rmse = _spec("rmse", target_transform="log1p")
+    rmse = source_spec("rmse", target_transform="log1p")
     assert "task_metric_deviance_on_transformed_target" not in metric_findings(
         make_v2_container(df, spec=rmse, problem_type="regression")
     )
@@ -1342,7 +1240,7 @@ def _exposure_column() -> ScoringColumn:
 
 
 def _rate_container(df=None, *, sample_weight="exposure", inputs=None, scoring=None) -> CuratedContainer:
-    spec = _spec(
+    spec = source_spec(
         "mean_poisson_deviance",
         params={"min_prediction": 1e-4},
         inputs={"weight": "exposure"} if inputs is None else inputs,
@@ -1386,7 +1284,7 @@ def _replicate_container(*, used_by="training", inputs=None, sample_weight="repl
         scoring.append(ScoringColumn(column="plot_weight", role="weight", used_by="rmse", description="1 / quadrats"))
     return make_v2_container(
         df,
-        spec=_spec("rmse", inputs=inputs or {}),
+        spec=source_spec("rmse", inputs=inputs or {}),
         scoring_columns=scoring,
         problem_type="regression",
         sample_weight=sample_weight,
@@ -1459,7 +1357,7 @@ def test_a_weighted_rmse_reads_a_row_weight():
     weight = ScoringColumn(column="plot_weight", role="weight", used_by="rmse", description="1 / quadrats of the plot")
 
     def container(sample_weight=None):
-        spec = _spec("rmse", inputs={"weight": "plot_weight"})
+        spec = source_spec("rmse", inputs={"weight": "plot_weight"})
         return make_v2_container(
             df, spec=spec, scoring_columns=[weight], problem_type="regression", sample_weight=sample_weight
         )
@@ -1503,10 +1401,10 @@ def test_a_weighted_poisson_rate_rebuilds_whole_counts():
 def test_a_feature_named_like_an_exposure_warns_without_a_weight():
     """A numeric feature that looks like an amount at risk is explained when no weight is declared (LEAK-41)."""
     df = make_iid_frame().assign(Exposure=np.linspace(0.1, 1.0, 60), target=np.linspace(0, 3, 60))
-    found = weight_findings(make_v2_container(df, spec=_spec("rmse"), problem_type="regression"))
+    found = weight_findings(make_v2_container(df, spec=source_spec("rmse"), problem_type="regression"))
     assert found == {"task_feature_looks_like_exposure": "warning"}
     df = df.rename(columns={"Exposure": "exponent"})  # a name that only starts the same way
-    assert weight_findings(make_v2_container(df, spec=_spec("rmse"), problem_type="regression")) == {}
+    assert weight_findings(make_v2_container(df, spec=source_spec("rmse"), problem_type="regression")) == {}
 
 
 def test_an_unset_sample_weight_stays_out_of_the_saved_metadata(tmp_path):
@@ -1521,36 +1419,6 @@ def test_an_unset_sample_weight_stays_out_of_the_saved_metadata(tmp_path):
 
 
 # --- Format 2: a unit weight, each unit counted once in the score (MET-17) --------------------------------------------
-
-
-def _unit_frame() -> pd.DataFrame:
-    """60 rows in 30 plots of 1, 2 or 3 quadrats; ``plot_weight`` is 1 over the plot's quadrats."""
-    sizes = np.tile([1, 2, 3], 10)
-    df = make_iid_frame(60).assign(target=np.linspace(0.0, 3.0, 60), plot=np.repeat(np.arange(30), sizes))
-    return df.assign(plot_weight=1.0 / df.groupby("plot")["plot"].transform("size"))
-
-
-def _plot_splits(df: pd.DataFrame) -> dict:
-    """Three folds by plot, so every plot's rows lie on one side."""
-    fold = df["plot"].to_numpy() % 3
-    rows = np.arange(len(df))
-    return {0: {f: (rows[fold != f].tolist(), rows[fold == f].tolist()) for f in range(3)}}
-
-
-def _unit_container(df=None, *, splits="plots", **task) -> CuratedContainer:
-    df = _unit_frame() if df is None else df
-    weight = ScoringColumn(column="plot_weight", role="weight", used_by="rmse", description="1 / quadrats of the plot")
-    task.setdefault("unit_weight", UnitWeight(column="plot_weight", unit="plot"))
-    return make_v2_container(
-        df,
-        spec=_spec("rmse", inputs={"weight": "plot_weight"}),
-        scoring_columns=[weight],
-        problem_type="regression",
-        splits=_plot_splits(df) if splits == "plots" else None,
-        **task,
-    )
-
-
 def unit_findings(container: CuratedContainer) -> dict[str, str]:
     """The findings of the unit-weight checks and of the missing-training-weight prompt, slug to severity."""
     report = run_bundle_checks(container, verbose=False)
@@ -1561,7 +1429,7 @@ def test_a_unit_weight_counts_each_unit_once_and_tells_downstream_tools():
     """A declared unit weight needs no training weight, keeps its unit out of the inputs, and names the column a
     validation loss is weighted by (MET-17).
     """
-    container = _unit_container()
+    container = unit_container()
     assert unit_findings(container) == {}
     assert unit_weight(container) == UnitWeight(column="plot_weight", unit="plot")
     assert validation_weight(container) == "plot_weight"
@@ -1573,7 +1441,7 @@ def test_a_unit_weight_counts_each_unit_once_and_tells_downstream_tools():
     block = "\n".join(_metric_block(container.task_metadata))
     assert "**Unit weight**" in block
     assert "unit weight: weight a validation loss by it; never a feature" in block
-    without = _unit_container(unit_weight=None)  # the same weight undeclared: MET-15's prompt again
+    without = unit_container(unit_weight=None)  # the same weight undeclared: MET-15's prompt again
     assert unit_findings(without) == {"task_metric_weight_without_sample_weight": "warning"}
     assert validation_weight(without) == "plot_weight"
 
@@ -1586,30 +1454,30 @@ def test_the_validation_weight_is_the_metrics_row_weight():
 
 def test_a_unit_weight_that_does_not_sum_to_one_per_unit_is_an_error():
     """Each unit counts once: its weights sum to 1, or the check stops the build."""
-    df = _unit_frame()
+    df = unit_frame()
     df.loc[df["plot"] == 2, "plot_weight"] = 0.5  # a plot of three quadrats counted 1.5 times
-    assert unit_findings(_unit_container(df)) == {"task_unit_weight_not_one_per_unit": "error"}
+    assert unit_findings(unit_container(df)) == {"task_unit_weight_not_one_per_unit": "error"}
 
 
 def test_a_unit_on_both_sides_of_a_split_warns():
     """Random splits put a plot's quadrats on both sides: its vote is shared between training and test."""
-    assert unit_findings(_unit_container(splits="iid")) == {"task_unit_weight_unit_split": "warning"}
+    assert unit_findings(unit_container(splits="iid")) == {"task_unit_weight_unit_split": "warning"}
 
 
 def test_a_unit_weight_is_the_metrics_weight_and_never_a_training_weight():
     """The unit weight is the metric's weight scoring column, never the sample weight, and its unit no target."""
     with pytest.raises(ValueError, match="names no scoring column"):
-        _unit_container(unit_weight=UnitWeight(column="feat_num", unit="plot"))
+        unit_container(unit_weight=UnitWeight(column="feat_num", unit="plot"))
     with pytest.raises(ValueError, match="never a training weight"):
-        _unit_container(sample_weight="plot_weight")
+        unit_container(sample_weight="plot_weight")
     with pytest.raises(ValueError, match="the target or a scoring column"):
-        _unit_container(unit_weight=UnitWeight(column="plot_weight", unit="target"))
+        unit_container(unit_weight=UnitWeight(column="plot_weight", unit="target"))
 
 
 def test_an_unset_unit_weight_stays_out_of_the_saved_metadata(tmp_path):
     """Containers built before the field keep their checksum and JSON; a set field round-trips."""
     assert b"unit_weight" not in encode_pydantic_metadata(_rate_container().task_metadata)
-    container = _unit_container()
+    container = unit_container()
     assert b'"unit_weight":{"column":"plot_weight","unit":"plot"}' in encode_pydantic_metadata(container.task_metadata)
     loaded = CuratedContainer.load(container.save(tmp_path))
     assert loaded.task_metadata.unit_weight == UnitWeight(column="plot_weight", unit="plot")

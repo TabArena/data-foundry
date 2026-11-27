@@ -51,23 +51,34 @@ def is_time(values: pd.Series) -> bool:
     )
 
 
-def numeric(df: pd.DataFrame, drop: list[str] | tuple[str, ...] = ()) -> tuple[pd.DataFrame, list[str], list[str]]:
+def numeric(
+    df: pd.DataFrame, drop: list[str] | tuple[str, ...] = (), rows: np.ndarray | None = None
+) -> tuple[pd.DataFrame, list[str], list[str]]:
     """Numeric model inputs (columns ``f0``, ``f1``, ...), their original names, and the text columns left out;
     ``drop`` names columns that are no inputs.
+
+    ``rows`` (positions in ``df``) returns those rows only, indexed ``0..len(rows) - 1``: a column at a time is
+    converted and its median taken over every row, so the values equal the whole frame's at those positions, and the
+    memory follows the rows kept (a ``_1m`` container's millions of training rows, of which a probe fits a sample).
     """
-    X = df.drop(columns=[c for c in drop if c in df.columns])
-    text = list(X.select_dtypes(include=["string", "object"]).columns)
-    X = X.drop(columns=text)
-    for col in X.columns:
-        if isinstance(X[col].dtype, pd.CategoricalDtype):
-            X[col] = X[col].cat.codes.replace(-1, len(X[col].cat.categories))
-        elif is_time(X[col]):
-            X[col] = seconds(X[col])
-    X = X.astype(float)
-    names = list(X.columns)
-    X = X.fillna(X.median()).fillna(0.0)
-    X.columns = [f"f{i}" for i in range(X.shape[1])]
-    return X, names, text
+    dropped = set(drop)
+    inputs = [c for c in df.columns if c not in dropped]
+    text = list(df.iloc[:0][inputs].select_dtypes(include=["string", "object"]).columns)
+    names = [c for c in inputs if c not in set(text)]
+    columns = {}
+    for k, col in enumerate(names):
+        values = df[col]
+        if isinstance(values.dtype, pd.CategoricalDtype):
+            values = values.cat.codes.replace(-1, len(values.cat.categories))
+        elif is_time(values):
+            values = seconds(values)
+        values = values.astype(float)
+        median = values.median()
+        if rows is not None:
+            values = values.iloc[rows]
+        columns[f"f{k}"] = values.fillna(0.0 if pd.isna(median) else median).to_numpy()
+    index = pd.RangeIndex(len(rows)) if rows is not None else df.index
+    return pd.DataFrame(columns, index=index), names, text
 
 
 def native(features: pd.DataFrame, *, dates: bool = False) -> pd.DataFrame:

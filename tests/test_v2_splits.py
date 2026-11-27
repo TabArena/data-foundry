@@ -30,7 +30,7 @@ from data_foundry.schema import (
     RowBudget,
     TrainSampling,
 )
-from tests.test_bundle_checks import make_container, make_iid_frame, make_spec
+from tests.helpers import make_container, make_iid_frame, make_spec
 
 
 class Sized:
