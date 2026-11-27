@@ -741,10 +741,11 @@ def test_server_refuses_an_edit_of_a_record_changed_since_it_was_read(
     path = save_record(sample_record, guideline_repo / "curation" / "records")
     (row,) = json.loads(_get(server, "/api/records")[2])
     seen = row[MTIME_KEY]
+    assert seen == str(path.stat().st_mtime_ns)  # a string: a JavaScript number would round the nanoseconds
 
     sample_record.comments = "An agent's note."
     save_record(sample_record, path.parent)
-    os.utime(path, ns=(seen + 1_000_000, seen + 1_000_000))  # a different mtime even on a coarse clock
+    os.utime(path, ns=(int(seen) + 1_000_000, int(seen) + 1_000_000))  # a different mtime even on a coarse clock
     status, body = _put(server, "/api/records/musk", {"priority": 1, MTIME_KEY: seen})
     assert status == 409
     assert "changed on disk" in body["error"]
@@ -753,9 +754,24 @@ def test_server_refuses_an_edit_of_a_record_changed_since_it_was_read(
     (row,) = json.loads(_get(server, "/api/records")[2])
     status, body = _put(server, "/api/records/musk", {"priority": 1, MTIME_KEY: row[MTIME_KEY]})
     assert status == 200
-    assert body[MTIME_KEY] == path.stat().st_mtime_ns  # the tab's next edit sends this one
+    assert body[MTIME_KEY] == str(path.stat().st_mtime_ns)  # the tab's next edit sends this one
     assert load_record(path).comments == "An agent's note."
     assert _put(server, "/api/records/musk", {"priority": 2, MTIME_KEY: body[MTIME_KEY]})[0] == 200
+
+
+def test_the_edit_check_survives_a_javascript_number(
+    server: int, guideline_repo: Path, sample_record: CurationRecord
+) -> None:
+    """The page holds the mtime it sends back as JavaScript would: a string stays exact, a number (a double) is
+    rounded to 53 bits and fails the check for almost every real mtime.
+    """
+    path = save_record(sample_record, guideline_repo / "curation" / "records")
+    mtime = 1_795_686_619_839_148_732  # a real record's mtime_ns; a double rounds it to ...148800
+    os.utime(path, ns=(mtime, mtime))
+    (row,) = json.loads(_get(server, "/api/records")[2])
+    as_javascript = json.loads(json.dumps(row), parse_int=float)[MTIME_KEY]  # numbers parsed as doubles
+    assert as_javascript == str(mtime)
+    assert _put(server, "/api/records/musk", {"priority": 3, MTIME_KEY: as_javascript})[0] == 200
 
 
 @pytest.mark.parametrize(

@@ -76,9 +76,10 @@ GRID_READ_ONLY: frozenset[str] = frozenset({"review"})
 """Record fields a dashboard edit may not change: the review is written by the review workflows and never deleted."""
 
 MTIME_KEY: str = "record_mtime_ns"
-"""The record file's ``mtime_ns`` when the dashboard read it (a derived key, never written back). An edit that sends
-it back is refused with 409 when the file changed since, so two tabs (or a tab and an agent) do not overwrite each
-other."""
+"""The record file's ``mtime_ns`` when the dashboard read it, as a string (a derived key, never written back). An edit
+that sends it back is refused with 409 when the file changed since, so two tabs (or a tab and an agent) do not
+overwrite each other. A string, because a JavaScript number holds 53 bits: a nanosecond mtime would come back rounded
+and every edit would look stale."""
 
 _WRITE_LOCK = threading.Lock()
 
@@ -172,7 +173,7 @@ def _records_payload(directory: Path | None) -> list[dict[str, object]]:
         mtime = path.stat().st_mtime_ns
         r = load_record(path)
         d = _overlay_claim(record_to_dict(r), board)
-        d[MTIME_KEY] = mtime
+        d[MTIME_KEY] = str(mtime)
         rel = r.notebook_path or resolve_notebook(r)
         if rel:
             d["notebook_path"] = rel
@@ -441,7 +442,7 @@ class CurationHandler(BaseHTTPRequestHandler):
             if unique_name.startswith("_") or "/" in unique_name or not path.is_file():
                 self._send_json({"error": f"unknown record: {unique_name}"}, status=404)
                 return
-            if base_mtime is not None and path.stat().st_mtime_ns != base_mtime:
+            if base_mtime is not None and str(path.stat().st_mtime_ns) != str(base_mtime):
                 self._send_json(
                     {"error": f"{unique_name} changed on disk since this page read it; reload to see the change."},
                     status=409,
@@ -454,7 +455,7 @@ class CurationHandler(BaseHTTPRequestHandler):
             record.needs_review = record.review_reasons(load_vocabularies())
             save_record(record, self._records_dir)
             out = record_to_dict(record)
-            out[MTIME_KEY] = path.stat().st_mtime_ns
+            out[MTIME_KEY] = str(path.stat().st_mtime_ns)
         self._send_json(out)
 
     def _claim_action(self, unique_name: str) -> None:
@@ -487,7 +488,7 @@ class CurationHandler(BaseHTTPRequestHandler):
         claims.mirror_to_records(outcome.board, [unique_name], self._records_dir)
         mtime = path.stat().st_mtime_ns
         row = _overlay_claim(record_to_dict(load_record(path)), outcome.board)
-        self._send_json({**row, MTIME_KEY: mtime})
+        self._send_json({**row, MTIME_KEY: str(mtime)})
 
     def _add_vocab_option(self) -> None:
         body = self._read_json_body()
