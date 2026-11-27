@@ -1,5 +1,16 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-27, nyc_taxi_trip_duration: rebuilt from the TLC's open-data release (task change; container not shipped)
+
+- `nyc_taxi_trip_duration_1m` reads NYC Open Data's "2016 Yellow Taxi Trip Data" (one CSV per pickup day, 21 April
+  to 30 June 2016, 26,818,607 trips) instead of the Kaggle competition's sample of 1,458,644 trips: every train side
+  now holds over 1M trips (13.3M to 23.3M; the April window of the sample held 766,626).
+- `ratecodeid` is a new feature (the TLC's rate code, named as in its data dictionary; the code 99 is missing).
+- The windows are 24-30 June, 27 May-2 June and 10-16 June; the April week is outside the period. Each test window
+  keeps a random 500,000 trips; the container holds 23,784,905 rows.
+- The filters stay (the 120 km/h filter of the entry below drops 644 trips here); the daylight-saving fix and the
+  Kaggle id are gone. 26,131,305 trips after cleaning; README regenerated.
+
 ## 2026-11-27, breast_cancer_prediction: the radiologist's assessment dropped (task change; container not rebuilt)
 
 - `breast_cancer_prediction` drops `birads_assessment`, Andrej's decision (review issue 2, B): the assessment is the
