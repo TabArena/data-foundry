@@ -82,13 +82,14 @@ format is the review skill's [review_file_format.md](../../review-added-datasets
   the agents that built the dataset and the reports of the panel.
 * A record without a dataset folder (not added) keeps its open issues in the same section, in the same format, with
   an outcome that starts `not added`.
-* `/review-added-datasets` builds its page from the records' reviews (`collect_reviews.py`). Applying a decision
-  writes the curator's turn and the `**Resolved (<date>, <who>):**` turn into the review and the `CC` line into the
-  comments, all in the one record.
+* `/review-added-datasets` builds its page from the records' reviews (`review_page.py`, which reads them through
+  `data_foundry.curation.review`, the one parser of the section; the decision register reads them the same way).
+  Applying a decision writes the curator's turn and the `**Resolved (<date>, <who>):**` turn into the review and the
+  `CC` line into the comments, all in the one record.
 * A review is never deleted (Andrej, 2026-11-02): a settled issue keeps its Resolved turn, and a retired dataset's
   record keeps its review, so the record says how the dataset was decided.
-* No `REVIEW.md` exists in the working copy, and none is created. `collect_reviews.py` stops at one and a test fails
-  the PR that adds one. An item that spans datasets is a draft rule in the knowledge skills or a GitHub issue
+* No `REVIEW.md` exists in the working copy, and none is created. The parser stops at one and a test fails the PR
+  that adds one. An item that spans datasets is a draft rule in the knowledge skills or a GitHub issue
   ([working_copy.md](working_copy.md)).
 * The dashboard and the public site show the review with the record; the flat export (CSV, the sheet) leaves it out.
 

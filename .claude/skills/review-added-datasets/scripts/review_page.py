@@ -1,21 +1,25 @@
-"""Build the review page for a batch of datasets that /add-dataset added, from the run's report.
+r"""The review page of the open review issues: read from the records' ``## Review`` sections, checked, and built.
 
 Usage, from the repository root::
 
-    .venv/bin/python .claude/skills/review-added-datasets/scripts/build_review_page.py <report.md> --out <dir>
-        [--root datasets/_dev/tabarena-v0pt2] [--title "New Datasets Review"] [--subtitle <text>]
-        [--tldr <yaml>]
+    .venv/bin/python .claude/skills/review-added-datasets/scripts/review_page.py check [--names a,b] [--keep-settled]
+        [--metric-marks a,b|all] [--horizon-marks a,b|all] [--split-marks a,b|all]
+    .venv/bin/python .claude/skills/review-added-datasets/scripts/review_page.py build --out <dir> [the same]
+        [--title "New Datasets Review"] [--subtitle <text>] [--date <YYYY-MM-DD>] [--tldr <yaml>]
+        [--root datasets/_dev/tabarena-v0pt2] [--records curation/records]
 
-Writes ``<out>/data.json`` and ``<out>/review_page.html`` (``assets/review_page.html`` with the data embedded).
-Per record the page embeds the report's section, the definition's ``dataset.py``, ``task_summary``, declared
-``metric`` (with its scoring columns) and split (from the README's front matter and Splits section; the Use case
-tab shows both) and generated ``README.md`` (for a retired
-definition: from the last commit that still had it) and the curation record, as they are at build time. The report
-format is ``references/review_file_format.md``; a report that does not follow it stops the build with the section
-and the line.
+Both read every record's ``## Review`` through ``data_foundry.curation.review`` (the one parser; the format is
+``references/review_file_format.md``) and stop with the record and the line on a review that breaks it. They leave
+out a record with nothing left to decide (``review.is_settled``) unless ``--keep-settled``, print the counts and warn
+on stderr about an open issue out of shape. ``check`` stops there; ``build`` writes ``<out>/data.json`` and
+``<out>/review_page.html``
+(``assets/review_page.html`` with the data embedded).
 
-The page lists the records in review order (``review_order``): the record's ``priority`` from 5 down to 1, records
-without one last, then the fewest open marks first, then the name.
+Per record the page embeds the review, the definition's ``dataset.py``, ``task_summary``, declared ``metric`` (with
+its scoring columns) and split (from the README's front matter and Splits section; the Use case tab shows both) and
+generated ``README.md`` (for a retired definition: from the last commit that still had it) and the curation record,
+as they are at build time. The page lists the records in review order (``review_order``): the record's ``priority``
+from 5 down to 1, records without one last, then the fewest open marks first, then the name.
 
 ``--tldr`` takes hand-written summaries (``unique_name: markdown``) for records whose definition has no
 ``task_summary``.
@@ -37,9 +41,7 @@ import re
 import subprocess
 import sys
 import textwrap
-from collections.abc import Callable
-from dataclasses import dataclass
-from functools import partial
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -49,7 +51,7 @@ try:
     from markdown_it import MarkdownIt
 except ImportError:  # pragma: no cover - depends on the environment
     sys.exit(
-        "build_review_page.py needs markdown-it-py (the `curation` extra) to render the report's markdown.\n"
+        "review_page.py needs markdown-it-py (the `curation` extra) to render the reviews' markdown.\n"
         "Install it from the repository root with\n"
         '    uv pip install --python .venv/bin/python -e ".[curation]"\n'
         "or only the package with\n"
@@ -57,6 +59,7 @@ except ImportError:  # pragma: no cover - depends on the environment
     )
 
 from data_foundry import time_basis as basis_rules
+from data_foundry.curation import review as rv
 from data_foundry.curation.consistency import COLLECTION_TYPES, collection_type_problems, time_basis_problems
 from data_foundry.definition.dataset import DEFAULT_SPLITS_COMMENT, TaskSummary
 from data_foundry.definition.registry import load_definition
@@ -70,66 +73,28 @@ GITHUB_REPO = "https://github.com/TabArena/data-foundry"
 DASHBOARD = "http://127.0.0.1:8765/#q="
 RECORDS_DIR = "curation/records"
 PLACEHOLDERS = ("__TITLE__", "__SUBTITLE__", "__DATA__")
+FORMAT = HERE.parent / "references" / "review_file_format.md"
+MARK_FLAGS = {
+    "metric": (
+        "Comma-separated unique names, or `all`: the records whose declared metric is a choice of this round (new "
+        "datasets, a proposed metric change). The page shows the metric and a mark on it only for these."
+    ),
+    "horizon": (
+        "Comma-separated unique names, or `all`: the temporal records whose horizon and test windows the curator "
+        "signs off in this round (new datasets, or when asked). The page shows them with a mark only for these."
+    ),
+    "split": (
+        "Comma-separated unique names, or `all`: the records whose declared split is a choice of this round (new "
+        "datasets, a proposed split change). The page shows the split and a mark on it only for these."
+    ),
+}
 
 MD = MarkdownIt("commonmark", {"html": False, "typographer": False}).enable("table")
 # The dataset READMEs are generated by `dataset check`, which escapes data values; their own <details> blocks render.
 MD_README = MarkdownIt("commonmark", {"html": True, "typographer": False}).enable("table")
 
-# The `##` sections with a fixed role; every other `##` section holds per-record sections.
-SUMMARY, FIELDS = "Summary", "Record fields"
-
-LABEL_RE = re.compile(r"^\*\*([^*]+?)\*\*(.*)$")
-VERIF_HEADING = re.compile(r"^#### Verification")
-# A labelled block of a record section: the bold label at the start of a line, then the block key. A label may
-# carry a parenthesised tail ("Verification (fix round, ...)"), which is kept as the block's first words.
-LABELS = [
-    ("outcome", re.compile(r"Outcome")),
-    ("judgment", re.compile(r"Record judgment")),
-    ("horizon", re.compile(r"Horizon")),
-    ("data", re.compile(r"Data")),
-    ("definition", re.compile(r"Definition")),
-    ("checks", re.compile(r"Checks")),
-    ("probes", re.compile(r"Probes")),
-    ("verification", re.compile(r"Verification")),
-    ("verification", re.compile(r"Fix round")),
-    ("issues", re.compile(r"Issues(?: for [^(,:]*[^(,:\s])?")),
-    ("recommendation", re.compile(r"Recommendation")),
-    ("task", re.compile(r"Task")),
-    ("split", re.compile(r"Split")),
-    ("source", re.compile(r"Source and licence")),
-    ("issues", re.compile(r"Open questions")),
-    ("critic", re.compile(r"Final critic")),
-]
-SECTION_TITLES = {
-    "outcome": "Outcome",
-    "judgment": "Record judgment",
-    "horizon": "Horizon",
-    "data": "Data",
-    "definition": "Definition",
-    "checks": "Checks",
-    "probes": "Probes",
-    "verification": "Verification",
-    "recommendation": "Recommendation",
-    "task": "Task",
-    "split": "Split",
-    "source": "Source and licence",
-    "critic": "Final critic, remaining points",
-}
-RESOLVED_RE = re.compile(r"\*\*(Resolved|Deferred)\b[^*]*\*\*")
-"""An item with a bold "Resolved ..." or "Deferred ..." label (or a title that starts so) is closed: the page hides
-it behind a toggle."""
-RESOLVED_TITLE = re.compile(r"^(Resolved|Deferred)\b")
-SHARED_COUNT = re.compile(r"\bthe (two|three|four|five|six|seven|eight|nine|ten|\d+)\b", re.IGNORECASE)
-NUMBERS = {"two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7, "eight": 8, "nine": 9, "ten": 10}
-RECORDS_LINE = re.compile(r"^Records?:\s*(.*)$")
-FIELD_LINE = re.compile(r"^- `([^`]+)`: (.*?)\.?$")
-FIELD_PART = re.compile(r"^(tag|[a-z_]+) `([^`]+)`, definition(?: source)? `([^`]+)`$")
-PANEL_LABEL = re.compile(r"^\*\*Review panel:\*\*\s*(.*)$")
-"""The review panel's label. The panel is the last block of a record section: it runs to the end of the section."""
-DETAILS_OPEN = re.compile(r"^<details>\s*<summary>(.+?)</summary>$")
-DETAILS_CLOSE = re.compile(r"^</details>$")
-FENCE = re.compile(r"^\s*(```|~~~)")
-SENTENCE_END = re.compile(r"\.(?=\s|$)")
+BLOCK_TITLES = {"outcome": "Outcome", "judgment": "Record judgment"}
+"""The review's blocks the Details tab shows, besides the issues, the record fields and the panel."""
 
 REGIME = {"iid": "iid", "temporal_non_iid": "temporal", "grouped_non_iid": "grouped"}
 """README `task.split_regime` values to the regime names the page uses."""
@@ -145,458 +110,8 @@ TLDR_LABELS = {
 """The labelled paragraphs of a tldr entry, by the TaskSummary field they stand for."""
 
 
-class ReportFormatError(ValueError):
-    """The run report does not follow ``references/review_file_format.md``."""
-
-    def __init__(self, path: Path, index: int, section: str, message: str) -> None:
-        """Name the report, the line (``index`` counts from 0) and the section in the message."""
-        super().__init__(f"{path}, line {index + 1} (in {section}): {message}")
-
-
 class BuildError(RuntimeError):
-    """The report is well formed, but the repository does not hold what it names."""
-
-
-class PanelFormatError(ValueError):
-    """A review panel block does not follow the format; ``index`` counts from the block's label line (0)."""
-
-    def __init__(self, index: int, message: str) -> None:
-        """Keep the line within the block, for the caller to name the line in its file."""
-        super().__init__(message)
-        self.index = index
-        self.message = message
-
-
-# ---------------------------------------------------------------------------------------------------------------
-# Parsing the report (format only; nothing here reads the repository)
-# ---------------------------------------------------------------------------------------------------------------
-
-
-def _headings(lines: list[str], level: str, start: int, end: int) -> list[tuple[int, str]]:
-    """The (index, title) of the headings of one level between ``start`` and ``end``, outside fenced code."""
-    out, fenced = [], False
-    for i in range(start, end):
-        line = lines[i]
-        if line.lstrip().startswith(("```", "~~~")):
-            fenced = not fenced
-        elif not fenced and line.startswith(level + " "):
-            out.append((i, line[len(level) + 1 :].strip()))
-    return out
-
-
-def _spans(heads: list[tuple[int, str]], end: int) -> list[tuple[int, str, int]]:
-    """Each heading with the index where its section ends."""
-    return [(i, title, heads[k + 1][0] if k + 1 < len(heads) else end) for k, (i, title) in enumerate(heads)]
-
-
-def _dedent(lines: list[str]) -> str:
-    """Remove the common indentation of the continuation lines."""
-    body = [ln for ln in lines if ln.strip()]
-    if not body:
-        return ""
-    pad = min(len(ln) - len(ln.lstrip(" ")) for ln in body)
-    return "\n".join(ln[pad:] if len(ln) >= pad else ln for ln in lines)
-
-
-def _label_of(line: str) -> tuple[str, str] | None:
-    """The block key and the rest of the line when the line opens a labelled block."""
-    m = LABEL_RE.match(line)
-    if not m:
-        return None
-    bold, rest = m.group(1).strip(), m.group(2)
-    for key, pattern in LABELS:
-        pm = pattern.match(bold)
-        if not pm:
-            continue
-        tail = bold[pm.end() :].strip().rstrip(":").strip()
-        rest = rest.lstrip(":").strip() if bold.endswith(":") or rest.startswith(":") else rest.strip()
-        if tail and not tail.startswith(("(", ",")):
-            continue
-        tail = "" if tail.startswith(",") else tail
-        return key, ((tail + " " if tail else "") + rest).strip()
-    return None
-
-
-def _split_blocks(lines: list[str]) -> dict[str, str]:
-    """Split one record section into its labelled blocks (text before the first label is the outcome)."""
-    blocks: dict[str, list[str]] = {}
-    current = "outcome"
-    for line in lines:
-        if VERIF_HEADING.match(line):
-            current = "verification"
-            blocks.setdefault(current, []).append("*" + line.lstrip("# ").strip() + "*")
-            continue
-        found = _label_of(line)
-        if found:
-            current, rest = found
-            blocks.setdefault(current, [])
-            if rest:
-                blocks[current].append(rest)
-            continue
-        blocks.setdefault(current, []).append(line)
-    return {k: "\n".join(v).strip() for k, v in blocks.items()}
-
-
-def _is_resolved(text: str, title: str) -> bool:
-    return bool(RESOLVED_RE.search(text) or RESOLVED_TITLE.match(title))
-
-
-def _split_items(text: str) -> tuple[str, list[dict[str, Any]]]:
-    """The numbered top-level items of an issues block, with the text before them."""
-    intro: list[str] = []
-    raw: list[tuple[int, list[str]]] = []
-    for line in text.splitlines():
-        m = re.match(r"^(\d+)\. (.*)$", line)
-        if m:
-            raw.append((int(m.group(1)), [m.group(2)]))
-        elif raw:
-            raw[-1][1].append(line)
-        else:
-            intro.append(line)
-    items = []
-    for n, lines in raw:
-        first, rest = lines[0], lines[1:]
-        m = re.match(r"^\*\*(.+?)\*\*\s*(.*)$", first)
-        if m:
-            title, lead = m.group(1).strip(), m.group(2).strip()
-        else:
-            title, lead = first.strip(), ""
-            cut = re.search(r"(?<=[.?!])\s", title)
-            if cut and cut.start() < 140:
-                title, lead = title[: cut.start()], title[cut.start() :].strip()
-            elif len(title) > 140:
-                title, lead = title[:137].rsplit(" ", 1)[0] + "…", title
-        items.append(
-            {
-                "n": n,
-                "title_md": title.rstrip(":").strip(),
-                "body_md": (lead + "\n" + _dedent(rest)).strip(),
-                "resolved": _is_resolved("\n".join(lines), title),
-            },
-        )
-    return "\n".join(intro).strip(), items
-
-
-def panel_start(lines: list[str]) -> int | None:
-    """The index of the review panel's label line among ``lines``, outside fenced code; None without a panel."""
-    fenced = False
-    for i, line in enumerate(lines):
-        if FENCE.match(line):
-            fenced = not fenced
-        elif not fenced and PANEL_LABEL.match(line):
-            return i
-    return None
-
-
-@dataclass
-class _OpenSection:
-    """A ``<details>`` section of the review panel being read: its line, its role, its lines so far."""
-
-    at: int
-    title: str
-    body: list[str]
-    fenced: bool = False
-
-
-def _panel_summary(lines: list[str]) -> tuple[str, int]:
-    """The panel's summary paragraph (it starts on the label line) and the index of the line after it."""
-    m = PANEL_LABEL.match(lines[0]) if lines else None
-    if m is None:
-        raise PanelFormatError(0, "the panel starts with its label `**Review panel:**`")
-    i = 1
-    while i < len(lines) and lines[i].strip() and not lines[i].strip().startswith("<details"):
-        i += 1
-    summary_md = "\n".join([m.group(1), *lines[1:i]]).strip()
-    if not summary_md:
-        raise PanelFormatError(0, "no summary: the panel's recommendation and summary follow the label on its line")
-    return summary_md, i
-
-
-def _open_section(line: str, k: int, current: _OpenSection | None) -> _OpenSection:
-    if current is not None:
-        raise PanelFormatError(current.at, "this `<details>` is not closed: end it with `</details>` first")
-    opened = DETAILS_OPEN.match(line.strip())
-    if opened is None or not opened.group(1).strip():
-        raise PanelFormatError(k, "a section opens with `<details><summary>Role</summary>` on one line")
-    return _OpenSection(k, opened.group(1).strip(), [])
-
-
-def _close_section(k: int, current: _OpenSection | None) -> dict[str, str]:
-    if current is None:
-        raise PanelFormatError(k, "`</details>` without its `<details><summary>Role</summary>`")
-    if not "".join(current.body).strip():
-        raise PanelFormatError(current.at, f"the `{current.title}` section is empty; leave it out")
-    return {"title": current.title, "md": _dedent(current.body).strip()}
-
-
-def _panel_sections(lines: list[str], start: int) -> list[dict[str, str]]:
-    """The ``<details>`` sections from ``start`` on; inside a fence, ``<details>`` lines are text."""
-    sections: list[dict[str, str]] = []
-    current: _OpenSection | None = None
-    for k in range(start, len(lines)):
-        line, stripped = lines[k], lines[k].strip()
-        if current is not None and (current.fenced or FENCE.match(line)):
-            current.fenced = current.fenced != bool(FENCE.match(line))
-            current.body.append(line)
-        elif stripped.startswith("<details"):
-            current = _open_section(line, k, current)
-        elif DETAILS_CLOSE.match(stripped):
-            sections.append(_close_section(k, current))
-            current = None
-        elif current is not None:
-            current.body.append(line)
-        elif stripped:
-            raise PanelFormatError(
-                k,
-                "text outside a section; after the summary paragraph come only `<details><summary>Role</summary>` "
-                "... `</details>` sections",
-            )
-    if current is not None:
-        fence = " (a code fence in it is not closed)" if current.fenced else ""
-        raise PanelFormatError(current.at, f"this `<details>` is not closed with `</details>`{fence}")
-    return sections
-
-
-def split_panel(lines: list[str]) -> dict[str, Any]:
-    """The review panel block, ``lines[0]`` being its label line: the summary, the recommendation, the sections.
-
-    The summary is the first paragraph (it starts on the label line); its first sentence, up to the first full stop,
-    is the panel's recommendation. Then come only ``<details><summary>Role</summary>`` ... ``</details>`` sections,
-    one per role, each with markdown inside. The ``<details>`` wrapper is read here, so the markdown inside renders
-    with raw HTML off.
-
-    Raises:
-        PanelFormatError: The block does not follow ``references/review_file_format.md``; its ``index`` counts
-            from the label line.
-    """
-    summary_md, start = _panel_summary(lines)
-    sections = _panel_sections(lines, start)
-    flat = " ".join(summary_md.split())
-    cut = SENTENCE_END.search(flat)
-    return {"summary_md": summary_md, "recommendation": flat[: cut.start()] if cut else flat, "sections": sections}
-
-
-def _cells(line: str) -> list[str]:
-    return [c.strip() for c in re.split(r"(?<!\\)\|", line.strip().strip("|"))]
-
-
-Span = tuple[int, str, int]
-"""A section: the index of its heading line, its title, and the index where it ends."""
-
-
-def _check_something_to_review(
-    rows: list[dict[str, Any]], record_parts: list[Span], fail: Callable[..., ReportFormatError]
-) -> None:
-    """The report has record rows, and they have their per-record sections."""
-    if not rows:
-        raise fail(0, "the report", "no record row in the summary table: nothing to review")
-    if not record_parts:
-        raise fail(0, "the report", "no `## ` section with the per-record sections (`### <unique_name>`)")
-
-
-def _parse_summary(lines: list[str], span: Span, fail: Callable[..., ReportFormatError]) -> list[dict[str, Any]]:
-    """The summary table: one row per record, in the report's order (the page sorts them by ``review_order``)."""
-    start, title, end = span
-    section = f"## {title}"
-    table = [i for i in range(start + 1, end) if lines[i].lstrip().startswith("|")]
-    if len(table) < 2:
-        raise fail(start, section, "no summary table (a header and its separator row)")
-    if not re.fullmatch(r"\|?(\s*:?-{3,}:?\s*\|)+\s*:?-{3,}:?\s*\|?", lines[table[1]].strip()):
-        raise fail(table[1], section, "the second table line is the separator `|---|---|---|`")
-    rows: list[dict[str, Any]] = []
-    seen: dict[str, int] = {}
-    for i in table[2:]:
-        cells = _cells(lines[i])
-        if len(cells) != 3:
-            raise fail(i, section, f"a summary row has three cells (record, outcome, points), this one {len(cells)}")
-        m = re.search(r"\[`([^`]+)`\]", cells[0])
-        if not m:
-            raise fail(i, section, "the first cell links the record as [`unique_name`](#unique_name)")
-        name = m.group(1)
-        if name in seen:
-            raise fail(i, section, f"`{name}` has a second row (the first is at line {seen[name] + 1})")
-        seen[name] = i
-        rows.append({"name": name, "late": "(late)" in cells[0], "outcome": cells[1], "points": cells[2], "line": i})
-    return rows
-
-
-def _parse_fields(
-    lines: list[str],
-    span: Span,
-    names: set[str],
-    fail: Callable[..., ReportFormatError],
-) -> dict[str, list[dict[str, str]]]:
-    """The record fields that disagree with the definition, per record."""
-    start, title, end = span
-    section = f"## {title}"
-    bullets: list[tuple[int, str]] = []
-    for i in range(start + 1, end):
-        line = lines[i]
-        if line.startswith("- "):
-            bullets.append((i, line))
-        elif bullets and line.startswith((" ", "\t")) and line.strip():
-            bullets[-1] = (bullets[-1][0], bullets[-1][1] + " " + line.strip())
-    fields: dict[str, list[dict[str, str]]] = {}
-    for i, line in bullets:
-        m = FIELD_LINE.match(line)
-        if not m:
-            raise fail(i, section, "a field line reads ``- `name`: field `record value`, definition `value`.``")
-        name, rest = m.groups()
-        if name not in names:
-            raise fail(i, section, f"`{name}` has no row in the summary table")
-        for part in rest.split("; "):
-            fm = FIELD_PART.match(part.strip())
-            if not fm:
-                raise fail(i, section, f"field not understood: {part!r} (expected ``field `x`, definition `y` ``)")
-            field, rec, dfn = fm.groups()
-            if any(f["key"] == field for f in fields.get(name, [])):
-                raise fail(i, section, f"`{name}` lists `{field}` twice; the page stores one mark per field")
-            fields.setdefault(name, []).append({"key": field, "field": field, "record": rec, "definition": dfn})
-    return fields
-
-
-def _shared_records(
-    body: list[str],
-    title: str,
-    order: list[str],
-    names: set[str],
-    fail: Callable[[str], ReportFormatError],
-) -> tuple[list[str], list[str]]:
-    """The records a shared section covers, and its body without the `Records:` line.
-
-    An explicit first line ``Records: `a`, `b``` wins. Without it: "the three" (two to ten, or a number) in the
-    title means that many records directly before the section; otherwise the records since the previous shared
-    section of the same `##` section. ``order`` lists the records seen so far, with "" for each shared section.
-    """
-    first = next((k for k, ln in enumerate(body) if ln.strip()), None)
-    if first is not None and (m := RECORDS_LINE.match(body[first].strip())):
-        listed = re.findall(r"`([^`]+)`", m.group(1))
-        unknown = [n for n in listed if n not in names]
-        if not listed or unknown:
-            raise fail(f"the Records line names {unknown or 'no record'}; list unique names in backticks")
-        return listed, body[:first] + body[first + 1 :]
-    before = [n for n in order if n]
-    count = SHARED_COUNT.search(title)
-    if count:
-        word = count.group(1).lower()
-        k = int(word) if word.isdigit() else NUMBERS[word]
-        if len(before) < k:
-            raise fail(f"the title says {word} records, but only {len(before)} come before it")
-        return before[-k:], body
-    if "" in order:
-        since = order[len(order) - order[::-1].index("") :]
-        if since:
-            return since, body
-    raise fail("name the records these shared notes cover in a first line ``Records: `a`, `b` ``")
-
-
-def _cut_panel(rec: dict[str, Any], name: str, fail: Callable[..., ReportFormatError]) -> dict[str, Any] | None:
-    """The record section's review panel, cut from its lines: the last block, from its label to the section's end."""
-    at = panel_start(rec["lines"])
-    if at is None:
-        return None
-    try:
-        panel = split_panel(rec["lines"][at:])
-    except PanelFormatError as error:
-        raise fail(rec["line"] + 1 + at + error.index, f"### {name}", error.message) from error
-    rec["lines"] = rec["lines"][:at]
-    return panel
-
-
-def _parse_records(
-    lines: list[str],
-    parts: list[Span],
-    names: set[str],
-    fail: Callable[..., ReportFormatError],
-) -> tuple[dict[str, dict[str, Any]], dict[str, list[dict[str, str]]]]:
-    """The record sections (`### <unique_name>`) and the shared sections between them, per record."""
-    records: dict[str, dict[str, Any]] = {}
-    shared: dict[str, list[dict[str, str]]] = {}
-    for start, title, end in parts:
-        heads = _spans(_headings(lines, "###", start + 1, end), end)
-        if not heads:
-            raise fail(start, f"## {title}", "no `### <unique_name>` section; a `## ` section of this kind holds them")
-        order: list[str] = []
-        for h, sec_title, sec_end in heads:
-            body = lines[h + 1 : sec_end]
-            if sec_title in names:
-                if sec_title in records:
-                    first_at = records[sec_title]["line"] + 1
-                    raise fail(h, f"## {title}", f"`### {sec_title}` again (the first is at line {first_at})")
-                records[sec_title] = {"line": h, "lines": body}
-                order.append(sec_title)
-                continue
-            section = f"### {sec_title}"
-            if re.fullmatch(r"[a-z0-9_]+", sec_title):
-                raise fail(h, section, f"`{sec_title}` has no summary row (shared notes take a title in words)")
-            covered, body = _shared_records(body, sec_title, order, names, partial(fail, h, section))
-            for n in covered:
-                shared.setdefault(n, []).append({"title": sec_title, "md": "\n".join(body)})
-            order.append("")
-    for name, rec in records.items():
-        panel = _cut_panel(rec, name, fail)
-        blocks = _split_blocks(rec["lines"])
-        intro, items = _split_items(blocks.pop("issues", ""))
-        numbers = [it["n"] for it in items]
-        twice = sorted({n for n in numbers if numbers.count(n) > 1})
-        if twice:
-            raise fail(rec["line"], f"### {name}", f"issue number(s) {twice} appear twice; marks are stored by number")
-        rec.update(blocks=blocks, issues_intro=intro, items=items, panel=panel)
-    return records, shared
-
-
-def parse_report(path: Path) -> dict[str, Any]:
-    """Parse a run report into its parts, as markdown text.
-
-    Raises:
-        ReportFormatError: The report does not follow ``references/review_file_format.md``; the message names the
-            line and the section.
-    """
-    lines = path.read_text().splitlines()
-    fail = partial(ReportFormatError, path)
-    if not lines or not lines[0].startswith("# "):
-        raise fail(0, "the title", "the report starts with a `# <title>` line")
-    parts = _spans(_headings(lines, "##", 1, len(lines)), len(lines))
-    if not parts:
-        raise fail(0, "the report", "no `## ` section; see references/review_file_format.md")
-
-    roles: dict[str, Span] = {}
-    record_parts: list[Span] = []
-    for span in parts:
-        role = next((r for r in (SUMMARY, FIELDS) if span[1].startswith(r)), None)
-        if role is None:
-            record_parts.append(span)
-        elif role in roles:
-            raise fail(
-                span[0], f"## {span[1]}", f"a second `## {role}` section (the first is at line {roles[role][0] + 1})"
-            )
-        else:
-            roles[role] = span
-    if SUMMARY not in roles:
-        raise fail(0, "the report", "no `## Summary per record` section")
-    rows = _parse_summary(lines, roles[SUMMARY], fail)
-    _check_something_to_review(rows, record_parts, fail)
-    names = {row["name"] for row in rows}
-    fields = _parse_fields(lines, roles[FIELDS], names, fail) if FIELDS in roles else {}
-    records, shared = _parse_records(lines, record_parts, names, fail)
-    for row in rows:
-        if row["name"] not in records:
-            raise fail(row["line"], f"## {roles[SUMMARY][1]}", f"no `### {row['name']}` section for this row")
-
-    date = re.search(r"\b(\d{4}-\d{2}-\d{2})\b", lines[0])
-    return {
-        "path": path,
-        "title": lines[0][2:].strip(),
-        "date": date.group(1) if date else None,
-        "header_md": "\n".join(lines[1 : parts[0][0]]),
-        "metric_marks": _metric_marks(lines[1 : parts[0][0]]),
-        "horizon_marks": _metric_marks(lines[1 : parts[0][0]], HORIZON_MARKS_LABEL),
-        "split_marks": _metric_marks(lines[1 : parts[0][0]], SPLIT_MARKS_LABEL),
-        "rows": rows,
-        "fields": fields,
-        "records": records,
-        "shared": shared,
-    }
+    """The records' reviews are well formed, but the repository does not hold what they name."""
 
 
 # ---------------------------------------------------------------------------------------------------------------
@@ -629,45 +144,6 @@ def _last_commit_with(repo: Path, path: str) -> tuple[str, str | None] | None:
 def _show(repo: Path, commit: str, path: str) -> str | None:
     shown = _git(repo, "show", f"{commit}:{path}", check=False)
     return shown.stdout if shown.returncode == 0 else None
-
-
-FOOTNOTE_DEF = re.compile(r"^\[\^([\w.-]+)\]:\s?(.*)$")
-FOOTNOTE_REF = re.compile(r"\[\^([\w.-]+)\]")
-AI_NOTES = re.compile(r"^\*\*Notes for the AI:\*\*\s*(.*)$")
-
-
-def _cut_notes(text: str) -> tuple[str, str, list[tuple[str, str]]]:
-    """``text`` without its footnote definitions and its ``**Notes for the AI:**`` block, then that block and the
-    definitions (id, markdown) in file order.
-
-    A definition is a line ``[^id]: text`` at the start of a line, with its indented continuation lines. The notes
-    block runs from its label to the end of the text. Fenced code is left alone.
-    """
-    body: list[str] = []
-    notes: list[str] = []
-    defs: list[tuple[str, list[str]]] = []
-    fenced = in_def = in_notes = False
-    for line in text.splitlines():
-        if line.lstrip().startswith("```"):
-            fenced = not fenced
-        m = None if fenced else FOOTNOTE_DEF.match(line)
-        if m:
-            defs.append((m.group(1), [m.group(2)]))
-            in_def = True
-            continue
-        if in_def and line.startswith((" ", "\t")) and line.strip():
-            defs[-1][1].append(line.strip())
-            continue
-        in_def = False
-        n = None if fenced else AI_NOTES.match(line)
-        if n:
-            in_notes = True
-            notes.append(n.group(1))
-        elif in_notes:
-            notes.append(line)
-        else:
-            body.append(line)
-    return "\n".join(body), "\n".join(notes).strip(), [(k, " ".join(v)) for k, v in defs]
 
 
 BULLET_LEAD = re.compile(r"^[*-] \*\*([^*:]+):?\*\*")
@@ -767,36 +243,11 @@ def _options_tables(out: str, text: str) -> str:
     return TABLE_HTML.sub(table, out)
 
 
-MD_ROW = re.compile(r"^\s*\|(.*)\|\s*$")
-
-
 def _options(text: str) -> dict[str, Any]:
-    """An issue's options as the page's mark buttons name them: from its first options table (a header with an
-    ``Option`` column), each row's key and option name, the key of the row marked ``(implemented)`` (what "As
-    implemented" locks in) and the key the ``**Recommendation:**`` names. Empty when the issue has no such table.
-    """
-    tables: list[list[list[str]]] = [[]]
-    for line in text.splitlines():
-        m = MD_ROW.match(line)
-        if m:
-            tables[-1].append([c.strip() for c in re.split(r"(?<!\\)\|", m.group(1))])
-        elif tables[-1]:
-            tables.append([])
-    rows = next((t for t in tables if t and "option" in (h.lower() for h in t[0])), [])
-    if not rows:
-        return {"options": [], "implemented": "", "recommended": ""}
-    heads = [h.lower() for h in rows[0]]
-    col = heads.index("option")
-    options, implemented = [], ""
-    for cells in rows[2:]:
-        if len(cells) <= col or not cells[0]:
-            continue
-        key, name = re.sub(r"[*`]", "", cells[0]).strip(), cells[col]
-        if IMPLEMENTED.search(name):
-            name, implemented = IMPLEMENTED.sub("", name), implemented or key
-        options.append({"key": key, "nameHtml": MD.renderInline(name.strip())})
-    rec = RECOMMENDED.search(text)
-    return {"options": options, "implemented": implemented, "recommended": rec.group(1) if rec else ""}
+    """An issue's options as the page's mark buttons name them (``review.options``, each name as inline HTML)."""
+    found = rv.options(text)
+    named = [{"key": o["key"], "nameHtml": MD.renderInline(o["name"])} for o in found["options"]]
+    return {**found, "options": named}
 
 
 def render(text: str, *, fold: bool = False) -> str:
@@ -809,7 +260,7 @@ def render(text: str, *, fold: bool = False) -> str:
     """
     if not text.strip():
         return ""
-    body, notes, defs = _cut_notes(text.strip())
+    body, notes, defs = rv.cut_notes(text.strip())
     out = _options_tables(_fold(body) if fold else (MD.render(body.strip()) if body.strip() else ""), body)
     if notes:
         out += '<details class="ainotes"><summary>Notes for the AI</summary>' + MD.render(notes) + "</details>"
@@ -817,7 +268,7 @@ def render(text: str, *, fold: bool = False) -> str:
         return out
     known = dict(defs)
     order: list[str] = []
-    for key in FOOTNOTE_REF.findall(out):
+    for key in rv.FOOTNOTE_REF.findall(out):
         if key in known and key not in order:
             order.append(key)
     order += [k for k, _ in defs if k not in order]
@@ -829,19 +280,10 @@ def render(text: str, *, fold: bool = False) -> str:
         n = order.index(key) + 1
         return f'<sup class="fnref"><button type="button" data-act="fn" data-fn="{n}">{n}</button></sup>'
 
-    out = FOOTNOTE_REF.sub(ref, out)
+    out = rv.FOOTNOTE_REF.sub(ref, out)
     items = "".join(f'<li data-fn="{i}">{MD.renderInline(known[key])}</li>' for i, key in enumerate(order, start=1))
     summary = f"<summary>Rules and references ({len(order)})</summary>"
     return out + f'<details class="fnotes">{summary}<ol>{items}</ol></details>'
-
-
-TURN = re.compile(
-    r"^(?:- )?\*\*(?:(?P<ai>Answer|Consistency check) \(AI, (?P<ai_date>\d{4}-\d{2}-\d{2})\)[^*]*"
-    r"|(?P<close>Resolved|Deferred) \((?P<close_date>\d{4}-\d{2}-\d{2})(?:, (?P<close_who>[^)]+))?\)"
-    r"|(?P<who>[A-Z][a-z]+) \((?P<who_date>\d{4}-\d{2}-\d{2})(?:, (?P<mark>[^)]+))?\)):\*\*\s*",
-)
-"""A turn of the conversation on an issue or item, at the start of a line: the AI's answer or consistency check,
-the curator's note, or the label that closes it."""
 
 
 CHOICE = re.compile(r"^\s*[-*] \((?P<key>[a-z])\) (?P<text>.*)$")
@@ -880,50 +322,28 @@ def _choices(md: str) -> tuple[str, list[dict[str, str]]]:
 
 
 def _thread(text: str) -> dict[str, Any]:
-    """An issue's or item's text split into the original and the turns after it, each rendered.
+    """An issue's or item's text split into the original and the turns after it (``review.split_turns``), each
+    rendered.
 
-    The original is everything before the first turn label; each turn runs to the next label. The page shows the turns
-    as a conversation under the original text, so the curator sees who said what, and when. The options of the
-    original (``_options``) name what each mark button locks in.
+    The page shows the turns as a conversation under the original text, so the curator sees who said what, and when.
+    The options of the original (``_options``) name what each mark button locks in.
     """
-    body: list[str] = []
+    original, found = rv.split_turns(text)
     turns: list[dict[str, Any]] = []
-    for line in text.splitlines():
-        m = TURN.match(line)
-        if m:
-            if m["ai"]:
-                turn = {"who": "ai", "kind": m["ai"].lower(), "date": m["ai_date"]}
-            elif m["close"]:
-                turn = {
-                    "who": "closed",
-                    "kind": m["close"].lower(),
-                    "date": m["close_date"],
-                    "by": m["close_who"] or "",
-                }
-            else:
-                turn = {
-                    "who": "curator",
-                    "kind": "note",
-                    "date": m["who_date"],
-                    "mark": m["mark"] or "",
-                    "by": m["who"],
-                }
-            turn["lines"] = [line[m.end() :]]
-            turns.append(turn)
-        elif turns:
-            turns[-1]["lines"].append(line)
+    for t in found:
+        if t.who == "ai":
+            turn: dict[str, Any] = {"who": "ai", "kind": t.kind, "date": t.date}
+            md, turn["choices"] = _choices(t.text)
+        elif t.who == "closed":
+            turn, md = {"who": "closed", "kind": t.kind, "date": t.date, "by": t.by}, t.text
         else:
-            body.append(line)
-    for turn in turns:
-        lines = turn.pop("lines")
-        md = "\n".join([lines[0], _dedent(lines[1:])]) if len(lines) > 1 else lines[0]
-        if turn["who"] == "ai":
-            md, turn["choices"] = _choices(md)
+            turn, md = {"who": "curator", "kind": "note", "date": t.date, "mark": t.mark, "by": t.by}, t.text
         turn["html"] = render(md)
+        turns.append(turn)
     # The AI's last turn, when the issue waits on the curator: the page counts the issue as unmarked until the curator
     # marks it (or writes a note) in reply to this turn, stored as `re` next to the mark.
     ask = hashlib.sha256(turns[-1]["html"].encode()).hexdigest()[:12] if turns and turns[-1]["who"] == "ai" else ""
-    return {"html": render("\n".join(body), fold=True), "thread": turns, "askId": ask, **_options("\n".join(body))}
+    return {"html": render(original, fold=True), "thread": turns, "askId": ask, **_options(original)}
 
 
 def _frontmatter(text: str | None) -> tuple[dict, str]:
@@ -969,34 +389,6 @@ def _record(path: Path) -> dict:
     return {"fields": rows, "html": render(body)}
 
 
-METRIC_MARKS_LABEL = "**Metric marks:**"
-"""The report's header line naming the records whose declared metric the round marks (`` `a`, `b` `` or ``all``);
-without it the page shows no metric (Lennart, 2026-11-10: "the metric was not a new issue or choice here, hence it
-should be resolved or hidden unless asked for")."""
-
-
-HORIZON_MARKS_LABEL = "**Horizon marks:**"
-"""The same for the horizon and test windows of a temporal task, which the curator signs off for every new temporal
-dataset (Lennart, 2026-11-10: "for new datasets, the curator should also sign off on this (akin to how we sign off on
-the metric)")."""
-
-
-SPLIT_MARKS_LABEL = "**Split marks:**"
-"""The same for the declared split (the regime, its columns, the time basis, the folds), which the page shows in the
-Use case tab above the metric: on the page, with a mark, only when the round asks about it."""
-
-
-def _metric_marks(lines: list[str], label: str = METRIC_MARKS_LABEL) -> set[str] | None:
-    """The records of the header's marks line ``label`` (``None``: all), or none without that line."""
-    for line in lines:
-        if line.startswith("## "):
-            break
-        if line.startswith(label):
-            rest = line[len(label) :].strip().rstrip(".")
-            return None if rest == "all" else set(re.findall(r"`([^`]+)`", rest))
-    return set()
-
-
 REVIEW_SECTION = re.compile(r"^## Review[ \t]*\n.*?(?=^## |\Z)", re.MULTILINE | re.DOTALL)
 """A record's ``## Review`` section: the review the page shows on the Decisions and Panel tabs, not in the record tab,
 and never read for the curator's CC lines (a review may quote one)."""
@@ -1007,48 +399,12 @@ def _without_review(body: str) -> str:
     return REVIEW_SECTION.sub("", body)
 
 
-HORIZON_CHECKED = re.compile(
-    r"^CC \((?P<date>\d{4}-\d{2}-\d{2}), (?P<who>[^)]+)\): the declared horizon\b.*?\bis checked\b.*$", re.MULTILINE
-)
-
-
-METRIC_CHECKED = re.compile(
-    r"^CC \((?P<date>\d{4}-\d{2}-\d{2}), (?P<who>[^)]+)\): the declared metric\b.*?\bis checked\b.*$", re.MULTILINE
-)
-
-
-SPLIT_CHECKED = re.compile(
-    r"^CC \((?P<date>\d{4}-\d{2}-\d{2}), (?P<who>[^)]+)\): the declared split\b.*?\bis checked\b.*$", re.MULTILINE
-)
-
-
-def _metric_checked(path: Path) -> dict | None:
-    """The record's latest CC line saying the declared metric is checked (the curator's metric mark, applied): the page
-    then shows that line instead of the mark and does not count the metric as open.
+def _checked(path: Path, what: str) -> dict | None:
+    """The record's latest CC line that the declared ``what`` (metric, horizon, split) is checked (the curator's mark,
+    applied): the page then shows that line instead of the mark and does not count it as open.
     """
-    found = list(METRIC_CHECKED.finditer(_without_review(_frontmatter(path.read_text())[1]))) if path.is_file() else []
-    if not found:
-        return None
-    m = found[-1]
-    return {"date": m["date"], "by": m["who"], "html": MD.renderInline(m.group(0))}
-
-
-def _horizon_checked(path: Path) -> dict | None:
-    """The record's latest CC line saying the declared horizon is checked (the curator's horizon mark, applied)."""
-    found = list(HORIZON_CHECKED.finditer(_without_review(_frontmatter(path.read_text())[1]))) if path.is_file() else []
-    if not found:
-        return None
-    m = found[-1]
-    return {"date": m["date"], "by": m["who"], "html": MD.renderInline(m.group(0))}
-
-
-def _split_checked(path: Path) -> dict | None:
-    """The record's latest CC line saying the declared split is checked (the curator's split mark, applied)."""
-    found = list(SPLIT_CHECKED.finditer(_without_review(_frontmatter(path.read_text())[1]))) if path.is_file() else []
-    if not found:
-        return None
-    m = found[-1]
-    return {"date": m["date"], "by": m["who"], "html": MD.renderInline(m.group(0))}
+    found = rv.checked(path, what)
+    return None if found is None else {"date": found["date"], "by": found["by"], "html": MD.renderInline(found["line"])}
 
 
 HORIZON_TITLE = "Sign off the horizon: the window length, the gap and the period the windows cover?"
@@ -1070,7 +426,7 @@ def _horizon_item(text: str, temporal: dict | None, record_path: Path) -> dict |
         while at < len(lines) and lines[at].startswith((" ", "\t")) and lines[at].strip():
             at += 1
         lines[at:at] = [f"* **Declared:** {declared}"]
-    checked = _horizon_checked(record_path)
+    checked = _checked(record_path, "horizon")
     return {
         "n": "H",
         "titleHtml": MD.renderInline(HORIZON_TITLE),
@@ -1466,27 +822,42 @@ def _retired_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
     }
 
 
-def _panel(panel: dict[str, Any] | None) -> dict[str, Any] | None:
+def _panel(panel: rv.Panel | None) -> dict[str, Any] | None:
     """The review panel as the page shows it: the summary as HTML, the recommendation as text, the role sections."""
     if panel is None:
         return None
     return {
-        "summary": render(panel["summary_md"]),
-        "recommendation": panel["recommendation"],
-        "sections": [{"title": s["title"], "html": render(s["md"])} for s in panel["sections"]],
+        "summary": render(panel.summary),
+        "recommendation": panel.recommendation,
+        "sections": [{"title": s.title, "html": render(s.text)} for s in panel.sections],
     }
 
 
-def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: dict[str, Any]) -> dict[str, Any]:
+@dataclass
+class Marks:
+    """The records whose declared metric, horizon and split this round asks about (``None``: every record)."""
+
+    metric: set[str] | None = field(default_factory=set)
+    """By default none, so the page shows no metric (Lennart, 2026-11-10: "the metric was not a new issue or choice
+    here, hence it should be resolved or hidden unless asked for")."""
+    horizon: set[str] | None = field(default_factory=set)
+    """The horizon and test windows of a temporal task, which the curator signs off for every new temporal dataset
+    (Lennart, 2026-11-10)."""
+    split: set[str] | None = field(default_factory=set)
+    """The declared split (the regime, its columns, the time basis, the folds)."""
+
+    def asks(self, what: str, name: str) -> bool:
+        """Whether the round asks about ``what`` (metric, horizon, split) of the record ``name``."""
+        marks = getattr(self, what)
+        return marks is None or name in marks
+
+
+def _dataset(where: _Repo, review: rv.Review, tldr: dict[str, Any], marks: Marks) -> dict[str, Any]:
     """Everything the page shows for one record."""
-    name = row["name"]
-    rec = report["records"][name]
-    cat = _category(row["outcome"])
-    m = re.search(r"added as `([^`]+)`", row["outcome"])
-    folder = m.group(1) if m else (None if cat == "notadded" else name)
-    record_path = where.repo / RECORDS_DIR / f"{name}.md"
+    name, folder = review.name, review.folder
+    record_path = review.source
     if not record_path.is_file():
-        raise BuildError(f"{name}: no curation record {RECORDS_DIR}/{name}.md")
+        raise BuildError(f"{name}: no curation record {record_path}")
     retired = bool(folder) and not (where.root / folder).is_dir()
     files: dict[str, Any] = dict.fromkeys(("code", "summary", "metric", "split", "temporal", "meta", "readme"))
     if folder:
@@ -1496,50 +867,37 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
     if files["summary"] is None and name in tldr:
         files["summary"] = _summary_from_tldr(str(tldr[name]))
     decided = _decided(record_path)
-    fields = report["fields"].get(name, [])
-    marks, hmarks = report.get("metric_marks", set()), report.get("horizon_marks", set())
-    smarks = report.get("split_marks", set())
-    horizon = _horizon_item(rec["blocks"].get("horizon", ""), files["temporal"], record_path)
-    items = [horizon] if horizon and (hmarks is None or name in hmarks) else []
+    fields = [{"key": f.key, "field": f.key, "record": f.record, "definition": f.definition} for f in review.fields]
+    horizon = _horizon_item(review.horizon, files["temporal"], record_path)
+    items = [horizon] if horizon and marks.asks("horizon", name) else []
+    items += [
+        {"n": it.number, "titleHtml": MD.renderInline(it.title), **_thread(it.text), "resolved": it.closed}
+        for it in review.issues
+    ]
+    blocks = {"outcome": review.outcome, "judgment": review.judgment}
     return {
         "name": name,
         "folder": folder,
         "priority": _priority(record_path),
-        "openMarks": sum(1 for it in [*items, *rec["items"]] if not it["resolved"]) + len(fields),
-        "late": row["late"],
-        "cat": "decided" if decided else cat,
-        "outcomeHtml": MD.renderInline(row["outcome"]),
-        "pointsHtml": MD.renderInline(row["points"]),
-        "issuesIntroHtml": render(rec["issues_intro"]),
-        "items": items
-        + [
-            {
-                "n": it["n"],
-                "titleHtml": MD.renderInline(it["title_md"]),
-                **_thread(it["body_md"]),
-                "resolved": it["resolved"],
-            }
-            for it in rec["items"]
-        ],
+        "openMarks": sum(1 for it in items if not it["resolved"]) + len(fields),
+        "cat": "decided" if decided else _category(review.cell),
+        "outcomeHtml": MD.renderInline(review.cell),
+        "pointsHtml": MD.renderInline(review.points),
+        "items": items,
         "fields": fields,
-        "blocks": [
-            {"key": k, "title": SECTION_TITLES[k], "html": render(v)}
-            for k, v in rec["blocks"].items()
-            if v.strip() and k != "horizon"
-        ],
-        "shared": [{"title": s["title"], "html": render(s["md"])} for s in report["shared"].get(name, [])],
-        "panel": _panel(rec.get("panel")),
+        "blocks": [{"key": k, "title": BLOCK_TITLES[k], "html": render(v)} for k, v in blocks.items() if v.strip()],
+        "panel": _panel(review.panel),
         "code": files["code"],
         "retired": retired,
         "record": _record(record_path),
         "decided": decided,
         "summary": files["summary"],
         "metric": files["metric"],
-        "metricChecked": _metric_checked(record_path),
-        "metricMark": marks is None or name in marks,
+        "metricChecked": _checked(record_path, "metric"),
+        "metricMark": marks.asks("metric", name),
         "split": files["split"],
-        "splitMark": smarks is None or name in smarks,
-        "splitChecked": _split_checked(record_path),
+        "splitMark": marks.asks("split", name),
+        "splitChecked": _checked(record_path, "split"),
         "meta": files["meta"],
         "readme": files["readme"],
         "retiredCommit": files.get("retiredCommit"),
@@ -1547,39 +905,66 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
     }
 
 
+def _plural(n: int, word: str) -> str:
+    return f"{n} {word}{'' if n == 1 else 's'}"
+
+
+def header_markdown(reviews: list[rv.Review], marks: Marks, settled: list[str], date: str) -> str:
+    """What the Summary view shows under "About this page": the counts, the marks the round asks, the settled
+    records left out.
+    """
+    n_folders = sum(1 for r in reviews if r.folder)
+    n_issues = sum(len(r.issues) for r in reviews)
+    n_fields = sum(len(r.fields) for r in reviews)
+    out = [
+        f"Read on {date} from the `## Review` sections of the curation records: "
+        f"{_plural(n_folders, 'added dataset')} and {_plural(len(reviews) - n_folders, 'record')} without a folder, "
+        f"{_plural(n_issues, 'issue')} and {_plural(n_fields, 'record field')}. Edit those records, not this page."
+    ]
+    for label, names in (("Metric", marks.metric), ("Horizon", marks.horizon), ("Split", marks.split)):
+        if names is None:
+            out.append(f"**{label} marks:** all.")
+        elif names:
+            out.append(f"**{label} marks:** {', '.join(f'`{n}`' for n in sorted(names))}.")
+    if settled:
+        out.append(f"**Settled, left out (they ship by default):** {', '.join(f'`{n}`' for n in settled)}.")
+    return "\n\n".join(out)
+
+
 def build_data(
-    report: dict[str, Any],
+    reviews: list[rv.Review],
     root: Path,
     *,
+    marks: Marks | None = None,
+    settled: list[str] | None = None,
+    date: str | None = None,
     title: str = "New Datasets Review",
     subtitle: str | None = None,
     tldr: Path | None = None,
 ) -> dict[str, Any]:
-    """The data the page renders: the parsed report plus each record's files as they are now.
+    """The data the page renders: the reviews plus each record's files as they are now.
 
     Raises:
-        BuildError: A record, a definition or a retired definition named by the report is missing.
+        BuildError: A record, a definition or a retired definition named by a review is missing.
     """
     where = _repo_of(root)
+    marks = marks or Marks()
     tldr_entries = (yaml.safe_load(tldr.read_text()) or {}) if tldr else {}
-    datasets = sorted((_dataset(where, report, row, tldr_entries) for row in report["rows"]), key=review_order)
+    datasets = sorted((_dataset(where, r, tldr_entries, marks) for r in reviews), key=review_order)
 
     today = dt.date.today()
-    run_date = dt.date.fromisoformat(report["date"]) if report["date"] else None
+    day = dt.date.fromisoformat(date) if date else today
     if subtitle is None:
         n = len(datasets)
-        when = f"run of {_date_text(run_date)}" if run_date else f"built {_date_text(today)}"
-        subtitle = f"Working copy {where.root.name} · {n} curation record{'' if n == 1 else 's'} · {when}"
-    path = Path(report["path"]).resolve()
-    shown = path.relative_to(where.repo).as_posix() if path.is_relative_to(where.repo) else path.name
+        subtitle = f"Working copy {where.root.name} · {n} curation record{'' if n == 1 else 's'} · {_date_text(day)}"
     return {
-        "generated": (run_date or today).isoformat(),
+        "generated": day.isoformat(),
         "snapshot": _date_text(today),
-        "headerHtml": render(report["header_md"]),
+        "headerHtml": render(header_markdown(reviews, marks, settled or [], day.isoformat())),
         "datasets": datasets,
         "title": title,
         "subtitle": subtitle,
-        "report": {"name": path.name, "path": shown, "title": report["title"], "date": report["date"]},
+        "source": RECORDS_DIR,
         "github": where.github,
         "githubRepo": GITHUB_REPO,
         "workingCopy": where.wc,
@@ -1612,7 +997,7 @@ def assemble(data: dict[str, Any], template: str) -> str:
     return page.replace("__DATA__", payload, 1)
 
 
-def _report(data: dict[str, Any], out: Path) -> None:
+def _summary(data: dict[str, Any], out: Path) -> None:
     datasets = data["datasets"]
     n_items = sum(len(d["items"]) for d in datasets)
     n_open = sum(1 for d in datasets for it in d["items"] if not it["resolved"])
@@ -1639,37 +1024,111 @@ def _report(data: dict[str, Any], out: Path) -> None:
         print(f"{out / name} {(out / name).stat().st_size:,} bytes")
 
 
-def main(argv: list[str] | None = None) -> int:
-    """Parse the report, collect the files, write data.json and the page."""
+def _marks(value: str | None) -> set[str] | None:
+    """The names of a ``--metric-marks``, ``--horizon-marks`` or ``--split-marks`` flag (``None`` for ``all``)."""
+    marks = {n.strip() for n in (value or "").split(",") if n.strip()}
+    return None if marks == {"all"} else marks
+
+
+def select(args: argparse.Namespace) -> tuple[list[rv.Review], Marks, list[str]]:
+    """The reviews on the page, the marks the round asks and the settled records left out.
+
+    Raises:
+        ReviewFormatError: A review breaks the format, the working copy holds a review file, a name has no review,
+            or a marks flag names a record without one.
+    """
+    names = [n.strip() for n in args.names.split(",") if n.strip()] if args.names else None
+    reviews = rv.read_reviews(args.records, names)
+    marks = Marks(_marks(args.metric_marks), _marks(args.horizon_marks), _marks(args.split_marks))
+    for what in MARK_FLAGS:
+        unknown = sorted((getattr(marks, what) or set()) - {r.name for r in reviews})
+        if unknown:
+            message = f"--{what}-marks names records without a review: {', '.join(unknown)}"
+            raise rv.ReviewFormatError(args.records, None, message)
+    settled: list[str] = []
+    if not args.keep_settled:
+        settled = [r.name for r in reviews if rv.is_settled(r, args.records, marks.metric, marks.horizon, marks.split)]
+        reviews = [r for r in reviews if r.name not in settled]
+    return reviews, marks, settled
+
+
+def _report_reviews(reviews: list[rv.Review], settled: list[str]) -> None:
+    """The counts of what the page shows, the settled records left out, and the shape warnings (on stderr)."""
+    n_folders = sum(1 for r in reviews if r.folder)
+    n_open = sum(1 for r in reviews for i in r.issues if i.state == "open")
+    print(
+        f"records {len(reviews)} ({n_folders} with a folder, {len(reviews) - n_folders} without), "
+        f"issues {sum(len(r.issues) for r in reviews)} ({n_open} open), "
+        f"field rows {sum(len(r.fields) for r in reviews)}, "
+        f"review panels {sum(1 for r in reviews if r.panel)}"
+    )
+    if settled:
+        print(f"left out {_plural(len(settled), 'settled record')} (--keep-settled keeps them): {', '.join(settled)}")
+    for warning in (w for r in reviews for w in rv.shape_warnings(r)):
+        print(f"warning: {warning}", file=sys.stderr)
+
+
+def make_parser() -> argparse.ArgumentParser:
+    """The command line: ``check`` and ``build``, with the options of the module docstring."""
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("report", type=Path, help="The run report (markdown).")
-    parser.add_argument("--out", type=Path, required=True, help="Folder for data.json and review_page.html.")
-    parser.add_argument("--root", type=Path, default=Path("datasets/_dev/tabarena-v0pt2"), help="The working copy.")
-    parser.add_argument("--title", default="New Datasets Review", help="The page title.")
-    parser.add_argument("--subtitle", help="Default: the working copy, the number of records and the report date.")
-    parser.add_argument("--tldr", type=Path, help="YAML of hand-written summaries for records without task_summary.")
+    commands = parser.add_subparsers(dest="command", required=True)
+    check = commands.add_parser("check", help="Read the records' reviews, print the counts and the shape warnings.")
+    build = commands.add_parser("build", help="Check, then write data.json and review_page.html into --out.")
+    for sub in (check, build):
+        sub.add_argument("--root", type=Path, default=Path("datasets/_dev/tabarena-v0pt2"), help="The working copy.")
+        sub.add_argument("--records", type=Path, default=Path(RECORDS_DIR), help="The curation records.")
+        sub.add_argument("--names", help="Comma-separated unique names: only these records.")
+        sub.add_argument("--keep-settled", action="store_true", help="Keep the records with nothing left to decide.")
+        for what, help_text in MARK_FLAGS.items():
+            sub.add_argument(f"--{what}-marks", help=help_text)
+    build.add_argument("--out", type=Path, required=True, help="Folder for data.json and review_page.html.")
+    build.add_argument("--title", default="New Datasets Review", help="The page title.")
+    build.add_argument("--subtitle", help="Default: the working copy, the number of records and the date.")
+    build.add_argument("--date", default=dt.date.today().isoformat(), help="The page's date (YYYY-MM-DD).")
+    build.add_argument("--tldr", type=Path, help="YAML of hand-written summaries for records without task_summary.")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    """``check``: read and check the reviews; ``build``: also write data.json and the page."""
+    parser = make_parser()
     args = parser.parse_args(argv)
+    if args.command == "build":
+        try:
+            dt.date.fromisoformat(args.date)
+        except ValueError:
+            parser.error(f"--date {args.date!r} is not YYYY-MM-DD")
 
     try:
-        report = parse_report(args.report)
+        reviews, marks, settled = select(args)
+    except rv.ReviewFormatError as error:
+        print(f"error: {error}\nThe format: {FORMAT}", file=sys.stderr)
+        return 1
+    _report_reviews(reviews, settled)
+    if args.command == "check":
+        return 0
+    if not reviews:
+        print("nothing left to decide: no page written (--keep-settled writes one)")
+        return 0
+    try:
         data = build_data(
-            report,
+            reviews,
             args.root,
+            marks=marks,
+            settled=settled,
+            date=args.date,
             title=args.title,
             subtitle=args.subtitle,
             tldr=args.tldr,
         )
         page = assemble(data, TEMPLATE.read_text())
-    except ReportFormatError as error:
-        print(f"error: {error}\nThe format: {HERE.parent / 'references' / 'review_file_format.md'}", file=sys.stderr)
-        return 1
     except BuildError as error:
         print(f"error: {error}", file=sys.stderr)
         return 1
     args.out.mkdir(parents=True, exist_ok=True)
     (args.out / "data.json").write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")))
     (args.out / "review_page.html").write_text(page)
-    _report(data, args.out)
+    _summary(data, args.out)
     return 0
 
 

@@ -153,7 +153,6 @@ button, input, textarea { font: inherit; color: inherit; }
 .tag.added { background: var(--ok-soft); color: var(--ok); }
 .tag.noship { background: var(--stop-soft); color: var(--stop); }
 .tag.notadded { background: var(--surface-2); color: var(--ink-2); }
-.tag.late { background: transparent; color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 .tag.decided { background: var(--surface-2); color: var(--ink-3); box-shadow: inset 0 0 0 1px var(--ink-3); }
 .tag.prio { background: var(--accent-soft); color: var(--accent); }
 .tag.prio.none { background: transparent; color: var(--ink-3); box-shadow: inset 0 0 0 1px var(--rule); }
@@ -538,7 +537,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   // The mark on the declared metric (stored as `metric: {d, note}` on the record's review document).
   const METRIC_OPTS = [["ok", "As declared"], ["change", "Change"], ["discuss", "Discuss"]];
   const METRIC_LABEL = { ok: "As declared", change: "Change", discuss: "Discuss" };
-  // The metric is on the page only when the round asks about it (`metricMark`: the collector's --metric-marks; Lennart,
+  // The metric is on the page only when the round asks about it (`metricMark`: review_page.py --metric-marks; Lennart,
   // 2026-11-10, "hidden unless asked for"), and takes a mark until the record carries the curator's CC line that it
   // is checked (then it is resolved).
   const hasMetricMark = (d) => !!d.metricMark && !!d.metric && !!d.folder && !d.retired && d.cat !== "decided" && !d.metricChecked;
@@ -797,7 +796,6 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
 
   /* ---------- rendering: rail ---------- */
   function visible(d) {
-    if (ui.filter === "late" && !d.late) return false;
     if (["added", "noship", "notadded", "decided"].includes(ui.filter) && d.cat !== ui.filter) return false;
     if (ui.hideReviewed && peekRev(d.name).verdict && d.name !== ui.current) return false;
     if (ui.q) {
@@ -814,7 +812,6 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       ["noship", "Rec. not to ship", n((d) => d.cat === "noship")],
       ["notadded", "Not added", n((d) => d.cat === "notadded")],
       ["decided", "Decided: verify", n((d) => d.cat === "decided")],
-      ["late", "Late", n((d) => d.late)],
     ];
     document.getElementById("filters").innerHTML = defs.map(([k, label, c]) =>
       '<button class="chipbtn" data-act="filter" data-f="' + k + '" aria-pressed="' + (ui.filter === k) + '">' + esc(label) + '<span class="n">' + c + "</span></button>").join("");
@@ -1149,7 +1146,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
 
     // 1. The start, as on the task-summary page: eyebrow, name, links, then the run's outcome in two lines.
     h += '<div class="eyebrow"><span class="tag prio' + (d.priority ? "" : " none") + '" title="The record\u2019s priority: 5 is reviewed first">' + prioLabel(d.priority) + "</span>" +
-      '<span class="tag ' + d.cat + '">' + esc(CAT[d.cat]) + "</span>" + (d.late ? '<span class="tag late">Late</span>' : "");
+      '<span class="tag ' + d.cat + '">' + esc(CAT[d.cat]) + "</span>";
     if (d.meta) {
       const m = d.meta;
       h += '<span class="facts">' + (m.regime ? "<span>" + esc(REGIME[m.regime] || m.regime) + "</span>" : "") +
@@ -1167,7 +1164,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
         '<p class="facts">Suggestion <b>' + esc(dd.suggestion) + "</b>" + (dd.markers.length ? " · markers " + esc(dd.markers.join(", ")) : "") +
         (dd.checkedBy.length ? " · checked by " + esc(dd.checkedBy.join(", ")) : "") + "</p>" +
         (dd.ccHtml ? '<div class="md">' + dd.ccHtml + "</div>" : "") +
-        "<p class=\"facts\">Only check that the record says what was decided (verdict, markers, dated note); the report in the Details tab is background.</p></section>";
+        "<p class=\"facts\">Only check that the record says what was decided (verdict, markers, dated note); the review in the Details tab is background.</p></section>";
     }
 
     // 2. The record tabs: the use case first, then the decisions and the sources.
@@ -1188,12 +1185,9 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     let dec = d.fields.length ? '<nav class="panelnav" aria-label="In this tab"><span>In this tab:</span>' +
       '<button class="linkbtn" data-act="jumpto" data-to="iss-h">Issues (' + (d.items.length - nClosed) + (nClosed ? " open" : "") + ")</button>" +
       '<button class="linkbtn" data-act="jumpto" data-to="fld-h">Record fields (' + d.fields.length + ")</button></nav>" : "";
-    let det = '<section class="report" aria-labelledby="rep-h"><h3 id="rep-h">The run\u2019s report</h3>';
+    let det = '<section class="report" aria-labelledby="rep-h"><h3 id="rep-h">The review</h3>';
     d.blocks.forEach((b) => { det += '<section class="rblock"><h4>' + esc(b.title) + '</h4><div class="md">' + b.html + "</div></section>"; });
-    d.shared.forEach((s) => {
-      det += '<details class="block"><summary>Shared notes: ' + esc(s.title) + '</summary><div class="md">' + s.html + "</div></details>";
-    });
-    if (!d.blocks.length && !d.shared.length) det += '<p class="intro">The run report has no further details for this record.</p>';
+    if (!d.blocks.length) det += '<p class="intro">The review has no further details for this record.</p>';
     det += "</section>";
     dec += '<h3 id="iss-h">Issues <span class="count">' + (refOnly(d) ? "for reference, no marks to set" : "a mark for each") + "</span></h3>";
     if (d.items.length && !refOnly(d)) dec += '<p class="intro">As implemented locks in the option tagged <em>implemented</em> in the issue\u2019s table, what the definition does now. Change to: pick another option\u2019s letter, or other and say what in your note. Discuss: Claude answers on the page first. The row a mark locks in is highlighted in the table. Record fields are marked in their own table below.</p>';
@@ -1207,7 +1201,6 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       dec += '<p class="intro">The split (' + esc(REGIME[d.split.regime] || d.split.regime) + ") is marked in the Use case tab, under Split: " + esc(sm) +
         '. <button class="linkbtn" data-act="ctab" data-c="usecase">Go there</button></p>';
     }
-    if (d.issuesIntroHtml) dec += '<div class="md intro">' + d.issuesIntroHtml + "</div>";
     if (reopened(d)) dec += '<p class="intro">Already decided in triage, and reopened: mark the open issues; the resolved ones are for reference.</p>';
     if (d.items.length && refOnly(d)) dec += '<p class="intro">Already decided in triage: the issues are shown for reference, with no marks to set.</p>';
     if (nClosed) {
@@ -1373,7 +1366,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   // Every review mark in the store's shape (collection reviews, by document id),
   // for a reviewer whose marks live only in this browser.
   function decisionsJson() {
-    const out = { page: { title: DATA.title, report: DATA.report.path, snapshot: DATA.snapshot }, reviews: {} };
+    const out = { page: { title: DATA.title, records: DATA.source, snapshot: DATA.snapshot }, reviews: {} };
     const hasText = (v) => typeof v === "string" && v.trim() !== "";
     Object.keys(S.reviews).sort().forEach((name) => {
       if (!byName.has(name)) return;
@@ -1425,7 +1418,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     h += '<p class="intro">Opened as a local file, this page keeps the marks in this browser only; “Copy decisions (JSON)” copies every verdict, mark and note, for Claude to read.</p>';
     h += '<label class="visually-hidden" for="jsonOut">Decisions as JSON</label><textarea class="copyout" id="jsonOut" readonly hidden></textarea>';
     h += '<label class="visually-hidden" for="copyOut">Decisions as text</label><textarea class="copyout" id="copyOut" readonly></textarea>';
-    h += '<details class="about"><summary>About this run (from ' + esc(DATA.report.name) + ')</summary><div class="md">' + DATA.headerHtml + "</div></details>";
+    h += '<details class="about"><summary>About this page (from the reviews in ' + esc(DATA.source) + ')</summary><div class="md">' + DATA.headerHtml + "</div></details>";
     h += "</div>";
     el.innerHTML = h;
     document.getElementById("copyOut").value = decisionsText();

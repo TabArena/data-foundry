@@ -45,9 +45,10 @@ dataset:
        column 0;
      - `**Outcome:**` and `**Main points:**` say what was decided, in one sentence, and drop the settled questions;
      - never delete an issue.
-4. **Collect:** `.venv/bin/python .claude/skills/review-added-datasets/scripts/collect_reviews.py --out
-   <run folder>/apply_<agent>.md --names <the records> --horizon-marks <the same> --keep-settled`; fix each warning
-   that names your records. `uvx ruff@0.15.15 check` and `format --check` on each `dataset.py` you changed.
+4. **Check:** `.venv/bin/python .claude/skills/review-added-datasets/scripts/review_page.py check --names <the
+   records> --horizon-marks <the same> --keep-settled` (it reads the reviews with the one parser and writes nothing);
+   fix each error and each warning that names your records. `uvx ruff@0.15.15 check` and `format --check` on each
+   `dataset.py` you changed.
 
 The agent returns per dataset one line for `dataset.py` and one for the record (its comments and its review), the
 check's result with the numbers, and a one- or two-sentence `CHANGELOG.md` draft, which the main session writes.
@@ -57,5 +58,5 @@ check's result with the numbers, and a one- or two-sentence `CHANGELOG.md` draft
 * Read each changed `dataset.py` and record diff, not only the agent's summary: a mark word copied wrong ("change" for
   "discuss"), a claim the agent's own measurement contradicts, or a stale count in a text the brief did not name are
   what the rounds of 2026-11-11 found.
-* Run `collect_reviews.py` over every record of the round, and `pytest -q` once all agents are done.
+* Run `review_page.py check` over every record of the round, and `pytest -q` once all agents are done.
 * Write the `CHANGELOG.md` entry from the drafts, rebuild the page and republish it (Step 5).

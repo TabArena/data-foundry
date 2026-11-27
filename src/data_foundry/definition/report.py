@@ -38,6 +38,15 @@ from data_foundry.definition.dataset import (
 from data_foundry.definition.windows import Window, window_stats
 from data_foundry.schema import resolve_warehouse_dir, rows_text, training_only_weight
 
+_SAFE_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+"""libyaml's safe loader when installed (about 9x faster on the records' front matter), else the pure-Python one."""
+
+
+def _load_yaml(text: str) -> object:
+    """``yaml.safe_load`` with the fastest safe loader available."""
+    return yaml.load(text, Loader=_SAFE_LOADER)  # noqa: S506 - a safe loader, C or Python
+
+
 if TYPE_CHECKING:
     from data_foundry.definition.dataset import AbstractCuratedDataset, CurationResult
 
@@ -98,7 +107,7 @@ def read_report(path: Path | str) -> dict[str, Any]:
     end = text.find("\n---\n", 4)
     if end == -1:
         return {}
-    return yaml.safe_load(text[4:end]) or {}
+    return _load_yaml(text[4:end]) or {}
 
 
 def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | None = None) -> dict[str, Any]:

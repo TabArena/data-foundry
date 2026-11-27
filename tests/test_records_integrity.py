@@ -14,6 +14,7 @@ from pathlib import Path
 import pytest
 
 from data_foundry.curation._paths import records_dir, resolve_curation_root
+from data_foundry.curation.comments import parse_exception_lines, rule_ids_defined
 from data_foundry.curation.notebooks import V2_TREE, required_tree, shipped_uuids, sync_notebook_paths, sync_v2_paths
 from data_foundry.curation.record import (
     ACCEPTED_SUGGESTIONS,
@@ -362,19 +363,10 @@ def test_exception_lines_name_a_defined_rule_and_serve_a_principle(records):
     """Every ``**Exception to <ID> (...)**`` line names a rule the knowledge files define and gives a reason with a
     "Serves" part (the ID check waits until the knowledge files define rule IDs at all).
     """
-    import importlib.util
-    import sys
-
-    skills = Path(__file__).resolve().parents[1] / ".claude" / "skills"
-    path = skills / "knowledge-data-foundry" / "scripts" / "decision_register.py"
-    spec = importlib.util.spec_from_file_location("decision_register", path)
-    register = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = register  # dataclasses look their module up there
-    spec.loader.exec_module(register)
-    defined = register.rule_ids_defined(skills / "knowledge-curation")
+    defined = rule_ids_defined(Path(__file__).resolve().parents[1] / ".claude" / "skills" / "knowledge-curation")
     problems = []
     for r in records:
-        for line in register.parse_exception_lines(r.comments or ""):
+        for line in parse_exception_lines(r.comments or ""):
             if not line.rule_ids or (defined and set(line.rule_ids) - defined):
                 problems.append((r.unique_name, "rule IDs not defined", line.rule_ids))
             if line.serves is None or not line.words_before_serves:

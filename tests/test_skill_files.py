@@ -8,7 +8,6 @@ list every file they hold; and the register runs on the repository. Links are ch
 
 from __future__ import annotations
 
-import importlib.util
 import re
 import subprocess
 import sys
@@ -17,6 +16,8 @@ from pathlib import Path
 
 import pytest
 import yaml
+
+from data_foundry.curation import comments
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ROOT / ".claude" / "skills"
@@ -36,19 +37,14 @@ ANY_HEAD = re.compile(r"^(?:\s*(?:[-*]|\d+\.)\s+)?\*\*([A-Z]+)-(\d+)\b")
 
 @pytest.fixture(scope="module")
 def register():
-    """The decision register script as a module (it lives in a skill, not in the package)."""
-    path = KDF / "scripts" / "decision_register.py"
-    spec = importlib.util.spec_from_file_location("decision_register", path)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module  # dataclasses look their module up there
-    spec.loader.exec_module(module)
-    return module
+    """The rule-ID grammar the decision register reads with (``data_foundry.curation.comments``)."""
+    return comments
 
 
 @pytest.fixture(scope="module")
-def defined(register):
-    """The rule IDs the knowledge files define, as the register reads them."""
-    return register.rule_ids_defined(KNOWLEDGE)
+def defined():
+    """The rule IDs the knowledge files define, as the decision register reads them."""
+    return comments.rule_ids_defined(KNOWLEDGE)
 
 
 def _rel(path: Path) -> str:

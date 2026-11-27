@@ -15,9 +15,9 @@ not add keeps its questions in the same section. The record is the one source of
 decides on the page, and Claude checks the decisions and writes them back into the record (and the definition); only
 then are the accepted datasets built, when the curator asks
 ([rebuild.md](../knowledge-data-foundry/references/rebuild.md)). How decisions are ranked and when an exception is
-reasonable: [principles.md](../knowledge-curation/references/principles.md). The format of the record's review and of
-the report the page is built from: [`references/review_file_format.md`](references/review_file_format.md). Where the
-files of the working copy live: [working_copy.md](../knowledge-data-foundry/references/working_copy.md).
+reasonable: [principles.md](../knowledge-curation/references/principles.md). The format of the record's review, which
+the page is built from: [`references/review_file_format.md`](references/review_file_format.md). Where the files of the
+working copy live: [working_copy.md](../knowledge-data-foundry/references/working_copy.md).
 
 The page shows, per record, a tab row: Use case (the definition's `task_summary`: question, fields, use-case fit; then,
 when the round asks about them, the declared split, from the generated README and the definition: the regime and its
@@ -36,8 +36,8 @@ bullets for the problem, its effect, the experiments, the consistency with other
 table of the options (what each does, pro, con; the implemented one marked), and the recommendation with the
 decision. The page shows the short problem, a closed Details box with the other bullets, then the options and the
 recommendation. The rules sit in footnotes and what only Claude needs in `**Notes for the AI:**`, both closed on the
-page, so the text reads without them. The collector warns about an open issue that breaks the shape: rewrite it before
-handing the page over.
+page, so the text reads without them. `review_page.py` warns about an open issue that breaks the shape: rewrite it
+before handing the page over.
 
 The rail lists the records by the record's `priority`, 5 first, each priority under its own heading, and within one
 priority the record with the fewest open decisions first: the curator reviews the most important datasets first and
@@ -47,11 +47,9 @@ does not leave quick decisions behind long ones. Records without a priority come
 
 ```bash
 R=local-data-warehouse/_runs/<date>_review
-.venv/bin/python .claude/skills/review-added-datasets/scripts/collect_reviews.py --out $R/review_report.md \
-    [--names a,b] [--metric-marks a,b|all] [--split-marks a,b|all] [--horizon-marks a,b|all] [--title <report title>] \
-    [--date <YYYY-MM-DD>]
-.venv/bin/python .claude/skills/review-added-datasets/scripts/build_review_page.py $R/review_report.md \
-    --out $R/review_page [--title "New Datasets Review"] [--subtitle <text>] [--tldr <yaml>]
+.venv/bin/python .claude/skills/review-added-datasets/scripts/review_page.py build --out $R/review_page \
+    [--names a,b] [--metric-marks a,b|all] [--split-marks a,b|all] [--horizon-marks a,b|all] \
+    [--title "New Datasets Review"] [--subtitle <text>] [--date <YYYY-MM-DD>] [--tldr <yaml>]
 ```
 
 **Only what is a choice of this round goes on the page.** The declared metric is on the page, with a mark, only for the
@@ -77,30 +75,30 @@ declared horizon (...) is checked" resolves it (Lennart, 2026-11-10: "for new da
 off on this (akin to how we sign off on the metric)"; "make it more similiar to the normal isues with a table and
 details collaped by default").
 
-Before building, check that every record on the page has a `priority`: the builder prints the count per priority,
-and `priority_factors.py` (in `knowledge-data-foundry/scripts/`, no names: every record whose review has something
-open) lists them with the measured factors. Give a record without one its priority as `/add-dataset` does (Step 8,
-[selection.md](../knowledge-curation/references/selection.md), "Priority"), through the store API.
+Before building, check that every record on the page has a `priority`: the build prints the count per priority, and
+`benchmark_coverage.py priority` (in `knowledge-data-foundry/scripts/`, no names: every record whose review has
+something open) lists them with the measured factors. Give a record without one its priority as `/add-dataset` does
+(Step 8, [selection.md](../knowledge-curation/references/selection.md), "Priority"), through the store API.
 
-`collect_reviews.py` reads the `## Review` section of every record in `curation/records/` and writes one report;
-`--names` limits it to some records (the batch of one run). It leaves out a record with nothing left to decide (every
-issue resolved, no field row, nothing deferred or to verify from triage, and, when `--metric-marks`, `--split-marks` or
-`--horizon-marks` names it, the declared metric, split or horizon checked): such a record ships by default, and its
-decisions stay readable in the record's review (Lennart, 2026-11-08); `--keep-settled` keeps it, for a page that looks
-back or to check one settled review's report.
-When every record is settled, there is nothing to review: it writes no report and says so. It stops with the record and
-the line when a review breaks the format, and checks the report with the builder's parser; fix the record, not the
-scripts. The report and the page are generated: never edit or commit them. They stay in the run folder, the only files
-between the record and the board.
+`review_page.py` reads the `## Review` section of every record in `curation/records/` through
+`data_foundry.curation.review`, the one parser of a review; there is no report in between, the page is built from the
+records. `--names` limits it to some records (the batch of one run). It leaves out a record with nothing left to
+decide (every issue resolved, no field row, nothing deferred or to verify from triage, and, when `--metric-marks`,
+`--split-marks` or `--horizon-marks` names it, the declared metric, split or horizon checked): such a record ships by
+default, and its decisions stay readable in the record's review (Lennart, 2026-11-08); `--keep-settled` keeps it, for
+a page that looks back. When every record is settled, there is nothing to review: it writes no page and says so.
 
-The collector also stops on a `REVIEW.md` anywhere in the working copy and on an `**Open issues (AI, <date>):**` block
-left in a record's `## Comments`: both are retired (2026-11-11). Move such a review by hand into the record's
-`## Review`, in the format of [`references/review_file_format.md`](references/review_file_format.md).
+It stops with the record and the line when a review breaks the format; fix the record, not the script. It also stops
+on a `REVIEW.md` anywhere in the working copy and on an `**Open issues (AI, <date>):**` block left in a record's
+`## Comments`: both are retired (2026-11-11). Move such a review by hand into the record's `## Review`, in the format
+of [`references/review_file_format.md`](references/review_file_format.md). `review_page.py check` (the same options,
+no `--out`) reads and checks the reviews, prints the counts and the shape warnings, and writes nothing: the check after
+an edit of a review.
 
-`build_review_page.py` writes `data.json` and `review_page.html` into `--out`. Both scripts need `markdown-it-py`
-(the `curation` extra: `uv pip install --python .venv/bin/python -e ".[curation]"`). Records whose definition has no
-`task_summary` show "No summary" in the Use case tab (`--tldr` takes hand-written ones). Keep the output under
-`local-data-warehouse/`: it is never committed.
+`review_page.py build` writes `data.json` and `review_page.html` into `--out`. It needs `markdown-it-py` (the
+`curation` extra: `uv pip install --python .venv/bin/python -e ".[curation]"`). Records whose definition has no
+`task_summary` show "No summary" in the Use case tab (`--tldr` takes hand-written ones). The page is generated: never
+edit or commit it. Keep it under `local-data-warehouse/`.
 
 ## Step 2: Hand the page to the curator
 
@@ -117,7 +115,7 @@ only one other row), then "Discuss". A letter sets the mark to
 change and starts the note with `Option <letter>: <name>.`, which Claude reads as the row to apply; "other" means the
 note says what to change. The row a mark locks in is highlighted in the table ("locked in" or "your change"), the
 others dimmed. An issue whose table has no `(implemented)` row shows "As implemented" without a letter (it keeps the
-definition as it is), and the collector warns about it.
+definition as it is), and `review_page.py` warns about it.
 
 * **Local file.** Open `review_page.html` in a browser. The marks are kept in that browser only (localStorage). When
   done, the curator copies them from the Summary view ("Copy decisions (JSON)") and pastes them to Claude or saves
@@ -279,8 +277,8 @@ takes the next number after the highest its review has had.
   [writing.md](../knowledge-curation/references/writing.md) says for issues, and no process log. A run's process log
   (what was tried, probe outputs, scraped pages, evidence scripts) stays in its local run folder
   `local-data-warehouse/_runs/<run>/`; no run report is committed.
-* The report, the page and its data stay under `local-data-warehouse/` and are never committed; the artifact is private
-  until the curator shares it.
+* The page and its data stay under `local-data-warehouse/` and are never committed; the artifact is private until the
+  curator shares it.
 * A retired record keeps its review, and the page shows it like any other while something on it is open (or with
   `--keep-settled`); the definition comes from the last commit that still had the folder. Records that were not added
   show their review and their record.

@@ -1,4 +1,4 @@
-"""The curation scripts of the knowledge-data-foundry skill: coverage, priority factors, clean room, decision register.
+"""The curation scripts of the knowledge-data-foundry skill: coverage and priority, clean room, decision register.
 
 The scripts live in the skill, not in the package, so they are imported from their files. They run here on small
 records written to ``tmp_path``; the clean room's end-to-end test needs the raw files of ``airfoil_self_noise`` and
@@ -21,7 +21,8 @@ import pytest
 from sklearn.metrics import mean_poisson_deviance
 
 from data_foundry.curation.record import CurationRecord
-from data_foundry.curation.store import save_record
+from data_foundry.curation.review import read_review
+from data_foundry.curation.store import load_record, save_record
 from data_foundry.definition import get_dataset
 from data_foundry.metrics import Metric, score
 from data_foundry.schema import ScoringColumn
@@ -56,9 +57,9 @@ def coverage():
 
 
 @pytest.fixture(scope="module")
-def priority():
-    """priority_factors.py, imported as a module."""
-    return _import("priority_factors")
+def priority(coverage):
+    """benchmark_coverage.py, whose ``priority`` command measures the priority factors."""
+    return coverage
 
 
 @pytest.fixture(scope="module")
@@ -71,6 +72,10 @@ def clean_room():
 def register():
     """decision_register.py, imported as a module."""
     return _import("decision_register")
+
+
+def load(directory: Path, unique_name: str) -> CurationRecord:
+    return load_record(directory / f"{unique_name}.md")
 
 
 def _record(directory: Path, unique_name: str, **fields) -> CurationRecord:
@@ -137,13 +142,13 @@ def test_coverage_main_writes_json(coverage, tmp_path, capsys):
     vocab = tmp_path / "vocabularies.yaml"
     vocab.write_text("domain:\n- finance\n- education\nproblem_type:\n- Regression\n")
     out = tmp_path / "coverage.json"
-    assert coverage.main(["--records", str(records), "--vocab", str(vocab), "--json", str(out)]) == 0
+    assert coverage.main(["coverage", "--records", str(records), "--vocab", str(vocab), "--json", str(out)]) == 0
     assert "1 accepted datasets of 2 records" in capsys.readouterr().out
     data = json.loads(out.read_text())
     assert [row["value"] for row in data["fields"]["domain"]["values"] if row["thin"]] == ["finance", "education"]
 
 
-# --------------------------------------------------------------------------- priority_factors
+# --------------------------------------------------------------------------- benchmark_coverage priority
 def _facts(domain="finance", problem="regression", regime="iid", units=5000, features=10, non_numeric=("categorical",)):
     return {
         "domain": domain,
@@ -207,12 +212,12 @@ def test_priority_factors_on_the_working_copy(priority, capsys):
     if not (root / "airfoil_self_noise" / "README.md").is_file():
         pytest.skip("needs the working copy")
     where = ["--root", str(root), "--records", str(REPO / "curation" / "records")]
-    assert priority.main(["airfoil_self_noise", *where]) == 0
+    assert priority.main(["priority", "airfoil_self_noise", *where]) == 0
     out = capsys.readouterr().out
     assert out.startswith("Thin among the ")
     assert "| `airfoil_self_noise` |" in out
     with pytest.raises(SystemExit, match="no folder for: no_such_record"):
-        priority.main(["no_such_record", *where])
+        priority.main(["priority", "no_such_record", *where])
 
 
 # --------------------------------------------------------------------------- clean_room
@@ -527,9 +532,11 @@ def _register_fixture(tmp_path: Path) -> tuple[Path, Path]:
         suggestion="Yes",
         comments="CC (2026-10-01, Lennart): Kept: the features are min-max scaled over all rows, no strong leak.",
         review=(
-            "**Outcome:** added.\n\n**Issues for Lennart:**\n\n"
+            "**Outcome:** not added; kept for the review.\n\n**Main points:** Two questions.\n\n"
+            "**Issues for Lennart:**\n\n"
             "1. **Keep the target in decibels?** The source reports dB (LEAK-3).\n   More evidence here.\n\n"
-            "2. Drop the duplicate rows. They are copies.\n\n**Record judgment:** valid."
+            "2. Drop the duplicate rows. They are copies.\n\n"
+            "   **Resolved (2026-10-09, Lennart):** dropped."
         ),
     )
     _record(
@@ -579,11 +586,11 @@ def test_collect_reads_the_three_sources(register, tmp_path):
     kinds = {}
     for d in decisions:
         kinds[d.kind] = kinds.get(d.kind, 0) + 1
-    assert kinds == {"cc": 4, "assessment": 1, "exception": 4, "open_issue": 2, "case": 2}
-    issues = [d for d in decisions if d.kind == "open_issue"]
-    assert [(d.dataset, d.text, d.rule_ids) for d in issues] == [
-        ("keep_scaled", "Keep the target in decibels?", ["LEAK-3"]),
-        ("keep_scaled", "Drop the duplicate rows.", []),
+    assert kinds == {"cc": 4, "assessment": 1, "exception": 4, "issue": 2, "case": 2}
+    issues = [d for d in decisions if d.kind == "issue"]
+    assert [(d.dataset, d.text, d.rule_ids, d.state, d.date, d.author) for d in issues] == [
+        ("keep_scaled", "Keep the target in decibels?", ["LEAK-3"], "open", None, "AI"),
+        ("keep_scaled", "Drop the duplicate rows.", [], "resolved", "2026-10-09", "Lennart"),
     ]
     assert issues[1].outcome == "fix"
     assert "duplicate rows" in issues[1].mechanisms
@@ -597,6 +604,33 @@ def test_collect_reads_the_three_sources(register, tmp_path):
         ("fitness_club", ["LEAK-3"], "Lennart", "exclude", "applied"),
         ("case_ds", ["CLEAN-4"], "case table", "keep", "exception"),
     ]
+
+
+def test_register_counts_the_issues_the_parser_finds(register, tmp_path):
+    """Only the issues block counts: the numbered lines of a review panel (a claim audit, a mediator's list) are no
+    issues, and a broken review is left out with a warning instead of stopping the register.
+    """
+    records = tmp_path / "records"
+    panel_lines = "".join(f"{i}. Claim {i} holds.\n" for i in range(1, 13))
+    _record(
+        records,
+        "with_panel",
+        suggestion="Yes",
+        review=(
+            "**Outcome:** not added; a panel ran.\n\n**Main points:** One question.\n\n**Issues for Lennart:**\n\n"
+            "1. **Keep the column?**\n   * **Problem:** p.\n\n"
+            "3. **Drop the rows?**\n   x.\n   **Deferred (2026-10-10):** parked.\n\n"
+            "**Review panel:** ship (mediator). Twelve claims.\n\n"
+            f"<details><summary>Claim audit</summary>\n\n{panel_lines}\n</details>\n"
+        ),
+    )
+    _record(records, "broken", suggestion="Yes", review="1. **No outcome?**\n")
+    parsed = read_review(records / "with_panel.md")
+    issues = register.review_decisions({"with_panel": load(records, "with_panel")}, records)
+    assert [(d.text, d.state) for d in issues] == [(i.title, i.state) for i in parsed.issues]
+    assert [(d.text, d.state) for d in issues] == [("Keep the column?", "open"), ("Drop the rows?", "deferred")]
+    decisions = register.collect(records, tmp_path / "no_knowledge")
+    assert sum(d.kind == "issue" for d in decisions) == 2
 
 
 def test_flags(register, tmp_path):

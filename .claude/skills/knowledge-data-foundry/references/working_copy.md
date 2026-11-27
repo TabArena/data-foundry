@@ -47,10 +47,10 @@ then, its 37 items all settled, is in the git history
 When the curator settles an issue, its decision goes into `dataset.py` (code and `curation_comments`) and the record:
 the curator's turn and a closing `**Resolved (<date>, <who>):**` turn in its review, a `CC` line in its comments. A
 review is never deleted, so the record keeps every decision and how it was reached (Andrej, 2026-11-02).
-`/review-added-datasets` builds the review page from the records' reviews (`collect_reviews.py`). The report and the
-page it generates stay in the local run folder `local-data-warehouse/_runs/<date>_<run>/` and are never committed:
-they are the only files between the record and the page. The process log of a run (what was tried, probe outputs,
-scraped pages, evidence scripts) stays there too, never in git.
+`/review-added-datasets` builds the review page from the records' reviews (`review_page.py build`). The page stays in
+the local run folder `local-data-warehouse/_runs/<date>_<run>/` and is never committed: the record is its one
+source. The process log of a run (what was tried, probe outputs, scraped pages, evidence scripts) stays there too,
+never in git.
 
 ## Builds
 
