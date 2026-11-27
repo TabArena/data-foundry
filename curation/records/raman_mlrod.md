@@ -39,6 +39,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
+CC (2026-11-27, Andrej): Review issue 1 rewritten after Andrej asked what is most correct for the task. The mirror stays the read path: ODR needs a browser for every file, so a definition that read it could not be rebuilt by anyone, and three of its files match byte for byte, the one with the spreadsheet damage included, which a re-upload would not reproduce. The unchecked fourth file ships 5,183 of 34,857 test spectra, so its checksum is a provenance note and no longer holds the verdict. ODR's file list is the one check that can still change something, and the answer to a longer list is a new candidate record (new option D), not re-scoping this one: the task is the paper's, bounded by its Table 1.
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from the source's pages and papers (and, where the block says so, a preview of the files), NOT from building the data. A human must verify everything before relying on it.**
 
 **Screening (AI, 2026-10-31):** `TBD -> Yes`, priority 3: a large, documented set of measured Raman spectra of Mars-analogue minerals, mixtures and rocks, clean and under basalt dust, for a named identification task; open are how many physical specimens stand behind each class and the spectra question (SEL-12, SEL-15).
@@ -69,9 +70,9 @@ rock never measured before, from one Raman spectrum (950 bands of 1 cm-1, 150-1,
 source reports only accuracy), read per rock too. Built from a third-party mirror of the 41 files (ODR refuses this
 machine); three files you downloaded from ODR match it byte for byte. The AI recommends shipping it after the panel's
 changes, which are made. The paper you supplied settles two of the three gates the panel set (the slabs were labelled by
-hand; the reference maps are separate hand samples), so the record's `TBD` now waits only on issue 1: one more file and
-ODR's file list.
-Verdict: ship after changes (made); `TBD` until issue 1 is settled; issue 4 after a GPU run.
+hand; the reference maps are separate hand samples), so the record's `TBD` now waits only on your confirmation of
+issue 1, which is ODR's file list; the fourth file's checksum is a provenance note, not a gate.
+Verdict: ship after changes (made); `TBD` until issue 1 is confirmed; issue 4 after a GPU run.
 Validity: SEL-12 open: the source's own spectrum CNN scores 1.00 accuracy on the clean slabs, an untuned logistic
 regression 0.934, so whether tabular models are competitive waits for a tuned run (issue 4; SEL-15's default leans
 keep). USE-5 holds: the slab labels are a person's calls, checked against the source's CNN (paper, Sec. 4.2; issue 2);
@@ -104,12 +105,13 @@ logistic regression 0.675, LightGBM 0.660 (baseline 0.5). On the source's own la
 the same split): linear 4.217 against 5.642 for the class shares (21.2% lower): the 4,817 code-15 points have no class
 to learn and the 3,540 points labelled microcline are anorthite, which is why the definition drops the one and repairs
 the other.
-For the curator: issue 1 (one file to compare, ODR's file list and the licence it states), issues 2 and 3 (answered by
+For the curator: issue 1 (ODR's file list, and confirming the mirror as the read path), issues 2 and 3 (answered by
 the paper; confirm), issue 4 (SEL-12, after the run), issue 5 (design A, only if you want it), issue 6 (the four warning
 texts, yes or no), issue 7 (the collection type and time basis the walk gives, new on this branch; confirm).
 
-**Main points:** Issue 1 is the last check before the record leaves `TBD`: download one file from ODR, compare its
-sha256, and note ODR's file count and licence. Issues 2 and 3 are answered by the paper you supplied (labelled by hand;
+**Main points:** Issue 1 is the last check before the record leaves `TBD`, and it is ODR's file list: maps beyond the
+41 would be a second dataset, not a correction to this one. The mirror itself is settled by three byte matches, the
+damaged file included, and the fourth file's checksum is a note rather than a gate. Issues 2 and 3 are answered by the paper you supplied (labelled by hand;
 the reference maps are separate hand samples): confirm. Issue 4 waits for a GPU run of the source's CNN against tuned
 tabular models. Issue 5 asks nothing unless you want one fold per rock. Issue 6: the four warning texts, yes or no. Issue 7 confirms the collection type and time basis, new on this branch.
 
@@ -121,17 +123,18 @@ for byte (issue 1 for the rest).
 
 **Issues for Lennart:**
 
-1. **Does the last file match ODR, and does ODR hold more maps than our 41?**
+1. **Confirm the mirror as the read path, and does ODR hold maps the paper does not describe?**
 
    * **Problem:**
-     - The definition is built from a third-party mirror (the raman-data package's Google Drive zip), because ODR answers this machine with a reCAPTCHA; you compared three of its files with ODR's on 2026-11-09 and all three match byte for byte, the file with the spreadsheet fill-down included[^prov].
-     - Still to do in your browser: compare the fourth file, the dusty granite, and read ODR's file list and licence.
-     - A match and 41 maps settle the source and lift the record's `TBD`; a mismatch means a rebuild from ODR's files; more maps mean a new scope (option C); a match with 41 maps is option A and nothing in the data changes.
+     - The definition reads the raman-data mirror because ODR answers this machine with a reCAPTCHA, and three of its files you compared on 2026-11-09 equal ODR's byte for byte, the one with the spreadsheet damage included[^prov].
+     - The check that can still change what ships is ODR's file list: maps beyond the 41 would be a dataset the paper does not describe, not a correction to this one.
+     - The fourth file's checksum is worth having for the provenance line and is not a gate: it ships 5,183 rows, the 10,000 of the granite under dust less the 4,817 dust points we drop, so a mismatch means re-fetching one file, not rebuilding the task.
+   * **Effect on the task:** none on A, which is what ships today. The scope question decides whether this record is the paper's dataset or something larger, and the read path decides whether anybody can rebuild the container without a browser: ODR's reCAPTCHA means 41 manual downloads under B.
    * **Your request (in a browser):**
-     - Download `L_raw_granite50dust_test_015s_10000.csv` from https://odr.io/MLROD (doi:10.48484/PWRB-R137) and compare its sha256 (`shasum -a 256 L_raw_granite50dust_test_015s_10000.csv`) with 04d079761ab987f2d85d721ccc2447acd49e97243174c6527eef10518f90fb91 (163,027,169 bytes). Save it anywhere (it is not kept) and write the sum and 'match' or 'mismatch' into this issue; on a mismatch, keep the file for the rebuild (option B). It is the one file with no `og-idx` header, so the source's own reader fails on it, and it holds the 4,817 code-15 points.
-     - Count the map files ODR lists: the mirror has 41 (ODR ids 63245 and 63641-63758); note whether id 63742, missing from that run, is a map, and whether any map beyond the 41 is there (the raman-data card says 4 mixtures, 3 here; NASA AHED's keywords name magnesium sulfates, a sulfide and basaltic glass).
+     - Count the map files ODR lists (https://odr.io/MLROD, doi:10.48484/PWRB-R137; the mirror has 41, ODR ids 63245 and 63641-63758); note whether id 63742, missing from that run, is a map, and whether any map beyond the 41 is there (the raman-data card says 4 mixtures, 3 here; NASA AHED's keywords name magnesium sulfates, a sulfide and basaltic glass).
      - Copy the licence text ODR shows (NASA AHED's text says CC BY-NC, its badge links CC BY-NC-ND 4.0); a note for the release checklist, never a reason for the verdict[^lic].
-   * **Background:** already checked by you on 2026-11-09, each equal in size and sha256 to the mirror's file (a byte match, as for ai4d):
+     - When it suits you, and not as a condition of the verdict: download `L_raw_granite50dust_test_015s_10000.csv` and compare its sha256 (`shasum -a 256 <file>`) with 04d079761ab987f2d85d721ccc2447acd49e97243174c6527eef10518f90fb91 (163,027,169 bytes), then write the sum and 'match' or 'mismatch' into this issue; on a mismatch keep the file for option B. It is the one file with no `og-idx` header, so the source's own reader fails on it, and it holds the 4,817 code-15 points.
+   * **Background:** already checked by you on 2026-11-09, each equal in size and sha256 to the mirror's file (a byte match, as for ai4d). The third is the strongest of the three: its spreadsheet fill-down is damage, and ODR's own file carries it, which a re-upload or a cleaned re-export would not reproduce.
 
      | File on ODR | sha256 | bytes | Result |
      |---|---|---|---|
@@ -139,23 +142,25 @@ for byte (issue 1 for the rest).
      | `L_raw_granite0dust_test_015s_4084_final.csv` | fc0d5132897101563167511eaba4d64ed672007737ebfce0daea4e07a2be01e0 | 70,455,751 | match |
      | `qtzalb_train_60s_3000.csv` | df16b22e4cb37bd43efb4efe8cb6ef4cce4f7d168e7f58ac2978fceb9022f831 | 32,476,361 | match: ODR's file holds the same fill-down, so it stays masked |
 
-   * **Experiments:** the paper's Table 1 lists about 130,000 spectra (89,121 training, 39,720 test), close to the 130,061 the 41 files hold, so the "500,000+" of the abstract does not point to maps the paper describes.
+   * **Experiments:** the paper's Table 1 lists about 130,000 spectra (89,121 training, 39,720 test), close to the 130,061 the 41 files hold, so the "500,000+" of the abstract does not point to maps the paper describes. The unchecked file's shipped share: 5,183 of the 34,857 test spectra (14.9%), 32% of the granite group, 4.1% of the 125,244 rows.
    * **Consistency:** the three matches follow ai4d (a byte match settles a mirror); ugr16_isp_netflow_intrusion in this batch has the same situation (a mirror for a server that refuses this machine) and is decided alike.
    * **Options:**
 
      | | Option | What it does | Pro | Con |
      |---|---|---|---|---|
-     | A | Keep the mirror (implemented) | the definition reads the mirror's zip; ODR named as the origin | three of four checked files match ODR byte for byte; one zip downloads by script | the dusty granite file and the file list still unchecked |
-     | B | Rebuild from ODR's files | the download line names ODR's files | the origin's own bytes | ODR needs a browser for every file; nothing gained if the last file matches too |
-     | C | Re-scope to ODR's full deposit | new maps added as reference maps or test rocks | the data the deposit holds | a new build and review |
+     | A | Keep the mirror as the read path, ODR declared as the publication (implemented) | nothing in the data changes | three of four files match byte for byte, the damaged one included; one zip downloads by script, so a rebuild is reproducible | the fourth file and the file list are unchecked |
+     | B | Rebuild from ODR's files | the download line names ODR's files | the origin's own bytes | 41 downloads by hand, and nobody can rebuild the container without a browser; nothing is gained unless the fourth file mismatches |
+     | C | Re-scope this dataset to ODR's full deposit | new maps join as reference maps or test rocks | every map the deposit holds | the task stops being the paper's: the class set and the training side change under the same name, and the source's own accuracy no longer compares |
+     | D | Extra maps become their own candidate record | this record stays as it is; a new record is screened for what ODR holds beyond the 41 | each dataset is judged on its own design, and this one keeps the source's split | a second record to screen |
 
-   * **Recommendation:** A on a match and 41 maps, B on a mismatch, C if ODR holds maps the mirror lacks. **Decision:** does the dusty granite file match, and how many maps does ODR list?
+   * **Recommendation:** A, with D if ODR lists more than 41 maps. The mirror is proven equal where it was checked, and the copy rule asks for no more; B costs reproducibility and buys bytes we already have; C would redefine the task the record was accepted for. B only if the fourth file mismatches, and then for that file. **Decision:** confirm A (and D if the list is longer), or C?
 
    **Notes for the AI:**
-   - A: a `CC` line with the date and the results (the three matches of 2026-11-09 and the fourth); `download_description` names the ODR check; the record leaves `TBD` (issue 4 does not hold it).
+   - A: a `CC` line with the date and the file count; `download_description` names the ODR check; the record leaves `TBD` (issue 4 does not hold it).
    - B: put the ODR files under `local-data-warehouse/raman_mlrod/odr/`, point `_load_raw` there, write the sums into `download_description`; the fill mask stays; re-run `dataset check` and the probes.
-   - C: a new `/add-dataset` pass on the added maps.
-   - Licence: write what ODR states into `license` as a note.
+   - C: a new `/add-dataset` pass on the added maps, with the class set and the split re-decided.
+   - D: a new record from the ODR listing, screened on its own, naming this one as its sibling.
+   - Licence: write what ODR states into the source's `license` as a note.
 
    [^prov]: **PROV-1** (Must): the data comes from its first publisher, or a copy proven equal to it. **PROV-13** (Must): a damaged value is repaired from the origin where it can be, else masked. **PROV-2**: the release as published, in full or the cut stated.
    [^lic]: **EV-4**: a licence is a note for the release checklist, never a verdict reason (Lennart, 2026-09-23).
