@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: gse40279_methylation_age
 container_format: 2
-checksum: v2:398bbb71891aca6493fe43e3be27faf722528a737b9525073f2774b8fc21a8c3
+checksum: v2:0de54fa9162052f63e0dac1c5bfcba427311d61ce1c0882bc9d8fe66db34db71
 build: null
 build_stale: false
 data:
@@ -16,8 +16,8 @@ data:
 task:
   target: age
   problem_type: regression
-  metric: rmse
-  metric_origin: fallback
+  metric: mae
+  metric_origin: context
   scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: null
@@ -51,9 +51,19 @@ bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos:
-  - dataset_duplicates_skipped
+  infos: []
   accepted:
+    dataset_duplicates_skipped: '310,312,272 cells against the checks'' budget of
+      50,000,000, so the duplicate-column and duplicate-row checks do not run. That
+      follows from the width, which is the dataset: 656 people against 473,035 probes.
+      What the checks would have looked for is answered elsewhere and does not need
+      them. Duplicate rows: every row is one person''s array and the series lists
+      656 distinct samples, with no replicate among them. Duplicate columns: a probe
+      is a fixed position on the 450K chip and appears once, and the frame is built
+      by reading the manifest''s probes in order, so two identical columns would be
+      two readings of one position, which the platform does not produce. Raising the
+      budget to cover this frame would make every check of this width cost a pairwise
+      pass over 310 million cells for a question the platform already answers.'
     task_group_count_low: 'Nine plates are every assay batch the series has, and the
       batch is the level a clock must generalize over: a test sample is always measured
       in a batch of its own. The signal survives the key, so the few groups do not
@@ -64,8 +74,10 @@ bundle_checks:
       as when generalizing over a few hospitals (heart_disease stayed grouped with
       3). Each fold holds three plates and 146 to 267 rows. The 60 splits are 41 distinct
       training sides, so the spread over repeats is descriptive rather than 60 independent
-      experiments; the per-split RMSE runs 4.62 to 6.66 with a fold-to-fold sd of
-      1.24, which is what a score on this dataset has to be read against.
+      experiments; a 100-probe clock's per-split RMSE runs 4.62 to 6.66 with a fold-to-fold
+      sd of 1.24, and pooled over the folds the same model scores the declared MAE
+      of 4.57 against an RMSE of 6.14, which is the spread a score on this dataset
+      has to be read against.
 decisions:
 - The values the authors imputed are set back to missing
 - Grouped by assay plate
@@ -75,9 +87,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `age`, scored with `rmse` on grouped splits by `plate`. 656 rows and 473,035 features. Source: Other (2012).
+Regression of `age`, scored with `mae` on grouped splits by `plate`. 656 rows and 473,035 features. Source: Other (2012).
 
-Not built yet. The current definition gives checksum `v2:398bbb71891aca6493fe43e3be27faf722528a737b9525073f2774b8fc21a8c3`.
+Not built yet. The current definition gives checksum `v2:0de54fa9162052f63e0dac1c5bfcba427311d61ce1c0882bc9d8fe66db34db71`.
 
 ## In brief
 
@@ -95,7 +107,7 @@ Not built yet. The current definition gives checksum `v2:398bbb71891aca6493fe43e
 
 **Our changes to the source.** We hold out whole plates instead of random people, leave the recruitment site and the recorded ethnicity out of the inputs, and set the 0.14% of values the authors had imputed back to missing.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The fit rests on the clock builder: the inputs are what a clock reads from a blood array, the target is the age a clock is chosen by, and a held-out plate is a batch the model has not seen. The plates differ in age and each holds one recorded ethnicity, so a test fold is a shift in cohort as well as in batch.
+> **Use case fit: direct (the rows, features and split mirror the use case).** The fit rests on the clock builder: the inputs are what a clock reads from a blood array, the target is the age a clock is chosen by, and a held-out plate is a batch the model has not seen. Two qualifications are in the notes: a test fold shifts cohort as well as batch, and two published clocks were fitted on these rows.
 
 ## Files in this folder
 
@@ -153,7 +165,7 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 656 x 473,037 |
 | task.target | age |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | mae |
 | task.split_regime | grouped_non_iid |
 | task.group_on | plate |
 | task.group_labels | per_sample |
@@ -162,10 +174,10 @@ Only curators run `build`, when the dataset ships.
 
 | field | value |
 |---|---|
-| name | `rmse` (standard; takes value; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
-| definition | sqrt(mean((y - p)^2)) |
-| reason | Where we looked: the paper, the GEO series page and its sample records, and the literature the paper belongs to. Hannum et al. report two criteria side by side for the methylation age model, "a correlation between age and predicted age of 96% and an error of 3.9 years" on the primary cohort and 91% and 4.9 years on the validation cohort (Results, "A predictive model for the aging methylome"), and never say what the error is; the Experimental Procedures give no formula, and the one RMSE the paper names (Fig. 7A, 7.22 years) belongs to its transcriptome model, not to this one. The GEO series defines no task metric and there is no competition page, so there is no single deliberate choice (MET-5). Whether the task makes a metric obvious was weighed and not taken: the field does state absolute error in years (forensic age tools report a mean absolute error of about 3.2 years, the standard clock a median absolute deviation), and the paper's own unnamed 3.9 years sits between this task's measured MAE (4.57) and median absolute error (3.58) and nowhere near its RMSE (6.14) over the 60 folds; against that, the source reports two criteria rather than acting on one, and over nine model variants the two rankings agree at Kendall tau 0.889, so the context was judged short of clear and the regression fallback stands: rmse in years. The choice is in the record's review for the curator. For provenance only: the benchmark this candidate comes from states RMSE is its primary regression metric, which is another collection's choice and no evidence for ours. |
+| name | `mae` (standard; takes value; lower is better) |
+| origin | context: obvious from the task: the source defines no metric |
+| definition | mean(\|y - p\|) |
+| reason | Mean absolute error in years: the source fixes no metric, and the task makes this one obvious (MET-11), so the regression fallback is overruled. Where we looked: the paper, the GEO series page and its sample records, and the literature the paper belongs to. Hannum et al. report two criteria side by side for the methylation age model, "a correlation between age and predicted age of 96% and an error of 3.9 years" on the primary cohort and 91% and 4.9 years on the validation cohort (Results, "A predictive model for the aging methylome"), and never say what that error is; the Experimental Procedures give no formula, and the one RMSE the paper names (Fig. 7A, 7.22 years) belongs to its transcriptome model, not to this one. The GEO series defines no task metric and there is no competition page, so there is no single deliberate choice to take (MET-5). The original is that unnamed error of 3.9 years, and what fixes it is the context: every actor in this field states and acts on absolute error in years (forensic age tools report a mean absolute error of about 3.2 years, inter-laboratory work a mean absolute deviation of 3.62, the standard clock a median absolute deviation). The measurement agrees, pooled over the 60 folds for a 100-probe clock: MAE 4.57 and median absolute error 3.58 against RMSE 6.14, so the paper's own 3.9 years sits between the first two and nowhere near the third. Rejected: the rmse fallback, which this declaration overrules and which is driven by the band where a clock is most biased (+2.59 years at ages 19 to 39, -4.40 at 80 to 101); median absolute error, which is closer still to how clocks are reported but which no source fixes and which is not one of our fallbacks. Little moves either way: over nine model variants the MAE and RMSE rankings agree at Kendall tau 0.889. The metric reads only the target and the prediction, so no scoring column is needed. For provenance only: the benchmark this candidate comes from states RMSE is its primary regression metric, which is another collection's choice and no evidence for ours. |
 
 <details>
 <summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
@@ -217,17 +229,20 @@ We start with the GEO series matrix of GSE40279 (656 whole-blood samples, one pe
 - Target: the characteristic `age (y)` as `age`, whole years, 19 to 101 (mean 64.0); every sample's `!Sample_title` repeats it ("age 67y 1001"), and the two agree on all 656 rows.
 - Features: the 473,034 probes as deposited (470,043 `cg`, 2,991 non-CpG `ch`, no `rs` control), betas from 0 to 0.99958; none is constant and no two are copies, and no two samples are copies (the highest correlation between two samples is 0.9946, against a median 0.9888 over all pairs). It is the paper's QC subset of the array: counted in the GPL13534 v1.1 manifest, the 485,577 assay probes less the 11,648 on X and Y and the 65 `rs` controls leave 473,864, and the "830 markers ... removed as they had greater than 5% missing values" (Experimental Procedures) make up the rest exactly (827 `cg` and 3 `ch`). Width is no reason to drop a probe (CLEAN-22).
 - Features: `sex` (the characteristic `gender`, F and M decoded to female and male), a covariate of the paper's own model ("The covariates gender, BMI, diabetes status, ethnicity, and batch were included in the model", Experimental Procedures); BMI and diabetes status are not deposited. It is an attribute of the person and not a mark of the batch: both sexes sit on every plate (female share 0.312 to 0.728, overall 0.515), and alone it scores exactly the constant (RMSE 15.566 over the plate folds).
-- Dropped: `ethnicity` (Caucasian - European 426, Hispanic - Mexican 230), because each of the nine plates holds exactly one ethnicity (plates 5, 6 and 9 Hispanic, the six others Caucasian), so the column is a two-level coarsening of the group key and hands a model back part of what the split withholds (LEAK-33). What it carries is the study's recruitment design, not biology: alone it scores 13.645 against the constant's 15.566, and predicting each test row by its ethnicity's training-side mean age cuts RMSE 16.07 to 14.18 and beats the dummy on 52 of the 60 folds, while a real model is hurt by it (the honest model 5.279 to 5.553, a 100-probe clock 6.046 to 6.060). The paper could not separate it from the batch either ("Analysis of ethnicity and diabetes status was not possible due to correlations with batch variables", Results).
+- Dropped: `ethnicity` (Caucasian - European 426, Hispanic - Mexican 230), because each of the nine plates holds exactly one ethnicity (plates 5, 6 and 9 Hispanic, the six others Caucasian), so the column is a two-level coarsening of the group key and hands a model back part of what the split withholds (LEAK-33). What it carries is the study's recruitment design, not biology (every error in years in this bullet is an RMSE over the plate folds, the comparison as it was measured): alone it scores 13.645 against the constant's 15.566, and predicting each test row by its ethnicity's training-side mean age cuts RMSE 16.07 to 14.18 and beats the dummy on 52 of the 60 folds, while a real model is hurt by it (the honest model 5.279 to 5.553, a 100-probe clock 6.046 to 6.060). The paper could not separate it from the batch either ("Analysis of ethnicity and diabetes status was not possible due to correlations with batch variables", Results).
 - Dropped: `site` (the characteristic `source`: UCSD 304, Utah 178, USC 139, Boston 35), the recruitment cohort, which differs in age by design (UCSD mean 70.0, Boston 52.0) and names a cohort a new sample is not from; `tissue`, whole blood on every row.
 - Imputed values set back to missing (LEAK-30, PROV-13): the paper set betas with a detection p-value above 0.01 to missing and "imputed [them] with the KNN approach (10 nearest markers)", whose neighbours are found over all samples, the test samples included; the deposit has no missing cell at all. BeadStudio's signal file holds each sample's own beta, max(B, 0) / (A + B + 100) of its two signals (checked on the 42,640 cells of the 65 `rs` probes: the two agree to 3e-7), so the cells where the deposit differs from it, or where it is blank, are the imputed ones: 430,448 of 310,310,304 (0.139%), 405,768 blank and 24,680 changed. They ship as missing, 185 to 8,315 per sample (at most 1.8% of a sample) and at most 34 of the 656 samples per probe. 304 of the 430,448 are measured rather than imputed: BeadStudio left the cell blank where the sample's signal B is at or below 0 (284 of them deposited as exactly 0.0, over 188 samples and 186 probes). They ship as missing with the rest.
 - Note: the 830-marker filter ran over all samples too; without the detection p-values, which are not deposited, it cannot be undone, and it chose markers by their failures, not by age. Kept.
 - Note: 4,616,287 cells of the deposit (1.49%), spread over 67,248 probes, are exactly 0: the formula's floor where a sample's signal B is 0 after background subtraction, not a missing value. Kept as measured.
 - Note: the betas are each sample's own ratio, so nothing was scaled across samples (probe 16's benign reading); the KNN imputation above is the one step that read all samples.
+- Potential leak, kept on purpose: two published epigenetic clocks were fitted on the ages of these very rows. Hannum et al. 2013 (71 CpGs; this series is its own fitting set, 482 of the 656 samples its primary cohort) and Lin et al. 2016 (99 CpGs, fitted on the same series) publish their coefficients, in a public Bioconductor data package among other places, and every site either clock uses is a column of this table. Every one of the 60 test folds holds rows those clocks were fitted on, on average 75% of the fold and at least 40%. What that buys, as mean RMSE in years over the 60 shipped splits: the best honest model (a ridge on a fold-honest top-5000, z-scored) errs 5.279; Hannum alone, recalibrated per split, with no model of our features at all, errs 4.949; the honest model stacked with Hannum and Lin errs 4.645, and with all five published clocks 4.487, a gain of 0.791 years. The control that stacks only the three clocks fitted elsewhere gains 0.115 years (5.163), which is what identifies most of that gain as label information rather than better modelling. No change to this definition removes it: the leak sits in the published weights and not in the site list, and refitting honestly on Hannum's own 71 sites errs 5.299, so dropping those sites does not work either. No check can detect its use: the exploit is a dot product of public numbers, and a stacked clock is invisible in a prediction vector. The second reader is warned as well: anyone using this series to validate a new clock will reach for Hannum's published predictions as the comparison, and on these rows they are not honest. Protocol: an entry on this task must not use a model, or coefficients, fitted on the ages of these 656 samples; that bound is declared rather than enforced, because nothing in the data and nothing in a submitted prediction shows it was crossed. Revisit: if this collection ever scores predictions it did not fit itself, this note is not enough and the dataset is re-examined.
 - Rows: one per person, all 656 deposited samples (the paper had already removed one sample with over 5% missing values and 24 PCA outliers). No two rows are the same person: of the 65 `rs` genotype probes in the signal file, the closest pair of samples shares 62 (X5056 and X5057, a likely first-degree relative pair), while over all pairs the median agreement is 40% of the probes and the 99.99th percentile 64%; both sit on plate 5, so no split separates them.
 - Width: 656 rows x 473,037 columns (473,035 features, the target and the group).
 - Time basis: UnseenGroup: the use case applies the clock to blood measured in a batch the model has not seen, not to a later period: age is a fixed fact at the draw, and the series records no date per sample. It cannot test a drift of the assay over the years.
 
 ## Splits
+
+Every error in years quoted below is an RMSE over the splits it names, which is how these comparisons were measured; the task's declared metric is the mean absolute error (metric reason).
 
 Grouped by assay plate (the characteristic `plate`: 9 plates of 17 to 92 samples), the leaf L-PLACE.groups of the split tree. The place the leaf means here is the assay batch: the use case applies the clock to blood measured in a batch the model never saw ([EXP.meets] another laboratory, site or instrument), and the series holds nine such batches ([PLACE.several]). A test fold holds every sample of three plates (146 to 267 rows over the 20 repeats x 3 folds; the 60 splits are 41 distinct test sets and 41 distinct training sides, 18 of the 20 repeats a distinct partition), so no test row keeps its own plate in training (0.0%) and no test sample shares a BeadChip with a training sample (each of the 67 chips sits on one plate).
 
@@ -365,14 +380,14 @@ A laboratory's new samples come in a batch of their own; the plates carry a stro
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 310,312,272 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
 
 Accepted on purpose:
 
+- `dataset_duplicates_skipped`: 310,312,272 cells against the checks' budget of 50,000,000, so the duplicate-column and duplicate-row checks do not run. That follows from the width, which is the dataset: 656 people against 473,035 probes. What the checks would have looked for is answered elsewhere and does not need them. Duplicate rows: every row is one person's array and the series lists 656 distinct samples, with no replicate among them. Duplicate columns: a probe is a fixed position on the 450K chip and appears once, and the frame is built by reading the manifest's probes in order, so two identical columns would be two readings of one position, which the platform does not produce. Raising the budget to cover this frame would make every check of this width cost a pairwise pass over 310 million cells for a question the platform already answers.
 - `task_group_count_low`: Nine plates are every assay batch the series has, and the batch is the level a clock must generalize over: a test sample is always measured in a batch of its own. The signal survives the key, so the few groups do not hollow the task out: four model families beat the dummy on all 60 splits, and shuffled ages on none of them over three seeds.
-- `groups_test_groups_few`: A group is one assay plate of 17 to 92 samples, a batch over which we want to generalize, and from the context a few such batches suffice, as when generalizing over a few hospitals (heart_disease stayed grouped with 3). Each fold holds three plates and 146 to 267 rows. The 60 splits are 41 distinct training sides, so the spread over repeats is descriptive rather than 60 independent experiments; the per-split RMSE runs 4.62 to 6.66 with a fold-to-fold sd of 1.24, which is what a score on this dataset has to be read against.
+- `groups_test_groups_few`: A group is one assay plate of 17 to 92 samples, a batch over which we want to generalize, and from the context a few such batches suffice, as when generalizing over a few hospitals (heart_disease stayed grouped with 3). Each fold holds three plates and 146 to 267 rows. The 60 splits are 41 distinct training sides, so the spread over repeats is descriptive rather than 60 independent experiments; a 100-probe clock's per-split RMSE runs 4.62 to 6.66 with a fold-to-fold sd of 1.24, and pooled over the folds the same model scores the declared MAE of 4.57 against an RMSE of 6.14, which is the spread a score on this dataset has to be read against.
 
 ## Data checks
 

@@ -202,13 +202,9 @@ class Gse40279MethylationAge(AbstractCuratedDataset):
         fit="direct",
         fit_reason=(
             "The fit rests on the clock builder: the inputs are what a clock reads from a blood array, the target "
-            "is the age a clock is chosen by, and a held-out plate is a batch the model has not seen. The plates "
-            "differ in age and each holds one recorded ethnicity, so a test fold is a shift in cohort as well as "
-            "in batch. A potential leak is kept on purpose and does not change the grade: two published clocks "
-            "were fitted on the ages of these very rows, and recalibrating one of them floors the error at about "
-            "4.9 years with no model of our features at all, against the best honest model's 5.279 "
-            '(curation_comments, "Potential leak, kept on purpose"). The fit graded here is that of the task '
-            "without the leak."
+            "is the age a clock is chosen by, and a held-out plate is a batch the model has not seen. Two "
+            "qualifications are in the notes: a test fold shifts cohort as well as batch, and two "
+            "published clocks were fitted on these rows."
         ),
     )
 
@@ -338,6 +334,17 @@ class Gse40279MethylationAge(AbstractCuratedDataset):
     )
 
     accepted_check_warnings = {
+        "dataset_duplicates_skipped": (
+            "310,312,272 cells against the checks' budget of 50,000,000, so the duplicate-column and duplicate-row "
+            "checks do not run. That follows from the width, which is the dataset: 656 people against 473,035 "
+            "probes. What the checks would have looked for is answered elsewhere and does not need them. Duplicate "
+            "rows: every row is one person's array and the series lists 656 distinct samples, with no replicate "
+            "among them. Duplicate columns: a probe is a fixed position on the 450K chip and appears once, and the "
+            "frame is built by reading the manifest's probes in order, so two identical columns would be two "
+            "readings of one position, which the platform does not produce. Raising the budget to cover this frame "
+            "would make every check of this width cost a pairwise pass over 310 million cells for a question the "
+            "platform already answers."
+        ),
         "task_group_count_low": (
             "Nine plates are every assay batch the series has, and the batch is the level a clock must generalize "
             "over: a test sample is always measured in a batch of its own. The signal survives the key, so the few "

@@ -1,5 +1,22 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-27, gse40279_methylation_age: the deferred check ran, and its README is current again (nothing built)
+
+- The folder's `dataset check` had been deferred since 2026-11-25 on the belief that a frame of this width could
+  not be read. That was a confusion between the check and a build: the check assembles the frame in memory and
+  never goes through the container's parquet reader, which only a build does. It ran here against the merged main
+  and passed, so the generated README stops disagreeing with the definition and now carries `mae` from context
+  rather than the `rmse` fallback it had shown for two days.
+- Two warnings surfaced because the check finally ran, and both are answered. `task_summary.fit_reason` ran to 134
+  words against the limit of 70 and is cut to 64, the detail it carried being already in the notes.
+  `dataset_duplicates_skipped` is accepted with its reason: 310,312,272 cells against the checks' budget of
+  50,000,000, so the duplicate-row and duplicate-column passes do not run, which follows from the width that is
+  the dataset. What they would look for is answered by the platform instead, since every row is one person's array
+  among the series' 656 distinct samples and every column is a fixed position on the 450K chip, read once from the
+  manifest in order.
+- `dataset check`: 0 errors, 0 warnings, 0 info over 28 checks, 3 accepted warnings ignored. Still nothing built;
+  saving a container of this width remains blocked on the read, which is the open cross-dataset item.
+
 ## 2026-11-27, maize_nam_flowering_time removed: back to 2nd Tier on the curator's decision (nothing was built)
 
 - Andrej, 2026-11-27: "the dataset is not worth a slot; back to 2nd Tier." The folder added on 2026-11-26 leaves
