@@ -227,12 +227,13 @@ def test_data_foundry_index_names_every_script():
     assert not named - present, f"the index names scripts that do not exist: {sorted(named - present)}"
 
 
-def test_probe_library_docstring_names_every_module():
-    """The curation_probes package docstring lists each module, and no module that does not exist."""
-    package = KNOWLEDGE / "scripts" / "curation_probes"
+def test_probe_package_docstring_names_every_module():
+    """The ``data_foundry.probes`` package docstring lists each module, and no module that does not exist."""
+    package = ROOT / "src" / "data_foundry" / "probes"
     doc = re.match(r'"""(.*?)"""', (package / "__init__.py").read_text(encoding="utf-8"), re.DOTALL).group(1)
     named = set(re.findall(r"^\* ``([a-z_]+)``:", doc, re.MULTILINE))
     present = {p.stem for p in package.glob("*.py") if p.stem != "__init__"}
+    present |= {p.parent.name for p in package.glob("*/__init__.py")}
     assert named == present, (
         f"modules not listed: {sorted(present - named)}; listed, missing: {sorted(named - present)}"
     )

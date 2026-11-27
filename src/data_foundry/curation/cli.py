@@ -8,9 +8,10 @@ Subcommands::
     data-foundry-curation sync-notebooks [--check]      # refresh each record's notebook_path and v2_path
     data-foundry-curation export --format csv OUT.csv   # flat snapshot (csv|xlsx)
     data-foundry-curation dataset {list,check,build,new}   # v2 dataset folders (see data_foundry.definition.cli)
+    data-foundry-curation probe {leak,task,group,...} NAME...   # the probes (see data_foundry.probes.cli)
     data-foundry-curation claims {list,claim,release,renew,check,init}   # live claims board
 
-Run ``python -m data_foundry.curation.cli <subcommand> -h`` for details.
+``data-foundry`` is the same command. Run ``python -m data_foundry.curation.cli <subcommand> -h`` for details.
 """
 
 from __future__ import annotations
@@ -29,6 +30,7 @@ from data_foundry.curation.record import ACCEPTED_SUGGESTIONS, load_vocabularies
 from data_foundry.curation.site import build_site
 from data_foundry.curation.store import load_all, load_index
 from data_foundry.definition.cli import add_dataset_parser
+from data_foundry.probes.cli import add_probe_parser
 
 
 def _cmd_serve(args: argparse.Namespace) -> int:
@@ -290,6 +292,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_export.set_defaults(func=_cmd_export)
 
     add_dataset_parser(sub)
+    add_probe_parser(sub)
     _add_claims_parser(sub)
 
     return parser

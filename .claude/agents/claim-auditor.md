@@ -15,7 +15,7 @@ For each claim:
 
 1. State it exactly, with where it is written.
 2. Design the cheapest test whose outcome would refute it (EV-1, the decisive experiment): load the data through
-   `.claude/skills/knowledge-data-foundry/scripts/dataset_io.py` or the definition, compute, fit a quick model,
+   `data_foundry.probes.inputs` or the definition, compute, fit a quick model,
    compare with the source, read the paper or codebook.
 3. Run it. Thread caps on every Python run (`OMP_NUM_THREADS=2` and the like); scratch files go in the run folder.
 4. Record the result: holds, refuted, or untested (and why), with the numbers and the rule ID the claim rests on.

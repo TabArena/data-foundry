@@ -1,5 +1,14 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-26, the probes run as `data-foundry probe` (no container built)
+
+- The probes moved into the package (`data_foundry.probes`) and run as one command,
+  `data-foundry probe {leak,task,group,hidden-groups,time,dtypes,generated} NAME...` (codebase review of 2026-11-25);
+  the skill scripts `*_probes.py`, `hidden_groups.py` and `dataset_io.py` are gone. The README of this folder names the
+  command; the generated `README.md` of 48 grouped datasets still points to `group_probes.py` until its next `dataset
+  check`, since a generated README is never edited by hand. No definition changed: the dated notes of airfoil_self_noise, sat11_hand_algo_runtime and infrared_thermography_temperature still
+  name the scripts they ran then.
+
 ## 2026-11-26, overlapping checks merged; accepted slugs renamed (no container built)
 
 - One finding per cause (Lennart, 2026-11-26): the checks that reported one cause under several slugs are merged, 177

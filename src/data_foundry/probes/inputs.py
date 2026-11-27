@@ -1,20 +1,23 @@
-"""A v2 dataset as the plain inputs of the probe library: the Data Foundry side of the probe scripts.
+"""A dataset as the probes take it: one loader from a v2 definition or a built container.
 
-The probes in ``.claude/skills/knowledge-curation/scripts/curation_probes/`` take a pandas frame, its target and
-problem type, the group and time columns and the splits; this module reads them from a v2 definition under a root
-folder: from the definition's own frame and split plan (rebuilt from the raw files), or from a container (the built
-one recorded in the definition's ``README.md``, or one rebuilt from the definition).
+The probes take a pandas frame, its target and problem type, the group and time columns and the splits; this module
+reads them from a v2 definition under a root folder: from the definition's own frame and split plan (rebuilt from the
+raw files, ``from_definition``), or from a container (``load``: the built one recorded in the definition's
+``README.md`` or a registered collection's copy with ``built=True``, else one rebuilt from the definition).
 
-The scoring columns (``task.scoring_columns``: the inputs of the metric, such as Numerai's ``era``) are never model
-inputs, so they are dropped from the frame the probes see, unless one is also the target, a group column or the time
-column, which the probes take by name. ``ProbeInput.scoring_cols`` lists the ones dropped.
+The model inputs are decided in one place, ``data_foundry.curation_container.non_feature_columns``: never the target,
+the group, scoring or unit columns, nor a time column that dates the label. ``ProbeInput.feature_cols`` lists them
+(``ProbeInput.features`` also for an input built by hand), and every probe reads its X from them only. The scoring
+columns (``task.scoring_columns``: the inputs of the metric, such as Numerai's ``era``) are dropped from the frame the
+probes see, unless one is also the target, a group column or the time column, which the probes take by name.
+``ProbeInput.scoring_cols`` lists the ones dropped.
 
 The task's training weight (``sample_weight``: a scoring column of role ``weight``, such as the years insured of a
 claims-per-year target) leaves ``df`` with them; ``ProbeInput.weights`` holds its values, row by row of ``df``, so the
 probes fit every model with it, and ``ProbeInput.weight_column`` names it. ``ProbeInput.metric`` is the declared
 metric (the spec), and ``ProbeInput.scoring`` the values of every scoring column, row by row of ``df``:
 ``metric_inputs(rows)`` gives the metric's inputs by role (``data_foundry.metrics.score(spec, y, p, **inputs)``),
-and ``declared_metric()`` the metric as the probe library takes it (``curation_probes.weights``), scored as the
+and ``declared_metric()`` the metric as the probes take it (``data_foundry.probes.scoring``), scored as the
 benchmark scores it.
 
 A special feature (``task.special_features``) enters the probes in its recommended encoding
@@ -26,8 +29,8 @@ blind reviewer's clean room). ``ProbeInput.special_features`` lists them by name
 With ``raw=True``, ``from_definition`` also gives the raw state: ``ProbeInput.raw``, the table ``_load_raw`` returns
 (in source order, before ``_clean``), and ``ProbeInput.raw_rows``, the raw position of each row of ``df`` (the lineage
 of ``process(lineage=True)``), or None when the rows cannot be traced (``ProbeInput.raw_note`` says why). The probes of
-the raw state (``leak_probes.py --raw``) read row order, the rows ``_clean`` removed, the columns it dropped and the
-copies before deduplication from them.
+the raw state (``data-foundry probe leak --raw``) read row order, the rows ``_clean`` removed, the columns it dropped
+and the copies before deduplication from them.
 
 Rows without a target are dropped from every input (``df``, the splits, the weights, the scoring values and the raw
 positions), since no probe can fit or score them; ``ProbeInput.target_note`` says how many, and the loader prints it
@@ -78,7 +81,7 @@ class ProbeInput:
             ``encode_special=False``.
         feature_cols: The exact model inputs (after special-feature encoding): no target, group or scoring
             column, even when a scoring column stays in ``df`` as the time key.
-            None for manually constructed legacy inputs.
+            None for an input built by hand (``features`` then gives the inputs).
         raw: With ``from_definition(..., raw=True)``: the raw table in source order (``_load_raw``), or None when the
             raw data is not one table.
         raw_rows: The raw position of each row of ``df``, or None when the rows cannot be traced.
@@ -114,6 +117,16 @@ class ProbeInput:
     target_note: str = ""
 
     @property
+    def features(self) -> list[str]:
+        """The model inputs: ``feature_cols``, or for an input built by hand without them every column but the
+        target, the group and the scoring columns.
+        """
+        if self.feature_cols is not None:
+            return list(self.feature_cols)
+        skip = {self.target, *self.group_cols, *self.scoring_cols}
+        return [c for c in self.df.columns if c not in skip]
+
+    @property
     def group_cols(self) -> list[str]:
         """The group columns (none for an IID or temporal task)."""
         return as_column_list(self.grouping.on) if self.grouping is not None else []
@@ -138,7 +151,7 @@ class ProbeInput:
         return out
 
     def declared_metric(self) -> dict | None:
-        """The declared metric as the probe library takes it (``curation_probes.weights``), scored as the benchmark
+        """The declared metric as the probes take it (``data_foundry.probes.scoring``), scored as the benchmark
         scores it (``data_foundry.metrics.scorer``: a group's rows aggregated, the input columns read by row), or
         None: a format-1 container, or a metric whose code only the definition holds (``kind="local"``).
         """
@@ -239,13 +252,6 @@ def _without_scoring_columns(df: pd.DataFrame, task: Any) -> tuple[pd.DataFrame,
     return (df.drop(columns=columns) if columns else df), drop
 
 
-def _excluded_columns(task: Any) -> set[str]:
-    """The columns that are never model inputs, from the package's ``non_feature_columns`` (the one place that
-    decides): the target, the group, scoring and unit columns, and a time column that dates the label.
-    """
-    return non_feature_columns(task)
-
-
 def _weight_and_metric(frame: pd.DataFrame, task: Any) -> dict[str, Any]:
     """The ``ProbeInput`` fields of the training weight, the declared metric and the scoring columns' values, from
     ``frame`` before the scoring columns are dropped.
@@ -287,7 +293,7 @@ def from_definition(
     task = ds.task_metadata_for(plan.df)
     df, scoring = _without_scoring_columns(plan.df, task)
     df, special = _with_encoded_special_features(df, task, encode=encode_special)
-    excluded = _excluded_columns(task)
+    excluded = non_feature_columns(task)
     table, rows, note = _raw_state(ds, plan.df) if raw else (None, None, "")
     data = ProbeInput(
         df=df,
@@ -362,7 +368,7 @@ def from_container(container: CuratedContainer, origin: str, *, encode_special: 
         origin=origin,
         scoring_cols=scoring,
         special_features=special,
-        feature_cols=tuple(c for c in df.columns if c not in _excluded_columns(task)),
+        feature_cols=tuple(c for c in df.columns if c not in non_feature_columns(task)),
         **_weight_and_metric(container.dataset, task),
     )
     return without_missing_target(data)
@@ -406,6 +412,7 @@ def from_built(container: CuratedContainer, origin: str, *, encode_special: bool
             grouping=grouping,
             time_on=task.time_on,
             origin=origin,
+            feature_cols=tuple(c for c in container.dataset.columns if c not in non_feature_columns(task)),
         )
     )
 

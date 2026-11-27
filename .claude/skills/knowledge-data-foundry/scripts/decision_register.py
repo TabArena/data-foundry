@@ -103,7 +103,7 @@ MECHANISMS: dict[str, str] = {
     f"probe flag {flag}": rf"\b{flag}\b"
     for flag in ("no_signal", "solved", "no_spread", "one_feature", "drift_baseline", "unstable", "few_minority")
 }
-"""Mechanism name -> regex (case-insensitive). The task-probe flags (``curation_probes/task.py``) are mechanisms too:
+"""Mechanism name -> regex (case-insensitive). The task-probe flags (``data_foundry.probes.task``) are mechanisms too:
 the same flag, kept on one dataset and retired on another, is worth a look."""
 
 OUTCOME_RULES: dict[str, tuple[str, ...]] = {

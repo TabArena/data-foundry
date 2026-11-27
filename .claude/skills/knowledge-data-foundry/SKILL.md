@@ -31,11 +31,11 @@ implements. The overview for people is the [skills README](../README.md).
 | Pull requests: the title, a body with the summary on top and the details folded, one PR per independent change against `main`, stacks only for a dependency (made with `gh stack`), updating and merging | [pull_requests.md](references/pull_requests.md) | before opening, updating, stacking or merging a PR |
 | Exploring a dataset in a notebook: an optional starting point (`ds = workbench()`), not part of a dataset folder | [explore_notebook_reference.ipynb](references/explore_notebook_reference.ipynb) | you want a notebook to look at a dataset; copy it next to `dataset.py`, do not commit the copy |
 
-The scripts are in [scripts/](scripts/):
+The probes are in the package (`data_foundry.probes`) and run as one command,
+`data-foundry probe {leak,task,group,hidden-groups,time,dtypes,generated} NAME...`
+([checks_and_probes.md](references/checks_and_probes.md)). The scripts are in [scripts/](scripts/):
 
-* the probe entry points `leak_probes.py`, `task_probes.py`, `group_probes.py`, `hidden_groups.py`,
-  `generated_probes.py`, `dtype_probes.py`, `time_probes.py` (they load a Data Foundry dataset through `dataset_io.py`
-  and call the general probe library of `knowledge-curation`), `tuned_results.py` and `check_collection_bundles.py`;
+* beside the probes: `tuned_results.py` (the tuned results that settle a probe flag) and `check_collection_bundles.py`;
 * for the pipeline: `benchmark_coverage.py` (`coverage`: the accepted set per domain, problem type and regime, for
   screening priorities; `priority`: the two measured factors of a record's priority, the gap and the shape),
   `clean_room.py` (the blind reviewer's folder, and with `--participant` the task gamer's kit) and

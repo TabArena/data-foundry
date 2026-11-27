@@ -105,20 +105,22 @@ if it were IID, gives the positive controls for the thresholds.
 
 from __future__ import annotations
 
+import argparse
 import time
 import unicodedata
 from itertools import combinations
 from math import comb
+from pathlib import Path
 
-import lightgbm as lgb
 import numpy as np
 import pandas as pd
 from scipy.sparse import coo_matrix
 from scipy.sparse.csgraph import connected_components
-from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import GroupKFold, KFold, StratifiedGroupKFold, StratifiedKFold
 
-from curation_probes.text import features
+from data_foundry.probes import inputs, models
+from data_foundry.probes.encode import numeric
+from data_foundry.probes.scoring import skill
 
 MIN_GROUPS = 20
 MIN_MEAN_SIZE = 1.5
@@ -205,20 +207,6 @@ def attributes(
     return static, aliases
 
 
-def skill(y: np.ndarray, pred: np.ndarray, n_classes: int) -> float:
-    """``2 AUC - 1`` (macro one-vs-rest for multiclass), or ``1 - MSE / MSE(mean)`` for regression."""
-    if n_classes == 0:
-        dummy = float(np.mean((y - y.mean()) ** 2))
-        return float("nan") if dummy == 0 else 1.0 - float(np.mean((y - pred) ** 2)) / dummy
-    present = np.unique(y)
-    if len(present) < 2:
-        return float("nan")
-    if n_classes == 2:
-        return 2.0 * roc_auc_score(y, pred[:, 1]) - 1.0
-    aucs = [roc_auc_score(y == c, pred[:, c]) for c in present]
-    return 2.0 * float(np.mean(aucs)) - 1.0
-
-
 def group_codes(values: pd.Series) -> np.ndarray:
     """Integer group ids; every missing value is its own group."""
     codes = pd.factorize(values, use_na_sentinel=True)[0].astype(np.int64)
@@ -268,13 +256,13 @@ def oof(
     per_fold = []
     for train, test in folds:
         if n_classes == 0:
-            model = lgb.LGBMRegressor(n_estimators=200, verbose=-1, n_jobs=n_jobs)
+            model = models.lightgbm(regression=True, n_jobs=n_jobs)
             model.fit(X.iloc[train], y[train])
             pred[test, 0] = model.predict(X.iloc[test])
         elif len(np.unique(y[train])) == 1:  # a training fold with one class predicts it
             pred[test, y[train][0]] = 1.0
         else:
-            model = lgb.LGBMClassifier(n_estimators=200, verbose=-1, n_jobs=n_jobs)
+            model = models.lightgbm(regression=False, n_jobs=n_jobs)
             model.fit(X.iloc[train], y[train])
             pred[np.ix_(test, model.classes_)] = model.predict_proba(X.iloc[test])
         part = pred[test, 0] if n_classes == 0 else pred[test]
@@ -929,9 +917,9 @@ def run(
 
     scored = column_candidates(df, y, n_classes, skip, known)
     if temporal:  # no gap test: only the scored candidates need model inputs
-        X, names, _ = features(df[[c["column"] for c in scored[:MAX_SCORED]]], [])
+        X, names, _ = numeric(df[[c["column"] for c in scored[:MAX_SCORED]]], [])
     else:
-        X, names, _ = features(df, [target])
+        X, names, _ = numeric(df, [target])
     by_name = dict(zip(names, X.columns, strict=True))
     rng = np.random.default_rng(0)
     ranked = rank(scored[:MAX_SCORED], df, X, by_name, y, n_classes, target, n_jobs, rng)
@@ -958,3 +946,156 @@ def run(
     result["hits"] = [c["column"] for c in [*ranked, *keys, copies, *texts] if c.get("hit")]
     result["entity_like"] = [c["column"] for c in [*ranked, *keys] if c["eligible"]]
     return result
+
+
+# On a dataset: `data-foundry probe hidden-groups`
+
+
+def probe(name: str, root: Path, args: argparse.Namespace) -> dict:
+    """Run ``run`` on one dataset: an IID task gets the split gaps, a temporal task the recurrence of its entities
+    across the shipped splits (its time column left out of the candidates), a grouped task is skipped unless
+    ``--include-grouped`` runs it as if it were IID (its known group marked).
+    """
+    started = time.time()
+    data = inputs.load(name, root, built=args.built)
+    # the task's regime, not its time column: a grouped task can name a time column too
+    regime = {"temporal_non_iid": "temporal", "grouped_non_iid": "grouped"}.get(data.regime, "iid")
+    result: dict = {"name": name, "regime": regime, "origin": data.origin}
+    if regime == "grouped" and not args.include_grouped:
+        return result | {"skipped": f"{regime} task"}
+    result |= run(
+        data.df,
+        data.target,
+        data.problem_type,
+        known=data.group_cols,
+        time_on=data.time_on if regime == "temporal" else None,
+        splits=data.flat_splits(),
+        n_jobs=args.n_jobs,
+        feature_cols=data.features,
+    )
+    result["seconds"] = round(time.time() - started)
+    return result
+
+
+def _outcome(c: dict) -> str:
+    """The gap (IID) or the recurrence across the cutoff (temporal) of a candidate, as text."""
+    if "gap" in c:
+        return f", gap {c['gap']:+.3f} (random {c['skill_random']:.3f}, grouped {c['skill_grouped']:.3f})"
+    if "test_rows_seen" in c and c["splits"]:
+        low, high = c["test_rows_seen_range"]
+        return f", test rows seen in train {c['test_rows_seen']:.1%} ({low:.1%}-{high:.1%}, {c['splits']} splits)"
+    return ""
+
+
+def _key_lines(result: dict) -> list[str]:
+    """The composite keys of one dataset, or what the search checked when none counts."""
+    search = result.get("composite_search")
+    if not search:
+        return []
+    lines = []
+    for c in result["composite_keys"]:
+        mark = " [known group]" if c["known_group"] else ""
+        lines.append(
+            f"   {c['column']}{mark}: {c['values']} keys of {c['key_columns']} columns, "
+            f"{c['mean_rows_per_value']} rows each, {c['varying_share']:.1%} of the rows share a key with a row "
+            f"that differs ({c['baseline_share']:.1%} with independent columns), s_id {c['s_id']:.3f}{_outcome(c)}"
+            + (
+                f"; {c['rows_in_large_keys']} rows of keys over {COPY_MAX_CLUSTER} left out"
+                if c["rows_in_large_keys"]
+                else ""
+            )
+        )
+    if search["left_out"]:
+        scope = {1: "one column", 2: "one or two columns"}.get(max(search["left_out"]), "a few columns")
+        best = f"; best {search['best']} {search['best_varying_share']:.1%}" if search["best"] else ""
+        found = f"{search['counted']} count" if search["counted"] else "none counts"
+        lines.append(
+            f"   (keys of all but {scope}): {found} ({search['keys_checked']} of {search['keys']} keys, "
+            f"{search['columns']} columns{best}), {search['seconds']} s"
+        )
+    else:
+        lines.append(f"   (keys of all but one column): not searched ({search['columns']} columns)")
+    return lines
+
+
+def render(result: dict) -> str:
+    """A short text summary of one dataset."""
+    lines = [f"== {result['name']} ({result.get('regime', '?')}, {result.get('rows', '?')} rows)"]
+    if "skipped" in result or "error" in result:
+        return lines[0] + f": {result.get('skipped') or result.get('error')}"
+    if result["regime"] == "temporal":
+        lines.append(f"   candidates {result['candidates']}; entity-like {result['entity_like']} (temporal: no hits)")
+    else:
+        lines.append(f"   candidates {result['candidates']}; hits {result['hits']}")
+    for c in result["scored"][:N_TESTED]:
+        mark = " [known group]" if c["known_group"] else ""
+        lines.append(
+            f"   {c['column']}{mark}: {c['values']} values, {c['mean_rows_per_value']} rows each, "
+            f"s_id {c['s_id']:.3f}, s_smooth {c['s_smooth']:.3f}, "
+            f"{c['static']} attributes {c['static_columns'][:4]}{_outcome(c)}"
+        )
+    lines.extend(_key_lines(result))
+    lines.append(_copy_line(result["near_copies"]))
+    lines.extend(_text_line(c) for c in result.get("text_keys", []))
+    return "\n".join(lines)
+
+
+def _copy_line(c: dict) -> str:
+    """The near copies of one dataset, or why the check did not run."""
+    if not c.get("run", True):
+        return (
+            f"   {NEAR_COPIES}: not run, no row has {COPY_MIN_SHARED} informative tokens "
+            f"({c['columns_used']} columns); no evidence either way"
+        )
+    ladder = ", ".join(f"{s['similarity']}: {s['clusters']} ({s['repeated_share']:.1%})" for s in c["ladder"])
+    sizes = ", ".join(f"{k}: {v}" for k, v in c["cluster_sizes"].items() if v)
+    left_out = []
+    if c["rows_with_few_tokens"]:
+        left_out.append(f"{c['rows_with_few_tokens']} rows with fewer than {COPY_MIN_SHARED} tokens")
+    if c["rows_in_large_clusters"]:
+        left_out.append(f"{c['rows_in_large_clusters']} rows of clusters over {COPY_MAX_CLUSTER}")
+    return (
+        f"   {NEAR_COPIES} at {c['similarity']}: {c['values']} clusters, {c['repeated_share']:.1%} of the rows in "
+        f"clusters of 2+, largest {c['largest']} (sizes {sizes or 'none'}), s_id {c['s_id']:.3f}{_outcome(c)}; "
+        f"by similarity {ladder}; {c['columns_used']} columns, {c['seconds']} s"
+        + "".join(f"; {note} left single" for note in left_out)
+    )
+
+
+def _text_line(c: dict) -> str:
+    """The exact key on one normalised text column."""
+    sizes = ", ".join(f"{k}: {v}" for k, v in c["cluster_sizes"].items() if v)
+    large = c["rows_in_large_keys"]
+    large = f"; {large} rows of texts over {COPY_MAX_CLUSTER} left single" if large else ""
+    return (
+        f"   {c['column']}: {c['values']} texts, {c['repeated_share']:.1%} of the rows share their normalised text, "
+        f"largest {c['largest']} (sizes {sizes or 'none'}), s_id {c['s_id']:.3f}{_outcome(c)}{large}, {c['seconds']} s"
+    )
+
+
+def _summary_row(r: dict) -> str:
+    """One line of ``summary.md``."""
+    if r.get("scored") is None:
+        top = r.get("skipped") or r.get("error", "")
+    else:
+        parts = []
+        texts = sorted(r.get("text_keys", []), key=lambda c: -c["repeated_share"])[:1]
+        for c in [*r["scored"][:1], *r.get("composite_keys", [])[:1], r["near_copies"], *texts]:
+            if c["column"] == NEAR_COPIES and not c.get("run", True):
+                parts.append(f"{c['column']} not run")
+            elif "gap" in c:
+                parts.append(f"{c['column']} gap {c['gap']:+.3f}")
+            elif "test_rows_seen" in c:
+                parts.append(f"{c['column']} seen {c['test_rows_seen']:.1%}")
+            elif c["column"] == NEAR_COPIES or c["dtype"] == "text key":
+                parts.append(f"{c['column']} {c['repeated_share']:.1%} of rows")
+        top = "; ".join(parts)
+    hits = ", ".join(r.get("hits", []))
+    return f"| `{r['name']}` | {r.get('regime', '?')} | {r.get('candidates', '')} | {hits} | {top} |"
+
+
+def summary(results: list[dict]) -> str:
+    """``summary.md``: one row per dataset with its hits and the top candidate of each kind."""
+    header = "| dataset | regime | candidates | hits | top candidate; composite key; near copies; text key |\n"
+    header += "|---|---|---|---|---|\n"
+    return header + "\n".join(_summary_row(r) for r in results) + "\n"

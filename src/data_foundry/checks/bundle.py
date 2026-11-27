@@ -1431,7 +1431,7 @@ def _test_group_findings(ctx: _Ctx, codes: np.ndarray, n_groups: int) -> Iterato
         "warning",
         message[:1].upper() + message[1:] + ".",
         hint="Few groups make a grouped split coarse and its scores vary. Keep the dataset only if its signal across "
-        "groups is real (`.claude/skills/knowledge-data-foundry/scripts/group_probes.py`), and accept the warning "
+        "groups is real (`data-foundry probe group`), and accept the warning "
         "with that reason.",
     )
 

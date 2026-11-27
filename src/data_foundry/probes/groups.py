@@ -3,20 +3,20 @@
 Tooling-independent: ``run`` takes a pandas frame, its target column and problem type, the group columns and the
 grouped splits (one list of ``(train_idx, test_idx)`` folds per repeat), prints and returns:
 
-* the split gap: untuned LightGBM on 3-fold IID splits (stratified for classification) against the grouped splits of
-  the first repeat, with the spread over folds. A clear drop under grouped splits means rows of a group inform each
-  other (an IID split would leak); a gap within the fold spread means the grouping changes little;
-* learnability across groups: several untuned model families (regularised linear, random forest, LightGBM, kNN) on
-  the first ``n_repeats`` repeats, scored on the out-of-fold predictions per row and, for one label per group, per
-  group (the mean of a group's predictions), against the baseline of always predicting the prior; only the rows some
-  fold of the repeat tests are scored (a holdout or a row budget leaves rows untested);
-* for one label per group: a permutation test that shuffles the labels across groups and re-runs the grouped CV with
-  the best model; its p-value says whether the per-group score could come from chance.
+* the split gap: untuned LightGBM on 3-fold IID splits (stratified for classification) against the grouped splits of the
+  first repeat, with the spread over folds. A clear drop under grouped splits means rows of a group inform each other
+  (an IID split would leak); a gap within the fold spread means the grouping changes little;
+* learnability across groups: the untuned model families of the task probe (``models.families``: regularised linear,
+  random forest, LightGBM) and kNN on the first ``n_repeats`` repeats, scored on the out-of-fold predictions per row
+  and, for one label per group, per group (the mean of a group's predictions), against the baseline of always predicting
+  the prior; only the rows some fold of the repeat tests are scored (a holdout or a row budget leaves rows untested);
+* for one label per group: a permutation test that shuffles the labels across groups and re-runs the grouped CV with the
+  best model; its p-value says whether the per-group score could come from chance.
 
 Scores are ROC AUC or R^2; a multiclass ROC AUC is the mean of the one-vs-rest ROC AUCs over the classes present in
 the scored rows (a grouped fold can lack a class). Group, target and string columns are not features, nor the columns
-``feature_cols`` leaves out; the inputs are those of the task probes (``curation_probes.text.features``: categoricals
-as codes, datetimes and durations as seconds). A frame over ``max_rows`` keeps a random set of whole groups. The
+``feature_cols`` leaves out; the inputs are those of the task probes (``encode.numeric``: categoricals as codes,
+datetimes and durations as seconds). A frame over ``max_rows`` keeps a random set of whole groups. The
 numbers are indicative (untuned models) and meant for the curation decision.
 
 With a training weight (``sample_weight``, such as the years insured of a claims-per-year target), every model is
@@ -26,41 +26,17 @@ a group by the sum of its rows' weights.
 
 from __future__ import annotations
 
-import lightgbm as lgb
+import argparse
+import time
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.linear_model import LogisticRegression, Ridge
-from sklearn.metrics import r2_score, roc_auc_score
 from sklearn.model_selection import KFold, StratifiedKFold
-from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
 
-from curation_probes import weights
-from curation_probes.task import linear_inputs
-from curation_probes.text import features
-
-
-def models(*, regression: bool, categorical: list[str] | None = None) -> dict:
-    """Untuned models of four families; ``categorical`` names the columns the linear models one-hot encode."""
-    categorical = categorical or []
-    if regression:
-        return {
-            "ridge": lambda: make_pipeline(linear_inputs(categorical), Ridge(alpha=1.0)),
-            "random_forest": lambda: RandomForestRegressor(
-                n_estimators=300, min_samples_leaf=2, n_jobs=1, random_state=0
-            ),
-            "lightgbm": lambda: lgb.LGBMRegressor(n_estimators=300, learning_rate=0.05, verbose=-1, n_jobs=1),
-            "knn5": lambda: make_pipeline(StandardScaler(), KNeighborsRegressor(n_neighbors=5)),
-        }
-    return {
-        "logreg": lambda: make_pipeline(linear_inputs(categorical), LogisticRegression(C=0.1, max_iter=5000)),
-        "random_forest": lambda: RandomForestClassifier(n_estimators=300, n_jobs=1, random_state=0),
-        "lightgbm": lambda: lgb.LGBMClassifier(n_estimators=300, learning_rate=0.05, verbose=-1, n_jobs=1),
-        "knn5": lambda: make_pipeline(StandardScaler(), KNeighborsClassifier(n_neighbors=5)),
-    }
+from data_foundry.probes import inputs, models, scoring
+from data_foundry.probes.encode import numeric
 
 
 def out_of_fold(
@@ -74,28 +50,12 @@ def out_of_fold(
     for train, test in folds:
         if n_classes:
             pred[test] = 0.0  # a class the training side lacks gets probability 0
-        model = weights.fit(make(), X.iloc[train], y[train], weights.take(weight, train))
+        model = models.fit(make(), X.iloc[train], y[train], scoring.take(weight, train))
         if n_classes:
             pred[np.ix_(test, model.classes_)] = model.predict_proba(X.iloc[test])
         else:
             pred[test, 0] = model.predict(X.iloc[test])
     return pred
-
-
-def score(y: np.ndarray, pred: np.ndarray, n_classes: int, weight: np.ndarray | None = None) -> float:
-    """ROC AUC (for multiclass, the mean one-vs-rest ROC AUC over the classes present in ``y``) or R^2, each row
-    weighted by ``weight`` when given; higher is better. NaN for a multiclass ``y`` of one class.
-    """
-    if not n_classes:
-        return float(r2_score(y, pred[:, 0], sample_weight=weight))
-    if n_classes == 2:  # binary
-        return float(roc_auc_score(y, pred[:, 1], sample_weight=weight))
-    p = pred.clip(1e-12)
-    p = p / p.sum(axis=1, keepdims=True)
-    present = np.unique(y)
-    if len(present) < 2:
-        return float("nan")
-    return float(np.mean([roc_auc_score(y == k, p[:, k], sample_weight=weight) for k in present]))
 
 
 def per_group(
@@ -125,11 +85,11 @@ def evaluate(make, X, y, groups, repeats, n_classes, *, by_group: bool, weight=N
     for folds in repeats:
         seen = tested(folds, len(X))
         pred = out_of_fold(make, X, y, folds, n_classes, weight)[seen]
-        w = weights.take(weight, seen)
-        rows.append(score(y[seen], pred, n_classes, w))
+        w = scoring.take(weight, seen)
+        rows.append(scoring.auc_or_r2(y[seen], pred, n_classes, w))
         if by_group:
             gp, gy, gw = per_group(pred, y[seen], groups[seen], w)
-            grouped.append(score(gy, gp, n_classes, gw))
+            grouped.append(scoring.auc_or_r2(gy, gp, n_classes, gw))
     return float(np.mean(rows)), (float(np.mean(grouped)) if by_group else None)
 
 
@@ -193,7 +153,7 @@ def run(  # noqa: PLR0913
         classes = sorted(labels_of.astype(str).unique())
         y, n_classes = labels_of.astype(str).map({c: i for i, c in enumerate(classes)}).to_numpy(), len(classes)
     inputs = df[list(feature_cols)] if feature_cols is not None else df.drop(columns=[target, *group_cols])
-    X, names, _ = features(inputs, [target, *group_cols])  # string columns are left out
+    X, names, _ = numeric(inputs, [target, *group_cols])  # string columns are left out
     by_group = per_group_labels
     weighted = ", weighted by the training weight" if weight is not None else ""
     print(
@@ -203,12 +163,12 @@ def run(  # noqa: PLR0913
     result: dict = {"name": name, "rows": len(df), "features": X.shape[1], "groups": len(np.unique(groups))}
     result["weighted"] = weight is not None
 
-    lgbm = models(regression=regression)["lightgbm"]
+    lgbm = models.families(regression=regression, n_jobs=1)["lightgbm"]
     iid_cv = KFold(3, shuffle=True, random_state=0) if regression else StratifiedKFold(3, shuffle=True, random_state=0)
 
     def fold_score(tr: np.ndarray, te: np.ndarray) -> float:
         pred = out_of_fold(lgbm, X, y, [(tr, te)], n_classes, weight)[te]
-        return score(y[te], pred, n_classes, weights.take(weight, te))
+        return scoring.auc_or_r2(y[te], pred, n_classes, scoring.take(weight, te))
 
     iid = [fold_score(tr, te) for tr, te in iid_cv.split(X, y)]
     grouped = [fold_score(tr, te) for tr, te in repeats[0]]
@@ -221,7 +181,7 @@ def run(  # noqa: PLR0913
     baseline = 0.0 if regression else 0.5
     print(f"learnability across groups (baseline {baseline:.1f}), per row" + (" / per group" if by_group else ""))
     categorical = [f"f{i}" for i, column in enumerate(names) if isinstance(df[column].dtype, pd.CategoricalDtype)]
-    candidates = models(regression=regression, categorical=categorical)
+    candidates = models.families(regression=regression, n_jobs=1, categorical=categorical, knn=True)
     results = Parallel(n_jobs=min(n_jobs, len(candidates)))(
         delayed(evaluate)(make, X, y, groups, repeats, n_classes, by_group=by_group, weight=weight)
         for make in candidates.values()
@@ -257,3 +217,49 @@ def run(  # noqa: PLR0913
     )
     result["permutation"] = {"model": best, "score": real, "null_mean": float(null.mean()), "p_value": p_value}
     return result
+
+
+# On a dataset: `data-foundry probe group`
+
+
+def probe(name: str, root: Path, args: argparse.Namespace) -> dict:
+    """Run ``run`` on one grouped dataset: the definition's frame and split plan (rebuilt from the raw files), or with
+    ``--built`` the built container; a task without a grouping is skipped.
+    """
+    started = time.time()
+    if args.built:
+        data = inputs.load(name, root, built=True)
+    else:
+        ds = inputs.definition(name, root)
+        if ds.task_metadata.grouping is None:
+            return {"name": name, "skipped": "not a grouped task"}
+        data = inputs.from_definition(ds)
+    if data.grouping is None:
+        return {"name": name, "origin": data.origin, "skipped": "not a grouped task"}
+    result = run(
+        data.df,
+        data.target,
+        data.problem_type,
+        data.group_cols,
+        data.repeats(),
+        per_group_labels=data.grouping.labels == "per_group",
+        name=name,
+        n_repeats=args.repeats,
+        permutations=args.permutations,
+        max_rows=args.max_rows,
+        n_jobs=args.n_jobs,
+        sample_weight=data.weights,
+        feature_cols=data.features,
+    )
+    return result | {"origin": data.origin, "seconds": round(time.time() - started)}
+
+
+def render(result: dict) -> str:
+    """The closing line of one dataset (``run`` prints the report as it goes)."""
+    if "skipped" in result:
+        return f"{result['name']}: skipped ({result['skipped']})"
+    learn = result.get("learnability", {})
+    best = max(learn, key=lambda m: np.nan_to_num(learn[m]["row"], nan=-np.inf), default=None)
+    gap = result["split_gap"]["gap"]
+    cell = f"; best across groups {best} {learn[best]['row']:.3f}" if best else ""
+    return f"{result['name']}: split gap {gap:+.3f}{cell}; {result.get('seconds', '?')} s"

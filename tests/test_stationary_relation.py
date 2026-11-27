@@ -2,18 +2,11 @@
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 import pytest
 
-pytest.importorskip("lightgbm")
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / ".claude/skills/knowledge-curation/scripts"))
-
-from curation_probes import stationarity
+from data_foundry.probes import models, stationarity
 
 
 def _data(n_periods=6, rows=1200, drift=False, seed=0, share_jump=False):
@@ -174,4 +167,4 @@ def test_a_not_flat_window_stands_in_a_partial_run():
 def test_tabpfn_v35_refuses_a_cpu():
     """TabPFN v3.5 runs on a GPU only."""
     with pytest.raises(ValueError, match="on a GPU"):
-        stationarity.tabpfn_v35("binary", [0, 1], device="cpu")
+        models.tabpfn_v35("binary", [0, 1], device="cpu")

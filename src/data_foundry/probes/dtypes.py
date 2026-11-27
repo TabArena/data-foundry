@@ -43,12 +43,18 @@ case, categorical by default (CLEAN-14).
 
 from __future__ import annotations
 
+import argparse
 import json
 import re
+import time
 import urllib.request
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
+
+from data_foundry.curation_container import non_feature_columns
+from data_foundry.probes import inputs
 
 MIN_LEVELS = 10
 RANK_CORR = -0.5
@@ -293,3 +299,75 @@ def fetch_codebook(url: str, *, timeout: float = 30) -> dict[str, dict]:
     with urllib.request.urlopen(api, timeout=timeout) as response:  # noqa: S310 - a fixed https address
         payload = json.loads(response.read())
     return codebook_from_uci(payload) if "uci.edu" in api else codebook_from_openml(payload)
+
+
+# On a dataset: `data-foundry probe dtypes`
+
+
+def codebook_link(ds: object) -> str | None:
+    """The first UCI or OpenML link of the definition's source links and download description."""
+    urls = " ".join(source.url for source in getattr(ds, "sources", ()))
+    text = f"{urls} {getattr(ds, 'download_description', '') or ''}"
+    return next((u for u in re.findall(r"https?://[^\s\"'<>)]+", text) if codebook_api_url(u)), None)
+
+
+def probe(name: str, root: Path, args: argparse.Namespace) -> dict:
+    """Run ``column_table`` on one dataset's model inputs: the definition's frame as the split step leaves it (typed
+    by ``_feature_types``), or with ``--built`` the built container's; the codebook from ``--codebook`` or the
+    definition's first UCI or OpenML link, unless ``--no-fetch``.
+    """
+    started = time.time()
+    ds = inputs.definition(name, root)
+    fetch = not args.no_fetch
+    result = {"name": name, "codebook_url": (args.codebook or codebook_link(ds)) if fetch else None}
+    codebook = {}
+    if result["codebook_url"]:
+        try:
+            codebook = fetch_codebook(result["codebook_url"])
+        except Exception as error:  # noqa: BLE001 - the probe runs without a codebook
+            result["codebook_error"] = f"{type(error).__name__}: {error}"[:200]
+    if args.built:
+        data = inputs.load(name, root, built=True, encode_special=False)
+        frame, exclude = data.df, [c for c in data.df.columns if c not in set(data.features)]
+        result["origin"] = data.origin
+    else:
+        frame, exclude = ds.make_splits().df, sorted(non_feature_columns(ds.task_metadata))
+        result["origin"] = "definition"
+    table = column_table(frame, exclude=exclude, codebook=codebook)
+    result["columns"] = len(table)
+    result["codebook_columns"] = len(codebook)
+    result["codebook_matched"] = 0
+    if not table.empty:
+        matched = table["codebook_type"].notna() | table["codebook_description"].notna()
+        result["codebook_matched"] = int(matched.sum())
+    result["flagged"] = flagged(table).to_dict("records")
+    result["seconds"] = round(time.time() - started)
+    return result
+
+
+def render(r: dict) -> str:
+    """The dataset's line, then one line per flagged column."""
+    if "error" in r:
+        return f"{r['name']}: error {r['error']}"
+    if r.get("codebook_error"):
+        source = f"codebook failed ({r['codebook_error']})"
+    elif r.get("codebook_url"):
+        source = f"codebook {r['codebook_matched']} of {r['columns']} columns matched ({r['codebook_url']})"
+    else:
+        source = "no codebook"
+    lines = [f"{r['name']}: {len(r['flagged'])} of {r['columns']} columns flagged; {source}"]
+    for row in r["flagged"]:
+        values = f", {row['value_min']:g} to {row['value_max']:g}" if row["value_min"] is not None else ""
+        if row["other_levels"]:
+            values += f", also {row['other_levels']}"
+        book = ""
+        if row["codebook_type"] or row["codebook_description"]:
+            book = f"; codebook {row['codebook_type'] or ''} {str(row['codebook_description'] or '')[:90]!r}"
+        lines.append(f"  {row['column']} ({row['dtype']}, {row['n_values']} values{values}): {row['flags']}{book}")
+    return "\n".join(lines)
+
+
+def write_extra(out: Path, results: list[dict]) -> None:
+    """``flagged.csv`` beside the JSON files: one row per flagged column of every dataset."""
+    rows = [{"dataset": r["name"], **row} for r in results for row in r.get("flagged", [])]
+    pd.DataFrame(rows).to_csv(out / "flagged.csv", index=False)

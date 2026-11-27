@@ -18,10 +18,10 @@ the data holds. ``stationary_relation`` measures it, the same way for every data
   draws the test half, the contemporaneous sample and the models' seeds anew.
 * **The floor** is ``FLOOR_SHARE`` of the distance between the contemporaneous model and the constant predictor: a
   gap below it is too small to matter, whatever its noise.
-* **Models:** a regularised LightGBM (probe 23's settings, ``leak._regularised``) on every training row, and, where
+* **Models:** a regularised LightGBM (probe 23's settings, ``models.regularised``) on every training row, and, where
   ``foundation`` gives one, a tabular foundation model on at most ``max_foundation_train`` training rows and
   ``max_foundation_test`` test rows (both drawn by the same rules). For a time basis it is one state-of-the-art
-  tabular foundation model, on a GPU: TabPFN v3.5 (``tabpfn_v35``) or Kumo-Tabular (``kumo_tabular``).
+  tabular foundation model, on a GPU: TabPFN v3.5 (``models.tabpfn_v35``) or Kumo-Tabular (``models.kumo_tabular``).
 
 A window is **not flat** for a model when its mean gap is above both two SDs and the floor; **flat** when it is not, the
 contemporaneous model beats the constant predictor, and the test was fine enough to see a gap of a few floors (two SDs
@@ -41,13 +41,16 @@ training share: SPLIT-14's floor is for a split's windows, not for this test. A 
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import numpy as np
 import pandas as pd
 from scipy.stats import fisher_exact
 
-from . import leak
+from data_foundry.probes import leak
+
+if TYPE_CHECKING:
+    from data_foundry.probes.models import Foundation
 
 FLOOR_SHARE = 0.01
 """The floor: a share of the distance between the contemporaneous model and the constant predictor."""
@@ -60,9 +63,6 @@ MIN_WINDOW_ROWS = 40
 """Rows a period needs to be a window: a test half of 20 rows at least."""
 TIME_BASIS_WINDOWS = 3
 """The newest periods a verdict on the relation covers (SPLIT-32); a run on fewer is partial."""
-
-Foundation = Callable[[pd.DataFrame, np.ndarray, pd.DataFrame, int], np.ndarray]
-"""``fit_predict(x_train, y_train, x_test, seed)``: values, or class probabilities in the order of ``fits.classes``."""
 
 
 def _draw_units(rows: np.ndarray, size: float, units: np.ndarray, rng: np.random.Generator) -> np.ndarray:
@@ -209,7 +209,7 @@ def stationary_relation(  # noqa: C901, PLR0913
         sample_weight: The task's training weight, one value per row, or None.
         feature_cols: The model inputs (default: every column but the target and ``exclude_cols``).
         exclude_cols: Columns that are no input: the period column and anything that names the period.
-        metric: The task's own metric (``curation_probes.weights``), or None for R^2 or ROC AUC.
+        metric: The task's own metric (``data_foundry.probes.scoring``), or None for R^2 or ROC AUC.
         fit_params: LightGBM parameters, such as ``{"objective": "tweedie"}``.
         n_windows: Windows, newest first (ordered periods only).
         test_periods: Only these windows, by label (to run each window as its own job); the verdict is then
@@ -234,7 +234,7 @@ def stationary_relation(  # noqa: C901, PLR0913
         None if units is None else pd.factorize(pd.Series(units).reset_index(drop=True), use_na_sentinel=False)[0]
     )
     df = df.reset_index(drop=True)
-    fits = leak._TargetFits(
+    fits = leak.TargetFits(
         df[target],
         problem_type,
         sample_weight,
@@ -245,7 +245,7 @@ def stationary_relation(  # noqa: C901, PLR0913
         regularised=True,
     )
     columns = list(feature_cols) if feature_cols is not None else [c for c in df.columns if c != target]
-    X = leak._forced_inputs(df, [c for c in columns if c not in {target, *exclude_cols}])
+    X = leak.forced_inputs(df, [c for c in columns if c not in {target, *exclude_cols}])
     rows_per = np.bincount(codes, minlength=count)
     windows = _windows(
         codes, rows_per, labels, ordered=ordered, n_windows=n_windows, test_periods=test_periods, min_rows=min_rows
@@ -339,7 +339,7 @@ def _windows(
     return [k for k in windows if labels[k] in test_periods]
 
 
-def _target_by_period(fits: leak._TargetFits, codes: np.ndarray, labels: list[str]) -> list[dict]:
+def _target_by_period(fits: leak.TargetFits, codes: np.ndarray, labels: list[str]) -> list[dict]:
     rows = []
     for k, label in enumerate(labels):
         mask = codes == k
@@ -451,105 +451,3 @@ def stationary_relation_lines(result: dict) -> list[str]:
     else:
         lines.append(f"  verdict: {result['verdict']}")
     return lines
-
-
-def tabpfn_v35(problem_type: str, classes, *, device: str = "cuda") -> Foundation:
-    """TabPFN v3.5 (the public ``tabpfn`` package with the public Hugging Face weights ``Prior-Labs/tabpfn_3_5``) as a
-    ``Foundation``: one of the state-of-the-art foundation models a time basis can quote (SPLIT-32).
-
-    Categories go in as their codes, named as categorical features; dates are already days. Classification returns
-    the probability columns in the order of ``classes`` (a class missing from a training side scores 0), regression
-    the mean. Run it on a GPU, on a node started through SkyPilot: v3.5 on a CPU is refused, as it is too slow there.
-    Raises ``ImportError`` without the package.
-    """
-    if device == "cpu":
-        raise ValueError("tabpfn_v35: run TabPFN v3.5 on a GPU (device='cuda'), not on a CPU")
-    from tabpfn import TabPFNClassifier, TabPFNRegressor  # noqa: PLC0415 - an optional dependency
-    from tabpfn.constants import ModelVersion  # noqa: PLC0415
-
-    regression = problem_type == "regression"
-    position = None if regression else {c: i for i, c in enumerate(classes)}
-
-    def fit_predict(x_tr: pd.DataFrame, y_tr: np.ndarray, x_te: pd.DataFrame, seed: int) -> np.ndarray:
-        both = pd.concat([x_tr, x_te], ignore_index=True)  # one coding of each category for both sides
-        cat_idx, columns = [], {}
-        for i, c in enumerate(both.columns):
-            s = both[c]
-            if isinstance(s.dtype, pd.CategoricalDtype):
-                columns[c] = s.cat.codes.astype(float).where(s.notna())
-                cat_idx.append(i)
-            else:
-                columns[c] = pd.to_numeric(s, errors="coerce").astype(float)
-        X = pd.DataFrame(columns).to_numpy(dtype=np.float32)
-        n = len(x_tr)
-        estimator = TabPFNRegressor if regression else TabPFNClassifier
-        model = estimator.create_default_for_version(
-            ModelVersion.V3_5,
-            device=device,
-            ignore_pretraining_limits=True,
-            random_state=seed,
-            categorical_features_indices=cat_idx or None,
-        )
-        model.fit(X[:n], np.asarray(y_tr))
-        if regression:
-            return np.asarray(model.predict(X[n:]), dtype=float)
-        proba = np.asarray(model.predict_proba(X[n:]), dtype=float)
-        out = np.zeros((len(x_te), len(position)))
-        for j, c in enumerate(model.classes_):
-            out[:, position[c]] = proba[:, j]
-        return out
-
-    return fit_predict
-
-
-def kumo_tabular(
-    problem_type: str,
-    classes,
-    *,
-    device: str = "cpu",
-    threads: int | None = None,
-    num_estimators: int = 8,
-    size: str = "large",
-    point: str = "mean",
-) -> Foundation:
-    """NVIDIA's Kumo-Tabular (``structured-data-models``, imported here) as a ``Foundation``: one of the
-    state-of-the-art foundation models a time basis can quote (SPLIT-32).
-
-    Classification returns the probability columns in the order of ``classes``; regression the mean (``point="mean"``)
-    or the median of its 999 quantiles. A column empty on a training side is left out of that fit. Raises
-    ``ImportError`` without the package.
-    """
-    import sdm  # noqa: PLC0415 - an optional dependency
-    import torch  # noqa: PLC0415
-
-    if threads:
-        torch.set_num_threads(threads)
-    regression = problem_type == "regression"
-    model = sdm.models.KumoTabular(size=size, device=device)
-    names = None if regression else [str(c) for c in classes]
-
-    def fit_predict(x_tr: pd.DataFrame, y_tr: np.ndarray, x_te: pd.DataFrame, seed: int) -> np.ndarray:
-        keep = [c for c in x_tr.columns if x_tr[c].notna().any()]
-        both = pd.concat([x_tr[keep], x_te[keep]], ignore_index=True)
-        y = pd.Series(np.concatenate([np.asarray(y_tr), np.asarray(y_tr)[:1].repeat(len(x_te))]))
-        both["__target__"] = y.to_numpy(dtype=float) if regression else y.astype(str).to_numpy()
-        stypes = sdm.infer_stypes(both, overrides={"__target__": "numerical" if regression else "categorical"})
-        table = sdm.TableTensor.from_pandas(df=both, stypes=stypes, device=device)
-        n = len(x_tr)
-        model.fit(
-            x=table[:n].drop_columns("__target__"),
-            y=table[:n, "__target__"],
-            num_estimators=num_estimators,
-            generator=torch.Generator().manual_seed(seed),
-        )
-        pred = model.predict(table[n:].drop_columns("__target__")).to_pandas()
-        model.clear()
-        if regression:
-            q = pred[[c for c in pred.columns if str(c).startswith("q")]].to_numpy(dtype=float)
-            return np.median(q, axis=1) if point == "median" else q.mean(axis=1)
-        probs = np.column_stack(
-            [pred[c].to_numpy(dtype=float) if c in pred.columns else np.zeros(len(pred)) for c in names]
-        )
-        return probs / np.clip(probs.sum(axis=1, keepdims=True), 1e-12, None)
-
-    return fit_predict

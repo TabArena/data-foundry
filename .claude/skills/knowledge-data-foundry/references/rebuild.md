@@ -104,7 +104,7 @@ read each file) and a `README.txt`. It is a local backup for the user: never add
 ## Step 6: the task-probe sweep (when rows or splits changed)
 
 ```bash
-.venv/bin/python .claude/skills/knowledge-data-foundry/scripts/task_probes.py --all --built --jobs 8 --out $OUT/probes
+.venv/bin/data-foundry probe task --all --built --jobs 8 --out $OUT/probes
 ```
 
 The sweep's output stays in `$OUT/probes` (`summary.md` and one JSON per dataset); nothing of it goes into git. A

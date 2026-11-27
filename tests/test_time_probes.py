@@ -1,11 +1,9 @@
-"""Tests for the time-recovery probe (``curation_probes.time_recovery``) and its command-line rendering."""
+"""Tests for the time-recovery probe (``data_foundry.probes.time_recovery``) and its report."""
 
 from __future__ import annotations
 
-import importlib.util
+import argparse
 import shutil
-import sys
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -13,21 +11,13 @@ import pytest
 
 from data_foundry.collections import CollectionEntry, DatasetCollection, LocalWarehouseSource
 from data_foundry.examples import get_toy_container_path
-
-pytest.importorskip("scipy")
-pytest.importorskip("lightgbm")  # curation_probes imports curation_probes.leak, which imports it
-
-REPO = Path(__file__).resolve().parents[1]
-LIBRARY = REPO / ".claude" / "skills" / "knowledge-curation" / "scripts"
-SCRIPTS = REPO / ".claude" / "skills" / "knowledge-data-foundry" / "scripts"
+from data_foundry.probes import inputs, time_recovery
 
 
 @pytest.fixture(scope="module")
 def probe():
-    """``curation_probes.time_recovery``, with the library folder on the path."""
-    if str(LIBRARY) not in sys.path:
-        sys.path.insert(0, str(LIBRARY))
-    return importlib.import_module("curation_probes.time_recovery")
+    """The probe's module."""
+    return time_recovery
 
 
 def _frame(n: int = 2000, seed: int = 0) -> pd.DataFrame:
@@ -330,13 +320,8 @@ def test_an_order_that_is_not_the_sources_is_not_read(probe):
 
 @pytest.fixture(scope="module")
 def cli():
-    """The command line, ``time_probes.py``, with its folders on the path."""
-    if str(SCRIPTS) not in sys.path:
-        sys.path.insert(0, str(SCRIPTS))
-    spec = importlib.util.spec_from_file_location("time_probes_cli", SCRIPTS / "time_probes.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    """The report and the dataset runner of ``data-foundry probe time``: the same module."""
+    return time_recovery
 
 
 def test_the_command_line_renders_one_line(probe, cli):
@@ -366,7 +351,8 @@ def test_built_reads_the_collection_cache_without_a_local_build(cli, tmp_path, m
     monkeypatch.setattr("data_foundry.collections.get_collection", lambda _name: collection)
     monkeypatch.setenv("DATA_FOUNDRY_CACHE", str(tmp_path / "cache"))
     monkeypatch.setenv("DATA_FOUNDRY_WAREHOUSE", str(tmp_path / "warehouse"))
-    result = cli.probe(toy.parent.name, tmp_path / "definitions", built=True)
+    args = argparse.Namespace(built=True, include_temporal=False)
+    result = cli.probe(toy.parent.name, tmp_path / "definitions", args)
     assert result["origin"] == "built (Toy)"
     assert result["order_source"] == "none"
 
@@ -375,6 +361,6 @@ def test_built_reads_the_collection_cache_without_a_local_build(cli, tmp_path, m
     readme = tmp_path / "definitions" / toy.parent.name / "README.md"
     readme.parent.mkdir(parents=True)
     readme.write_text(f"---\nbuild:\n  path: {toy.parent.name}/{toy.name}\n---\n")
-    assert cli.dataset_io.built_container(toy.parent.name, tmp_path / "definitions")[1] == "built"
+    assert inputs.built_container(toy.parent.name, tmp_path / "definitions")[1] == "built"
     with pytest.raises(FileNotFoundError):
-        cli.dataset_io.built_container("no_such_dataset", tmp_path / "definitions")
+        inputs.built_container("no_such_dataset", tmp_path / "definitions")

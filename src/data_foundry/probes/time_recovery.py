@@ -35,13 +35,16 @@ time columns, nor are fractional numbers outside 1900-2100 (a ratio named ``thre
 
 from __future__ import annotations
 
+import argparse
 import re
+import time
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 from scipy import stats
 
-from . import leak
+from data_foundry.probes import inputs, leak
 
 TIME_WORDS = re.compile(
     r"(^|[_\W])(date|datetime|timestamp|year|yr|month|week|quarter|qtr|season|period|wave|round|cohort|era|"
@@ -616,3 +619,121 @@ def _flags(result: dict) -> list[str]:
     if sorted_order and any(c["share"] >= CLASS_DRIFT_SHARE and not c["sorted_by"] for c in drift.values()):
         flags.append("class_block_drift")
     return flags
+
+
+# On a dataset: `data-foundry probe time`
+
+BUILT_WARNING = (
+    "warning: --built reads containers, whose rows were shuffled: the checks of the row order (order, "
+    "sorted_by_target, periodic_blocks, entity_runs, class_block_drift) are not run."
+)
+
+
+def header(args: argparse.Namespace) -> list[str]:
+    """The lines printed before the datasets: with ``--built``, that the row order is not read."""
+    return [BUILT_WARNING] if args.built else []
+
+
+def probe(name: str, root: Path, args: argparse.Namespace) -> dict:
+    """Run ``check_frame`` on one dataset: the definition's frame with its raw state, or with ``--built`` a container
+    (whose row order is not read); a temporal split is skipped unless ``--include-temporal``.
+    """
+    started = time.time()
+    include_temporal = getattr(args, "include_temporal", False)
+    if args.built:
+        data = inputs.load(name, root, built=True)
+    else:
+        ds = inputs.definition(name, root)
+        if ds.temporal is not None and not include_temporal:  # decided before the raw frame is built
+            return {"name": name, "origin": "definition", "regime": "temporal_non_iid", "skipped": "temporal split"} | {
+                "flags": []
+            }
+        data = inputs.from_definition(ds, raw=True)
+    result = {"name": name, "origin": data.origin, "regime": data.regime}
+    if data.regime == "temporal_non_iid" and not include_temporal:
+        return result | {"skipped": "temporal split", "flags": []}
+    result |= check_frame(
+        data.df,
+        data.target,
+        data.problem_type,
+        exclude=tuple(data.group_cols) + tuple(data.scoring_cols),
+        raw=data.raw,
+        raw_rows=data.raw_rows,
+        order_known=not args.built,
+        feature_cols=data.features,
+    )
+    result["raw_note"] = data.raw_note
+    result["seconds"] = round(time.time() - started)
+    return result
+
+
+def _render_order(r: dict) -> list[str]:
+    """The parts of the line that read the row order."""
+    if r["order_source"] == "none":
+        return ["row order not read (a built container's rows are shuffled)"]
+    order = r["order"]
+    size = order.get("largest_tenth_gap", order.get("spearman_position"))
+    parts = [f"{r['order_source']} order: p {order['p']:.1e}, size {size:.3f}"]
+    blocks = r.get("periodic_blocks", {})
+    if blocks.get("standout_windows"):
+        target = blocks.get("target", {})
+        part = (
+            f"rows repeat one block later in {blocks['standout_windows']}/{blocks['windows']} windows (lag "
+            f"{min(blocks['lags'])}-{max(blocks['lags'])}, close {blocks['close_at_lag']:.2f} vs "
+            f"{blocks['close_around']:.2f}"
+        )
+        if "same_class_one_block" in target:
+            part += (
+                f"; '{target['class']}' one block later {target['same_class_one_block']:.2f} vs "
+                f"{target['same_class_half_block']:.2f}/{target['same_class_one_and_a_half_blocks']:.2f}"
+            )
+        parts.append(part + ")")
+    runs = r.get("entity_runs", {})
+    if runs.get("flag"):
+        fixed = sorted(runs["fixed_fields"])
+        fixed_text = ", ".join(fixed[:5]) + (f" and {len(fixed) - 5} more" if len(fixed) > 5 else "")
+        part = (
+            f"runs on {runs['counter']}: {runs['runs']} runs ({runs['runs_from_start']} from the start, "
+            f"{runs['runs_of_two_or_more']} of 2+ rows), fixed {fixed_text}"
+        )
+        if "class_on_last_row" in runs:
+            shares = ", ".join(f"{k} {v:.3f}" for k, v in runs["class_on_last_row"].items())
+            part += f"; on a run's last row: {shares} (all rows {runs['last_row_share']:.3f})"
+        parts.append(part)
+    drifting = {k: c for k, c in r.get("class_block_drift", {}).items() if c["drifting"]}
+    if drifting:
+        parts.append(
+            "within class blocks, features drift: "
+            + ", ".join(
+                f"{k} {c['drifting']}/{c['features']}"
+                + (f" (sorted by {', '.join(c['sorted_by'])})" * bool(c["sorted_by"]))
+                for k, c in drifting.items()
+            )
+        )
+    return parts
+
+
+def render(r: dict) -> str:
+    """One line per dataset."""
+    if "error" in r:
+        return f"{r['name']}: error {r['error']}"
+    if "skipped" in r:
+        return f"{r['name']}: skipped ({r['skipped']})"
+    parts = []
+    if r["time_columns"]:
+        parts.append("time columns " + ", ".join(f"{c} ({why})" for c, why in r["time_columns"].items()))
+    if r.get("dropped_time_columns"):
+        parts.append("dropped " + ", ".join(r["dropped_time_columns"]))
+    parts += _render_order(r)
+    drifting = [c for c, o in r["id_orders"].items() if o["flag"]]
+    if drifting:
+        parts.append("IDs with drift " + ", ".join(drifting))
+    period = r["period_values"]
+    if period.get("columns"):
+        parts.append(f"period columns {period['columns']} ({period.get('levels')} levels, p {period.get('p', 1):.1e})")
+    return f"{r['name']} ({r['regime']}, {r['rows']} rows): " + "; ".join(parts) + f"; flags {r['flags']}"
+
+
+def summary(results: list[dict]) -> str:
+    """``summary.md``: the line of each dataset."""
+    return "\n".join(f"- {render(r)}" for r in results) + "\n"

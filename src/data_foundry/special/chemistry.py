@@ -14,8 +14,8 @@ reduce to triethylamine), so salt forms of one compound are a definition's decis
 MACCS keys and the ECFP4 counts, one row per molecule, the same for a molecule in every dataset, so a benchmark can
 cache it by value. Its spec id names the RDKit release and a revision; the container records it as the column's
 ``recommended_encoding``. A benchmark may use it or its own encoding; the probes of this repository use it
-(``dataset_io.py``). Measured on the SMILES datasets of 2026-11-01: the MACCS keys add 0.02 ROC AUC next to the
-descriptors on drug_induced_autoimmunity_prediction and change the others by -0.006 to +0.009; the ECFP4 counts lift
+(``data_foundry.probes.inputs``). Measured on the SMILES datasets of 2026-11-01: the MACCS keys add 0.02 ROC AUC next to
+the descriptors on drug_induced_autoimmunity_prediction and change the others by -0.006 to +0.009; the ECFP4 counts lift
 qsar_tid_11's LightGBM R^2 from 0.601 to 0.658.
 
 :func:`rdkit_descriptors` gives the descriptors alone, with the columns that are constant or copies in the given
