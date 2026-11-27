@@ -110,114 +110,271 @@ CC (2026-11-26, Andrej): accepted, go to `/add-dataset`.
 
 **Outcome:** added as `maize_nam_flowering_time`: 4,699 recombinant inbred lines of the 25-family maize Nested
 Association Mapping population, days to anthesis in days from 1,106 imputed linkage-map markers, grouped on the
-family. The data is the project's own Buckler et al. 2009 release, and the target is the line value it publishes,
-a best linear unbiased prediction across eight environments, so no value is computed here. `dataset check` passes
-with 0 errors and 0 warnings over 28 checks and nothing is built. The leak, task, dtype, generated and
-hidden-group probes are clean: no test row has an exact feature copy in training, the 1-NN R^2 is negative, the
-best single marker is worth 0.050 on the declared metric against a random forest's 0.303, and no column is
-flagged. Over all 60 shipped splits ridge scores a per-family correlation of 0.351 and is positive on every
-one of them. The review panel has not run; these three issues are what a build of this definition raises.
+family, scored by the within-family correlation. The data is the project's own Buckler et al. 2009 release and the
+target is the line value it publishes, so no value is computed here. `dataset check` passes with 0 errors and 0
+warnings over 28 checks and nothing is built. A full review panel ran and found no leak, no copy across a split, no
+artefact in the target and no feature that is unavailable at the prediction point; it corrected a dozen statements
+in the notes, and it left one question that decides the dataset (issue 4) and one that decides how it is served
+(issue 5).
 
-**Main points:** which genotype the dataset ships on, which of the three flowering traits is the target, and
-whether the breeder's cross is new (which decides the split and the few-groups warning with it).
+**Main points:** whether a task whose models all score below the mean on a pooled score has signal across its
+groups (issue 4) is the decision; after it come the genotype to ship on, the flowering trait, the split, and the
+container the benchmark hands a participant.
 
-**Record judgment:** the screening block holds up on the data. Two of its risks are settled in the definition
-rather than left open: the genotype table carries no line identifier, and the ids are recovered and asserted; and
-the marker columns are unnamed, and the released map's order is confirmed from the linkage structure, so the
-markers ship under their own names with chromosome and map position. Two facts the screening did not have: the
-line table holds 5,463 lines over 27 families against the genotype table's 4,699 over 25, so families 17 and 27
-have no genotype row at all and 764 lines have a value and no markers; and the between-family share of the
-target's variance is 69.3%, higher than the soy dataset's 55.7%.
+**Record judgment:** the screening block holds up on the data and its two open risks are closed, but one of them
+was closed the wrong way round: the genotype table does carry a line identifier, as its first column, so the
+"positional join" the screening worried about never existed and the definition now reads the id. The screening's
+between-family share of 0.472 is wrong (0.6933 on what ships); its "27 families" are 25 families plus the IBM
+population and a block of inbreds that includes B73 and the founders; and its marker-density risk is refuted, since
+a tenth of the markers keeps 92% of the score. The panel's own corrections are in the definition and in the panel
+block below.
 
 **Issues for Andrej:**
 
-1. **Ship the 1,106-marker linkage map, or the population's dense genotype?**
+1. **Ship on the parent-of-origin map, or rebuild on the population's absolute-allele genotype?**
 
    **Problem:**
-   - The definition ships the 2008 linkage map of 1,106 markers, which is what the 2009 release pairs with the
-     flowering values, while the same lines now have a genotype three orders of magnitude denser.
-   - The project publishes ZeaGBS v2.7, 955,690 SNPs over 17,280 public samples, and the page does not say how
-     many of those samples are these lines.
-   - A breeder today genotypes at the dense scale, so the coarse map is the part of this dataset that has aged.
+   - The 1,106 shipped markers are coded relative to B73, so a 2 names a different founder's segment in each
+     family and the features carry no absolute allele at all.
+   - That is why the between-family part of the target, 69.3% of its variance, is unreachable by any model here,
+     and why a dense SNP release would not be a denser version of this task but a different one.
+   - The same population has a public absolute-allele release (955,690 SNPs over 17,280 public samples), whose
+     overlap with these 4,699 lines is not measured.
 
-   **Effect on the task:** the features change entirely and the row set may shrink to the lines the dense release
-   covers; the target, the grouping and the metric are untouched either way.
+   **Effect on the task:** under B the features change entirely, the family mean becomes partly predictable, and
+   the per-family metric of issue 4 would no longer be forced; the rows and the use case are untouched.
 
-   **Experiments:** on the shipped map, over the nine grouped splits, a random forest scores 0.303 on the declared
-   metric and ridge 0.348, against 0 for a predictor given each family's true mean. Nothing is measured on the
-   dense genotype, which was not downloaded.
+   **Experiments:**
+
+   | | measured |
+   |---|---|
+   | family-by-marker mean calls | all 25 x 1,106 lie in 0.441 to 1.581, none fixed in any family |
+   | markers needed for the score | a tenth of them keeps 92% of the declared metric; ~31 markers per haplotype segment |
+   | effective width | 77 components carry 90% of the marker variance, participation ratio 42.5 |
 
    **Options:**
 
    | | Option | What it does | Pro | Con |
    |---|---|---|---|---|
-   | A | Keep the linkage map (implemented) | 4,699 lines x 1,106 markers, the release's own pairing | the genotype and the phenotype come from one release and one paper; nothing to join; a width tabular models handle | the markers are a 2008 linkage map, far coarser than a breeder genotypes at today |
-   | B | Rebuild on the dense genotype | the same lines against the GBS release | the features a breeder actually holds; far more signal to find | another download and join; the overlap with these lines is unmeasured; a width that needs the column budget |
-   | C | Ship both, as two versions | A now, B as a second folder | the comparison itself becomes measurable | two datasets of one population; the curator picks one anyway |
+   | A | Keep the parent-of-origin map (implemented) | 4,699 lines x 1,106 markers, the release's own pairing | genotype and phenotype come from one release and one paper; density is saturated, so nothing is lost to coarseness | the features cannot express the between-family component, which forces the metric of issue 4 |
+   | B | Rebuild on the absolute-allele release | the same lines against the dense SNP release | a model could learn founder allele effects, and a pooled score would stop being wrong | a different task, not a better version of this one; another download and join; the overlap with these lines is unmeasured |
+   | C | Ship both | A now, B as a second record | the comparison becomes measurable | two datasets of one population, and the curator picks one anyway |
 
-   **Recommendation:** A now, and B as its own record later if the dense release turns out to cover these lines.
-   The coarse map is the release's own pairing and is honest about what it is; swapping the features is a new
-   dataset, not a fix to this one. **Decision:** A, B or C?
+   **Recommendation:** A, and B as its own record if it is ever wanted. The panel's practitioner and its blind
+   reviewer agree on the facts and split on the conclusion: density is saturated, so A loses nothing to the map's
+   age, while B is the only route to a learnable between-family component. **Decision:** A, B or C?
 
 2. **Which of the three flowering traits is the target?**
 
    **Problem:**
-   - The genotype table carries three traits in the same columns, days to anthesis, days to silk and the interval
-     between them, and the definition takes the first and drops the other two.
+   - The genotype table carries days to anthesis, days to silk and the interval between them in the same three
+     columns, and the definition takes the first and drops the other two.
    - All three are measured on the same plants within days of each other, so none can be a feature for another.
-   - Days to silk is the trait a breeder reads for drought work, and the interval is the one the source's own
-     paper studies as a stress indicator.
+   - Days to silk is the trait a drought breeder reads, and the interval is the one the source's own paper studies
+     as a stress indicator.
 
    **Effect on the task:** the target column changes; the rows, the markers, the grouping and the metric do not.
 
-   **Experiments:** on the shipped target the between-family share of the variance is 69.3% and the within-family
-   SD is 1.99 days; the other two were not scored.
+   **Experiments:**
+
+   | trait | within-family SD | between-family share | ridge, within-family r | within-family r with anthesis |
+   |---|---|---|---|---|
+   | days to anthesis (implemented) | 1.99 d | 0.693 | 0.372 | — |
+   | days to silk | 2.24 d | 0.681 | 0.373 | 0.886 |
+   | anthesis-silking interval | 0.79 d | 0.324 | 0.309 | 0.010 |
 
    **Options:**
 
    | | Option | What it does | Pro | Con |
    |---|---|---|---|---|
-   | A | Days to anthesis (implemented) | one dataset, the pollen-shed date | the trait the population is best known for; the one the paper's title names | the other two columns are discarded |
-   | B | Days to silk instead | the silking date | closer to what a drought breeder selects on | no reason to prefer it on this panel's own evidence |
-   | C | All three as separate datasets | three folders of one population | nothing is discarded | three cuts of one table with one task between them, which the provenance rules keep to one |
+   | A | Days to anthesis (implemented) | one dataset, the pollen-shed date | the trait this population is known for, and the paper's own title names it | the other two columns are discarded |
+   | B | Days to silk instead | the silking date | closer to what a drought breeder selects on | the same trait by measurement (within-family r 0.886) and predicted no better, so nothing changes |
+   | C | All three as separate datasets | three folders of one population | nothing is discarded | the interval needs managed drought to mean anything, and three cuts of one table are one task |
 
-   **Recommendation:** A. The three are the same measurement of the same plants days apart, so they are one task,
-   and the anthesis date is the one this population is known for. **Decision:** A, B or C?
+   **Recommendation:** A. Silk is the same trait days later; the interval is a genuinely different one but these
+   are unstressed summer nurseries, where the panel's practitioner says it carries little of what makes it worth
+   selecting on. **Decision:** A, B or C?
 
 3. **Is the breeder's next cross a new one, or one already phenotyped?**
 
    **Problem:**
    - The definition holds out whole families, which is a breeder ranking the progeny of a cross nobody has grown.
-   - A breeder who has already phenotyped part of a cross and wants the rest ranked is a different and equally
-     real use case, and it is a random split over lines.
-   - The choice decides the few-groups warning with it, since 25 families give 8 or 9 per test fold over the 60
-     shipped splits.
+   - A breeder who has phenotyped part of a cross and wants the rest ranked is an equally real use case, and that
+     is a random split over lines.
+   - The choice carries the few-groups warning with it, since 25 families give 8 or 9 per test fold.
 
-   **Effect on the task:** under a random split every test line has full siblings in training, and the scores rise
-   steeply; the declared per-family metric would then be scoring a much easier question.
+   **Effect on the task:** under a random split every test line has full siblings in training; the family then
+   becomes a legitimate input and the task is much easier.
 
    **Experiments:**
 
-   | | Folds of random lines | Whole families held out | Splits measured |
+   | | whole families held out (shipped) | random over lines | splits |
    |---|---|---|---|
-   | LightGBM, pooled R^2 | 0.233 (SE 0.015) | 0.047 (SE 0.047) | 9 of 60, the group probe's three repeats |
-   | ridge, per-family correlation (the declared metric) | not measured | 0.351 (SE 0.005), positive on 60 of 60 | all 60 |
-   | random forest, per-family correlation | not measured | 0.303, beating the dummy on 100% of folds by +0.3026 (SE 0.0087) | 30 of 60, the task probe |
-   | a predictor given each test family's true mean | not measured | pooled r 0.793, per-family exactly 0 | all 60 |
+   | untuned ridge, declared metric | 0.164 | 0.188 | 60 |
+   | random forest | 0.300 | 0.335 | 60 |
+   | LightGBM | 0.265 | 0.301 | 60 |
+   | LightGBM with `family` as a feature | not applicable | 0.517 | 15 |
+   | pooled R^2, LightGBM | -0.144 | +0.226 | 60 |
+   | a model fitted on two thirds of one family's own lines | 0.56 | — | 15 |
 
-   The group probe's learnability figures are negative for every family tried on unseen crosses (ridge -0.500,
-   random forest -0.028, LightGBM -0.025, 5-NN -0.222), which is the same fact read on a pooled R^2: 69.3% of the
-   variance is between families, no model predicts an unseen cross's mean from markers, and the declared metric
-   does not ask it to. The definition's split comment now says this, because a reader who scores this dataset with
-   a pooled R^2 will conclude the task is unlearnable.
+   The markers name a line's family on 50.3% of held-out lines against 4.0% by chance, so a random split hands a
+   model the between-family component rather than merely adding siblings.
 
    **Options:**
 
    | | Option | What it does | Pro | Con |
    |---|---|---|---|---|
-   | A | Hold out whole families (implemented), accepting the few-groups warning | 20 x 3 splits over the 25 families, 8 or 9 per test fold | the harder and more useful question, and the one genomic selection is bought for; the warning is inherent to it and the signal across families is measured | 25 groups is few, and the repeats reuse them, so the spread over repeats is descriptive |
-   | B | Random split over lines | siblings of a test line are in training | more folds, no few-groups warning | a breeder ranking a new cross does not have its siblings' values; the score mostly measures family membership |
+   | A | Hold out whole families (implemented), accepting the few-groups warning | 20 x 3 splits over the 25 families, 8 or 9 per test fold | the question genomic selection is bought for; the warning is inherent to it and the signal across families is measured | 25 groups is few and the repeats reuse them, so the honest unit is the family |
+   | B | Random split over lines | siblings of a test line are in training | more folds, no few-groups warning | a breeder ranking a new cross does not have its siblings; `family` would have to become a feature, and the score mostly measures family membership |
    | C | Both, as two datasets | A and B as separate folders | both use cases served | two datasets of one table, and the easier one would read as the better result |
 
-   **Recommendation:** A, with the warning accepted as it is written in the definition. The use case the record
-   names is the new cross, and that is what the grouped split tests. **Decision:** A, B or C?
+   **Recommendation:** A, with the warning accepted as the definition writes it. The split auditor ran the
+   alternatives and found none better; the practitioner, playing the breeder, calls A their own decision.
+   **Decision:** A, B or C?
+
+4. **Does this dataset have signal across its groups, or is the per-family metric papering over a `No Signal` case?**
+
+   **Problem:**
+   - Every model scores below the training mean on unseen families at every ridge penalty, pooled R^2 from -0.84
+     to -0.136, which on its face is the rule that retires a grouped task for having no signal across groups[^s28].
+   - The definition answers that with the per-group metric rule[^met18], which sits two ranks lower, so the answer
+     cannot be made silently from below[^rank].
+   - The panel's blind reviewer, judging without our notes, reached "I would not benchmark on this" from the same
+     numbers.
+
+   **Effect on the task:** the whole dataset. Under the `No Signal` reading it does not ship; under the per-family
+   reading it ships as defined.
+
+   **Experiments:**
+
+   | | value |
+   |---|---|
+   | pooled R^2 on unseen families, every model and penalty | -0.84 to -0.136 |
+   | correlation between predicted and true family means over the 25 families | -0.72 (ridge), -0.78 (random forest) |
+   | ridge at alpha 1,000, per-family r | 0.351, positive on 60 of 60 splits and in 24 of 25 families |
+   | within-family label permutation null, 200 runs | mean 0.0005, SD 0.0068; the observed sits 53 SDs above, none reaching it |
+   | honest ceiling found by the panel's task gamer | 0.421 |
+   | realised gain, earliest fifth of each held-out cross | about 1.0 days, 40% of a perfect ranking, positive in 94% of crosses |
+   | headroom over a constant on pooled RMSE | 2% |
+
+   **Options:**
+
+   | | Option | What it does | Pro | Con |
+   |---|---|---|---|---|
+   | A | Sign off the per-family reading (implemented) | the dataset ships; the splits comment names the rule and gives the permutation null as what refutes it | the null is decisive at 53 SDs; the metric is realised gain up to a constant; the between-family part is unreachable by construction, not missing | a Must answered from a lower rule, which has to be the curator's signature, not ours |
+   | B | Ship, but change the target to the family-centred deviation | the task becomes within-family transfer explicitly | pooled R^2 turns positive (0.161 on held-out families), so every metric agrees and a leaderboard reads straight | the target stops being the source's published value, which is what keeps this dataset clear of the rule the sibling needed an exception to[^rows] |
+   | C | Do not ship: `No Signal` | back to 2nd tier or retired | consistent with reading the rule as written | the null refutes the premise, and the practitioner's realised-gain figures say a breeder would use it |
+
+   **Recommendation:** A. The rule asks whether there is signal across the groups the task is scored over, and the
+   permutation null answers it; what is absent is the between-family mean, which these features cannot carry and
+   which the metric does not score. But this is the first dataset where the two rules meet head-on, the sibling
+   never had to answer it, and the reading belongs to the curator. **Decision:** A, B or C?
+
+   [^s28]: the split rule that a regression whose models all score below the mean on unseen groups has no signal
+       across groups, which retires the dataset or sends it back for a use case that allows known groups.
+   [^met18]: the metric rule adopted 2026-11-26: when the scored rows fall into groups the actor does not choose
+       between and a group-mean predictor beats the models pooled, the metric is declared per group.
+   [^rank]: the ranked principles: a Must at a higher rank is not answered by a rule below it without the
+       curator's decision.
+   [^rows]: the split rule that a dataset ships the source's own rows; the sibling
+       `genomic_prediction_soy_yield` computes its line value from the plots and files an exception for it,
+       while this dataset ships the published line value and needs none.
+
+5. **Does the benchmark have to enforce the per-split refit, and record the public lookup?**
+
+   **Problem:**
+   - The participant kit ships `days_to_anthesis` for all 4,699 rows, test rows included, and nothing makes a
+     participant refit per split, so one model fitted on every row and scored on all 60 splits reaches a perfect
+     1.0 against an honest ceiling of 0.421.
+   - The source file the task card links is a single unauthenticated download holding the identical 4,699 rows
+     with the identical labels, so a join on the genotype vector also reaches 1.0.
+   - Neither is a flaw in the task's design: the panel's gamer found no exploit in the features, the label, the row
+     order, the split or the metric.
+
+   **Effect on the task:** none on the data. It decides whether a number from this dataset is verifiable.
+
+   **Experiments:** fit once on all rows, score all 60 splits: 1.000 (LightGBM) and 0.636 (ridge at alpha 0.1),
+   against an honest 0.421. Marker pre-selection over all rows before fitting on the training side: +0.031, still
+   below the honest ceiling. Every other attack returned nothing.
+
+   **Options:**
+
+   | | Option | What it does | Pro | Con |
+   |---|---|---|---|---|
+   | A | Nothing; the harness already refits per split for our own runs (implemented) | no change | the collection fits its own models, so the exploit is not a route a scored model has, which is the standing decision on public lookups | an outside leaderboard built on this folder reports unverifiable numbers |
+   | B | Record both in the definition as a caveat | one bullet naming the two and what they cost | a reader knows what a score here means | a published note tells a participant where to look |
+   | C | B, plus ask the framework to hand a model only its training rows | a change to the harness, not to this dataset | closes the one exploit that is ours to close | a framework change for a problem no shipped collection has |
+
+   **Recommendation:** B. The lookup is the same question you settled on 2026-11-26 for a public derived copy, and
+   the answer there was that the collection fits its own models; what is new here is the refit, which is cheap to
+   state and would be cheap to enforce later. **Decision:** A, B or C?
+
+**Review panel:** full tier, seven evidence roles, run 2026-11-27 on the definition as committed that morning. Two
+caveats on how it ran: the roles were not available as registered agent types, so each read its own role definition
+instead; and the blind reviewer and the task gamer were sandboxed by instruction rather than by the hook, with both
+reporting what did and did not reach them. The blind reviewer disclosed that the repository's `CLAUDE.md` reached
+its context through the harness.
+
+<details><summary>Claim auditor</summary>
+
+31 claims tested, 26 held. It confirmed the marker order with a test the definition did not
+have, comparing observed recombination fractions against the map's distances in sequence (Spearman 0.936
+forward against 0.049 reversed, in all ten chromosomes), and the line-id recovery against the file's own ids
+(4,699 of 4,699). It refuted four statements: the genotype table does carry the line id; "ridge" meant an
+undisclosed alpha of 1,000 where the probe log in the same folder prints 0.165; the LightGBM figures did not
+reproduce; and two probe claims asserted checks that had not run.
+
+</details>
+
+<details><summary>Column auditor</summary>
+
+No column fails its dtype or its availability at the prediction point, no marker encodes
+the family (largest between-family share 0.037), and neither sibling trait survives anywhere in the frame. It
+found the imputation understated roughly fivefold and the value 1 described as a call, with the ladder across
+recombination breakpoints as the evidence, and it identified the IBM population and the inbred block.
+
+</details>
+
+<details><summary>Split auditor</summary>
+
+"Right with notes; nothing needs re-splitting." It walked the tree to the same leaf, ran
+the alternatives (random over lines, a founder's half-sib group, a map-keyed split inside families,
+leave-one-germplasm-group-out) and found none better, measured the split's cost on both metrics, and raised
+the rule collision that is issue 4.
+
+</details>
+
+<details><summary>Domain practitioner</summary>
+
+Fit approximate, metric kept, with the breeder's equation showing the declared metric
+is realised gain up to a constant. It measured the founder's own flowering date as the thing a pooled score
+would reward (r 0.965 to the family mean), struck the marker-density gap from the fit reason, and showed the
+task delivers a ranking rather than a date.
+
+</details>
+
+<details><summary>Blind reviewer</summary>
+
+Would not benchmark on it as prepared: the honest headroom is 2% of pooled RMSE, model
+families are statistically indistinguishable while the regularization strength moves the score five times
+further, and the effective sample is 25 crosses. It verified the table against the public source, endorsed
+the grouped split and the dropped sibling traits, and proposed the family-centred target that is issue 4
+option B.
+
+</details>
+
+<details><summary>Task gamer</summary>
+
+No exploit in the features, the label, the row order, the copies, the metric or the field
+design; the framing "holds up against everything I could test". Its two findings are the container's, and
+are issue 5.
+
+</details>
+
+<details><summary>Precedent checker</summary>
+
+Consistent with the sibling on the per-group metric, on shipping the source's own line
+value and on the public second copy; departing on the few-groups evidence, which has since been measured to
+the sibling's standard and is in the accepted warning.
+
+</details>

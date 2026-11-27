@@ -1,5 +1,39 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-27, maize_nam_flowering_time: the review panel, and a dozen corrections to its notes (nothing built)
+
+- A full panel ran on the definition as committed: claim auditor, column auditor, split auditor, domain
+  practitioner, blind reviewer, task gamer and precedent checker. It found no leak, no copy across a split, no
+  artefact in the target and no feature unavailable at the prediction point. What it did find was a dozen
+  statements in the notes that the data contradicts, all now corrected.
+- The three that matter most. The features are not SNP calls: every marker is coded relative to B73, so a 2 names
+  a different founder's segment in each family, which is why the between-family part of the target is unreachable
+  by any model here. The genotype table does carry the line id, as its first column, so the "positional join" the
+  screening treated as a risk never existed and the definition now reads the id and checks it against the line
+  table. And 7.71% of marker cells are not a call rather than the 1.44% the notes said: the value 1 is another
+  6.27%, and it is the source's posterior across a recombination breakpoint, not heterozygosity, since every run
+  of 0.5 is flanked by a 0 and a 1, every run of 1.5 by a 1 and a 2, and 79.6% of the runs of 1 by a 0 and a 2.
+- The rest. "Ridge" meant an undisclosed alpha of 1,000, where the probe log in the same folder prints 0.165 for
+  the untuned one, and the penalty is now named wherever the number appears; the LightGBM figures are re-measured
+  over all 60 splits (0.265 per family, 0.245 pooled); the grouped split's cost is given on the declared metric
+  (0.024 to 0.036) beside the pooled one (0.370 over 60 splits, where the quoted 0.186 came from three folds);
+  the few-groups acceptance carries the spread over the 25 families (SD 0.150, SE 0.030, positive in 24) and a
+  within-family permutation null at 53 SDs; `context="all_rows"` is recorded as worth nothing measurable, since a
+  per-family shift cannot change a within-family correlation, while centring the training families is worth
+  +0.114 and needs no grant; two probe claims that asserted checks which had not run are gone; the marker-order
+  evidence is restated in its decisive form, including the directional test the panel added; the fit reason loses
+  the marker-density gap, since a tenth of the markers keeps 92% of the score; and `pop` 17 and 27 are named as
+  the IBM population and a block of inbreds holding B73 and the founders, rather than as families.
+- Two facts added that the notes did not have: the markers name a line's family on 50.3% of held-out lines against
+  4.0% by chance, which is what makes the grouped split load-bearing; and the non-recurrent founder's own days to
+  tassel predicts its family's mean at r = 0.965, so the pooled ranking the metric declines to score is one the
+  breeder already holds.
+- The record's review now carries five issues. Two are new: whether a task whose models all score below the mean
+  on a pooled score has signal across its groups, which is a Must answered here from a lower rule and is the
+  decision that settles the dataset; and whether the benchmark must enforce the per-split refit, since the kit
+  ships every label and a model fitted once on all rows scores a perfect 1.0 against an honest ceiling of 0.421.
+- `dataset check`: 0 errors, 0 warnings, 1 info over 28 checks; README regenerated. Nothing built.
+
 ## 2026-11-26, maize_nam_flowering_time added: flowering time of the maize NAM population (no container built)
 
 - New folder. The maize Nested Association Mapping population as its own project released it for Buckler et al.

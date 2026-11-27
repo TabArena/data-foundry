@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: maize_nam_flowering_time
 container_format: 2
-checksum: v2:171a463fe26084e8c33318c780e0bb4d86b03d6640b2775f84f7c3ec72c0f8d1
+checksum: v2:b10477cbc38c120ecc87df4ad89aaa48c2f149deaad5bdfc2b6877aa23431f49
 build: null
 build_stale: false
 raw_files:
@@ -59,11 +59,16 @@ bundle_checks:
   - task_metric_input_is_model_input
   accepted:
     groups_test_groups_few: '25 families, 8 or 9 per test fold and 1,442 to 1,729
-      lines scored per fold. The signal across groups is measured, not assumed: over
-      all 60 shipped splits ridge scores a per-family r of 0.351 (SE 0.005) and is
-      positive on 60 of them, and an untuned LightGBM 0.258 over the 12 measured,
-      where the training mean is undefined per family because it is constant there,
-      and a predictor given each test family''s true mean scores exactly 0. The task
+      lines scored per fold. The signal across groups is measured, not assumed, and
+      on the spread that matters, which is over the families rather than over the
+      60 splits that reuse them: the ridge at alpha 1,000 scores a per-family 0.351
+      with an SD of 0.150 over the 25 families, an SE of 0.030, positive in 24 of
+      them, running from -0.043 (P39, sweet corn) to +0.506; a random forest scores
+      0.303 and beats the dummy on 100% of the 30 splits the task probe runs by +0.3026
+      (SE 0.0087); the training mean is undefined per family because it is constant
+      there, and a predictor given each test family''s true mean scores exactly 0.
+      A within-family label permutation null over 200 runs has mean 0.0005 and SD
+      0.0068, putting the observed 53 SDs above it with no run reaching it. The task
       is a breeder''s own: the families are the crosses a breeder makes, and a few
       of them is what a breeding programme holds.'
 decisions: []
@@ -75,25 +80,25 @@ decisions: []
 
 Regression of `days_to_anthesis`, scored with `mean_group_pearsonr` on grouped splits by `family`. 4,699 rows and 1,106 features. Source: Other (2009).
 
-Not built yet. The current definition gives checksum `v2:171a463fe26084e8c33318c780e0bb4d86b03d6640b2775f84f7c3ec72c0f8d1`.
+Not built yet. The current definition gives checksum `v2:b10477cbc38c120ecc87df4ad89aaa48c2f149deaad5bdfc2b6877aa23431f49`.
 
 ## In brief
 
-**Question.** How many days after planting will a maize line shed pollen, from its SNP genotype alone?
+**Question.** Which lines of one maize cross will flower earliest, from their marker genotypes alone?
 
 **Use case.** A maize breeder ranks the inbred progeny of a cross before the field season and picks which lines to advance, from the genotype alone (genomic selection), without having grown any of them.
 
-**One row.** One recombinant inbred line of the maize Nested Association Mapping population (4,699 lines of 25 families, each a cross of B73 with one other founder), with its imputed marker calls and its flowering time over the 2006 and 2007 trials.
+**One row.** One recombinant inbred line of the maize Nested Association Mapping population (4,699 lines of 25 families, each a cross of B73 with one other founder), with its marker calls and its flowering time over the 2006 and 2007 trials.
 
-**Predicted.** The line's days to anthesis in days, as the trials measured it: the best linear unbiased prediction the source published for the line over eight environments.
+**Predicted.** The line's days to anthesis in days, as the trials measured it: the best linear unbiased prediction the source published for the line over eight environments. What the task delivers is the ordering inside one cross, not a date (the notes measure both).
 
-**Known at prediction time.** Which allele of each of 1,106 linkage-map markers the line carries, as a dosage the source imputed (0, 1 or 2, with an intermediate value where the imputation is uncertain), and which family it comes from.
+**Known at prediction time.** For each of 1,106 linkage-map markers, how much of the line's genome there came from the family's non-B73 founder rather than from B73, as the source imputed it (0, 1 or 2, with 0.5, 1 and 1.5 marking where the imputation places a switch of parental origin), and which family the line comes from.
 
 **What the test data stands for.** Whole families are held out: the test lines are the progeny of a cross whose flowering nobody has measured, which is what a breeder faces with a new cross.
 
-**Our changes to the source.** Days to silk and the anthesis-silking interval, measured in the same plots, are left out: they are not known before the season. The markers take the source's own names, chromosome and map position from the released marker list, and the line id is recovered from the line table and kept out of the features.
+**Our changes to the source.** Days to silk and the anthesis-silking interval, measured in the same plots, are left out: they are not known before the season. The markers take the source's own names, chromosome and map position from the released marker list, and the line id is read from the genotype table and kept out of the features.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The inputs are the genotype a breeder holds before the season and the target is the flowering time the trials measured, in days, on the scale the breeder selects on. Two gaps: the panel spans the diversity of the species rather than an elite programme's working set, and its 1,106 linkage-map markers are far coarser than a programme genotypes at today (the scope bullet measures both).
+> **Use case fit: approximate (a stand-in with a known gap).** The inputs are the genotype a breeder holds before the season and the target is the flowering time the trials measured, in days, on the scale the breeder selects on. The gap is the germplasm: this is a research panel designed to span the species, all crossed to one parent and deliberately unselected, so the level reached here is not a breeder's at-home accuracy.
 
 ## Files in this folder
 
@@ -126,7 +131,7 @@ markergenotypes062508.txt d2c837df384285fc8cec6d79d6f1a0916a6ca0f157d16d90ba6ef6
 markers061208.txt e4319eb39526a02b3fe07c649ec4cafdb39e77cdf48ece6df1ba6418de0a8634,
 NAMSum0607FloweringTraitBLUPsAcross8Envs.txt
 435488a619b6dd1f24e83f663dd97532b5873c7a4d450e0f13d3cf1578e5594e.
-The archive also holds four per-plot tables (days to tassel, days to silk and the two raw dates, 43,055 to
+The archive also holds four per-plot tables (days to tassel, days to silk and the two raw dates, 43,054 to
 43,459 rows each), which this definition does not read.
 ```
 
@@ -152,7 +157,7 @@ Only curators run `build`, when the dataset ships.
 | source | Other: https://doi.org/10.1126/science.1174276 |
 | year | 2009 |
 | domain | biology & life sciences |
-| license | No licence stated by the host; a public release of the NSF-funded maize diversity project |
+| license | No licence stated by the host, which asserts copyright without granting one; a public release of the NSF-funded maize diversity project |
 | data_tags | Non-IID, Grouped, UnseenGroup |
 | reference | buckler2009flowering |
 | rows x columns | 4,699 x 1,108 |
@@ -170,7 +175,7 @@ Only curators run `build`, when the dataset ships.
 | name | `mean_group_pearsonr` (custom; takes value; higher is better) |
 | origin | context: obvious from the task: the source defines no metric |
 | definition | mean over groups of the Pearson correlation within the group; method='numerai_corr' transforms first as Numerai's CORR |
-| reason | The decision is which lines of one new cross to advance, a ranking inside the cross, and the split holds out whole families. The field's own criterion, which the papers on genomic prediction in these panels report, is the correlation pooled over the held-out lines; it is the original here, from context rather than from this source, since Buckler et al. map flowering-time QTL and declare no prediction metric at all. MET-18 is what makes the declaration per family: 69.3% of the variance of the line values lies between the 25 families, and a predictor that knows nothing but each test family's own true mean scores a pooled r of 0.793, against 0.209 for ridge and 0.231 for an untuned LightGBM on the markers, while the same predictor scores exactly 0 within a family, because it is constant there. A pooled score would therefore rank models by how well they recover a ranking of the crosses that the breeder reads off the parents, not the ranking inside a cross that genomic selection is bought for. Per family the same two models score 0.351 and 0.258, ridge on all 60 of the shipped splits and positive on every one of them, so the declared metric does not flatter them; it scores what the breeder buys. |
+| reason | The decision is which lines of one new cross to advance, a ranking inside the cross, and the split holds out whole families. The original from context is the pooled correlation the field reports; Buckler et al. map flowering-time QTL and declare no prediction metric at all, and the closest published prediction work on this very population and these traits, Ogut et al. 2015 (Heredity 114:552-563), reports ability within each family and across families side by side and warns that the across-family figures run up to twice the within-family ones. MET-18 is what makes the declaration per family: 69.3% of the variance of the line values lies between the 25 families, and a predictor that knows nothing but each test family's own true mean scores a pooled r of 0.793, against 0.209 for a ridge at alpha 1,000 and 0.245 for an untuned LightGBM on the markers, while that same predictor scores exactly 0 within a family, which is this metric's convention for a prediction that does not vary inside a group. A pooled score would therefore rank models by how well they recover a ranking of the crosses that the breeder already holds: the non-recurrent founder's own days to tassel, measured in these very trials, predicts its family's mean at r = 0.965, and predicting held-out lines from that number alone scores a pooled r of 0.764 against the markers' 0.225. Per family, over all 60 shipped splits, the ridge at alpha 1,000 scores 0.351 (SE 0.005 over splits, 0.030 over the 25 families) and the untuned LightGBM 0.265, where the repo's untuned ridge at alpha 1 scores 0.164; the best honest model found is a ridge at alpha 3,000 on within-family centred inputs at 0.421. The metric is what the breeder buys: response to selection is intensity x accuracy x the within-family SD, and that SD is fixed at 1.99 days here, so ranking models by the within-family correlation ranks them by realised gain. Selecting the earliest fifth of each held-out cross returns about 1.0 days for the ridge against 0.77 for a random forest, which is 40% of what a perfect ranking would return, and is positive in 94% of crosses. |
 | inputs | group: `family` |
 
 <details>
@@ -230,59 +235,104 @@ linkage-map markers and flowering time measured over eight environments in 2006 
   and before any of them has been grown. Everything measured in the plots is after it: days to anthesis is
   the target, and days to silk and the anthesis-silking interval, which the genotype table carries in the
   same three columns, are left out (LEAK-10). They are measured on the same plants within days of the
-  target and would hand a model most of it.
+  target: days to silk correlates 0.886 with it within a family and is predicted equally well (0.373
+  against 0.372), so it is the same trait rather than a second one.
+- **What a marker column is, and what it is not.** These are not SNP calls. The source coded every marker
+  relative to B73, so a 2 means "this line's segment here came from this family's non-B73 founder" and
+  names a different plant in each of the 25 families. Measured: every one of the 25 x 1,106 family-by-marker
+  mean calls lies between 0.441 and 1.581, 93.5% of them between 0.8 and 1.2, and not one marker is fixed in
+  any family, where a real SNP panel across 25 diverse founders would be monomorphic in many of them. Two
+  consequences run through everything below. The coding discards founder identity, so the between-family
+  part of the target is not reachable from the features at all, which is why no model predicts an unseen
+  cross's mean and why the metric is declared per family. And a model fitted here cannot be carried to a
+  breeder's own genotype file, which holds alleles rather than parent-of-origin dosages.
+- How much of the matrix is a call: no cell is missing, but 7.71% of them are not a call either. 6.27% hold
+  1 and 1.44% hold 0.5 or 1.5, and these are the source's posterior over where the parental origin switches,
+  not heterozygosity: walking each line along a chromosome, every run of 0.5 is flanked by a 0 and a 1,
+  every run of 1.5 by a 1 and a 2, and 79.6% of the runs of 1 by a 0 on one side and a 2 on the other, so
+  the values climb a ladder 0, 0.5, 1, 1.5, 2 across each breakpoint. The release carries no unimputed
+  version of this marker set, so it is kept with this note rather than repaired (LEAK-30 at most).
 - The line value is the source's, not ours (SPLIT-26): the released line table is a best linear unbiased
   prediction per line across the eight environments, in days, which is the scale a breeder selects on
   (MET-3). The archive also ships the 43,459 per-plot observations behind it, which this definition does
-  not read; the published line value is the one the population's own papers use.
-- The genotype table is self-contained and carries no line identifier: its columns are the three traits,
-  the family, and `i0` to `i1105`. Two facts about it were checked rather than assumed. First, the marker
-  order: the released marker list's fourth column is the global index 1 to 1,106, a permutation, and
-  sorting on it gives linkage order; adjacent columns of the genotype table then correlate at a median
-  |r| of 0.980 within a chromosome and 0.014 across the nine chromosome boundaries, against 0.035 under a
-  random reordering, so `i0` to `i1105` are the markers in that order and they take the source's names,
-  chromosomes and map positions. Second, the line id: within a family the genotype rows are an in-order
-  subsequence of the line table's rows and carry its exact values, so a greedy in-order match on the
-  anthesis value names all 4,699 (4,678 of the values are already unique inside their family). The id is
-  an identifier and is not a feature.
-- What the genotype table leaves out: the line table holds 5,463 lines over 27 families, and the genotype
-  table 4,699 over 25. Family 17, whose lines carry `MO` identifiers rather than the `Z` codes, has no
-  genotype row at all, nor does family 27; within the other families the genotyped lines are 126 to 196 of
-  the 190 to 200 the line table holds.
-- The marker calls are the source's imputation and cannot be checked from the release: no cell is missing,
-  and 1.44% of them carry an intermediate dosage (0.5 or 1.5) where that imputation is uncertain
-  (LEAK-30 at most). No two lines share a marker profile.
+  not read; the published line value is the one the population's own papers use. Against an
+  environment-adjusted plot mean built from those tables it correlates 0.976, and the between-family share
+  of the variance is 0.605 on the raw plot means against 0.635 after adjusting for environment, so the
+  family differences are genetic rather than an artefact of where each family was grown.
+- The field design behind that value, from the per-plot tables: nine location-year-rep cells over 2006 and
+  2007, which are the source's eight environments (Raleigh's two reps are one environment), with environment
+  effects spanning 26 days. The eight are not the same eight for every family: nine families miss Columbia
+  MO 2006 and get Columbia MO 2007 instead, and a line appears in 2 to 9 cells (median 7). Field blocks are
+  balanced, each holding 24 or 25 of the 25 families, so there is no family-by-block confound to remove.
+- The genotype table's first column is the line id (`Z001E0001` and so on); it is read, checked against the
+  line table and then dropped, since an identifier is no model input. All 4,699 ids are in the line table
+  and every one of their three trait values matches it exactly.
+- The marker columns arrive unnamed as `i0` to `i1105` and take their names from the released map, whose
+  fourth column is the global index 1 to 1,106 and so gives linkage order. Three facts confirm that order on
+  the data itself: all nine chromosome boundaries have an adjacent correlation of at most 0.024 while all
+  1,096 within-chromosome adjacencies are at least 0.696 (median 0.980); the breaks fall at columns 175,
+  302, 432, 543, 682, 760, 838, 944 and 1,029, exactly the map's own chromosome blocks; and, since
+  reversing a chromosome would preserve every adjacency, the direction is fixed by comparing the observed
+  recombination fractions with the map's distances in sequence, which agree at Spearman 0.936 forward
+  against 0.049 reversed, in every one of the ten chromosomes.
+- What the genotype table leaves out. The line table holds 5,463 rows: the 25 families, plus the IBM
+  population (`pop` 17, B73 crossed with Mo17 and intermated, 200 lines with `MO` identifiers) and a
+  281-row block of inbreds (`pop` 27) that includes B73 itself and the founder lines. Neither is a family
+  of this panel and neither is genotyped here, so the checks and the founders never become rows of the
+  task. Of the 764 line-table rows with a value and no markers, those two account for 481; the other 283
+  sit inside the 25 families, 74 of them in `pop` 13, which ships 126 lines against 181 to 196 elsewhere.
+  Those 283 flower slightly earlier than their genotyped family-mates (family-centred mean -0.343 days
+  against +0.021, p = 0.030) and are more variable (SD 2.76 against 2.04), while their unadjusted means are
+  indistinguishable.
+- No two lines share a marker profile. Seven pairs are more than 95% identical on the binarised calls, and
+  all seven are inside one family, so a grouped split never puts them on opposite sides.
 - The family is the group column and no feature: a breeder predicting for a new cross has no family of
-  their own in the training data. It stays in the frame because the metric scores within it.
+  their own in the training data. It stays in the frame because the metric scores within it. No single
+  marker gives it away either: the largest between-family share of a marker's variance is 0.037.
 - Scope (USE-8): one designed population of 25 crosses that all share B73 as a parent, one 2006-2007 trial
-  network of eight environments, one 2008 linkage map of 1,106 markers. The same population now has a
-  genotype two orders of magnitude denser, which would be another version of this dataset rather than
-  another task.
-- Time basis: UnseenGroup: the breeder ranks the progeny of a cross the data does not hold, so whole families are held out and the two trial years are not weighed: the target is the flowering time of a fixed genotype, measured once by one 2006-2007 protocol and published as a line value across its eight environments. The split cannot test a later season, another trial network, or germplasm outside this panel's 26 founders. One limit follows from the panel's own design and is accepted with it: every family is a cross to B73, so each test line has half-sibs in training and no held-out family is unrelated to the training ones.
+  network of eight environments, one 2008 linkage map of 1,106 markers. Density is not the limit: a line
+  carries about 25 recombination breakpoints over a 1,399 cM map, so 1,106 markers is roughly 31 per
+  segment, and a tenth of them keeps 92% of the declared metric. The same population now has a genotype
+  three orders of magnitude denser, but in absolute alleles rather than parent-of-origin dosages, which
+  would be another task rather than a denser version of this one.
+- Time basis: UnseenGroup: the breeder ranks the progeny of a cross the data does not hold, so whole families are held out and the two trial years are not weighed: the target is the flowering time of a fixed genotype, published as a line value across its eight environments. The split cannot test a later season, another trial network, or germplasm outside this panel's 26 founders; the last of those is measurable here and is markedly harder, since holding out a whole germplasm group (tropical, temperate, mixed, sweet, popcorn) drops the declared metric to 0.116 for ridge and 0.202 for a random forest, with the two-family sweet-corn group negative for every model. Five groups are too few to split on, so it stays a limit rather than the split. One limit follows from the panel's own design and is accepted with it: every family is a cross to B73, so each test line has half-sibs in training and no held-out family is unrelated to the training ones.
 
 ## Splits
 
 The default repeated grouped protocol on the 25 families, 20 repeats of 3 folds, 60 splits: each test fold
-holds 8 or 9 whole families and 1,442 to 1,729 of the 4,699 lines. It replaces the random holdout over lines that the
-benchmarking work on these panels uses, which was designed for a different question, comparing algorithms
-inside a population that is already phenotyped, and is a habit rather than a choice for ours (SPLIT-5): a
-random split puts the full siblings of every test line in the training data, which a breeder ranking a new
-cross does not have. A test family's own feature rows are all on the test side and may be read
-(`context="all_rows"`, the grouping definition). Leaf L-EXP.kind of the split tree. The repeats reuse the
-same 25 families, so the spread over repeats is descriptive, not 25 independent crosses.
+holds 8 or 9 whole families and 1,442 to 1,729 of the 4,699 lines. It replaces the random holdout over
+lines that the benchmarking work on these panels uses, which was designed for a different question,
+comparing algorithms inside a population that is already phenotyped, and is a habit rather than a choice
+for ours (SPLIT-5): a random split puts the full siblings of every test line in the training data, which a
+breeder ranking a new cross does not have, and it is measurably not harmless, since the markers name a
+line's family on 50.3% of held-out lines against 4.0% by chance, so an IID split hands a model the
+between-family component the grouped one withholds (pooled R^2 +0.220 against +0.051). Leaf L-EXP.kind of
+the split tree. All 60 training sides are distinct family sets and each family is a test family exactly 20
+times, but the sides overlap at a mean Jaccard of 0.498, so the honest unit is the family: the spread over
+repeats is descriptive, and the uncertainty about a new cross is the spread over the 25 families, four to
+six times the spread over splits.
 
-What the grouped split costs, and why a pooled R^2 reads as no signal here. Over the nine splits the group
-probe runs, three of the twenty repeats, an untuned LightGBM scores R^2 0.233 on folds of random lines and
-0.047 on folds of whole families, a gap of 0.186, and its learnability figures across unseen families are
-negative for every model tried (ridge -0.500, random forest -0.028, LightGBM -0.025, 5-NN -0.222). That is
-not an absence of signal: 69.3% of the target's variance is between the families, a pooled R^2 is mostly a
-test of predicting the family mean, and no model predicts an unseen cross's mean from markers alone. The
-signal is inside the family, which is where the decision and the declared metric are: over all 60 shipped
-splits ridge scores a per-family correlation of 0.351 (SE 0.005) and is positive on 60 of 60, over the 30
-the task probe runs a random forest scores 0.303 and beats the dummy on 100% of them by +0.3026 (SE
-0.0087), and a predictor handed each test family's true mean scores exactly 0 there against a pooled r of
-0.793. A reader who scores this dataset with a pooled R^2 will conclude the task is unlearnable; that is
-the metric's choice being skipped, not the task.
+What the split costs, measured on both metrics, since they disagree. On the declared metric it costs 0.024
+for the untuned ridge, 0.035 for a random forest and 0.036 for LightGBM against the same 60 splits drawn at
+random over lines; paired family by family it costs 0.017 to 0.028. On a pooled R^2 it costs 0.370. The
+alternatives were run and none is better: a map-keyed split inside each family is no harder than random
+lines, a founder's half-sib group is the family itself since B73 is the only common parent, and
+leave-one-germplasm-group-out is markedly harder but has five groups, one of them a single family.
+
+Why a pooled R^2 reads as no signal here, and why that reading is refused. Every model scores below the
+training mean on unseen families at every ridge penalty, pooled R^2 running from -0.84 to -0.136, and the
+group probe's learnability figures are negative for all of them (ridge -0.500, random forest -0.028,
+LightGBM -0.025, 5-NN -0.222). On its face that is SPLIT-28, a task with no signal across its groups. It is
+not: the between-family component is not reachable from these features by construction, since the markers
+are parent-of-origin dosages that name no founder, and models do not merely miss an unseen cross's mean but
+get it backwards, predicting means in a 76.6 to 77.7 band against a true 70.2 to 82.9 and correlating
+-0.72 (ridge) and -0.78 (random forest) with it across the 25 families. The signal is inside the family,
+where the decision and the declared metric are, and it is measured rather than asserted: the ridge at alpha
+1,000 scores a per-family 0.351 and is positive on 60 of 60 splits and in 24 of the 25 families, a random
+forest 0.303, and a null that shuffles the labels inside each test family puts the observed score 53
+standard deviations above it (200 runs, null mean 0.0005, SD 0.0068, none reaching the observed). A reader
+who scores this dataset with a pooled R^2 will conclude the task is unlearnable; that is the metric's
+choice being skipped, not the task. The curator signs that reading off in the record's review.
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 2,970 to 3,257 rows, test 1,442 to 1,729 rows.
 
@@ -362,7 +412,12 @@ panel so that every family shares B73 as a parent and the other founders span th
 species; genomic selection is used to rank the progeny of a cross before the season, so whole families
 are held out: a test family's flowering times are unknown, as they are for a cross nobody has grown.
 Each line is scored on its own. The breeder genotypes the whole progeny of the cross at once and ranks
-them together, so a model may use all rows of a test family (`all_rows`).
+them together, so a model may use all rows of a test family (`all_rows`). That grant is declared for
+the use case and not for a gain, and here it is worth nothing measurable: centring a test family's
+markers on its own mean rather than on the training mean gives identical scores, because the declared
+metric is a correlation inside the group and a per-family shift does not change it. What does pay is
+centring the markers inside every family on the training side, which needs no grant at all and lifts
+the untuned ridge from 0.164 to 0.278.
 
 | field | value |
 |---|---|
@@ -392,7 +447,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 Accepted on purpose:
 
-- `groups_test_groups_few`: 25 families, 8 or 9 per test fold and 1,442 to 1,729 lines scored per fold. The signal across groups is measured, not assumed: over all 60 shipped splits ridge scores a per-family r of 0.351 (SE 0.005) and is positive on 60 of them, and an untuned LightGBM 0.258 over the 12 measured, where the training mean is undefined per family because it is constant there, and a predictor given each test family's true mean scores exactly 0. The task is a breeder's own: the families are the crosses a breeder makes, and a few of them is what a breeding programme holds.
+- `groups_test_groups_few`: 25 families, 8 or 9 per test fold and 1,442 to 1,729 lines scored per fold. The signal across groups is measured, not assumed, and on the spread that matters, which is over the families rather than over the 60 splits that reuse them: the ridge at alpha 1,000 scores a per-family 0.351 with an SD of 0.150 over the 25 families, an SE of 0.030, positive in 24 of them, running from -0.043 (P39, sweet corn) to +0.506; a random forest scores 0.303 and beats the dummy on 100% of the 30 splits the task probe runs by +0.3026 (SE 0.0087); the training mean is undefined per family because it is constant there, and a predictor given each test family's true mean scores exactly 0. A within-family label permutation null over 200 runs has mean 0.0005 and SD 0.0068, putting the observed 53 SDs above it with no run reaching it. The task is a breeder's own: the families are the crosses a breeder makes, and a few of them is what a breeding programme holds.
 
 ## Data checks
 
