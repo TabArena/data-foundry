@@ -18,6 +18,11 @@ Start it with::
 The server is meant to run locally per curator (edit -> git commit -> PR); it is
 not hardened for multi-user or public exposure.
 
+The page loads ``/api/records`` once (every record, about 17 MB for 2,100 records), then polls the cheap change token
+``/api/version`` and catches up with ``/api/records?since=<newest mtime_ns it holds>&tip=<claims tip>``: only the
+records written since, the names of all records and, when the claims board moved, the claim columns. Parsed rows are
+cached per file (:data:`_ROW_CACHE`), so a request re-reads only the files written since the last one.
+
 Claims come from the live claims board (:mod:`data_foundry.curation.claims`), not from the records: a background
 thread fetches the board every :data:`CLAIMS_REFRESH_S` seconds, the records payload shows each record's live holder
 in ``claim_holder`` (with the details in ``live_claim``), a column of the grid that is not a record field, and editing
@@ -36,7 +41,7 @@ from dataclasses import asdict
 from functools import partial
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 from data_foundry.curation import claims
 from data_foundry.curation._paths import records_dir, resolve_curation_root, skills_dir, vocabularies_path
@@ -154,8 +159,52 @@ def _overlay_claim(row: dict[str, object], board: claims.Board | None) -> dict[s
     return row
 
 
-def _records_payload(directory: Path | None) -> list[dict[str, object]]:
-    """Serialise every record, augmented with read-only *derived* link fields.
+_ROW_CACHE: dict[Path, tuple[tuple[int, int, int], dict[str, object]]] = {}
+"""Each record file's row as :func:`_record_row` built it, under the file's ``(mtime_ns, size, inode)`` when read: a
+request parses only the files written since (a save replaces the file, so its inode changes too)."""
+
+_ROW_CACHE_LOCK = threading.Lock()
+
+
+def _record_paths(records_root: Path) -> list[Path]:
+    """The record files under ``records_root``, sorted; as ``load_all``, ``_template.md`` is no record."""
+    paths = sorted(records_root.glob("*.md")) if records_root.exists() else []
+    return [p for p in paths if not p.name.startswith("_")]
+
+
+def _record_row(path: Path, stat: os.stat_result, records_root: Path, repo_root: Path) -> dict[str, object]:
+    """One record as the grid reads it, without the claim overlay; from :data:`_ROW_CACHE` while the file is
+    unchanged. ``stat`` is taken before the file is read, so :data:`MTIME_KEY` never claims a newer file.
+    """
+    key = (stat.st_mtime_ns, stat.st_size, stat.st_ino)
+    with _ROW_CACHE_LOCK:
+        cached = _ROW_CACHE.get(path)
+    if cached is not None and cached[0] == key:
+        return cached[1]
+    r = load_record(path)
+    d = record_to_dict(r)
+    d[MTIME_KEY] = str(stat.st_mtime_ns)
+    rel = r.notebook_path or resolve_notebook(r)
+    if rel:
+        d["notebook_path"] = rel
+        d["notebook_url"] = f"{GITHUB_BLOB_BASE}/{rel}"
+    if r.v2_path:
+        d["v2_url"] = f"{GITHUB_BLOB_BASE}/{r.v2_path}"
+    try:
+        rec_rel = (records_root / f"{r.unique_name}.md").relative_to(repo_root).as_posix()
+    except ValueError:  # custom records dir outside the repo: no stable GitHub link
+        rec_rel = None
+    if rec_rel:
+        d["record_path"] = rec_rel
+        d["record_url"] = f"{GITHUB_BLOB_BASE}/{rec_rel}"
+    with _ROW_CACHE_LOCK:
+        _ROW_CACHE[path] = (key, d)
+    return d
+
+
+def _records_payload(directory: Path | None, since: int | None = None) -> list[dict[str, object]]:
+    """Serialise every record (with ``since``, only those whose file's ``mtime_ns`` is at least ``since``),
+    augmented with read-only *derived* link fields.
 
     ``notebook_path`` is a real record field, so the pointer a record carries is used as-is; only
     records that have none fall back to :func:`~data_foundry.curation.notebooks.resolve_notebook`
@@ -167,34 +216,43 @@ def _records_payload(directory: Path | None) -> list[dict[str, object]]:
     dashboard's per-row 📓 / 📄 buttons read them (live and on the static site). With a cached
     claims board, ``claim_holder`` is the live holder and ``live_claim`` the claim (:func:`_overlay_claim`).
     :data:`MTIME_KEY` is the file's ``mtime_ns``, taken before the file is read, which an edit sends back.
+    Each row is a fresh dict: a caller may change it.
     """
     repo_root = resolve_curation_root().parent.resolve()
     records_root = (Path(directory) if directory is not None else records_dir()).resolve()
     board = claims.cached_board()
     payload: list[dict[str, object]] = []
-    paths = sorted(records_root.glob("*.md")) if records_root.exists() else []
-    for path in paths:
-        if path.name.startswith("_"):  # as load_all: _template.md is not a record
+    for path in _record_paths(records_root):
+        stat = path.stat()
+        if since is not None and stat.st_mtime_ns < since:
             continue
-        mtime = path.stat().st_mtime_ns
-        r = load_record(path)
-        d = _overlay_claim(record_to_dict(r), board)
-        d[MTIME_KEY] = str(mtime)
-        rel = r.notebook_path or resolve_notebook(r)
-        if rel:
-            d["notebook_path"] = rel
-            d["notebook_url"] = f"{GITHUB_BLOB_BASE}/{rel}"
-        if r.v2_path:
-            d["v2_url"] = f"{GITHUB_BLOB_BASE}/{r.v2_path}"
-        try:
-            rec_rel = (records_root / f"{r.unique_name}.md").relative_to(repo_root).as_posix()
-        except ValueError:  # custom records dir outside the repo: no stable GitHub link
-            rec_rel = None
-        if rec_rel:
-            d["record_path"] = rec_rel
-            d["record_url"] = f"{GITHUB_BLOB_BASE}/{rec_rel}"
-        payload.append(d)
+        payload.append(_overlay_claim(dict(_record_row(path, stat, records_root, repo_root)), board))
     return payload
+
+
+def _records_changed_payload(directory: Path | None, since: int, tip: str | None) -> dict[str, object]:
+    """What a dashboard tab needs to catch up (``/api/records?since=<mtime_ns>&tip=<claims tip>``): the records
+    written at or after ``since``, the names of all records (a name the tab shows that is missing was deleted), and
+    when the claims board moved past ``tip``, every record's claim columns.
+
+    ``since`` is the newest :data:`MTIME_KEY` the tab holds; "at or after" re-sends the records of that instant, so a
+    file written twice within one timestamp tick is never missed.
+    """
+    records_root = (Path(directory) if directory is not None else records_dir()).resolve()
+    board = claims.cached_board()
+    current_tip = board.tip if board is not None else None
+    out: dict[str, object] = {
+        "records": _records_payload(directory, since=since),
+        "names": [p.stem for p in _record_paths(records_root)],
+        "tip": current_tip,
+    }
+    if tip != current_tip:
+        out["claims"] = {
+            name: {k: row[k] for k in ("claim_holder", "live_claim")}
+            for name in out["names"]
+            for row in [_overlay_claim({"unique_name": name}, board)]
+        }
+    return out
 
 
 def _version_payload(directory: Path | None) -> dict[str, object]:
@@ -373,6 +431,19 @@ class CurationHandler(BaseHTTPRequestHandler):
             return
         self._send_file(path, "text/markdown; charset=utf-8")
 
+    def _send_records(self, query: dict[str, list[str]]) -> None:
+        """All records, or with ``since`` what a tab needs to catch up (:func:`_records_changed_payload`)."""
+        if "since" not in query:
+            self._send_json(_records_payload(self._records_dir))
+            return
+        try:
+            since = int(query["since"][0])
+        except ValueError:
+            self._send_json({"error": "since must be an integer mtime_ns"}, status=400)
+            return
+        tip = query.get("tip", [None])[0] or None
+        self._send_json(_records_changed_payload(self._records_dir, since, tip))
+
     def _read_json_body(self) -> dict[str, object]:
         length = int(self.headers.get("Content-Length", 0))
         return json.loads(self.rfile.read(length) or b"{}")
@@ -383,7 +454,8 @@ class CurationHandler(BaseHTTPRequestHandler):
     # -- routing ---------------------------------------------------------
     def do_GET(self) -> None:
         """Serve the SPA, the schema, the records list, the on-disk change token, or the guideline docs."""
-        route = urlparse(self.path).path
+        url = urlparse(self.path)
+        route = url.path
         try:
             if route in ("/", "/index.html"):
                 self._send_file(STATIC_DIR / "index.html", "text/html; charset=utf-8")
@@ -392,7 +464,7 @@ class CurationHandler(BaseHTTPRequestHandler):
             elif route == "/api/schema":
                 self._send_json(_schema_payload())
             elif route == "/api/records":
-                self._send_json(_records_payload(self._records_dir))
+                self._send_records(parse_qs(url.query))
             elif route == "/api/version":
                 self._send_json(_version_payload(self._records_dir))
             elif route == "/api/docs":

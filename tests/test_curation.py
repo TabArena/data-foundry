@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import dataclasses
 import http.client
 import json
 import os
@@ -16,7 +17,7 @@ import pandas as pd
 import pydantic
 import pytest
 
-from data_foundry.curation import exporter, notebooks
+from data_foundry.curation import claims, exporter, notebooks
 from data_foundry.curation._paths import DATA_FOUNDRY_CURATION_ENV
 from data_foundry.curation.app import (
     GUIDELINE_SKILLS,
@@ -26,6 +27,7 @@ from data_foundry.curation.app import (
     START_SECTION,
     CurationHandler,
     _docs_payload,
+    _records_changed_payload,
     _records_payload,
     _schema_payload,
     _version_payload,
@@ -758,6 +760,65 @@ def test_the_edit_check_survives_a_javascript_number(
     as_javascript = json.loads(json.dumps(row), parse_int=float)[MTIME_KEY]  # numbers parsed as doubles
     assert as_javascript == str(mtime)
     assert _put(server, "/api/records/musk", {"priority": 3, MTIME_KEY: as_javascript})[0] == 200
+
+
+def test_a_tab_catches_up_with_only_what_changed(
+    server: int, guideline_repo: Path, sample_record: CurationRecord
+) -> None:
+    """``/api/records?since=`` sends the records written at or after ``since`` and the names of all records, so a
+    tab sees an outside write and a deletion without fetching every record again.
+    """
+    folder = guideline_repo / "curation" / "records"
+    musk = save_record(sample_record, folder)
+    other = save_record(dataclasses.replace(sample_record, unique_name="other", name="other"), folder)
+    os.utime(musk, ns=(1_000_000_000_000, 1_000_000_000_000))
+    os.utime(other, ns=(2_000_000_000_000, 2_000_000_000_000))
+    rows = json.loads(_get(server, "/api/records")[2])
+    newest = max(int(r[MTIME_KEY]) for r in rows)
+
+    delta = json.loads(_get(server, f"/api/records?since={newest}&tip=")[2])
+    assert [r["unique_name"] for r in delta["records"]] == ["other"]  # at or after: the newest comes back
+    assert delta["names"] == ["musk", "other"]
+
+    sample_record.comments = "An agent's note."
+    save_record(sample_record, folder)  # an outside write: a newer mtime
+    delta = json.loads(_get(server, f"/api/records?since={newest}&tip=")[2])
+    assert {r["unique_name"]: r["comments"] for r in delta["records"]}["musk"] == "An agent's note."
+
+    other.unlink()
+    delta = json.loads(_get(server, f"/api/records?since={newest}&tip=")[2])
+    assert delta["names"] == ["musk"]  # the tab drops the row it no longer finds
+
+    assert _get(server, "/api/records?since=soon")[0] == 400
+
+
+def test_a_catch_up_sends_the_claim_columns_when_the_board_moved(
+    guideline_repo: Path, sample_record: CurationRecord, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Claims do not change a record file, so a catch-up whose tip differs from the board's carries every record's
+    claim columns; with the same tip it leaves them out.
+    """
+    folder = guideline_repo / "curation" / "records"
+    save_record(sample_record, folder)
+    monkeypatch.setattr(claims, "cached_board", lambda: None)  # no board: tip None, nobody holds anything
+    assert "claims" not in _records_changed_payload(folder, 0, None)
+    moved = _records_changed_payload(folder, 0, "an-older-tip")
+    assert moved["claims"] == {"musk": {"claim_holder": None, "live_claim": None}}
+
+
+def test_the_row_cache_follows_a_save_that_keeps_mtime_and_size(
+    guideline_repo: Path, sample_record: CurationRecord
+) -> None:
+    """Rows are cached per file under ``(mtime_ns, size, inode)``; a save replaces the file, so even a change of the
+    same length written within one timestamp tick is read again.
+    """
+    folder = guideline_repo / "curation" / "records"
+    path = save_record(dataclasses.replace(sample_record, comments="aaaa"), folder)
+    os.utime(path, ns=(5_000_000_000, 5_000_000_000))
+    assert _records_payload(folder)[0]["comments"] == "aaaa"
+    save_record(dataclasses.replace(sample_record, comments="bbbb"), folder)  # same size, a new file
+    os.utime(path, ns=(5_000_000_000, 5_000_000_000))
+    assert _records_payload(folder)[0]["comments"] == "bbbb"
 
 
 @pytest.mark.parametrize(
