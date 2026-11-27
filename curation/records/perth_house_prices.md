@@ -89,15 +89,17 @@ CC (2026-11-13, Andrej): collection facts `Samples: Over Time`, `Time: Dated` an
 
 CC (2026-11-17, Andrej): the declared split (temporal on `DATE_SOLD`, windows of 1 month, 9 windows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-27, Andrej): Review issue 16: A, a note naming the two meanings of a missing garage count and the date (October 2019); the column stays. Ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added. On 2026-11-11 you kept the nine one-month windows every third month from December 2018 to
 December 2020, without a gap (issue 15 and the horizon, A); the stale bullet that named April to December 2020 is
 fixed.
 
-**Main points:** Re-reviewed on 2026-11-26 (audit against the source and a second published listing): one issue
-open, whether to say that a missing garage count means no car space before October 2019 and an unread field after
-(16). Nothing else needs a decision: no validity problem was found, and the window choice holds on re-measurement.
+**Main points:** Re-reviewed on 2026-11-26 (audit against the source and a second published listing): settled on 2026-11-27:
+the notes now say that a missing garage count means no car space before October 2019 and an unread field after (16,
+A); ship as defined. Nothing else needs a decision: no validity problem was found, and the window choice holds on re-measurement.
 Earlier, settled on 2026-11-11: the windows every third month from December 2018 stay (issue 15, A), and
 the declared horizon of one month without a gap is checked.
 
@@ -283,4 +285,8 @@ the rule on late labels since its amendment of 2026-11-04. `temporal` is unchang
      | D | Recode the blanks before October 2019 to zero, with a note | a blank then means "not read" in both periods | one meaning per value | wrong for about a third of the recoded rows; an imputation on 40 matched rows |
 
    * **Recommendation:** A, or D if you prefer one meaning per value: the third that D gets wrong is the price of making blanks consistent, and the score does not decide between them. **Decision:** A, B, C or D?
+
+   **Andrej (2026-11-27, change):** Option A: A note naming the two meanings and the date.
+
+   **Resolved (2026-11-27, Andrej):** A. The definition's notes now say that a missing garage count means no car space before October 2019 (27 of 40 matched rows) and an unread field from October 2019 (47 of 75 matched rows had two spaces); the column stays.
 

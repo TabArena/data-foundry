@@ -118,6 +118,8 @@ CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTe
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 4, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. A one-year 1997 study used today, with a rating rule (the legal bonus-malus scale) that the source country abolished in 2004; the span and the rule change both stand against ASR.
 
+CC (2026-11-27, Andrej): Review issue 5: A, as implemented: all rows stay weighted by exposure; no sentence on where the skill is earned is added (the answer of 2026-11-27 explains why part-year policies claim more per year insured: a claim often ends the policy).
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it. The re-review of 2026-11-06 under the exposure rules (LEAK-41,
@@ -144,7 +146,7 @@ collection's training-weight gate (`BENCHMARK_CHANGES_TODO.md`, "Training weight
 
 **Main points:** Re-audited on 2026-11-26: nothing invalidates the dataset. The metric's reference does define the
 Poisson deviance scored against exposure, the exposure is the scoring weight and not a feature, and the split tree's
-leaf matches what ships. One issue is open, a note on where the skill is earned (5). Earlier: no open issue, so it
+leaf matches what ships. Issue 5 settled on 2026-11-27 (A): no sentence added. Earlier: no open issue, so it
 shipped by default: issues 1-3 are resolved, and the re-review of 2026-11-06 adds
 none on this dataset (its two questions are the cross-dataset items X1 and X2). Issue 4 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
 
@@ -434,6 +436,10 @@ weighted rate deviance the same comparison gives +0.0048. A dated AI line next t
    * The arithmetic adds noise, not bias: one claim over a quarter-year is a rate of 4. The exposure weight handles that, and it is why the unweighted mean rate is 1.13 times the portfolio rate.
    * Consequence for the issue: the part-year rows carry about 55% of the measured skill, and their exposure is partly set by the outcome. That is the sentence option B adds.
    * **Recommendation:** B, with the mechanism in its sentence. **Decision:** A, B, C or D?
+
+   **Andrej (2026-11-27, ok):** As implemented (A).
+
+   **Resolved (2026-11-27, Andrej):** A, as implemented: all rows stay, weighted by exposure, and no sentence on where the skill is earned is added; the data, split and metric stay as decided on 2026-11-06.
 
 **Review panel:** ship after changes (mediator). Tier full, re-review of 2026-11-06 under LEAK-41, MET-14 to MET-16,
 after issue 1 was resolved as the rate weighted by `expo`. Claim audit: 31 claims, 20 hold (2 with a caveat), 2 refuted

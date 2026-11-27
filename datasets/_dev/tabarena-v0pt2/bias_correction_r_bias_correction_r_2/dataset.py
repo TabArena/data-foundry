@@ -183,6 +183,8 @@ class BiasCorrectionRBiasCorrectionR2(AbstractCuratedDataset):
         midnight, after the first prediction that evening. Each window holds 149-175 station-days (6-7 days of the 25
         stations), and the oldest trains on the four summers 2013-2016. The 9 windows are the 3 x 3 splits of the v2
         protocol for this size; the paper's own hindcast refits every day (Cho et al. 2020, Sec. 3.3).
+        The windows stay in the newest summer rather than spread over 2016 and 2017, an exception to the preference
+        for other years and seasons (Andrej, 2026-11-27): the newest weeks are the period an evening refit serves.
         Protocol: a station's next-day row, whose `Present_Tmin` is within 0.42 degrees of the label, is in the same
         test window for six of the seven days of a window; each test row is predicted from the training rows and its
         own features only, and no feature or model step may use other test rows (CC 2026-11-27).

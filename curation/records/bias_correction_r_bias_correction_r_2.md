@@ -59,6 +59,8 @@ CC (2026-11-27, Andrej): the declared metric (RMSE on Next_Tmin, over the 9 test
 
 **Assessment (AI, 2026-11-27):** applied; `dataset check` 0 errors, 7,648 rows and the 9 windows unchanged. Issue 2 (the windows over two summers) has no mark yet and stays open.
 
+CC (2026-11-27, Andrej): Review issue 2: A, confirmed after the consistency check: the nine consecutive weeks of 2017 stay. **Exception to SPLIT-15 (2026-11-27, Andrej):** the windows stay in the newest summer instead of spreading over 2016 and 2017; the newest weeks are the period an evening refit serves, and the spread windows separated the methods no better (paired SEs 0.023-0.047 against 0.028-0.042).
+
 ## Review
 
 **Outcome:** added. Re-audited on 2026-11-27: the data reproduce (checksum matches, 7,648 rows recomputed, `dataset check` clean), the second target is not shipped as a feature, the one-day gap is right, and the split tree's leaf matches what ships. Issue 1 decided on 2026-11-27 (A): the next-day row that carries the label is stated with its measurement and a protocol line. One issue is open: the nine windows sit in a single summer for a reason the window rule does not accept (2); your ok of 2026-11-27 waits on the reason to keep them. Needing no decision: the solar radiation column is not the day's observation but the station's calendar-day potential radiation, identical every year, which is why it drifts in every window; and 9 of 25 stations lack the day's minimum on 2017-06-30.
@@ -122,6 +124,10 @@ CC (2026-11-27, Andrej): the declared metric (RMSE on Next_Tmin, over the 9 test
    * A consistency check before applying: A keeps windows whose only recorded reason is a comparison of model scores, which the window rule does not accept as the basis for choosing windows. The windows themselves can stay; the reason cannot.
    * Keeping A needs a reason from the data or the use, for example that the newest weeks are the period a deployed forecaster serves. Under A the score comparison leaves the notes and that reason replaces it.
    * **Decision:** A with a reason from the data (which one?), or B as recommended?
+
+   **Andrej (2026-11-27, ok):** As implemented (A), confirmed after the consistency check.
+
+   **Resolved (2026-11-27, Andrej):** A, confirmed as a departure from the window rule's preference for other years and seasons: the nine consecutive weeks of 2017 stay as the test windows (1,538 test rows, 80% training floor); no change to the definition.
 
 **Review panel:** ship after changes (re-audit against the source, 2026-11-27; no separate mediator). Claims: the row
 count and every dropped day reproduce; the solar radiation column is mislabelled as an observation. Columns: no

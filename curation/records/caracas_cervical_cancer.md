@@ -56,6 +56,8 @@ CC (2026-11-17, Andrej): the declared split (random, 10x3 folds, `ForcedIIDFromT
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 3, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. A behavioural questionnaire under changing screening and vaccination policy gives no mechanism that time leaves unchanged.
 
+CC (2026-11-27, Andrej): the declared metric (ROC AUC of the predicted probability of a positive biopsy, the source's) is checked and stays as declared. Ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added. A question on `CrossSectional` (2026-11-13) was withdrawn when the prototype was dropped.

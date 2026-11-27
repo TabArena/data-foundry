@@ -62,6 +62,8 @@ CC (2026-11-27, Andrej): Review issue 2: Option B, narrow the wording ("Narrow t
 
 **Assessment (AI, 2026-11-27):** applied; `dataset check` 0 errors, 1 warning left from before this round (`splits_below_target`, 4 windows against 9) and 1 info; no data change. The text fixes the audit listed for the next edit (the new below-target warning, the `DISTANCEONLY` note, `UG25ABV`, the no-gap R^2 figures, the zip folder date) are not part of these marks and are not applied.
 
+CC (2026-11-27, Andrej): the declared metric (RMSE on the 150% completion rate, the fallback; the source defines no task) is checked and stays as declared. Ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added as `college_scorecard`; re-audited 2026-11-27 against the pinned Wayback zip (MD5 matches the recorded ETag): 34,431 rows, 2,569 institutions, 92 features, LightGBM RMSE 0.085 against 0.198 for the dummy on all 4 windows. Decided 2026-11-27: `Selection Bias` and the survivor cut named, `Yes` kept (issue 1, B); the use case narrowed to the college as actor (issue 2, B).

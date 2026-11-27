@@ -77,16 +77,18 @@ CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words w
 
 CC (2026-11-17, Andrej): the declared split (temporal on `transaction_month`, windows of 1 month, 9 windows, gap 1 month) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-27, Andrej): Review issue 1: D, as implemented: "I don't want to change anything about this dataset for now, it is good as it is." Not retired. The declared metric (MAE of logerror, the source's) is checked and stays as declared. Ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added. Re-audited on 2026-11-27: the data reproduce (all five checksums match, `dataset check` clean),
 no leak was found, and the split tree's leaf matches what ships. The property snapshot question is small and already
 disclosed: the 2017 file is a snapshot of October 2017, so every 2017 sale's building facts were looked up after it,
 but only 3.37% of the 62,876 kept 2017 sales have a fact that differs from the 2016 file, flat by sale month, and
-every tax field predates its sale. One issue is open, and it is about the task's value.
+every tax field predates its sale. Issue 1 settled on 2026-11-27 (D): nothing changes, ship as defined.
 
-**Main points:** One for you: the claim that the gain comes from the features does not hold on the declared metric,
-and the model barely beats the median (1).
+**Main points:** You kept the dataset as it is (issue 1, D): the model barely beats the median on the declared
+metric, and the notes' claim on the median stays unchanged.
 
 **Issues for Andrej:**
 
@@ -125,6 +127,10 @@ and the model barely beats the median (1).
    * A consistency check before applying: the signal rule makes a tuned run the only ground for `No Signal`; here only an untuned L1 LightGBM exists (+0.00008 MAE over the median, 1.6 standard errors). The page verdict for this record also says ship, which conflicts with retiring.
    * Without the location columns the gain is +0.00033 (SE 0.00004), so a small real signal may exist and be diluted; a tuned run settles that either way.
    * **Decision:** retire now as an exception to the signal rule (with the fact that sets it apart: the gain sits inside 0.1% of the error on the declared metric), or B first (the tuned run, then retire or keep on its result)?
+
+   **Andrej (2026-11-27, ok):** I don't want to change anything about this dataset for now, it is good as it is.
+
+   **Resolved (2026-11-27, Andrej):** D, as implemented: nothing changes, the dataset stays and is not retired; the claim about the median and the signal question stay as they are.
 
 **Review panel:** ship after changes (re-audit against the source, 2026-11-27; no separate mediator). Claims: every
 count recomputed on the shipped frame holds except the median claim. Columns: the five flagged codes are already
