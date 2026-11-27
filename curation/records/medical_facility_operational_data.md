@@ -116,6 +116,10 @@ CC (2026-11-27, Andrej): Review issue 16, B ("Option B: Anchor the newest window
 
 **Assessment (AI, 2026-11-27):** `dataset check`: 0 errors, 0 warnings, and the accepted `splits_rows_unused` is gone: no visit is left out of every split. The nine windows hold 12,435 test visits (1,140 to 1,550 per window; the newest 1,550, 144 visits on its last day), and train on 41,048 to 80,451 of 82,001 visits (50.1% to 98.1%). The newest window starts 72 days after the eighth (the first eight start 43 to 51 days apart). The mean `Wait` of the newest window's test visits is 1.32 minutes (2.99 before; 10.01 in the oldest window), patients check in 35.1 minutes early on average (34.6 before) and the time from arrival to start is 36.4 minutes (flat from 36.9 in the oldest). LightGBM MAE and bias figures of the notes were measured with the newest window ending 28 days before the last arrival and are dated in the definition, not measured again.
 
+CC (2026-11-27, Andrej): the declared split (temporal on `arrival_order`, nine expanding 14-day windows, the newest ending at the last arrival) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added. The review panel recommends shipping after changes; the changes that need no decision are made

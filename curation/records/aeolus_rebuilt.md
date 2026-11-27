@@ -74,12 +74,16 @@ CC (2026-11-27, Andrej): Review issue 3, B, "Add the airports' state in the hour
 
 **Assessment (AI, 2026-11-27):** untuned LightGBM, 1M training rows (random, newest year of the train side), seed 0, ROC AUC without / with the nine columns: 18 December 0.8344 / 0.8417 (+0.0073), 3 July 0.8349 / 0.8413 (+0.0064), 13 March 0.8334 / 0.8381 (+0.0047). The four delay and late-share columns carry the gain; the counts add under 0.001. The same columns read one hour after the prediction point score higher (all nine 0.8401-0.8457), so the shipped version holds nothing from after it. Values checked against a plain filter of the flight files for 400 random flights: no difference. `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
+CC (2026-11-27, Andrej): the declared metric (ROC AUC on `ARR_DEL15`, an arrival 15 minutes or more late; the binary fallback, the paper reports AUC and accuracy side by side) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added as `aeolus_rebuilt_1m`. Under the rule on choosing test windows, rewritten on 2026-11-10, you chose
 B (issue 1): the test fortnights are 18-31 December, 3-16 July and 13-26 March 2024 instead of the newest six weeks,
 and the 14-day length and the one-day gap stay with a new reason. Issue 3 (2026-11-27, B): nine inputs for the airports' state at the
-prediction point were added, worth 0.0061 ROC AUC on average.
+prediction point were added, worth 0.0061 ROC AUC on average. Metric checked and shipped on 2026-11-27.
 
 **Main points:** Re-audited on 2026-11-27: nothing to decide. All 25 flight files and the station history match their checksums, and the frame rebuilt from today's live station files still matches the record exactly (13,690,703 rows; test windows of 264,245, 278,071 and 267,477 flights). Every number in the splits comment recomputes on the shipped windows, and the newest window ends on the last day of the data. Text fixes need no decision: the committed README still describes the windows before 2026-11-10; the probe figures in the notes were measured on those old windows and recompute slightly higher (LightGBM 0.826 against 0.819); two source files, the carrier code table and the weather station database, come from live downloads whose declared hashes no longer reproduce; and two weather columns go missing for about 16,000 rows a month in August-September and December 2024, though never in a test window. Earlier: Settled on 2026-11-10: the test windows are the holiday peak, the summer peak and a spring fortnight
 of 2024 (issue 1, B), and the declared horizon is checked. Settled on 2026-11-17: the three 14-day windows stay
