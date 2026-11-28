@@ -155,10 +155,12 @@ materials not yet reported, or no scope stated → yes)_
 - no: items like those it contains, or from elsewhere → **Family-key step** (here: open_soil_spectral_library,
   qsar_biodeg, superconductivity)
 - yes, or no scope stated →
-  **Does each item carry a final date of entry into this catalogue, with a final label?** [CAT.entry-date] _(data and
-  documentation; reads SPLIT-37 step 4: a date of entry into this catalogue in the release or a parent source, not a
-  registration that predates it; items still to come, not an inventory already collected, a closed study or a
-  designed experiment; labels that are not revised later (hint: the `Time:` fact, `Target: Revised Later`))_
+  **Does each item carry a final date of entry into this catalogue, with a final label, or can such a date be rebuilt
+  from the data?** [CAT.entry-date] _(data and documentation; reads SPLIT-37 step 4: a date of entry into this catalogue
+  in the release or a parent source, not a registration that predates it; items still to come, not an inventory
+  already collected, a closed study or a designed experiment; labels that are not revised later, or a date at which
+  each label is final rebuilt from the data and checked as SPLIT-22 asks, such as the year an item's last measurement
+  arrives (hint: the `Time:` fact, `Target: Revised Later`))_
   - no → **Family-key step** (here: drug_induced_autoimmunity_prediction, nci_aids_antiviral_screen,
     qsar_oral_toxicity)
   - yes →

@@ -2,13 +2,13 @@
 unique_name: desi_dr1_star_galaxy_quasar
 name: DESI Data Release 1 (spectroscopic classes with Legacy Surveys DR9 photometry)
 checked_by:
-- AI (UNVERIFIED)
+- Myunghwan
+data_foundry_status:
+- 'DF: Suspended'
 suggestion: TBD -> Yes
-priority: 3
+priority: 1
 decision_markers:
 - Selection Bias
-tags:
-- AI-Filled (Verify)
 original_source: Website
 year: '2025'
 domain: physics & astronomy
@@ -20,8 +20,6 @@ source_links:
 - https://data.desi.lbl.gov/doc/releases/dr1/
 - https://data.desi.lbl.gov/public/dr1
 - https://ui.adsabs.harvard.edu/abs/2026AJ....171..285D
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -43,3 +41,7 @@ type_adapter_id: curation-record-v1
 - as published: 18,659,804 unique main-survey objects with useful spectra: 13,049,402 galaxies, 1,553,713 quasars, 4,056,689 stars; photometry from the Legacy Surveys DR9 Tractor catalogue (g, r, z, WISE W1/W2 ...; target: Spectroscopic class SPECTYPE (STAR, GALAXY, QSO), the same three classes as sdss_17; access: open.
 - Why: Same target and the same photometric classification task as sdss_17's v2 definition (position and broadband magnitudes, redshift and plate dropped), from a newer spectroscopic survey
 - Adds: Two orders of magnitude more labelled objects (subsample for the benchmark), newer data, infrared WISE bands that help separate quasars from stars. Same risk as sdss_17: targets were picked by colour cuts (Selection Bias); the DESI target bits and tile/fibre columns encode the class and must be dropped. A newer ...
+
+CC (2026-11-05, Myunghwan): Carry forward the explicit defer decision for the proposed physical STAR/GALAXY/QSO task. Credible physical-class correctness above 90% has not been established for the intended population; preserve the investigation and do not continue qualification or build under the current decision.
+
+**Assessment (AI, 2026-11-05):** The prior disposition saved TBD -> Yes at priority 1; carry those values forward with DF: Suspended. Source studies show class-dependent failures in selected pipeline populations. The 20 selected visual-model cases are diagnostic evidence, not a representative global error-rate estimate or independently validated replacement labels. Do not describe a reported failure rate within a source-selected subset as a global label-accuracy result, or equate a reliable spectral fit with a verified physical class. Reopen with applicable independent label validation or source-supported repair meeting the stated requirement for a specified cohort and an explicit galaxy/AGN/QSO mapping. A materially changed target or population remains a curator choice. The hold is not a permanent scientific rejection or a new metric/split decision.

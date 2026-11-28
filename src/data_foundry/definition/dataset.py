@@ -2138,8 +2138,8 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
             "`TemporalSplits(sample_by=...)` sets how a version samples to its budget; it needs the collection's row "
             "budget (a `<name>_<suffix>` version)."
         )
-    if budget is not None and custom_splits:
-        fail("the row budget is ignored when the class implements `_make_splits`; sample there instead.")
+    # No refusal of `_make_splits` under a budget: the collection's budget comes with the `_<suffix>` name, so a
+    # version that builds its own splits caps its test sides itself; the build's budget checks still hold it.
     if cls.grouped_splits is not None:
         if not isinstance(cls.grouped_splits, GroupedSplits):
             fail(f"`grouped_splits` must be a `GroupedSplits(...)`, got {type(cls.grouped_splits).__name__}.")

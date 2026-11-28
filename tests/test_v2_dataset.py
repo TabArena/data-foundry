@@ -916,6 +916,24 @@ def test_a_collection_version_gets_the_budget_by_its_name(tmp_path: Path, wareho
     assert meta.train_sampling == TrainSampling(default="random", unit="rows", stratify_on="y")
 
 
+def test_a_collection_version_may_build_its_own_splits(tmp_path: Path, warehouse: Path) -> None:
+    """A `_<suffix>` version gets the collection's budget by its name, so its own `_make_splits` caps its test sides."""
+    del warehouse
+    root = tmp_path / "datasets"
+    write_collection(root)
+    body = DEFINITION.format(name="toy_ds_0p2k", comment="Toy data.").replace(
+        "    def _feature_types(",
+        '    splits_comment = "A toy split that caps its own test side."\n\n'
+        "    def _make_splits(self, df: pd.DataFrame) -> dict:\n"
+        "        return {0: {0: (list(range(500)), list(range(500, 550)))}}\n\n"
+        "    def _feature_types(",
+    )
+    write_definition(root, "toy_ds_0p2k", body=body)
+    ds = get_dataset(root, "toy_ds_0p2k")
+    assert fold_sizes(ds.make_splits().splits) == {(500, 50)}
+    assert ds.to_container().experiment_metadata.row_budget == RowBudget(train=200, test=50)
+
+
 def test_a_collection_dataset_over_the_budget_must_be_its_version(tmp_path: Path, warehouse: Path) -> None:
     del warehouse
     root = tmp_path / "datasets"
@@ -2113,3 +2131,11 @@ def test_the_readme_shows_the_time_basis_under_the_curation_notes() -> None:
     ]
     plain = SimpleNamespace(container=SimpleNamespace(dataset_metadata=_define().dataset_metadata))
     assert _curation_notes_section(plain) == []
+
+
+def test_order_rows_keeps_a_frame_already_in_time_order_without_reordering() -> None:
+    """A frame already sorted by its time column comes back with the same rows in the same order."""
+    df = pd.DataFrame({"t": np.arange(50), "x": np.arange(50) * 2.0}, index=np.arange(100, 150))
+    out = order_rows(df, time_on="t", shuffle=False)
+    assert out["x"].tolist() == df["x"].tolist()
+    assert out.index.tolist() == list(range(50))

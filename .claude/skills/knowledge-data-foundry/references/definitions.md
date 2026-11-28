@@ -105,6 +105,8 @@ leaves each period in the order of the finer values (chicago_traffic_crashes, 20
 
 Other hooks: `_make_splits(df)` for splits the declarations below cannot express (return a `SplitPlan`; check
 [The split declarations](#the-split-declarations) first);
+a `_1m` version with its own splits samples its test sides there, on the whole frame (`plan.df` holds the rows
+kept), so the training-floor check counts every row;
 `_prepare_raw_files(raw_dir)` with `prepared_raw_files = (...)` for a heavy one-off step that writes intermediate
 files into the raw directory (it runs again when a file is missing or when the method, a helper of `dataset.py` it
 calls, or a module constant it reads changed; the hash sits in `.prepared_raw_files.json` next to the files). Sibling
