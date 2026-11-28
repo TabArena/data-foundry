@@ -7,7 +7,8 @@ from collections.abc import Mapping
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -20,7 +21,7 @@ from data_foundry.v2 import (
     canonical_smiles,
     scaffold_groups,
 )
-from data_foundry.v2.chemistry import RDKIT_VERSION
+from data_foundry.special.chemistry import RDKIT_VERSION
 
 RAW_FILE = "class_all.csv"
 """Huang and Zhang's ClassDataset_all as Körner et al.'s repository carries it: the chemical's name, name type, CAS
@@ -378,7 +379,7 @@ class ReadyBiodegradabilityHuangZhang(AbstractCuratedDataset):
         - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form
           (`canonical_smiles`; every fragment and the stereochemistry as published), declared in `special_features`, so
           a benchmark encodes it as a structure and never as text; the recommended encoding is
-          `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts).
+          `data_foundry.special.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts).
           All 6,139 SMILES parse with the pinned RDKit.
         - The `pka_*` and `α_*` columns leave: Körner et al. computed them from the structure with MolGpKa
           (`add_pka_values.py` in their repository), one modelling choice of the structure, as the Dragon descriptors

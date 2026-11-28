@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: video_transcoding_time_prediction
 container_format: 2
-checksum: v2:1ec183d8e152cff598c10fc5a5863f83922030132fb64a1a6217290ce53c929e
+checksum: v2:d40a07f6b706e0273ab93f0d798376651fdd4ff5a210636fdb5236e062d80ba0
 build:
-  uuid: 01a111fc-7b5a-7853-8e13-f42ccc0c3b03
-  checksum: v2:3aa594889a2dde13c7f6af4bcea53b584d83d77906ab536ffec81e5413812dd5
-  built_at: '2026-10-06T16:12:02+00:00'
-  path: video_transcoding_time_prediction/01a111fc-7b5a-7853-8e13-f42ccc0c3b03
+  uuid: 01a21800-6d54-7d25-985a-6d4e5ee65524
+  checksum: v2:d40a07f6b706e0273ab93f0d798376651fdd4ff5a210636fdb5236e062d80ba0
+  built_at: '2026-11-26T13:16:51+00:00'
+  path: video_transcoding_time_prediction/01a21800-6d54-7d25-985a-6d4e5ee65524
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 68784
   n_features: 18
@@ -54,6 +54,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 42377
     max: 49098
@@ -76,7 +77,7 @@ decisions: []
 
 Regression of `log_transcoding_time`, scored with `rmsle` on grouped splits by `video_id`. 68,784 rows and 18 features. Source: UCI (2015).
 
-Built as `01a111fc-7b5a-7853-8e13-f42ccc0c3b03` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1ec183d8e152cff598c10fc5a5863f83922030132fb64a1a6217290ce53c929e`, so the build is stale. See [Build](#build).
+Built as `01a21800-6d54-7d25-985a-6d4e5ee65524` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -198,9 +199,6 @@ We use the tabular prediction task from the UCI archive, which is a video transc
 - We log scale the target variable.
 - Metric: RMSLE on the time, computed after the inverse of the shipped log (`target_transform="log"`), not the paper's R2 on the raw time (known only from a dissertation abstract, not read); the curator accepted the log-scale error (Lennart, 2026-10-21).
 - Scored per job (Lennart, 2026-11-08; MET-17): each job is a decision of the scheduler. 80 of the 1,099 videos were transcoded to the full grid of 841 output settings and hold 97.8% of the jobs, so the score is in effect the error on new output settings of these videos; 1,018 videos have one job, and counting each video once would give them 93% of the weight, neither mix a cluster's queue. Counting each video once ranks 8 untuned predictors (random forest, extra trees, two LightGBM, two ridge, kNN, the training mean) like the per-job RMSLE at Kendall tau 0.90 per split on average (lowest 0.79) and 0.93 for the ranking by the mean over the 9 shipped splits, and swaps the top pair (random forest leads per job, LightGBM per video).
-- Time basis: Timeless: designed transcoding jobs on one machine (Deneke et al. 2014); the video's properties
-  and the output setting are known before a job, no job is dated, and all jobs of a video are held out together.
-  Not tested: another machine or newer codecs.
 - Leak and score check (2026-11-10, the curator's question; kept with notes, Andrej, 2026-11-11): no column is
   measured during or after a job (`umem` is dropped), and holding out whole videos raises LightGBM's RMSLE from
   0.081 (row split) to 0.181. The time does not follow the video's duration (r = 0.04 on log-log), and 81 large
@@ -214,10 +212,11 @@ We use the tabular prediction task from the UCI archive, which is a video transc
   | linear (logs + codecs) | 0.346 | 0.022 |
   | LightGBM untuned, all features | 0.181 | 0.023 |
   | noise floor: 81 jobs measured twice | 0.113 | |
+- Time basis: Timeless: designed transcoding jobs on one machine (Deneke et al. 2014); the video's properties and the output setting are known before a job, no job is dated, and all jobs of a video are held out together. Not tested: another machine or newer codecs.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation keeping each group of `video_id` whole (shuffled group k-fold, a new draw per repeat): 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 68,784 rows (SPLIT-33).
 
 3 repeat(s) x 3 fold(s) with seed 4267; train 42,377 to 49,098 rows, test 19,686 to 26,407 rows.
 
@@ -255,7 +254,7 @@ One group is a video; its rows are transcoding jobs of that video to an output s
 | nearest neighbour in the same group | 93.0% of the rows (chance: 1.2%) |
 | label variance explained by the group | 0.14 (shuffled groups: 0.02) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
@@ -355,11 +354,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-7b5a-7853-8e13-f42ccc0c3b03 |
-| checksum | v2:3aa594889a2dde13c7f6af4bcea53b584d83d77906ab536ffec81e5413812dd5 |
-| built_at | 2026-10-06T16:12:02+00:00 |
-| path | video_transcoding_time_prediction/01a111fc-7b5a-7853-8e13-f42ccc0c3b03 |
+| uuid | 01a21800-6d54-7d25-985a-6d4e5ee65524 |
+| checksum | v2:d40a07f6b706e0273ab93f0d798376651fdd4ff5a210636fdb5236e062d80ba0 |
+| built_at | 2026-11-26T13:16:51+00:00 |
+| path | video_transcoding_time_prediction/01a21800-6d54-7d25-985a-6d4e5ee65524 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:1ec183d8e152cff598c10fc5a5863f83922030132fb64a1a6217290ce53c929e` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: sarcoma
 container_format: 2
-checksum: v2:a1cf57ad9d823428eb36d4221b0e72c66ddabbd4f468c5019686a036932547cd
-build: null
+checksum: v2:4decabb52ac2e14525d8bbea96599c828fd61affb158fabcb310ebcf4997a904
+build:
+  uuid: 01a217fd-fc29-721c-bd8f-e375ca6a489d
+  checksum: v2:4decabb52ac2e14525d8bbea96599c828fd61affb158fabcb310ebcf4997a904
+  built_at: '2026-11-26T13:14:40+00:00'
+  path: sarcoma/01a217fd-fc29-721c-bd8f-e375ca6a489d
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 201
@@ -33,6 +46,14 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'IID over patients, stratified on the type: each patient is one row, and
+    a lab types the tumours of new patients. One tissue source site holds 101 of the
+    201 rows and 40 of the 50 dedifferentiated liposarcomas, and the features carry
+    the site weakly within a type (that site against the rest among dedifferentiated
+    liposarcomas: ROC AUC 0.69-0.73, against 0.65 for the 95th percentile of shuffled
+    labels). Holding out whole sites raises a random forest''s log loss from 0.46
+    to 0.58 (mean of three seeds), so the scores are optimistic for a lab whose patients
+    come from elsewhere.'
   n_train:
     min: 134
     max: 134
@@ -56,7 +77,7 @@ decisions:
 
 Multiclass classification of `histological_type`, scored with `log_loss` on IID splits. 201 rows and 25,910 features. Source: Other (2018).
 
-Not built yet. The current definition gives checksum `v2:a1cf57ad9d823428eb36d4221b0e72c66ddabbd4f468c5019686a036932547cd`.
+Built as `01a217fd-fc29-721c-bd8f-e375ca6a489d` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -205,10 +226,11 @@ We start with the sarcoma files of the multi-omic cancer benchmark of Rappoport 
 - Split: IID over patients, one row each, since a lab types the tumours of new patients (splits comment; kept over a split by site, Lennart, 2026-10-22). One tissue source site holds 101 of the 201 rows and 40 of the 50 dedifferentiated liposarcomas, and holding out whole sites raises a random forest's log loss from 0.46 to 0.58 (four classes, mean of three seeds; 0.64 to 0.77 with MFS and UPS apart): a known optimism for a new lab.
 - Split by entry into TCGA, checked and not taken (2026-11-12): the programme is closed (the GDC lists the cohort's 261 cases, none added after the study that supplies the label), so no later wave exists to hold out. The TCGA batch (aliquot plate, 127 codes over the cohort) is recoverable only from the GDC's full barcodes, not from our rows, whose barcodes are trimmed to the sample, and a shipment is the tissue source site under another name. The one date per case, the year of diagnosis (169 of 261 cases, 1996 to 2013, 117 of them 2009 or later), dates the patient, not the case's entry.
 - Note: the generated-data probe flags rule leaves of dedifferentiated liposarcoma: `mRNA_MDM2.4193` alone separates the class (ROC AUC 1.000), since MDM2 sits on the 12q15 amplicon the review required. Unlike coad's copy-number block, the defining measurement is not shipped, a lab measures MDM2 at typing anyway, and the task is no rule (best single-feature skill 0.24 over 30 splits against 0.75 for the best model, four classes; 0.05 with five), so the column stays (SEL-5).
-- Time basis: Timeless: the histological type of a profiled primary tumour does not change once it is assigned.
-  It cannot test profiles from other platforms or laboratories.
+- Time basis: Timeless: the histological type of a profiled primary tumour does not change once it is assigned. It cannot test profiles from other platforms or laboratories.
 
 ## Splits
+
+Repeated 3-fold cross-validation over the rows, stratified on `histological_type`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 201 rows (SPLIT-33).
 
 IID over patients, stratified on the type: each patient is one row, and a lab types the tumours of new patients. One tissue source site holds 101 of the 201 rows and 40 of the 50 dedifferentiated liposarcomas, and the features carry the site weakly within a type (that site against the rest among dedifferentiated liposarcomas: ROC AUC 0.69-0.73, against 0.65 for the 95th percentile of shuffled labels). Holding out whole sites raises a random forest's log loss from 0.46 to 0.58 (mean of three seeds), so the scores are optimistic for a lab whose patients come from elsewhere.
 
@@ -500,4 +522,12 @@ The `rs` probes of the methylation array measure the patient's germline genotype
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a217fd-fc29-721c-bd8f-e375ca6a489d |
+| checksum | v2:4decabb52ac2e14525d8bbea96599c828fd61affb158fabcb310ebcf4997a904 |
+| built_at | 2026-11-26T13:14:40+00:00 |
+| path | sarcoma/01a217fd-fc29-721c-bd8f-e375ca6a489d |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

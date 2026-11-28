@@ -34,9 +34,12 @@ git (`git show 04e6cfe:datasets/_template/_template.ipynb`).
 
 ## Format-1 containers
 
+The format-1 metadata classes live in `data_foundry.v1` (`DatasetMetadata`, `PredictiveMLTaskMetadata`) since
+2026-11-25; the rest of the package is format 2, and loading a format-1 container needs nothing else.
+
 * The task metadata is `PredictiveMLTaskMetadata` (`predictive-ml-task-mold-v1`): the regime is the flat
   `time_on`, or `group_on` with `group_labels` and an optional `group_time_on`. There is no grouping block, so
-  `container.grouping` raises; `container.format_version` is 1, and `container_metadata.json` has no
+  `container.grouping` returns None; `container.format_version` is 1, and `container_metadata.json` has no
   `format_version` key.
 * The format-1 classes keep exactly the fields the shipped checksums encode. A field added later is left out of the
   checksum while unset (`_OMIT_WHEN_UNSET`), so every shipped container still verifies: `container.verify()`.
@@ -53,8 +56,8 @@ notebook (`subsample_split_to_budget`). IID and grouped splits come from `get_re
 `get_recommended_grouped_splits`; temporal splits were written by hand in each notebook. Until 2026-11-12
 `run_bundle_checks` judged a format-1 container by this protocol (`splits_dimensions_off_protocol`, the 250k
 `splits_test_over_budget`); the pinned containers cannot change, so those checks went with the helpers. v2 has its
-own protocol (always 3 folds, repeats by the units at any size; no row budget except a version's, 1M train and 500k
-test rows for the `_1m` versions of TabArena v0.2, set by the working copy's `collection.py`).
+own protocol (always 3 folds, repeats by the units at any size, a row budget only for a `_1m` version):
+[`split_protocol.md`](.claude/skills/knowledge-data-foundry/references/split_protocol.md).
 
 ## The notebook pipeline
 
@@ -107,11 +110,14 @@ For a shipped BeyondArena dataset (the re-check of `/add-dataset` covers v2 defi
 2. **Automated checks.**
 
    ```python
-   from data_foundry.bundle_checks import run_bundle_checks
+   from data_foundry.checks import run_bundle_checks
    from data_foundry.collections import BEYOND_ARENA
 
    report = run_bundle_checks(BEYOND_ARENA.get_dataset("<name>"))   # prints the report
    ```
+
+   The checks moved from `data_foundry.bundle_checks` to `data_foundry.checks` on 2026-11-26; what each slug means
+   is in [`check_slugs.md`](.claude/skills/knowledge-data-foundry/references/check_slugs.md).
 
    For the whole collection: `.venv/bin/python .claude/skills/knowledge-data-foundry/scripts/check_collection_bundles.py
    --collection BeyondArena --examples 5`. The leak, task and group probes run on v2 definitions; for a shipped
@@ -153,10 +159,10 @@ latest state, and the TabArena v0.2 collection will ship it.
 
 * A notebook runs only at commit `6cc3c945` (the v1 helpers are gone since).
 * Do not re-run a shipped notebook end to end and re-save: `save()` mints a new UUID and breaks the collection pin.
-  A collection release re-ran notebooks and rewrote `final_uuid_list.py` with
-  [`scripts/beyond_arena/rerun_notebooks_update_uuids.py`](scripts/beyond_arena/rerun_notebooks_update_uuids.py);
-  [`scripts/beyond_arena/export_warehouse_bundle.py`](scripts/beyond_arena/export_warehouse_bundle.py) zips the
-  pinned containers.
+  A collection release re-ran notebooks and rewrote `final_uuid_list.py` with `rerun_notebooks_update_uuids.py`, and
+  `export_warehouse_bundle.py` zipped the pinned containers. Both, with the v1 paper plots and the warehouse stats,
+  were in `scripts/beyond_arena/`, removed on 2026-11-25; they are in the git history
+  (`git log --diff-filter=D -- scripts/beyond_arena` names the commit, check out its parent to get them back).
 * Do not edit committed notebook outputs; they are the evidence. Notebooks must stay valid JSON: edit them with
   `nbformat`, never by hand in the cell `source` arrays.
 * A notebook that moves or is superseded needs its record's `notebook_path` updated in the same change

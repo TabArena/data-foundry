@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: micro_mass
 container_format: 2
-checksum: v2:6ff8a8a4d77cf27e9c6e44140ed010864dbe7c10a753e7619d9bcdc04a7e14d2
+checksum: v2:782ecf60d7eecefe70d47605337557222048719612c751cf763857806d990d87
 build:
-  uuid: 01a111fc-8b57-73f7-bb59-b6d7ab7a6881
-  checksum: v2:802ebb029c52182c5bbf583d95742b4b602e695db08e9507413476054f2d48a2
-  built_at: '2026-10-06T16:12:08+00:00'
-  path: micro_mass/01a111fc-8b57-73f7-bb59-b6d7ab7a6881
+  uuid: 01a21800-7c41-79fe-97c6-799b7666cbf8
+  checksum: v2:782ecf60d7eecefe70d47605337557222048719612c751cf763857806d990d87
+  built_at: '2026-11-26T13:16:56+00:00'
+  path: micro_mass/01a21800-7c41-79fe-97c6-799b7666cbf8
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 571
   n_features: 1082
@@ -56,6 +56,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 366
     max: 401
@@ -78,7 +79,7 @@ decisions: []
 
 Multiclass classification of `Species`, scored with `hierarchical_balanced_accuracy` on grouped splits by `Strain`. 571 rows and 1,082 features. Source: UCI (2013).
 
-Built as `01a111fc-8b57-73f7-bb59-b6d7ab7a6881` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6ff8a8a4d77cf27e9c6e44140ed010864dbe7c10a753e7619d9bcdc04a7e14d2`, so the build is stale. See [Build](#build).
+Built as `01a21800-7c41-79fe-97c6-799b7666cbf8` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -204,17 +205,11 @@ We use the pure spectra version (without mixing) and replicate a grouped-based t
 - We drop constant columns (all 0).
 - Each strain has one species; the 20 species have 7 to 20 strains each (median 10; Escherichia coli 20, Haemophilus influenzae 18, Enterobacter cloacae 16; from the v1 exploration, counted 2026-10-22).
 - The spectrum is declared as one (`special_features`, CLEAN-26, 2026-11-02) in the state the instrument's software left it: a peak list on 1,300 fixed bins ("pre-processed by the standard algorithm used for routine (culture-based) bacterial identification, which provided a peak-list representation", the archive's README). The m/z of the bins is not published, so the axis is the bin number; the recommended encoding leaves a peak list as it is.
-- Time basis: Timeless: the species is a fixed property of the strain, known from the reference collection
-  before the culture, and the row is the spectrum of that culture. The release holds no acquisition date, run or
-  plate (the metadata file has the species and the strain number only), and the file order carries no campaign
-  order (time probe, 2026-11-06: no order drift, p 0.58). The panel is a single 2013 deposit, the strain
-  identifier is an integer with no accession or date, and no arrival order can be recovered, so the strain
-  key stays the split (2026-11-12). Not tested: an isolate of a species or a strain type
-  the panel does not hold, and a run batch shared across strains, which no column records.
+- Time basis: Timeless: the species is a fixed property of the strain, known from the reference collection before the culture, and the row is the spectrum of that culture. The release holds no acquisition date, run or plate (the metadata file has the species and the strain number only), and the file order carries no campaign order (time probe, 2026-11-06: no order drift, p 0.58). The panel is a single 2013 deposit, the strain identifier is an integer with no accession or date, and no arrival order can be recovered, so the strain key stays the split (2026-11-12). Not tested: an isolate of a species or a strain type the panel does not hold, and a run batch shared across strains, which no column records.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the groups of `Strain` (one label each), stratified on `Species`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 213 groups (SPLIT-33).
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 366 to 401 rows, test 170 to 205 rows.
 
@@ -308,7 +303,7 @@ One group is a bacterial strain; its rows are technical replicate MALDI-TOF spec
 | nearest neighbour in the same group | 37.1% of the rows (chance: 0.4%) |
 | label variance explained by the group | 1.00 (shuffled groups: 0.37) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
@@ -511,11 +506,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-8b57-73f7-bb59-b6d7ab7a6881 |
-| checksum | v2:802ebb029c52182c5bbf583d95742b4b602e695db08e9507413476054f2d48a2 |
-| built_at | 2026-10-06T16:12:08+00:00 |
-| path | micro_mass/01a111fc-8b57-73f7-bb59-b6d7ab7a6881 |
+| uuid | 01a21800-7c41-79fe-97c6-799b7666cbf8 |
+| checksum | v2:782ecf60d7eecefe70d47605337557222048719612c751cf763857806d990d87 |
+| built_at | 2026-11-26T13:16:56+00:00 |
+| path | micro_mass/01a21800-7c41-79fe-97c6-799b7666cbf8 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6ff8a8a4d77cf27e9c6e44140ed010864dbe7c10a753e7619d9bcdc04a7e14d2` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

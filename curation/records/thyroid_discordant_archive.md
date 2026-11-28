@@ -5,8 +5,6 @@ checked_by:
 - Andrej
 data_foundry_status:
 - 'DF: Yes'
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 2
 tags:
@@ -44,6 +42,8 @@ CC (2026-11-16, Lennart): PR #102 review: the temporal split is ok (the request 
 CC (2026-11-17, Andrej): the declared split (temporal on `request_date`, windows of 4 months, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk).
 
 CC (2026-11-26, Andrej): better data checked 2026-11-25 (review issue 2, A): no open table beats the archive; candidates and verdicts in the review. Verdict ship; nothing open in the review.
+
+CC (2026-11-26, Lennart): accepted `splits_dimensions_off_protocol` (SPLIT-15) after the rebuild of 2026-11-26: three windows against SPLIT-33's nine, as thyroid_discordant's split decision; five would train on 30%.
 
 ## Review
 

@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -188,7 +189,7 @@ class AfricanCreditScoringChallenge(AbstractCuratedDataset):
     split_leaf = "L-ORDER.windows"
     temporal = Temporal(on="disbursement_date", horizon=WINDOW_DAYS, horizon_unit="days")
     accepted_check_warnings = {
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Six of the nine windows an IID split of this size would get: a label settles 37 days after disbursement, "
             "so only the loans from 15 October 2022 have half the rows settled before them, and those 48 days hold "
             "six windows of about a week (Andrej, 2026-11-19)."

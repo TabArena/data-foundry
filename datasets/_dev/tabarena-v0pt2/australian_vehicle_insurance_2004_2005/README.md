@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: australian_vehicle_insurance_2004_2005
 container_format: 2
-checksum: v2:dafc9e4c88ad9666534b620f175f9b80713e08a1ce963d451536fc19e4a6e93e
-build: null
+checksum: v2:132aa935c8fe6fca32631c3e4a92a00d8341402fc3ca8d03a533a8504391c47d
+build:
+  uuid: 01a21800-b7e2-7cd9-a96e-8b58a5c433fb
+  checksum: v2:132aa935c8fe6fca32631c3e4a92a00d8341402fc3ca8d03a533a8504391c47d
+  built_at: '2026-11-26T13:17:10+00:00'
+  path: australian_vehicle_insurance_2004_2005/01a21800-b7e2-7cd9-a96e-8b58a5c433fb
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 67856
@@ -35,6 +48,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 45237
     max: 45238
@@ -72,7 +86,7 @@ decisions:
 
 Regression of `claim_cost_per_year`, scored with `normalized_weighted_gini` on IID splits. 67,856 rows and 6 features. Source: Other (2008).
 
-Not built yet. The current definition gives checksum `v2:dafc9e4c88ad9666534b620f175f9b80713e08a1ce963d451536fc19e4a6e93e`.
+Built as `01a21800-b7e2-7cd9-a96e-8b58a5c433fb` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -168,7 +182,7 @@ Only curators run `build`, when the dataset ships.
 
 **Scoring columns**
 
-Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.metrics.scorer(container)(y_test, y_pred, test_idx)`).
 
 | column | role | how the metric uses it | model input |
 |---|---|---|---|
@@ -234,26 +248,6 @@ We start with `dataCar` of the R package insuranceData 1.0, the "Car" data of de
 - Columns renamed to plain names: `vehicle_value`, `vehicle_body`, `vehicle_age_band`, `driver_age_band`; `gender`, `area` and `exposure` keep theirs, and the target is `claim_cost_per_year`. `gender` is "gender" in insuranceData and the policyholder's in CASdatasets, so it is not called the driver's. `area` is a code A-F that insuranceData leaves undocumented and CASdatasets lacks (the book's Table 1.6, pp. 15-16, says it denotes the area of residence and leaves A-F unexplained; Ye et al. 2022 call it the driver's area of residence). The age band keeps its name: the book's Table 1.1 says "Driver's age category", while its Table 1.6 and CASdatasets call it the policyholder's age.
 - `gender` (F 38,603, M 29,253) stays a rating factor. Sex leaves an insurance pricing task when the law of the country the data come from bars it today, as if the ban had always applied, and stays where that law allows it (the Tensions row on rating factors in principles.md, amended 2026-11-09, Andrej; CC below). Australian law allows it: the Sex Discrimination Act 1984 (Cth), s41(1), makes discrimination on the ground of the client's sex in the terms on which an insurance policy is offered lawful when it "is based on actuarial or statistical data from a source on which it is reasonable for the insurer to rely" and "is reasonable having regard to the data", the data to be shown to a client who asks in writing (compilation of 1 November 2025, read 2026-11-09). It carries little (9 shipped splits, every fit weighted, the score with it minus without on the same splits, SE over the splits): a Tweedie GLM 0.133 against 0.130 (+0.004, SE 0.001, higher with it on 7 of 9), the 300-round Tweedie LightGBM -0.004 (SE 0.004, 3 of 9), the L2 LightGBM -0.007 (SE 0.008, 6 of 9), and over 3 seeds a regularised Tweedie LightGBM -0.002 (SE 0.001, 2 of 9; seed SD 0.001) and a regularised L2 LightGBM +0.002 (SE 0.002, 6 of 9): a small gain for the GLM, none for boosting. It was dropped from 2026-11-08 to 2026-11-09 under the family stance (CC of 2026-11-08 below).
 - 707 rows share every column with another row (378 extra copies, 0.6%), all without a claim. That is about three times chance: with the exposure shuffled among the no-claim rows, about 122 copies remain (105 to 132 over 20 runs). Among the 1,129 full-year rows without a claim 152 are copies (13.5%), against 0.35% of the no-claim rows of each other day count with 100 rows or more (2.0% at most); that cohort is rich in trucks and panel vans, likely fleet vehicles insured on the same dates. Kept (LEAK-18): on the earlier cost target (2026-11-01), dropping the copies moved the Gini by +0.0045, and 0.8% of the test rows had an exact feature copy in train then (leak probe, first split, with exposure a feature). Without exposure among the features, 34,974 rows (51.5%) share their six rating factors with another policy and 42-43% of the test rows have an exact copy of them in train (every shipped split): coarse rating cells of distinct policies, the portfolio a tariff prices, as in fremtpl2. On the rate, every fit weighted, splits grouped by those six factors score as the shipped ones and splits grouped by the full row with the exposure higher (Tweedie LightGBM 0.062 and 0.078, Tweedie GLM 0.126 and 0.139, against 0.062 and 0.133; 9 splits each, 2026-11-09; the GLM's -0.007 under the cell grouping is inside the splits' SD of 0.017).
-- Time basis: ForcedIIDFromTemporal (SPLIT-8): an insurer fits its tariff on past policy-years and prices the
-  next year's policies, but the release has no date and no policy id. It looks like one observation period of
-  about a year (exposure spread over 1-365 days, about 6,300 policies per 30 days at the short end falling to
-  about 4,300 at the long end; 1.9% full years, no 366-day row), so a temporal test needs another year's
-  extract. The exposure is cut at the extract window's edges as well as by some claims, and both sides of the
-  random split share the one window; a temporal split on a dated release would cut it again at each cutoff and
-  must check its training side for periods the cutoff ended (SPLIT-9, LEAK-41). The raw file order is not random
-  (12.2% of adjacent rows share a day count, against 0.3% when the rows are permuted, and the mean exposure per
-  tenth of the file runs from 0.42 to 0.53 against a chance SD of 0.0035; whether the order is time is unknown),
-  but the claim indicator shows no serial dependence (lag-1 correlation 0.005), and training on the earlier
-  quarters of the file to test the next shows no drop (on the rate, every fit weighted: Tweedie LightGBM 0.086
-  and Tweedie GLM 0.129 on average over the three such splits, against 0.066 and 0.117 for random splits of the
-  same sizes; 2026-11-09). No policy is visibly split into two rows (116 pairs of identical rating factors sum
-  to 365 days, against 105 on average for the sums from 330 to 400 days, 78 to 145) and the hidden-group probe
-  finds no group. Shipped forced on the curator's call (Andrej, 2026-11-02): a forced IID split ships only when
-  no leak is found across the random split, as here (no row shares its outcome across the split, no hidden
-  group, no order dependence); how_much_did_it_rain's `No` named a measured leak. Not taken as stationary
-  (Andrej, 2026-11-18): Insurance prices and claim costs drift, the use is decades after collection, and the
-  file order holds unexplained structure; nothing gives a domain reason to take later policies as
-  interchangeable.
 - Note: how mature the labels are (Andrej, 2026-11-09): `claimcst0` is the policy's "claim amount" over the observed part of a 2004-05 year, and neither the book nor insuranceData says whether it is paid or incurred, or as of when it was valued (the source bullet). The release gives no claim date, closure date or status, so the share still open at a refit cannot be counted. Both sides of the random split come from one extract of one observation period, so they carry the same maturity.
 - Note: held for training rows only, not shipped (Andrej, 2026-11-09): `numclaims`, the number of claims behind each claim cost (4,937 claims on the 4,624 policies with a claim, 291 of them with 2 to 4), dropped above as a part of the target. The insurer holds it for its past policy-years when it fits its tariff, but not for a policy it prices. It would need a training-only role, which the format does not have yet (MET-14, LEAK-41, MET-16), so it stays out for now.
 - CC (2026-11-06, Lennart): decision D8 of the exposure study of 2026-11-05: the target is the claim cost per year insured (`claimcst0` / `exposure`, in dollars, identity scale), `exposure` the weight scoring column, the `weight` input of `normalized_weighted_gini` and the task's `sample_weight`, and never a feature (LEAK-41, MET-14, MET-15); the metric stays a context Gini, now weighted on the rate; the 7 rows at 1M dollars or more a year are kept. Supersedes Andrej's call of 2026-11-02 (`exposure` kept as a feature with its note, the LEAK-10 case for time on risk cut short by the outcome) and changes the form of his Gini of the same day (unweighted on the cost, now weighted on the rate). What sets the case apart is a measurement made after the call: the deviance on the claim counts shows the leak the slice Gini hid (47 to 82% of a free model's gain over a constant rate is leak); on the weighted Gini of the cost per year a free GLM scores 0.238 against 0.125 for honest quotes, and on the shipped splits `exposure` as a feature lifts an honest LightGBM from 0.059 to 0.149 (9 of 9). The alternative, the claim frequency with an exposure-weighted deviance, was not chosen.
@@ -261,10 +255,11 @@ We start with `dataCar` of the R package insuranceData 1.0, the "Car" data of de
 - CC (2026-11-08, Lennart): `gender` leaves the features ("Option C: Drop gender, as bemtpl97", then, on the consistency check: "A stance for the family; as if we were to simulate the case in europe always"). Sex leaves the rating factors of every insurance pricing task of this collection, whatever the actor's jurisdiction, as under EU law (Test-Achats), and the Tensions row on rating factors in principles.md says so (amended 2026-11-08). Supersedes Andrej's ship of 2026-11-02, which kept `gender` among the six rating factors. Gender carried little: the Tweedie GLM scores 0.124 with it and 0.119 without (+0.004, SE 0.002, higher with it on 7 of 9 shipped splits), a regularised LightGBM 0.103 either way.
 - CC (2026-11-08, Lennart): the target stays the claim cost per year insured, `exposure` its weight, scored by the weighted Gini (on the answer: "Keep the current target, the clause amended"); decision D8 of 2026-11-06 stands. MET-14's per-contract clause is amended in one change with spanish_motor_insurance_2015_2018: a per-contract target needs the data to record each contract to its end, and where an extract window cuts the policies at its edges the recorded amount is the window's, so the rate ships (the target bullet).
 - CC (2026-11-09, Andrej): `gender` ships again as a rating factor (on the information audit: "If the EU bans it today, we treat it as if it also has been banned before. For non-banned countries, we use it."). Sex leaves an insurance pricing task when the law of the country the data come from bars it today, as if the ban had always applied, and stays where that law allows it; Australian law allows it (s41 of the Sex Discrimination Act 1984 (Cth), read 2026-11-09), and the Tensions row on rating factors in principles.md is amended so. Supersedes the CC of 2026-11-08 (Lennart) that dropped `gender` under the family stance; Andrej's ship of 2026-11-02, which kept `gender`, holds again on this point.
+- Time basis: ForcedIIDFromTemporal: an insurer fits its tariff on past policy-years and prices the next year's policies, but the release has no date and no policy id. It looks like one observation period of about a year (exposure spread over 1-365 days, about 6,300 policies per 30 days at the short end falling to about 4,300 at the long end; 1.9% full years, no 366-day row), so a temporal test needs another year's extract. The exposure is cut at the extract window's edges as well as by some claims, and both sides of the random split share the one window; a temporal split on a dated release would cut it again at each cutoff and must check its training side for periods the cutoff ended (SPLIT-9, LEAK-41). The raw file order is not random (12.2% of adjacent rows share a day count, against 0.3% when the rows are permuted, and the mean exposure per tenth of the file runs from 0.42 to 0.53 against a chance SD of 0.0035; whether the order is time is unknown), but the claim indicator shows no serial dependence (lag-1 correlation 0.005), and training on the earlier quarters of the file to test the next shows no drop (on the rate, every fit weighted: Tweedie LightGBM 0.086 and Tweedie GLM 0.129 on average over the three such splits, against 0.066 and 0.117 for random splits of the same sizes; 2026-11-09). No policy is visibly split into two rows (116 pairs of identical rating factors sum to 365 days, against 105 on average for the sums from 330 to 400 days, 78 to 145) and the hidden-group probe finds no group. Shipped forced on the curator's call (Andrej, 2026-11-02): a forced IID split ships only when no leak is found across the random split, as here (no row shares its outcome across the split, no hidden group, no order dependence); how_much_did_it_rain's `No` named a measured leak. Not taken as stationary (Andrej, 2026-11-18): Insurance prices and claim costs drift, the use is decades after collection, and the file order holds unexplained structure; nothing gives a domain reason to take later policies as interchangeable.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows: 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 67,856 rows (SPLIT-33).
 
 3 repeat(s) x 3 fold(s) with seed 4267; train 45,237 to 45,238 rows, test 22,618 to 22,619 rows.
 
@@ -393,4 +388,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a21800-b7e2-7cd9-a96e-8b58a5c433fb |
+| checksum | v2:132aa935c8fe6fca32631c3e4a92a00d8341402fc3ca8d03a533a8504391c47d |
+| built_at | 2026-11-26T13:17:10+00:00 |
+| path | australian_vehicle_insurance_2004_2005/01a21800-b7e2-7cd9-a96e-8b58a5c433fb |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

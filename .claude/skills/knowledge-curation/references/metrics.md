@@ -279,17 +279,17 @@ known when the model is trained (past periods, all closed) and when it is scored
 not at the prediction point, where a quote prices the period before it runs. The model therefore predicts the rate,
 which does not depend on the length still to come, and the length multiplies the rate afterwards: in the score, as in a
 premium earned pro rata. The training rows' weights shape the fit; the test rows' are read by the scorer only, never
-when predicting (LEAK-41; [definitions.md](../../knowledge-data-foundry/references/definitions.md), `sample_weight`
-under "Field mapping"). The task summary says so in `known_at_scoring` (Lennart, 2026-11-09).
+when predicting (LEAK-41; [definition_fields.md](../../knowledge-data-foundry/references/definition_fields.md),
+`sample_weight`). The task summary says so in `known_at_scoring` (Lennart, 2026-11-09).
 
-**MET-16 (Should; 2026-11-06, Lennart; amended 2026-11-12, Lennart).** A survey or design weight is never a feature.
-The task is scored unweighted unless the use case is a population estimate; then one weight ships as a scoring column
-and as the sample weight, and folds follow the design when it is known. A weight may also be declared for training
-alone, when it says how much each row's label is worth to the fit while the decision counts the rows without it: a
-design weight when sampling depends on the outcome (the notes name the sampling), or a label's precision (the number of
-replicate measurements behind a mean). It is the task's `sample_weight`, a weight scoring column declared
-`used_by="training"` that the metric does not read, never a feature; its description says why it trains and why it
-does not score. A harness fits every model with it like any sample weight and weights a validation loss by the metric's
+**MET-16 (Should; 2026-11-06, Lennart; amended 2026-11-12, Lennart).** A survey or design weight is never a feature. The
+task is scored unweighted unless the use case is a population estimate; then one weight ships as a scoring column and as
+the sample weight, and folds follow the design when it is known. A weight may also be declared for training alone, when
+it says how much each row's label is worth to the fit while the decision counts the rows without it: a design weight
+when sampling depends on the outcome (the notes name the sampling), or a label's precision (the number of replicate
+measurements behind a mean). It is the task's `sample_weight`, a weight scoring column declared `fit=True,
+used_by="training"` that the metric does not read, never a feature; its description says why it trains and why it does
+not score. A harness fits every model with it like any sample weight and weights a validation loss by the metric's
 weight (`validation_weight`), and the score cannot show whether a model used it. What a given harness supports today
 (AutoGluon ties the training and the validation weight to one column) does not limit what a dataset declares. A unit
 weight of our own that gives each unit one vote (MET-17) is no survey or design weight in this sense (2026-11-08,
@@ -301,14 +301,14 @@ video_transcoding_time_prediction).** When the source's rows come in units with 
 counts each unit once if the actor decides once per unit and the unit's further rows are repeats the source's protocol
 made (the quadrats of a plot, the SuperCon entries of a composition, the bleeds of a mouse, the visits of a person).
 Each row then weighs 1 over its unit's rows, through a weight scoring column the metric reads, for scoring only
-(MET-15), and the rows stay (SPLIT-26); the task declares it as its `unit_weight` (the weight column and the unit's
-column), so downstream tools weight their validation loss alike. The score stays per row when each row is a decision of
-its own (an instance a solver selector runs, a job a scheduler places); the notes then say how unequal the units are and
-how far one vote per unit moves the ranking. The weight changes how much a prediction counts, never what one prediction
-is (SPLIT-23). A score that departs this way from the source's per-row score is declared from context and names the
-source's score as the original (MET-11). Why: a unit the protocol happened to measure five times would otherwise count
-five times in a decision the actor makes once; on the six cases one vote per unit ranks models at Kendall tau 0.66 to
-0.98 per split against the per-row score.
+(MET-15), and the rows stay (SPLIT-26); the task declares it as its `unit_weight` (the weight scoring column with
+`unit=` the unit's column), so downstream tools weight their validation loss alike. The score stays per row when each
+row is a decision of its own (an instance a solver selector runs, a job a scheduler places); the notes then say how
+unequal the units are and how far one vote per unit moves the ranking. The weight changes how much a prediction counts,
+never what one prediction is (SPLIT-23). A score that departs this way from the source's per-row score is declared from
+context and names the source's score as the original (MET-11). Why: a unit the protocol happened to measure five times
+would otherwise count five times in a decision the actor makes once; on the six cases one vote per unit ranks models at
+Kendall tau 0.66 to 0.98 per split against the per-row score.
 
 ## Patterns
 
@@ -360,7 +360,7 @@ decided.
 | MET-4 | expresso_churn_prediction_1m | `roc_auc` kept (2026-10-21, Lennart) | the first competition (UmojaHack Ghana 2020) scored log loss, its 2021 re-run on the same files ROC AUC | applied |
 | MET-4, MET-6 | hiva_agnostic | `balanced_accuracy` kept (2026-10-21, Lennart) | the challenge most likely ranked by the balanced error rate on hard labels (not verified) | applied |
 | MET-7 | coil_2000 | `precision_at_k` kept (2026-10-21, Lennart) | CoIL 2000 counted the policy owners among the 800 customers selected from 4,000 | applied |
-| MET-4 | rossmann_store_sales | `rmspe` kept (2026-10-21, Lennart) | Kaggle scored RMSPE, now a custom metric of `data_foundry.v2.metrics` | applied |
+| MET-4 | rossmann_store_sales | `rmspe` kept (2026-10-21, Lennart) | Kaggle scored RMSPE, now a custom metric of `data_foundry.metrics` | applied |
 | MET-1, MET-11 | churn_telco_south_asia | fallback `roc_auc` kept (2026-10-21, Lennart) | the first publication (closed access) could not be read; no metric is known | applied |
 | MET-2 (amended 2026-11-02, Andrej), MET-1, MET-12 | blogfeedback | `mean_group_top_k_overlap` (k = 10) with the time column `basetime_day` as its group, Buza's Hits@10 per test day (2026-11-02, Andrej) | the source scores each test day's top 10; the day is the task's time column, which the metric reads where it is, as sat11 reads its group column | applied |
 | MET-2 (amended 2026-11-02, Andrej), MET-4 | liberty_mutual_fire_peril_loss_cost | the competition's `normalized_weighted_gini`; `var11` stays a feature and its copy ships as the weight scoring column (2026-11-02, Andrej; the copy 2026-11-05, Lennart) | `var11`, the sum insured, is a policy characteristic the host shipped in the test file for every team, set at underwriting and known for train and test rows alike; on a weighted Gini the best order is by expected loss whatever the weights, and as a feature it moved an untuned model's score by -0.010 (within fold noise) | applied |
@@ -392,5 +392,6 @@ decided.
 ## In Data Foundry
 
 How a definition declares the metric (`Metric.source`, `Metric.stand_in`, `Metric.fallback`), the scoring columns and
-the spec in the container, and how to add a custom metric to `src/data_foundry/v2/metrics.py` and test it:
-[definitions.md](../../knowledge-data-foundry/references/definitions.md), "Field mapping" and "Metrics".
+the spec in the container, and how to add a custom metric to `src/data_foundry/metrics.py` and test it:
+[definition_fields.md](../../knowledge-data-foundry/references/definition_fields.md) (`metric`) and
+[definitions.md](../../knowledge-data-foundry/references/definitions.md), "Metrics".

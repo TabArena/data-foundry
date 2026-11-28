@@ -4,9 +4,6 @@ name: Aerobic ready and inherent biodegradation of organic chemicals (Huang & Zh
 checked_by:
 - AI (UNVERIFIED)
 - Andrej
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:

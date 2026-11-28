@@ -4,9 +4,6 @@ name: NHANES whole-body dual-energy X-ray absorptiometry (DXX) with body measure
 checked_by:
 - AI (UNVERIFIED)
 - Andrej
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 4
 decision_markers:

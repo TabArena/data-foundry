@@ -4,9 +4,6 @@ name: Craigslist used vehicles, Ford F-150 asking prices across repeated scrapes
 checked_by:
 - AI (UNVERIFIED)
 - Andrej
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:

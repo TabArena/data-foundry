@@ -8,7 +8,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -172,7 +173,7 @@ class CraigslistUsedVehiclesF150(AbstractCuratedDataset):
             "within one scrape. A scrape is never cut by the split, so they stay together."
         ),
         "task_time_on_few_unique": "Nine scrape periods, one date each, by design: the scrape is the time step.",
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Five windows against nine: every scrape whose training side keeps half the rows is a window; the 50% "
             "floor stops more (Jan 2020 trains on 41.1%)."
         ),
@@ -241,7 +242,7 @@ class CraigslistUsedVehiclesF150(AbstractCuratedDataset):
         df["scrape_date"] = pd.to_datetime(df["version"].map(SCRAPE_DATES))
         df["advert_title"] = [
             _title(slug, year)
-            for slug, year in zip(df["url"].str.extract(SLUG, expand=False), df["scrape_date"].dt.year)
+            for slug, year in zip(df["url"].str.extract(SLUG, expand=False), df["scrape_date"].dt.year, strict=True)
         ]
         # Versions 9 and 10 are one period: a listing in both is kept once, from version 10
         df = df.sort_values("version", kind="stable")

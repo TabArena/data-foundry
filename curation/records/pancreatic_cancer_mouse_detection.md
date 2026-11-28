@@ -7,8 +7,6 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
-- WIP (DF)
-claimed_by: Lennart
 suggestion: 'Yes'
 priority: 1
 decision_markers:

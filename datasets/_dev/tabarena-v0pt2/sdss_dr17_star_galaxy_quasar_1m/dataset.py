@@ -6,17 +6,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.collections import TABARENA_V0PT2_ROW_BUDGET
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
     Source,
-    SplitPlan,
     TaskSummary,
     Temporal,
+    TemporalSplits,
 )
-from data_foundry.v2.splits import sample_temporal_splits
 
 # The SkyServer columns under the names of the Kaggle cut `sdss_17` uses, so both definitions read alike.
 RENAME = {
@@ -262,9 +261,10 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
     )
 
     split_leaf = "L-ORDER.windows"
-    # Splits: three windows, one per targeting era, the test sides capped (`_make_splits`)
+    # Splits: three windows, one per targeting era, the test sides capped at the collection's test budget
     temporal = Temporal(
         on="date",
+        splits=TemporalSplits(window=None, unit="years", cutoffs=WINDOWS),
         horizon=1,
         horizon_unit="years",
         time_of="label",  # the date of the spectrum arrives with the class: no model input (2026-11-12, Andrej)
@@ -279,12 +279,6 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
         whose target is 9. The windows are spread over the eras because the targeting programme sets the class mix:
         BOSS used all the dark time until June 2014, eBOSS half of it until 1 March 2019, and quasars are 15.6% of
         the 2013 spectra, 42.4% of 2016's and 50.3% of 2019-2020's.
-
-        The windows hold 52,526 (2019-2020), 179,009 (2016) and 447,141 (2013) spectra, all scored (a test window
-        keeps at most 500,000, drawn at random within the classes). Each train side holds every earlier spectrum:
-        4,197,395 (98.8% of the 4,249,921 objects, 2019-2020), 3,564,868 (83.9%, 2016) and 2,769,428 (65.2%, 2013),
-        and a benchmark sub-samples it to 1M rows (by default rows drawn at random from the newest year before each
-        window, extended back in time until it holds that many rows, `subsample_train`).
 
         No gap: the user is the survey team, which has its reduced spectra, and so the classes, within days and
         plans the next plates from them. A public user waits for the next release, whose newest spectra are 0.5 to
@@ -344,26 +338,6 @@ class SdssDr17StarGalaxyQuasar1m(AbstractCuratedDataset):
             ]
         )
         return df
-
-    def _make_splits(self, df: pd.DataFrame) -> SplitPlan:
-        """The windows of `WINDOWS`, newest first, each training on every spectrum taken before its start, no gap; each
-        test window capped at the collection's test budget, a random draw within the classes.
-        """
-        dates = df["date"]  # the frame arrives sorted by date with a RangeIndex
-        positions = np.arange(len(df))
-        splits = {}
-        for start, end in WINDOWS:
-            test = (dates >= start) & (dates < end) if end is not None else dates >= start
-            train = dates < start
-            splits[len(splits)] = {0: (positions[train.to_numpy()], positions[test.to_numpy()])}
-        frame, splits, _ = sample_temporal_splits(
-            df,
-            splits,
-            TABARENA_V0PT2_ROW_BUDGET,
-            stratify_on=self.target,
-            random_state=self.SPLIT_RANDOM_STATE,
-        )
-        return SplitPlan(splits=splits, df=frame)
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         # cam_col names which of the six camera columns took the image: a code, not a quantity (as `sdss_17`);

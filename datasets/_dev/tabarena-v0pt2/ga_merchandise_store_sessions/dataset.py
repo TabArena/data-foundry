@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -365,7 +366,7 @@ class GaMerchandiseStoreSessions(AbstractCuratedDataset):
             "December 2016 on 35.7% of the visits (one-day gap), added to test the holiday season the newer months "
             "lack and to come closer to the target of 9 windows, as on the earlier exceptions."
         ),
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "8 windows against a target of 9 (Andrej, 2026-11-25): November 2016 would train on 26.2% of the visits, "
             "under the 30% floor, so the eight months December 2016 to July 2017 are all the sample holds."
         ),

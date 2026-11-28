@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: pricing_game_2017_french_mtpl
 container_format: 2
-checksum: v2:ec94f9eb40215333a0cd10b5615d9076e4e1c8ae97d8dd42b392b6479d38e30a
-build: null
+checksum: v2:ccf49aab0d5c9368bb73bf6a9e1667e5db731a11d98b28ac7d532edd8cc145a0
+build:
+  uuid: 01a217f9-9cde-7e96-a316-52a98398e916
+  checksum: v2:ccf49aab0d5c9368bb73bf6a9e1667e5db731a11d98b28ac7d532edd8cc145a0
+  built_at: '2026-11-26T13:09:25+00:00'
+  path: pricing_game_2017_french_mtpl/01a217f9-9cde-7e96-a316-52a98398e916
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 100000
@@ -42,6 +55,68 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Default splits, grouped by client (id_client): all policies of a client
+    stay on one side, since a client''s other
+
+    vehicles'' claims of the same year are not known when its premiums are set. Grouped
+    and random folds score alike
+
+    for untuned LightGBM with a Tweedie loss (Gini 0.258 against 0.262, 9 splits each).
+    An untuned random forest
+
+    (100 trees, leaves of at least 50 rows, a third of the features per split) scores
+    0.276 on grouped and 0.324 on
+
+    random folds (3 splits each, unpaired), but on the same random folds, removing
+    the test clients'' other vehicles
+
+    from its training rows, against removing as many other multi-vehicle rows, changes
+    its Gini by -0.002 +- 0.003
+
+    (6 splits), so the gap is not shown to come from a client''s other vehicles. The
+    task is temporal by its use
+
+    case, since the game''s players fit a tariff on Year 0 and priced Year 1 knowing
+    each policy''s Year-0 claims, but
+
+    CASdatasets holds the claims of Year 0 only, so held-out clients of the same year
+    stand in for next year''s
+
+    policies (ForcedGroupedFromTemporal; see the time basis). Its cost, measured on
+    the AIcrowd copy of the portfolio (Gini,
+
+    LightGBM Tweedie): 0.268 for this design, 0.277 for next year''s held-out policies
+    and 0.305 for next year with
+
+    the policy''s own past claims; the stand-in underrates the real task, it does
+    not flatter it. Training on the
+
+    test year gives every model, the constant included, that year''s claim level,
+    which a tariff would forecast; on
+
+    the AIcrowd copy the level drifts by 0% to 6% a year (mean cost per policy 119.3,
+    119.0, 112.3 and 106.2 EUR in
+
+    years 1 to 4; the organisers may have built the later years, so the drift may
+    be theirs). A later claim year
+
+    adds the claim history and should be recovered; AIcrowd''s later claim years,
+    on noised features behind an
+
+    account, give two windows only. Shipped forced on the curator''s call (Andrej,
+    2026-11-02: "Forced group splits
+
+    should be fine"). The leak test across the split finds none (untuned LightGBM,
+    9 splits, Gini 0.223): no
+
+    exact or near copies; the training side''s mean target of a test row''s household
+    or vehicle proxy, department
+
+    or commune of the same year changes the Gini by -0.005 to +0.003 (sd 0.004 to
+    0.010), and removing the
+
+    training rows of the test rows'' communes, against as many random rows, by +0.008
+    +- 0.029.'
   n_train:
     min: 66631
     max: 66693
@@ -71,7 +146,7 @@ decisions:
 
 Regression of `claim_amount`, scored with `mean_tweedie_deviance` on grouped splits by `id_client`. 100,000 rows and 27 features. Source: Other (2017).
 
-Not built yet. The current definition gives checksum `v2:ec94f9eb40215333a0cd10b5615d9076e4e1c8ae97d8dd42b392b6479d38e30a`.
+Built as `01a217f9-9cde-7e96-a316-52a98398e916` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -236,13 +311,11 @@ We start with pg17trainpol and pg17trainclaim of CASdatasets, the Year-0 underwr
 - CC (2026-11-08, Lennart): the drivers' sex leaves the features, on the stance Lennart set in australian_vehicle_insurance_2004_2005's review ("A stance for the family; as if we were to simulate the case in europe always"): sex is no rating factor of any insurance pricing task of this collection, whatever the actor's jurisdiction, as under EU law (Test-Achats). Supersedes the note that kept `drv_sex1` and `drv_sex2` as legal in the data's year (AI, 2026-11-01), which shipped with Andrej's verdict of 2026-11-03. They carried almost nothing: in the task probe the random forest scores 62.30 without them and 62.22 with them, against the constant's 63.10 (the same 5 splits).
 - CC (2026-11-10, Andrej): the task stays on Year 0 split by client, with a sentence on the yearly drift of the claim level in `splits_comment` ("Keep, with the drift sentence"); no rebuild on the AIcrowd years.
 - CC (2026-11-10, Andrej): the metric floor stays at 0.1 EUR ("0.1 EUR"), its reason restated under MET-13 as amended on 2026-11-09 (Metric floor bullet).
-- Time basis: ForcedGroupedFromTemporal (Andrej, 2026-11-16; `DelayedTarget` from 2026-11-13, retired): every
-  premium of Year 0 is set at the start of the policy year, with ages and durations counted from it; the target
-  is the year's claims. One policy year is one period, too few for three windows (SPLIT-8), and CASdatasets
-  holds Year 0 only, so held-out clients of the same year stand in for next year's policies, which the split
-  cannot test (the splits comment gives the measured cost).
+- Time basis: ForcedGroupedFromTemporal (Andrej, 2026-11-16): every premium of Year 0 is set at the start of the policy year, with ages and durations counted from it; the target is the year's claims. One policy year is one period, too few for three windows (SPLIT-8), and CASdatasets holds Year 0 only, so held-out clients of the same year stand in for next year's policies, which the split cannot test (the splits comment gives the measured cost).
 
 ## Splits
+
+Repeated 3-fold cross-validation keeping each group of `id_client` whole (shuffled group k-fold, a new draw per repeat): 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 100,000 rows (SPLIT-33).
 
 Default splits, grouped by client (id_client): all policies of a client stay on one side, since a client's other
 vehicles' claims of the same year are not known when its premiums are set. Grouped and random folds score alike
@@ -302,7 +375,7 @@ One group is a client (id_client); its rows are its insured vehicles, one policy
 | nearest neighbour in the same group | 0.1% of the rows (chance: 0.0%) |
 | label variance explained by the group | 0.94 (shuffled groups: 0.92) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Decisions
 
@@ -339,7 +412,7 @@ The rules give 0 as the age of an absent second driver (Sec. 4.15); a licence of
 0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 1 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (0.1% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (0.94 vs 0.92). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.)
+- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (0.1% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (0.94 vs 0.92). (hint: The grouping may not be needed: compare IID and grouped scores with `data-foundry probe group`.)
 
 Accepted on purpose:
 
@@ -477,4 +550,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a217f9-9cde-7e96-a316-52a98398e916 |
+| checksum | v2:ccf49aab0d5c9368bb73bf6a9e1667e5db731a11d98b28ac7d532edd8cc145a0 |
+| built_at | 2026-11-26T13:09:25+00:00 |
+| path | pricing_game_2017_french_mtpl/01a217f9-9cde-7e96-a316-52a98398e916 |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

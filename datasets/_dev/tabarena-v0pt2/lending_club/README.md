@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: lending_club
 container_format: 2
-checksum: v2:b3946d9013a023a5ef72c12d958dadfcbac8ebc5ead14bb58dd9f1c50cfb19c6
+checksum: v2:6834bf9264dde5858011572d8b859f0a227bda471005b8f8755ce75826225e4f
 build:
-  uuid: 01a111fb-70c3-7e45-af56-3ed5e3a90f7f
-  checksum: v2:d4904238a396f98457bb4678a6e8425feeac587b3f2232019110bfe66bdd0a40
-  built_at: '2026-10-06T16:11:24+00:00'
-  path: lending_club/01a111fb-70c3-7e45-af56-3ed5e3a90f7f
+  uuid: 01a217fd-07e9-7fc8-b8de-4db9313eff79
+  checksum: v2:6834bf9264dde5858011572d8b859f0a227bda471005b8f8755ce75826225e4f
+  built_at: '2026-11-26T13:13:32+00:00'
+  path: lending_club/01a217fd-07e9-7fc8-b8de-4db9313eff79
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 raw_files:
   LC_loans_granting_model_dataset.csv?download=1: 207d65b2712f775a91404496ab27c786ac0da6b0f977f849e6d5d8149e925acc
   accepted_2007_to_2018Q4.csv.gz: 55c16f75120f897683f02e7aabcf080d0e4a20c4832feb1d592cfa941bd62a2d
@@ -52,6 +52,103 @@ splits:
   time_horizon_unit: months
   time_gap: null
   time_gap_unit: null
+  reason: 'We try to create splits that simulate a model deployed to solve the task.
+
+
+    Each test window is one calendar quarter, a model refit every quarter. LendingClub
+    released its loan files by
+
+    calendar quarter ("complete loan data for all loans issued through the previous
+    completed calendar quarter"),
+
+    and no source names a refit cadence: Sanz-Guerrero and Arroyo (2025) shuffle the
+    loans into 5 folds, so the
+
+    quarter matches the release, not a stated cadence (CC 2026-11-11), and a month
+    of loans is a small test set.
+
+    The 3 test windows (CC 2026-11-11), newest first: October to December 2015, the
+    newest quarter; April to June 2015; and October to
+
+    December 2014, a quarter of another year. October
+
+    to December 2014 trains on less than half the loans (45.9%), beside 85.5% and
+    62.8%. The windows are spread
+
+    over two years instead of walking back from the newest: 46% of the loans were
+    issued in 2015, so before 2015
+
+    only 2014 Q4, Q3 and Q2 keep 30% of the loans for training (45.9%, 39.2% and 33.0%),
+    and 2014 Q4 adds the
+
+    other year at the smallest cost in training data. July to September and January
+    to March 2015 are not
+
+    tested. The default rate barely moves between the windows (14.8%, 15.4% and 14.6%;
+    on the train sides 13.8%,
+
+    13.3% and 12.8%). The outcome of a loan issued shortly before a window was only
+    known later (by 2018), so the
+
+    train side holds labels a deployed model would not have had yet; a gap of a full
+    36-month term would remove
+
+    this but leave too little data.
+
+
+    Exception to SPLIT-10 (2026-10-21, Lennart): a loan''s outcome is known only when
+    it ends, up to 36 months after
+
+    issue, and the data has no outcome dates; a 36-month gap leaves 3.9-8.8% of the
+    rows for training in the three
+
+    windows and a 12-month gap 22.5-45.9%, under the floor (even a 6-month gap leaves
+    only the newest window at
+
+    half: 62.8%, 45.9% and 33.0%; for the windows of 2026-10-21 the figures were 5-9%,
+    33-46% and 46% for the
+
+    oldest). Serves SPLIT-14 (Must). The unmatured labels fall under SPLIT-10 (principles.md,
+    Tensions).
+
+
+    Repeat borrowers (Andrej, 2026-11-11): each training side leaves out the loans
+    of borrowers who take a loan in
+
+    the test quarter, as alfa_battle_2_0_task_2 does. The release has no borrower
+    id, so the borrower is the exact
+
+    match of the month of the earliest credit line, the 3-digit ZIP code, the state
+    and the lower-cased employer
+
+    title (`borrower_key`, built in `_clean`, not a feature). A test loan whose borrower''s
+    latest earlier loan
+
+    defaulted defaults at 60%, 78% and 69% (October-December 2015, April-June 2015,
+    October-December 2014; 376,
+
+    313 and 109 loans), against 8-9% after a repaid earlier loan and 15% without one;
+    a lender does not grant a
+
+    new loan on a charged-off one, so that earlier default was most likely recorded
+    after the test loan was
+
+    issued, a label a refit at the quarter''s start could not know. The filter removes
+    5,213, 3,216 and 1,288
+
+    training loans (1.0%, 0.8% and 0.5%), where 4,942, 3,122 and 1,269 test loans
+    have a match; the training
+
+    sides keep 515,664, 379,872 and 278,279 loans (84.6%, 62.3% and 45.7%). LightGBM
+    (400 trees) with the matched
+
+    training loans dropped against as many dropped at random: ROC AUC 0.683 against
+    0.684, 0.670 against 0.672
+
+    and 0.663 against 0.662; on the matched test loans 0.682 against 0.698, 0.660
+    against 0.692 and 0.676
+
+    against 0.708 (2026-11-23).'
   n_train:
     min: 278279
     max: 515664
@@ -62,7 +159,8 @@ bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos: []
+  infos:
+  - splits_rows_unused
   accepted:
     meta_license_unknown: LendingClub published the loans under its terms of use,
       without a licence; the Zenodo cut is CC BY 4.0 and the Kaggle file CC0, set
@@ -71,9 +169,6 @@ bundle_checks:
       2014 trains on 45.9% of the loans (45.7% after the repeat-borrower filter),
       beside October to December 2015 and April to June 2015 on 85.5% and 62.8%; kept
       as the curator''s exception to the half-data floor (Andrej, 2026-11-20).'
-    splits_rows_unused: 'By design (Andrej, 2026-11-11): a loan whose borrower key
-      matches a test loan in every window it could train for, and is in no test window,
-      is in no split (324 loans, 0.1%; the repeat-borrower filter in `_make_splits`).'
 decisions: []
 ---
 
@@ -83,7 +178,7 @@ decisions: []
 
 Binary classification of `Default`, scored with `roc_auc` on temporal splits by `issue_d`. 609,544 rows and 67 features. Source: Other (2018).
 
-Built as `01a111fb-70c3-7e45-af56-3ed5e3a90f7f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b3946d9013a023a5ef72c12d958dadfcbac8ebc5ead14bb58dd9f1c50cfb19c6`, so the build is stale. See [Build](#build).
+Built as `01a217fd-07e9-7fc8-b8de-4db9313eff79` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -244,6 +339,8 @@ We start with the data from Sanz-Guerrero et al. (2025), which is already prepro
 
 ## Splits
 
+Expanding-window temporal splits: 3 test window(s) of 3 months, starting at 2015-10-01, 2015-04-01, 2014-10-01, newest first; train is all earlier data. Each train side keeps no row of an entity of `borrower_key` that its window tests. The test windows by `issue_d`, as listed: 2015-10-01 to 2015-12-01 (88,667 test, 515,664 train rows); 2015-04-01 to 2015-06-01 (64,222 test, 379,872 train rows); 2014-10-01 to 2014-12-01 (49,197 test, 278,279 train rows).
+
 We try to create splits that simulate a model deployed to solve the task.
 
 Each test window is one calendar quarter, a model refit every quarter. LendingClub released its loan files by
@@ -251,8 +348,7 @@ calendar quarter ("complete loan data for all loans issued through the previous 
 and no source names a refit cadence: Sanz-Guerrero and Arroyo (2025) shuffle the loans into 5 folds, so the
 quarter matches the release, not a stated cadence (CC 2026-11-11), and a month of loans is a small test set.
 The 3 test windows (CC 2026-11-11), newest first: October to December 2015, the newest quarter; April to June 2015; and October to
-December 2014, a quarter of another year. They hold 88,667, 64,222 and 49,197 loans, and each trains on all
-loans issued before it: 520,877, 383,088 and 279,567 loans (85.5%, 62.8% and 45.9% of the 609,544). October
+December 2014, a quarter of another year. October
 to December 2014 trains on less than half the loans (45.9%), beside 85.5% and 62.8%. The windows are spread
 over two years instead of walking back from the newest: 46% of the loans were issued in 2015, so before 2015
 only 2014 Q4, Q3 and Q2 keep 30% of the loans for training (45.9%, 39.2% and 33.0%), and 2014 Q4 adds the
@@ -303,14 +399,14 @@ Each test window against its train side, by statistics of the data, never of a m
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
+- **info** `splits_rows_unused`: 324 row(s) (0.1%) appear in no train and no test set. (hint: Expected of a temporal split (the rows of a gap, history no window trains on, rows a filter keeps out of every training side); say why in `splits_comment`.)
 
 Accepted on purpose:
 
 - `meta_license_unknown`: LendingClub published the loans under its terms of use, without a licence; the Zenodo cut is CC BY 4.0 and the Kaggle file CC0, set by its uploader.
 - `splits_train_under_half`: Signed off (Lennart, 2026-11-11): October to December 2014 trains on 45.9% of the loans (45.7% after the repeat-borrower filter), beside October to December 2015 and April to June 2015 on 85.5% and 62.8%; kept as the curator's exception to the half-data floor (Andrej, 2026-11-20).
-- `splits_rows_unused`: By design (Andrej, 2026-11-11): a loan whose borrower key matches a test loan in every window it could train for, and is in no test window, is in no split (324 loans, 0.1%; the repeat-borrower filter in `_make_splits`).
 
 ## Data checks
 
@@ -526,11 +622,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fb-70c3-7e45-af56-3ed5e3a90f7f |
-| checksum | v2:d4904238a396f98457bb4678a6e8425feeac587b3f2232019110bfe66bdd0a40 |
-| built_at | 2026-10-06T16:11:24+00:00 |
-| path | lending_club/01a111fb-70c3-7e45-af56-3ed5e3a90f7f |
+| uuid | 01a217fd-07e9-7fc8-b8de-4db9313eff79 |
+| checksum | v2:6834bf9264dde5858011572d8b859f0a227bda471005b8f8755ce75826225e4f |
+| built_at | 2026-11-26T13:13:32+00:00 |
+| path | lending_club/01a217fd-07e9-7fc8-b8de-4db9313eff79 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:b3946d9013a023a5ef72c12d958dadfcbac8ebc5ead14bb58dd9f1c50cfb19c6` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

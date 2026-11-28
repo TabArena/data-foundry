@@ -4,9 +4,6 @@ name: GUSTO-I trial patient data (30-day mortality after acute myocardial infarc
 checked_by:
 - AI (UNVERIFIED)
 - Andrej
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 4
 decision_markers:

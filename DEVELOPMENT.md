@@ -54,9 +54,12 @@ in two situations:
 Two flavors, both publish to PyPI without creating a git tag, commit, or
 GitHub Release. The version is set only on the CI runner.
 
-**Automatic `.dev` builds on every push to `main`** —
+**Automatic `.dev` builds on every push to `main` that changes the package** —
 [`.github/workflows/dev-release.yaml`](.github/workflows/dev-release.yaml).
-Triggered via `workflow_run` after the `Tests` workflow succeeds. The
+Triggered via `workflow_run` after the `Tests` workflow succeeds, and
+skipped when nothing under `src/` or `pyproject.toml` changed since the
+last successful `Tests` run on `main` (a merge of records or docs only
+publishes nothing). The
 version is computed as `<next-patch>.dev<UTC-timestamp>` (e.g.
 `0.0.4.dev20260528170102` when `pyproject.toml` is at `0.0.3`). This is
 the AutoGluon-style "every commit is on PyPI" pattern — install with:

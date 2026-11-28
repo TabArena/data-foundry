@@ -5,7 +5,9 @@ name: Dev Release
 # computed on the runner and exists only on PyPI.
 #
 # Gated on the Tests workflow succeeding for that commit, so a broken main
-# does not get published.
+# does not get published, and on a change to the package (`src/**` or
+# `pyproject.toml`) since the last successful Tests run on main, so a merge
+# that only edits records or docs publishes nothing.
 
 on:
   workflow_run:
@@ -20,18 +22,47 @@ jobs:
     environment: pypi
     permissions:
       id-token: write   # (future) PyPI trusted publishing via OIDC
+      actions: read     # list the earlier Tests runs
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+
+      - name: Did the package change?
+        id: changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_CREATED: ${{ github.event.workflow_run.created_at }}
+        run: |
+          # The base is the head of the last successful push run of Tests on main before this one: every commit
+          # since then is in this diff, also when a push held several commits or an earlier run failed.
+          base="$(gh api "repos/${{ github.repository }}/actions/workflows/main.yaml/runs?branch=main&event=push&status=success&per_page=20" \
+            --jq "[.workflow_runs[] | select(.created_at < \"$RUN_CREATED\" and .head_sha != \"$HEAD_SHA\")][0].head_sha // empty" \
+            || true)"  # an API error falls back to publishing, as before this gate
+          if [[ -z "$base" ]] || ! git cat-file -e "$base^{commit}" 2>/dev/null; then
+            echo "No earlier successful run found; publishing."
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          elif [[ -n "$(git diff --name-only "$base" "$HEAD_SHA" -- src pyproject.toml)" ]]; then
+            echo "The package changed since $base; publishing."
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Only records, docs or tooling changed since $base; no dev release."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Install uv
+        if: steps.changed.outputs.publish == 'true'
         uses: astral-sh/setup-uv@v5
 
       - name: Set up Python
+        if: steps.changed.outputs.publish == 'true'
         run: uv python install 3.11
 
       - name: Compute .dev version
+        if: steps.changed.outputs.publish == 'true'
         id: ver
         run: |
           base="$(uv version --short)"
@@ -49,12 +80,15 @@ jobs:
           echo "Publishing dev version: $version (base $base, commit ${{ github.event.workflow_run.head_sha }})"
 
       - name: Set version (ephemeral, not committed)
+        if: steps.changed.outputs.publish == 'true'
         run: uv version "${{ steps.ver.outputs.version }}"
 
       - name: Build sdist + wheel
+        if: steps.changed.outputs.publish == 'true'
         run: uv build
 
       - name: Publish to PyPI
+        if: steps.changed.outputs.publish == 'true'
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
         run: uv publish

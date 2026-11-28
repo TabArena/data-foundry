@@ -3,9 +3,6 @@ unique_name: 1000_cameras
 name: 1000-cameras
 checked_by:
 - Lennart
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Lennart
 suggestion: TBD -> 2nd Tier
 decision_markers:
 - No Good Target (yet)

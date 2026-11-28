@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: garments_worker_productivity
 container_format: 2
-checksum: v2:79b766e36e9c51779ce02114b88b633a7a9b6b9eddaf8ad8d22b0fe113cc8fcd
+checksum: v2:7341ef56559d9d9da0d35d1d34f6b98af16d8bebfe1dc1e782b7fce67e3b3e1d
 build:
-  uuid: 01a111fc-d4cc-702b-99bc-38e5c3ea0aa4
-  checksum: v2:7ca2ed38aad99f6130e49249c818bb3e7274bb810ad2bb57fd5a156a182cd9bc
-  built_at: '2026-10-06T16:12:25+00:00'
-  path: garments_worker_productivity/01a111fc-d4cc-702b-99bc-38e5c3ea0aa4
+  uuid: 01a21800-cb66-789b-8669-127e16d7544b
+  checksum: v2:7341ef56559d9d9da0d35d1d34f6b98af16d8bebfe1dc1e782b7fce67e3b3e1d
+  built_at: '2026-11-26T13:17:16+00:00'
+  path: garments_worker_productivity/01a21800-cb66-789b-8669-127e16d7544b
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 1197
   n_features: 15
@@ -48,6 +48,35 @@ splits:
   time_horizon_unit: days
   time_gap: null
   time_gap_unit: null
+  reason: 'A day''s productivity and its other end-of-day values are in the efficiency
+    report written after the shift; the
+
+    prediction is made at the start of the next day, so every training label is known
+    and no gap is needed. The
+
+    end-of-day values enter lagged to the team''s previous recorded day (no team has
+    two rows on one day), and each
+
+    window is a whole factory day. The one-day windows hold fewer than the 33 scored
+    units SPLIT-14 asks of a
+
+    test window: the curator''s exception (Andrej, 2026-11-19 and 2026-11-20), as
+    the factory
+
+    plans and is judged by the day, so a day''s 17-24 team records are the natural
+    test unit. Measured against
+
+    two-day windows (15 windows, the second day scored by a model trained before the
+    first): the second day is no
+
+    harder (worse than the first in 5 to 8 of 15 windows for LightGBM, ridge and Kumo-Tabular),
+    but a model one day
+
+    older is worse for Kumo-Tabular in 12 of 15 windows (+0.006 MAE, 6.5%, Wilcoxon
+    p 0.012; LightGBM +0.0007,
+
+    p 0.89), so two-day windows would penalise methods that learn from the newest
+    day: the daily refit stays.'
   n_train:
     min: 599
     max: 1173
@@ -74,7 +103,7 @@ decisions: []
 
 Regression of `actual_productivity`, scored with `rmse` on temporal splits by `date`. 1,197 rows and 15 features. Source: UCI (2020).
 
-Built as `01a111fc-d4cc-702b-99bc-38e5c3ea0aa4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:79b766e36e9c51779ce02114b88b633a7a9b6b9eddaf8ad8d22b0fe113cc8fcd`, so the build is stale. See [Build](#build).
+Built as `01a21800-cb66-789b-8669-127e16d7544b` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -211,7 +240,8 @@ The first 5 of 1,197 rows of the final frame (the oldest rows: the frame is sort
 
 ## Splits
 
-We define 30 splits with one day for testing each, resulting in small test sizes of 17-24 samples per split. The split with the smallest train sizes uses exactly half of the available samples.
+Expanding-window temporal splits: 30 test window(s) of 1 time value, walking back from the newest data, newest first; train is all earlier data. The test windows by `date`, as listed: 2015-03-11 (24 test, 1,173 train rows); 2015-03-10 (23 test, 1,150 train rows); 2015-03-09 (22 test, 1,128 train rows); 2015-03-08 (22 test, 1,106 train rows); 2015-03-07 (19 test, 1,087 train rows); 2015-03-05 (19 test, 1,068 train rows); 2015-03-04 (21 test, 1,047 train rows); 2015-03-03 (22 test, 1,025 train rows); 2015-03-02 (20 test, 1,005 train rows); 2015-03-01 (20 test, 985 train rows); 2015-02-28 (21 test, 964 train rows); 2015-02-26 (21 test, 943 train rows); 2015-02-25 (21 test, 922 train rows); 2015-02-24 (19 test, 903 train rows); 2015-02-23 (19 test, 884 train rows); 2015-02-22 (20 test, 864 train rows); 2015-02-19 (20 test, 844 train rows); 2015-02-18 (21 test, 823 train rows); 2015-02-17 (20 test, 803 train rows); 2015-02-16 (18 test, 785 train rows); 2015-02-15 (19 test, 766 train rows); 2015-02-14 (17 test, 749 train rows); 2015-02-12 (19 test, 730 train rows); 2015-02-11 (19 test, 711 train rows); 2015-02-10 (19 test, 692 train rows); 2015-02-09 (18 test, 674 train rows); 2015-02-08 (19 test, 655 train rows); 2015-02-07 (19 test, 636 train rows); 2015-02-05 (18 test, 618 train rows); 2015-02-04 (19 test, 599 train rows).
+
 A day's productivity and its other end-of-day values are in the efficiency report written after the shift; the
 prediction is made at the start of the next day, so every training label is known and no gap is needed. The
 end-of-day values enter lagged to the team's previous recorded day (no team has two rows on one day), and each
@@ -401,11 +431,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-d4cc-702b-99bc-38e5c3ea0aa4 |
-| checksum | v2:7ca2ed38aad99f6130e49249c818bb3e7274bb810ad2bb57fd5a156a182cd9bc |
-| built_at | 2026-10-06T16:12:25+00:00 |
-| path | garments_worker_productivity/01a111fc-d4cc-702b-99bc-38e5c3ea0aa4 |
+| uuid | 01a21800-cb66-789b-8669-127e16d7544b |
+| checksum | v2:7341ef56559d9d9da0d35d1d34f6b98af16d8bebfe1dc1e782b7fce67e3b3e1d |
+| built_at | 2026-11-26T13:17:16+00:00 |
+| path | garments_worker_productivity/01a21800-cb66-789b-8669-127e16d7544b |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:79b766e36e9c51779ce02114b88b633a7a9b6b9eddaf8ad8d22b0fe113cc8fcd` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

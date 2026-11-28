@@ -1,12 +1,13 @@
-"""Tests for the recommended encodings of date, text and SMILES columns (``data_foundry.v2.encodings``)."""
+"""Tests for the recommended encodings of date, text and SMILES columns (``data_foundry.encodings``)."""
 
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry.v2 import encodings
-from data_foundry.v2.encodings import (
+
+from data_foundry import encodings
+from data_foundry.encodings import (
     DATETIME_ENCODING,
     TEXT_E5_ENCODING,
     TEXT_TFIDF_ENCODING,
@@ -111,3 +112,22 @@ def test_encode_text_e5_encodes_each_distinct_value_once_with_the_query_prefix()
     assert list(out.columns) == ["e5_0", "e5_1", "e5_2"]
     assert out.loc[1, "e5_0"] == out.loc[3, "e5_0"] == len("query: ab")
     assert out.loc[2, "e5_0"] == len("query: ")
+
+
+@pytest.mark.parametrize(
+    "train",
+    [["alpha beta", "gamma delta", "eps zeta"], [None, None, None], ["", " ", None], ["one"]],
+    ids=["no-shared-term", "all-missing", "blank", "one-row"],
+)
+def test_encode_text_tfidf_survives_a_small_or_empty_training_side(train, caplog) -> None:
+    """A fold of a small dataset: terms seen once are kept, and a side with no term gives no columns and a warning."""
+    pytest.importorskip("sklearn")
+    out_train, out_test = encode_text_tfidf(
+        pd.Series(train, dtype="string", name="note"), pd.Series(["alpha", None], dtype="string")
+    )
+    assert len(out_train) == len(train)
+    assert len(out_test) == 2
+    assert list(out_train.columns) == list(out_test.columns)
+    has_terms = any(v and v.strip() for v in train)
+    assert (out_train.shape[1] > 0) == has_terms
+    assert ("no term" in caplog.text) == (not has_terms)

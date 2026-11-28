@@ -2,11 +2,24 @@
 report_format: data-foundry-report-v2
 unique_name: aeolus_rebuilt_1m
 container_format: 2
-checksum: v2:cee73acd5d8b71c59d1c422e8624d356379a5bc07a63e9d5b59cd4be00690037
-build: null
+checksum: v2:24c48215a0de3d796bc086226c56eb69a6f31c7c3c09ef9d3b013f79cad83c46
+build:
+  uuid: 01a21832-1223-7ee0-a649-3f665841eff6
+  checksum: v2:24c48215a0de3d796bc086226c56eb69a6f31c7c3c09ef9d3b013f79cad83c46
+  built_at: '2026-11-26T14:11:47+00:00'
+  path: aeolus_rebuilt_1m/01a21832-1223-7ee0-a649-3f665841eff6
+  data_foundry_version: 0.0.5
+  git_sha: c0295a4ec7dcdcc8b1bab070e1c263605df09a69-dirty
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
-  n_rows: 1799255
+  n_rows: 13690703
   n_features: 34
   dtypes:
     category: 8
@@ -35,15 +48,40 @@ splits:
   time_horizon_unit: days
   time_gap: 1
   time_gap_unit: days
+  reason: 'No source states a refit cadence: the authors split 1-15 June 2024 chronologically
+    6:2:2 (Sec. 4.1), so they test about three days after nine, one stretch and no
+    season, and we depart from it. Two weeks keep a window under the 500k-row test
+    cap and spread a single storm or outage over fourteen days, while the cutoffs
+    choose the seasons (one week would let one event carry a window: on 19 July 2024,
+    the CrowdStrike outage, 58.3% of the flights were late; a calendar month holds
+    more than 500k flights). The three windows are fortnights of 2024 chosen by season
+    (CC 2026-11-10), newest first: 2024-12-18 to 12-31, the newest, in the holiday
+    peak (25.9% of the operated flights late); 2024-07-03 to 07-16, the summer peak
+    (26.9% late, and the largest shift of the weather inputs against the train side,
+    PSI 2.43 on the temperatures); and 2024-03-13 to 03-26, a spring fortnight near
+    the average (21.3% late against 20.7% of all flights). By month the late share
+    is highest in June and July (25 to 30%) and lowest in October and November (13
+    to 16%). Every fortnight from 17 January 2024 on keeps half the flights for training
+    and none of 2023 does, so each train side holds the same season of 2023 once.
+    We leave out 17-30 July, which holds the CrowdStrike outage: one airline''s five-day
+    outage would make a third of the score. Train is every flight from 2023 on dated
+    at least two days before the window (a one-day gap): a flight''s arrival delay
+    is known only once it has landed, and the previous evening''s flights land after
+    midnight. The 17,947 flights of 2024-12-17, the gap before the newest window,
+    lie in no split, so the frame leaves them out.'
   n_train:
-    min: 1000000
-    max: 1000000
+    min: 7987461
+    max: 13426458
   n_test:
-    min: 259738
-    max: 273891
+    min: 264245
+    max: 278071
   row_budget:
     train: 1000000
     test: 500000
+  train_sampling:
+    default: newest_year
+    unit: rows
+    stratify_on: ARR_DEL15
 bundle_checks:
   ok: true
   errors: []
@@ -64,9 +102,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `ARR_DEL15`, scored with `roc_auc` on temporal splits by `FL_DATE`. 1,799,255 rows and 34 features. Source: GOV Website (2026).
+Binary classification of `ARR_DEL15`, scored with `roc_auc` on temporal splits by `FL_DATE`. 13,690,703 rows and 34 features. Source: GOV Website (2026).
 
-Not built yet. The current definition gives checksum `v2:cee73acd5d8b71c59d1c422e8624d356379a5bc07a63e9d5b59cd4be00690037`.
+Built as `01a21832-1223-7ee0-a649-3f665841eff6` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -80,11 +118,11 @@ Not built yet. The current definition gives checksum `v2:cee73acd5d8b71c59d1c422
 
 **Known at prediction time.** At the full hour before the scheduled departure: the date, airline, flight number, route, distance, scheduled times, the airports' locations, the weather reported at both airports for that hour, and where the aircraft's previous flight is (not yet left, in the air or landed, with its delays so far).
 
-**What the test data stands for.** Each test window is two weeks at the end of 2024; training is a random million earlier flights from 2023 on, as for a model refit every two weeks.
+**What the test data stands for.** Each test window is two weeks of 2024: the holiday peak (18-31 December), the summer peak (3-16 July) and a spring fortnight (13-26 March); training is every flight from 2023 on dated at least two days before the window, of which a benchmark fits on a random million of the newest year.
 
 **Our changes to the source.** Rebuilt from the DOT's flight records and Meteostat's station weather instead of the Aeolus release: the weather is read at the right hour, March 2024 and the flights of 43 airports the release dropped are back, and the aircraft's previous flight is added.
 
-> **Use case fit: approximate (a stand-in with a known gap).** Cancelled and diverted flights (1.6%; 0.4 to 1.4% of a test window) are not rows: the test data holds only flights that operated, which is not known an hour before departure. The aircraft is the one that flew; a swap decided after the prediction point is kept (notes).
+> **Use case fit: approximate (a stand-in with a known gap).** Cancelled and diverted flights (1.6%; 1.2 to 2.0% of a test window) are not rows: the test data holds only flights that operated, which is not known an hour before departure. The aircraft is the one that flew; a swap decided after the prediction point is kept (notes).
 
 ## Files in this folder
 
@@ -93,7 +131,7 @@ Not built yet. The current definition gives checksum `v2:cee73acd5d8b71c59d1c422
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/aeolus_rebuilt.md`](../../../../curation/records/aeolus_rebuilt.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/aeolus_rebuilt.md`](../../../../curation/records/aeolus_rebuilt.md)
 - The original source: <https://www.transtats.bts.gov/Fields.asp?gnoyr_VQ=FGJ>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -185,8 +223,7 @@ Only curators run `build`, when the dataset ships.
 | license | BTS on-time data and the NOAA ISD station list: US government works (public domain); Meteostat weather and station data: CC BY 4.0 (https://dev.meteostat.net/license) |
 | data_tags | Non-IID, Temporal, Spatial |
 | reference | bts2026ontime,meteostat2026hourly,xu2025aeolus |
-| version of | aeolus_rebuilt |
-| rows x columns | 1,799,255 x 35 |
+| rows x columns | 13,690,703 x 35 |
 | task.target | ARR_DEL15 |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -244,15 +281,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 1,799,255 rows of the final frame (the oldest rows: the frame is sorted by `FL_DATE`); 12 of 35 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 13,690,703 rows of the final frame (the oldest rows: the frame is sorted by `FL_DATE`); 12 of 35 columns, the target first. Cells are cut at 40 characters.
 
 | ARR_DEL15 | FL_DATE | OP_CARRIER | OP_CARRIER_FL_NUM | ORIGIN | DEST | CRS_DEP_TIME_MIN | CRS_ARR_TIME_MIN | CRS_ELAPSED_TIME | DISTANCE | O_LATITUDE | O_LONGITUDE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | No | 2023-01-01 00:00:00 | DL | 1377 | ATL | PBI | 980 | 1085 | 105 | 545 | 33.6367 | -84.4278 |
-| No | 2023-01-01 00:00:00 | DL | 1109 | ATL | LGA | 680 | 810 | 130 | 762 | 33.6367 | -84.4278 |
-| No | 2023-01-01 00:00:00 | WN | 3370 | LAS | SAN | 500 | 575 | 75 | 258 | 36.08 | -115.152 |
-| Yes | 2023-01-01 00:00:00 | NK | 3165 | ORD | MIA | 1240 | 49 | 189 | 1197 | 41.9769 | -87.9081 |
-| No | 2023-01-01 00:00:00 | AA | 2509 | MCO | DCA | 834 | 962 | 128 | 759 | 28.4294 | -81.3089 |
+| No | 2023-01-01 00:00:00 | WN | 1722 | DAL | LAX | 650 | 740 | 210 | 1246 | 32.8458 | -96.8508 |
+| No | 2023-01-01 00:00:00 | UA | 2305 | ORD | SEA | 1265 | 1432 | 287 | 1721 | 41.9769 | -87.9081 |
+| No | 2023-01-01 00:00:00 | YX | 4384 | DCA | EYW | 519 | 716 | 197 | 1023 | 38.8514 | -77.0378 |
+| No | 2023-01-01 00:00:00 | AA | 2407 | GSP | DFW | 979 | 1090 | 171 | 862 | 34.8956 | -82.2189 |
 
 ## Curation notes
 
@@ -267,31 +304,43 @@ We start with the monthly files of the BTS Reporting Carrier On-Time Performance
 - Weather: each airport's nearest station with hourly observations through 2023-2024 (first decision; 353 of 359 within 2.5 km, at most 10.6 km), read at the prediction point's hour at both airports: 8 Meteostat parameters, the condition code as a category. ISD-Lite, the source of most readings, takes each value from the ten minutes up to the full hour (ISD-Lite Technical Document, 2006: "observation minute greater than or equal to ten minutes before the top of the hour up to and including the top of the hour"), so no reading is from after the prediction point. A wind direction of 0 is calm, 360 north. Peak gust and snow depth are empty and not kept. The 2025 files give the readings of the 2024-12-31 flights whose hour falls in 2025 in UTC.
 - Note: Meteostat fills missing observations with model forecasts for the hour: 0.2% of the origin temperatures, 5.9% of the precipitation, 41% of the cloud cover and 97% of the condition codes (third decision). A forecast for an hour is issued before it, so it is known at the prediction point; the issue times are not in the files. Kept as Meteostat publishes them, as Aeolus did (CC 2026-10-26). Remark for users: part of the weather inputs, most of the condition code and cloud cover, are the output of a weather model, not observations, so a score on these columns depends on that model; a study of the weather's value should read them apart from the observed temperature and precipitation.
 - Impossible weather becomes missing (`MIN_TEMPERATURE_C`, `MAX_WIND_KMH`, a humidity of 0%): 4 readings of -60.6 C at Sarasota, 45 mean winds of 121-232 km/h, most in clear or fair weather, and 11 humidities of 0% at Lihue and Jackson Hole. Precipitation up to 96.5 mm in an hour (Gulf and Florida storms) stays.
-- Aircraft's previous flight: the tail number's flight scheduled to leave just before this one (`INBOUND_*`). Its scheduled times are known; its actual departure and arrival delays only when they happened by the prediction point, else missing, and `INBOUND_STATUS` says how far it had got (`none` when it did not end at this origin). The five columns add 0.15 to 0.17 ROC AUC per window (0.647-0.654 without them, 0.800-0.827 with them; untuned LightGBM, 1M training rows).
-- Potential leak, kept on purpose: BTS records the aircraft that flew. When an aircraft was swapped, the row carries the swap: for 0.9% of the flights the recorded previous flight was scheduled to land after this departure (79-98% late), for 2.1% it ended elsewhere (42% late). Whether a swap was decided before the prediction point is not recorded. On the shipped splits these rows are 2.6-3.4% of a window; setting their five columns to `none` and missing costs 0.0002 to 0.0013 ROC AUC, and scoring without them gives 0.007 to 0.011 less. Revisit if a source of planned tail assignments turns up.
+- Aircraft's previous flight: the tail number's flight scheduled to leave just before this one (`INBOUND_*`). Its scheduled times are known; its actual departure and arrival delays only when they happened by the prediction point, else missing, and `INBOUND_STATUS` says how far it had got (`none` when it did not end at this origin). The five columns add 0.15 to 0.17 ROC AUC per window (0.647-0.654 without them, 0.800-0.827 with them; untuned LightGBM, 1M training rows; measured on the windows before 2026-11-10, the newest six weeks of 2024).
+- Potential leak, kept on purpose: BTS records the aircraft that flew. When an aircraft was swapped, the row carries the swap: for 0.9% of the flights the recorded previous flight was scheduled to land after this departure (79-98% late), for 2.1% it ended elsewhere (42% late). Whether a swap was decided before the prediction point is not recorded. On the windows before 2026-11-10 (the newest six weeks of 2024) these rows are 2.6-3.4% of a window; setting their five columns to `none` and missing costs 0.0002 to 0.0013 ROC AUC, and scoring without them gives 0.007 to 0.011 less. Revisit if a source of planned tail assignments turns up.
 - Proxy missing values: scheduled block times below 15 minutes (5 rows) become missing. 52 others that are more than twice or less than half their route's median stay as BTS records them.
 - Coordinates: the BTS master coordinate of the airport sequence id the flight uses (Guam and Pago Pago with their true signs).
 - `OP_CARRIER_FL_NUM` is categorical (the paper's Table 9), as in aeolus_1m; one operated flight has none.
-- Note: compared with the Aeolus release, the rebuild adds March 2024 (585,413 operated flights) and the 192,954 flights of 43 airports the release left out (mostly Allegiant and SkyWest), and reads the weather in the hour before departure, not 3.5 to 11 hours earlier. With aeolus_1m's inputs (the schedule and three weather values per airport), the weather adds 0.043-0.051 ROC AUC per window here against 0.032-0.039 in aeolus_1m (the destination's alone 0.010-0.014 against 0.014-0.015; untuned LightGBM on each dataset's own splits).
-- Task probes (200k newest training rows, three windows): no flags; ROC AUC LightGBM 0.819, random forest 0.808, linear 0.760, the best single feature (`INBOUND_ARR_DELAY`) 0.729. Leak probes (50k rows): no exact copies across the split; `INBOUND_ARR_DELAY` alone 0.734 against 0.790 for all features, the core of the task (a late aircraft makes a late flight); its missing indicator 0.683, which marks a previous flight that had not landed by the prediction point, known then. Every test airport is in training (known entities, SPLIT-13).
+- Note: compared with the Aeolus release, the rebuild adds March 2024 (585,413 operated flights) and the 192,954 flights of 43 airports the release left out (mostly Allegiant and SkyWest), and reads the weather in the hour before departure, not 3.5 to 11 hours earlier. With aeolus_1m's inputs (the schedule and three weather values per airport), the weather adds 0.043-0.051 ROC AUC per window here against 0.032-0.039 in aeolus_1m (the destination's alone 0.010-0.014 against 0.014-0.015; untuned LightGBM on the two datasets' windows before 2026-11-10, the newest six weeks of 2024).
+- Task probes (200k newest training rows, the three windows before 2026-11-10): no flags; ROC AUC LightGBM 0.819, random forest 0.808, linear 0.760, the best single feature (`INBOUND_ARR_DELAY`) 0.729. Leak probes (50k rows): no exact copies across the split; `INBOUND_ARR_DELAY` alone 0.734 against 0.790 for all features, the core of the task (a late aircraft makes a late flight); its missing indicator 0.683, which marks a previous flight that had not landed by the prediction point, known then. Every test airport is in training (known entities, SPLIT-13).
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
   categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed
   by the curator's rule (missing when the column has no other missing value, else the lowest level; a state that
   is simply not on the scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
-
-Version of `aeolus_rebuilt`: The BTS files hold 13,708,650 operated flights from 2023 on with an arrival delay (13,926,960 scheduled). We sample per test window (v2 split protocol): each window keeps at most 500k of its rows (all of them here), and its train side is a random 1M of the earlier flights, drawn in one random order for all windows; the frame keeps only the rows a split uses.
+- The row budget: The BTS files hold 13,708,650 operated flights from 2023 on with an arrival delay (13,926,960 scheduled). Each test window keeps at most 500k of its rows (v2 split protocol; all of them here), and each train side holds every earlier flight, so the container holds every flight a split uses: 13,690,703, all but the 17,947 of 2024-12-17, the gap before the newest window. The container records the 1M train budget, and a benchmark sub-samples each train side to 1M flights before a fit (`subsample_train`; by default a random 1M of the newest year before the window).
 
 ## Splits
 
-As in aeolus_1m: a delay model is refit every two weeks and predicts the flights of the two weeks ahead. The last six weeks of 2024 are three two-week test windows (2024-12-18 to 12-31, 12-04 to 12-17 and 11-20 to 12-03, newest first; 25.9%, 16.7% and 17.5% of the operated flights late), so that one window falls in the holiday peak. Train is every flight from 2023 on dated at least two days before the window (a one-day gap): a flight's arrival delay is known only once it has landed, and the previous evening's flights land after midnight. Each window keeps all of its flights (264,245, 259,738 and 273,891); each train side is a random 1M of the earlier flights (one random order for all windows). The authors split 1-15 June 2024 chronologically 6:2:2 (Sec. 4.1), one test stretch of about three days and no season, so we depart from it. All three windows lie in late November and December: the score measures early-winter delays.
+Expanding-window temporal splits: 3 test window(s) of 14 days, starting at 2024-12-18, 2024-07-03, 2024-03-13, newest first; train is all earlier data up to a gap of 1 days. The test windows by `FL_DATE`, as listed: 2024-12-18 to 2024-12-31 (264,245 test, 13,426,458 train rows); 2024-07-03 to 2024-07-16 (278,071 test, 10,166,861 train rows); 2024-03-13 to 2024-03-26 (267,477 test, 7,987,461 train rows). Each test window keeps at most 500k of its rows, drawn at random; each train side holds every earlier row, and a benchmark sub-samples it to 1M rows (by default rows drawn at random from the newest year before each window, extended back in time until it holds that many rows, `subsample_train`).
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 259,738 to 273,891 rows. Prediction horizon: 14 days. Gap between train and test: 1 days. Row budget: at most 1M train / 500k test rows per split.
+No source states a refit cadence: the authors split 1-15 June 2024 chronologically 6:2:2 (Sec. 4.1), so they test about three days after nine, one stretch and no season, and we depart from it. Two weeks keep a window under the 500k-row test cap and spread a single storm or outage over fourteen days, while the cutoffs choose the seasons (one week would let one event carry a window: on 19 July 2024, the CrowdStrike outage, 58.3% of the flights were late; a calendar month holds more than 500k flights). The three windows are fortnights of 2024 chosen by season (CC 2026-11-10), newest first: 2024-12-18 to 12-31, the newest, in the holiday peak (25.9% of the operated flights late); 2024-07-03 to 07-16, the summer peak (26.9% late, and the largest shift of the weather inputs against the train side, PSI 2.43 on the temperatures); and 2024-03-13 to 03-26, a spring fortnight near the average (21.3% late against 20.7% of all flights). By month the late share is highest in June and July (25 to 30%) and lowest in October and November (13 to 16%). Every fortnight from 17 January 2024 on keeps half the flights for training and none of 2023 does, so each train side holds the same season of 2023 once. We leave out 17-30 July, which holds the CrowdStrike outage: one airline's five-day outage would make a third of the score. Train is every flight from 2023 on dated at least two days before the window (a one-day gap): a flight's arrival delay is known only once it has landed, and the previous evening's flights land after midnight. The 17,947 flights of 2024-12-17, the gap before the newest window, lie in no split, so the frame leaves them out.
+
+3 repeat(s) x 1 fold(s) with seed 4267; train 7,987,461 to 13,426,458 rows, test 264,245 to 278,071 rows. Prediction horizon: 14 days. Gap between train and test: 1 days. Row budget: at most 500k test rows per split; a benchmark trains on at most 1M. The train sides keep every row available to them; `subsample_train` draws the 1M rows a benchmark fits on from the newest year before each window, extended back in time until it holds that many rows, at random, as rows.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 1000000 | 264245 | 2023-01-01 00:00:00 | 2024-12-16 00:00:00 | 2024-12-18 00:00:00 | 2024-12-31 00:00:00 |
-| 1 | 0 | 1000000 | 259738 | 2023-01-01 00:00:00 | 2024-12-02 00:00:00 | 2024-12-04 00:00:00 | 2024-12-17 00:00:00 |
-| 2 | 0 | 1000000 | 273891 | 2023-01-01 00:00:00 | 2024-11-18 00:00:00 | 2024-11-20 00:00:00 | 2024-12-03 00:00:00 |
+| 0 | 0 | 13426458 | 264245 | 2023-01-01 00:00:00 | 2024-12-16 00:00:00 | 2024-12-18 00:00:00 | 2024-12-31 00:00:00 |
+| 1 | 0 | 10166861 | 278071 | 2023-01-01 00:00:00 | 2024-07-01 00:00:00 | 2024-07-03 00:00:00 | 2024-07-16 00:00:00 |
+| 2 | 0 | 7987461 | 267477 | 2023-01-01 00:00:00 | 2024-03-11 00:00:00 | 2024-03-13 00:00:00 | 2024-03-26 00:00:00 |
+
+
+### The test windows
+
+Each test window against its train side, by statistics of the data, never of a model: the target, and the population stability index (PSI) of each feature, its largest value and the features that drift most (below 0.1 little shift, above 0.25 a large one), and the share of test rows with a category the train side never shows. Up to 20,000 rows per side. The candidates the windows were chosen from: `.venv/bin/python -m data_foundry.curation.cli dataset windows aeolus_rebuilt_1m`.
+
+| window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
+|---|---|---|---|---|---|---|---|---|
+| 0 | Dec 2024 | 264245 | 0.981 | Yes 26.5% (about 69,959) | Yes 20.6% (about 2,763,165) | 1.086 | O_TEMP (1.09), D_TEMP (1.08), O_PRES (0.40) | 0.0001 |
+| 1 | Jul 2024 | 278071 | 0.743 | Yes 27.3% (about 75,941) | Yes 20.6% (about 2,097,423) | 2.467 | D_TEMP (2.47), O_TEMP (2.33), D_PRES (0.40) | 0.0004 |
+| 2 | Mar 2024 | 267477 | 0.583 | Yes 20.7% (about 55,461) | Yes 20.3% (about 1,619,857) | 0.318 | O_TEMP (0.32), D_TEMP (0.32), D_WSPD (0.08) | 0.0003 |
 
 ## Decisions
 
@@ -732,13 +781,13 @@ The prediction point is the full UTC hour at or before the scheduled departure; 
 
 ### 4. Cancelled and diverted flights are not rows
 
-BTS leaves the arrival delay empty for cancelled and diverted flights, the release has none, and their timing is not recorded. They cluster on storm days: the newest window has the most.
+BTS leaves the arrival delay empty for cancelled and diverted flights, the release has none, and their timing is not recorded. They cluster on storm days: the July window has the most.
 
 | window | scheduled flights | cancelled | diverted | late share of operated | late share, cancelled and diverted counted late |
 |---|---|---|---|---|---|
 | 2024-12-18 to 2024-12-31 | 268117 | 2836 | 1036 | 0.2586 | 0.2694 |
-| 2024-12-04 to 2024-12-17 | 261365 | 1133 | 494 | 0.1669 | 0.1721 |
-| 2024-11-20 to 2024-12-03 | 274995 | 783 | 321 | 0.1747 | 0.178 |
+| 2024-07-03 to 2024-07-16 | 283618 | 4399 | 1148 | 0.2691 | 0.2834 |
+| 2024-03-13 to 2024-03-26 | 270626 | 2584 | 565 | 0.2125 | 0.2217 |
 
 ### 5. The aircraft's previous flight, as known at the prediction point
 
@@ -756,10 +805,10 @@ The tail number links each flight to the aircraft's flight scheduled just before
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 62,973,925 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
-- **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 62,973,925 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 479,174,605 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to run them; nothing else checks duplicate rows and columns.)
+- **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 479,174,605 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
 
 ## Data checks
 
@@ -770,41 +819,41 @@ The tail number links each flight to the aircraft's flight scheduled just before
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| INBOUND_STATUS | category | 35968 | 2 | 3 | arrived, in the air, not departed |
-| O_COCO | category | 14497 | 0.81 | 21 | fair, cloudy, overcast, clear, fog, light rain, rain, heavy rain, light snowfal… |
-| D_COCO | category | 14512 | 0.81 | 22 | fair, cloudy, overcast, clear, light rain, fog, rain, heavy rain, light snowfal… |
-| OP_CARRIER | category | 0 | 0 | 15 | WN, DL, AA, UA, OO, YX, MQ, B6, NK, AS |
-| OP_CARRIER_FL_NUM | category | 0 | 0 | 6727 | 540, 1368, 372, 322, 323, 374, 1233, 383, 697, 354 |
-| ORIGIN | category | 0 | 0 | 354 | ATL, DEN, DFW, ORD, CLT, LAX, PHX, LAS, MCO, SEA |
-| DEST | category | 0 | 0 | 354 | ATL, DEN, DFW, ORD, CLT, LAX, PHX, LAS, LGA, MCO |
+| INBOUND_STATUS | category | 281465 | 2.06 | 3 | arrived, in the air, not departed |
+| O_COCO | category | 45256 | 0.33 | 22 | fair, cloudy, clear, overcast, light rain, fog, rain, heavy rain, heavy rain sh… |
+| D_COCO | category | 45395 | 0.33 | 22 | fair, cloudy, clear, overcast, light rain, fog, rain, heavy rain, heavy rain sh… |
+| OP_CARRIER | category | 0 | 0 | 15 | WN, DL, AA, UA, OO, YX, NK, MQ, B6, AS |
+| OP_CARRIER_FL_NUM | category | 1 | 0 | 6919 | 555, 1150, 323, 352, 777, 540, 372, 1168, 392, 374 |
+| ORIGIN | category | 0 | 0 | 355 | ATL, DEN, DFW, ORD, CLT, LAX, LAS, PHX, SEA, MCO |
+| DEST | category | 0 | 0 | 355 | ATL, DEN, DFW, ORD, CLT, LAX, LAS, PHX, SEA, MCO |
 | ARR_DEL15 | category | 0 | 0 | 2 | No, Yes |
-| FL_DATE | datetime64\[ns\] | 0 | 0 | 731 | 2024-12-01 00:00:00, 2024-11-22 00:00:00, 2024-11-26 00:00:00, 2024-11-27 00:00… |
-| INBOUND_ARR_DELAY | float64 | 277121 | 15.4 | 1253 | -12.0, -13.0, -10.0, -11.0, -14.0, -15.0, -9.0, -8.0, -16.0, -7.0 |
-| D_PRCP | float64 | 126680 | 7.04 | 255 | 0.0, 0.3, 0.5, 0.2, 0.8, 1.0, 1.5, 1.3, 1.8, 0.1 |
-| O_PRCP | float64 | 125958 | 7 | 252 | 0.0, 0.3, 0.5, 0.2, 0.8, 1.0, 1.3, 1.5, 1.8, 0.1 |
-| INBOUND_DEP_DELAY | float64 | 56241 | 3.13 | 1279 | -5.0, -4.0, -3.0, -6.0, -2.0, -1.0, -7.0, 0.0, -8.0, -9.0 |
-| INBOUND_TURN_MIN | float64 | 35968 | 2 | 8021 | 50.0, 45.0, 40.0, 55.0, 60.0, 35.0, 65.0, 70.0, 30.0, 66.0 |
-| INBOUND_MIN_SINCE_SCHED_DEP | float64 | 35968 | 2 | 7225 | 120.0, 180.0, 150.0, 240.0, 135.0, 105.0, 165.0, 110.0, 90.0, 115.0 |
-| O_CLDC | float64 | 5784 | 0.32 | 9 | 8.0, 2.0, 4.0, 0.0, 6.0, 7.0, 5.0, 3.0, 1.0 |
-| D_CLDC | float64 | 5781 | 0.32 | 9 | 8.0, 2.0, 4.0, 0.0, 6.0, 7.0, 5.0, 3.0, 1.0 |
-| O_WDIR | float64 | 1647 | 0.09 | 361 | 0.0, 260.0, 170.0, 300.0, 200.0, 180.0, 320.0, 310.0, 190.0, 210.0 |
-| O_PRES | float64 | 1621 | 0.09 | 816 | 1015.0, 1017.0, 1018.0, 1019.0, 1016.0, 1020.0, 1014.0, 1021.0, 1013.0, 1022.0 |
-| D_WDIR | float64 | 1691 | 0.09 | 361 | 0.0, 260.0, 300.0, 330.0, 180.0, 310.0, 170.0, 200.0, 210.0, 320.0 |
-| D_PRES | float64 | 1693 | 0.09 | 805 | 1018.0, 1016.0, 1017.0, 1019.0, 1020.0, 1015.0, 1014.0, 1021.0, 1013.0, 1022.0 |
-| D_TEMP | float64 | 1376 | 0.08 | 594 | 10.0, 13.9, 15.0, 14.4, 15.6, 11.7, 13.3, 10.6, 12.2, 8.3 |
-| D_RHUM | float64 | 1382 | 0.08 | 99 | 93.0, 90.0, 86.0, 76.0, 72.0, 82.0, 70.0, 68.0, 74.0, 60.0 |
-| D_WSPD | float64 | 1387 | 0.08 | 191 | 0.0, 9.4, 11.2, 7.6, 13.0, 5.4, 14.8, 16.6, 18.4, 20.5 |
-| O_TEMP | float64 | 1307 | 0.07 | 607 | 10.0, 13.9, 15.6, 13.3, 15.0, 11.7, 12.2, 14.4, 10.6, 17.2 |
-| O_RHUM | float64 | 1312 | 0.07 | 99 | 93.0, 90.0, 86.0, 72.0, 76.0, 70.0, 82.0, 68.0, 74.0, 60.0 |
-| O_WSPD | float64 | 1334 | 0.07 | 187 | 0.0, 9.4, 11.2, 7.6, 13.0, 5.4, 14.8, 16.6, 18.4, 20.5 |
-| CRS_ELAPSED_TIME | float64 | 0 | 0 | 605 | 90.0, 85.0, 95.0, 80.0, 75.0, 110.0, 115.0, 70.0, 120.0, 100.0 |
-| DISTANCE | float64 | 0 | 0 | 1624 | 337.0, 399.0, 296.0, 594.0, 404.0, 862.0, 391.0, 867.0, 328.0, 733.0 |
-| O_LATITUDE | float64 | 0 | 0 | 357 | 33.6367, 39.8617, 32.8972, 41.9769, 35.2136, 33.9425, 33.4342, 36.08, 28.4294, … |
-| O_LONGITUDE | float64 | 0 | 0 | 359 | -84.4278, -104.6731, -97.0378, -87.9081, -80.9492, -118.4081, -112.0117, -115.1… |
-| D_LATITUDE | float64 | 0 | 0 | 357 | 33.6367, 39.8617, 32.8972, 41.9769, 35.2136, 33.9425, 33.4342, 36.08, 40.7772, … |
-| D_LONGITUDE | float64 | 0 | 0 | 359 | -84.4278, -104.6731, -97.0378, -87.9081, -80.9492, -118.4081, -112.0117, -115.1… |
-| CRS_DEP_TIME_MIN | int64 | 0 | 0 | 1347 | 360, 420, 480, 540, 600, 390, 450, 660, 375, 510 |
-| CRS_ARR_TIME_MIN | int64 | 0 | 0 | 1432 | 1439, 1310, 1320, 1260, 1200, 1090, 630, 1125, 1000, 1155 |
+| FL_DATE | datetime64\[ns\] | 0 | 0 | 730 | 2024-10-06 00:00:00, 2024-08-01 00:00:00, 2024-10-21 00:00:00, 2024-11-30 00:00… |
+| INBOUND_ARR_DELAY | float64 | 2.12202e+06 | 15.5 | 1881 | -11.0, -10.0, -13.0, -12.0, -9.0, -14.0, -8.0, -15.0, -7.0, -16.0 |
+| O_PRCP | float64 | 762254 | 5.57 | 323 | 0.0, 0.3, 0.5, 0.8, 1.0, 1.3, 0.2, 1.5, 1.8, 2.0 |
+| D_PRCP | float64 | 763126 | 5.57 | 327 | 0.0, 0.3, 0.5, 0.8, 1.0, 1.3, 0.2, 1.5, 1.8, 2.0 |
+| INBOUND_DEP_DELAY | float64 | 438108 | 3.2 | 1904 | -5.0, -4.0, -3.0, -6.0, -2.0, -1.0, -7.0, 0.0, -8.0, -9.0 |
+| INBOUND_TURN_MIN | float64 | 281465 | 2.06 | 18802 | 50.0, 45.0, 40.0, 55.0, 60.0, 35.0, 70.0, 65.0, 30.0, 56.0 |
+| INBOUND_MIN_SINCE_SCHED_DEP | float64 | 281465 | 2.06 | 16168 | 120.0, 180.0, 150.0, 105.0, 135.0, 165.0, 110.0, 240.0, 115.0, 90.0 |
+| O_CLDC | float64 | 14899 | 0.11 | 9 | 2.0, 8.0, 4.0, 0.0, 6.0, 7.0, 5.0, 3.0, 1.0 |
+| D_CLDC | float64 | 14662 | 0.11 | 9 | 2.0, 8.0, 4.0, 0.0, 6.0, 7.0, 5.0, 3.0, 1.0 |
+| O_WDIR | float64 | 5488 | 0.04 | 361 | 0.0, 170.0, 180.0, 190.0, 200.0, 210.0, 220.0, 160.0, 230.0, 260.0 |
+| D_WDIR | float64 | 5557 | 0.04 | 361 | 0.0, 180.0, 170.0, 190.0, 200.0, 210.0, 220.0, 260.0, 160.0, 230.0 |
+| O_TEMP | float64 | 3820 | 0.03 | 721 | 25.0, 24.4, 22.8, 26.1, 23.3, 23.9, 25.6, 20.0, 21.7, 22.2 |
+| O_RHUM | float64 | 3840 | 0.03 | 100 | 90.0, 93.0, 70.0, 72.0, 84.0, 68.0, 87.0, 82.0, 76.0, 74.0 |
+| O_WSPD | float64 | 3947 | 0.03 | 222 | 11.2, 9.4, 13.0, 7.6, 0.0, 14.8, 5.4, 16.6, 18.4, 20.5 |
+| O_PRES | float64 | 4586 | 0.03 | 876 | 1015.0, 1016.0, 1014.0, 1017.0, 1013.0, 1018.0, 1012.0, 1019.0, 1015.2, 1015.8 |
+| D_TEMP | float64 | 3867 | 0.03 | 725 | 25.0, 22.8, 24.4, 23.3, 23.9, 20.0, 21.7, 22.2, 26.1, 25.6 |
+| D_RHUM | float64 | 3899 | 0.03 | 100 | 90.0, 93.0, 70.0, 84.0, 68.0, 82.0, 72.0, 76.0, 87.0, 74.0 |
+| D_WSPD | float64 | 3982 | 0.03 | 220 | 11.2, 9.4, 13.0, 7.6, 0.0, 14.8, 5.4, 16.6, 18.4, 20.5 |
+| D_PRES | float64 | 4601 | 0.03 | 877 | 1015.0, 1016.0, 1014.0, 1013.0, 1017.0, 1018.0, 1012.0, 1019.0, 1015.2, 1015.4 |
+| CRS_ELAPSED_TIME | float64 | 3 | 0 | 638 | 90.0, 85.0, 80.0, 75.0, 95.0, 70.0, 110.0, 115.0, 105.0, 120.0 |
+| DISTANCE | float64 | 0 | 0 | 1650 | 337.0, 399.0, 296.0, 594.0, 404.0, 862.0, 391.0, 867.0, 733.0, 328.0 |
+| O_LATITUDE | float64 | 0 | 0 | 358 | 33.6367, 39.8617, 32.8972, 41.9769, 35.2136, 33.9425, 36.08, 33.4342, 47.45, 28… |
+| O_LONGITUDE | float64 | 0 | 0 | 360 | -84.4278, -104.6731, -97.0378, -87.9081, -80.9492, -118.4081, -115.1522, -112.0… |
+| D_LATITUDE | float64 | 0 | 0 | 358 | 33.6367, 39.8617, 32.8972, 41.9769, 35.2136, 33.9425, 36.08, 33.4342, 47.45, 28… |
+| D_LONGITUDE | float64 | 0 | 0 | 360 | -84.4278, -104.6731, -97.0378, -87.9081, -80.9492, -118.4081, -115.1522, -112.0… |
+| CRS_DEP_TIME_MIN | int64 | 0 | 0 | 1397 | 360, 420, 480, 540, 390, 600, 510, 660, 450, 375 |
+| CRS_ARR_TIME_MIN | int64 | 0 | 0 | 1438 | 1439, 1320, 1200, 1090, 1260, 1310, 1135, 1180, 1000, 1030 |
 
 </details>
 
@@ -812,8 +861,8 @@ The tail number links each flight to the aircraft's flight scheduled just before
 
 | ARR_DEL15 | count | pct |
 |---|---|---|
-| No | 1432050 | 79.59 |
-| Yes | 367205 | 20.41 |
+| No | 10855797 | 79.29 |
+| Yes | 2834906 | 20.71 |
 
 ### Numeric features
 
@@ -822,32 +871,32 @@ The tail number links each flight to the aircraft's flight scheduled just before
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| CRS_DEP_TIME_MIN | 179926 | 806.864 | 297.277 | 4 | 1439 |
-| CRS_ARR_TIME_MIN | 179926 | 905.672 | 313.027 | 1 | 1439 |
-| CRS_ELAPSED_TIME | 179926 | 147.453 | 72.9175 | 23 | 697 |
-| DISTANCE | 179926 | 834.573 | 597.11 | 31 | 5095 |
-| O_LATITUDE | 179926 | 36.5308 | 5.97247 | -14.33 | 71.2847 |
-| O_LONGITUDE | 179926 | -94.8273 | 18.6933 | -176.643 | 145.73 |
-| D_LATITUDE | 179926 | 36.5267 | 5.99309 | -14.33 | 71.2847 |
-| D_LONGITUDE | 179926 | -94.8975 | 18.7603 | -176.643 | 145.73 |
-| O_TEMP | 179776 | 14.5844 | 10.249 | -35 | 48.3 |
-| O_RHUM | 179775 | 61.5006 | 22.2279 | 2 | 100 |
-| O_PRCP | 167192 | 0.0905612 | 0.745554 | 0 | 78.2 |
-| O_WDIR | 179739 | 175.431 | 111.04 | 0 | 360 |
-| O_WSPD | 179772 | 13.7239 | 8.5701 | 0 | 98 |
-| O_PRES | 179751 | 1017.31 | 7.43387 | 960.5 | 1059.4 |
-| O_CLDC | 179347 | 4.3684 | 2.82244 | 0 | 8 |
-| D_TEMP | 179803 | 14.5891 | 10.2443 | -35 | 47.2 |
-| D_RHUM | 179803 | 61.5363 | 22.1299 | 2 | 100 |
-| D_PRCP | 167198 | 0.0926201 | 0.773413 | 0 | 70.4 |
-| D_WDIR | 179782 | 176.502 | 111.331 | 0 | 360 |
-| D_WSPD | 179803 | 13.7287 | 8.5521 | 0 | 83.5 |
-| D_PRES | 179773 | 1017.3 | 7.45331 | 965.6 | 1053.6 |
-| D_CLDC | 179365 | 4.35878 | 2.82741 | 0 | 8 |
-| INBOUND_TURN_MIN | 176298 | 251.839 | 2044.91 | -350 | 692618 |
-| INBOUND_MIN_SINCE_SCHED_DEP | 176298 | 372.143 | 2048.93 | -55 | 692815 |
-| INBOUND_DEP_DELAY | 174239 | 9.56299 | 44.247 | -47 | 3024 |
-| INBOUND_ARR_DELAY | 152111 | -0.93583 | 43.4289 | -126 | 3063 |
+| CRS_DEP_TIME_MIN | 1.36907e+06 | 808.119 | 298.078 | 1 | 1439 |
+| CRS_ARR_TIME_MIN | 1.36907e+06 | 904.932 | 314.026 | 1 | 1439 |
+| CRS_ELAPSED_TIME | 1.36907e+06 | 146.381 | 72.8052 | 20 | 706 |
+| DISTANCE | 1.36907e+06 | 834.281 | 598.592 | 31 | 5095 |
+| O_LATITUDE | 1.36907e+06 | 36.6041 | 6.00547 | -14.33 | 71.2847 |
+| O_LONGITUDE | 1.36907e+06 | -94.8827 | 18.6785 | -176.643 | 145.73 |
+| D_LATITUDE | 1.36907e+06 | 36.5959 | 6.00284 | -14.33 | 71.2847 |
+| D_LONGITUDE | 1.36907e+06 | -94.8954 | 18.6891 | -176.643 | 145.73 |
+| O_TEMP | 1.36871e+06 | 17.9393 | 9.97838 | -44.4 | 48.3 |
+| O_RHUM | 1.36871e+06 | 60.5171 | 22.0657 | 2 | 100 |
+| O_PRCP | 1.29283e+06 | 0.097981 | 0.887447 | 0 | 73.7 |
+| O_WDIR | 1.36851e+06 | 174.14 | 109.199 | 0 | 360 |
+| O_WSPD | 1.36869e+06 | 13.9944 | 8.485 | 0 | 113 |
+| O_PRES | 1.36864e+06 | 1015.75 | 6.65015 | 961.4 | 1059.2 |
+| O_CLDC | 1.36759e+06 | 4.28312 | 2.76141 | 0 | 8 |
+| D_TEMP | 1.3687e+06 | 17.9768 | 9.93894 | -41.1 | 48.9 |
+| D_RHUM | 1.3687e+06 | 60.4105 | 21.979 | 2 | 100 |
+| D_PRCP | 1.29315e+06 | 0.0976539 | 0.873347 | 0 | 73.7 |
+| D_WDIR | 1.36855e+06 | 174.934 | 109.409 | 0 | 360 |
+| D_WSPD | 1.3687e+06 | 13.9887 | 8.4693 | 0 | 118.4 |
+| D_PRES | 1.36862e+06 | 1015.73 | 6.65168 | 962 | 1059.6 |
+| D_CLDC | 1.36762e+06 | 4.25764 | 2.76972 | 0 | 8 |
+| INBOUND_TURN_MIN | 1.34058e+06 | 244.96 | 1208.78 | -358 | 264776 |
+| INBOUND_MIN_SINCE_SCHED_DEP | 1.34058e+06 | 364.216 | 1215.1 | -58 | 264865 |
+| INBOUND_DEP_DELAY | 1.32504e+06 | 9.66189 | 43.9914 | -99 | 2935 |
+| INBOUND_ARR_DELAY | 1.15609e+06 | -0.477567 | 42.7442 | -98 | 2923 |
 
 </details>
 
@@ -858,50 +907,58 @@ The tail number links each flight to the aircraft's flight scheduled just before
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| ARR_DEL15 | 1 | No | 143318 | 79.65 |
-| ARR_DEL15 | 2 | Yes | 36608 | 20.35 |
-| DEST | 1 | ATL | 8731 | 4.85 |
-| DEST | 2 | DEN | 7817 | 4.34 |
-| DEST | 3 | DFW | 7646 | 4.25 |
-| DEST | 4 | ORD | 6965 | 3.87 |
-| DEST | 5 | CLT | 5359 | 2.98 |
-| D_COCO | 1 | fair | 53977 | 30 |
-| D_COCO | 2 | cloudy | 49545 | 27.54 |
-| D_COCO | 3 | overcast | 27426 | 15.24 |
-| D_COCO | 4 | clear | 22071 | 12.27 |
-| D_COCO | 5 | light rain | 7739 | 4.3 |
-| FL_DATE | 1 | 2024-12-01 00:00:00 | 2251 | 1.25 |
-| FL_DATE | 2 | 2024-11-22 00:00:00 | 2132 | 1.18 |
-| FL_DATE | 3 | 2024-11-26 00:00:00 | 2131 | 1.18 |
-| FL_DATE | 4 | 2024-11-27 00:00:00 | 2093 | 1.16 |
-| FL_DATE | 5 | 2024-11-30 00:00:00 | 2084 | 1.16 |
-| INBOUND_STATUS | 1 | arrived | 152111 | 84.54 |
-| INBOUND_STATUS | 2 | in the air | 22128 | 12.3 |
-| INBOUND_STATUS | 3 | &lt;NA> | 3628 | 2.02 |
-| INBOUND_STATUS | 4 | not departed | 2059 | 1.14 |
-| OP_CARRIER | 1 | WN | 36187 | 20.11 |
-| OP_CARRIER | 2 | DL | 25872 | 14.38 |
-| OP_CARRIER | 3 | AA | 24389 | 13.56 |
-| OP_CARRIER | 4 | UA | 19412 | 10.79 |
-| OP_CARRIER | 5 | OO | 18737 | 10.41 |
-| OP_CARRIER_FL_NUM | 1 | 540 | 90 | 0.05 |
-| OP_CARRIER_FL_NUM | 2 | 1368 | 87 | 0.05 |
-| OP_CARRIER_FL_NUM | 3 | 372 | 83 | 0.05 |
-| OP_CARRIER_FL_NUM | 4 | 322 | 82 | 0.05 |
-| OP_CARRIER_FL_NUM | 5 | 323 | 81 | 0.05 |
-| ORIGIN | 1 | ATL | 8822 | 4.9 |
-| ORIGIN | 2 | DEN | 7781 | 4.32 |
-| ORIGIN | 3 | DFW | 7656 | 4.26 |
-| ORIGIN | 4 | ORD | 6970 | 3.87 |
-| ORIGIN | 5 | CLT | 5488 | 3.05 |
-| O_COCO | 1 | fair | 53764 | 29.88 |
-| O_COCO | 2 | cloudy | 49968 | 27.77 |
-| O_COCO | 3 | overcast | 27257 | 15.15 |
-| O_COCO | 4 | clear | 21761 | 12.09 |
-| O_COCO | 5 | fog | 8081 | 4.49 |
+| ARR_DEL15 | 1 | No | 1084790 | 79.24 |
+| ARR_DEL15 | 2 | Yes | 284280 | 20.76 |
+| DEST | 1 | ATL | 66986 | 4.89 |
+| DEST | 2 | DEN | 58559 | 4.28 |
+| DEST | 3 | DFW | 58367 | 4.26 |
+| DEST | 4 | ORD | 53303 | 3.89 |
+| DEST | 5 | CLT | 40635 | 2.97 |
+| D_COCO | 1 | fair | 442393 | 32.31 |
+| D_COCO | 2 | cloudy | 414418 | 30.27 |
+| D_COCO | 3 | clear | 171358 | 12.52 |
+| D_COCO | 4 | overcast | 152450 | 11.14 |
+| D_COCO | 5 | light rain | 58735 | 4.29 |
+| FL_DATE | 1 | 2024-10-06 00:00:00 | 2198 | 0.16 |
+| FL_DATE | 2 | 2024-08-01 00:00:00 | 2191 | 0.16 |
+| FL_DATE | 3 | 2024-10-21 00:00:00 | 2190 | 0.16 |
+| FL_DATE | 4 | 2024-11-30 00:00:00 | 2172 | 0.16 |
+| FL_DATE | 5 | 2024-11-27 00:00:00 | 2172 | 0.16 |
+| INBOUND_STATUS | 1 | arrived | 1156094 | 84.44 |
+| INBOUND_STATUS | 2 | in the air | 168942 | 12.34 |
+| INBOUND_STATUS | 3 | &lt;NA> | 28492 | 2.08 |
+| INBOUND_STATUS | 4 | not departed | 15542 | 1.14 |
+| OP_CARRIER | 1 | WN | 281857 | 20.59 |
+| OP_CARRIER | 2 | DL | 197392 | 14.42 |
+| OP_CARRIER | 3 | AA | 189224 | 13.82 |
+| OP_CARRIER | 4 | UA | 146709 | 10.72 |
+| OP_CARRIER | 5 | OO | 140101 | 10.23 |
+| OP_CARRIER_FL_NUM | 1 | 555 | 650 | 0.05 |
+| OP_CARRIER_FL_NUM | 2 | 1150 | 605 | 0.04 |
+| OP_CARRIER_FL_NUM | 3 | 323 | 597 | 0.04 |
+| OP_CARRIER_FL_NUM | 4 | 352 | 591 | 0.04 |
+| OP_CARRIER_FL_NUM | 5 | 777 | 590 | 0.04 |
+| ORIGIN | 1 | ATL | 66559 | 4.86 |
+| ORIGIN | 2 | DEN | 58865 | 4.3 |
+| ORIGIN | 3 | DFW | 58678 | 4.29 |
+| ORIGIN | 4 | ORD | 53124 | 3.88 |
+| ORIGIN | 5 | CLT | 40560 | 2.96 |
+| O_COCO | 1 | fair | 441534 | 32.25 |
+| O_COCO | 2 | cloudy | 417173 | 30.47 |
+| O_COCO | 3 | clear | 166281 | 12.15 |
+| O_COCO | 4 | overcast | 151514 | 11.07 |
+| O_COCO | 5 | light rain | 58850 | 4.3 |
 
 </details>
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a21832-1223-7ee0-a649-3f665841eff6 |
+| checksum | v2:24c48215a0de3d796bc086226c56eb69a6f31c7c3c09ef9d3b013f79cad83c46 |
+| built_at | 2026-11-26T14:11:47+00:00 |
+| path | aeolus_rebuilt_1m/01a21832-1223-7ee0-a649-3f665841eff6 |
+| data_foundry_version | 0.0.5 |
+| git_sha | c0295a4ec7dcdcc8b1bab070e1c263605df09a69-dirty |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

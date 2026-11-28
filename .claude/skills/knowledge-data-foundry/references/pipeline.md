@@ -22,7 +22,7 @@ belong?") needs no command: answer it from knowledge-curation.
 | New candidate | empty | empty | empty | none | none | none |
 | Screened by the AI | `TBD -> Yes`, `TBD -> 2nd Tier` or `No` | 1-5 (none on `No`) | `AI (UNVERIFIED)` | none | none | the disclaimer and a `**Screening (AI, <date>):**` block |
 | Verified by the curator | `Yes` (accepted for adding), `TBD -> Yes` (later) or `No` | as the curator leaves it | the curator | none | none | `CC` lines for decisions given in chat |
-| Taken for adding | `Yes` | | | on the claims board; `WIP (DF)` and `claimed_by` mirrored | none | |
+| Taken for adding | `Yes` | | | on the claims board (nothing in the record) | none | |
 | Added by the AI | `Yes` | 1-5 again, from what was measured | | kept | `v2_path`, the folder | `**Assessment (AI, <date>):**`; the review in `## Review` |
 | Reviewed by the curator | `Yes`, or `No` / `No (Retired)` when retired | | | kept until the work reaches `main` | a retired folder goes | `CC` lines, `Exception to` lines; each settled issue gets the curator's turn and a `Resolved` turn in `## Review`, which stays |
 | On `main` | `Yes` | | | `DF: Yes`, claim released | | |
@@ -38,13 +38,13 @@ never sets a plain `Yes` while screening; only a curator does.
 * **Screening review:** the dashboard's Screening pill (AI-unverified records whose verdict is not `No`, highest
   priority first); confirmed rejections are found with the status funnel on 🤖 and ✗.
 * **To add:** `suggestion` `Yes`, no `DF: Yes`, no claim on the board, not AI-unverified
-  (`#hf.suggestion=+Yes&hf.data_foundry_status=-DF: Yes&hf.claimed_by=+∅&hf.checked_by=-AI (UNVERIFIED)`; the
+  (`#hf.suggestion=+Yes&hf.data_foundry_status=-DF: Yes&hf.claim_holder=+∅&hf.checked_by=-AI (UNVERIFIED)`; the
   dashboard's Claimed by column shows the board, [claims.md](claims.md)).
 * **To review:** the records whose `## Review` has something open for the curator (an issue without its Resolved
   turn, a record-field row, a verdict to verify, the metric or the horizon a round asks about), with a folder or
   without ([records.md](records.md), "The review section"); the review page lists them by priority, highest first, and
-  within one priority the fewest open decisions first. A record that is `WIP (DF)` with nothing open is reviewed and
-  waits for the PR that brings it to `main`.
+  within one priority the fewest open decisions first. A record with nothing open is reviewed and waits for the
+  PR that brings it to `main`.
 
 ## Which file is the truth for what
 
@@ -55,7 +55,7 @@ When two files disagree, the one named here wins for its topic; the other is cor
 | What the dataset is: data, target, splits, notes | the definition, `dataset.py` | the generated README (rewrite it with `dataset check`), the record's prose |
 | The verdict, the status, the claim, the priority | the record's front matter | the review's outcome, a chat message not yet applied |
 | The curator's decisions and their reasons | `CC` lines in the record, `Exception to` lines | an AI assessment |
-| What is still open | the record's `## Review`, and the working copy's cross-dataset `REVIEW.md` | the review page and its report (snapshots of these), a run folder |
+| What is still open | the record's `## Review`; across datasets, a GitHub issue | the review page and its report (snapshots of these), a run folder |
 | The rules | the knowledge skills | memory (pointers and preferences only), an old run report |
 | A build | the README's build record and the CHANGELOG | the warehouse folder names |
 

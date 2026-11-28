@@ -1,3 +1,7 @@
+"""A curated container: the frame, its metadata and its splits, saved and loaded as files; and the helpers that
+say which columns are model inputs (``feature_columns``), split columns, weights and special features.
+"""
+
 from __future__ import annotations
 
 import dataclasses
@@ -8,9 +12,10 @@ import os
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import pandas as pd
+from pandas.api.types import is_datetime64_any_dtype
 from pydantic import TypeAdapter
 from uuid6 import uuid7
 
@@ -23,12 +28,10 @@ from data_foundry.row_table import (
     table_metadata,
 )
 from data_foundry.schema import (
-    DatasetMetadata,
     DatasetMetadataV2,
     Grouping,
     MultilineStr,
     PredictiveMLSplitsMetadata,
-    PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2,
     SpecialFeature,
     UnitWeight,
@@ -45,6 +48,10 @@ from data_foundry.utils.checksum import (
     omit_unset_fields,
 )
 from data_foundry.utils.dtypes import is_str_dtype
+from data_foundry.v1 import DatasetMetadata, PredictiveMLTaskMetadata
+
+if TYPE_CHECKING:
+    from data_foundry.task import BenchmarkTask
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +67,7 @@ FORMAT_VERSIONS = {
     PredictiveMLTaskMetadataV2.type_adapter_id: 2,
 }
 """The container format of each task metadata class: 1 for the v1 notebooks (and the shipped BeyondArena
-containers), 2 for the v2 definitions (:mod:`data_foundry.v2`)."""
+containers), 2 for the v2 definitions (:mod:`data_foundry.definition`)."""
 NoIndentMetadata = [
     PredictiveMLSplitsMetadata.type_adapter_id,
 ]
@@ -101,7 +108,9 @@ def feature_columns(container: CuratedContainer) -> list[str]:
 
 def split_columns(container: CuratedContainer) -> list[str]:
     """The columns an inner validation split reads, in frame order: the group column(s) of a grouped task (whole
-    groups on one side) and the time column of a temporal task (the newest training rows held out).
+    groups on one side), the time column of a temporal task (the newest training rows held out), the order inside a
+    group and its prediction point (``grouping.time_on``, ``grouping.prediction_time``) when set, and the unit of a
+    unit weight (``unit_weight.unit``: a unit's rows stay on one side, as the score counts each unit once).
 
     Read them to cut the folds, never as inputs unless :func:`feature_columns` lists them too (a time column of the
     prediction point is both; a group column or a time column that dates the label is only this)::
@@ -111,6 +120,12 @@ def split_columns(container: CuratedContainer) -> list[str]:
     """
     task = container.task_metadata
     wanted = {*as_column_list(task.group_on), *as_column_list(task.time_on)}
+    grouping = getattr(task, "grouping", None)
+    if grouping is not None:
+        wanted.update(c for c in (grouping.time_on, grouping.prediction_time) if c is not None)
+    unit = getattr(task, "unit_weight", None)
+    if unit is not None:
+        wanted.add(unit.unit)
     return [c for c in container.dataset.columns if c in wanted]
 
 
@@ -144,7 +159,7 @@ def validation_weight(container: CuratedContainer) -> str | None:
     """
     if getattr(container, "format_version", 1) != 2:
         return None
-    from data_foundry.v2.metrics import row_weight_column  # noqa: PLC0415 - data_foundry.v2 imports this module
+    from data_foundry.metrics import row_weight_column  # noqa: PLC0415 - data_foundry.definition imports this module
 
     return row_weight_column(container.task_metadata.objective_metric)
 
@@ -153,7 +168,7 @@ def special_features(container: CuratedContainer, kind: str | None = None) -> li
     """The model inputs that need handling beyond their dtype (:class:`~data_foundry.schema.SpecialFeature`): every
     one, or those of ``kind`` (``smiles``, ``spectrum``). Each is one column (a SMILES, ``layout == "column"``) or a
     group of columns encoded together (a spectrum, ``layout == "group"``); its columns are in ``feature.columns``.
-    Encode one with ``data_foundry.v2.special.encode_special_feature(container.dataset, feature)``; where
+    Encode one with ``data_foundry.special.encode_special_feature(container.dataset, feature)``; where
     ``feature.encoding_required`` the raw values are no model input. A format-1 container has none.
     """
     features = getattr(container.task_metadata, "special_features", None) or ()
@@ -173,6 +188,7 @@ class CuratedContainer:
             "test_dtypes.json",
             "test_categories.json",
             "container_metadata.json",
+            "benchmark_task.json",
             ROWS_FILE,
         }
     )
@@ -215,9 +231,15 @@ class CuratedContainer:
         checks and the checksums.
 
         Raises:
-            ValueError: A new container's frame has a column name that is not a string, or an index other than
-                ``0..n-1`` (the files keep neither, so the checksum would not verify after a save).
+            ValueError: A new container's frame has a column name that is not a string, an index other than
+                ``0..n-1`` (the files keep neither, so the checksum would not verify after a save) or a categorical
+                column with datetime categories; or a format-2 container has a ``version_comment``.
         """
+        if self.version_comment is not None and self.format_version >= 2:
+            raise ValueError(
+                "A format-2 container keeps no version_comment (container_metadata.json does not write it); say how "
+                "the version differs in its dataset metadata (`derivation`).",
+            )
         if self.dataset is not None:
             self.dataset = self._text_categories_as_object(self.dataset)
         if self.test_dataset is not None:
@@ -234,10 +256,23 @@ class CuratedContainer:
 
     @staticmethod
     def _check_new_frame(df: pd.DataFrame, label: str) -> None:
-        """Refuse what a save would not keep: non-string column names and an index other than ``0..n-1``."""
+        """Refuse what a save would not keep: non-string column names, an index other than ``0..n-1`` and
+        categorical columns with datetime categories (parquet stores them as plain datetimes, and a time zone is lost).
+        """
         not_str = [c for c in df.columns if not isinstance(c, str)]
         if not_str:
             raise ValueError(f"`{label}` has column names that are not strings: {not_str[:5]}.")
+        datetime_categoricals = [
+            c
+            for c, dtype in df.dtypes.items()
+            if isinstance(dtype, pd.CategoricalDtype) and is_datetime64_any_dtype(dtype.categories.dtype)
+        ]
+        if datetime_categoricals:
+            raise ValueError(
+                f"`{label}` has categorical columns with datetime categories, which a save does not keep: "
+                f"{datetime_categoricals[:5]}. Store each as a datetime column (`df[col].astype(df[col].cat.categories"
+                ".dtype)`).",
+            )
         index = df.index
         if not (isinstance(index, pd.RangeIndex) and index.start == 0 and index.step == 1):
             raise ValueError(
@@ -262,16 +297,19 @@ class CuratedContainer:
     def grouping(self) -> Grouping | None:
         """How a grouped task is used (:class:`~data_foundry.schema.Grouping`), or None for an IID or temporal task.
 
-        Format 2 only. A format-1 container records just ``group_on`` / ``group_labels`` / ``group_time_on``, not the
-        prediction unit, the aggregation or the context, so asking it for a grouping raises.
+        A format-1 container records just ``group_on`` / ``group_labels`` / ``group_time_on``, not the prediction
+        unit, the aggregation or the context, so it returns None, as the other format-2 helpers do; its group column
+        is ``task_metadata.group_on``, or ``task().split_roles.group`` in the task view.
         """
-        if self.format_version < 2:
-            raise NotImplementedError(
-                f"{self.dataset_metadata.unique_name}: a format-{self.format_version} container has no grouping "
-                "block (only task_metadata.group_on / group_labels / group_time_on); rebuild it from its v2 "
-                "definition, or check `container.format_version >= 2` first.",
-            )
-        return self.task_metadata.grouping
+        return getattr(self.task_metadata, "grouping", None)
+
+    def task(self) -> BenchmarkTask:
+        """The benchmark's view of this container (:class:`~data_foundry.task.BenchmarkTask`): the model inputs, the
+        folds within the row budget, the weights, the metric with its optimum and the scorer, for both formats.
+        """
+        from data_foundry.task import BenchmarkTask  # noqa: PLC0415 - data_foundry.task imports this module
+
+        return BenchmarkTask.from_container(self)
 
     @property
     def container_metadata(self) -> dict[str, str | int | None]:
@@ -304,7 +342,7 @@ class CuratedContainer:
         if version is None:
             version = checksum_version(self.checksum) if self.checksum else CHECKSUM_VERSION
 
-        print("Calculating checksum for curated container...")
+        logger.debug("Calculating the checksum of %s.", self.dataset_metadata.unique_name)
         h = hashlib.blake2b(digest_size=32)
         h.update(b"\0")
         h.update(b"dataset\0")
@@ -437,8 +475,10 @@ class CuratedContainer:
 
     @staticmethod
     def _save_dtypes(df: pd.DataFrame, path: Path) -> None:
-        """Save DataFrame column dtypes to a JSON file."""
-        dtypes = {str(col): str(dtype) for col, dtype in df.dtypes.items()}
+        """Save DataFrame column dtypes to a JSON file; pandas 3's ``str`` dtype is written as ``object``, as pandas 2
+        reads it (and as the checksum counts it).
+        """
+        dtypes = {str(col): "object" if is_str_dtype(dtype) else str(dtype) for col, dtype in df.dtypes.items()}
         with path.open("w") as f:
             json.dump(dtypes, f, indent=2)
 
@@ -470,7 +510,13 @@ class CuratedContainer:
             categories = pd.Index(detail["categories"], dtype=detail["categories_dtype"])
             dtype = pd.CategoricalDtype(categories, ordered=detail["ordered"])
             if df[col].dtype != dtype or list(df[col].cat.categories) != list(categories):
-                df[col] = df[col].astype(dtype)
+                restored = df[col].astype(dtype)
+                if restored.isna().sum() > df[col].isna().sum():
+                    raise ValueError(
+                        f"{path.name}: restoring the categories of column '{col}' would turn values into missing "
+                        f"values (dtype {df[col].dtype} read, categories of dtype {detail['categories_dtype']}).",
+                    )
+                df[col] = restored
         return df
 
     @staticmethod
@@ -479,7 +525,9 @@ class CuratedContainer:
 
         If the file does not exist, logs a warning and returns the DataFrame with only its text categories fixed.
         If a column cast fails, logs a warning for that column and skips it. Text categories come back as
-        ``object``, as pandas 2 reads them (pandas 3 reads them as ``str``), so both load the same frame.
+        ``object``, as pandas 2 reads them (pandas 3 reads them as ``str``), so both load the same frame. A column
+        saved as ``str`` (pandas 3's text dtype, in a file written before the save wrote ``object`` for it) keeps the
+        dtype parquet gives it: ``astype("str")`` would turn its missing values into the text ``"None"`` under pandas 2.
         """
         if not path.exists():
             logger.warning("dtype file %s not found — skipping dtype restoration (backward compatibility).", path)
@@ -492,7 +540,7 @@ class CuratedContainer:
             if col not in df.columns:
                 logger.warning("Column '%s' from dtype file not found in DataFrame — skipping.", col)
                 continue
-            if str(df[col].dtype) == dtype_str:
+            if str(df[col].dtype) == dtype_str or dtype_str == "str":  # "str": text, which parquet reads as such
                 continue
             try:
                 df[col] = df[col].astype(dtype_str)
@@ -527,20 +575,32 @@ class CuratedContainer:
         ``$DATA_FOUNDRY_WAREHOUSE`` or ``local-data-warehouse/``).
 
         The container is written to ``<save_dir>/<unique_name>/<uuid>/`` (a format-1 version of another dataset:
-        ``<save_dir>/<version_from_unique_name>/versions/<uuid>/``).
+        ``<save_dir>/<version_from_unique_name>/versions/<uuid>/``). A format-2 container also writes its task view
+        (:meth:`task`, ``to_dict()``) as ``benchmark_task.json``: derived from the metadata, outside the checksum.
         """
         save_dir = resolve_warehouse_dir() if save_dir is None else Path(save_dir)
         final_path = self._save_path(save_dir)
         final_path.parent.mkdir(parents=True, exist_ok=True)
         warehouse_path = final_path.relative_to(save_dir)
-        print(f"Saving curated container to {warehouse_path}")
+        logger.info("Saving curated container to %s", warehouse_path)
         # write into a temporary folder next to the target and rename it at the end, so an interrupted save never
-        # leaves a half-written container under the UUID
+        # leaves a half-written container under the UUID; a write that fails removes the temporary folder
         save_path = final_path.parent / f".{final_path.name}.saving-{os.getpid()}"
         if save_path.exists():
             shutil.rmtree(save_path)
         save_path.mkdir()
+        try:
+            self._write_files(save_path)
+            if final_path.exists():  # saving the same UUID again replaces it
+                shutil.rmtree(final_path)
+            save_path.rename(final_path)
+        except BaseException:
+            shutil.rmtree(save_path, ignore_errors=True)
+            raise
+        return final_path
 
+    def _write_files(self, save_path: Path) -> None:
+        """Write the container's files into the folder ``save_path`` (:meth:`save`)."""
         # Save dataset
         dataset_path = save_path / "dataset.parquet"
         self.dataset.to_parquet(dataset_path, index=False)
@@ -573,10 +633,11 @@ class CuratedContainer:
         with (save_path / "container_metadata.json").open("w") as f:
             json.dump(self.container_metadata, f, indent=2)
 
-        if final_path.exists():  # saving the same UUID again replaces it
-            shutil.rmtree(final_path)
-        save_path.rename(final_path)
-        return final_path
+        if self.format_version >= 2:  # derived from the metadata for readers without Data Foundry; not checksummed
+            from data_foundry.task import BENCHMARK_TASK_FILE  # noqa: PLC0415 - data_foundry.task imports this module
+
+            with (save_path / BENCHMARK_TASK_FILE).open("w") as f:
+                json.dump(self.task().to_dict(), f, indent=2)
 
     def _row_table(self) -> pd.DataFrame | None:
         """The row table a format-2 container saves its splits in (:mod:`data_foundry.row_table`).
@@ -627,6 +688,7 @@ class CuratedContainer:
             if type_adapter_id == SPLITS_TABLE_TYPE:  # the splits are in the row table
                 with meta_file.open("r") as f:
                     meta_data = inline_metadata(json.load(f), path, PredictiveMLSplitsMetadata.type_adapter_id)
+                CuratedContainer._refuse_unknown_fields(meta_file, meta_data, PredictiveMLSplitsMetadata)
                 metadata_objs[meta_name] = TypeAdapter(PredictiveMLSplitsMetadata).validate_python(meta_data)
                 continue
             if type_adapter_id not in MetadataRegistry:
@@ -652,16 +714,32 @@ class CuratedContainer:
             # backward compatibility
             meta_data.pop("local_data_directory_base", None)
 
-            # forward compatibility: a container saved by a newer version may carry fields this version lacks
-            known = {f.name for f in dataclasses.fields(MetadataRegistry[type_adapter_id])}
-            unknown = sorted(set(meta_data) - known)
-            if unknown:
-                logger.warning("%s: ignoring fields this version does not know: %s.", meta_file.name, unknown)
-                meta_data = {k: v for k, v in meta_data.items() if k in known}
+            # forward compatibility: a container saved by a newer version may carry fields this version lacks. The
+            # dataset metadata is descriptive, so those are dropped with a warning; a task or split field can change
+            # what a model reads or how it is scored (a dropped `time_of` makes a label time a feature), so it refuses
+            meta_class = MetadataRegistry[type_adapter_id]
+            if meta_name == "dataset_metadata":
+                known = {f.name for f in dataclasses.fields(meta_class)}
+                unknown = sorted(set(meta_data) - known)
+                if unknown:
+                    logger.warning("%s: ignoring fields this version does not know: %s.", meta_file.name, unknown)
+                    meta_data = {k: v for k, v in meta_data.items() if k in known}
+            else:
+                CuratedContainer._refuse_unknown_fields(meta_file, meta_data, meta_class)
 
             metadata_objs[meta_name] = adapter.validate_python(meta_data)
 
         return metadata_objs
+
+    @staticmethod
+    def _refuse_unknown_fields(meta_file: Path, meta_data: dict, meta_class: type) -> None:
+        """Raise when a task or split metadata file holds a field ``meta_class`` does not know."""
+        unknown = sorted(set(meta_data) - {f.name for f in dataclasses.fields(meta_class)})
+        if unknown:
+            raise ValueError(
+                f"{meta_file.name}: fields this version does not know: {unknown}; the container was probably written "
+                "by a newer data_foundry. Upgrade data_foundry to read it.",
+            )
 
     @staticmethod
     def load(path: Path | str, *, load_dataset: bool = True, load_test_data: bool = False) -> CuratedContainer:

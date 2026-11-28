@@ -4,9 +4,6 @@ name: 'Machine Learning for Bankruptcy Prediction in the American Stock Market: 
 checked_by:
 - AI (UNVERIFIED)
 - Andrej
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 2
 decision_markers:

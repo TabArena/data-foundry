@@ -3,8 +3,8 @@
 Several curators, each running several agents, work on the same records and folders, and git shows their work only
 when it reaches `main`. A claim says "I am working on this dataset now", and every curator and agent sees it within
 seconds. A claim covers one dataset: its record `curation/records/<name>.md` (its review included) and its folder
-`datasets/_dev/tabarena-v0pt2/<name>/`. Shared files (CHANGELOG, the vocabulary, the working copy's cross-dataset
-`REVIEW.md`) are never claimed; their conflicts are resolved when merging.
+`datasets/_dev/tabarena-v0pt2/<name>/`. Shared files (CHANGELOG, the vocabulary, the knowledge files) are never
+claimed; their conflicts are resolved when merging.
 
 ## How it works
 
@@ -29,15 +29,15 @@ seconds. A claim covers one dataset: its record `curation/records/<name>.md` (it
   * the dashboard shows the holder.
 
   A warning means: stop and ask the curator, or the holder.
-* **The records mirror the board.** `claimed_by` and the WIP value (`WIP (Triage)` for triage or an open verdict,
-  `WIP (DF)` for work on an accepted dataset) are written by `claims claim` and `claims release`. They travel with the
-  work branch and reach `main` with the work. The board is the truth: the old rule of pushing the claim to `main` in
-  its own PR is gone.
+* **The board is the only copy.** The record carries nothing about the claim: no holder, no WIP value. Claim and
+  release with `data-foundry-curation claims claim|release`; the record keeps only the work's own state (`DF: Yes`
+  once the dataset is in Data Foundry). Until 2026-11-25 the records carried a copy of the claim; it drifted
+  from the board and was removed, and old comments that mention it are history.
 
 ## Setup, once per curator
 
 ```bash
-git config data-foundry.curator <Name>     # a claimed_by value of curation/vocabularies.yaml
+git config data-foundry.curator <Name>     # a name of the `curators` list in curation/vocabularies.yaml
 .venv/bin/python -m data_foundry.curation.cli claims list
 ```
 
@@ -55,8 +55,6 @@ commands with `env SSH_AUTH_SOCK=`. The git calls never prompt: a missing creden
 | `claim <names> [--stage S] [--note TEXT] [--ttl DAYS] [--steal]` | Claims what is free and skips the rest. Exit 1 when anything was skipped. Stage default: `add` for an accepted record, else `triage`. A name with no record is refused unless `--allow-unknown`. Claiming your own claim again renews it. |
 | `release <names> [--force]` | Releases your claims; `--force` releases someone else's (logged). |
 | `renew [<names>] [--ttl DAYS]` | Extends your claims (all of them by default). |
-| `sync [--check]` | Makes every record's `claimed_by` and WIP value match the board. |
-| `import-records` | One-time: moves the claims the records carry onto the board. |
 | `init [--pages-dispatch]` | Creates the branch. `--pages-dispatch` adds `.github/workflows/claims-to-pages.yaml` to it, so each claim rebuilds the public dashboard. |
 
 From Python: `claims.claim(...)`, `claims.release(...)`, `claims.load(max_age=30)`, `claims.cached_board()`.
@@ -70,9 +68,9 @@ From Python: `claims.claim(...)`, `claims.release(...)`, `claims.load(max_age=30
 * **When the work reaches `main`, or is dropped,** `claims release <names>`.
 * **When the curator sets the board aside** for a run ("we can ignore any claims", 2026-11-11), the work goes on,
   and the PR lists the datasets it touched that another curator holds, so the holder hears of it before it merges.
-* **Batch filters** use the board (`claims list --json`), not the record's `claimed_by`, which can lag behind.
-* **Hand edits:** the dashboard's Claimed by column shows the board. Pick your own name in a cell to claim, empty it to
-  release. The 🔒 count in the bar says when the board was fetched.
+* **Batch filters** use the board (`claims list --json`) or the dashboard's Claimed by column, which shows it.
+* **Hand edits:** the dashboard's Claimed by column shows the board (it is not a record field). Pick your own name in
+  a cell to claim, empty it to release. The 🔒 count in the bar says when the board was fetched.
 
 ## The Claude Code hook
 
@@ -94,7 +92,5 @@ the page follows within a minute or two. Without it, the page updates with the n
 
 ## When something is off
 
-* **A record says `claimed_by` but the board does not** (or the reverse): `claims sync --check` lists the drift and
-  `claims sync` fixes the records.
 * **"The claims branch kept moving"**: five pushes in a row lost a race. Run the command again.
 * **The board's log** shows every claim and release: `git log origin/claims`.

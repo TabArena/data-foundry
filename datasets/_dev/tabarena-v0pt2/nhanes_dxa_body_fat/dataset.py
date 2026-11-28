@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -279,7 +280,7 @@ class NhanesDxaBodyFat(AbstractCuratedDataset):
         (TabPFN v3.5) against floors of 0.053 and 0.054, the shift that window is kept to test.
     """
     accepted_check_warnings = {
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Four of the nine windows an IID split of 38,708 people would get (SPLIT-33): the release holds eight "
             "cycles, and a fifth window, 2005-2006, would train on 43.6% of the people, below the half-the-data floor "
             "(splits comment)."

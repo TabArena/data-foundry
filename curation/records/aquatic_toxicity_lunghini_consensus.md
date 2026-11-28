@@ -4,9 +4,6 @@ name: 'Consensus QSAR models estimating acute aquatic toxicity for three trophic
 checked_by:
 - AI (UNVERIFIED)
 - Andrej
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:

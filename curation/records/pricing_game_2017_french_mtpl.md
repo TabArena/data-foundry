@@ -3,9 +3,6 @@ unique_name: pricing_game_2017_french_mtpl
 name: pg17trainpol / pg17trainclaim (CASdatasets, 2017 French pricing game)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:

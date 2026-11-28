@@ -7,7 +7,8 @@ from pathlib import Path
 import arff
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -136,7 +137,7 @@ class MiamiHousing(AbstractCuratedDataset):
         "meta_time_horizon_mismatch": "`sale_month` holds the first day of the sale month (the source gives no day), "
         "so each one-month test window holds a single date and its span reads as 1 day; the windows are calendar "
         "months (as perth_house_prices and zillow_prize).",
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Five of the nine windows an IID split of this size would get: sales are dated by month and the data hold "
             "one year, so July 2016 and earlier would train on under half the sales (49.2% for July; Andrej, "
             "2026-11-19)."

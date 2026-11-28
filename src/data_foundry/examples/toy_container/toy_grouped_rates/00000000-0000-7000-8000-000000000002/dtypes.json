@@ -1,0 +1,8 @@
+{
+  "customer": "int64",
+  "driver_age": "int64",
+  "vehicle_size": "category",
+  "region": "category",
+  "exposure": "float64",
+  "claim_rate": "float64"
+}

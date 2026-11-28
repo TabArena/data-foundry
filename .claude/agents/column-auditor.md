@@ -14,7 +14,7 @@ paper, and in `.claude/skills/knowledge-curation/references/`: `principles.md`, 
 `cleaning_features.md`.
 
 For every column of the cleaned frame (load it through
-`.claude/skills/knowledge-data-foundry/scripts/dataset_io.py`; thread caps on every Python run):
+`data_foundry.probes.inputs`; thread caps on every Python run):
 
 1. What it means, from the codebook; "unknown" when nothing says.
 2. When its value comes into existence, and whether that is before the prediction point. Post-outcome fields,
@@ -27,7 +27,7 @@ For every column of the cleaned frame (load it through
    release.
 3. Its dtype and cleaning against `cleaning_features.md`: by meaning, proxy missing values, impossible values,
    encodings reversed, identifiers dropped or turned into their meaning. Run the dtype probe
-   (`.claude/skills/knowledge-data-foundry/scripts/dtype_probes.py <name> --out <run folder>`) and answer each column
+   (`data-foundry probe dtypes <name> --out <run folder>`) and answer each column
    it flags: a count or a measured quantity typed categorical, or a code typed numeric, is a cleaning problem. An
    ordinal scale is an ordered category (`ordinal` in `_feature_types`): check its order against the codebook (the
    order of the codes is often reversed), and that its codes for unknown answers are missing.
@@ -39,8 +39,8 @@ For every column of the cleaned frame (load it through
    60%).
 5. A verdict: fine, leak (rule, strength, remedy), cleaning problem (rule, remedy), or question for the curator.
 
-When the task has a training weight (`sample_weight`, such as a realized time on risk), read the weight column's
-values too, and judge each feature that predicts it (probe 22, `leak_probes.py <name> --weight-proxy`) by its timing
+When the task has a training weight (`sample_weight`, such as a realized time on risk), read the weight column's values
+too, and judge each feature that predicts it (probe 22, `data-foundry probe leak <name> --weight-proxy`) by its timing
 (LEAK-41): a feature known at the quote stays (USE-6); one set or cut after the prediction point goes.
 
 Before the columns, the files: list every file of the release (for Kaggle, `kaggle competitions files -c <name>` or

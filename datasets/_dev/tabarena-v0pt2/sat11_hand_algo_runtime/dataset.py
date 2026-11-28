@@ -8,7 +8,8 @@ from pathlib import Path
 import arff
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Grouping,
@@ -179,7 +180,6 @@ class Sat11HandAlgoRuntime(AbstractCuratedDataset):
             "over instances"
         ),
         params={"cutoff": 5000, "k": 10, "timeout_rel_tol": 0.0001},
-        inputs={"group": "instance_id"},
         target_transform="log",
     )
     scoring_columns = (

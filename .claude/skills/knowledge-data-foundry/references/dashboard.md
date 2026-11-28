@@ -44,10 +44,11 @@ commit, PR) and is not hardened for multi-user or public use.
   or *(none)* from the cell's list. Click the header to sort: records without a priority sort last in both directions.
   Its filter popover lists 1 to 5 and *(empty)*, so `#hf.priority=+5|+4` shows the two top priorities.
 * **Claimed by** (next to *Data Foundry*) shows the live claims board ([claims.md](claims.md)), which the server
-  fetches every 20 s; the 🔒 count in the bar says when, and the error if the fetch failed. Pick your own name in a
-  cell to claim the dataset, empty the cell to release it (both push to the board and update the record). Its filter
-  on *(empty)* (`#hf.claimed_by=+∅`) shows the datasets nobody works on; add your name for "free or mine"
-  (`#hf.claimed_by=+∅|+<name>`). The server needs your name: `git config data-foundry.curator <Name>`.
+  fetches every 20 s; the 🔒 count in the bar says when, and the error if the fetch failed. It is not a record field.
+  Pick your own name in a cell to claim the dataset, empty the cell to release it (both push to the board; the record
+  file is not touched). Its filter on *(empty)* (`#hf.claim_holder=+∅`) shows the datasets nobody works on; add your
+  name for "free or mine" (`#hf.claim_holder=+∅|+<name>`). The server needs your name:
+  `git config data-foundry.curator <Name>`.
 * **Column filters combine with AND and NOT.** Every dropdown column's header has a filter
   button opening a popover that lists all its values (vocabulary ∪ values actually present ∪
   **(empty)**, each with a count; ⚠ marks a value missing from `vocabularies.yaml`). Clicking a

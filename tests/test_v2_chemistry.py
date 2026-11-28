@@ -1,17 +1,18 @@
-"""Tests for the SMILES descriptors and scaffolds (``data_foundry.v2.chemistry``)."""
+"""Tests for the SMILES descriptors and scaffolds (``data_foundry.special.chemistry``)."""
 
 from __future__ import annotations
 
 import pandas as pd
 import pytest
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     DatasetDefinitionError,
     Encoding,
-    chemistry,
     murcko_scaffolds,
     rdkit_descriptors,
     scaffold_groups,
 )
+from data_foundry.special import chemistry
 
 pytest.importorskip("rdkit")
 

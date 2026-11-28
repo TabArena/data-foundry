@@ -10,7 +10,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -253,7 +254,6 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Three test windows of four months, newest first: 1 July to 5 October 2020 (the release's end), 1 March to 30 June 2020 and 1 November 2019 to 29 February 2020; each trains on all earlier applications, with no gap.
         The length is how long one fitted scorecard keeps scoring (the curator's pick, 2026-11-11): a scorecard is fit
         on applications whose default is known and then scores every new application until the next refit, and Home
         Credit's competition fit one model and scored it on each week after its training data ("When a model runs in
@@ -272,9 +272,7 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
         half.
         No gap: the weekly default rate stays at 1.8% to 2.8% to the end of the release, so the labels look final, as
         for lt_vehicle_loan_default_prediction.
-        Each window keeps all its rows (under the 500k test budget), and each train side holds every earlier row (0.83M
-        to 1.38M); a benchmark sub-samples it to 1M before a fit (`subsample_train`): by default the newest year before
-        the window, extended back in time until it holds 1M rows, and a random 1M of those. The year before July 2020
+        The year before July 2020
         holds 937,675 rows, so that window trains on the newest 1M (from 11 June 2019); the year before March 2020
         holds 1,094,102, of which a random 1M; the November 2019 window trains on all 828,906 (January to October
         2019).

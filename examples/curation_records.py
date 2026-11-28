@@ -50,7 +50,7 @@ def main() -> None:
             unique_name="example_dataset",
             name="Example Dataset",
             checked_by=["Lennart"],
-            data_foundry_status=["WIP (DF)"],
+            data_foundry_status=["DF: Yes"],
             suggestion="Yes",
             tags=["New IID"],
             problem_type="Regression",
@@ -61,7 +61,7 @@ def main() -> None:
         assert reloaded == draft
         print(f"\nSaved + reloaded a draft record at {path.name} (round-trips cleanly).")
 
-    # One-way snapshot to a flat table (what the exporter / read-only Sheet uses).
+    # One-way snapshot to a flat table (what the exporter writes as CSV or XLSX).
     df = to_dataframe(records)
     print(f"\nFlat snapshot: {df.shape[0]} rows x {df.shape[1]} columns.")
 

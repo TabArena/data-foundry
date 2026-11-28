@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis, drop_columns
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+    drop_columns,
+)
 
 RAW_FILE = "train_jqd04QH.csv"
 """The hackathon's train file: 18,359 enrollees with labels, 2,425 of them looking for a job change."""

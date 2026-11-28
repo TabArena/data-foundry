@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: homesite_quote_conversion
 container_format: 2
-checksum: v2:e2ad1ad8559f3025ea6ce24a8a73e89f9c79b4134752664031dbfaf6a12497c2
+checksum: v2:3af421334f2a9b7b3f7bcd6dfb2029faaa8934e7137ab833c920f29edac06d0a
 build:
-  uuid: 01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4
-  checksum: v2:34b44a2882689d641bdce45ee35249fd576143b28b1ab493589cfccd8e2d8915
-  built_at: '2026-10-06T16:11:39+00:00'
-  path: homesite_quote_conversion/01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4
+  uuid: 01a217ff-7257-7179-ab45-56034704e10e
+  checksum: v2:3af421334f2a9b7b3f7bcd6dfb2029faaa8934e7137ab833c920f29edac06d0a
+  built_at: '2026-11-26T13:15:52+00:00'
+  path: homesite_quote_conversion/01a217ff-7257-7179-ab45-56034704e10e
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 260753
   n_features: 287
@@ -48,6 +48,7 @@ splits:
   time_horizon_unit: months
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 184261
     max: 254663
@@ -74,7 +75,7 @@ decisions: []
 
 Binary classification of `QuoteConversion_Flag`, scored with `roc_auc` on temporal splits by `Original_Quote_Date`. 260,753 rows and 287 features. Source: Kaggle (2015).
 
-Built as `01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e2ad1ad8559f3025ea6ce24a8a73e89f9c79b4134752664031dbfaf6a12497c2`, so the build is stale. See [Build](#build).
+Built as `01a217ff-7257-7179-ab45-56034704e10e` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -209,7 +210,7 @@ We start with the train.csv from Kaggle.
 
 ## Splits
 
-Expanding-window temporal splits: 9 test window(s) of 1 months, walking back from the newest data, newest first; train is all earlier data.
+Expanding-window temporal splits: 9 test window(s) of 1 month, walking back from the newest data, newest first; train is all earlier data. The test windows by `Original_Quote_Date`, as listed: 2015-05-01 to 2015-05-18 (6,090 test, 254,663 train rows); 2015-04-01 to 2015-04-30 (10,205 test, 244,458 train rows); 2015-03-01 to 2015-03-31 (12,241 test, 232,217 train rows); 2015-02-01 to 2015-02-28 (7,897 test, 224,320 train rows); 2015-01-01 to 2015-01-31 (9,755 test, 214,565 train rows); 2014-12-01 to 2014-12-31 (6,945 test, 207,620 train rows); 2014-11-01 to 2014-11-30 (7,432 test, 200,188 train rows); 2014-10-01 to 2014-10-31 (7,860 test, 192,328 train rows); 2014-09-01 to 2014-09-30 (8,067 test, 184,261 train rows).
 
 9 repeat(s) x 1 fold(s) with seed 4267; train 184,261 to 254,663 rows, test 6,090 to 12,241 rows. Prediction horizon: 1 months.
 
@@ -246,7 +247,7 @@ Each test window against its train side, by statistics of the data, never of a m
 
 0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 75,096,864 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 75,096,864 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to run them; nothing else checks duplicate rows and columns.)
 - **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 75,096,864 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
 
 Accepted on purpose:
@@ -482,11 +483,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4 |
-| checksum | v2:34b44a2882689d641bdce45ee35249fd576143b28b1ab493589cfccd8e2d8915 |
-| built_at | 2026-10-06T16:11:39+00:00 |
-| path | homesite_quote_conversion/01a111fc-15c3-7dfe-bf9e-39d8ab56f8f4 |
+| uuid | 01a217ff-7257-7179-ab45-56034704e10e |
+| checksum | v2:3af421334f2a9b7b3f7bcd6dfb2029faaa8934e7137ab833c920f29edac06d0a |
+| built_at | 2026-11-26T13:15:52+00:00 |
+| path | homesite_quote_conversion/01a217ff-7257-7179-ab45-56034704e10e |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:e2ad1ad8559f3025ea6ce24a8a73e89f9c79b4134752664031dbfaf6a12497c2` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

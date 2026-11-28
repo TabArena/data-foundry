@@ -51,6 +51,11 @@ def _audit(event: str, args: tuple) -> None:
         if isinstance(mode, str) and any(m in mode for m in "wax+"):
             return
         _note(args[0])
+    elif event == "sqlite3.connect" and args and isinstance(args[0], str | bytes | os.PathLike):
+        # SQLite opens its file in C, past the "open" event (aeolus_rebuilt's stations.db), also as a URI
+        # (noaa_afsc's `file:<path>?mode=ro`)
+        path = os.fsdecode(args[0])
+        _note(path.removeprefix("file:").split("?", 1)[0] if path.startswith("file:") else path)
 
 
 def _wrap(module: object, name: str) -> None:
@@ -140,7 +145,7 @@ def main() -> int:
     args = parser.parse_args()
 
     _install_tracing()
-    from data_foundry.v2 import load_definition  # noqa: PLC0415 - after the readers are wrapped
+    from data_foundry.definition import load_definition  # noqa: PLC0415 - after the readers are wrapped
 
     started = time.time()
     record: dict = {"name": args.name, "check_only": args.check_only}

@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -19,7 +20,7 @@ from data_foundry.v2 import (
     decode,
     drop_columns,
 )
-from data_foundry.v2.splits import SPLIT_RANDOM_STATE, grouped_splits
+from data_foundry.definition.splits import SPLIT_RANDOM_STATE, grouped_splits
 
 # The file's 1/2 history codes: 2 is "yes". The file labels `htn` "History of Hypertension" and `fam` "Family History
 # of MI"; `pan` carries no label. Region 1 of the file is the 2,188-patient "West region" subsample of the GUSTO-I

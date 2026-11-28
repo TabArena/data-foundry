@@ -6,7 +6,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary, TimeBasis
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+)
 
 # A re-entry of a test: a row at the same age as an earlier row of another mix, with all seven amounts within 1 kg and
 # the strength within 0.01 MPa (rows 936 to 1029 of the UCI file re-enter rows 721 to 935).

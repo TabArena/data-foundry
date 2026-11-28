@@ -11,7 +11,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -448,7 +449,7 @@ class PhreshphishPhishingPages(AbstractCuratedDataset):
             "The canonical URL is the filter's input, not an id: one value per row by the rule of one row per URL; "
             "alone it scores ROC AUC 0.896 (Andrej, 2026-11-26)."
         ),
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Three of the nine windows an IID split of 348,287 pages would get: a fourth four-week window (19 May to "
             "15 June 2025) would hold 3,517 pages and train on 2024 alone, after 7.5 months without benign pages, and "
             "shorter windows would shorten the assumed four-week refit only to reach the count (Andrej, 2026-11-26)."

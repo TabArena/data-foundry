@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: noaa_afsc_bottom_trawl_survey_cpue
 container_format: 2
-checksum: v2:ed91807fbdbccdc6a446c95e95d4f29119ac91bb6180dfcb71c7a57084dcfeed
-build: null
+checksum: v2:2d9c79987704eb06f5c467e1c5d87bbac878f111f004c069bbbb8f0246fbb1e6
+build:
+  uuid: 01a21835-3add-7186-961b-e9686c1d730e
+  checksum: v2:2d9c79987704eb06f5c467e1c5d87bbac878f111f004c069bbbb8f0246fbb1e6
+  built_at: '2026-11-26T14:14:36+00:00'
+  path: noaa_afsc_bottom_trawl_survey_cpue/01a21835-3add-7186-961b-e9686c1d730e
+  data_foundry_version: 0.0.5
+  git_sha: c0295a4ec7dcdcc8b1bab070e1c263605df09a69-dirty
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 391044
@@ -36,6 +49,58 @@ splits:
   time_horizon_unit: years
   time_gap: null
   time_gap_unit: null
+  reason: 'Expanding-window temporal splits by survey year: nine test windows of two
+    calendar years (2025-2026 back to
+
+    2009-2010; the 2019-2020 window holds only 2019, as no survey ran in 2020), newest
+    first, each trained on every
+
+    earlier survey, without a gap (Andrej, 2026-11-02: "no need to do five years.
+    Also no planning gap is
+
+    required"). Two years is the survey cycle: since 2005 the Gulf of Alaska is surveyed
+    in odd years and the
+
+    Aleutians in even years, beside the yearly eastern Bering Sea shelf, so each window
+    holds the EBS shelf, the GOA
+
+    and, except 2019, the AI; the slope survey ended in 2016, and the northern Bering
+    Sea runs in some years (2010,
+
+    2017, 2019, 2021-2023, 2025). Nine windows, more than the three an IID split of
+    this size would get (SPLIT-15);
+
+    the oldest trains on 54% of the rows, and a tenth (2007-2008) would train on 49%.
+    No gap, an exception to
+
+    SPLIT-10: the 2022 review states no delay between a survey and its use, only the
+    surveys it used (1982-2019,
+
+    TM-459, p. 3), and FOSS held the hauls of the 2026 summer by 30 October 2026,
+    so a model refit after each
+
+    two-year survey cycle has every earlier survey when the next cycle starts; the
+    cycle''s second year is predicted
+
+    a season after the model''s newest data (42.6% of the test hauls). All rows of
+    a haul share its date, so a haul''s
+
+    taxa stay on one side. The source scored its models on hauls held out at random
+    (Laman et al. 2017, p. 16;
+
+    TM-459, p. 20); the windows ask how a model holds up on the next survey cycle
+    instead, as the same team tests
+
+    its models by retrospective forecasts (Barnes, Essington, Pirtle et al. 2022,
+    Ecography e06189), and the 2022
+
+    review "assessed the forecasting accuracy of the 2017 SDM approach" (TM-459, p.
+    3). Most test hauls are at a
+
+    station seen in training (all of the eastern Bering Sea grid; Gulf of Alaska stations
+    are drawn anew for each
+
+    survey).'
   n_train:
     min: 211119
     max: 373005
@@ -65,7 +130,7 @@ decisions:
 
 Regression of `log1p_cpue_no_km2`, scored with `mean_group_normalized_rmse` on temporal splits by `date`. 391,044 rows and 9 features. Source: GOV Website (2026).
 
-Not built yet. The current definition gives checksum `v2:ed91807fbdbccdc6a446c95e95d4f29119ac91bb6180dfcb71c7a57084dcfeed`.
+Built as `01a21835-3add-7186-961b-e9686c1d730e` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -174,7 +239,7 @@ Only curators run `build`, when the dataset ships.
 
 **Scoring columns**
 
-Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.metrics.scorer(container)(y_test, y_pred, test_idx)`).
 
 | column | role | how the metric uses it | model input |
 |---|---|---|---|
@@ -248,6 +313,8 @@ We start with the FOSS tables HAUL (35,561 standard hauls, 1982-2026) and CATCH 
 - CC (2026-11-09, Andrej): the window layout, resolved, "Go ahead" on the consistency check's (a): the nine two-year windows stay, each fitted once; the split text, the no-gap sentence of the splits comment and the record's exception to SPLIT-10 now name a refit after each two-year survey cycle, not after each season, since each window's second year (42.6% of the test hauls) is predicted without the season before it. Rows, split and score do not change.
 
 ## Splits
+
+Expanding-window temporal splits: 9 test window(s) of 2 years, starting at 2025, 2023, 2021, 2019, 2017, 2015, 2013, 2011, 2009, newest first; train is all earlier data. The test windows by `date`, as listed: 2025-05-27 to 2026-08-04 (18,039 test, 373,005 train rows); 2023-05-21 to 2024-08-05 (18,386 test, 354,619 train rows); 2021-05-23 to 2022-08-20 (21,601 test, 333,018 train rows); 2019-05-23 to 2019-08-20 (11,624 test, 321,394 train rows); 2017-05-27 to 2018-08-08 (20,349 test, 301,045 train rows); 2015-05-26 to 2016-08-09 (23,243 test, 277,802 train rows); 2013-05-29 to 2014-08-08 (18,795 test, 259,007 train rows); 2011-05-22 to 2012-08-11 (22,284 test, 236,723 train rows); 2009-05-22 to 2010-08-11 (25,604 test, 211,119 train rows).
 
 Expanding-window temporal splits by survey year: nine test windows of two calendar years (2025-2026 back to
 2009-2010; the 2019-2020 window holds only 2019, as no survey ran in 2020), newest first, each trained on every
@@ -450,4 +517,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a21835-3add-7186-961b-e9686c1d730e |
+| checksum | v2:2d9c79987704eb06f5c467e1c5d87bbac878f111f004c069bbbb8f0246fbb1e6 |
+| built_at | 2026-11-26T14:14:36+00:00 |
+| path | noaa_afsc_bottom_trawl_survey_cpue/01a21835-3add-7186-961b-e9686c1d730e |
+| data_foundry_version | 0.0.5 |
+| git_sha | c0295a4ec7dcdcc8b1bab070e1c263605df09a69-dirty |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

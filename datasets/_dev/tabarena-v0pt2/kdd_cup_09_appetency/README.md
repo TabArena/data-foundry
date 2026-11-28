@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: kdd_cup_09_appetency
 container_format: 2
-checksum: v2:bdbec71019321a530fd0bb532d7de5a021935c428ae1479df3615e8c57cf3560
+checksum: v2:34bf24eafebb37e384d0de25113ce825572743b20fee7d6174dbe16c6c4c4711
 build:
-  uuid: 01a111fc-4f06-781e-a57e-d46ef749395b
-  checksum: v2:f99cbecc7a799657e482596d74f37ad7f8e519b0d70e9c29428a5beee4d00b7e
-  built_at: '2026-10-06T16:11:55+00:00'
-  path: kdd_cup_09_appetency/01a111fc-4f06-781e-a57e-d46ef749395b
+  uuid: 01a21802-688e-7e6e-8e85-d8f7e668ae55
+  checksum: v2:34bf24eafebb37e384d0de25113ce825572743b20fee7d6174dbe16c6c4c4711
+  built_at: '2026-11-26T13:19:25+00:00'
+  path: kdd_cup_09_appetency/01a21802-688e-7e6e-8e85-d8f7e668ae55
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 50000
   n_features: 12887
@@ -46,6 +46,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 33333
     max: 33334
@@ -74,7 +75,7 @@ decisions: []
 
 Binary classification of `Appetency`, scored with `roc_auc` on IID splits. 50,000 rows and 12,887 features. Source: Other (2009).
 
-Built as `01a111fc-4f06-781e-a57e-d46ef749395b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:bdbec71019321a530fd0bb532d7de5a021935c428ae1479df3615e8c57cf3560`, so the build is stale. See [Build](#build).
+Built as `01a21802-688e-7e6e-8e85-d8f7e668ae55` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -214,18 +215,11 @@ The first 5 of 50,000 rows of the final frame (random rows: the frame is shuffle
 - Anomaly: this dataset has many missing values.
 - The target (2026-11-01, CLEAN-25): `Appetency` ships its classes as words (1 is the event). Binary: "Yes" is
   the event, the class that sorts second, so it is the metrics' positive class.
-- Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16; `DelayedTarget` before, retired): one extract of
-  Orange's customer datamart (date not stated, before mid-2009), 100,000 customers resampled toward the labels
-  and split at random by the host; the target, appetency, is read as a purchase of a new product or service
-  after the scoring date, as the marketing use case needs. One extract is one period, too few for three windows
-  (SPLIT-8). The label window and the features' windows are not stated and the features are masked, so neither
-  can be checked. Extracts of later campaigns would allow a temporal split. Not tested: the next campaign. Not
-  taken as stationary (Andrej, 2026-11-18): The target is uptake of a campaign's new offer, which changes by
-  campaign; nothing makes later campaigns interchangeable.
+- Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16): one extract of Orange's customer datamart (date not stated, before mid-2009), 100,000 customers resampled toward the labels and split at random by the host; the target, appetency, is read as a purchase of a new product or service after the scoring date, as the marketing use case needs. One extract is one period, too few for three windows (SPLIT-8). The label window and the features' windows are not stated and the features are masked, so neither can be checked. Extracts of later campaigns would allow a temporal split. Not tested: the next campaign. Not taken as stationary (Andrej, 2026-11-18): The target is uptake of a campaign's new offer, which changes by campaign; nothing makes later campaigns interchangeable.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `Appetency`: 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 50,000 rows (SPLIT-33).
 
 3 repeat(s) x 3 fold(s) with seed 4267; train 33,333 to 33,334 rows, test 16,666 to 16,667 rows.
 
@@ -245,7 +239,7 @@ Default splits.
 
 0 error(s), 0 warning(s), 3 info (28 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 644,400,000 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 644,400,000 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to run them; nothing else checks duplicate rows and columns.)
 - **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 644,400,000 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
 - **info** `accepted_check_warnings_unused`: Accepted on purpose but not found: ['dataset_pure_feature_value']. (hint: Remove the entries that no longer apply, or fix a misspelled slug.)
 
@@ -483,11 +477,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-4f06-781e-a57e-d46ef749395b |
-| checksum | v2:f99cbecc7a799657e482596d74f37ad7f8e519b0d70e9c29428a5beee4d00b7e |
-| built_at | 2026-10-06T16:11:55+00:00 |
-| path | kdd_cup_09_appetency/01a111fc-4f06-781e-a57e-d46ef749395b |
+| uuid | 01a21802-688e-7e6e-8e85-d8f7e668ae55 |
+| checksum | v2:34bf24eafebb37e384d0de25113ce825572743b20fee7d6174dbe16c6c4c4711 |
+| built_at | 2026-11-26T13:19:25+00:00 |
+| path | kdd_cup_09_appetency/01a21802-688e-7e6e-8e85-d8f7e668ae55 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:bdbec71019321a530fd0bb532d7de5a021935c428ae1479df3615e8c57cf3560` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -22,7 +22,7 @@ from pathlib import Path
 
 from data_foundry.curation._paths import skills_dir
 from data_foundry.curation.consistency import COLLECTION_TYPES
-from data_foundry.schema import FORCED_TIME_TAGS, GROUP_BASIS_TAGS, TIME_BASIS_TAGS, current_tag
+from data_foundry.schema import FORCED_TIME_TAGS, GROUP_BASIS_TAGS, TIME_BASIS_TAGS
 
 TREE_FILE = "knowledge-curation/references/split_tree.md"
 """The tree, relative to the skills directory."""
@@ -172,7 +172,7 @@ def parse(text: str) -> SplitTree:
     names = [c.partition("\n")[0].strip() for c in chunks]
     types = {t.lower() for t in COLLECTION_TYPES}
     sections: dict[str, Section] = {}
-    for name, chunk in zip(names, chunks):
+    for name, chunk in zip(names, chunks, strict=False):
         body = chunk.partition("\n")[2]
         kind = "type" if name.lower() in types else "step" if name.lower().endswith(" step") else "text"
         if kind == "text":
@@ -291,7 +291,7 @@ def _parse_table(text: str) -> list[dict[str, str]]:
     if len(rows) < 2:
         return []
     header = [h.lower() for h in _cells(rows[0])]
-    return [dict(zip(header, _cells(row))) for row in rows[2:]]
+    return [dict(zip(header, _cells(row), strict=False)) for row in rows[2:]]
 
 
 def _cells(row: str) -> list[str]:
@@ -325,6 +325,6 @@ def placement_problems(leaf: Leaf | None, leaf_id: str, split: str, tags: set[st
     found = []
     if split != family:
         found.append(f"{leaf_id} is a {family} split, the definition ships a {split} one")
-    if leaf.tag and leaf.tag not in {current_tag(t) for t in tags}:
+    if leaf.tag and leaf.tag not in tags:
         found.append(f"{leaf_id} carries `{leaf.tag}`, the definition {sorted(tags) or 'none'}")
     return found
