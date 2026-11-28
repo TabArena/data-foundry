@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: hepatitis_c_prediction
 container_format: 2
-checksum: v2:80dd2f541272e48d6989c333b4265cdff013c4748624b9767b0ffb4ff678a0d4
+checksum: v2:5d3d40211663f2d6dc48ff5e84861f874d6d4f027ccdf0cae725eee086a3b3ee
 build:
-  uuid: 01a111fc-da06-7344-b05c-32c0c4829da1
-  checksum: v2:3b064a7111c0feec2dbda78b7c01add1af848f38ec06d17d94232ac6bac1e80a
-  built_at: '2026-10-06T16:12:26+00:00'
-  path: hepatitis_c_prediction/01a111fc-da06-7344-b05c-32c0c4829da1
+  uuid: 01a21800-feb3-7dda-a162-26c3a012eb4d
+  checksum: v2:5d3d40211663f2d6dc48ff5e84861f874d6d4f027ccdf0cae725eee086a3b3ee
+  built_at: '2026-11-26T13:17:28+00:00'
+  path: hepatitis_c_prediction/01a21800-feb3-7dda-a162-26c3a012eb4d
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 601
   n_features: 10
@@ -47,6 +47,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 400
     max: 401
@@ -68,7 +69,7 @@ decisions: []
 
 Multiclass classification of `Category`, scored with `log_loss` on IID splits. 601 rows and 10 features. Source: UCI (2020).
 
-Built as `01a111fc-da06-7344-b05c-32c0c4829da1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:80dd2f541272e48d6989c333b4265cdff013c4748624b9767b0ffb4ff678a0d4`, so the build is stale. See [Build](#build).
+Built as `01a21800-feb3-7dda-a162-26c3a012eb4d` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -198,7 +199,7 @@ We start with the data from UCI.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `Category`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 601 rows (SPLIT-33).
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 400 to 401 rows, test 200 to 201 rows.
 
@@ -336,11 +337,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-da06-7344-b05c-32c0c4829da1 |
-| checksum | v2:3b064a7111c0feec2dbda78b7c01add1af848f38ec06d17d94232ac6bac1e80a |
-| built_at | 2026-10-06T16:12:26+00:00 |
-| path | hepatitis_c_prediction/01a111fc-da06-7344-b05c-32c0c4829da1 |
+| uuid | 01a21800-feb3-7dda-a162-26c3a012eb4d |
+| checksum | v2:5d3d40211663f2d6dc48ff5e84861f874d6d4f027ccdf0cae725eee086a3b3ee |
+| built_at | 2026-11-26T13:17:28+00:00 |
+| path | hepatitis_c_prediction/01a21800-feb3-7dda-a162-26c3a012eb4d |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:80dd2f541272e48d6989c333b4265cdff013c4748624b9767b0ffb4ff678a0d4` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: immoscout_german_house_prices
 container_format: 2
-checksum: v2:cb5a77f245239d9bff75597cf119f32f9e102a2aad7bcf7fea64e90ad6190dea
+checksum: v2:3674ad310ab0f7bc46084518389f8bde9784c49f58ef70bd619894cd4165433e
 build:
-  uuid: 01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9
-  checksum: v2:e91f49bdb50c1cd545a4e8d63445b34d9d9656af0c38c65cf81d41e18ec5054d
-  built_at: '2026-10-06T16:12:28+00:00'
-  path: immoscout_german_house_prices/01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9
+  uuid: 01a21800-d916-7fe5-8864-85e446414bc8
+  checksum: v2:3674ad310ab0f7bc46084518389f8bde9784c49f58ef70bd619894cd4165433e
+  built_at: '2026-11-26T13:17:18+00:00'
+  path: immoscout_german_house_prices/01a21800-d916-7fe5-8864-85e446414bc8
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 10203
   n_features: 23
@@ -47,6 +47,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 6802
     max: 6802
@@ -70,7 +71,7 @@ decisions: []
 
 Regression of `LogPrice`, scored with `rmsle` on IID splits. 10,203 rows and 23 features. Source: Kaggle (2020).
 
-Built as `01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:cb5a77f245239d9bff75597cf119f32f9e102a2aad7bcf7fea64e90ad6190dea`, so the build is stale. See [Build](#build).
+Built as `01a21800-d916-7fe5-8864-85e446414bc8` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -233,13 +234,11 @@ We treat this as an IID time-independent task, because the prices is not sold pr
 - We drop all rows where the living space is less than 10 (in Germany, this would likely not be enough living space for a real house, and thus might be a data error.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
   categories in the order of the source's codebook (`ORDINAL_LEVELS`).
-- Time basis: RetrospectiveFillIn: one scrape of the houses live on ImmoScout24 on 14 July 2020; the asking prices of that
-  day, set at listing and possibly lowered since, without listing dates; the use case prices a house against
-  the same day's market. Not tested: prices after July 2020.
+- Time basis: RetrospectiveFillIn: one scrape of the houses live on ImmoScout24 on 14 July 2020; the asking prices of that day, set at listing and possibly lowered since, without listing dates; the use case prices a house against the same day's market. Not tested: prices after July 2020.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows: 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 10,203 rows (SPLIT-33).
 
 3 repeat(s) x 3 fold(s) with seed 4267; train 6,802 rows, test 3,401 rows.
 
@@ -304,7 +303,7 @@ Accepted on purpose:
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | -0.342 | -0.641 | 0.717 | 0.004 | log | 98176.7 | 2.08279e+16 | exponential |
+| 0 | 0 | 0 | -0.342 | -0.641 | 0.717 | 0.004 | log | 98176.7 | 4.45461e+15 | exponential |
 
 ### Numeric features
 
@@ -399,11 +398,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9 |
-| checksum | v2:e91f49bdb50c1cd545a4e8d63445b34d9d9656af0c38c65cf81d41e18ec5054d |
-| built_at | 2026-10-06T16:12:28+00:00 |
-| path | immoscout_german_house_prices/01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9 |
+| uuid | 01a21800-d916-7fe5-8864-85e446414bc8 |
+| checksum | v2:3674ad310ab0f7bc46084518389f8bde9784c49f58ef70bd619894cd4165433e |
+| built_at | 2026-11-26T13:17:18+00:00 |
+| path | immoscout_german_house_prices/01a21800-d916-7fe5-8864-85e446414bc8 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:cb5a77f245239d9bff75597cf119f32f9e102a2aad7bcf7fea64e90ad6190dea` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

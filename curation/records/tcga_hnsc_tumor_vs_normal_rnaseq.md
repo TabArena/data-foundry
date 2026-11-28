@@ -3,9 +3,6 @@ unique_name: tcga_hnsc_tumor_vs_normal_rnaseq
 name: TCGA-TCGA-HNSC_Gene-Expression-Quantification (TCGA Head & Neck, RNA-seq)
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'No'
 decision_markers:
 - No Good Target / Scientific Discovery

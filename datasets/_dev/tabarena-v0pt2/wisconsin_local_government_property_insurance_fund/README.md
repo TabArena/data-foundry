@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: wisconsin_local_government_property_insurance_fund
 container_format: 2
-checksum: v2:a0f2742c8e233019a68dc37d477c767e05070a600d3d5a804b01fca167c155bb
-build: null
+checksum: v2:25fc77e8c2aee918de600ae8b42794f638b42412053119dccdba182297c0ec9e
+build:
+  uuid: 01a21800-ed00-7f7b-bf24-f45fe45a06f1
+  checksum: v2:25fc77e8c2aee918de600ae8b42794f638b42412053119dccdba182297c0ec9e
+  built_at: '2026-11-26T13:17:24+00:00'
+  path: wisconsin_local_government_property_insurance_fund/01a21800-ed00-7f7b-bf24-f45fe45a06f1
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 5639
@@ -36,6 +49,74 @@ splits:
   time_horizon_unit: years
   time_gap: null
   time_gap_unit: null
+  reason: 'Three expanding yearly windows, newest first: test 2010 trained on 2006-2009
+    (4,529 rows, 80.3%; 1,110 test
+
+    member-years, 403 with a claim), test 2009 on 2006-2008 (3,417 rows, 60.6%; 1,112,
+    301) and test 2008 on
+
+    2006-2007 (2,292 rows, 40.6%; 1,125, 309). The fund rates the members it knows
+    once a year for the next year,
+
+    and the source tested on the next year, 2011, which is not public. The 2008 window
+    trains on 40.6%, below half
+
+    the rows, as SPLIT-14 allows since its amendment of 2026-11-08 (Lennart, on this
+    fund: two
+
+    windows above the floor, 97.6% to 98.8% of each test year''s members in earlier
+    years, and member folds leaked
+
+    the year''s claim level): the curator''s call of 2026-11-02 (Andrej), after the
+    leak test found the year''s claim
+
+    level shared across the member folds the definition shipped before ("We found
+    that grouped splits leak, so I
+
+    would recommend to use three splits, one for each year of 2008, 2009, 2010"),
+    kept ("We think the task is too
+
+    good to remove because of the 50% floor", Lennart, 2026-11-06). The short window
+    changes the order of the two
+
+    simplest predictors: on the two windows above the floor coverage alone (0.368)
+    beats a Tweedie GLM (0.312), with
+
+    the 2008 window the GLM comes first (0.291 against 0.251). In that window the
+    no-claim credit is unknown on
+
+    every training row (the file starts in 2006), so it informs only the two later
+    windows. Exception to SPLIT-10 (2026-11-08, Lennart): every policy
+
+    year ships with its final claim amounts, so no label is selected by the release
+    end, and a one-year gap would
+
+    leave the 2009 window 2006-2007 and the 2008 window one year, below the floor
+    in two of the three windows; it
+
+    serves SPLIT-14. The training years carry final claim amounts, which the fund
+    knew only in part when it rated
+
+    (fit approximate). Members recur across the cutoff, as the fund re-rates them
+    (SPLIT-13, USE-10): 98.8%, 97.6%
+
+    and 98.6% of the 2008, 2009 and 2010 members are in their training years, and
+    `PolicyNum` is an input. The
+
+    windows differ: the claims were $12.1M, $11.0M and $36.7M, and in 2010, a year
+    of severe weather, coverage fell
+
+    for 67.7% of the members and one claim is 35% of the year''s claims, so that window''s
+    score moves with where that
+
+    one member is ranked.
+
+
+    Three windows, against the 9 an IID split of 5,639 member-years would get: the
+    release has five years, and a
+
+    2007 window would train on 2006 alone, 20.5% of the rows, under the 30% floor
+    (Andrej, 2026-11-19).'
   n_train:
     min: 2292
     max: 4529
@@ -46,8 +127,7 @@ bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos:
-  - meta_time_horizon_unit
+  infos: []
   accepted:
     splits_train_under_half: 'Signed off (Lennart, 2026-11-08): the 2008 window trains
       on 40.6% of the rows, beside 2009 and 2010 on 60.6% and 80.3%; kept as the curator''s
@@ -68,9 +148,9 @@ bundle_checks:
     splits_feature_missing_in_test: 'Decided (Lennart, 2026-11-11): `NoClaimCredit`
       is missing in 2006 and 2007 by construction, so the 2008 window trains on years
       without it (curation_comments).'
-    splits_below_target: 'Three windows, against the 9 an IID split of 5,639 member-years
-      would get: the release has five years, and a 2007 window would train on 2006
-      alone, 20.5% of the rows, under the 30% floor (Andrej, 2026-11-19).'
+    splits_dimensions_off_protocol: 'Three windows, against the 9 an IID split of
+      5,639 member-years would get: the release has five years, and a 2007 window
+      would train on 2006 alone, 20.5% of the rows, under the 30% floor (Andrej, 2026-11-19).'
 decisions:
 - The fund's premium is the metric's base, never an input
 - The yearly claims agree with the claim-level file
@@ -83,7 +163,7 @@ decisions:
 
 Regression of `bc_claims`, scored with `ordered_lorenz_gini` on temporal splits by `Year` (one step is a year). 5,639 rows and 9 features. Source: GitHub (2017).
 
-Not built yet. The current definition gives checksum `v2:a0f2742c8e233019a68dc37d477c767e05070a600d3d5a804b01fca167c155bb`.
+Built as `01a21800-ed00-7f7b-bf24-f45fe45a06f1` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -173,7 +253,7 @@ Only curators run `build`, when the dataset ships.
 
 **Scoring columns**
 
-Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.metrics.scorer(container)(y_test, y_pred, test_idx)`).
 
 | column | role | how the metric uses it | model input |
 |---|---|---|---|
@@ -248,6 +328,8 @@ We start with PropertyFundInsample.csv of the open textbook Loss Data Analytics 
 
 ## Splits
 
+Expanding-window temporal splits: 3 test window(s) of 1 time value, walking back from the newest data, newest first; train is all earlier data. The test windows by `Year`, as listed: 2010 (1,110 test, 4,529 train rows); 2009 (1,112 test, 3,417 train rows); 2008 (1,125 test, 2,292 train rows).
+
 Three expanding yearly windows, newest first: test 2010 trained on 2006-2009 (4,529 rows, 80.3%; 1,110 test
 member-years, 403 with a claim), test 2009 on 2006-2008 (3,417 rows, 60.6%; 1,112, 301) and test 2008 on
 2006-2007 (2,292 rows, 40.6%; 1,125, 309). The fund rates the members it knows once a year for the next year,
@@ -260,8 +342,7 @@ would recommend to use three splits, one for each year of 2008, 2009, 2010"), ke
 good to remove because of the 50% floor", Lennart, 2026-11-06). The short window changes the order of the two
 simplest predictors: on the two windows above the floor coverage alone (0.368) beats a Tweedie GLM (0.312), with
 the 2008 window the GLM comes first (0.291 against 0.251). In that window the no-claim credit is unknown on
-every training row (the file starts in 2006), so it informs only the two later windows. No test year has a row
-on its training side, and no gap separates the sides. Exception to SPLIT-10 (2026-11-08, Lennart): every policy
+every training row (the file starts in 2006), so it informs only the two later windows. Exception to SPLIT-10 (2026-11-08, Lennart): every policy
 year ships with its final claim amounts, so no label is selected by the release end, and a one-year gap would
 leave the 2009 window 2006-2007 and the 2008 window one year, below the floor in two of the three windows; it
 serves SPLIT-14. The training years carry final claim amounts, which the fund knew only in part when it rated
@@ -333,9 +414,8 @@ The test years are 2008, 2009 and 2010, each trained on every earlier year. The 
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
-- **info** `meta_time_horizon_unit`: `time_horizon_unit='years'` implies calendar time, but `time_on='Year'` has dtype int64, so the horizon cannot be cross-checked. (hint: Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use `time_horizon_unit='steps'` for a plain numeric time index.)
 
 Accepted on purpose:
 
@@ -344,7 +424,7 @@ Accepted on purpose:
 - `meta_license_unknown`: The first edition's repository, which holds the shipped file, has no licence file (GitHub API, 2026-11-01), and its book pages state none. The second edition named in the download description (OpenActTexts/LDAVer2, WiscPropFund.csv: the same rows with fewer columns) has a CC0-1.0 LICENSE in its repository (committed 2024-10-03), and its book pages state CC BY 4.0; the rows can be taken from it if the release needs a stated licence.
 - `task_target_value_dominant`: 70.2% zeros: member-years without a building and contents claim (`Freq` 0), real no-claim years and not a cap or a placeholder; the batch's other zero-inflated targets are accepted on the same ground (Andrej, 2026-11-03).
 - `splits_feature_missing_in_test`: Decided (Lennart, 2026-11-11): `NoClaimCredit` is missing in 2006 and 2007 by construction, so the 2008 window trains on years without it (curation_comments).
-- `splits_below_target`: Three windows, against the 9 an IID split of 5,639 member-years would get: the release has five years, and a 2007 window would train on 2006 alone, 20.5% of the rows, under the 30% floor (Andrej, 2026-11-19).
+- `splits_dimensions_off_protocol`: Three windows, against the 9 an IID split of 5,639 member-years would get: the release has five years, and a 2007 window would train on 2006 alone, 20.5% of the rows, under the 30% floor (Andrej, 2026-11-19).
 
 ## Data checks
 
@@ -417,4 +497,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a21800-ed00-7f7b-bf24-f45fe45a06f1 |
+| checksum | v2:25fc77e8c2aee918de600ae8b42794f638b42412053119dccdba182297c0ec9e |
+| built_at | 2026-11-26T13:17:24+00:00 |
+| path | wisconsin_local_government_property_insurance_fund/01a21800-ed00-7f7b-bf24-f45fe45a06f1 |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

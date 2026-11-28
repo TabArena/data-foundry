@@ -6,7 +6,8 @@ import json
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -20,7 +21,7 @@ from data_foundry.v2 import (
     drop_columns,
     scaffold_groups,
 )
-from data_foundry.v2.chemistry import RDKIT_VERSION
+from data_foundry.special.chemistry import RDKIT_VERSION
 
 ACTIVITY_FILES = tuple(f"chembl_activities_{offset}.json" for offset in (0, 1000, 2000, 3000, 4000))
 """The five pages of the ChEMBL activity endpoint for assay CHEMBL3301363, 1,000 activities each (4,200 in all)."""

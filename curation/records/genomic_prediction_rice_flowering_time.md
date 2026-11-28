@@ -3,9 +3,6 @@ unique_name: genomic_prediction_rice_flowering_time
 name: gp-rice-FT (Rice Flowering Time Genomic Prediction)
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: TBD -> 2nd Tier
 priority: 2
 tags:

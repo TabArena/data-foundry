@@ -3,9 +3,6 @@ unique_name: mgnify_hmp_isolation_source
 name: MGYS00005380 MGnify functional profile
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'No'
 decision_markers:
 - No Good Target / Scientific Discovery

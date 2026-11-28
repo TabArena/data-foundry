@@ -1,16 +1,18 @@
-"""Tests for the group statistics and findings of grouped v2 tasks (``data_foundry.v2.group_checks``)."""
+"""Tests for the group statistics and findings of grouped v2 tasks (``data_foundry.checks.groups``)."""
 
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry.curation_container import CuratedContainer
-from data_foundry.schema import DatasetMetadata, Grouping, PredictiveMLSplitsMetadata, PredictiveMLTaskMetadataV2
-from data_foundry.v2 import group_checks
-from data_foundry.v2.splits import grouped_splits
 
-from tests.test_bundle_checks import make_spec
+from data_foundry.checks import groups as group_checks
+from data_foundry.checks.bundle import run_bundle_checks
+from data_foundry.curation_container import CuratedContainer
+from data_foundry.definition.splits import grouped_splits
+from data_foundry.schema import Grouping, PredictiveMLSplitsMetadata, PredictiveMLTaskMetadataV2
+from data_foundry.v1 import DatasetMetadata
+from tests.helpers import make_spec
 
 
 def _container(df: pd.DataFrame, grouping: Grouping | None, problem_type: str = "binary_classification"):
@@ -55,7 +57,7 @@ def _frame(n_groups: int, rows: int, *, clustered: bool, label_per_group: bool) 
 
 
 def _slugs(container: CuratedContainer) -> set[str]:
-    return {r.slug for r in group_checks.group_findings(container, group_checks.group_stats(container))}
+    return {r.slug for r in group_checks.group_findings(group_checks.group_stats(container))}
 
 
 def test_stats_of_a_clustered_grouped_task() -> None:
@@ -70,9 +72,13 @@ def test_stats_of_a_clustered_grouped_task() -> None:
 
 
 def test_few_test_groups_and_constant_per_sample_labels_are_flagged() -> None:
+    """The bundle checks hold both, so a container read from disk gets them too."""
     df = _frame(30, 4, clustered=True, label_per_group=True)
-    slugs = _slugs(_container(df, Grouping(on="g", labels="per_sample", definition="x")))
-    assert slugs == {"groups_test_groups_few", "groups_labels_constant"}
+    container = _container(df, Grouping(on="g", labels="per_sample", definition="x"))
+    assert _slugs(container) == set()
+    found = {r.slug: r.severity for r in run_bundle_checks(container, verbose=False).results}
+    assert found["groups_test_groups_few"] == "warning"
+    assert found["task_group_labels_mismatch"] == "warning"
 
 
 def test_unclustered_groups_are_reported() -> None:
@@ -91,4 +97,4 @@ def test_iid_tasks_have_no_group_stats() -> None:
     df = _frame(10, 4, clustered=False, label_per_group=False)
     container = _container(df, None)
     assert group_checks.group_stats(container) is None
-    assert group_checks.group_findings(container, None) == []
+    assert group_checks.group_findings(None) == []

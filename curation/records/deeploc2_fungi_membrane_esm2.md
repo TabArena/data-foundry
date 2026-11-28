@@ -3,9 +3,6 @@ unique_name: deeploc2_fungi_membrane_esm2
 name: local-DeepLoc2-Fungi-ESM2 (DeepLoc2 Fungi, ESM-2)
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'No'
 decision_markers:
 - Wrong Domain / Source Modality

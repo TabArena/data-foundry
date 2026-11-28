@@ -61,7 +61,7 @@ its priority when a hit was found (step 5).
 ## Step 2: The coverage snapshot
 
 ```bash
-.venv/bin/python .claude/skills/knowledge-data-foundry/scripts/benchmark_coverage.py
+.venv/bin/python .claude/skills/knowledge-data-foundry/scripts/benchmark_coverage.py coverage
 ```
 
 Once per run: the accepted datasets per domain, problem type, regime and source, with the thin values marked. It feeds

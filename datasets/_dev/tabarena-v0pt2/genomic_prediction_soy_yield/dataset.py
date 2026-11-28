@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -487,8 +488,7 @@ class GenomicPredictionSoyYield(AbstractCuratedDataset):
         """,
     )
     splits_comment = """
-        The default repeated grouped protocol on the 39 families, 20 repeats of 3 folds: each test fold holds 13
-        whole families and about a third of the 5,143 lines. It replaces the split the work on this population uses,
+        The split on whole families replaces the split the work on this population uses,
         "an 80/20 training/testing approach ... where 20% of the lines were held out" over 10 replicates (Azodi et
         al. 2019, Methods), which was designed for their own question, benchmarking algorithms inside a population
         that is already phenotyped, and is a habit rather than a choice for ours (SPLIT-5): a random split puts the

@@ -3,9 +3,6 @@ unique_name: gut_cirrhosis_metaml
 name: gut-cirrhosis (Gut microbiome markers, healthy vs cirrhosis)
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: TBD -> 2nd Tier
 priority: 1
 decision_markers:

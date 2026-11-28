@@ -3,9 +3,6 @@ unique_name: astrazeneca_chembl_logd74
 name: lipophilicity
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 2
 tags:

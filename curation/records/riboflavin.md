@@ -3,9 +3,6 @@ unique_name: riboflavin
 name: OpenML-46983 Riboflavin Production
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: TBD -> 2nd Tier
 priority: 1
 tags:

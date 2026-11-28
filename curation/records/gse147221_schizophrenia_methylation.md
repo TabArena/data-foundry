@@ -3,9 +3,6 @@ unique_name: gse147221_schizophrenia_methylation
 name: GEO-GSE147221-Methylation-Schizophrenia (Schizophrenia DNA Methylation)
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: TBD -> 2nd Tier
 priority: 1
 decision_markers:

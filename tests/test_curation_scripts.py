@@ -1,4 +1,4 @@
-"""The curation scripts of the knowledge-data-foundry skill: coverage, priority factors, clean room, decision register.
+"""The curation scripts of the knowledge-data-foundry skill: coverage and priority, clean room, decision register.
 
 The scripts live in the skill, not in the package, so they are imported from their files. They run here on small
 records written to ``tmp_path``; the clean room's end-to-end test needs the raw files of ``airfoil_self_noise`` and
@@ -18,19 +18,21 @@ from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry.curation.record import CurationRecord
-from data_foundry.curation.store import save_record
-from data_foundry.schema import ScoringColumn
-from data_foundry.v2 import get_dataset
-from data_foundry.v2.metrics import Metric, score
 from sklearn.metrics import mean_poisson_deviance
 
-from tests.test_v2_dataset import (  # noqa: F401 - the fixture is used by name
-    DEFINITION,
-    temporal_body,
-    warehouse,
-    write_definition,
+from data_foundry.curation.cli import main as curation_main
+from data_foundry.curation.record import CurationRecord
+from data_foundry.curation.review import read_review
+from data_foundry.curation.store import load_record, save_record
+from data_foundry.definition import get_dataset
+from data_foundry.metrics import Metric, score
+from data_foundry.probes import dtypes, groups, inputs, leak, models, task
+from data_foundry.probes.leak import (
+    forced as leak_forced,
+    modes as leak_modes,
 )
+from data_foundry.schema import ScoringColumn
+from tests.helpers import DEFINITION, temporal_body, write_definition
 
 REPO = Path(__file__).resolve().parents[1]
 SCRIPTS = REPO / ".claude" / "skills" / "knowledge-data-foundry" / "scripts"
@@ -41,7 +43,7 @@ def _import(name: str):
     if not path.is_file():
         pytest.fail(f"{path} is missing", pytrace=False)
     if str(SCRIPTS) not in sys.path:
-        sys.path.insert(0, str(SCRIPTS))  # clean_room imports its neighbour dataset_io
+        sys.path.insert(0, str(SCRIPTS))
     spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
     sys.modules[spec.name] = module  # dataclasses look their module up there
@@ -56,9 +58,9 @@ def coverage():
 
 
 @pytest.fixture(scope="module")
-def priority():
-    """priority_factors.py, imported as a module."""
-    return _import("priority_factors")
+def priority(coverage):
+    """benchmark_coverage.py, whose ``priority`` command measures the priority factors."""
+    return coverage
 
 
 @pytest.fixture(scope="module")
@@ -71,6 +73,10 @@ def clean_room():
 def register():
     """decision_register.py, imported as a module."""
     return _import("decision_register")
+
+
+def load(directory: Path, unique_name: str) -> CurationRecord:
+    return load_record(directory / f"{unique_name}.md")
 
 
 def _record(directory: Path, unique_name: str, **fields) -> CurationRecord:
@@ -137,13 +143,13 @@ def test_coverage_main_writes_json(coverage, tmp_path, capsys):
     vocab = tmp_path / "vocabularies.yaml"
     vocab.write_text("domain:\n- finance\n- education\nproblem_type:\n- Regression\n")
     out = tmp_path / "coverage.json"
-    assert coverage.main(["--records", str(records), "--vocab", str(vocab), "--json", str(out)]) == 0
+    assert coverage.main(["coverage", "--records", str(records), "--vocab", str(vocab), "--json", str(out)]) == 0
     assert "1 accepted datasets of 2 records" in capsys.readouterr().out
     data = json.loads(out.read_text())
     assert [row["value"] for row in data["fields"]["domain"]["values"] if row["thin"]] == ["finance", "education"]
 
 
-# --------------------------------------------------------------------------- priority_factors
+# --------------------------------------------------------------------------- benchmark_coverage priority
 def _facts(domain="finance", problem="regression", regime="iid", units=5000, features=10, non_numeric=("categorical",)):
     return {
         "domain": domain,
@@ -207,19 +213,19 @@ def test_priority_factors_on_the_working_copy(priority, capsys):
     if not (root / "airfoil_self_noise" / "README.md").is_file():
         pytest.skip("needs the working copy")
     where = ["--root", str(root), "--records", str(REPO / "curation" / "records")]
-    assert priority.main(["airfoil_self_noise", *where]) == 0
+    assert priority.main(["priority", "airfoil_self_noise", *where]) == 0
     out = capsys.readouterr().out
     assert out.startswith("Thin among the ")
     assert "| `airfoil_self_noise` |" in out
     with pytest.raises(SystemExit, match="no folder for: no_such_record"):
-        priority.main(["no_such_record", *where])
+        priority.main(["priority", "no_such_record", *where])
 
 
 # --------------------------------------------------------------------------- clean_room
 def _probe_input(clean_room, regime: str, grouping=None, time_on=None):
     df = pd.DataFrame({"x": range(10), "g": list("aabbccddee"), "y": [0.5] * 10})
     splits = {r: {f: ([0, 1], [2, 3]) for f in range(3)} for r in range(2)}
-    return clean_room.dataset_io.ProbeInput(
+    return inputs.ProbeInput(
         df=df,
         target="y",
         problem_type="regression",
@@ -269,11 +275,11 @@ def test_probe_input_drops_the_scoring_columns(clean_room):
         ScoringColumn(column="g", role="group", used_by="par_k", description="the instance"),
     ]
     task = SimpleNamespace(target_column_name="y", group_on="g", time_on=None, scoring_columns=scoring)
-    out, dropped = clean_room.dataset_io._without_scoring_columns(df, task)
+    out, dropped = inputs._without_scoring_columns(df, task)
     assert list(out.columns) == ["y", "x", "g"]
     assert dropped == ("era",)
     plain = SimpleNamespace(target_column_name="y", group_on=None, time_on=None)  # format 1: no scoring columns
-    assert clean_room.dataset_io._without_scoring_columns(df, plain)[0] is df
+    assert inputs._without_scoring_columns(df, plain)[0] is df
 
 
 def test_source_links_drop_the_notes(clean_room, tmp_path):
@@ -389,7 +395,7 @@ def test_participant_kit_on_hepatitis(clean_room, tmp_path):
     assert run.stdout.startswith("r0f0: train ")
 
 
-def test_a_label_time_is_no_input_for_the_probes_and_the_participant(clean_room, tmp_path, warehouse):  # noqa: F811
+def test_a_label_time_is_no_input_for_the_probes_and_the_participant(clean_room, tmp_path, warehouse):
     """The probe kit and the participant kit read the inputs the package decides: a time that dates the label stays
     in the frame to order the rows, and neither a probe nor a participant's ``features()`` fits on it.
     """
@@ -397,7 +403,7 @@ def test_a_label_time_is_no_input_for_the_probes_and_the_participant(clean_room,
     body = temporal_body(time_of="label", prediction_time="listed", listed=-1)
     write_definition(tmp_path / "datasets", body=body)
     ds = get_dataset(tmp_path / "datasets", "toy_ds")
-    data = clean_room.dataset_io.from_definition(ds)
+    data = inputs.from_definition(ds)
     assert (data.time_of, data.prediction_time) == ("label", "listed")
     assert "t" in data.df.columns
     assert "t" not in data.feature_cols
@@ -527,9 +533,11 @@ def _register_fixture(tmp_path: Path) -> tuple[Path, Path]:
         suggestion="Yes",
         comments="CC (2026-10-01, Lennart): Kept: the features are min-max scaled over all rows, no strong leak.",
         review=(
-            "**Outcome:** added.\n\n**Issues for Lennart:**\n\n"
+            "**Outcome:** not added; kept for the review.\n\n**Main points:** Two questions.\n\n"
+            "**Issues for Lennart:**\n\n"
             "1. **Keep the target in decibels?** The source reports dB (LEAK-3).\n   More evidence here.\n\n"
-            "2. Drop the duplicate rows. They are copies.\n\n**Record judgment:** valid."
+            "2. Drop the duplicate rows. They are copies.\n\n"
+            "   **Resolved (2026-10-09, Lennart):** dropped."
         ),
     )
     _record(
@@ -579,11 +587,11 @@ def test_collect_reads_the_three_sources(register, tmp_path):
     kinds = {}
     for d in decisions:
         kinds[d.kind] = kinds.get(d.kind, 0) + 1
-    assert kinds == {"cc": 4, "assessment": 1, "exception": 4, "open_issue": 2, "case": 2}
-    issues = [d for d in decisions if d.kind == "open_issue"]
-    assert [(d.dataset, d.text, d.rule_ids) for d in issues] == [
-        ("keep_scaled", "Keep the target in decibels?", ["LEAK-3"]),
-        ("keep_scaled", "Drop the duplicate rows.", []),
+    assert kinds == {"cc": 4, "assessment": 1, "exception": 4, "issue": 2, "case": 2}
+    issues = [d for d in decisions if d.kind == "issue"]
+    assert [(d.dataset, d.text, d.rule_ids, d.state, d.date, d.author) for d in issues] == [
+        ("keep_scaled", "Keep the target in decibels?", ["LEAK-3"], "open", None, "AI"),
+        ("keep_scaled", "Drop the duplicate rows.", [], "resolved", "2026-10-09", "Lennart"),
     ]
     assert issues[1].outcome == "fix"
     assert "duplicate rows" in issues[1].mechanisms
@@ -597,6 +605,33 @@ def test_collect_reads_the_three_sources(register, tmp_path):
         ("fitness_club", ["LEAK-3"], "Lennart", "exclude", "applied"),
         ("case_ds", ["CLEAN-4"], "case table", "keep", "exception"),
     ]
+
+
+def test_register_counts_the_issues_the_parser_finds(register, tmp_path):
+    """Only the issues block counts: the numbered lines of a review panel (a claim audit, a mediator's list) are no
+    issues, and a broken review is left out with a warning instead of stopping the register.
+    """
+    records = tmp_path / "records"
+    panel_lines = "".join(f"{i}. Claim {i} holds.\n" for i in range(1, 13))
+    _record(
+        records,
+        "with_panel",
+        suggestion="Yes",
+        review=(
+            "**Outcome:** not added; a panel ran.\n\n**Main points:** One question.\n\n**Issues for Lennart:**\n\n"
+            "1. **Keep the column?**\n   * **Problem:** p.\n\n"
+            "3. **Drop the rows?**\n   x.\n   **Deferred (2026-10-10):** parked.\n\n"
+            "**Review panel:** ship (mediator). Twelve claims.\n\n"
+            f"<details><summary>Claim audit</summary>\n\n{panel_lines}\n</details>\n"
+        ),
+    )
+    _record(records, "broken", suggestion="Yes", review="1. **No outcome?**\n")
+    parsed = read_review(records / "with_panel.md")
+    issues = register.review_decisions({"with_panel": load(records, "with_panel")}, records)
+    assert [(d.text, d.state) for d in issues] == [(i.title, i.state) for i in parsed.issues]
+    assert [(d.text, d.state) for d in issues] == [("Keep the column?", "open"), ("Drop the rows?", "deferred")]
+    decisions = register.collect(records, tmp_path / "no_knowledge")
+    assert sum(d.kind == "issue" for d in decisions) == 2
 
 
 def test_flags(register, tmp_path):
@@ -656,12 +691,8 @@ def test_register_main(register, tmp_path, capsys):
 
 @pytest.fixture(scope="module")
 def task_probe():
-    """curation_probes.task, imported through task_probes.py (which puts the probe library on the path).
-
-    The task probes need LightGBM, which the CI environment does not install; the tests skip without it.
-    """
-    pytest.importorskip("lightgbm")
-    return _import("task_probes").task
+    """``data_foundry.probes.task``."""
+    return task
 
 
 def test_task_probe_cap_keeps_the_newest_rows_of_a_temporal_train_side(task_probe):
@@ -720,9 +751,8 @@ def test_task_probe_run_on_a_capped_temporal_task(task_probe):
 
 @pytest.fixture(scope="module")
 def leak_probe():
-    """curation_probes.leak, imported through leak_probes.py; it needs LightGBM, so the tests skip without it."""
-    pytest.importorskip("lightgbm")
-    return _import("leak_probes").leak
+    """``data_foundry.probes.leak``."""
+    return leak
 
 
 def test_leak_probe_written_decimals(leak_probe):
@@ -789,12 +819,12 @@ RATE_TASK = """    target = "rate"
         "mean_poisson_deviance",
         reference="https://example.org/eval",
         params={"min_prediction": 1e-4},
-        inputs={"weight": "exposure"},
     )
     scoring_columns = (
-        ScoringColumn(column="exposure", role="weight", used_by="mean_poisson_deviance", description="years insured"),
+        ScoringColumn(
+            column="exposure", role="weight", used_by="mean_poisson_deviance", fit=True, description="years insured"
+        ),
     )
-    sample_weight = "exposure"
 """
 RATE_CLEAN = """        df["exposure"] = (df["row_id"] % 12 + 1) / 12
         df["rate"] = df["y"] / df["exposure"]
@@ -849,20 +879,18 @@ def _poisson_metric(exposure: np.ndarray) -> dict:
 
 @pytest.fixture(scope="module")
 def group_probe():
-    """curation_probes.groups, imported through group_probes.py; it needs LightGBM."""
-    pytest.importorskip("lightgbm")
-    return _import("group_probes").groups
+    """``data_foundry.probes.groups``."""
+    return groups
 
 
-def test_probe_input_carries_the_training_weight_and_the_metric(clean_room, tmp_path, warehouse):  # noqa: F811
+def test_probe_input_carries_the_training_weight_and_the_metric(clean_room, tmp_path, warehouse):
     """`from_definition` and `from_container` give the definition's sample weight row by row, never as a feature,
     with the declared metric, its inputs and a scorer that weights the rows as the benchmark does.
     """
     del warehouse
-    dataset_io = clean_room.dataset_io
     ds = _rate_toy(tmp_path / "datasets")
     plan = ds.make_splits()
-    data = dataset_io.from_definition(ds, plan)
+    data = inputs.from_definition(ds, plan)
     exposure = plan.df["exposure"].to_numpy()
     assert data.weight_column == "exposure"
     np.testing.assert_array_equal(data.weights, exposure)
@@ -877,7 +905,7 @@ def test_probe_input_carries_the_training_weight_and_the_metric(clean_room, tmp_
     expected = mean_poisson_deviance(y, pred, sample_weight=exposure[rows])
     assert metric["score"](y, pred, rows) == pytest.approx(expected)
     assert score(data.metric, y, pred, **data.metric_inputs(rows)) == pytest.approx(expected)
-    rebuilt = dataset_io.from_container(ds.to_container(), "rebuilt")
+    rebuilt = inputs.from_container(ds.to_container(), "rebuilt")
     assert rebuilt.weight_column == "exposure"
     np.testing.assert_array_equal(rebuilt.weights, exposure)
 
@@ -888,13 +916,13 @@ def test_probes_fit_with_the_training_weight(task_probe, leak_probe, group_probe
     """
     df, exposure, claims = _rate_frame()
     fitted: list[bool] = []
-    fit = task_probe.weights.fit
+    fit = models.fit
 
     def recording_fit(model, X, y, weight=None):
         fitted.append(weight is not None and len(weight) == len(X))
         return fit(model, X, y, weight)
 
-    monkeypatch.setattr(task_probe.weights, "fit", recording_fit)
+    monkeypatch.setattr(models, "fit", recording_fit)
     idx = np.random.default_rng(1).permutation(len(df))
     train, test = np.sort(idx[:350]), np.sort(idx[350:])
     rows = df.drop(columns="g")
@@ -966,7 +994,7 @@ def test_weight_proxy_flags_an_earned_premium(leak_probe, clean_room):
     spec = Metric.source(
         "mean_poisson_deviance", reference="x", params={"min_prediction": 1e-4}, inputs={"weight": "exposure"}
     ).spec("regression")
-    data = clean_room.dataset_io.ProbeInput(
+    data = inputs.ProbeInput(
         df=df,
         target="rate",
         problem_type="regression",
@@ -1094,8 +1122,8 @@ def test_weight_proxy_fits_a_gini_scored_rate_with_its_actuarial_objective(leak_
     when the rate times the weight is a whole count, Tweedie at power 1.5 for a cost, L2 without a training weight
     (pricing_game_2016_french_fleet: its two arms had both been L2, 2026-11-06).
     """
-    del leak_probe  # the fixture skips without LightGBM
-    script = _import("leak_probes")
+    del leak_probe
+    script = leak_modes
     gini = {"name": "normalized_weighted_gini", "params": {}}
     weight = np.array([0.5, 1.0, 0.25, 1.0])
     counts = np.array([1.0, 0.0, 1.0, 2.0]) / weight
@@ -1112,17 +1140,16 @@ def test_weight_proxy_fits_a_gini_scored_rate_with_its_actuarial_objective(leak_
     assert script.fit_params("metric", tweedie, costs, weight) == expected
 
 
-def test_leak_probes_command_runs_the_weight_proxy(leak_probe, tmp_path, warehouse, capsys):  # noqa: F811
-    """`leak_probes.py --weight-proxy` reads the task's sample weight and metric from the definition and, by default,
-    fits a Poisson deviance's rate with the Poisson objective; `--objective l2` asks for the L2 fit.
+def test_leak_probes_command_runs_the_weight_proxy(leak_probe, tmp_path, warehouse, capsys):
+    """`data-foundry probe leak --weight-proxy` reads the task's sample weight and metric from the definition and, by
+    default, fits a Poisson deviance's rate with the Poisson objective; `--objective l2` asks for the L2 fit.
     """
-    del warehouse, leak_probe  # the fixture skips without LightGBM
+    del warehouse, leak_probe
     root = tmp_path / "datasets"
     _rate_toy(root)
     out = tmp_path / "out"
-    script = _import("leak_probes")
     argv = ["toy_ds", "--root", str(root), "--weight-proxy", "--splits", "1", "--seeds", "2", "--n-jobs", "1"]
-    assert script.main([*argv, "--out", str(out)]) == 0
+    assert curation_main(["probe", "leak", *argv, "--out", str(out)]) == 0
     result = json.loads((out / "toy_ds.json").read_text())["weight_proxy"]
     assert (result["weight"], result["metric"], result["objective"]) == ("exposure", "mean_poisson_deviance", "poisson")
     assert result["metric_row_weight"] == "exposure"
@@ -1130,7 +1157,7 @@ def test_leak_probes_command_runs_the_weight_proxy(leak_probe, tmp_path, warehou
     printed = capsys.readouterr().out
     assert "weight proxy (probe 22) of `exposure`" in printed
     assert "run again with --objective l2" in printed
-    assert script.main([*argv, "--objective", "l2", "--out", str(out)]) == 0
+    assert curation_main(["probe", "leak", *argv, "--objective", "l2", "--out", str(out)]) == 0
     assert json.loads((out / "toy_ds.json").read_text())["weight_proxy"]["objective"] == "L2"
 
 
@@ -1279,10 +1306,10 @@ def test_lookup_folds_by_group_never_read_a_rows_own_group(leak_probe):
     units = groups.copy()  # each fleet's profile is its own
     values = np.random.default_rng(0).normal(size=(len(units), 1))
     tr, te = np.arange(600), np.arange(600, 800)
-    on_tr, on_te = leak_probe._lookup(units, values, np.ones(len(units)), tr, tr, te, np.random.default_rng(0), groups)
+    on_tr, on_te = leak_forced._lookup(units, values, np.ones(len(units)), tr, tr, te, np.random.default_rng(0), groups)
     assert np.isnan(on_tr).all()
     assert np.isnan(on_te).all()
-    by_row, _ = leak_probe._lookup(units, values, np.ones(len(units)), tr, tr, te, np.random.default_rng(0))
+    by_row, _ = leak_forced._lookup(units, values, np.ones(len(units)), tr, tr, te, np.random.default_rng(0))
     assert np.isfinite(by_row).mean() > 0.9
 
 
@@ -1318,11 +1345,11 @@ def test_outcome_periods_and_period_columns(leak_probe):
     assert [why for _, why in found][:2] == ["dates", "years"]
 
 
-def test_leak_probes_command_runs_the_forced_split_tests(leak_probe, tmp_path, warehouse, capsys):  # noqa: F811
-    """`leak_probes.py --forced-split` runs probe 23 on a split tagged forced from temporal, on the year column it
-    finds, and says why it does not run on any other split; the default run of a forced split ends with it.
+def test_leak_probes_command_runs_the_forced_split_tests(leak_probe, tmp_path, warehouse, capsys):
+    """`data-foundry probe leak --forced-split` runs probe 23 on a split tagged forced from temporal, on the year column
+    it finds, and says why it does not run on any other split; the default run of a forced split ends with it.
     """
-    del warehouse, leak_probe  # the fixture skips without LightGBM
+    del warehouse, leak_probe
     root = tmp_path / "datasets"
     body = DEFINITION.format(name="toy_ds", comment="x")
     old = '        df["y"] = df["y"].map({0: "no", 1: "yes"})\n'
@@ -1337,10 +1364,9 @@ def test_leak_probes_command_runs_the_forced_split_tests(leak_probe, tmp_path, w
             '    target = "y"\n',
         ),
     )
-    script = _import("leak_probes")
     out = tmp_path / "out"
     argv = ["toy_ds", "--root", str(root), "--forced-split", "--forced-splits", "2", "--seeds", "1", "--n-jobs", "1"]
-    assert script.main([*argv, "--out", str(out)]) == 0
+    assert curation_main(["probe", "leak", *argv, "--out", str(out)]) == 0
     result = json.loads((out / "toy_ds.json").read_text())["forced_split"]
     assert result["tags"] == ["ForcedIIDFromTemporal"]
     assert result["period_outcome"]["period"] == "year"
@@ -1350,17 +1376,20 @@ def test_leak_probes_command_runs_the_forced_split_tests(leak_probe, tmp_path, w
     assert "period outcome (probe 23): the periods of `year` (years)" in printed
     assert "shared units (probe 23)" in printed
     default = [a for a in argv if a != "--forced-split"]
-    assert script.main([*default, "--splits", "1", "--max-single-features", "2", "--out", str(out)]) == 0
+    assert (
+        curation_main(["probe", "leak", *default, "--splits", "1", "--max-single-features", "2", "--out", str(out)])
+        == 0
+    )
     result = json.loads((out / "toy_ds.json").read_text())
     assert "all_features" in result
     assert result["forced_split"]["tags"] == ["ForcedIIDFromTemporal"]
     assert "period outcome (probe 23) on `year`" in capsys.readouterr().out
     write_definition(root)
-    assert script.main(argv) == 0
+    assert curation_main(["probe", "leak", *argv]) == 0
     assert "forced split (probe 23): not run (the split is not tagged" in capsys.readouterr().out
 
 
-def test_clean_rooms_name_the_training_weight(clean_room, tmp_path, warehouse):  # noqa: F811
+def test_clean_rooms_name_the_training_weight(clean_room, tmp_path, warehouse):
     """The participant kit's task.json and task.md name the sample weight, which ships in scoring.parquet; the blind
     reviewer's clean room ships it as the last column of data.parquet, labelled in task.md.
     """
@@ -1386,9 +1415,8 @@ def test_clean_rooms_name_the_training_weight(clean_room, tmp_path, warehouse): 
 
 @pytest.fixture(scope="module")
 def dtype_probe():
-    """curation_probes.dtypes, imported through dtype_probes.py."""
-    pytest.importorskip("joblib")
-    return _import("dtype_probes").dtypes
+    """``data_foundry.probes.dtypes``."""
+    return dtypes
 
 
 def _flags(table: pd.DataFrame) -> dict[str, list[str]]:

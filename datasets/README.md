@@ -10,7 +10,7 @@ on the current package: commit `6cc3c945` is the last state with the v1 helpers 
 datasets/
 ├── _template/        # the v2 template `dataset new` copies: dataset.py
 ├── _dev/             # work in progress, one folder per collection being built
-│   ├── tabarena-v0pt2/      # the TabArena v0.2 working copy: 177 v2 definitions (start with its GETTING_STARTED.md)
+│   ├── tabarena-v0pt2/      # the TabArena v0.2 working copy: v2 definitions (start with its GETTING_STARTED.md)
 │   └── feature_selection/   # v1 notebooks of the feature-selection work (SelectArena)
 ├── beyond_iid/       # the shipped BeyondArena collection (v1 notebooks), pinned in final_uuid_list.py
 └── _maintenance/     # everything kept for reference or development that is not in a shipped collection
@@ -23,7 +23,7 @@ datasets/
 | Folder | Format | What it is | Who edits it |
 |---|---|---|---|
 | [`_template/`](_template/) | v2 | The template `.venv/bin/python -m data_foundry.curation.cli dataset new` copies. | Framework changes only. |
-| [`_dev/tabarena-v0pt2/`](_dev/tabarena-v0pt2/) | v2 | One folder per dataset of TabArena v0.2, built as container format 2. Its [`README.md`](_dev/tabarena-v0pt2/README.md) has the dataset table, [`GETTING_STARTED.md`](_dev/tabarena-v0pt2/GETTING_STARTED.md) the way in, [`CHANGELOG.md`](_dev/tabarena-v0pt2/CHANGELOG.md) every change. | Curators, through PRs; every change gets a CHANGELOG entry. |
+| [`_dev/tabarena-v0pt2/`](_dev/tabarena-v0pt2/) | v2 | One folder per dataset of TabArena v0.2, built as container format 2. Its [`README.md`](_dev/tabarena-v0pt2/README.md) says how to rebuild them, [`GETTING_STARTED.md`](_dev/tabarena-v0pt2/GETTING_STARTED.md) the way in, [`CHANGELOG.md`](_dev/tabarena-v0pt2/CHANGELOG.md) every change. | Curators, through PRs; every change gets a CHANGELOG entry. |
 | [`_dev/feature_selection/`](_dev/feature_selection/) | v1 | Notebooks of the feature-selection work; several are older copies of datasets that shipped from `beyond_iid/`. | Not for new datasets. |
 | [`beyond_iid/`](beyond_iid/) | v1 | The BeyondArena notebooks (`old_iid/`, `new_iid/`, `temporal/`, `grouped/`), the ablation variants (`_ablations/`) and [`final_uuid_list.py`](beyond_iid/final_uuid_list.py), the `(unique_name, uuid)` pins of the shipped containers. | Frozen: a shipped notebook is not re-run (a re-run makes a new UUID). |
 | [`_maintenance/`](_maintenance/) | v1 | Datasets outside a shipped collection, kept for provenance: the TabArena v0.1 re-curation (`_old_collections/tabarena-v0pt1/`), deprecated, suspended and out-of-scope datasets. A record of a dataset here carries `DF: Yes` without a collection tag on purpose (see [`_deprecated/README.md`](_maintenance/_deprecated/README.md)). | Rarely; moving a dataset here updates its record's `notebook_path`. |

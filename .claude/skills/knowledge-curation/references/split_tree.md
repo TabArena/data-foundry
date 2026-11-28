@@ -59,15 +59,15 @@ question no answer fits: only a reviewer adds a branch.
 
 ## Words
 
-* **Time basis**: why a split that is not temporal is not, declared as `TimeBasis(tag, reason)` and rendered as the
-  `Time basis:` line. **Group basis**: why a split is random although the use case holds out a group
-  (`ForcedIIDFromGrouped`), beside the time basis.
+* **Time basis**: why a split that is not temporal is not, declared as `TimeBasis(tag, reason)`, stored with the dataset
+  and shown in its README as the `Time basis:` line. **Group basis**: why a split is random although the use case holds
+  out a group (`ForcedIIDFromGrouped`), beside the time basis.
 * **IID** in `ForcedIIDFromTemporal` and `ForcedIIDFromGrouped` means a random split of the rows, not a judgement that
   the rows are independent.
 * **`RetrospectiveFillIn`**: the use case fills in what is missing for the time the data covers (rows without a
   label, places a survey did not sample, occasions a panel did not record), not a later time. It was called
-  `Retrospective`, which clinical readers take for "a retrospective study" and ML readers for a backtest; the old name
-  is still read until every definition uses the new one.
+  `Retrospective` before 2026-11-23, which clinical readers took for "a retrospective study" and ML readers for a
+  backtest.
 * **Unit**: the recurring thing the unit check asks about (a patient, a car, a station, a policy). **Item**: an entry
   of a catalogue or an experiment (a molecule, a mix). **Group**: a place, region, site, family or kind that holds
   many units or items. **Scored unit**: what SPLIT-33 counts.

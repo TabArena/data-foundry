@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: sdss_17
 container_format: 2
-checksum: v2:10ee9731343c254fbb68d71dda50d6c205bfdd786f0b9e02b9f552aa617a0c29
+checksum: v2:2a34975a78d0642e60a3da70175584f1fe4664a59864d7b23851b89f9521030b
 build:
-  uuid: 01a111fc-9499-7f77-abbe-45c6b8ec8291
-  checksum: v2:23581aaf9a00d579de3f759616f9da199f4b250322ed730303150c7cfbc18d0d
-  built_at: '2026-10-06T16:12:09+00:00'
-  path: sdss_17/01a111fc-9499-7f77-abbe-45c6b8ec8291
+  uuid: 01a21800-9867-796b-836e-ac138838ed88
+  checksum: v2:2a34975a78d0642e60a3da70175584f1fe4664a59864d7b23851b89f9521030b
+  built_at: '2026-11-26T13:17:04+00:00'
+  path: sdss_17/01a21800-9867-796b-836e-ac138838ed88
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 99999
   n_features: 8
@@ -48,6 +48,51 @@ splits:
   time_horizon_unit: years
   time_gap: null
   time_gap_unit: null
+  reason: 'Eight windows, newest first: 1 January 2019 to 24 March 2020, then the
+    calendar years 2018 to 2012; each
+
+    trains on every spectrum taken before it, as a classifier refit at each yearly
+    data release (DR8, January
+
+    2011, to DR16, December 2019) would. No gap: the pipeline''s class comes with
+    the spectrum, and a public user
+
+    waits for the next release, which the one-year windows already stand in for.
+
+
+    The sizes follow DR17, of which the file holds 1.6% to 2.4% a
+
+    year: BOSS used all the dark time until June 2014, eBOSS half of it until it ended
+    on 1 March 2019,
+
+    and 2020 holds only 7 eFEDS plates of X-ray sources (and 1 reverberation-mapping
+    plate), observed before the
+
+    observatory closed for COVID-19 on 24 March 2020. A 2020 window alone (141 spectra,
+    8 plates, one programme)
+
+    gave untuned LightGBM''s log loss a standard error of 0.083 against 0.008 to 0.025
+    in the other years, and 77%
+
+    of the noise of the nine-window mean (standard error 0.0105). Merged with 2019
+    (1,076 spectra, 72 plates) the
+
+    newest window''s standard error is 0.024 and that of the eight-window mean 0.0056;
+    every spectrum stays tested,
+
+    the eFEDS ones included, and the newest window spans 15 months (2026-11-12, Andrej).
+
+
+    The year also holds out the test object''s plate, which the random split did not:
+    0 to 5 plates per window
+
+    were also observed before it, at most 90 test rows (0.9% of the 2013 window).
+
+
+    Eight windows, against the 9 an IID split of 99,999 spectra would get: 2019 and
+    2020 form one window
+
+    (2026-11-12), and a 2011 window would train on 40.4% of the spectra (Andrej, 2026-11-19).'
   n_train:
     min: 51256
     max: 98923
@@ -60,9 +105,9 @@ bundle_checks:
   warnings: []
   infos: []
   accepted:
-    splits_below_target: 'Eight windows, against the 9 an IID split of 99,999 spectra
-      would get: 2019 and 2020 form one window (2026-11-12), and a 2011 window would
-      train on 40.4% of the spectra (Andrej, 2026-11-19).'
+    splits_dimensions_off_protocol: 'Eight windows, against the 9 an IID split of
+      99,999 spectra would get: 2019 and 2020 form one window (2026-11-12), and a
+      2011 window would train on 40.4% of the spectra (Andrej, 2026-11-19).'
 decisions: []
 ---
 
@@ -72,7 +117,7 @@ decisions: []
 
 Multiclass classification of `ObjectType`, scored with `log_loss` on temporal splits by `date`. 99,999 rows and 8 features. Source: Other (2021).
 
-Built as `01a111fc-9499-7f77-abbe-45c6b8ec8291` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:10ee9731343c254fbb68d71dda50d6c205bfdd786f0b9e02b9f552aa617a0c29`, so the build is stale. See [Build](#build).
+Built as `01a21800-9867-796b-836e-ac138838ed88` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -238,13 +283,14 @@ The first 5 of 99,999 rows of the final frame (the oldest rows: the frame is sor
 
 ## Splits
 
+Expanding-window temporal splits: 8 test window(s), each from its start to the next start, the newest to the end of the data (starts: 2019-01-01, 2018-01-01, 2017-01-01, 2016-01-01, 2015-01-01, 2014-01-01, 2013-01-01, 2012-01-01), newest first; train is all earlier data. The test windows by `date`, as listed: 2019-01-01 to 2020-03-24 (1,076 test, 98,923 train rows); 2018-01-05 to 2018-12-20 (6,705 test, 92,218 train rows); 2017-01-05 to 2017-12-26 (5,989 test, 86,229 train rows); 2016-01-02 to 2016-12-29 (4,873 test, 81,356 train rows); 2015-01-08 to 2015-12-22 (3,364 test, 77,992 train rows); 2014-01-01 to 2014-12-25 (5,849 test, 72,143 train rows); 2013-01-03 to 2013-12-31 (9,843 test, 62,300 train rows); 2012-01-01 to 2012-12-23 (11,044 test, 51,256 train rows).
+
 Eight windows, newest first: 1 January 2019 to 24 March 2020, then the calendar years 2018 to 2012; each
 trains on every spectrum taken before it, as a classifier refit at each yearly data release (DR8, January
 2011, to DR16, December 2019) would. No gap: the pipeline's class comes with the spectrum, and a public user
 waits for the next release, which the one-year windows already stand in for.
 
-The windows train on 51.3% (2012) to 98.9% (2019-2020) of the 99,999 objects and hold 11,044, 9,843, 5,849,
-3,364, 4,873, 5,989, 6,705 and 1,076 spectra. The sizes follow DR17, of which the file holds 1.6% to 2.4% a
+The sizes follow DR17, of which the file holds 1.6% to 2.4% a
 year: BOSS used all the dark time until June 2014, eBOSS half of it until it ended on 1 March 2019,
 and 2020 holds only 7 eFEDS plates of X-ray sources (and 1 reverberation-mapping plate), observed before the
 observatory closed for COVID-19 on 24 March 2020. A 2020 window alone (141 spectra, 8 plates, one programme)
@@ -295,7 +341,7 @@ Each test window against its train side, by statistics of the data, never of a m
 
 Accepted on purpose:
 
-- `splits_below_target`: Eight windows, against the 9 an IID split of 99,999 spectra would get: 2019 and 2020 form one window (2026-11-12), and a 2011 window would train on 40.4% of the spectra (Andrej, 2026-11-19).
+- `splits_dimensions_off_protocol`: Eight windows, against the 9 an IID split of 99,999 spectra would get: 2019 and 2020 form one window (2026-11-12), and a 2011 window would train on 40.4% of the spectra (Andrej, 2026-11-19).
 
 ## Data checks
 
@@ -306,8 +352,8 @@ Accepted on purpose:
 | cam_col | category | 0 | 0 | 6 | 4, 3, 5, 2, 1, 6 |
 | ObjectType | category | 0 | 0 | 3 | GALAXY, STAR, QSO |
 | date | datetime64\[ns\] | 0 | 0 | 2180 | 2013-11-29 00:00:00, 2018-02-13 00:00:00, 2014-01-01 00:00:00, 2013-04-08 00:00… |
-| alpha | float64 | 0 | 0 | 99999 | 147.3668, 148.5264, 147.9054, 149.0324, 149.1849, 147.9312, 147.0827, 148.7535,… |
-| delta | float64 | 0 | 0 | 99999 | 0.9684, -0.9717, 0.4121, 0.2881, 0.2421, 0.9521, -1.2156, -0.5962, 0.9841, -0.8… |
+| alpha | float64 | 0 | 0 | 99999 | 131.6708, 147.3668, 148.5264, 147.9054, 149.0324, 149.1849, 147.9312, 147.0827,… |
+| delta | float64 | 0 | 0 | 99999 | 0.8746, 0.9684, -0.9717, 0.4121, 0.2881, 0.2421, 0.9521, -1.2156, -0.5962, 0.98… |
 | u | float64 | 1 | 0 | 93747 | 24.6347, 24.6347, 24.6347, 24.6346, 24.6347, 24.6346, 24.6346, 24.6347, 20.5925… |
 | g | float64 | 1 | 0 | 92650 | 25.1144, 25.1144, 25.1144, 20.4269, 22.4174, 21.401, 21.2275, 21.1364, 21.7641,… |
 | r | float64 | 0 | 0 | 91901 | 24.802, 24.802, 24.802, 20.7224, 20.7466, 20.7653, 20.8977, 20.6485, 20.467, 20… |
@@ -361,11 +407,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-9499-7f77-abbe-45c6b8ec8291 |
-| checksum | v2:23581aaf9a00d579de3f759616f9da199f4b250322ed730303150c7cfbc18d0d |
-| built_at | 2026-10-06T16:12:09+00:00 |
-| path | sdss_17/01a111fc-9499-7f77-abbe-45c6b8ec8291 |
+| uuid | 01a21800-9867-796b-836e-ac138838ed88 |
+| checksum | v2:2a34975a78d0642e60a3da70175584f1fe4664a59864d7b23851b89f9521030b |
+| built_at | 2026-11-26T13:17:04+00:00 |
+| path | sdss_17/01a21800-9867-796b-836e-ac138838ed88 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:10ee9731343c254fbb68d71dda50d6c205bfdd786f0b9e02b9f552aa617a0c29` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: hr_analytics
 container_format: 2
-checksum: v2:d78fd048cfca9e2bade67bcaa7e757ba8d5080ab4605ebafcd4544ead1f0cfa6
+checksum: v2:9eab6750c9c5bd9036f1f88f7adb131580c4644c3e039d13c206243e604bf24a
 build:
-  uuid: 01a13a7d-c2d4-7c87-a495-ce69f1b8a4c4
-  checksum: v2:e812c1329270426adef79897cec0ec3f1b2d8724e57d3359308efcb2130b09d6
-  built_at: '2026-10-14T12:58:03+00:00'
-  path: hr_analytics/01a13a7d-c2d4-7c87-a495-ce69f1b8a4c4
+  uuid: 01a21800-d4ac-7cb9-b506-6133d6abcdcb
+  checksum: v2:9eab6750c9c5bd9036f1f88f7adb131580c4644c3e039d13c206243e604bf24a
+  built_at: '2026-11-26T13:17:17+00:00'
+  path: hr_analytics/01a21800-d4ac-7cb9-b506-6133d6abcdcb
   data_foundry_version: 0.0.5
-  git_sha: f93df193827f5244586b178fd7199efb86d66359-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 18359
   n_features: 11
@@ -46,6 +46,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 12239
     max: 12240
@@ -75,7 +76,7 @@ decisions: []
 
 Binary classification of `LookingForJobChange`, scored with `roc_auc` on IID splits. 18,359 rows and 11 features. Source: Other (2018).
 
-Built as `01a13a7d-c2d4-7c87-a495-ce69f1b8a4c4` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:d78fd048cfca9e2bade67bcaa7e757ba8d5080ab4605ebafcd4544ead1f0cfa6`, so the build is stale. See [Build](#build).
+Built as `01a21800-d4ac-7cb9-b506-6133d6abcdcb` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -233,7 +234,7 @@ Supremacy (DataHack, July 2018). The same files ran again as JanataHack: HR Anal
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `LookingForJobChange`: 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 18,359 rows (SPLIT-33).
 
 3 repeat(s) x 3 fold(s) with seed 4267; train 12,239 to 12,240 rows, test 6,119 to 6,120 rows.
 
@@ -358,11 +359,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a13a7d-c2d4-7c87-a495-ce69f1b8a4c4 |
-| checksum | v2:e812c1329270426adef79897cec0ec3f1b2d8724e57d3359308efcb2130b09d6 |
-| built_at | 2026-10-14T12:58:03+00:00 |
-| path | hr_analytics/01a13a7d-c2d4-7c87-a495-ce69f1b8a4c4 |
+| uuid | 01a21800-d4ac-7cb9-b506-6133d6abcdcb |
+| checksum | v2:9eab6750c9c5bd9036f1f88f7adb131580c4644c3e039d13c206243e604bf24a |
+| built_at | 2026-11-26T13:17:17+00:00 |
+| path | hr_analytics/01a21800-d4ac-7cb9-b506-6133d6abcdcb |
 | data_foundry_version | 0.0.5 |
-| git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:d78fd048cfca9e2bade67bcaa7e757ba8d5080ab4605ebafcd4544ead1f0cfa6` |

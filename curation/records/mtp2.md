@@ -4,9 +4,6 @@ name: OpenML-430 mtp2
 checked_by:
 - AI (UNVERIFIED)
 - Andrej
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: TBD -> 2nd Tier
 priority: 1
 decision_markers:

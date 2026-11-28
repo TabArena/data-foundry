@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: infrared_thermography_temperature
 container_format: 2
-checksum: v2:a8ff3cd085b311213d909814090bf0b04f023c22ee3f2a6f16b14cc16bb1d8bc
-build: null
+checksum: v2:b798fa5e7514253ad80eb3c48e9af79c8f3f8feff428a24697a684316d1ca73a
+build:
+  uuid: 01a21800-2a6b-7b89-8196-2750cd149cff
+  checksum: v2:b798fa5e7514253ad80eb3c48e9af79c8f3f8feff428a24697a684316d1ca73a
+  built_at: '2026-11-26T13:16:35+00:00'
+  path: infrared_thermography_temperature/01a21800-2a6b-7b89-8196-2750cd149cff
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 1001
@@ -35,6 +48,23 @@ splits:
   time_horizon_unit: months
   time_gap: null
   time_gap_unit: null
+  reason: 'Target: the 30 splits an IID split of 1,001 subjects would get; three two-month
+    windows fit above the floor. A table this small with only three windows also gets
+    the stationary-relation test, which reads Nov-Dec 2017 not flat, so the windows
+    ship. No gap: the oral reading that sets the label is taken minutes after the
+    image, in the same visit. The visit date comes from the date part of `SubjectID`
+    and is no input (`time_of="label"`): it orders and splits the subjects only. The
+    windows start mid-month because the newest window must hold the newest visits;
+    starting on the 1st (Mar, Jan, Nov) would need a newest window stretched into
+    May and a 48% window under the floor. The set-up changed between the study years
+    (two locations, the median distance from 0.80 to 0.60 m), a first-year calibration
+    over-predicts by 0.06-0.09 °C, and the stationary-relation test reads Nov-Dec
+    2017 not flat (Kumo-Tabular +0.010 ± 0.003 RMSE, floor 0.001). A screening camera
+    calibrated once is used on later people, which these windows test (Andrej, 2026-11-23).
+    Wang et al. (2022, Sec. 2.5) calibrated on a random 60% of the subjects and note
+    that a random split of one pool may bias the estimate upwards (Sec. 4.5); the
+    earlier random 10 x 3 folds (Lennart, 2026-10-21) are compared in the curation
+    notes.'
   n_train:
     min: 527
     max: 893
@@ -47,10 +77,10 @@ bundle_checks:
   warnings: []
   infos: []
   accepted:
-    splits_below_target: 'Three windows of the 30 splits an IID split of 1,001 subjects
-      would get: two-month windows on half the subjects or more leave room for three.
-      A table this small with three windows gets the stationary-relation test, and
-      it reads Nov-Dec 2017 not flat, so the windows ship (Andrej, 2026-11-23).'
+    splits_dimensions_off_protocol: 'Three windows of the 30 splits an IID split of
+      1,001 subjects would get: two-month windows on half the subjects or more leave
+      room for three. A table this small with three windows gets the stationary-relation
+      test, and it reads Nov-Dec 2017 not flat, so the windows ship (Andrej, 2026-11-23).'
 decisions:
 - Round 1 of the FLIR camera, not the mean of the four rounds (the UCI copy)
 - Subjects without a complete round-1 image are dropped
@@ -64,7 +94,7 @@ decisions:
 
 Regression of `aveOralM`, scored with `rmse` on temporal splits by `VisitDate`. 1,001 rows and 35 features. Source: Other (2023).
 
-Not built yet. The current definition gives checksum `v2:a8ff3cd085b311213d909814090bf0b04f023c22ee3f2a6f16b14cc16bb1d8bc`.
+Built as `01a21800-2a6b-7b89-8196-2750cd149cff` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -218,7 +248,9 @@ We start with FLIR_groups1and2.csv from PhysioNet (version 1.0.0): 1,020 subject
 
 ## Splits
 
-Three expanding two-month windows on the visit date, newest first: from 15 March 2018 to the last visit (14 May 2018), from 15 January and from 15 November 2017. Each trains on every subject imaged before the window starts (89%, 60% and 53% of the subjects), so every window meets the half-data floor. Target: the 30 splits an IID split of 1,001 subjects would get; three two-month windows fit above the floor. A table this small with only three windows also gets the stationary-relation test, which reads Nov-Dec 2017 not flat, so the windows ship. No gap: the oral reading that sets the label is taken minutes after the image, in the same visit. The visit date comes from the date part of `SubjectID` and is no input (`time_of="label"`): it orders and splits the subjects only. The windows start mid-month because the newest window must hold the newest visits; starting on the 1st (Mar, Jan, Nov) would need a newest window stretched into May and a 48% window under the floor. The set-up changed between the study years (two locations, the median distance from 0.80 to 0.60 m), a first-year calibration over-predicts by 0.06-0.09 °C, and the stationary-relation test reads Nov-Dec 2017 not flat (Kumo-Tabular +0.010 ± 0.003 RMSE, floor 0.001). A screening camera calibrated once is used on later people, which these windows test (Andrej, 2026-11-23). Wang et al. (2022, Sec. 2.5) calibrated on a random 60% of the subjects and note that a random split of one pool may bias the estimate upwards (Sec. 4.5); the earlier random 10 x 3 folds (Lennart, 2026-10-21) are compared in the curation notes.
+Expanding-window temporal splits: 3 test window(s) of 2 months, starting at 2018-03-15, 2018-01-15, 2017-11-15, newest first; train is all earlier data. The test windows by `VisitDate`, as listed: 2018-03-15 to 2018-05-14 (108 test, 893 train rows); 2018-01-24 to 2018-03-14 (291 test, 602 train rows); 2017-11-16 to 2017-12-15 (75 test, 527 train rows).
+
+Target: the 30 splits an IID split of 1,001 subjects would get; three two-month windows fit above the floor. A table this small with only three windows also gets the stationary-relation test, which reads Nov-Dec 2017 not flat, so the windows ship. No gap: the oral reading that sets the label is taken minutes after the image, in the same visit. The visit date comes from the date part of `SubjectID` and is no input (`time_of="label"`): it orders and splits the subjects only. The windows start mid-month because the newest window must hold the newest visits; starting on the 1st (Mar, Jan, Nov) would need a newest window stretched into May and a 48% window under the floor. The set-up changed between the study years (two locations, the median distance from 0.80 to 0.60 m), a first-year calibration over-predicts by 0.06-0.09 °C, and the stationary-relation test reads Nov-Dec 2017 not flat (Kumo-Tabular +0.010 ± 0.003 RMSE, floor 0.001). A screening camera calibrated once is used on later people, which these windows test (Andrej, 2026-11-23). Wang et al. (2022, Sec. 2.5) calibrated on a random 60% of the subjects and note that a random split of one pool may bias the estimate upwards (Sec. 4.5); the earlier random 10 x 3 folds (Lennart, 2026-10-21) are compared in the curation notes.
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 527 to 893 rows, test 75 to 291 rows. Prediction horizon: 2 months. The time column `VisitDate` dates the label, which arrives after the prediction point: it orders and splits the rows, so every training label was known at its window's start, and is no model input (`feature_columns(container)` leaves it out).
 
@@ -306,7 +338,7 @@ The images of rounds 1-3 and the oral readings agree, while the date, the time, 
 
 Accepted on purpose:
 
-- `splits_below_target`: Three windows of the 30 splits an IID split of 1,001 subjects would get: two-month windows on half the subjects or more leave room for three. A table this small with three windows gets the stationary-relation test, and it reads Nov-Dec 2017 not flat, so the windows ship (Andrej, 2026-11-23).
+- `splits_dimensions_off_protocol`: Three windows of the 30 splits an IID split of 1,001 subjects would get: two-month windows on half the subjects or more leave room for three. A table this small with three windows gets the stationary-relation test, and it reads Nov-Dec 2017 not flat, so the windows ship (Andrej, 2026-11-23).
 
 ## Data checks
 
@@ -437,4 +469,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a21800-2a6b-7b89-8196-2750cd149cff |
+| checksum | v2:b798fa5e7514253ad80eb3c48e9af79c8f3f8feff428a24697a684316d1ca73a |
+| built_at | 2026-11-26T13:16:35+00:00 |
+| path | infrared_thermography_temperature/01a21800-2a6b-7b89-8196-2750cd149cff |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

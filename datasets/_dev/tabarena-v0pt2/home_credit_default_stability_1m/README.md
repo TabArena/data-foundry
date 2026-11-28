@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_stability_1m
 container_format: 2
-checksum: v2:6be845a1e4fbfb858ab191e8ae7a93948d173330989cca7a48342fda2e226e7f
+checksum: v2:9f065a85f70a1ef378fa5e27d3137ae19db629634ea8e9dd8ab99bbd979b2c10
 build:
-  uuid: 01a111fc-2b8d-77ef-a922-3ea3b96a716e
-  checksum: v2:5a98ed32667628b5c2fea4874566abac7cf8d1f0b67636e5f12916fd41ddb8db
-  built_at: '2026-10-06T16:12:28+00:00'
-  path: home_credit_default_stability/versions/01a111fc-2b8d-77ef-a922-3ea3b96a716e
+  uuid: 01a217fa-29fa-7f2b-a908-f1cc4d7dd86e
+  checksum: v2:9f065a85f70a1ef378fa5e27d3137ae19db629634ea8e9dd8ab99bbd979b2c10
+  built_at: '2026-11-26T13:10:44+00:00'
+  path: home_credit_default_stability_1m/01a217fa-29fa-7f2b-a908-f1cc4d7dd86e
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 1526659
   n_features: 710
@@ -51,6 +51,66 @@ splits:
   time_horizon_unit: months
   time_gap: null
   time_gap_unit: null
+  reason: 'The length is how long one fitted scorecard keeps scoring (the curator''s
+    pick, 2026-11-11): a scorecard is fit
+
+    on applications whose default is known and then scores every new application until
+    the next refit, and Home
+
+    Credit''s competition fit one model and scored it on each week after its training
+    data ("When a model runs in
+
+    production, it can only see past performance and predictions"). No source gives
+    Home Credit''s refit cadence,
+
+    so the window is the longest whose three windows all train on at least half the
+    applications: four months
+
+    (five would leave the oldest on 35.1%). The two months used until 2026-11-11 came
+    from cutting TabReD''s
+
+    4.5-month test period into three, not from a refit cadence.
+
+    The windows tile the months from 1 November 2019, the oldest start that keeps
+    half the applications for
+
+    training, to the release end, so at four months they leave no choice; they test
+    the months after, across and
+
+    before the drop of late March 2020, when applications fell from 60,748 in March
+    (4.6% defaults) to 8,289 in
+
+    April (2.2%) and the default rate stayed at 1.8-2.8% a week afterwards. A scorecard
+    that should stay stable
+
+    over time has to hold through that change, which no refit sees coming (the curator''s
+    pick of 2026-11-11).
+
+    Applications tested (defaults), then the train side and its share of the 1,526,659:
+    July to
+
+    5 October 2020 150,240 (3,175, 2.1%), 1,376,419 (90.2%); March to June 2020 143,724
+    (4,714, 3.3%), 1,232,695
+
+    (80.7%); November 2019 to February 2020 403,789 (15,541, 3.8%), 828,906 (54.3%).
+    No window trains on less than
+
+    half.
+
+    No gap: the weekly default rate stays at 1.8% to 2.8% to the end of the release,
+    so the labels look final, as
+
+    for lt_vehicle_loan_default_prediction.
+
+    The year before July 2020
+
+    holds 937,675 rows, so that window trains on the newest 1M (from 11 June 2019);
+    the year before March 2020
+
+    holds 1,094,102, of which a random 1M; the November 2019 window trains on all
+    828,906 (January to October
+
+    2019).'
   n_train:
     min: 828906
     max: 1376419
@@ -89,7 +149,7 @@ decisions: []
 
 Binary classification of `target`, scored with `roc_auc` on temporal splits by `date_decision`. 1,526,659 rows and 710 features. Source: Kaggle (2024).
 
-Built as `01a111fc-2b8d-77ef-a922-3ea3b96a716e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6be845a1e4fbfb858ab191e8ae7a93948d173330989cca7a48342fda2e226e7f`, so the build is stale. See [Build](#build).
+Built as `01a217fa-29fa-7f2b-a908-f1cc4d7dd86e` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -229,7 +289,8 @@ We start with the data from Kaggle and follow the preprocessing from TabRed (htt
 
 ## Splits
 
-Three test windows of four months, newest first: 1 July to 5 October 2020 (the release's end), 1 March to 30 June 2020 and 1 November 2019 to 29 February 2020; each trains on all earlier applications, with no gap.
+Expanding-window temporal splits: 3 test window(s) of 4 months, starting at 2020-07-01, 2020-03-01, 2019-11-01, newest first; train is all earlier data. The test windows by `date_decision`, as listed: 2020-07-01 to 2020-10-05 (150,240 test, 1,376,419 train rows); 2020-03-01 to 2020-06-30 (143,724 test, 1,232,695 train rows); 2019-11-01 to 2020-02-29 (403,789 test, 828,906 train rows). Each test window keeps at most 500k of its rows, drawn at random; each train side holds every earlier row, and a benchmark sub-samples it to 1M rows (by default rows drawn at random from the newest year before each window, extended back in time until it holds that many rows, `subsample_train`).
+
 The length is how long one fitted scorecard keeps scoring (the curator's pick, 2026-11-11): a scorecard is fit
 on applications whose default is known and then scores every new application until the next refit, and Home
 Credit's competition fit one model and scored it on each week after its training data ("When a model runs in
@@ -248,9 +309,7 @@ Applications tested (defaults), then the train side and its share of the 1,526,6
 half.
 No gap: the weekly default rate stays at 1.8% to 2.8% to the end of the release, so the labels look final, as
 for lt_vehicle_loan_default_prediction.
-Each window keeps all its rows (under the 500k test budget), and each train side holds every earlier row (0.83M
-to 1.38M); a benchmark sub-samples it to 1M before a fit (`subsample_train`): by default the newest year before
-the window, extended back in time until it holds 1M rows, and a random 1M of those. The year before July 2020
+The year before July 2020
 holds 937,675 rows, so that window trains on the newest 1M (from 11 June 2019); the year before March 2020
 holds 1,094,102, of which a random 1M; the November 2019 window trains on all 828,906 (January to October
 2019).
@@ -270,15 +329,15 @@ Each test window against its train side, by statistics of the data, never of a m
 
 | window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
 |---|---|---|---|---|---|---|---|---|
-| 0 | Jul 2020 - Oct 2020 | 150240 | 0.902 | Yes 2.1% (about 3,140) | Yes 3.3% (about 45,697) | 8.235 | MONTH (8.24), WEEK_NUM (8.22), mean_refreshdate_3813885D (7.70) | 0.1533 |
-| 1 | Mar 2020 - Jun 2020 | 143724 | 0.807 | Yes 3.3% (about 4,721) | Yes 3.4% (about 41,727) | 8.298 | max_pmts_year_1139T (8.30), WEEK_NUM (8.01), MONTH (7.81) | 0.2761 |
-| 2 | Nov 2019 - Feb 2020 | 403789 | 0.543 | Yes 4.0% (about 16,253) | Yes 2.8% (about 23,251) | 9.34 | responsedate_1012D (9.34), MONTH (7.94), WEEK_NUM (7.93) | 0.5201 |
+| 0 | Jul 2020 - Oct 2020 | 150240 | 0.902 | Yes 2.1% (about 3,102) | Yes 3.3% (about 45,353) | 8.235 | MONTH (8.24), WEEK_NUM (8.22), mean_refreshdate_3813885D (7.70) | 0.1542 |
+| 1 | Mar 2020 - Jun 2020 | 143724 | 0.807 | Yes 3.3% (about 4,750) | Yes 3.4% (about 41,357) | 8.301 | max_pmts_year_1139T (8.30), WEEK_NUM (8.01), MONTH (7.81) | 0.2761 |
+| 2 | Nov 2019 - Feb 2020 | 403789 | 0.543 | Yes 4.0% (about 16,212) | Yes 2.8% (about 23,209) | 9.341 | responsedate_1012D (9.34), MONTH (7.94), WEEK_NUM (7.93) | 0.5194 |
 
 ## Bundle checks
 
 0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 1,085,454,549 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 1,085,454,549 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to run them; nothing else checks duplicate rows and columns.)
 - **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 1,085,454,549 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
 
 Accepted on purpose:
@@ -326,8 +385,8 @@ Accepted on purpose:
 | first_education_1138M | category | 305137 | 19.99 | 6 | a55475b1, P97_36_170, P33_146_175, P106_81_188, P17_36_170, P157_18_172 |
 | last_postype_4733339M | category | 305137 | 19.99 | 9 | a55475b1, P177_117_192, P60_146_156, P149_40_170, P46_145_78, P217_110_186, P67… |
 | first_postype_4733339M | category | 305137 | 19.99 | 9 | a55475b1, P177_117_192, P46_145_78, P149_40_170, P67_102_161, P60_146_156, P217… |
-| last_profession_152M | category | 305137 | 19.99 | 3575 | a55475b1, P104_137_180, P46_72_80, P21_76_53, P203_66_70, P143_116_69, P95_143_… |
-| first_profession_152M | category | 305137 | 19.99 | 1999 | a55475b1, P46_72_80, P104_137_180, P116_59_165, P21_76_53, P121_114_58, P139_12… |
+| last_profession_152M | category | 305137 | 19.99 | 3575 | a55475b1, P104_137_180, P46_72_80, P95_143_148, P203_66_70, P21_76_53, P167_22_… |
+| first_profession_152M | category | 305137 | 19.99 | 1999 | a55475b1, P46_72_80, P104_137_180, P21_76_53, P116_59_165, P139_125_64, P121_11… |
 | last_rejectreason_755M | category | 305137 | 19.99 | 17 | a55475b1, P99_56_166, P45_84_106, P198_131_9, P94_109_143, P196_88_176, P121_60… |
 | first_rejectreason_755M | category | 305137 | 19.99 | 18 | a55475b1, P99_56_166, P94_109_143, P45_84_106, P198_131_9, P48_22_32, P30_86_84… |
 | last_rejectreasonclient_4145042M | category | 305137 | 19.99 | 11 | a55475b1, P94_109_143, P5_143_178, P19_25_34, P30_86_84, P53_10_15, P69_72_116,… |
@@ -343,8 +402,8 @@ Accepted on purpose:
 | last_collaterals_typeofguarante_669M | category | 141371 | 9.26 | 6 | a55475b1, 0e63c0f0, 168ad9f3, 3cbe86ba, 9276e4bb, f4d8a027 |
 | first_collaterals_typeofguarante_669M | category | 141371 | 9.26 | 15 | c7a5ad39, a55475b1, 9276e4bb, 7b62420e, 0e63c0f0, 940efad7, 2fd21cf1, 3cbe86ba,… |
 | last_subjectroles_name_541M | category | 141371 | 9.26 | 2 | a55475b1, ab3c25cf |
-| first_subjectroles_name_541M | category | 141371 | 9.26 | 9 | ab3c25cf, a55475b1, 15f04f45, daf49a8a, be4fd70b, 0c42a10e, 71ddaa88, 1d94eac1,… |
-| first_subjectroles_name_838M | category | 141371 | 9.26 | 9 | ab3c25cf, a55475b1, be4fd70b, daf49a8a, 15f04f45, P28_48_88, 71ddaa88, 0c42a10e… |
+| first_subjectroles_name_541M | category | 141371 | 9.26 | 9 | ab3c25cf, a55475b1, 15f04f45, daf49a8a, be4fd70b, 0c42a10e, 1d94eac1, 71ddaa88,… |
+| first_subjectroles_name_838M | category | 141371 | 9.26 | 9 | ab3c25cf, a55475b1, be4fd70b, daf49a8a, 15f04f45, P28_48_88, 0c42a10e, 71ddaa88… |
 | last_classificationofcontr_13M | category | 140386 | 9.2 | 3 | a55475b1, 01f63ac8, ea6782cc |
 | first_classificationofcontr_13M | category | 140386 | 9.2 | 11 | ea6782cc, a55475b1, 01f63ac8, 00135d9c, 4408ff0f, 1cf4e481, be7b251d, 2c070815,… |
 | last_classificationofcontr_400M | category | 140386 | 9.2 | 25 | a55475b1, ea6782cc, 01f63ac8, 00135d9c, 4408ff0f, 1cf4e481, e2453741, f0a30139,… |
@@ -376,64 +435,64 @@ Accepted on purpose:
 |---|---|---|---|---|---|
 | MONTH | 152666 | 201936 | 44.6509 | 201901 | 202010 |
 | WEEK_NUM | 152666 | 40.7677 | 23.76 | 0 | 91 |
-| actualdpdtolerance_344P | 110970 | 0.0486167 | 6.08039 | 0 | 1943 |
-| amtinstpaidbefduel24m_4187115A | 96860 | 55853.7 | 71434.4 | 0 | 1.05116e+06 |
-| annuity_780A | 152666 | 4035.41 | 2993.65 | 145.8 | 56021.8 |
-| annuitynextmonth_57A | 152666 | 1434.21 | 2815.92 | 0 | 61800 |
+| actualdpdtolerance_344P | 110932 | 0.048372 | 6.08112 | 0 | 1943 |
+| amtinstpaidbefduel24m_4187115A | 96815 | 55927.6 | 71521.5 | 0 | 1.05116e+06 |
+| annuity_780A | 152666 | 4034.31 | 2992.75 | 145.8 | 56021.8 |
+| annuitynextmonth_57A | 152666 | 1433.86 | 2813.39 | 0 | 61800 |
 | applicationcnt_361L | 152666 | 0 | 0 | 0 | 0 |
-| applications30d_658L | 152666 | 0.135158 | 0.471513 | 0 | 15 |
-| applicationscnt_1086L | 152666 | 0.416818 | 3.05603 | 0 | 564 |
-| applicationscnt_464L | 152666 | 1.04846 | 9.50484 | 0 | 245 |
-| applicationscnt_629L | 152666 | 0.26311 | 2.43916 | 0 | 85 |
-| applicationscnt_867L | 152666 | 2.88644 | 4.39873 | 0 | 287 |
-| avgdbddpdlast24m_3658932P | 91422 | 30.2887 | 317.807 | -665 | 4680 |
-| avgdbddpdlast3m_4187120P | 58047 | 29.968 | 370.346 | -531 | 4680 |
-| avgdbdtollast24m_4525197P | 55587 | 31.042 | 324.455 | -653 | 4680 |
-| avgdpdtolclosure24_3658938P | 106100 | 45.4964 | 317.634 | 0 | 4680 |
-| avginstallast24m_3658937A | 90249 | 5392.45 | 6362.71 | 0 | 261870 |
-| avglnamtstart24m_4525187A | 16344 | 44432.6 | 44464.6 | 0 | 496149 |
-| avgmaxdpdlast9m_3716943P | 77133 | 0.729882 | 4.52936 | 0 | 231 |
-| avgoutstandbalancel6m_4187114A | 68800 | 46053.7 | 64195.6 | -510000 | 1.12872e+06 |
-| avgpmtlast12m_4525200A | 50201 | 6365.52 | 8607.47 | 0 | 261870 |
-| clientscnt12m_3712952L | 152666 | 0.0396879 | 0.908071 | 0 | 198 |
-| clientscnt3m_3712950L | 152666 | 0.0202206 | 0.67813 | 0 | 105 |
-| clientscnt6m_3712949L | 152666 | 0.0283298 | 0.837869 | 0 | 154 |
-| clientscnt_100L | 152666 | 0.0510264 | 0.479484 | 0 | 106 |
-| clientscnt_1022L | 152666 | 0.111577 | 1.44223 | 0 | 266 |
-| clientscnt_1071L | 152666 | 0.0341988 | 0.19009 | 0 | 11 |
-| clientscnt_1130L | 152666 | 0.0307534 | 0.20875 | 0 | 24 |
-| clientscnt_157L | 152666 | 0.0784916 | 0.842562 | 0 | 241 |
-| clientscnt_257L | 152666 | 0.00307862 | 0.0668649 | 0 | 12 |
-| clientscnt_304L | 152666 | 0.0768016 | 1.3159 | 0 | 423 |
-| clientscnt_360L | 152666 | 0.00324892 | 0.0599342 | 0 | 3 |
-| clientscnt_493L | 152666 | 0.0155175 | 1.00575 | 0 | 354 |
-| clientscnt_533L | 152666 | 0.0758781 | 0.283881 | 0 | 6 |
-| clientscnt_887L | 152666 | 2.33356 | 38.5066 | 0 | 1237 |
-| clientscnt_946L | 152666 | 0.0330198 | 0.35087 | 0 | 72 |
-| cntincpaycont9m_3716944L | 107373 | 6.17206 | 6.25024 | 0 | 392 |
-| cntpmts24_3658933L | 106808 | 10.6114 | 7.88042 | 0 | 25 |
-| credamount_770A | 152666 | 49902.1 | 44327.6 | 2000 | 432659 |
-| currdebt_22A | 152666 | 19746.5 | 51452.1 | 0 | 1.09239e+06 |
-| currdebtcredtyperange_828A | 152666 | 11087 | 37301.1 | 0 | 1.02939e+06 |
-| datefirstoffer_1144D | 69144 | -2462.82 | 1615.7 | -4883 | 13 |
-| datelastinstal40dpd_247D | 13449 | -1976.61 | 1556.87 | -5174 | -26 |
-| datelastunpaid_3546854D | 63839 | -959.56 | 1247.4 | -5140 | 13 |
-| daysoverduetolerancedd_3976961L | 107645 | 97.0143 | 483.67 | 0 | 5244 |
-| disbursedcredamount_1113A | 152666 | 46095.7 | 42666.9 | 0 | 400000 |
-| downpmt_116A | 152666 | 566.394 | 4249.11 | 0 | 461867 |
-| dtlastpmtallstes_4499206D | 55038 | -414.106 | 846.209 | -5233 | 13 |
-| eir_270L | 133474 | 0.27753 | 0.197501 | 0 | 0.45 |
-| firstclxcampaign_1125D | 66606 | -990.545 | 465.907 | -1709 | 14 |
-| firstdatedue_489D | 104626 | -1835.85 | 1454.31 | -5318 | 45 |
-| homephncnt_628L | 152666 | 0.637896 | 0.852005 | 0 | 8 |
-| inittransactionamount_650A | 19336 | 32481.4 | 33324 | 0 | 200000 |
-| lastactivateddate_801D | 107530 | -630.228 | 906.904 | -5318 | 14 |
-| lastapplicationdate_877D | 122363 | -469.036 | 748.39 | -5242 | 14 |
-| lastapprcredamount_781A | 108688 | 36872.4 | 37027.3 | 0 | 400000 |
-| lastapprdate_640D | 108688 | -609.95 | 890.621 | -5321 | 14 |
-| lastdelinqdate_224D | 54873 | -538.939 | 645.71 | -4859 | 13 |
-| lastrejectcredamount_222A | 75852 | 51116.7 | 53307.9 | 0 | 1e+06 |
-| lastrejectdate_50D | 75852 | -835.601 | 1006.99 | -5265 | 14 |
+| applications30d_658L | 152666 | 0.135512 | 0.471731 | 0 | 15 |
+| applicationscnt_1086L | 152666 | 0.417283 | 3.06051 | 0 | 564 |
+| applicationscnt_464L | 152666 | 1.04573 | 9.47559 | 0 | 245 |
+| applicationscnt_629L | 152666 | 0.262337 | 2.43151 | 0 | 85 |
+| applicationscnt_867L | 152666 | 2.8862 | 4.38081 | 0 | 287 |
+| avgdbddpdlast24m_3658932P | 91431 | 29.92 | 315.707 | -665 | 4680 |
+| avgdbddpdlast3m_4187120P | 58052 | 29.5238 | 367.871 | -531 | 4680 |
+| avgdbdtollast24m_4525197P | 55571 | 30.4637 | 321.252 | -653 | 4680 |
+| avgdpdtolclosure24_3658938P | 106055 | 45.0822 | 315.498 | 0 | 4680 |
+| avginstallast24m_3658937A | 90266 | 5397.43 | 6371.74 | 0 | 261870 |
+| avglnamtstart24m_4525187A | 16324 | 44552.9 | 44527.5 | 0 | 400000 |
+| avgmaxdpdlast9m_3716943P | 77132 | 0.730294 | 4.5321 | 0 | 231 |
+| avgoutstandbalancel6m_4187114A | 68809 | 46062.8 | 64060.1 | -510000 | 1.12872e+06 |
+| avgpmtlast12m_4525200A | 50184 | 6372.43 | 8618.18 | 0 | 261870 |
+| clientscnt12m_3712952L | 152666 | 0.0387316 | 0.865326 | 0 | 198 |
+| clientscnt3m_3712950L | 152666 | 0.0193691 | 0.620862 | 0 | 105 |
+| clientscnt6m_3712949L | 152666 | 0.0274652 | 0.79139 | 0 | 154 |
+| clientscnt_100L | 152666 | 0.0509347 | 0.479235 | 0 | 106 |
+| clientscnt_1022L | 152666 | 0.11009 | 1.37218 | 0 | 266 |
+| clientscnt_1071L | 152666 | 0.0342774 | 0.190352 | 0 | 11 |
+| clientscnt_1130L | 152666 | 0.0309237 | 0.210132 | 0 | 24 |
+| clientscnt_157L | 152666 | 0.078806 | 0.842898 | 0 | 241 |
+| clientscnt_257L | 152666 | 0.00314412 | 0.0683156 | 0 | 12 |
+| clientscnt_304L | 152666 | 0.0770375 | 1.31625 | 0 | 423 |
+| clientscnt_360L | 152666 | 0.00322272 | 0.0597166 | 0 | 3 |
+| clientscnt_493L | 152666 | 0.015642 | 1.00607 | 0 | 354 |
+| clientscnt_533L | 152666 | 0.0759174 | 0.284239 | 0 | 6 |
+| clientscnt_887L | 152666 | 2.34458 | 38.6052 | 0 | 1237 |
+| clientscnt_946L | 152666 | 0.0328429 | 0.343081 | 0 | 72 |
+| cntincpaycont9m_3716944L | 107327 | 6.17368 | 6.25143 | 0 | 392 |
+| cntpmts24_3658933L | 106762 | 10.614 | 7.87838 | 0 | 25 |
+| credamount_770A | 152666 | 49893.6 | 44295 | 2000 | 432659 |
+| currdebt_22A | 152666 | 19763.6 | 51407.1 | 0 | 1.09239e+06 |
+| currdebtcredtyperange_828A | 152666 | 11093 | 37330.7 | 0 | 1.02939e+06 |
+| datefirstoffer_1144D | 69111 | -2462.03 | 1616.2 | -4883 | 13 |
+| datelastinstal40dpd_247D | 13400 | -1972.72 | 1555.65 | -5174 | -26 |
+| datelastunpaid_3546854D | 63825 | -958.899 | 1246.18 | -5140 | 13 |
+| daysoverduetolerancedd_3976961L | 107602 | 96.5504 | 482.263 | 0 | 5244 |
+| disbursedcredamount_1113A | 152666 | 46099.8 | 42659.6 | 0 | 400000 |
+| downpmt_116A | 152666 | 567.522 | 4256.49 | 0 | 461867 |
+| dtlastpmtallstes_4499206D | 55000 | -413.342 | 845.578 | -5233 | 13 |
+| eir_270L | 133498 | 0.277416 | 0.197525 | 0 | 0.45 |
+| firstclxcampaign_1125D | 66574 | -990.635 | 465.966 | -1709 | 14 |
+| firstdatedue_489D | 104584 | -1834.16 | 1453.94 | -5318 | 45 |
+| homephncnt_628L | 152666 | 0.637411 | 0.851553 | 0 | 8 |
+| inittransactionamount_650A | 19311 | 32436.1 | 33280.1 | 0 | 200000 |
+| lastactivateddate_801D | 107490 | -629.309 | 905.943 | -5318 | 14 |
+| lastapplicationdate_877D | 122344 | -468.571 | 748.067 | -5242 | 14 |
+| lastapprcredamount_781A | 108646 | 36912.8 | 37034.4 | 0 | 400000 |
+| lastapprdate_640D | 108646 | -609.128 | 889.847 | -5321 | 14 |
+| lastdelinqdate_224D | 54882 | -539.273 | 645.565 | -4859 | 13 |
+| lastrejectcredamount_222A | 75863 | 51141.8 | 53356 | 0 | 1e+06 |
+| lastrejectdate_50D | 75863 | -835.042 | 1006.34 | -5265 | 14 |
 
 (536 more rows not shown)
 
@@ -446,66 +505,66 @@ Accepted on purpose:
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| cardtype_51L | 1 | &lt;NA> | 133387 | 87.37 |
-| cardtype_51L | 2 | INSTANT | 19054 | 12.48 |
-| cardtype_51L | 3 | PERSONALIZED | 225 | 0.15 |
-| credtype_322L | 1 | COL | 98801 | 64.72 |
-| credtype_322L | 2 | CAL | 34529 | 22.62 |
-| credtype_322L | 3 | REL | 19336 | 12.67 |
+| cardtype_51L | 1 | &lt;NA> | 133411 | 87.39 |
+| cardtype_51L | 2 | INSTANT | 19031 | 12.47 |
+| cardtype_51L | 3 | PERSONALIZED | 224 | 0.15 |
+| credtype_322L | 1 | COL | 98847 | 64.75 |
+| credtype_322L | 2 | CAL | 34508 | 22.6 |
+| credtype_322L | 3 | REL | 19311 | 12.65 |
 | date_decision | 1 | 2019-11-29 00:00:00 | 917 | 0.6 |
 | date_decision | 2 | 2019-11-30 00:00:00 | 884 | 0.58 |
 | date_decision | 3 | 2019-12-28 00:00:00 | 716 | 0.47 |
 | date_decision | 4 | 2019-12-30 00:00:00 | 638 | 0.42 |
 | date_decision | 5 | 2019-11-16 00:00:00 | 631 | 0.41 |
-| description_5085714M | 1 | a55475b1 | 131717 | 86.28 |
-| description_5085714M | 2 | 2fc785b2 | 18362 | 12.03 |
-| description_5085714M | 3 | &lt;NA> | 2587 | 1.69 |
-| disbursementtype_67L | 1 | SBA | 113894 | 74.6 |
-| disbursementtype_67L | 2 | GBA | 34525 | 22.61 |
-| disbursementtype_67L | 3 | DD | 4160 | 2.72 |
-| disbursementtype_67L | 4 | &lt;NA> | 87 | 0.06 |
-| education_1103M | 1 | a55475b1 | 86200 | 56.46 |
-| education_1103M | 2 | 6b2ae0fa | 45218 | 29.62 |
-| education_1103M | 3 | 717ddd49 | 13497 | 8.84 |
-| education_1103M | 4 | 39a0853f | 4610 | 3.02 |
-| education_1103M | 5 | &lt;NA> | 2587 | 1.69 |
-| education_88M | 1 | a55475b1 | 148543 | 97.3 |
-| education_88M | 2 | &lt;NA> | 2587 | 1.69 |
-| education_88M | 3 | 6b2ae0fa | 1136 | 0.74 |
-| education_88M | 4 | 717ddd49 | 343 | 0.22 |
-| education_88M | 5 | a34a13c8 | 40 | 0.03 |
-| equalitydataagreement_891L | 1 | &lt;NA> | 144977 | 94.96 |
-| equalitydataagreement_891L | 2 | True | 7190 | 4.71 |
-| equalitydataagreement_891L | 3 | False | 499 | 0.33 |
-| first_cancelreason_3545846M | 1 | a55475b1 | 76823 | 50.32 |
-| first_cancelreason_3545846M | 2 | &lt;NA> | 30303 | 19.85 |
-| first_cancelreason_3545846M | 3 | P94_109_143 | 30077 | 19.7 |
-| first_cancelreason_3545846M | 4 | P85_114_140 | 2269 | 1.49 |
-| first_cancelreason_3545846M | 5 | P30_86_84 | 2218 | 1.45 |
-| first_classificationofcontr_13M | 1 | ea6782cc | 115745 | 75.82 |
-| first_classificationofcontr_13M | 2 | &lt;NA> | 13982 | 9.16 |
-| first_classificationofcontr_13M | 3 | a55475b1 | 12335 | 8.08 |
-| first_classificationofcontr_13M | 4 | 01f63ac8 | 6278 | 4.11 |
-| first_classificationofcontr_13M | 5 | 00135d9c | 2449 | 1.6 |
-| first_classificationofcontr_400M | 1 | ea6782cc | 52276 | 34.24 |
-| first_classificationofcontr_400M | 2 | a55475b1 | 37370 | 24.48 |
-| first_classificationofcontr_400M | 3 | &lt;NA> | 13982 | 9.16 |
-| first_classificationofcontr_400M | 4 | 01f63ac8 | 6888 | 4.51 |
-| first_classificationofcontr_400M | 5 | 42a42e75 | 5661 | 3.71 |
-| first_collater_typofvalofguarant_298M | 1 | 9a0c095e | 98307 | 64.39 |
-| first_collater_typofvalofguarant_298M | 2 | 8fd95e4b | 27948 | 18.31 |
-| first_collater_typofvalofguarant_298M | 3 | &lt;NA> | 14085 | 9.23 |
-| first_collater_typofvalofguarant_298M | 4 | a55475b1 | 12284 | 8.05 |
-| first_collater_typofvalofguarant_298M | 5 | 06fb9ba8 | 42 | 0.03 |
-| first_collater_typofvalofguarant_407M | 1 | 9a0c095e | 68097 | 44.61 |
-| first_collater_typofvalofguarant_407M | 2 | a55475b1 | 37828 | 24.78 |
-| first_collater_typofvalofguarant_407M | 3 | 8fd95e4b | 32360 | 21.2 |
-| first_collater_typofvalofguarant_407M | 4 | &lt;NA> | 14085 | 9.23 |
-| first_collater_typofvalofguarant_407M | 5 | 06fb9ba8 | 270 | 0.18 |
-| first_collaterals_typeofguarante_359M | 1 | c7a5ad39 | 69788 | 45.71 |
-| first_collaterals_typeofguarante_359M | 2 | a55475b1 | 37828 | 24.78 |
-| first_collaterals_typeofguarante_359M | 3 | 3cbe86ba | 21224 | 13.9 |
-| first_collaterals_typeofguarante_359M | 4 | &lt;NA> | 14085 | 9.23 |
+| description_5085714M | 1 | a55475b1 | 131712 | 86.27 |
+| description_5085714M | 2 | 2fc785b2 | 18355 | 12.02 |
+| description_5085714M | 3 | &lt;NA> | 2599 | 1.7 |
+| disbursementtype_67L | 1 | SBA | 113919 | 74.62 |
+| disbursementtype_67L | 2 | GBA | 34504 | 22.6 |
+| disbursementtype_67L | 3 | DD | 4154 | 2.72 |
+| disbursementtype_67L | 4 | &lt;NA> | 89 | 0.06 |
+| education_1103M | 1 | a55475b1 | 86209 | 56.47 |
+| education_1103M | 2 | 6b2ae0fa | 45190 | 29.6 |
+| education_1103M | 3 | 717ddd49 | 13495 | 8.84 |
+| education_1103M | 4 | 39a0853f | 4615 | 3.02 |
+| education_1103M | 5 | &lt;NA> | 2599 | 1.7 |
+| education_88M | 1 | a55475b1 | 148536 | 97.29 |
+| education_88M | 2 | &lt;NA> | 2599 | 1.7 |
+| education_88M | 3 | 6b2ae0fa | 1132 | 0.74 |
+| education_88M | 4 | 717ddd49 | 340 | 0.22 |
+| education_88M | 5 | a34a13c8 | 41 | 0.03 |
+| equalitydataagreement_891L | 1 | &lt;NA> | 144931 | 94.93 |
+| equalitydataagreement_891L | 2 | True | 7227 | 4.73 |
+| equalitydataagreement_891L | 3 | False | 508 | 0.33 |
+| first_cancelreason_3545846M | 1 | a55475b1 | 76779 | 50.29 |
+| first_cancelreason_3545846M | 2 | &lt;NA> | 30322 | 19.86 |
+| first_cancelreason_3545846M | 3 | P94_109_143 | 30085 | 19.71 |
+| first_cancelreason_3545846M | 4 | P85_114_140 | 2268 | 1.49 |
+| first_cancelreason_3545846M | 5 | P30_86_84 | 2226 | 1.46 |
+| first_classificationofcontr_13M | 1 | ea6782cc | 115757 | 75.82 |
+| first_classificationofcontr_13M | 2 | &lt;NA> | 13999 | 9.17 |
+| first_classificationofcontr_13M | 3 | a55475b1 | 12315 | 8.07 |
+| first_classificationofcontr_13M | 4 | 01f63ac8 | 6276 | 4.11 |
+| first_classificationofcontr_13M | 5 | 00135d9c | 2435 | 1.59 |
+| first_classificationofcontr_400M | 1 | ea6782cc | 52177 | 34.18 |
+| first_classificationofcontr_400M | 2 | a55475b1 | 37389 | 24.49 |
+| first_classificationofcontr_400M | 3 | &lt;NA> | 13999 | 9.17 |
+| first_classificationofcontr_400M | 4 | 01f63ac8 | 6893 | 4.52 |
+| first_classificationofcontr_400M | 5 | 42a42e75 | 5670 | 3.71 |
+| first_collater_typofvalofguarant_298M | 1 | 9a0c095e | 98339 | 64.41 |
+| first_collater_typofvalofguarant_298M | 2 | 8fd95e4b | 27915 | 18.29 |
+| first_collater_typofvalofguarant_298M | 3 | &lt;NA> | 14101 | 9.24 |
+| first_collater_typofvalofguarant_298M | 4 | a55475b1 | 12268 | 8.04 |
+| first_collater_typofvalofguarant_298M | 5 | 06fb9ba8 | 43 | 0.03 |
+| first_collater_typofvalofguarant_407M | 1 | 9a0c095e | 68080 | 44.59 |
+| first_collater_typofvalofguarant_407M | 2 | a55475b1 | 37847 | 24.79 |
+| first_collater_typofvalofguarant_407M | 3 | 8fd95e4b | 32348 | 21.19 |
+| first_collater_typofvalofguarant_407M | 4 | &lt;NA> | 14101 | 9.24 |
+| first_collater_typofvalofguarant_407M | 5 | 06fb9ba8 | 264 | 0.17 |
+| first_collaterals_typeofguarante_359M | 1 | c7a5ad39 | 69741 | 45.68 |
+| first_collaterals_typeofguarante_359M | 2 | a55475b1 | 37847 | 24.79 |
+| first_collaterals_typeofguarante_359M | 3 | 3cbe86ba | 21240 | 13.91 |
+| first_collaterals_typeofguarante_359M | 4 | &lt;NA> | 14101 | 9.24 |
 
 (456 more rows not shown)
 
@@ -515,11 +574,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-2b8d-77ef-a922-3ea3b96a716e |
-| checksum | v2:5a98ed32667628b5c2fea4874566abac7cf8d1f0b67636e5f12916fd41ddb8db |
-| built_at | 2026-10-06T16:12:28+00:00 |
-| path | home_credit_default_stability/versions/01a111fc-2b8d-77ef-a922-3ea3b96a716e |
+| uuid | 01a217fa-29fa-7f2b-a908-f1cc4d7dd86e |
+| checksum | v2:9f065a85f70a1ef378fa5e27d3137ae19db629634ea8e9dd8ab99bbd979b2c10 |
+| built_at | 2026-11-26T13:10:44+00:00 |
+| path | home_credit_default_stability_1m/01a217fa-29fa-7f2b-a908-f1cc4d7dd86e |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6be845a1e4fbfb858ab191e8ae7a93948d173330989cca7a48342fda2e226e7f` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

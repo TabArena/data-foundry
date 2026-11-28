@@ -3,9 +3,6 @@ unique_name: tdc_lipophilicity_astrazeneca
 name: TDC-Lipophilicity-AstraZeneca
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'No'
 decision_markers:
 - Duplicate

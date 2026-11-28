@@ -9,7 +9,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -130,7 +131,7 @@ class AcquireValuedShoppersChallenge(AbstractCuratedDataset):
         splits=TemporalSplits(window=5, unit="days", n_windows=4, gap=5),
     )
     accepted_check_warnings = {
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Four of the nine windows an IID split of this size would get: the data hold 61 days, and with five-day "
             "windows and the five-day gap the next window (6-10 April) would train on 41.4% of the offers (Andrej, "
             "2026-11-19)."

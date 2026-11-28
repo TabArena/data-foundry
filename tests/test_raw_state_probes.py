@@ -1,28 +1,18 @@
-"""The raw state: the lineage of ``process(lineage=True)``, the raw table in ``dataset_io``, and the probes that read
-it (10, 19, 20, 21) with ``leak_probes.py --raw``.
+"""The raw state: the lineage of ``process(lineage=True)``, the raw table in ``data_foundry.probes.inputs``, and the
+probes that read it (10, 19, 20, 21) with ``data-foundry probe leak --raw``.
 """
 
 from __future__ import annotations
 
-import importlib.util
-import sys
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import pytest
-from data_foundry.v2 import get_dataset
 
-from tests.test_v2_dataset import DEFINITION, warehouse, write_definition  # noqa: F401 - the fixture is used by name
-
-pytest.importorskip("lightgbm")  # curation_probes.leak imports it
-
-SCRIPTS = Path(__file__).resolve().parents[1] / ".claude/skills/knowledge-data-foundry/scripts"
-sys.path.insert(0, str(SCRIPTS.parents[1] / "knowledge-curation/scripts"))
-sys.path.insert(0, str(SCRIPTS))
-
-import dataset_io  # noqa: E402 - from the skill's script folder, put on the path above
-from curation_probes import leak  # noqa: E402
+from data_foundry.curation.cli import main as curation_main
+from data_foundry.definition import get_dataset
+from data_foundry.probes import inputs, leak
+from tests.helpers import DEFINITION, write_definition
 
 PLAIN_CLEAN = '        return drop_columns(df, ["row_id"])'
 
@@ -44,7 +34,7 @@ def _assert_traced(ds, df: pd.DataFrame, rows: np.ndarray) -> None:
 # Lineage
 
 
-def test_lineage_by_the_column_through_a_row_filter_and_the_shuffle(tmp_path, warehouse) -> None:  # noqa: F811
+def test_lineage_by_the_column_through_a_row_filter_and_the_shuffle(tmp_path, warehouse) -> None:
     """A row filter and the shuffle keep the column trace: each row maps to its raw row."""
     del warehouse
     ds = _toy(tmp_path, '        df = df.loc[df["x1"] > -1]\n' + PLAIN_CLEAN)
@@ -56,7 +46,7 @@ def test_lineage_by_the_column_through_a_row_filter_and_the_shuffle(tmp_path, wa
     assert "__raw_row__" not in df.columns
 
 
-def test_lineage_by_the_index_when_clean_selects_columns(tmp_path, warehouse) -> None:  # noqa: F811
+def test_lineage_by_the_index_when_clean_selects_columns(tmp_path, warehouse) -> None:
     """A `_clean` that selects columns drops the tag column; the index trace takes over."""
     del warehouse
     ds = _toy(tmp_path, '        return df.loc[df["x1"] < 1, ["x1", "colour", "y"]]')
@@ -65,7 +55,7 @@ def test_lineage_by_the_index_when_clean_selects_columns(tmp_path, warehouse) ->
     _assert_traced(ds, df, lineage.rows)
 
 
-def test_a_trace_that_changes_what_clean_returns_is_not_used(tmp_path, warehouse) -> None:  # noqa: F811
+def test_a_trace_that_changes_what_clean_returns_is_not_used(tmp_path, warehouse) -> None:
     """A `_clean` that reads the number of columns gives another frame with the tag column: the index trace is used."""
     del warehouse
     ds = _toy(tmp_path, '        df["n_cols"] = float(df.shape[1])\n' + PLAIN_CLEAN)
@@ -74,7 +64,7 @@ def test_a_trace_that_changes_what_clean_returns_is_not_used(tmp_path, warehouse
     _assert_traced(ds, df, lineage.rows)
 
 
-def test_a_clean_that_asserts_the_source_shape_falls_back_to_the_index(tmp_path, warehouse) -> None:  # noqa: F811
+def test_a_clean_that_asserts_the_source_shape_falls_back_to_the_index(tmp_path, warehouse) -> None:
     """A `_clean` that asserts the raw shape fails on the tag column (Tunisian fraud); the index trace is used."""
     del warehouse
     raw = _toy(tmp_path).raw
@@ -84,7 +74,7 @@ def test_a_clean_that_asserts_the_source_shape_falls_back_to_the_index(tmp_path,
     _assert_traced(ds, df, lineage.rows)
 
 
-def test_no_lineage_when_clean_drops_the_column_and_resets_the_index(tmp_path, warehouse) -> None:  # noqa: F811
+def test_no_lineage_when_clean_drops_the_column_and_resets_the_index(tmp_path, warehouse) -> None:
     """Neither trace survives: no lineage, the reason given, the dataset unchanged."""
     del warehouse
     ds = _toy(tmp_path, '        return df.loc[df["x1"] < 1, ["x1", "colour", "y"]].reset_index(drop=True)')
@@ -93,13 +83,13 @@ def test_no_lineage_when_clean_drops_the_column_and_resets_the_index(tmp_path, w
     assert "column does not survive" in lineage.note
     assert "index does not survive" in lineage.note
     assert df.equals(ds.df)  # the dataset itself is unchanged
-    data = dataset_io.from_definition(ds, raw=True)
+    data = inputs.from_definition(ds, raw=True)
     assert data.raw is not None
     assert data.raw_rows is None
     assert data.raw_note == lineage.note
 
 
-def test_process_without_lineage_is_unchanged(tmp_path, warehouse) -> None:  # noqa: F811
+def test_process_without_lineage_is_unchanged(tmp_path, warehouse) -> None:
     """`process()` without lineage returns the dataset and the test frame as before."""
     del warehouse
     ds = _toy(tmp_path)
@@ -108,15 +98,15 @@ def test_process_without_lineage_is_unchanged(tmp_path, warehouse) -> None:  # n
     assert df.equals(ds.df)
 
 
-def test_from_definition_gives_the_raw_table_and_the_rows(tmp_path, warehouse) -> None:  # noqa: F811
+def test_from_definition_gives_the_raw_table_and_the_rows(tmp_path, warehouse) -> None:
     """`from_definition(raw=True)` gives the raw table and each row's raw position; the default gives none."""
     del warehouse
     ds = _toy(tmp_path, '        df = df.loc[df["x1"] > -1]\n' + PLAIN_CLEAN)
-    data = dataset_io.from_definition(ds, raw=True)
+    data = inputs.from_definition(ds, raw=True)
     assert data.raw.shape == ds.raw.shape
     assert data.raw_note == "traced by the column"
     np.testing.assert_array_equal(data.df["x1"].to_numpy(), data.raw["x1"].to_numpy()[data.raw_rows])
-    assert dataset_io.from_definition(ds).raw is None  # the raw state only on request
+    assert inputs.from_definition(ds).raw is None  # the raw state only on request
 
 
 def test_row_positions_follow_a_subsampled_split_frame() -> None:
@@ -125,9 +115,9 @@ def test_row_positions_follow_a_subsampled_split_frame() -> None:
     processed = pd.DataFrame({"a": rng.integers(0, 3, 200), "b": rng.normal(size=200)})
     keep = np.sort(rng.choice(200, 80, replace=False))
     frame = processed.iloc[keep].reset_index(drop=True)
-    np.testing.assert_array_equal(dataset_io._row_positions(frame, processed), keep)
-    np.testing.assert_array_equal(dataset_io._row_positions(processed, processed), np.arange(200))
-    assert dataset_io._row_positions(frame.iloc[::-1].reset_index(drop=True), processed) is None
+    np.testing.assert_array_equal(inputs._row_positions(frame, processed), keep)
+    np.testing.assert_array_equal(inputs._row_positions(processed, processed), np.arange(200))
+    assert inputs._row_positions(frame.iloc[::-1].reset_index(drop=True), processed) is None
 
 
 # The probes
@@ -199,14 +189,26 @@ def test_a_dropped_copy_of_the_target_scores_high_alone() -> None:
     assert lines[0].startswith("each dropped raw column alone (probe 20)")
 
 
-def test_the_cli_runs_the_raw_state_alone(tmp_path, warehouse, capsys) -> None:  # noqa: F811
-    """`leak_probes.py --raw` runs the probes of the raw state and no model probe."""
+def test_the_cli_runs_the_raw_state_alone(tmp_path, warehouse, capsys) -> None:
+    """`data-foundry probe leak --raw` runs the probes of the raw state and no model probe."""
     del warehouse
     _toy(tmp_path, '        df = df.loc[df["x1"] > -1]\n' + PLAIN_CLEAN)
-    spec = importlib.util.spec_from_file_location("leak_probes_cli", SCRIPTS / "leak_probes.py")
-    cli = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(cli)
-    assert cli.main(["toy_ds", "--root", str(tmp_path / "datasets"), "--raw", "--splits", "1", "--n-jobs", "1"]) == 0
+    root = str(tmp_path / "datasets")
+    args = [
+        "probe",
+        "leak",
+        "toy_ds",
+        "--root",
+        root,
+        "--raw",
+        "--splits",
+        "1",
+        "--n-jobs",
+        "1",
+        "--out",
+        str(tmp_path),
+    ]
+    assert curation_main(args) == 0
     out = capsys.readouterr().out
     assert "lineage: traced by the column" in out
     assert "row order (probe 10)" in out
@@ -214,3 +216,4 @@ def test_the_cli_runs_the_raw_state_alone(tmp_path, warehouse, capsys) -> None: 
     assert "each dropped raw column alone (probe 20): {'row_id'" in out
     assert "raw copies (probe 21)" in out
     assert "all features:" not in out  # no model probes with --raw
+    assert "raw_copies" in (tmp_path / "toy_ds.json").read_text()

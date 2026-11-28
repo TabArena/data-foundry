@@ -10,7 +10,7 @@
 **Data Foundry** is the data layer behind the next generation of [TabArena](https://tabarena.ai/) datasets. It provides:
 
 - A small, opinionated **schema** for tabular datasets, tasks (IID / temporal non-IID / grouped non-IID), and outer CV splits — aligned with OpenML where possible, extended where it had to be.
-- A **curation toolkit** so a curator turns a raw download into a reproducible artifact: one `dataset.py` definition per dataset (`data_foundry.v2`), with the split protocol, sanity checks, bundle checks and a generated evidence page built in.
+- A **curation toolkit** so a curator turns a raw download into a reproducible artifact: one `dataset.py` definition per dataset (`data_foundry.definition`), with the split protocol, sanity checks, bundle checks and a generated evidence page built in.
 - A **collections API** that pins datasets (defined by ``(unique_name, uuid)``) to immutable curated containers and resolves them against a local warehouse or directly against Hugging Face, as for the [BeyondArena Datasets](https://huggingface.co/datasets/TabArena/BeyondArena). It is how every collection ships, BeyondArena today and TabArena v0.2 next.
 - A git-native **curation log + dashboard** — the dataset backlog lives as **one markdown record per candidate dataset** under [`curation/records/`](curation/records), edited locally through a Sheets-like dashboard (`data-foundry-curation serve`) with a built-in **Guidelines** tab, and published as a read-only public site on [GitHub Pages](https://tabarena.github.io/data-foundry/). It replaces the old curation spreadsheet; a new dataset is added simply by creating a markdown file.
 
@@ -21,7 +21,6 @@
 
 ```bash
 pip install data-foundry
-python examples/load_curated_container.py
 ```
 
 ```python
@@ -33,7 +32,7 @@ print(container.dataset.shape)       # the actual DataFrame
 print(container.task_metadata.split_regime)  # "iid", "temporal_non_iid", or "grouped_non_iid"
 ```
 
-That's the whole API surface in three lines. See [`examples/benchmark_on_beyond_arena.py`](examples/benchmark_on_beyond_arena.py) for benchmarking Random Forest on the data! 
+The scripts in [`examples/`](examples) (for example [`examples/benchmark_on_beyond_arena.py`](examples/benchmark_on_beyond_arena.py), a Random Forest on the data) are not part of the PyPI package: run them from a clone ([From source](#-installation)).
 
 ## 🕹️ Use Cases
 
@@ -59,21 +58,19 @@ Full inspection script (every metadata field printed): [`examples/load_curated_c
 <details>
 <summary><b>📦 Use one dataset</b> — IID and non-IID variants</summary>
 
-Download a single BeyondArena container by name (or UUID) and iterate its outer CV splits. The collection resolves the container against your local cache; subsequent runs hit disk, not the network.
+Download a single BeyondArena container by name (or UUID) and fit on its outer CV splits through the task view. The collection resolves the container against your local cache; subsequent runs hit disk, not the network.
 
 ```python
 from data_foundry.collections import BEYOND_ARENA
 
-container = BEYOND_ARENA.get_dataset("airfoil_self_noise")
-df = container.dataset
-target = container.task_metadata.target_column_name
-
-for repeat_id, folds in container.experiment_metadata.splits.items():
-    for fold_id, (train_idx, test_idx) in folds.items():
-        X_train, y_train = df.iloc[train_idx].drop(columns=target), df.iloc[train_idx][target]
-        X_test,  y_test  = df.iloc[test_idx].drop(columns=target),  df.iloc[test_idx][target]
-        # ... fit, evaluate ...
+task = BEYOND_ARENA.get_dataset("airfoil_self_noise").task()
+for fold in task.folds():  # the shipped splits; fold.train stays within a row budget
+    model.fit(task.X(fold.train), task.y(fold.train), sample_weight=task.train_weight(fold.train))
+    score = task.score(task.y(fold.test), model.predict(task.X(fold.test)), fold.test)
+    print(task.metric.name, score, task.error(score))  # the error: lower is better, 0 at the metric's best value
 ```
+
+`task.X` holds only the model inputs (no target, group, scoring or unit column, no time column that dates the label), `task.train_weight` is the training weight or `None`, and `task.score` scores by the container's metric spec. [docs/benchmark_integration.md](docs/benchmark_integration.md) is the page for connecting a benchmark harness: the task view, the row budget, the inputs, the weights, scoring and errors. A minimal adapter is [`examples/minimal_adapter.py`](examples/minimal_adapter.py).
 
 Full worked example (Random Forest, RMSE per fold, full metadata via `container.describe()`): [`examples/benchmark_on_beyond_arena.py`](examples/benchmark_on_beyond_arena.py).
 
@@ -88,12 +85,14 @@ Full worked example (Random Forest, RMSE per fold, full metadata via `container.
 **Container formats.** `container.format_version` is `2` for a container built by a `dataset.py` definition (the
 TabArena v0.2 working copy and every new dataset) and `1` for the shipped BeyondArena containers, which were built
 with Data Foundry v1 ([DATA_FOUNDRY_V1.md](DATA_FOUNDRY_V1.md)); a format-2 container also states it in
-`container_metadata.json`. The collections API and `CuratedContainer.load` read both. Both read the same through `task_metadata.time_on`,
+`container_metadata.json`. The collections API, `CuratedContainer.load` and the task view (`container.task()`) read both:
+format 1 gets its metric name as a spec and no weights; format 2 also saves the task view as `benchmark_task.json` next to
+its metadata (derived, outside the checksum), for readers without Data Foundry. Both read the same through `task_metadata.time_on`,
 `group_on`, `group_labels` and `group_time_on`. Format 2 stores the group fields once, in a `Grouping`
 (`data_foundry.schema.Grouping`), and `container.grouping` returns it: the prediction unit (a row, or one prediction
 per group with an aggregation such as `mean` or `any`), what a model may know about a group when predicting, and the
-definition of a group with its source. A format-1 container has no such block, so `container.grouping` raises
-there. The group column is split and scoring metadata, never a model feature. A format-2 container keeps its outer
+definition of a group with its source. A format-1 container has no such block, so `container.grouping` returns
+None there. The group column is split and scoring metadata, never a model feature. A format-2 container keeps its outer
 splits in a row table, `rows.parquet`: one row per row of `dataset.parquet`, one column per split
 (`split_r<repeat>_f<fold>`) holding `train`, `test` or nothing, so it opens in any Parquet reader next to the data
 ([`examples/read_metric_without_data_foundry.py`](examples/read_metric_without_data_foundry.py) reads it without Data
@@ -102,13 +101,9 @@ layout, every side in row order. `run_bundle_checks` judges each
 format by its own split protocol (v1: the repeat ladder, 1M train and 250k test rows; v2: 3 folds, and the test cap
 of the `experiment_metadata.row_budget` a `_1m` version records: no size limit without one).
 
-**Row budget.** A format-2 container with a `row_budget` (a `<name>_1m` version) tests on at most `row_budget.test`
-rows per split, and its train sides keep every row they may use (all earlier rows of a temporal window). A benchmark
-fits on at most `row_budget.train` of them: `subsample_train(container, repeat, fold)` (`data_foundry.v2`) draws them
-by the default sampler the container records in `experiment_metadata.train_sampling` (for a temporal side the newest
-year, extended back in time until it holds that many rows, sampled at random; whole groups of a grouped one,
-stratified rows otherwise), and returns the train side whole for a container without a budget. A numeric time column
-carries its calendar in `task_metadata.time_unit` (numerai's `era` counts weeks). A benchmark that samples by its own rule keeps the unit `train_sampling` names.
+**Row budget.** A format-2 container with a `row_budget` (a `<name>_1m` version) caps its test sides and keeps every
+train row, and `fold.train` of `container.task().folds()` is the sample of at most `row_budget.train` rows a benchmark
+fits on; the details are in [docs/benchmark_integration.md](docs/benchmark_integration.md).
 
 **Checksums.** `container.verify()` recomputes a container's checksum and compares it with the stored one (with
 `get_dataset(..., verify=True)` a collection does it on load). A container built since 2026-10-06 has a version-2
@@ -157,7 +152,7 @@ shortened:
 
 ```python
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Source
+from data_foundry.definition import AbstractCuratedDataset, Source
 
 
 class BloodTransfusion(AbstractCuratedDataset):
@@ -229,9 +224,10 @@ selection criteria and processing conventions. Other CLI subcommands:
 ```bash
 data-foundry-curation validate                 # check records against the dropdown vocab
 data-foundry-curation sync-notebooks           # refresh each record's notebook_path + v2_path (--check to dry-run)
-data-foundry-curation export --format xlsx out.xlsx   # flat snapshot (csv|parquet|xlsx|gsheet)
+data-foundry-curation export --format xlsx out.xlsx   # flat snapshot (csv|xlsx)
 data-foundry-curation build-site site/          # read-only static copy (e.g. GitHub Pages)
 data-foundry-curation dataset check <folder>    # run a v2 dataset.py + bundle checks, write README.md (no save)
+data-foundry probe task <name>                  # a probe (leak, task, group, ...) on a dataset; needs the probes extra
 ```
 
 **Browse it online.** A read-only copy of the backlog is published to GitHub Pages —
@@ -240,9 +236,10 @@ regenerated automatically from `curation/records/` on every push to `main` (no i
 network round-trip to Hugging Face; search, sort, filter, and pin all run in the browser).
 Note this makes every record's comments, reviewer names, and decision notes public.
 
-Working with Claude Code? The repo ships four curation commands and two knowledge skills (in `.claude/skills/`); start
+Working with Claude Code? The repo ships five curation commands and two knowledge skills (in `.claude/skills/`); start
 with [`.claude/skills/README.md`](.claude/skills/README.md), which the dashboard also shows as "Start here". In each of
-the two stages the AI works and the curator verifies:
+the two stages the AI works and the curator verifies (the fifth command, `/review-split-tree`, shows the split decision
+tree for review):
 
 | Stage | The AI works | The curator verifies |
 |---|---|---|
@@ -253,7 +250,8 @@ The knowledge skills, [`knowledge-curation`](.claude/skills/knowledge-curation/S
 ranked rules) and [`knowledge-data-foundry`](.claude/skills/knowledge-data-foundry/SKILL.md) (how this repo implements
 it), hold what every command applies; builds and commits happen only when the curator asks.
 
-Loading, browsing and benchmarking shipped datasets needs no command; `CLAUDE.md` and `examples/` cover it.
+Loading, browsing and benchmarking shipped datasets needs no command;
+[docs/benchmark_integration.md](docs/benchmark_integration.md) and `examples/` cover it.
 
 </details>
 
@@ -266,8 +264,9 @@ Loading, browsing and benchmarking shipped datasets needs no command; `CLAUDE.md
 <summary><b>📦 From PyPI</b> — use Data Foundry as a library</summary>
 
 ```bash
-pip install data-foundry            # load and use curated datasets
-pip install "data-foundry[build]"   # also build datasets from their definitions
+pip install data-foundry                # load and use curated datasets
+pip install "data-foundry[benchmark]"   # also score them (scikit-learn, scipy)
+pip install "data-foundry[build]"       # also build datasets from their definitions
 ```
 
 </details>
@@ -291,12 +290,14 @@ git clone https://github.com/TabArena/data-foundry.git
 cd data-foundry
 uv pip install -e ".[dev]"
 pytest                                 # run the test suite
-ruff check . && ruff format --check .  # lint + format
+uvx ruff@0.15.15 check . && uvx ruff@0.15.15 format --check .  # lint + format, as CI does
 ```
 
-Loading and using a container needs only the core install. The `build` extra adds what building a dataset from its
+Loading and using a container needs only the core install; the `benchmark` extra adds scikit-learn and scipy, which
+the metrics import when they score. The `build` extra adds what building a dataset from its
 definition needs: `scikit-learn` for the splits, `scipy` for the checks, and the readers the definitions use
-(`liac-arff`, `openml`, `polars`, the Excel engines, `matplotlib`). `tests` adds `build` and `pytest`; `dev` adds
+(`liac-arff`, `openml`, `polars`, the Excel engines, `matplotlib`). The `probes` extra adds LightGBM for the probes
+(`data-foundry probe ...`). `tests` adds `build`, `probes` and `pytest`; `dev` adds
 both plus the curation tools (`autogluon`, `kaggle`, `seaborn`, `ruff`, …). pandas 2.3 and 3 build and load the same
 containers; the lock stays on pandas 2 because AutoGluon (and so TabArena) requires pandas below 2.4.
 
@@ -306,13 +307,18 @@ containers; the lock stays on pandas 2 because AutoGluon (and so TabArena) requi
 
 ```
 data-foundry/
-├── src/data_foundry/         # the package — schema, container, collections, checks, splits
-│   ├── v2/                   # v2 dataset definitions: AbstractCuratedDataset, split protocol, checks, README report
-│   ├── schema.py             # DatasetMetadata, PredictiveMLTaskMetadata (format 1) / V2 (+ Grouping), PredictiveMLSplitsMetadata
-│   ├── curation_container.py # CuratedContainer (save/load + describe + checksum)
+├── src/data_foundry/         # the package
+│   ├── curation_container.py # CuratedContainer (save/load + describe + checksum), feature_columns and the other helpers
 │   ├── collections/          # BEYOND_ARENA, DatasetCollection, HuggingFaceSource, cache helpers
-│   ├── dataset_checks.py     # run_all_checks(...) — sanity stats, rendered in each dataset's README
-│   ├── bundle_checks.py      # run_bundle_checks(...) / verify_saved_container(...) — bundle integrity
+│   ├── schema.py             # the format-2 metadata: DatasetMetadataV2, PredictiveMLTaskMetadataV2 (+ Grouping, MetricSpec)
+│   ├── metrics.py            # every metric of a metric spec and the scorer of a container
+│   ├── sampling.py           # subsample_train: the default sampler of a train side under a row budget
+│   ├── special/, encodings.py   # special features (SMILES, spectra) and the recommended encodings
+│   ├── definition/           # the definition API (`dataset.py` classes): AbstractCuratedDataset, split protocol, README report
+│   ├── v1/                   # the format-1 metadata of the shipped BeyondArena containers
+│   ├── checks/               # the checks: run_bundle_checks / verify_saved_container, the README tables
+│   │                         #   (run_all_checks), the task and definition checks, registry.py of every slug
+│   ├── probes/               # the probes (leak, task, group, hidden groups, time, dtypes, generated): `data-foundry probe`
 │   ├── curation/             # curation log toolkit — CurationRecord, store, dashboard (serve), import/export, build-site
 │   └── examples/toy_container/  # tiny ready-to-load CuratedContainer shipped in-package
 ├── curation/                 # the curation log (git-tracked data) — records/*.md + vocabularies.yaml
@@ -323,11 +329,11 @@ data-foundry/
 │   └── beyond_iid/           # the shipped BeyondArena notebooks (v1), pinned by `final_uuid_list.py`
 ├── examples/                 # runnable demos (covers the use-cases above); see examples/README.md
 ├── scripts/                  # one-off tooling (toy container builder, release)
-│   └── beyond_arena/         # BeyondArena-specific scripts and outputs (warehouse stats, plots)
 ├── .claude/skills/           # Claude Code skills; each skill's scripts/ holds the tools it runs
-│   ├── knowledge-curation/   # curation knowledge (references/) and the general probe library (scripts/)
-│   ├── knowledge-data-foundry/  # this repo's conventions (references/), the probe, pipeline and rebuild scripts
-│   └── <command>/            # screen-candidates, review-screened-candidates, add-dataset, review-added-datasets
+│   ├── knowledge-curation/   # curation knowledge (references/)
+│   ├── knowledge-data-foundry/  # this repo's conventions (references/), the pipeline and rebuild scripts
+│   └── <command>/            # screen-candidates, review-screened-candidates, add-dataset, review-added-datasets,
+│                             #   review-split-tree
 ├── .claude/agents/           # the agents of screening and of the review panel
 ├── tests/                    # pytest test suite
 └── local-data-warehouse/     # gitignored — curators write raw + saved containers here
@@ -340,8 +346,10 @@ The short version (v2):
 1. Scaffold the folder: `.venv/bin/python -m data_foundry.curation.cli dataset new <unique_name> --root
    datasets/_dev/tabarena-v0pt2` (or `/add-dataset <unique_name>` in Claude Code), and fill in `dataset.py`.
 2. Run `.venv/bin/python -m data_foundry.curation.cli dataset check <folder>` until there are no errors and every
-   warning is fixed or accepted with a reason; it writes the folder's `README.md`. Then run the probes in
-   `.claude/skills/knowledge-data-foundry/scripts/` (leak, task and, for a grouped task, group probes).
+   warning is fixed or accepted with a reason; it writes the folder's `README.md`. The checks and their slugs are in
+   `src/data_foundry/checks/` ([`check_slugs.md`](.claude/skills/knowledge-data-foundry/references/check_slugs.md)).
+   Then run the probes: `data-foundry probe leak <unique_name>`, `probe task` and, for a grouped task, `probe group`
+   (the `probes` extra).
 3. Open a PR; a curator runs `dataset build`, which saves the container and records its UUID.
 
 The long version is [**CONTRIBUTING_DATASETS.md**](CONTRIBUTING_DATASETS.md); a first contribution to TabArena v0.2

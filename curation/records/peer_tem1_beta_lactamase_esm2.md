@@ -3,9 +3,6 @@ unique_name: peer_tem1_beta_lactamase_esm2
 name: local-PEER-BetaLactamase-ESM2 (TEM-1 Activity, ESM-2)
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'No'
 decision_markers:
 - Wrong Domain / Source Modality

@@ -3,9 +3,6 @@ unique_name: mgnify_latin_america_resistome_biome
 name: MGYS00005381 MGnify functional profile
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'No'
 decision_markers:
 - No Good Target / Scientific Discovery

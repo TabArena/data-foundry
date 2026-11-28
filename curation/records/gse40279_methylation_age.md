@@ -3,9 +3,6 @@ unique_name: gse40279_methylation_age
 name: GEO-GSE40279-Methylation-Age (Blood DNA Methylation Age)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 2
 tags:

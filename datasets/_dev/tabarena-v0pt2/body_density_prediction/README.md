@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: body_density_prediction
 container_format: 2
-checksum: v2:1afebb3e1642ef4d399e006297a809caa95e5167ef8668c19179ad1db565b312
+checksum: v2:56f4226546ff4ab7bda5df4df29c4de0b38d635249e6c290a8d48ba50c7bbcdd
 build:
-  uuid: 01a111fc-caac-7d14-8929-e266415ab9cf
-  checksum: v2:7236bfa7aea6130e31ed60c800c3b35a123b0f14c84cbda8b2ff2733f68616c7
-  built_at: '2026-10-06T16:12:22+00:00'
-  path: body_density_prediction/01a111fc-caac-7d14-8929-e266415ab9cf
+  uuid: 01a21800-bbe5-71ed-b50a-0dd77586bd68
+  checksum: v2:56f4226546ff4ab7bda5df4df29c4de0b38d635249e6c290a8d48ba50c7bbcdd
+  built_at: '2026-11-26T13:17:11+00:00'
+  path: body_density_prediction/01a21800-bbe5-71ed-b50a-0dd77586bd68
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 252
   n_features: 13
@@ -46,6 +46,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 168
     max: 168
@@ -67,7 +68,7 @@ decisions: []
 
 Regression of `Density`, scored with `rmse` on IID splits. 252 rows and 13 features. Source: Other (1995).
 
-Built as `01a111fc-caac-7d14-8929-e266415ab9cf` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1afebb3e1642ef4d399e006297a809caa95e5167ef8668c19179ad1db565b312`, so the build is stale. See [Build](#build).
+Built as `01a21800-bbe5-71ed-b50a-0dd77586bd68` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -192,14 +193,11 @@ The first 5 of 252 rows of the final frame (random rows: the frame is shuffled);
 We start with the data from Kaggle.
 
 - Note, the task is not about bodyfat prediction as this is determined by a deterministic formula. Instead, the task is to estimate the density (which can be used to get the body fat via the deterministic formula). However, density requires a test. So we aim to predict from data the density such that we can skip this test. Which can make a lot of sense, if the test is too expensive as it requires underwater weighing.
-- Time basis: Timeless: each man was measured once (tape, scale and underwater weighing in one study at BYU,
-  before 1985), so density and features describe the same body at one time; no date or order is recorded, and
-  the derivation block of the first 143 cases does not differ from the rest. Not tested: bodies measured in
-  another study, such as women or today's gym and clinic clients.
+- Time basis: Timeless: each man was measured once (tape, scale and underwater weighing in one study at BYU, before 1985), so density and features describe the same body at one time; no date or order is recorded, and the derivation block of the first 143 cases does not differ from the rest. Not tested: bodies measured in another study, such as women or today's gym and clinic clients.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 252 rows (SPLIT-33).
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 168 rows, test 84 rows.
 
@@ -340,11 +338,10 @@ No categorical/object features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-caac-7d14-8929-e266415ab9cf |
-| checksum | v2:7236bfa7aea6130e31ed60c800c3b35a123b0f14c84cbda8b2ff2733f68616c7 |
-| built_at | 2026-10-06T16:12:22+00:00 |
-| path | body_density_prediction/01a111fc-caac-7d14-8929-e266415ab9cf |
+| uuid | 01a21800-bbe5-71ed-b50a-0dd77586bd68 |
+| checksum | v2:56f4226546ff4ab7bda5df4df29c4de0b38d635249e6c290a8d48ba50c7bbcdd |
+| built_at | 2026-11-26T13:17:11+00:00 |
+| path | body_density_prediction/01a21800-bbe5-71ed-b50a-0dd77586bd68 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:1afebb3e1642ef4d399e006297a809caa95e5167ef8668c19179ad1db565b312` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

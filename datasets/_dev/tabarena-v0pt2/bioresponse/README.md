@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: bioresponse
 container_format: 2
-checksum: v2:95a7a173dccc454410c90272b30617e7839e454bb7427a2590f49b39fbd58147
+checksum: v2:aa30301220cfb1155ca75164be3421b3d10b3c226130f038a104ab0d17353ab8
 build:
-  uuid: 01a111fc-4c0b-76f4-b01d-a4db8e120e35
-  checksum: v2:1879917730dc9cc5db736aa1cc90af3f1b8a3ee3153e041d93ba0b823cb52287
-  built_at: '2026-10-06T16:11:56+00:00'
-  path: bioresponse/01a111fc-4c0b-76f4-b01d-a4db8e120e35
+  uuid: 01a21800-0f3b-74b3-8d05-408a3530bcf1
+  checksum: v2:aa30301220cfb1155ca75164be3421b3d10b3c226130f038a104ab0d17353ab8
+  built_at: '2026-11-26T13:16:33+00:00'
+  path: bioresponse/01a21800-0f3b-74b3-8d05-408a3530bcf1
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 3751
   n_features: 1776
@@ -47,6 +47,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 2500
     max: 2501
@@ -68,7 +69,7 @@ decisions: []
 
 Binary classification of `MoleculeElicitsResponse`, scored with `log_loss` on IID splits. 3,751 rows and 1,776 features. Source: Kaggle (2012).
 
-Built as `01a111fc-4c0b-76f4-b01d-a4db8e120e35` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:95a7a173dccc454410c90272b30617e7839e454bb7427a2590f49b39fbd58147`, so the build is stale. See [Build](#build).
+Built as `01a21800-0f3b-74b3-8d05-408a3530bcf1` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -184,13 +185,6 @@ The first 5 of 3,751 rows of the final frame (random rows: the frame is shuffled
 - We changed the name of the target and mapped it to yes/no
 - Anomaly: Only train data is used, since test data is empty for target
 - Potential leak, kept on purpose: the 941 non-binary descriptors are min-max scaled over Kaggle's train and test molecules (each is exactly 0 and 1 over the 6,252 of both files, only 609 of them over the 3,751 rows we ship), so the scaling includes our test folds; no unscaled descriptors are published. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if raw descriptors appear.
-- Time basis: Timeless: the response is a property of the molecule and every descriptor is computed from its
-  structure, so nothing in a row arrives later. Boehringer Ingelheim tested the molecules over an unstated
-  period and published no date, structure or compound id, so no forward split is possible; the label drifts only
-  weakly along the file order (positive share 0.57-0.59 in the first deciles against 0.50-0.51 in the last,
-  Spearman -0.04) and the order is not known to follow the assays. Not tested: a new chemical series, as close
-  analogues cannot be grouped (nearest-neighbour label agreement 92% in the closest tenth of distances against
-  64% in the farthest).
 - Entity leakage, not recoverable (Andrej, 2026-11-11): no two molecules share all 1,776 descriptors and the
   nearest pair differs in 16, so no copy is dropped; close analogues of one series share the label
   (nearest-neighbour agreement 92% in the closest tenth of distances against 64% in the farthest) and cross the
@@ -198,15 +192,12 @@ The first 5 of 3,751 rows of the final frame (random rows: the frame is shuffled
   own test set looks like a random draw (a model tells its 2,501 molecules from the 3,751 training molecules at
   ROC AUC 0.485, against 0.484-0.497 for a random third of train; nearest-training distances match), and
   scoring new analogues of series already in testing is the lead-optimisation use case the competition framed.
-- Group basis: ForcedIIDFromGrouped (Andrej, 2026-11-16): the use case screens molecules a chemist has not made
-  yet, which whole chemical series held out would stand for (scaffold groups, SPLIT-31), but no structure or
-  compound id is published, so no series can be computed and the split is random. Overlap left: close
-  analogues of a test molecule sit in training (the label agreement above), so the score is optimistic for a
-  new series.
+- Time basis: Timeless: the response is a property of the molecule and every descriptor is computed from its structure, so nothing in a row arrives later. Boehringer Ingelheim tested the molecules over an unstated period and published no date, structure or compound id, so no forward split is possible; the label drifts only weakly along the file order (positive share 0.57-0.59 in the first deciles against 0.50-0.51 in the last, Spearman -0.04) and the order is not known to follow the assays. Not tested: a new chemical series, as close analogues cannot be grouped (nearest-neighbour label agreement 92% in the closest tenth of distances against 64% in the farthest).
+- Group basis: ForcedIIDFromGrouped (Andrej, 2026-11-16): the use case screens molecules a chemist has not made yet, which whole chemical series held out would stand for (scaffold groups, SPLIT-31), but no structure or compound id is published, so no series can be computed and the split is random. Overlap left: close analogues of a test molecule sit in training (the label agreement above), so the score is optimistic for a new series.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `MoleculeElicitsResponse`: 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 3,751 rows (SPLIT-33).
 
 3 repeat(s) x 3 fold(s) with seed 4267; train 2,500 to 2,501 rows, test 1,250 to 1,251 rows.
 
@@ -391,11 +382,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-4c0b-76f4-b01d-a4db8e120e35 |
-| checksum | v2:1879917730dc9cc5db736aa1cc90af3f1b8a3ee3153e041d93ba0b823cb52287 |
-| built_at | 2026-10-06T16:11:56+00:00 |
-| path | bioresponse/01a111fc-4c0b-76f4-b01d-a4db8e120e35 |
+| uuid | 01a21800-0f3b-74b3-8d05-408a3530bcf1 |
+| checksum | v2:aa30301220cfb1155ca75164be3421b3d10b3c226130f038a104ab0d17353ab8 |
+| built_at | 2026-11-26T13:16:33+00:00 |
+| path | bioresponse/01a21800-0f3b-74b3-8d05-408a3530bcf1 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:95a7a173dccc454410c90272b30617e7839e454bb7427a2590f49b39fbd58147` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -3,9 +3,6 @@ unique_name: mgnify_t2d_gut_host_sex
 name: MGYS00005285 MGnify functional profile
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'No'
 decision_markers:
 - No Good Target / Scientific Discovery

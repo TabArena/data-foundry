@@ -3,9 +3,6 @@ unique_name: genomic_prediction_soy_yield
 name: gp-soy-YLD (Soybean Yield Genomic Prediction)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:

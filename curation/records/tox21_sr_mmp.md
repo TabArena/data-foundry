@@ -3,9 +3,6 @@ unique_name: tox21_sr_mmp
 name: MoleculeNet-Tox21-SR-MMP (Tox21 Mitochondrial Membrane Potential)
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'No'
 decision_markers:
 - Duplicate

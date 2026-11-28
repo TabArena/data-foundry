@@ -3,9 +3,6 @@ unique_name: tdc_ld50_zhu
 name: TDC-LD50-Zhu (Acute Toxicity LD50)
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'No'
 decision_markers:
 - Duplicate

@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+)
 
 
 class MercedesBenzGreenerManufacturing(AbstractCuratedDataset):
@@ -89,7 +98,7 @@ class MercedesBenzGreenerManufacturing(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        The car ID is the only order: the competition ships no dates, does not confirm that the IDs follow the order of testing, and held out its own test cars at random. Each test window is a run of 233 consecutive cars in ID order, trained on every earlier car (Andrej, 2026-11-19). No source gives a length (the 320 cars used until then were the arithmetic of the first curation's scikit-learn TimeSeriesSplit): half the cars come before ID 4,230, so nine windows, the count an IID task of this size gets (3 x 3), all train on half the cars or more only at 233 cars each, which fill the newest half (2,097 test cars). The windows walk back from the newest; with no dates there is no season or period to choose between. Newest first, they test the cars with IDs 7,973-8,417, 7,499-7,972, 7,005-7,498, 6,539-7,004, 6,111-6,538, 5,630-6,103, 5,163-5,627, 4,701-5,162 and 4,230-4,699, 233 each. Train is every earlier car: 3,971, 3,738, 3,505, 3,272, 3,039, 2,806, 2,573, 2,340 and 2,107 cars (94.5%, 88.9%, 83.4%, 77.8%, 72.3%, 66.8%, 61.2%, 55.7% and 50.1%). No gap is needed: a car's testing time is known when it leaves the bench, and no row carries a date to measure a longer delay.
+        The car ID is the only order: the competition ships no dates, does not confirm that the IDs follow the order of testing, and held out its own test cars at random. Each test window is a run of 233 consecutive cars in ID order, trained on every earlier car (Andrej, 2026-11-19). No source gives a length (the 320 cars used until then were the arithmetic of the first curation's scikit-learn TimeSeriesSplit): half the cars come before ID 4,230, so nine windows, the count an IID task of this size gets (3 x 3), all train on half the cars or more only at 233 cars each, which fill the newest half (2,097 test cars). The windows walk back from the newest; with no dates there is no season or period to choose between. No gap is needed: a car's testing time is known when it leaves the bench, and no row carries a date to measure a longer delay.
         How the data arrives (Andrej, 2026-11-06): the bench time is known when the car leaves the bench, minutes after its configuration is fixed, so a model refit at a window's start knows every earlier car. The ID is taken as the testing order; the dropped code X5 forms 29 levels in 31 contiguous runs of IDs, about 200 cars each in this file, likely production periods. A window's first cars share their block with the newest training cars, but the block explains about 1% of the variance of the bench time (block means 96.1 to 102.6 s). A configuration tested again (15% to 27% of a window's test cars, with the six coded categories kept) is the car's known history, not a leak.
     """
     split_leaf = "L-ORDER.windows"

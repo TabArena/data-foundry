@@ -1,0 +1,271 @@
+"""The ``data-foundry-curation dataset`` subcommands for v2 dataset folders.
+
+::
+
+    data-foundry-curation dataset list  [--root DIR]                    # the datasets, with their state
+    data-foundry-curation dataset check <name-or-folder> [--root DIR]   # full pipeline, no save, writes README.md
+    data-foundry-curation dataset check <name-or-folder> --no-report     # the same, README.md left as it is
+    data-foundry-curation dataset build <name-or-folder> [--root DIR]   # check + save + verify (mints the UUID)
+    data-foundry-curation dataset new   <name> [--root DIR]             # scaffold dataset.py
+
+A dataset is given either as a folder holding ``dataset.py`` or as a name under ``--root`` (default:
+``$DATA_FOUNDRY_DATASETS_ROOT``, else the current directory). From the repository, run the commands as
+``.venv/bin/python -m data_foundry.curation.cli dataset ...``: another install of the package may come first on PATH.
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import re
+import shutil
+import sys
+from pathlib import Path
+from typing import TYPE_CHECKING, get_args
+
+import pandas as pd
+
+from data_foundry.curation._paths import records_dir
+from data_foundry.curation.consistency import record_problems
+from data_foundry.curation.store import load_record
+from data_foundry.definition.dataset import CLI_COMMAND, DEFINITION_FILENAME, REPORT_FILENAME, DatasetDefinitionError
+from data_foundry.definition.registry import discover_datasets, load_definition
+from data_foundry.definition.report import read_report
+from data_foundry.schema import DatasetSource, Domain
+
+if TYPE_CHECKING:
+    import argparse
+
+DATASETS_ROOT_ENV = "DATA_FOUNDRY_DATASETS_ROOT"
+"""Environment variable naming the default folder of dataset folders."""
+
+TEMPLATE_DIR_ENV = "DATA_FOUNDRY_V2_TEMPLATE"
+"""Environment variable naming the template folder that ``dataset new`` copies."""
+
+_REPO_TEMPLATE = Path(__file__).resolve().parents[3] / "datasets" / "_template"
+
+PROBLEM_TYPES = {
+    "regression": ("regression",),
+    "binary classification": ("binary_classification",),
+    "multiclass classification": ("multiclass_classification",),
+    "classification": ("multiclass_classification",),
+}
+
+
+def _root(args: argparse.Namespace) -> Path:
+    return Path(args.root or os.environ.get(DATASETS_ROOT_ENV) or ".")
+
+
+def _folder(args: argparse.Namespace) -> Path:
+    target = Path(args.target)
+    if (target / DEFINITION_FILENAME).is_file():
+        return target
+    return _root(args) / args.target
+
+
+def _cmd_list(args: argparse.Namespace) -> int:
+    registry = discover_datasets(_root(args), strict=False)
+    for name, cls in registry.items():
+        folder = Path(sys.modules[cls.__module__].__file__).parent
+        report = read_report(folder / REPORT_FILENAME)
+        build = report.get("build") or {}
+        state = "not checked" if not report else ("built " + build["uuid"] if build else "checked")
+        if report.get("build_stale"):
+            state += " (stale)"
+        print(f"{name:55s} {cls.task_metadata.split_regime:18s} {state}")
+    print(f"{len(registry)} dataset(s) under {_root(args)}")
+    broken = len(list(_root(args).glob(f"*/{DEFINITION_FILENAME}"))) - len(registry)
+    if broken:
+        print(f"{broken} definition(s) do not import; see the `Skipping <name>` warnings above.", file=sys.stderr)
+        return 1
+    return 0
+
+
+def _cmd_check(args: argparse.Namespace) -> int:
+    try:
+        cls = load_definition(_folder(args))
+        ds = cls()
+        result = ds.check(write_report=not args.no_report)
+    except DatasetDefinitionError as error:
+        print(error, file=sys.stderr)
+        return 1
+    if not args.no_report and ds.report_path is not None:
+        print(f"Wrote {ds.report_path}")
+    _print_record_problems(cls)
+    return 0 if result.ok else 1
+
+
+def _print_record_problems(cls: type) -> None:
+    """Print where the definition's curation record contradicts it (``data_foundry.curation.consistency``)."""
+    try:
+        record = load_record(records_dir() / f"{cls.unique_name}.md")
+    except (FileNotFoundError, OSError, ValueError):
+        return
+    problems = record_problems(set(record.tags or []), cls)
+    if problems:
+        print(f"The curation record {cls.unique_name}.md contradicts the definition (SPLIT-32, SPLIT-34):")
+        print("\n".join(f"  - {problem}" for problem in problems))
+
+
+WINDOW_COLUMNS = (
+    "window",
+    "chosen",
+    "test_start",
+    "test_end",
+    "period",
+    "weekdays",
+    "n_test",
+    "train_share",
+    "target_test",
+    "target_train",
+    "psi_max",
+    "psi_median",
+    "top_drift",
+    "unseen_categories",
+)
+"""The columns ``dataset windows`` prints; ``--csv`` writes every column."""
+
+
+def _cmd_windows(args: argparse.Namespace) -> int:
+    try:
+        ds = load_definition(_folder(args))()
+        table = ds.window_stats(
+            window=args.window,
+            unit=args.unit,
+            gap=args.gap,
+            gap_unit=args.gap_unit,
+            step=args.step,
+            min_train_fraction=args.min_train_fraction,
+            n_rows=args.rows,
+        )
+    except DatasetDefinitionError as error:
+        print(error, file=sys.stderr)
+        return 1
+    if args.csv:
+        table.to_csv(args.csv, index=False)
+        print(f"Wrote {args.csv}")
+    shown = table[[c for c in WINDOW_COLUMNS if c in table.columns]].copy()
+    shown["chosen"] = shown["chosen"].map({True: "*", False: ""})
+    with pd.option_context("display.width", 250, "display.max_columns", None, "display.max_colwidth", 60):
+        print(shown.to_string(index=False))
+    print(
+        f"{len(table)} window(s); * marks the definition's own. Data statistics only, never a model's score: choose "
+        "the windows from the use case (SPLIT-15), always with the newest, and declare them with "
+        "`TemporalSplits(cutoffs=...)`."
+    )
+    return 0
+
+
+def _cmd_build(args: argparse.Namespace) -> int:
+    try:
+        ds = load_definition(_folder(args))()
+    except DatasetDefinitionError as error:
+        print(error, file=sys.stderr)
+        return 1
+    ds.build()
+    print(f"Wrote {ds.report_path}")
+    return 0
+
+
+# The record's domain and original_source values that name one schema value (`data_foundry.schema.Domain` and
+# `DatasetSource`); any other value ("Other" domain, "Company", "?") stays TODO for the curator.
+RECORD_DOMAINS = {
+    **{d: d for d in get_args(Domain)},
+    "handcrafted/toy": "handcrafted",
+    "Multimedia (from non-tabular modalities)": "multimedia",
+}
+RECORD_SOURCES = {
+    **{s: s for s in get_args(DatasetSource)},
+    "Github": "GitHub",
+    "Website": "Other",
+}
+
+
+def _class_name(unique_name: str) -> str:
+    name = "".join(part.capitalize() for part in unique_name.split("_"))
+    return name if name[:1].isalpha() else f"Dataset{name}"
+
+
+def _prefill(text: str, record: object | None) -> str:
+    """Fill the template fields the curation record can answer; everything else stays TODO."""
+    if record is None:
+        return text
+
+    def put(field: str, value: str | None) -> None:
+        nonlocal text
+        if value:
+            text = re.sub(rf'(\b{field}\s*=\s*)"TODO"', lambda m: f"{m.group(1)}{json.dumps(value)}", text, count=1)
+
+    put("domain", RECORD_DOMAINS.get(getattr(record, "domain", None) or ""))
+    # the publication source of the template's `sources`
+    put("platform", RECORD_SOURCES.get(getattr(record, "original_source", None) or ""))
+    links = getattr(record, "source_links", None) or []
+    put("url", links[0] if links else None)
+    put("year", getattr(record, "year", None))
+    problem = PROBLEM_TYPES.get((getattr(record, "problem_type", None) or "").strip().lower())
+    if problem:
+        put("problem_type", problem[0])
+    return text
+
+
+def _cmd_new(args: argparse.Namespace) -> int:
+    name = args.target
+    folder = _root(args) / name
+    if (folder / DEFINITION_FILENAME).exists():
+        print(f"{folder / DEFINITION_FILENAME} already exists.", file=sys.stderr)
+        return 1
+    template = Path(os.environ.get(TEMPLATE_DIR_ENV) or _REPO_TEMPLATE)
+    if not (template / DEFINITION_FILENAME).is_file():
+        print(f"No template at {template} (set ${TEMPLATE_DIR_ENV}).", file=sys.stderr)
+        return 1
+
+    record = None
+    try:
+        record = load_record(Path(args.records_dir or records_dir()) / f"{name}.md")
+    except (FileNotFoundError, OSError, ValueError):
+        print(f"No curation record for {name!r}; scaffolding without prefill.")
+
+    folder.mkdir(parents=True, exist_ok=True)
+    text = (template / DEFINITION_FILENAME).read_text()
+    text = text.replace("<unique_name>", name).replace("class ClassName(", f"class {_class_name(name)}(")
+    (folder / DEFINITION_FILENAME).write_text(_prefill(text, record))
+    for extra in template.iterdir():
+        if extra.name != DEFINITION_FILENAME and extra.is_file():
+            shutil.copy(extra, folder / extra.name)
+    print(f"Scaffolded {folder}/{DEFINITION_FILENAME}. Fill in every TODO, then run:")
+    print(f"  {CLI_COMMAND} dataset check {folder}")
+    return 0
+
+
+def add_dataset_parser(sub: argparse._SubParsersAction) -> None:
+    """Register the ``dataset`` command group on the curation CLI."""
+    p_dataset = sub.add_parser("dataset", help="Work with v2 dataset folders (dataset.py + README.md).")
+    dsub = p_dataset.add_subparsers(dest="dataset_command", required=True)
+
+    def add(name: str, func, help_text: str, *, target: bool = True) -> None:
+        p = dsub.add_parser(name, help=help_text)
+        if target:
+            p.add_argument("target", help="Dataset name under --root, or a folder holding dataset.py.")
+        p.add_argument("--root", default=None, help=f"Folder of dataset folders (default: ${DATASETS_ROOT_ENV} or .).")
+        p.set_defaults(func=func)
+
+    add("list", _cmd_list, "List the datasets under --root with their report state.", target=False)
+    add("check", _cmd_check, "Run the pipeline and bundle checks without saving; write README.md.")
+    dsub.choices["check"].add_argument("--no-report", action="store_true", help="Check only: leave README.md as it is.")
+    add("build", _cmd_build, "Check, save the container (new UUID), verify it and write README.md.")
+    add("new", _cmd_new, "Scaffold a new dataset folder from the template and the curation record.")
+    add("windows", _cmd_windows, "Print the candidate test windows of a temporal dataset with their data statistics.")
+    windows = dsub.choices["windows"]
+    windows.add_argument("--window", type=int, default=None, help="Window length (default: the declared one).")
+    windows.add_argument("--unit", default=None, help="Window unit (default: the declared one).")
+    windows.add_argument("--gap", type=int, default=None, help="Gap before each window (default: the declared one).")
+    windows.add_argument("--gap-unit", default=None, help="Unit of the gap (default: the declared one).")
+    windows.add_argument("--step", type=int, default=None, help="How far candidates move back (default: the window).")
+    windows.add_argument(
+        "--min-train-fraction",
+        type=float,
+        default=0.3,
+        help="Every train side keeps this share of the rows (0.3, SPLIT-14's lower bound; core windows keep 0.5).",
+    )
+    windows.add_argument("--rows", type=int, default=100_000, help="Rows sampled per side for the statistics.")
+    windows.add_argument("--csv", default=None, help="Also write the full table to this CSV file.")

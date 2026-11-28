@@ -5,9 +5,6 @@ checked_by:
 - Myunghwan
 - Lennart
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
 suggestion: 'Yes'
 priority: 4
 tags:

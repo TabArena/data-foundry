@@ -3,9 +3,6 @@ unique_name: gse10893_breast_cancer_subtype
 name: GEO-GSE10893 Breast Cancer Subtypes
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'No'
 decision_markers:
 - No Good Target / Scientific Discovery

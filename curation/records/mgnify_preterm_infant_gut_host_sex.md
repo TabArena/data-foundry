@@ -3,9 +3,6 @@ unique_name: mgnify_preterm_infant_gut_host_sex
 name: MGYS00002425 MGnify functional profile
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'No'
 decision_markers:
 - No Good Target / Scientific Discovery

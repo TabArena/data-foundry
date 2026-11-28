@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: cirrhosis_patient_survival_prediction
 container_format: 2
-checksum: v2:291d1bc3e10bc840f296b605b5b9992f3d88822135d1af5a14a06a48f8f14bfd
+checksum: v2:98e761233ba39735c18f09f28ac08771ba38df955f6a629de3ce5b0407cd8d7a
 build:
-  uuid: 01a13a7d-c2bd-721a-88c1-f86443866b1e
-  checksum: v2:60b5d8fa6859308588d97ac9b03d362d334da815e103b670c1c18a43c5a21477
-  built_at: '2026-10-14T12:58:02+00:00'
-  path: cirrhosis_patient_survival_prediction/01a13a7d-c2bd-721a-88c1-f86443866b1e
+  uuid: 01a21800-c0ae-718c-b58f-eb110e6f47ee
+  checksum: v2:98e761233ba39735c18f09f28ac08771ba38df955f6a629de3ce5b0407cd8d7a
+  built_at: '2026-11-26T13:17:12+00:00'
+  path: cirrhosis_patient_survival_prediction/01a21800-c0ae-718c-b58f-eb110e6f47ee
   data_foundry_version: 0.0.5
-  git_sha: f93df193827f5244586b178fd7199efb86d66359-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 304
   n_features: 17
@@ -47,6 +47,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 202
     max: 203
@@ -69,7 +70,7 @@ decisions:
 
 Binary classification of `death_or_transplant_within_5y`, scored with `roc_auc` on IID splits. 304 rows and 17 features. Source: Other (1991).
 
-Built as `01a13a7d-c2bd-721a-88c1-f86443866b1e` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:291d1bc3e10bc840f296b605b5b9992f3d88822135d1af5a14a06a48f8f14bfd`, so the build is stale. See [Build](#build).
+Built as `01a21800-c0ae-718c-b58f-eb110e6f47ee` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -209,7 +210,7 @@ We start with the UCI copy (878) of the Mayo Clinic PBC data (Fleming and Harrin
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `death_or_transplant_within_5y`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 304 rows (SPLIT-33).
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 202 to 203 rows, test 101 to 102 rows.
 
@@ -389,11 +390,10 @@ Follow-up ended in July 1986 for everyone, so a patient registered after about m
 
 | field | value |
 |---|---|
-| uuid | 01a13a7d-c2bd-721a-88c1-f86443866b1e |
-| checksum | v2:60b5d8fa6859308588d97ac9b03d362d334da815e103b670c1c18a43c5a21477 |
-| built_at | 2026-10-14T12:58:02+00:00 |
-| path | cirrhosis_patient_survival_prediction/01a13a7d-c2bd-721a-88c1-f86443866b1e |
+| uuid | 01a21800-c0ae-718c-b58f-eb110e6f47ee |
+| checksum | v2:98e761233ba39735c18f09f28ac08771ba38df955f6a629de3ce5b0407cd8d7a |
+| built_at | 2026-11-26T13:17:12+00:00 |
+| path | cirrhosis_patient_survival_prediction/01a21800-c0ae-718c-b58f-eb110e6f47ee |
 | data_foundry_version | 0.0.5 |
-| git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:291d1bc3e10bc840f296b605b5b9992f3d88822135d1af5a14a06a48f8f14bfd` |

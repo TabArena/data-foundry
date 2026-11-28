@@ -4,9 +4,11 @@ How a v2 dataset of the TabArena v0.2 working copy turns its rows and groups int
 scored on, from the definition to the fit. It implements the split rules of knowledge-curation
 ([splits.md](../../knowledge-curation/references/splits.md)); how to declare the splits in a `dataset.py` is in
 [definitions.md](definitions.md). The code is
-[`src/data_foundry/v2/splits.py`](../../../../src/data_foundry/v2/splits.py) (the protocol) and the base class in
-[`src/data_foundry/v2/dataset.py`](../../../../src/data_foundry/v2/dataset.py); the working copy sets its budget once
-in [`collection.py`](../../../../datasets/_dev/tabarena-v0pt2/collection.py).
+[`src/data_foundry/definition/splits.py`](../../../../src/data_foundry/definition/splits.py) (the protocol),
+[`src/data_foundry/checks/protocol.py`](../../../../src/data_foundry/checks/protocol.py) (its numbers and checks),
+[`src/data_foundry/sampling.py`](../../../../src/data_foundry/sampling.py) (the train sampler) and the base class in
+[`src/data_foundry/definition/dataset.py`](../../../../src/data_foundry/definition/dataset.py); the working copy sets
+its budget once in [`collection.py`](../../../../datasets/_dev/tabarena-v0pt2/collection.py).
 
 - Every task has at least 3 test folds: IID and grouped data get repeated 3-fold cross-validation, temporal data at
   least 3 time windows.
@@ -125,16 +127,22 @@ declared). The counts in the figure are the train-side inputs of the ladder: 184
 The protocol is the default, not a constraint on the task (SPLIT-1 in
 [splits.md](../../knowledge-curation/references/splits.md): the split mirrors the application).
 
-- **Other splits.** A definition whose task needs other folds or repeats implements `_make_splits` (returning a
-  `SplitPlan`), says why in `splits_comment`, and accepts the check `splits_dimensions_off_protocol` with that reason
-  in `accepted_check_warnings`. Precedent: heart_disease holds out one hospital at a time, 3 splits, since more
-  repeats would draw the same three folds again. Temporal windows are chosen per dataset anyway (`TemporalSplits`,
-  SPLIT-15).
+- **Other splits.** A definition whose task needs other folds or repeats declares them where it can
+  (`GroupedSplits(kind="leave_one_group_out")`; for windows, `TemporalSplits(window=None, cutoffs=...)`,
+  `Temporal(label_known_on=...)` and `Temporal(exclude_test_entities_on=...)`, in
+  [definitions.md](definitions.md#the-split-declarations)), else implements `_make_splits` (returning a `SplitPlan`);
+  it says why in `splits_comment` and accepts the check `splits_dimensions_off_protocol` with that reason in
+  `accepted_check_warnings` (leave one group out needs no acceptance: the check knows the pattern). Precedent:
+  heart_disease holds out one hospital at a time, 3 splits, since more repeats would draw the same three folds
+  again. Temporal windows are chosen per dataset anyway (`TemporalSplits`, SPLIT-15).
+- **The splits comment.** The container and the README describe the splits from the code (the windows or folds, the
+  repeats, the gap, the budget and the train sampling); the definition's `splits_comment` follows as the reason and
+  never restates them ([definitions.md](definitions.md#the-splits-comment)).
 - **Another budget for every dataset.** The budget is the collection's: change `row_budget` in `collection.py` (and
   `TABARENA_V0PT2_ROW_BUDGET`), and every version follows on its next build; a new train budget renames the versions
   (`RowBudget.suffix`: `_1m`, `_2p5m`, `_10m`).
-- **Another budget for one dataset.** Not possible today: a definition of the working copy that declares `row_budget`
-  is refused, so all of TabArena v0.2 trains and tests on the same budget. A custom `_make_splits` keeps its sides
+- **Another budget for one dataset.** Not possible today: a definition has no budget of its own, so all of TabArena
+  v0.2 trains and tests on the same budget. A custom `_make_splits` keeps its sides
   within the budget itself (sample there), since the build refuses a plain name whose splits go over it.
 
 ## Examples
@@ -157,7 +165,6 @@ state (their containers were built before the budget moved after the split, issu
 
 | Guard | When | What it stops |
 |---|---|---|
-| Loading the definition | every load | a `row_budget` declared in a definition of the working copy |
 | The build | `dataset check`, `dataset build` | a name that does not match what the splits need |
 | Protocol checks | every container | other repeats or folds (warning), a test side over the budget (warning), a budget without its train sampling (error), fewer than 3 windows (warning) |
 | README test | `pytest` | a `README.md` over the budget, or one that does not record it |

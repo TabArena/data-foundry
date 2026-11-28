@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -171,13 +172,13 @@ class LusakaMobility2024(AbstractCuratedDataset):
         ),
     )
     splits_comment = """
-        Three four-day windows start on the recorded calendar at 2023-01-29, 2023-01-25 and 2023-01-21,
-        newest first. Four-day refits are a benchmark design choice within the one-month extract, not an organizer
+        Four-day refits are a benchmark design choice within the one-month extract, not an organizer
         cadence. Each training side uses all earlier trips starting at least one day before its test start; every
         kept trip lasts at most 3 hours (the longest 175 minutes), so training trips finish before each
         test-start/refit time. Subsequent
         label reporting delay and original cohort extraction/follow-up timing are undocumented. A fourth
-        earlier four-day window would violate the half-data training floor after this gap. The latest window ends
+        earlier four-day window would violate the half-data training floor after this gap, so the windows stay
+        at 3 of the 9 splits an IID split of this size would get (SPLIT-33). The latest window ends
         February 2 but only has observations through early February 1. No performance was used to choose windows.
         The windows hold different weekday mixes (the one from January 25 has no Sunday); trips are shorter on all
         five Sundays (11.1 to 12.1 minutes on average, against 13.7 to 14.7 on other days), a weekly pattern, not
@@ -185,7 +186,14 @@ class LusakaMobility2024(AbstractCuratedDataset):
         Missing starts, trips ending within 100 m of their start, trips over 3 hours and trips faster than 120 km/h in
         a straight line are excluded; other rows, target units and dates are preserved.
     """
-    accepted_check_warnings = {}
+    accepted_check_warnings = {
+        "splits_dimensions_off_protocol": (
+            "Three windows against the nine an IID split of 110,336 trips would get (SPLIT-33): with four-day windows "
+            "and the one-day gap, a fourth window would train on less than half the trips of the one-month extract. "
+            "The splits comment names the target, the count reached and what stops more (SPLIT-15; Lennart, "
+            "2026-11-26)."
+        ),
+    }
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         folder = raw_dir / MIRROR_COMMIT

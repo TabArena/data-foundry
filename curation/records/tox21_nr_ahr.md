@@ -3,9 +3,6 @@ unique_name: tox21_nr_ahr
 name: MoleculeNet-Tox21-NR-AhR (Tox21 Aryl Hydrocarbon Receptor Activity)
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'No'
 decision_markers:
 - Duplicate

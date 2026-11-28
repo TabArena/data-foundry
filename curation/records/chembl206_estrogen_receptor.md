@@ -4,9 +4,6 @@ name: CHEMBL206 (Oestrogen receptor bioactivity)
 checked_by:
 - AI (UNVERIFIED)
 - Andrej
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'No'
 decision_markers:
 - Duplicate

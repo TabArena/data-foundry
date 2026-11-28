@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_fish_toxicity
 container_format: 2
-checksum: v2:4dc4892ade807da24aea12bec7162e1e2ae0fdc5d005856756505e993b4011ac
+checksum: v2:13f64141e8e98ee4fcf87bc249fd96c96b5d578dc8ac925402a011aa08b7e508
 build:
-  uuid: 01a111fc-ec16-7add-afb7-17f93dcaa3d4
-  checksum: v2:297b99361a9cc29da5a134ae105ce939b6ec1774224cf656311f0d38d2993253
-  built_at: '2026-10-06T16:12:30+00:00'
-  path: qsar_fish_toxicity/01a111fc-ec16-7add-afb7-17f93dcaa3d4
+  uuid: 01a21800-eed7-76d5-9e69-5a4f067cca5c
+  checksum: v2:13f64141e8e98ee4fcf87bc249fd96c96b5d578dc8ac925402a011aa08b7e508
+  built_at: '2026-11-26T13:17:24+00:00'
+  path: qsar_fish_toxicity/01a21800-eed7-76d5-9e69-5a4f067cca5c
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 908
   n_features: 1
@@ -55,6 +55,10 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Grouped splits on the Bemis-Murcko scaffold: all chemicals of one series
+    stay on one side, so a model predicts chemicals of a series it has not seen; chemicals
+    without a ring are held out one by one. Chemicals with similar but not identical
+    scaffolds can be on both sides.'
   n_train:
     min: 577
     max: 630
@@ -76,7 +80,7 @@ decisions: []
 
 Regression of `LC50`, scored with `rmse` on grouped splits by `scaffold`. 908 rows and 1 features. Source: UCI (2015).
 
-Built as `01a111fc-ec16-7add-afb7-17f93dcaa3d4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:4dc4892ade807da24aea12bec7162e1e2ae0fdc5d005856756505e993b4011ac`, so the build is stale. See [Build](#build).
+Built as `01a21800-eed7-76d5-9e69-5a4f067cca5c` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -204,7 +208,7 @@ The first 5 of 908 rows of the final frame (random rows: the frame is shuffled).
 
 ## Curation notes
 
-- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form (`canonical_smiles`; no salts or mixtures here), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts).
+- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form (`canonical_smiles`; no salts or mixtures here), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.special.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts).
 - The authors' 6 descriptors leave (Lennart, 2026-11-01, as for qsar_tid_11: the task goes from the structure to a prediction, and the descriptors are one modelling choice of the authors). This also removes the mild optimism they carried: a genetic algorithm chose them on the paper's 726 training chemicals, which overlap our test folds (LEAK-31).
 - The structures come from the authors' own workbook, which the UCI copy left out. It is the same 908 rows in the same order: every one of the 6 descriptors is identical on all 908 rows (the CSV's rounding aside, LC50 too), so the link is exact and needs no key. All 908 SMILES parse, and no two are the same chemical, with or without stereochemistry.
 - The target comes from the workbook as well: the UCI file rounds LC50 to 3 decimals (every row differs by at most 0.0005), the workbook gives it at full precision.
@@ -212,18 +216,6 @@ The first 5 of 908 rows of the final frame (random rows: the frame is shuffled).
 - Split (CLEAN-24, SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold of the structure (`scaffold_groups`); chemicals without a ring, and those of a scaffold holding more than a tenth of the set, are groups of their own. An assessor estimates the toxicity of an untested chemical, often of a series not yet measured, so whole series are held out; qsar_bioconcentration, qsar_oral_toxicity and qsar_tid_11 group the same way. The source split at random.
 - Sibling of qsar_aquatic_toxicity (Andrej, 2026-11-11: keep both, note the overlap): the same Milano group, source databases (ECOTOX, EAT5, OASIS) and pipeline. 237 chemicals are in both, counted on the canonical SMILES of the two authors' workbooks with the stereo set aside (26.1% of this set, 43.4% of the Daphnia set; 225 of them carry the same CAS-RN in both), and their LC50s correlate at r = 0.81 (Spearman 0.82), the Daphnia values 0.37 log units more toxic on average. Another species (the fathead minnow, not Daphnia magna) and exposure time (96 h, not 48 h), so a different task, not a duplicate (PROV-7); a method that suits this study design gains on both.
 - CC (2026-11-12, Andrej): the fit stays direct (USE-8): whole series are held out and the authors' selected descriptors have left, the setting in which qsar_bioconcentration reads direct, so the open proposal of 2026-10-26 is closed as superseded. On the shipped scaffold splits (10 x 3), 12.4% of the test chemicals have a close training analog (Tanimoto 0.7 or more, Morgan radius 2, 2,048 bits; 9.4% to 16.5% per split), against 13.1% under random 3-fold splits of the same rows: holding out series removes few close analogs here.
-- Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before): the use case predicts for chemicals not
-  tested yet, which whole scaffolds held out stand for. A chemical's 96-hour LC50 for the fathead minnow is a
-  property of the chemical, and the Milano group compiled historic laboratory tests in 2015 without dates
-  (Andrej, 2026-11-12). Dated through the EPA's ECOTOX bulk release
-  (`ecotox_ascii_09_15_2026`), joined on the CAS-RN of the authors' workbook to the fathead minnow 96-hour LC50
-  records, the year being the publication year of the earliest matching test: 850 of 908 chemicals (93.6%), 1956
-  to 2005, median 1984, 90% by 1990. Where ECOTOX gives mg/L, its median per chemical matches the target at r =
-  0.923 (212 chemicals, median difference 0.02 log units, 95.3% within one log unit). The relation does not move
-  with the year (Spearman of first test year and LC50 -0.06; the authors' own train share is 0.78 to 0.88 in
-  every period), and a forward split by first test year is no stricter than the scaffold folds (untuned models
-  on `encode_smiles`, RMSE, three expanding windows, each training side at least half the dated chemicals;
-  2026-11-11):
 
   | Scheme | RMSE, LightGBM / RF | Close training analog | Test scaffold in training |
   |---|---|---|---|
@@ -233,8 +225,11 @@ The first 5 of 908 rows of the final frame (random rows: the frame is shuffled).
   | Scaffold 3-fold, all rows | 0.872 / 0.848 | 12.0% | 0 |
 
   The first three rows score the same test chemicals of the dated windows; the last is a scaffold 3-fold over all rows. The spread between windows (RMSE 0.81 to 1.17) is larger than the spread between schemes. The split cannot test a chemistry newer than the 1990s (90% of the dated chemicals were first tested by 1990, none after 2005), nor whether the 58 undated chemicals follow the same pattern; a publication year is an upper bound on the test date.
+- Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before): the use case predicts for chemicals not tested yet, which whole scaffolds held out stand for. A chemical's 96-hour LC50 for the fathead minnow is a property of the chemical, and the Milano group compiled historic laboratory tests in 2015 without dates (Andrej, 2026-11-12). Dated through the EPA's ECOTOX bulk release (`ecotox_ascii_09_15_2026`), joined on the CAS-RN of the authors' workbook to the fathead minnow 96-hour LC50 records, the year being the publication year of the earliest matching test: 850 of 908 chemicals (93.6%), 1956 to 2005, median 1984, 90% by 1990. Where ECOTOX gives mg/L, its median per chemical matches the target at r = 0.923 (212 chemicals, median difference 0.02 log units, 95.3% within one log unit). The relation does not move with the year (Spearman of first test year and LC50 -0.06; the authors' own train share is 0.78 to 0.88 in every period), and a forward split by first test year is no stricter than the scaffold folds (untuned models on `encode_smiles`, RMSE, three expanding windows, each training side at least half the dated chemicals; 2026-11-11):
 
 ## Splits
+
+Repeated 3-fold cross-validation keeping each group of `scaffold` whole (shuffled group k-fold, a new draw per repeat): 10 repeat(s) x 3 folds, 30 splits, the repeats set by the 908 rows (SPLIT-33).
 
 Grouped splits on the Bemis-Murcko scaffold: all chemicals of one series stay on one side, so a model predicts chemicals of a series it has not seen; chemicals without a ring are held out one by one. Chemicals with similar but not identical scaffolds can be on both sides.
 
@@ -299,7 +294,7 @@ One group is a chemical series: the chemicals that share one Bemis-Murcko scaffo
 | groups of two or more rows with a single label | 0.0% |
 | label variance explained by the group | 0.93 (shuffled groups: 0.90) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
@@ -313,7 +308,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | LC50 | float64 | 0 | 0 | 907 | 4.2084, 1.0885, 4.7476, 3.2458, 1.8418, 4.6637, 2.3708, 3.4484, 6.483, 3.9739 |
-| SMILES | string | 0 | 0 | 908 | CC(C)CC=O, Oc1ccccc1Cl, CCOP(=O)(OCC)OP(=O)(OCC)OCC, Cc1cocn1, Clc1ccccc1-c1ccc… |
+| SMILES | string | 0 | 0 | 908 | CCCSCCC, CC(C)CC=O, Oc1ccccc1Cl, CCOP(=O)(OCC)OP(=O)(OCC)OCC, Cc1cocn1, Clc1ccc… |
 | scaffold | string | 0 | 0 | 786 | c1ccncc1, c1ccc(Oc2ccccc2)cc1, c1ccc(Cc2ccccc2)cc1, C1CCCCC1, c1ccc2ccccc2c1, c… |
 
 ### Target distribution
@@ -332,11 +327,11 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| SMILES | 1 | CC(C)CC=O | 1 | 0.11 |
-| SMILES | 2 | Oc1ccccc1Cl | 1 | 0.11 |
-| SMILES | 3 | CCOP(=O)(OCC)OP(=O)(OCC)OCC | 1 | 0.11 |
-| SMILES | 4 | Cc1cocn1 | 1 | 0.11 |
-| SMILES | 5 | Clc1ccccc1-c1ccccc1 | 1 | 0.11 |
+| SMILES | 1 | CCCSCCC | 1 | 0.11 |
+| SMILES | 2 | CC(C)CC=O | 1 | 0.11 |
+| SMILES | 3 | Oc1ccccc1Cl | 1 | 0.11 |
+| SMILES | 4 | CCOP(=O)(OCC)OP(=O)(OCC)OCC | 1 | 0.11 |
+| SMILES | 5 | Cc1cocn1 | 1 | 0.11 |
 | scaffold | 1 | c1ccncc1 | 25 | 2.75 |
 | scaffold | 2 | c1ccc(Oc2ccccc2)cc1 | 11 | 1.21 |
 | scaffold | 3 | c1ccc(Cc2ccccc2)cc1 | 11 | 1.21 |
@@ -347,11 +342,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-ec16-7add-afb7-17f93dcaa3d4 |
-| checksum | v2:297b99361a9cc29da5a134ae105ce939b6ec1774224cf656311f0d38d2993253 |
-| built_at | 2026-10-06T16:12:30+00:00 |
-| path | qsar_fish_toxicity/01a111fc-ec16-7add-afb7-17f93dcaa3d4 |
+| uuid | 01a21800-eed7-76d5-9e69-5a4f067cca5c |
+| checksum | v2:13f64141e8e98ee4fcf87bc249fd96c96b5d578dc8ac925402a011aa08b7e508 |
+| built_at | 2026-11-26T13:17:24+00:00 |
+| path | qsar_fish_toxicity/01a21800-eed7-76d5-9e69-5a4f067cca5c |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:4dc4892ade807da24aea12bec7162e1e2ae0fdc5d005856756505e993b4011ac` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

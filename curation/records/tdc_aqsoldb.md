@@ -3,9 +3,6 @@ unique_name: tdc_aqsoldb
 name: TDC-AqSolDB (Aqueous Solubility)
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'No'
 decision_markers:
 - Duplicate

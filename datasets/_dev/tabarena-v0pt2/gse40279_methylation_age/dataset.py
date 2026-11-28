@@ -9,7 +9,8 @@ import numpy as np
 import pandas as pd
 import pyarrow as pa
 import pyarrow.csv as pacsv
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -345,13 +346,11 @@ class Gse40279MethylationAge(AbstractCuratedDataset):
             "would make every check of this width cost a pairwise pass over 310 million cells for a question the "
             "platform already answers."
         ),
-        "task_group_count_low": (
+        "groups_test_groups_few": (
             "Nine plates are every assay batch the series has, and the batch is the level a clock must generalize "
             "over: a test sample is always measured in a batch of its own. The signal survives the key, so the few "
             "groups do not hollow the task out: four model families beat the dummy on all 60 splits, and shuffled "
-            "ages on none of them over three seeds."
-        ),
-        "groups_test_groups_few": (
+            "ages on none of them over three seeds. "
             "A group is one assay plate of 17 to 92 samples, a batch over which we want to generalize, and from the "
             "context a few such batches suffice, as when generalizing over a few hospitals (heart_disease stayed "
             "grouped with 3). Each fold holds three plates and 146 to 267 rows. The 60 splits are 41 distinct "

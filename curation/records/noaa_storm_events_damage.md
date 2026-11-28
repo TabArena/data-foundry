@@ -3,9 +3,6 @@ unique_name: noaa_storm_events_damage
 name: NOAA NCEI Storm Events Database, property damage per storm event
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 2
 tags:

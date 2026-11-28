@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: concrete_compressive_strength
 container_format: 2
-checksum: v2:9027b7f4b2aabec7596dadbaa33744aaba990932b87a5b4621d78702a09f706c
+checksum: v2:5998f89d622bd1f1de806f34dad06c11b57e23f562c50a79cdd4c9f694a3b1a4
 build:
-  uuid: 01a13a7d-c2ed-79de-abb8-3476f95e6667
-  checksum: v2:5beb425c9d8c707dfa45d4535bd04431ebfe826172e5f94952c13dd5abb8ed1a
-  built_at: '2026-10-14T12:58:03+00:00'
-  path: concrete_compressive_strength/01a13a7d-c2ed-79de-abb8-3476f95e6667
+  uuid: 01a21800-c50d-7a6f-a42b-6ea69d12ee05
+  checksum: v2:5998f89d622bd1f1de806f34dad06c11b57e23f562c50a79cdd4c9f694a3b1a4
+  built_at: '2026-11-26T13:17:13+00:00'
+  path: concrete_compressive_strength/01a21800-c50d-7a6f-a42b-6ea69d12ee05
   data_foundry_version: 0.0.5
-  git_sha: f93df193827f5244586b178fd7199efb86d66359-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 938
   n_features: 8
@@ -54,6 +54,9 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Grouped splits on the mix: all tests of one mix stay on one side, so a
+    model predicts the strength of a mix it has not seen, at any age. Mixes that share
+    some ingredient amounts can be on both sides.'
   n_train:
     min: 589
     max: 670
@@ -77,7 +80,7 @@ decisions: []
 
 Regression of `ConcreteCompressiveStrength`, scored with `rmse` on grouped splits by `mix`. 938 rows and 8 features. Source: UCI (2007).
 
-Built as `01a13a7d-c2ed-79de-abb8-3476f95e6667` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:9027b7f4b2aabec7596dadbaa33744aaba990932b87a5b4621d78702a09f706c`, so the build is stale. See [Build](#build).
+Built as `01a21800-c50d-7a6f-a42b-6ea69d12ee05` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -201,11 +204,11 @@ The first 5 of 938 rows of the final frame (random rows: the frame is shuffled).
 - Re-entries dropped (Andrej, 2026-11-12): rows 936 to 1029 of the UCI file re-enter tests of rows 721 to 935, one source entered from two documents, the amounts to 0.1 kg instead of whole kg. A row is a re-entry when an earlier row of another mix has the same age, all seven amounts within 1 kg and the strength within 0.01 MPa (median difference 0.003 MPa, at most 0.007; two tests of one exact mix at one age differ by SD 1.6 MPa). We keep the first entry and drop the 92 re-entries (87 of them in rows 936 to 1029): 1,030 to 938 rows, 428 to 338 mixes. With them, a re-entry fell into another mix group than its twin, and 18% of the test rows met their own record in training; grouping each copy with its twin instead scores the same (R^2 within 0.005) but counts 92 tests twice. The 48 row pairs within 1 kg at one age with another strength (median difference 2.9 MPa) are separate tests and stay; they can sit on both sides of the split.
 - Note: 34 rows repeat the features of another row, a mix tested again at the same age (25 with the same strength, 9 with another); they stay, and the grouped split keeps them in the fold of their mix.
 - The UCI file is ordered by source study: decimals, units and age schedules mark about 11 blocks (the 17 sources of Yeh 1998 cannot be told apart cleanly). The mix split does not test a new laboratory: grouped by block, TabPFN R^2 0.70 against 0.91 by mix.
-- Time basis: Timeless: laboratory tests of designed mixes (Yeh 1998); the amounts are chosen before casting and
-  the strength is measured at the stated age, a feature; no test date is recorded. Not tested: mixes of a
-  laboratory outside the compilation, with its own materials and curing.
+- Time basis: Timeless: laboratory tests of designed mixes (Yeh 1998); the amounts are chosen before casting and the strength is measured at the stated age, a feature; no test date is recorded. Not tested: mixes of a laboratory outside the compilation, with its own materials and curing.
 
 ## Splits
+
+Repeated 3-fold cross-validation keeping each group of `mix` whole (shuffled group k-fold, a new draw per repeat): 10 repeat(s) x 3 folds, 30 splits, the repeats set by the 938 rows (SPLIT-33).
 
 Grouped splits on the mix: all tests of one mix stay on one side, so a model predicts the strength of a mix it has not seen, at any age. Mixes that share some ingredient amounts can be on both sides.
 
@@ -271,7 +274,7 @@ One group is a concrete mix: one set of amounts of the seven ingredients (kg per
 | nearest neighbour in the same group | 53.4% of the rows (chance: 0.4%) |
 | label variance explained by the group | 0.63 (shuffled groups: 0.39) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
@@ -331,11 +334,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a13a7d-c2ed-79de-abb8-3476f95e6667 |
-| checksum | v2:5beb425c9d8c707dfa45d4535bd04431ebfe826172e5f94952c13dd5abb8ed1a |
-| built_at | 2026-10-14T12:58:03+00:00 |
-| path | concrete_compressive_strength/01a13a7d-c2ed-79de-abb8-3476f95e6667 |
+| uuid | 01a21800-c50d-7a6f-a42b-6ea69d12ee05 |
+| checksum | v2:5998f89d622bd1f1de806f34dad06c11b57e23f562c50a79cdd4c9f694a3b1a4 |
+| built_at | 2026-11-26T13:17:13+00:00 |
+| path | concrete_compressive_strength/01a21800-c50d-7a6f-a42b-6ea69d12ee05 |
 | data_foundry_version | 0.0.5 |
-| git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:9027b7f4b2aabec7596dadbaa33744aaba990932b87a5b4621d78702a09f706c` |

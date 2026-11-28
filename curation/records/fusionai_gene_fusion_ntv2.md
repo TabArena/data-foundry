@@ -3,9 +3,6 @@ unique_name: fusionai_gene_fusion_ntv2
 name: FusionAI-NTv2-GeneFusion (Gene Fusion Breakpoints, NT-v2)
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'No'
 decision_markers:
 - Wrong Domain / Source Modality

@@ -3,9 +3,6 @@ unique_name: gse42861_rheumatoid_arthritis_methylation
 name: GEO-GSE42861-Methylation-RA (Rheumatoid Arthritis DNA Methylation)
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: TBD -> 2nd Tier
 priority: 1
 decision_markers:

@@ -7,7 +7,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+)
 
 
 class Kickstarter(AbstractCuratedDataset):
@@ -131,7 +140,7 @@ class Kickstarter(AbstractCuratedDataset):
 
         The gap is 60 days, Kickstarter's longest campaign: a refit at a window's start knows the outcome of a campaign only once it has ended, so each train side holds the projects launched more than 60 days before its window. At most one training project per window, a campaign longer than 60 days (up to 121 in the data), had not ended when its window starts. The scrape of 12 January 2026 holds only ended projects, so we drop the launches of its last 60 days (from 13 November 2025 11:00, 1,673 projects) and the newest window, 1 July to 13 November 2025, is complete but for such long campaigns.
 
-        The nine test windows are half-years of launches, every fourth of the twelve from 2020 H1 to 2025 H2 left out (Andrej, 2026-11-20): 2025 H2, 2025 H1, 2024 H1, 2023 H2, 2023 H1, 2022 H1, 2021 H2, 2021 H1 and 2020 H1. Nine is the number of splits a random split of 185,444 projects gets (three repeats of three folds). They cover the pandemic year 2020, the spread of pre-launch pages (from about 41% of the projects created in 2020 to 61% in 2025) and success rates from 60.5% (2020 H1) to 72.5% (2025 H2). Newest first, they test 10,566, 12,530, 9,834, 5,872, 6,224, 5,386, 4,495, 5,028 and 4,554 projects (64,489 in all) and train on 91.9%, 85.9%, 75.6%, 72.3%, 69.2%, 63.5%, 60.9%, 58.3% and 53.2% of the projects. The launch years 2017 to 2019, tested until 2026-11-20, are not tested: no window over them trains on half the projects.
+        The nine test windows are half-years of launches, every fourth of the twelve from 2020 H1 to 2025 H2 left out (Andrej, 2026-11-20): 2025 H2, 2025 H1, 2024 H1, 2023 H2, 2023 H1, 2022 H1, 2021 H2, 2021 H1 and 2020 H1. Nine is the number of splits a random split of 185,444 projects gets (three repeats of three folds). They cover the pandemic year 2020, the spread of pre-launch pages (from about 41% of the projects created in 2020 to 61% in 2025) and success rates from 60.5% (2020 H1) to 72.5% (2025 H2). The launch years 2017 to 2019, tested until 2026-11-20, are not tested: no window over them trains on half the projects.
     """
     split_leaf = "L-ORDER.windows"
     # `on`: the launch, when the use case predicts; a 60-day gap (the longest campaign) keeps the training outcomes

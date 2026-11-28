@@ -3,9 +3,6 @@ unique_name: prism_stool_metabolomics_cd_vs_uc
 name: MW-ST001000-CD-UC (PRISM Stool Metabolomics CD vs UC)
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: TBD -> 2nd Tier
 priority: 1
 tags:
