@@ -9,19 +9,18 @@ from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry.v2 import get_dataset
-from data_foundry.v2.cli import add_dataset_parser
-from data_foundry.v2.dataset import NEWEST_PERIOD_RATIO, AbstractCuratedDataset, newest_period_rate
-from data_foundry.v2.splits import (
-    TemporalSplits,
-    split_count,
-    temporal_window_splits,
-    training_sides,
-    window_bounds,
-)
-from data_foundry.v2.windows import Window, candidate_windows, window_stats
 
-from tests.test_v2_dataset import temporal_version_body, warehouse, write_definition  # noqa: F401 - the fixture
+from data_foundry.checks.protocol import _window_count_findings, split_count, training_sides
+from data_foundry.definition import (
+    DatasetDefinitionError,
+    checks as definition_checks,
+    get_dataset,
+)
+from data_foundry.definition.checks import NEWEST_PERIOD_RATIO, newest_period_rate, window_size_findings
+from data_foundry.definition.cli import add_dataset_parser
+from data_foundry.definition.splits import TemporalSplits, temporal_window_splits, window_bounds
+from data_foundry.definition.windows import Window, candidate_windows, window_stats
+from tests.helpers import TEMPORAL_BUDGET, temporal_version_body, write_version
 
 
 def three_years(seed: int = 0) -> pd.DataFrame:
@@ -112,10 +111,10 @@ def test_a_numeric_time_column_shows_its_values() -> None:
     assert table["psi_max"].iloc[0] > 5  # a trend is all drift
 
 
-def test_a_definition_marks_its_own_windows(tmp_path: Path, warehouse: Path, capsys: pytest.CaptureFixture) -> None:  # noqa: F811
+def test_a_definition_marks_its_own_windows(tmp_path: Path, warehouse: Path, capsys: pytest.CaptureFixture) -> None:
     """A definition lists its candidates with its own windows marked; the CLI prints them."""
     del warehouse  # 30 days of 20 rows; the definition tests the newest 3 of 5 days
-    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=temporal_version_body())
+    write_version(tmp_path / "datasets", "toy_ds_0p19k", temporal_version_body(), TEMPORAL_BUDGET)
     ds = get_dataset(tmp_path / "datasets", "toy_ds_0p19k")
     table = ds.window_stats(min_train_fraction=0.5)
     assert list(table["chosen"]) == [True, True, True]  # a 5-day window above the floor: only the three own
@@ -131,10 +130,10 @@ def test_a_definition_marks_its_own_windows(tmp_path: Path, warehouse: Path, cap
     assert "psi_max" in out
 
 
-def test_the_readme_describes_the_test_windows(tmp_path: Path, warehouse: Path) -> None:  # noqa: F811
+def test_the_readme_describes_the_test_windows(tmp_path: Path, warehouse: Path) -> None:
     """The README's splits section describes the chosen windows."""
     del warehouse
-    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=temporal_version_body())
+    write_version(tmp_path / "datasets", "toy_ds_0p19k", temporal_version_body(), TEMPORAL_BUDGET)
     get_dataset(tmp_path / "datasets", "toy_ds_0p19k").check(verbose=False)
     readme = (tmp_path / "datasets" / "toy_ds_0p19k" / "README.md").read_text()
     assert "### The test windows" in readme
@@ -169,7 +168,7 @@ def test_the_floor_counts_rows_also_for_unique_windows() -> None:
     assert all(len(w.train) >= 0.5 * len(df) for w in windows)
 
 
-def test_the_floor_findings_ask_for_the_curators_sign_off() -> None:
+def test_the_floor_findings_ask_for_the_curators_sign_off(monkeypatch: pytest.MonkeyPatch) -> None:
     """Every window trains on half the rows; under half is the curator's exception (a warning), under 30% an error;
     the shares count every row of the curated frame, not only the container's (SPLIT-14).
     """
@@ -178,8 +177,9 @@ def test_the_floor_findings_ask_for_the_curators_sign_off() -> None:
         splits = {i: {0: (list(range(n)), list(range(40)))} for i, n in enumerate(train_sizes)}
         container = SimpleNamespace(experiment_metadata=SimpleNamespace(splits=splits), dataset=range(60))
         definition = SimpleNamespace(temporal=object(), _frame_rows=frame_rows)
-        definition._window_size_findings = lambda c, w, n: []
-        return {r.slug: r.severity for r in AbstractCuratedDataset._floor_findings(definition, container)}
+        return {r.slug: r.severity for r in definition_checks.floor_findings(definition, container)}
+
+    monkeypatch.setattr(definition_checks, "window_size_findings", lambda c, w: [])
 
     assert findings([90, 70, 55]) == {}
     assert findings([90, 70, 45]) == {"splits_train_under_half": "warning"}
@@ -197,16 +197,16 @@ def test_test_windows_hold_33_scored_units_and_the_count_follows_split_33() -> N
         # era: two rows each, never cut by a window; taxon: three values in every window, cut by each
         frame = pd.DataFrame({"era": np.arange(n_rows) // 2, "taxon": np.arange(n_rows) % 3})
         starts = [n_rows // 2 + 2 * sum(test_sizes[:i]) for i in range(len(test_sizes))]  # even: an era stays whole
-        windows = [(i, list(range(s)), list(range(s, s + n))) for i, (s, n) in enumerate(zip(starts, test_sizes))]
+        windows = [
+            (i, list(range(s)), list(range(s, s + n))) for i, (s, n) in enumerate(zip(starts, test_sizes, strict=False))
+        ]
         inputs = {"group": "taxon" if cut else "era"} if unit_column else {}
         task = SimpleNamespace(objective_metric=SimpleNamespace(inputs=inputs))
         container = SimpleNamespace(task_metadata=task, dataset=frame)
-        return {
-            r.slug: r.severity
-            for r in AbstractCuratedDataset._window_size_findings(SimpleNamespace(), container, windows, n_rows)
-        }
+        found = [*window_size_findings(container, windows), *_window_count_findings(container, windows)]
+        return {r.slug: r.severity for r in found}
 
-    assert findings([40, 40, 40], 5_000) == {"splits_below_target": "warning"}  # 9 splits for 5,000 rows
+    assert findings([40, 40, 40], 5_000) == {"splits_dimensions_off_protocol": "warning"}  # 9 splits for 5,000 rows
     assert findings([40] * 9, 5_000) == {}
     assert findings([40, 32, 40] + [40] * 6, 5_000) == {"splits_test_too_small": "error"}
     assert findings([80] * 9, 12_000, unit_column=True) == {}  # 40 eras a window; 6,000 eras give 9 splits
@@ -225,8 +225,9 @@ def test_splits_count_by_their_training_sides() -> None:
     task = SimpleNamespace(objective_metric=SimpleNamespace(inputs={}))
     container = SimpleNamespace(task_metadata=task, dataset=frame)
     shared = [(i, list(range(100)), list(range(100 + 40 * i, 140 + 40 * i))) for i in range(9)]
-    found = AbstractCuratedDataset._window_size_findings(SimpleNamespace(), container, shared, 5_000)
-    assert [(r.slug, r.message.split(" ")[0]) for r in found] == [("splits_below_target", "1")]
+    found = _window_count_findings(container, shared)
+    assert [(r.slug, r.message.split(" ")[0]) for r in found] == [("splits_dimensions_off_protocol", "1")]
+    assert "at least 3" in found[0].message
 
 
 def test_a_newest_period_cut_short_is_found() -> None:
@@ -241,3 +242,46 @@ def test_a_newest_period_cut_short_is_found() -> None:
     assert ratio_cut < NEWEST_PERIOD_RATIO
     assert newest_period_rate(pd.Series(np.arange(10))) is None  # no date
     assert newest_period_rate(pd.Series(np.repeat(days[:90], 5))) is None  # fewer than four spans
+
+
+@pytest.mark.parametrize("unit", ["rows", "unique"])
+def test_candidate_windows_of_a_derived_length(unit: str) -> None:
+    """``window=None`` with ``n_windows`` had no length for the candidates, so `dataset windows` failed; the candidates
+    take the length the definition's splits resolve to, and its windows are among them.
+    """
+    df = pd.DataFrame({"t": np.repeat(np.arange(200), 3)})
+    declared = TemporalSplits(window=None, unit=unit, n_windows=4, min_train_fraction=0.5)
+    windows = candidate_windows(df, "t", declared)
+    length = 600 // 2 // 4 if unit == "rows" else 3 * (200 // 2 // 4)
+    assert {len(w.test) for w in windows} == {length}
+    own = {(test[0], test[-1]) for folds in declared.splits(df, "t").values() for _, test in folds.values()}
+    assert own <= {(w.test[0], w.test[-1]) for w in windows}
+    assert len(windows) > len(own)  # the candidates walk back to the 30% floor, past the declared 50%
+
+
+def test_a_definition_with_a_derived_window_lists_its_candidates(tmp_path: Path, warehouse: Path) -> None:
+    """A definition whose window is derived (`window=None`) lists candidates of the length its splits use."""
+    del warehouse  # 30 days of 20 rows; 3 windows over the newest half of the axis: 5 days each
+    # a derived window does not fix the horizon, so the definition declares it (the text closes `splits=...`)
+    splits = 'TemporalSplits(window=None, unit="unique", n_windows=3, min_train_fraction=0.5)'
+    windows = f'{splits}, horizon=5, horizon_unit="days"'
+    write_version(tmp_path / "datasets", "toy_ds_0p19k", temporal_version_body(windows=windows), TEMPORAL_BUDGET)
+    ds = get_dataset(tmp_path / "datasets", "toy_ds_0p19k")
+    table = ds.window_stats(min_train_fraction=0.5)
+    assert table["chosen"].sum() == 3
+    assert len(table) == 3
+
+
+def test_windows_between_cutoffs_ask_for_the_candidates_length(tmp_path: Path, warehouse: Path) -> None:
+    """Windows that run from cutoff to cutoff (`window=None, cutoffs=...`) have no single length: `dataset windows`
+    asks for the candidates' window and unit, and lists them with one given.
+    """
+    del warehouse  # 30 days of 20 rows
+    splits = 'TemporalSplits(window=None, unit="days", cutoffs=("2024-01-26", "2024-01-21", "2024-01-16"))'
+    windows = f'{splits}, horizon=5, horizon_unit="days"'
+    write_version(tmp_path / "datasets", "toy_ds_0p19k", temporal_version_body(windows=windows), TEMPORAL_BUDGET)
+    ds = get_dataset(tmp_path / "datasets", "toy_ds_0p19k")
+    with pytest.raises(DatasetDefinitionError, match="no single length; give the candidates' window and unit"):
+        ds.window_stats(min_train_fraction=0.5)
+    table = ds.window_stats(window=5, unit="days", min_train_fraction=0.5)
+    assert table["chosen"].sum() == 3

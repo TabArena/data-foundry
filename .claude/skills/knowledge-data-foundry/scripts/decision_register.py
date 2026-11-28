@@ -12,7 +12,9 @@ Sources, one decision each:
   ``**Consistency check (AI, date):**`` (``consistency``) and ``**Counter-argument (AI)...:**`` (``counter``); each
   carries the record's ``suggestion`` (as ``verdict``) and ``decision_markers``. A paragraph ends at a blank line or
   the next such label;
-* every record's ``## Review``: the titles of its numbered issues (``open_issue``, author AI, undated);
+* every record's ``## Review``, read by ``data_foundry.curation.review``: the titles of the numbered issues of its
+  issues block (``issue``, with its ``state``: open, resolved or deferred; an open issue is the AI's and undated, a
+  closed one takes the date and author of its closing turn);
 * the Cases tables of the knowledge files (``<knowledge>/**/*.md``): markdown tables whose header starts with
   ``| Rule |`` (``case``; their ``Kind`` column is kept as ``case_kind``). Missing files or tables are fine.
 
@@ -54,12 +56,25 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from data_foundry.curation._paths import records_dir, skills_dir
+from data_foundry.curation.comments import (
+    DATE,
+    exception_line,
+    exception_meta,
+    id_key,
+    paragraphs,
+    parse_exception_lines,
+    rule_ids_defined,
+    rule_ids_in,
+    rule_strengths,
+)
+from data_foundry.curation.review import ReviewFormatError, read_review
 from data_foundry.curation.store import load_all
 
 if TYPE_CHECKING:
-    from collections.abc import Iterator
-
     from data_foundry.curation.record import CurationRecord
+
+__all__ = ["parse_exception_lines", "rule_ids_defined", "rule_ids_in", "rule_strengths"]
+"""The comment grammar lives in :mod:`data_foundry.curation.comments`; these names stay importable from here."""
 
 # --------------------------------------------------------------------------- the register's vocabulary (extend here)
 MECHANISMS: dict[str, str] = {
@@ -88,7 +103,7 @@ MECHANISMS: dict[str, str] = {
     f"probe flag {flag}": rf"\b{flag}\b"
     for flag in ("no_signal", "solved", "no_spread", "one_feature", "drift_baseline", "unstable", "few_minority")
 }
-"""Mechanism name -> regex (case-insensitive). The task-probe flags (``curation_probes/task.py``) are mechanisms too:
+"""Mechanism name -> regex (case-insensitive). The task-probe flags (``data_foundry.probes.task``) are mechanisms too:
 the same flag, kept on one dataset and retired on another, is worth a look."""
 
 OUTCOME_RULES: dict[str, tuple[str, ...]] = {
@@ -129,7 +144,6 @@ OUTCOME_RULES: dict[str, tuple[str, ...]] = {
 removed (they cite other records). ``other`` is tried first, then ``exclude``; between ``fix`` and ``keep`` the
 earlier match wins; nothing gives ``other``."""
 
-MIN_REASON_WORDS = 8
 DRIFT_MIN_DAYS = 2
 AMENDMENT_AT = 3
 HEAD_WORDS = 40
@@ -137,27 +151,9 @@ MAX_PAIRS_SHOWN = 6
 TEXT_CHARS = 220
 
 # --------------------------------------------------------------------------- patterns
-ID_ALT = r"(?:SEL|USE|LEAK|SPLIT|PROV|TP|CLEAN|EV|MET)-\d+"
-RULE_ID = re.compile(rf"\b{ID_ALT}\b")
-LEGACY_TP = re.compile(r"task_probes\.md`?,?\s+rules?\s+(\d+)(?:\s*(-|\u2013|to|and)\s*(\d+))?")
-DEFINITION = re.compile(rf"^(?:\s*(?:[-*]|\d+\.)\s+)?\*\*({ID_ALT})\b[^*\n]*\*\*")
-DEFINITION_START = re.compile(rf"^(?:\s*(?:[-*]|\d+\.)\s+)?\*\*({ID_ALT})\b")
-STRENGTH = re.compile(rf"\*\*({ID_ALT}) \(([^)]*)\)")
-SERVES = re.compile(rf"\b[Ss]erves\s+(P\d+|{ID_ALT})\b")
-DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
-_LEAD = r"^\s*(?:[-*]\s+)?"
-_AI_LABEL = r" \(AI(?:,\s*(?P<date>\d{4}-\d{2}-\d{2}))?\)[^*]*?:?\*\*:?\s*"
-STARTS: dict[str, re.Pattern] = {
-    "cc": re.compile(r"^\s*CC \((?P<date>\d{4}-\d{2}-\d{2}),\s*(?P<author>[^)]+)\):\s*"),
-    "assessment": re.compile(_LEAD + r"\*\*Assessment" + _AI_LABEL),
-    "exception": re.compile(_LEAD + r"\*\*Exception to (?P<ids>[^*]+?)(?:\s*\((?P<meta>[^)]*)\))?:?\*\*:?\s*"),
-    "consistency": re.compile(_LEAD + r"\*\*Consistency check" + _AI_LABEL),
-    "counter": re.compile(_LEAD + r"\*\*Counter-argument" + _AI_LABEL),
-}
-AI_KINDS = ("assessment", "consistency", "counter", "open_issue")
+AI_KINDS = ("assessment", "consistency", "counter", "issue")
 _SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z`*(\[\"'])|:\s+(?=- )")
 _CASE_AUTHOR = re.compile(r"\(\d{4}-\d{2}-\d{2},\s*([A-Z][a-z]+)\)|\(([A-Z][a-z]+),\s*\d{4}-\d{2}-\d{2}\)")
-_ISSUE = re.compile(r"^(\d+)\.\s+(.*)$")
 _MECHANISMS = {name: re.compile(pattern, re.IGNORECASE) for name, pattern in MECHANISMS.items()}
 _OUTCOMES = {k: [re.compile(p, re.IGNORECASE | re.MULTILINE) for p in v] for k, v in OUTCOME_RULES.items()}
 
@@ -179,6 +175,8 @@ class Decision:
     verdict: str | None = None
     source: str = ""
     case_kind: str | None = None
+    state: str | None = None
+    """An issue's state: ``open``, ``resolved`` or ``deferred``."""
     full: str = field(default="", repr=False)
 
     @property
@@ -196,27 +194,6 @@ class Decision:
         out = asdict(self)
         out.pop("full")
         return out
-
-
-@dataclass
-class ExceptionLine:
-    """One ``**Exception to <ID> (date, name):**`` paragraph, with the parts the reason check needs."""
-
-    rule_ids: list[str]
-    date: str | None
-    author: str | None
-    reason: str
-    serves: str | None
-    words_before_serves: int
-
-    @property
-    def problem(self) -> str | None:
-        """Why the reason is thin, or None when it has a Serves part after enough words."""
-        if self.serves is None:
-            return "no 'Serves P<k>' (or 'serves <rule ID>') part"
-        if self.words_before_serves < MIN_REASON_WORDS:
-            return f"{self.words_before_serves} words before 'Serves {self.serves}' (fewer than {MIN_REASON_WORDS})"
-        return None
 
 
 @dataclass
@@ -240,111 +217,9 @@ class Flag:
         }
 
 
-# --------------------------------------------------------------------------- rule IDs and exception lines
-def _id_key(rule_id: str) -> tuple[str, int]:
-    prefix, _, number = rule_id.partition("-")
-    return prefix, int(number) if number.isdigit() else 0
-
-
-def rule_ids_in(text: str) -> list[str]:
-    """The rule IDs a text names, with the legacy ``task_probes.md rule N`` as ``TP-N``; sorted, unique."""
-    ids = set(RULE_ID.findall(text))
-    for match in LEGACY_TP.finditer(text):
-        first, sep, second = int(match.group(1)), match.group(2), match.group(3)
-        if second is None:
-            ids.add(f"TP-{first}")
-        elif sep == "and":
-            ids |= {f"TP-{first}", f"TP-{second}"}
-        else:
-            ids |= {f"TP-{n}" for n in range(first, int(second) + 1)}
-    return sorted(ids, key=_id_key)
-
-
-def _definition_heads(knowledge_dir: Path | str) -> Iterator[str]:
-    """The heads of the rule definitions (``**LEAK-3 (Must).**`` at the start of a line, outside code fences), each
-    joined across lines until its bold closes, so a head wrapped at 120 characters is still read whole.
-    """
-    root = Path(knowledge_dir)
-    if not root.exists():
-        return
-    for path in sorted(root.rglob("*.md")):
-        fenced = False
-        lines = path.read_text(encoding="utf-8").splitlines()
-        for i, line in enumerate(lines):
-            if line.lstrip().startswith("```"):
-                fenced = not fenced
-            elif not fenced and DEFINITION_START.match(line):
-                head = line
-                for more in lines[i + 1 : i + 12]:  # a head runs to its closing bold, within its paragraph
-                    if DEFINITION.match(head) or not more.strip():
-                        break
-                    head = f"{head} {more.strip()}"
-                if DEFINITION.match(head):
-                    yield head
-
-
-def rule_ids_defined(knowledge_dir: Path | str) -> set[str]:
-    """The rule IDs the knowledge files define: ``**LEAK-3 (Must).**`` at the start of a line, outside code fences."""
-    return {DEFINITION.match(head).group(1) for head in _definition_heads(knowledge_dir)}
-
-
-def rule_strengths(knowledge_dir: Path | str) -> dict[str, str]:
-    """The strength each rule ID is defined with, as written (``Must``, ``Should; narrows LEAK-1``, ...)."""
-    found: dict[str, str] = {}
-    for head in _definition_heads(knowledge_dir):
-        if match := STRENGTH.search(head):
-            found[match.group(1)] = match.group(2).strip()
-    return found
-
-
 def _is_must(strength: str | None) -> bool:
     """A plain Must: not a Should or Weigh, and not graded (``Must when strong, Should when weak``)."""
     return bool(strength) and strength.startswith("Must") and "Should" not in strength and "Weigh" not in strength
-
-
-def _paragraphs(text: str) -> list[tuple[str, re.Match, str]]:
-    """The labelled paragraphs of a comment: ``(kind, label match, text after the label)``."""
-    out: list[tuple[str, re.Match, list[str]]] = []
-    current: list[str] | None = None
-    for line in text.splitlines():
-        started = next(((kind, m) for kind, pattern in STARTS.items() if (m := pattern.match(line))), None)
-        if started is not None:
-            current = [line[started[1].end() :]]
-            out.append((*started, current))
-        elif not line.strip():
-            current = None
-        elif current is not None:
-            current.append(line.strip())
-    return [(kind, match, " ".join(lines).strip()) for kind, match, lines in out]
-
-
-def _exception_meta(match: re.Match) -> tuple[list[str], str | None, str | None]:
-    """The rule IDs, date and author of an exception label."""
-    meta = match.group("meta") or ""
-    found = DATE.search(meta)
-    author = DATE.sub("", meta).strip(" ,") or None
-    return rule_ids_in(match.group("ids")), found.group(0) if found else None, author
-
-
-def exception_line(body: str, rule_ids: list[str], date: str | None, author: str | None) -> ExceptionLine:
-    """The parts of one exception paragraph's text (after its label)."""
-    serves = SERVES.search(body)
-    before = body[: serves.start()] if serves else body
-    return ExceptionLine(
-        rule_ids=rule_ids,
-        date=date,
-        author=author,
-        reason=body,
-        serves=serves.group(1) if serves else None,
-        words_before_serves=len(before.split()),
-    )
-
-
-def parse_exception_lines(text: str) -> list[ExceptionLine]:
-    """Every ``**Exception to <ID> (date, name):** <fact>. Serves P<k>: <why>.`` paragraph of ``text``."""
-    return [
-        exception_line(body, *_exception_meta(match)) for kind, match, body in _paragraphs(text) if kind == "exception"
-    ]
 
 
 # --------------------------------------------------------------------------- outcome and mechanisms
@@ -418,7 +293,7 @@ def make_decision(dataset: str, kind: str, body: str, **fields) -> Decision:
         dataset=dataset,
         kind=kind,
         outcome=outcome_of(head_of(body, kind)),
-        rule_ids=sorted(ids, key=_id_key),
+        rule_ids=sorted(ids, key=id_key),
         mechanisms=mechanisms_in(body),
         reason_mechanisms=mechanisms_in(reason_of(body, kind)),
         text=_short(body),
@@ -437,11 +312,11 @@ def record_decisions(records: list[CurationRecord]) -> list[Decision]:
             "verdict": record.suggestion,
             "source": f"curation/records/{record.unique_name}.md",
         }
-        for kind, match, body in _paragraphs(record.comments or ""):
+        for kind, match, body in paragraphs(record.comments or ""):
             if kind == "cc":
                 who = {"date": match.group("date"), "author": match.group("author").strip()}
             elif kind == "exception":
-                ids, date, author = _exception_meta(match)
+                ids, date, author = exception_meta(match)
                 who = {"date": date, "author": author or "?", "rule_ids": ids}
             else:
                 who = {"date": match.group("date"), "author": "AI"}
@@ -449,44 +324,38 @@ def record_decisions(records: list[CurationRecord]) -> list[Decision]:
     return out
 
 
-def _issues(lines: list[str]) -> list[list[str]]:
-    """The numbered issues of a review: each its first line and its indented or blank continuation lines."""
-    issues: list[list[str]] = []
-    current: list[str] | None = None
-    for line in lines:
-        if match := _ISSUE.match(line):
-            current = [match.group(2)]
-            issues.append(current)
-        elif current is not None and (line.startswith("   ") or not line.strip()):
-            current.append(line.strip())
-        else:
-            current = None  # another block of the file ends the issue
-    return issues
-
-
 def review_decisions(records: dict[str, CurationRecord], records_dir: Path) -> list[Decision]:
-    """The numbered issues of every record's ``## Review`` (a dataset's review, open and settled), by their titles."""
+    """The numbered issues of every record's ``## Review`` (a dataset's review, open and settled), by their titles.
+
+    Only the issues block counts, each issue with its state (``open``, ``resolved``, ``deferred``); a closed issue
+    takes the date and the author of its last closing turn. A review that breaks the format is left out with a
+    warning on stderr.
+    """
     out = []
     for name in sorted(records):
         record = records[name]
         if not record.review:
             continue
-        lines = record.review.splitlines()
         path = records_dir / f"{name}.md"
-        for issue in _issues(lines):
-            bold = re.match(r"\*\*(.+?)\*\*", issue[0])
-            title = bold.group(1) if bold else (_sentences(issue[0]) or [issue[0]])[0]
-            body = " ".join(s for s in issue if s)
+        try:
+            review = read_review(path)
+        except ReviewFormatError as error:
+            print(f"warning: {error}; its issues are left out", file=sys.stderr)
+            continue
+        for issue in review.issues if review else []:
+            closing = next((t for t in reversed(issue.turns) if t.who == "closed"), None)
+            body = " ".join(line.strip() for line in issue.text.splitlines() if line.strip())
             decision = make_decision(
                 name,
-                "open_issue",
-                title,
-                date=None,
-                author="AI",
+                "issue",
+                issue.title,
+                date=closing.date if closing and issue.state != "open" else None,
+                author=(closing.by if closing and closing.by and issue.state != "open" else "AI"),
                 rule_ids=rule_ids_in(body),
-                markers=list(record.decision_markers) if record else [],
-                verdict=record.suggestion if record else None,
+                markers=list(record.decision_markers),
+                verdict=record.suggestion,
                 source=str(path),
+                state=issue.state,
             )
             decision.mechanisms = sorted(set(decision.mechanisms) | set(mechanisms_in(body)))
             out.append(decision)
@@ -575,7 +444,7 @@ def group(decisions: list[Decision]) -> dict[str, dict[str, list[Decision]]]:
             groups["marker"][marker].append(d)
         if not d.mechanisms and not d.markers:
             groups["none"][""].append(d)
-    order = {"rule": lambda kv: _id_key(kv[0])}
+    order = {"rule": lambda kv: id_key(kv[0])}
     return {k: dict(sorted(v.items(), key=order.get(k, lambda kv: kv[0]))) for k, v in groups.items()}
 
 
@@ -651,7 +520,7 @@ def flags_for(decisions: list[Decision], strengths: dict[str, str] | None = None
     for d in exceptions + case_exceptions:
         for rule_id in d.rule_ids:
             by_rule[rule_id].append(d)
-    for rule_id, items in sorted(by_rule.items(), key=lambda kv: _id_key(kv[0])):
+    for rule_id, items in sorted(by_rule.items(), key=lambda kv: id_key(kv[0])):
         if _is_must((strengths or {}).get(rule_id)):
             for d in items:
                 message = (
@@ -699,7 +568,8 @@ def _cell(text: str) -> str:
 def _table(decisions: list[Decision]) -> list[str]:
     lines = ["| date | dataset | author | kind | outcome | text |", "|---|---|---|---|---|---|"]
     for d in sorted(decisions, key=lambda d: (_date(d), d.dataset)):
-        lines.append(f"| {d.date or ''} | `{d.dataset}` | {d.author} | {d.kind} | {d.outcome} | {_cell(d.text)} |")
+        kind = f"{d.kind} ({d.state})" if d.state else d.kind
+        lines.append(f"| {d.date or ''} | `{d.dataset}` | {d.author} | {kind} | {d.outcome} | {_cell(d.text)} |")
     return lines
 
 
@@ -784,7 +654,7 @@ def main(argv: list[str] | None = None) -> int:
         args.json.parent.mkdir(parents=True, exist_ok=True)
         payload = {
             "total": len(decisions),
-            "rule_ids_defined": sorted(defined, key=_id_key),
+            "rule_ids_defined": sorted(defined, key=id_key),
             "groups": {k: {key: len(v) for key, v in g.items()} for k, g in group(shown).items()},
             "flags": [f.to_json() for f in flags],
             "decisions": [d.to_json() for d in shown],

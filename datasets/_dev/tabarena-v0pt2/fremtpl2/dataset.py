@@ -7,7 +7,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -226,7 +227,6 @@ class Fremtpl2(AbstractCuratedDataset):
             "1%20-%20French%20Motor%20Third-Party%20Liability%20Claims/Tools/FreMTPL_1b%20load%20data.r#L35"
         ),
         params={"min_prediction": 1e-4},
-        inputs={"weight": "Exposure"},
         definition=(
             "2*sum(w*(y*log(y/mu)-y+mu))/sum(w) over the claims per year y and the predicted rates mu, w = Exposure "
             "(years insured); 0*log(0/mu)=0; mu below 1e-4 claims per year counts as 1e-4. For mu above the floor it "
@@ -240,6 +240,7 @@ class Fremtpl2(AbstractCuratedDataset):
             column="Exposure",
             role="weight",
             used_by="mean_poisson_deviance",
+            fit=True,
             description=(
                 "years insured in the record's period (1/366 to 2.01), realized: shorter when the policy ended early, "
                 "often after a claim; in IDpol blocks 5-6 mostly cut at a calendar date (block 6 never exceeds 0.74 "
@@ -248,7 +249,6 @@ class Fremtpl2(AbstractCuratedDataset):
             ),
         ),
     )
-    sample_weight = "Exposure"
     splits_comment = """
         Three windows on the IDpol blocks (Andrej, 2026-11-20): block 6, 5 and 4 are tested, each
         trained on all earlier blocks (split 0: train blocks 0-5, 640,557 rows or 94.5%, test 37,434; split 1: train

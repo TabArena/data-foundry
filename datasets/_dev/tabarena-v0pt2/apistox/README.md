@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: apistox
 container_format: 2
-checksum: v2:8a2a2b1b0c38c42688da2854203697ed52d5f015477f71c9b3e94dccdbe070cb
+checksum: v2:22a042201f5c7e32ba6009c38b0c1f45244addda035ca16cf543a4de3c535794
 build:
-  uuid: 01a13aff-7eeb-7f10-a83c-d760795b95d5
-  checksum: v2:4c9968a68e1fd44ad36321446c0f615efb90a4d08f86232d8866a31435f263e4
-  built_at: '2026-10-14T15:19:46+00:00'
-  path: apistox/01a13aff-7eeb-7f10-a83c-d760795b95d5
+  uuid: 01a218c5-c27b-78af-8eb4-451066234ff7
+  checksum: v2:22a042201f5c7e32ba6009c38b0c1f45244addda035ca16cf543a4de3c535794
+  built_at: '2026-11-26T16:52:24+00:00'
+  path: apistox/01a218c5-c27b-78af-8eb4-451066234ff7
   data_foundry_version: 0.0.5
-  git_sha: de9e6adde48a58047e4e9a41f249e28507e48ed3-dirty
+  git_sha: 0d939f6d218cce0b083c3474f78e93095b5804d0-dirty
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 1035
   n_features: 5
@@ -51,6 +51,13 @@ splits:
   time_horizon_unit: years
   time_gap: null
   time_gap_unit: null
+  reason: 'The windows hold 54, 106, 118 and 173 compounds (12, 22, 19 and 33 toxic),
+    and their train sides 95%, 85%, 73% and 56% of all compounds. A model trained
+    on the compounds known up to a year predicts the toxicity of the compounds that
+    appear in the next ten years. Ten years is the shortest window with 50 compounds
+    at the newest end (2016-2023 holds 37): new compounds are few in recent years.
+    An IID task of this size would get 10 x 3 splits, but the newest half of the data
+    (from 1977 on) holds only 526 compounds, so four windows of about 50 or more remain.'
   n_train:
     min: 584
     max: 981
@@ -60,11 +67,14 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - splits_below_target
-  infos:
-  - meta_time_horizon_unit
-  accepted: {}
+  warnings: []
+  infos: []
+  accepted:
+    splits_dimensions_off_protocol: 'Four windows against the 30 an IID split of 1,035
+      compounds would get (SPLIT-33): the newest half of the data holds 526 compounds,
+      and ten years is the shortest window with about 50 compounds at the newest end.
+      The splits comment names the target, the count reached and what stops more (SPLIT-15;
+      Lennart, 2026-11-26).'
 decisions:
 - PPDB level, toxicity route and source database dropped
 - Ten-year temporal windows on the first publication year
@@ -76,7 +86,7 @@ decisions:
 
 Binary classification of `toxic_to_bees`, scored with `roc_auc` on temporal splits by `first_publication_year` (one step is a year). 1,035 rows and 5 features. Source: Other (2024).
 
-Built as `01a13aff-7eeb-7f10-a83c-d760795b95d5` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:8a2a2b1b0c38c42688da2854203697ed52d5f015477f71c9b3e94dccdbe070cb`, so the build is stale. See [Build](#build).
+Built as `01a218c5-c27b-78af-8eb4-451066234ff7` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -208,7 +218,7 @@ We start with dataset_final.csv of ApisTox from Zenodo (record 13350981): 1,035 
 - Target: `toxic_to_bees` is the file's `label`, "Yes" when the LD50 is at most 11 µg per bee, the US EPA threshold (Methods, Eq. 1).
 - Dropped as recorded with or after the test: `ppdb_level` (the same LD50 cut at 1 and 100 µg), `toxicity_type` (the route with the strongest measured toxicity) and `source` (the database the label came from, which a new candidate does not have).
 - Dropped as identifiers: `name`, `CID` and `CAS`.
-- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). The values are RDKit's canonical form of the source's SMILES (`canonical_smiles`; 17 strings change). Every fragment is kept: 141 compounds are salts or complexes, and stripping them to the largest fragment would make 86 rows copies of another, among them triclopyr and picloram triethylammonium, which both reduce to triethylamine. From 2026-10-14 to 2026-11-01 the definition shipped RDKit's 199 varying descriptors in place of the string. Mean ROC AUC on the 4 windows, LightGBM / random forest: 0.79 / 0.71 with the flags and the year, 0.83 / 0.82 adding the descriptors; the MACCS keys next to them change it by -0.006 / +0.004 (2026-11-01). The SMILES read as text adds 0.010 to LightGBM (character n-grams, standard error 0.023), and the default text embedding of TabArena v0.2 nothing (Assessment of 2026-10-07).
+- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.special.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). The values are RDKit's canonical form of the source's SMILES (`canonical_smiles`; 17 strings change). Every fragment is kept: 141 compounds are salts or complexes, and stripping them to the largest fragment would make 86 rows copies of another, among them triclopyr and picloram triethylammonium, which both reduce to triethylamine. From 2026-10-14 to 2026-11-01 the definition shipped RDKit's 199 varying descriptors in place of the string. Mean ROC AUC on the 4 windows, LightGBM / random forest: 0.79 / 0.71 with the flags and the year, 0.83 / 0.82 adding the descriptors; the MACCS keys next to them change it by -0.006 / +0.004 (2026-11-01). The SMILES read as text adds 0.010 to LightGBM (character n-grams, standard error 0.023), and the default text embedding of TabArena v0.2 nothing (Assessment of 2026-10-07).
 - The four agrochemical flags stay numeric 0/1. All four at 0 is the source's "'unknown' pesticide type" (Methods), so we set those 55 rows to missing. They are more often toxic (29 of 55, against 27% of the rest), and the flags were read in 2024, not at each compound's year.
 - We rename `year` to `first_publication_year`: the year of the earliest article PubChem links to the CID, else the PubChem record's creation date, so some compounds are dated late. We keep the source's years; dropping the affected compounds moves a window's ROC AUC by at most 0.044.
 - `first_publication_year` orders and splits the rows and is no model input (`Temporal(..., time_of="label")`): it arrives with the target, since a candidate screened before its bee test has no literature yet (2026-11-12, Andrej).
@@ -220,7 +230,9 @@ We start with dataset_final.csv of ApisTox from Zenodo (record 13350981): 1,035 
 
 ## Splits
 
-Expanding-window temporal splits on the first publication year: 4 test windows of ten years (2014-2023, 2004-2013, 1994-2003, 1984-1993), newest first; train is every compound dated before the window. The windows hold 54, 106, 118 and 173 compounds (12, 22, 19 and 33 toxic), and their train sides 95%, 85%, 73% and 56% of all compounds. A model trained on the compounds known up to a year predicts the toxicity of the compounds that appear in the next ten years. Ten years is the shortest window with 50 compounds at the newest end (2016-2023 holds 37): new compounds are few in recent years. An IID task of this size would get 10 x 3 splits, but the newest half of the data (from 1977 on) holds only 526 compounds, so four windows of about 50 or more remain.
+Expanding-window temporal splits: 4 test window(s) of 10 time values, starting at 2014, 2004, 1994, 1984, newest first; train is all earlier data. The test windows by `first_publication_year`, as listed: 2014 to 2023 (54 test, 981 train rows); 2004 to 2013 (106 test, 875 train rows); 1994 to 2003 (118 test, 757 train rows); 1984 to 1993 (173 test, 584 train rows).
+
+The windows hold 54, 106, 118 and 173 compounds (12, 22, 19 and 33 toxic), and their train sides 95%, 85%, 73% and 56% of all compounds. A model trained on the compounds known up to a year predicts the toxicity of the compounds that appear in the next ten years. Ten years is the shortest window with 50 compounds at the newest end (2016-2023 holds 37): new compounds are few in recent years. An IID task of this size would get 10 x 3 splits, but the newest half of the data (from 1977 on) holds only 526 compounds, so four windows of about 50 or more remain.
 
 4 repeat(s) x 1 fold(s) with seed 4267; train 584 to 981 rows, test 54 to 173 rows. Prediction horizon: 10 years. The time column `first_publication_year` dates the label, which arrives after the prediction point: it orders and splits the rows, so every training label was known at its window's start, and is no model input (`feature_columns(container)` leaves it out).
 
@@ -274,10 +286,12 @@ New compounds are few in recent years, so ten years is the shortest window that 
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 1 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `splits_below_target`: 4 window(s), against the 30 splits an IID split of 1,035 scored units would get (SPLIT-33). (hint: SPLIT-15 aims at that count and accepts fewer: the splits comment names the target, the count reached and what stops more windows (the use case's horizon or gap, the training floor, the least test window); then accept this warning with it.)
-- **info** `meta_time_horizon_unit`: `time_horizon_unit='years'` implies calendar time, but `time_on='first_publication_year'` has dtype int64, so the horizon cannot be cross-checked. (hint: Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use `time_horizon_unit='steps'` for a plain numeric time index.)
+
+Accepted on purpose:
+
+- `splits_dimensions_off_protocol`: Four windows against the 30 an IID split of 1,035 compounds would get (SPLIT-33): the newest half of the data holds 526 compounds, and ten years is the shortest window with about 50 compounds at the newest end. The splits comment names the target, the count reached and what stops more (SPLIT-15; Lennart, 2026-11-26).
 
 ## Data checks
 
@@ -291,7 +305,7 @@ New compounds are few in recent years, so ten years is the shortest window that 
 | other_agrochemical | category | 55 | 5.31 | 2 | 0.0, 1.0 |
 | toxic_to_bees | category | 0 | 0 | 2 | No, Yes |
 | first_publication_year | int64 | 0 | 0 | 158 | 2005, 1993, 1976, 1991, 1992, 1999, 2002, 1971, 1990, 1961 |
-| SMILES | string | 0 | 0 | 1035 | O=C(O)C(=O)O, O=C(O)c1ccccc1, O=\[Si\]=O, Cc1ccc(C(C)C)cc1, O=S(=O)(c1ccc(Cl)cc1)… |
+| SMILES | string | 0 | 0 | 1035 | CC1(C)CON(Cc2ccc(Cl)cc2Cl)C1=O, O=C(O)C(=O)O, O=C(O)c1ccccc1, O=\[Si\]=O, Cc1ccc(… |
 
 ### Target distribution
 
@@ -313,11 +327,11 @@ New compounds are few in recent years, so ten years is the shortest window that 
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| SMILES | 1 | O=C(O)C(=O)O | 1 | 0.1 |
-| SMILES | 2 | O=C(O)c1ccccc1 | 1 | 0.1 |
-| SMILES | 3 | O=\[Si\]=O | 1 | 0.1 |
-| SMILES | 4 | Cc1ccc(C(C)C)cc1 | 1 | 0.1 |
-| SMILES | 5 | O=S(=O)(c1ccc(Cl)cc1)c1cc(Cl)c(Cl)cc1Cl | 1 | 0.1 |
+| SMILES | 1 | CC1(C)CON(Cc2ccc(Cl)cc2Cl)C1=O | 1 | 0.1 |
+| SMILES | 2 | O=C(O)C(=O)O | 1 | 0.1 |
+| SMILES | 3 | O=C(O)c1ccccc1 | 1 | 0.1 |
+| SMILES | 4 | O=\[Si\]=O | 1 | 0.1 |
+| SMILES | 5 | Cc1ccc(C(C)C)cc1 | 1 | 0.1 |
 | fungicide | 1 | 0.0 | 783 | 75.65 |
 | fungicide | 2 | 1.0 | 197 | 19.03 |
 | fungicide | 3 | &lt;NA> | 55 | 5.31 |
@@ -339,11 +353,10 @@ New compounds are few in recent years, so ten years is the shortest window that 
 
 | field | value |
 |---|---|
-| uuid | 01a13aff-7eeb-7f10-a83c-d760795b95d5 |
-| checksum | v2:4c9968a68e1fd44ad36321446c0f615efb90a4d08f86232d8866a31435f263e4 |
-| built_at | 2026-10-14T15:19:46+00:00 |
-| path | apistox/01a13aff-7eeb-7f10-a83c-d760795b95d5 |
+| uuid | 01a218c5-c27b-78af-8eb4-451066234ff7 |
+| checksum | v2:22a042201f5c7e32ba6009c38b0c1f45244addda035ca16cf543a4de3c535794 |
+| built_at | 2026-11-26T16:52:24+00:00 |
+| path | apistox/01a218c5-c27b-78af-8eb4-451066234ff7 |
 | data_foundry_version | 0.0.5 |
-| git_sha | de9e6adde48a58047e4e9a41f249e28507e48ed3-dirty |
+| git_sha | 0d939f6d218cce0b083c3474f78e93095b5804d0-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8a2a2b1b0c38c42688da2854203697ed52d5f015477f71c9b3e94dccdbe070cb` |

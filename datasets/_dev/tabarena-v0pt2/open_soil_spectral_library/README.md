@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: open_soil_spectral_library
 container_format: 2
-checksum: v2:22b422dcf8a0097e2efd8aa32553a3656a6ae0cea5785362a6081cd5846c7812
+checksum: v2:197bbc95ef83de3deeeeb056e9e544dd79ff9874f7d28ad4b383d4ab95a54987
 build:
-  uuid: 01a1862b-1d5c-7d64-a5ce-76cc983104eb
-  checksum: v2:11b25638601b22b60a19c314b909e58a563ac455faa240266bc5fd65e731f145
-  built_at: '2026-10-29T05:39:30+00:00'
-  path: open_soil_spectral_library/01a1862b-1d5c-7d64-a5ce-76cc983104eb
+  uuid: 01a217fd-d89b-75e6-b08c-abb1e8423f24
+  checksum: v2:197bbc95ef83de3deeeeb056e9e544dd79ff9874f7d28ad4b383d4ab95a54987
+  built_at: '2026-11-26T13:14:14+00:00'
+  path: open_soil_spectral_library/01a217fd-d89b-75e6-b08c-abb1e8423f24
   data_foundry_version: 0.0.5
-  git_sha: 6d189a922994ddb0221c8249d07552d4df8af88b
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
     python: 3.12.3
-    pandas: 3.1.0
-    numpy: 2.5.4
-    pyarrow: 26.0.0
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
     scikit-learn: 1.7.2
-    polars: 2.0.0
-build_stale: true
+    polars: 1.41.1
+build_stale: false
 data:
   n_rows: 75929
   n_features: 1700
@@ -56,6 +56,21 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Whole KSSL survey projects held out (Andrej, 2026-11-12), three repeats
+    of three folds with seed 4267: a test layer''s project, and with it its profile,
+    is never in training, and the laboratory and instrument are the same in training
+    and test. 1,546 groups (1,548 projects, two pairs joined by a shared pedon key),
+    the largest 640 rows; test folds of 22,872 to 27,663 rows over the nine splits.
+    0.46% of test layers have a training neighbour closer than the 5th percentile
+    of the within-profile neighbour distance, against 5.0% under the earlier pedon
+    key. Drift between scan years, a note and not the split (untuned LightGBM, RMSLE
+    on log1p, 2026-11-04): trained on older scans only, cutoffs at 2017, 2018 and
+    2019 score 0.160, 0.183 and 0.194, against 0.144, 0.169 and 0.177 for a control
+    of the same size drawn from any date; trained on scans to 2017 and tested on those
+    of 2018 to 2022, 0.178 against 0.141 for a matched grouped control (26% worse),
+    the later scans under-predicted more at 3 to 12% organic carbon. The scan date
+    is missing for 10,044 rows (13%). Transfer to another instrument and to later
+    scans is untested.'
   n_train:
     min: 48266
     max: 53057
@@ -80,7 +95,7 @@ decisions:
 
 Regression of `log1p_organic_carbon_weight_percent`, scored with `rmsle` on grouped splits by `survey_project`. 75,929 rows and 1,700 features. Source: Other (2023).
 
-Built as `01a1862b-1d5c-7d64-a5ce-76cc983104eb` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:22b422dcf8a0097e2efd8aa32553a3656a6ae0cea5785362a6081cd5846c7812`, so the build is stale. See [Build](#build).
+Built as `01a217fd-d89b-75e6-b08c-abb1e8423f24` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -257,12 +272,11 @@ We start with the lab L1, site L0 and MIR L0 tables of Zenodo record 7599269, v1
 - Preparation audit: 55,855 usable XS scans use S references; 20,043 XN scans use N references; 31 XS scans use the source N fallback. Preserve all usable scan/reference rows and source coalescence; identity harmonization is not an analytical-equivalence claim.
 
 - Curator-requested few-band diagnostics (2026-10-27, on the percent target with all 1,701 bins, before the 600 cm-1 bin was dropped) on three fixed grouped samples found two-band OLS RMSE 5.98 and five-band OLS 4.01 percentage points, versus 1.96 for retained full-spectrum Ridge. Ten training-fitted PCs retained 98.6% of input variance; PCA10 Ridge RMSE was 4.55 and PCA10 LightGBM 2.77, versus full-spectrum LightGBM 2.43. These are bounded, untuned comparisons on identical 5,000-row train/test samples per fold, not full-data rankings or deployed preprocessing. All 1,700 retained bins ship as inputs.
-- Time basis: UnseenGroup (Andrej, 2026-11-13): the source builds its models for scans from soils its library
-  does not hold and tests them on samples kept out of calibration (Safanelli et al. 2025), so the split holds
-  out whole soil profiles. The library's own queue drifts (the scans of 2018 to 2022 score 26% worse than a
-  matched control), which is not the source's question; the split cannot test later scans.
+- Time basis: UnseenGroup (Andrej, 2026-11-13): the source builds its models for scans from soils its library does not hold and tests them on samples kept out of calibration (Safanelli et al. 2025), so the split holds out whole soil profiles. The library's own queue drifts (the scans of 2018 to 2022 score 26% worse than a matched control), which is not the source's question; the split cannot test later scans.
 
 ## Splits
+
+Repeated 3-fold cross-validation keeping each group of `survey_project` whole (shuffled group k-fold, a new draw per repeat): 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 75,929 rows (SPLIT-33).
 
 Whole KSSL survey projects held out (Andrej, 2026-11-12), three repeats of three folds with seed 4267: a test layer's project, and with it its profile, is never in training, and the laboratory and instrument are the same in training and test. 1,546 groups (1,548 projects, two pairs joined by a shared pedon key), the largest 640 rows; test folds of 22,872 to 27,663 rows over the nine splits. 0.46% of test layers have a training neighbour closer than the 5th percentile of the within-profile neighbour distance, against 5.0% under the earlier pedon key. Drift between scan years, a note and not the split (untuned LightGBM, RMSLE on log1p, 2026-11-04): trained on older scans only, cutoffs at 2017, 2018 and 2019 score 0.160, 0.183 and 0.194, against 0.144, 0.169 and 0.177 for a control of the same size drawn from any date; trained on scans to 2017 and tested on those of 2018 to 2022, 0.178 against 0.141 for a matched grouped control (26% worse), the later scans under-predicted more at 3 to 12% organic carbon. The scan date is missing for 10,044 rows (13%). Transfer to another instrument and to later scans is untested.
 
@@ -302,7 +316,7 @@ The KSSL survey project (id.project_ascii_txt, on every row): a soil survey or r
 | nearest neighbour in the same group | 30.3% of the rows (chance: 0.2%) |
 | label variance explained by the group | 0.61 (shuffled groups: 0.02) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Decisions
 
@@ -341,7 +355,7 @@ Organic carbon in weight percent ships as log1p, the scale the source fits and t
 
 0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 129,231,158 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 129,231,158 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to run them; nothing else checks duplicate rows and columns.)
 
 ## Data checks
 
@@ -509,11 +523,10 @@ Organic carbon in weight percent ships as log1p, the scale the source fits and t
 
 | field | value |
 |---|---|
-| uuid | 01a1862b-1d5c-7d64-a5ce-76cc983104eb |
-| checksum | v2:11b25638601b22b60a19c314b909e58a563ac455faa240266bc5fd65e731f145 |
-| built_at | 2026-10-29T05:39:30+00:00 |
-| path | open_soil_spectral_library/01a1862b-1d5c-7d64-a5ce-76cc983104eb |
+| uuid | 01a217fd-d89b-75e6-b08c-abb1e8423f24 |
+| checksum | v2:197bbc95ef83de3deeeeb056e9e544dd79ff9874f7d28ad4b383d4ab95a54987 |
+| built_at | 2026-11-26T13:14:14+00:00 |
+| path | open_soil_spectral_library/01a217fd-d89b-75e6-b08c-abb1e8423f24 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 6d189a922994ddb0221c8249d07552d4df8af88b |
-| libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:22b422dcf8a0097e2efd8aa32553a3656a6ae0cea5785362a6081cd5846c7812` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

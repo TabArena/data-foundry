@@ -1,0 +1,44 @@
+{
+  "target_column_name": "claim_rate",
+  "problem_type": "regression",
+  "objective_metric": {
+    "name": "mean_poisson_deviance",
+    "kind": "standard",
+    "prediction": "value",
+    "greater_is_better": false,
+    "origin": "context",
+    "params": {
+      "min_prediction": 0.001
+    },
+    "inputs": {
+      "weight": "exposure"
+    },
+    "original": null,
+    "reference": null,
+    "definition": "2*sum(w*(y*log(y/p)-y+p))/sum(w), w the optional weight input (1 without it); finite y>=0; p below min_prediction counts as it",
+    "reason": "A claim rate is scored by the Poisson deviance weighted by the years insured (synthetic data).",
+    "target_transform": "identity"
+  },
+  "stratify_on": null,
+  "time_on": null,
+  "grouping": {
+    "on": "customer",
+    "labels": "per_sample",
+    "time_on": null,
+    "definition": "A customer and their policies; new customers are scored, so a customer is held out whole.",
+    "prediction_unit": "row",
+    "aggregation": null,
+    "context": "none"
+  },
+  "scoring_columns": [
+    {
+      "column": "exposure",
+      "role": "weight",
+      "used_by": "mean_poisson_deviance",
+      "description": "years insured: the rate's denominator, known only once the policy period has ended"
+    }
+  ],
+  "special_features": [],
+  "sample_weight": "exposure",
+  "type_adapter_id": "predictive-ml-task-mold-v2"
+}

@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: ecoli_proteins
 container_format: 2
-checksum: v2:ec838ed9b2f3112c894e7c395603669cdafd2f80bc342f7a52f7840f574a6520
+checksum: v2:5ee41b6a0a8392f1c7301ddd6d9b0b738f2446d954fa1973d149c1768788e7e7
 build:
-  uuid: 01a111fc-d4ff-7dda-987a-8119d986e5f1
-  checksum: v2:40d233040dcbf3af5eefe4763b03ce0a9aed28f9a8b2733ccf127668b2c5c642
-  built_at: '2026-10-06T16:12:24+00:00'
-  path: ecoli_proteins/01a111fc-d4ff-7dda-987a-8119d986e5f1
+  uuid: 01a21800-cbd8-7f18-9e37-aa5b1da29dc1
+  checksum: v2:5ee41b6a0a8392f1c7301ddd6d9b0b738f2446d954fa1973d149c1768788e7e7
+  built_at: '2026-11-26T13:17:15+00:00'
+  path: ecoli_proteins/01a21800-cbd8-7f18-9e37-aa5b1da29dc1
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 327
   n_features: 5
@@ -53,6 +53,15 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Grouped 20 x 3 folds on the protein family (219 families, at most 12 proteins;
+    18 unresolved proteins each their own group): a family''s proteins stay on one
+    side, so the model predicts the location of a protein whose relatives it has not
+    seen. One of the 60 test folds lacks the outer-membrane location (20 proteins
+    in few families); log loss is unaffected. The SWISS-PROT entry years (1986-1995)
+    would give three windows only with the 1989-90 window trained on 37%, so the catalogue''s
+    family key decides (SPLIT-37). Against random folds, holding out families costs
+    +0.012 to +0.015 log loss for TabPFN and logistic regression, the ranking unchanged
+    (curation notes).'
   n_train:
     min: 192
     max: 243
@@ -66,8 +75,8 @@ bundle_checks:
   infos:
   - groups_not_clustered
   accepted:
-    splits_test_class_missing: 'One of the 60 family-grouped test folds (r1f2) lacks
-      one of the five locations: the outer-membrane proteins (20) sit in few families,
+    splits_class_missing: 'One of the 60 family-grouped test folds (r1f2) lacks one
+      of the five locations: the outer-membrane proteins (20) sit in few families,
       6 in the TonB-dependent receptors and 4 in the porins, so a fold can draw none.
       The metric is log loss, which a missing class in a test fold does not break
       (Andrej, 2026-11-23).'
@@ -80,7 +89,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on grouped splits by `protein_family`. 327 rows and 5 features. Source: UCI (1996).
 
-Built as `01a111fc-d4ff-7dda-987a-8119d986e5f1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ec838ed9b2f3112c894e7c395603669cdafd2f80bc342f7a52f7840f574a6520`, so the build is stale. See [Build](#build).
+Built as `01a21800-cbd8-7f18-9e37-aa5b1da29dc1` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -214,6 +223,8 @@ We start with the dataset from UCI.
 
 ## Splits
 
+Repeated 3-fold cross-validation keeping each group of `protein_family` whole (shuffled group k-fold, a new draw per repeat), stratified on `class`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 327 rows (SPLIT-33).
+
 Grouped 20 x 3 folds on the protein family (219 families, at most 12 proteins; 18 unresolved proteins each their own group): a family's proteins stay on one side, so the model predicts the location of a protein whose relatives it has not seen. One of the 60 test folds lacks the outer-membrane location (20 proteins in few families); log loss is unaffected. The SWISS-PROT entry years (1986-1995) would give three windows only with the 1989-90 window trained on 37%, so the catalogue's family key decides (SPLIT-37). Against random folds, holding out families costs +0.012 to +0.015 log loss for TabPFN and logistic regression, the ranking unchanged (curation notes).
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 192 to 243 rows, test 84 to 135 rows.
@@ -308,17 +319,17 @@ One group is a protein family: the UniProt protein family of the protein's SWISS
 | nearest neighbour in the same group | 1.5% of the rows (chance: 0.6%) |
 | label variance explained by the group | 0.92 (shuffled groups: 0.67) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
 0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
-- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (1.5% of nearest neighbours vs 0.6%), and the group explains no more of the label than shuffled groups (0.92 vs 0.67). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.)
+- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (1.5% of nearest neighbours vs 0.6%), and the group explains no more of the label than shuffled groups (0.92 vs 0.67). (hint: The grouping may not be needed: compare IID and grouped scores with `data-foundry probe group`.)
 
 Accepted on purpose:
 
-- `splits_test_class_missing`: One of the 60 family-grouped test folds (r1f2) lacks one of the five locations: the outer-membrane proteins (20) sit in few families, 6 in the TonB-dependent receptors and 4 in the porins, so a fold can draw none. The metric is log loss, which a missing class in a test fold does not break (Andrej, 2026-11-23).
+- `splits_class_missing`: One of the 60 family-grouped test folds (r1f2) lacks one of the five locations: the outer-membrane proteins (20) sit in few families, 6 in the TonB-dependent receptors and 4 in the porins, so a fold can draw none. The metric is log loss, which a missing class in a test fold does not break (Andrej, 2026-11-23).
 
 ## Data checks
 
@@ -379,11 +390,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-d4ff-7dda-987a-8119d986e5f1 |
-| checksum | v2:40d233040dcbf3af5eefe4763b03ce0a9aed28f9a8b2733ccf127668b2c5c642 |
-| built_at | 2026-10-06T16:12:24+00:00 |
-| path | ecoli_proteins/01a111fc-d4ff-7dda-987a-8119d986e5f1 |
+| uuid | 01a21800-cbd8-7f18-9e37-aa5b1da29dc1 |
+| checksum | v2:5ee41b6a0a8392f1c7301ddd6d9b0b738f2446d954fa1973d149c1768788e7e7 |
+| built_at | 2026-11-26T13:17:15+00:00 |
+| path | ecoli_proteins/01a21800-cbd8-7f18-9e37-aa5b1da29dc1 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ec838ed9b2f3112c894e7c395603669cdafd2f80bc342f7a52f7840f574a6520` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

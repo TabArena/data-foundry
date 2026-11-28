@@ -98,13 +98,13 @@ read each file) and a `README.txt`. It is a local backup for the user: never add
 * a dated `CHANGELOG.md` entry, newest first: what was rebuilt and why, crashes and their fixes, the open warnings
   (count and datasets), and the verification of steps 2 and 3;
 * the open items the build raised, in the same `CHANGELOG.md` entry and in the affected records (an issue in the
-  record's `## Review` when the curator has to decide), and, when datasets were removed, the counts in `AGENTS.md` and
-  `datasets/README.md`.
+  record's `## Review` when the curator has to decide). The docs list no dataset counts, so a removed dataset changes
+  none of them.
 
 ## Step 6: the task-probe sweep (when rows or splits changed)
 
 ```bash
-.venv/bin/python .claude/skills/knowledge-data-foundry/scripts/task_probes.py --all --built --jobs 8 --out $OUT/probes
+.venv/bin/data-foundry probe task --all --built --jobs 8 --out $OUT/probes
 ```
 
 The sweep's output stays in `$OUT/probes` (`summary.md` and one JSON per dataset); nothing of it goes into git. A

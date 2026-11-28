@@ -3,9 +3,6 @@ unique_name: pheochromocytoma_paraganglioma_metastasis
 name: Metastatic pheochromocytoma and paraganglioma (Pamporaki et al. 2023, Zenodo 7749613)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 decision_markers:

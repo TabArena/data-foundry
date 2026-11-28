@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: gallstone_disease
 container_format: 2
-checksum: v2:f9b45454de645a08149b7aef32c642880f2366f5f056c7a8764c3adfcc83a313
+checksum: v2:cdbd3585c60d587384d9efc7d25c1768f7dbed4341e5f9017b8f2e517ca33425
 build:
-  uuid: 01a111fc-d8af-7a12-816b-905e5085bf7f
-  checksum: v2:087c399da17c83e68663c6f18d35bedf6a650bb478ce9752985712430fe71520
-  built_at: '2026-10-06T16:12:25+00:00'
-  path: gallstone_disease/01a111fc-d8af-7a12-816b-905e5085bf7f
+  uuid: 01a21800-cb61-7bec-aaa2-51c672ba7e55
+  checksum: v2:cdbd3585c60d587384d9efc7d25c1768f7dbed4341e5f9017b8f2e517ca33425
+  built_at: '2026-11-26T13:17:15+00:00'
+  path: gallstone_disease/01a21800-cb61-7bec-aaa2-51c672ba7e55
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36-dirty
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 242
   n_features: 37
@@ -47,6 +47,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 161
     max: 162
@@ -70,7 +71,7 @@ decisions:
 
 Binary classification of `Gallstone Status`, scored with `roc_auc` on IID splits. 242 rows and 37 features. Source: UCI (2025).
 
-Built as `01a111fc-d8af-7a12-816b-905e5085bf7f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f9b45454de645a08149b7aef32c642880f2366f5f056c7a8764c3adfcc83a313`, so the build is stale. See [Build](#build).
+Built as `01a21800-cb61-7bec-aaa2-51c672ba7e55` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -214,7 +215,7 @@ We start with dataset-uci.xlsx from UCI: 319 outpatients, the 161 without gallst
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `Gallstone Status`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 242 rows (SPLIT-33).
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 161 to 162 rows, test 80 to 81 rows.
 
@@ -442,11 +443,10 @@ Vitamin D and visceral muscle area along the file; the filled cells lie on strai
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-d8af-7a12-816b-905e5085bf7f |
-| checksum | v2:087c399da17c83e68663c6f18d35bedf6a650bb478ce9752985712430fe71520 |
-| built_at | 2026-10-06T16:12:25+00:00 |
-| path | gallstone_disease/01a111fc-d8af-7a12-816b-905e5085bf7f |
+| uuid | 01a21800-cb61-7bec-aaa2-51c672ba7e55 |
+| checksum | v2:cdbd3585c60d587384d9efc7d25c1768f7dbed4341e5f9017b8f2e517ca33425 |
+| built_at | 2026-11-26T13:17:15+00:00 |
+| path | gallstone_disease/01a21800-cb61-7bec-aaa2-51c672ba7e55 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:f9b45454de645a08149b7aef32c642880f2366f5f056c7a8764c3adfcc83a313` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36-dirty |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

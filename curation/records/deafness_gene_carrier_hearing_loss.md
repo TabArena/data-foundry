@@ -3,9 +3,6 @@ unique_name: deafness_gene_carrier_hearing_loss
 name: Hearing loss among carriers of GJB2/SLC26A4/MT-RNR1 variants (Luo et al. 2021, Mendeley 6mh8mpnbgv)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 1
 decision_markers:

@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: lung_adenocarcinoma_metastasis
 container_format: 2
-checksum: v2:3a38875be946cbcdc2bfe64ea2e72ef9211c3cded55b3bdb8b7d48165545b612
+checksum: v2:59a534733a457bfa993d02df2870ba758ac7f2c81d25c1bc7920fa4209737090
 build:
-  uuid: 01a111fa-f2d2-7673-a757-142728cdfd4c
-  checksum: v2:6972b53e8d88f2ce4f384612e30af8d5814ee00e2631e91f51f8f322b97a51d0
-  built_at: '2026-10-06T16:10:40+00:00'
-  path: lung_cancer/01a111fa-f2d2-7673-a757-142728cdfd4c
+  uuid: 01a217ff-0adb-746b-9d0e-9efab95cf35d
+  checksum: v2:59a534733a457bfa993d02df2870ba758ac7f2c81d25c1bc7920fa4209737090
+  built_at: '2026-11-26T13:15:31+00:00'
+  path: lung_adenocarcinoma_metastasis/01a217ff-0adb-746b-9d0e-9efab95cf35d
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 123
   n_features: 12561
@@ -46,6 +46,13 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Random patients, stratified on the target: each row is the one tumour of
+    one patient (the normal lung of patient 268 is not a row), so no grouping is needed.
+    5 metastases fall in each test fold of a 3-fold split; 5 folds would leave 3.
+    The 6 IVT batches and 10 scan days hold 0 to 4 metastases each, and folds grouped
+    by either score as the random split does (random forest pooled ROC AUC over 5
+    seeds of grouped 3-fold: by batch 0.856 to 0.897, by scan day 0.868 to 0.903;
+    the shipped 20 random repeats 0.872; review panel, 2026-11-11).'
   n_train:
     min: 82
     max: 82
@@ -74,7 +81,7 @@ decisions: []
 
 Binary classification of `Metastasis`, scored with `roc_auc` on IID splits. 123 rows and 12,561 features. Source: Other (2001).
 
-Built as `01a111fa-f2d2-7673-a757-142728cdfd4c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3a38875be946cbcdc2bfe64ea2e72ef9211c3cded55b3bdb8b7d48165545b612`, so the build is stale. See [Build](#build).
+Built as `01a217ff-0adb-746b-9d0e-9efab95cf35d` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -213,10 +220,12 @@ The first 5 of 123 rows of the final frame (random rows: the frame is shuffled);
 - Source: GEO GSE83227, the study's deposit of all 254 arrays (Affymetrix HG-U95Av2), each with its raw scan, its MAS5 output and the specimen's histology; the caArray archive in the same series holds the annotation sheet and the paper (13790.pdf). The paper's Dataset A (PNAS supplement; OpenML 45093 is a copy) averages up to four arrays per adenocarcinoma patient and uses MAS4 values.
 - CC (2026-11-10, Andrej): rebuilt from GEO. One array per tumour, the first piece and first hybridisation (the first title in sorted order: `157T1` before `157T2`, `347T1-1` before `347T1-2`), because a lab profiles a new specimen once; the value is the array's MAS5 `Signal`, scaled on that array alone, so no test array depends on the training arrays.
 - Array choice (review panel, 2026-11-11): the first title in GEO's sorted order is not always the first hybridisation. For the 10 tumours titled `-1`/`-2` (AD131, AD183, AD255, AD301, AD338, AD340, AD341, AD346, AD347, AD350; two of them metastases) it is the later preparation, and the study's own Dataset A names the other array `Sample1`; the shipped array is the study's `Sample1` for 113 of the 123 tumours. Taking `Sample1` throughout moves no score (random forest 0.879 to 0.870, logistic regression 0.844 to 0.833, within the noise).
-- Time basis: Timeless: whether a resected tumour started in the lung or elsewhere does not change; the profiles were measured on banked specimens for one study (the 123 arrays scanned between 16 March and 17 April 2001, the study's last on 25 April), so when a tumour was resected plays no role. Not tested: tumours from another hospital, or arrays processed in another laboratory.
 - CC (2026-11-11, Lennart): the second review panel's decisions: USE-1 amended on this case (the use case names the expression tissue-of-origin test as the pathologist's second opinion), kept at 15 metastases (5 per test fold), and the nine agreed fixes (age, sex and pack-years as features, the target as No / Yes, the notes on the negatives, the four positives staged as primaries, the recording mechanism, and the claim corrections); the declared metric, ROC AUC (fallback), is checked.
+- Time basis: Timeless: whether a resected tumour started in the lung or elsewhere does not change; the profiles were measured on banked specimens for one study (the 123 arrays scanned between 16 March and 17 April 2001, the study's last on 25 April), so when a tumour was resected plays no role. Not tested: tumours from another hospital, or arrays processed in another laboratory.
 
 ## Splits
+
+Repeated 3-fold cross-validation over the rows, stratified on `Metastasis`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 123 rows (SPLIT-33).
 
 Random patients, stratified on the target: each row is the one tumour of one patient (the normal lung of patient 268 is not a row), so no grouping is needed. 5 metastases fall in each test fold of a 3-fold split; 5 folds would leave 3. The 6 IVT batches and 10 scan days hold 0 to 4 metastases each, and folds grouped by either score as the random split does (random forest pooled ROC AUC over 5 seeds of grouped 3-fold: by batch 0.856 to 0.897, by scan day 0.868 to 0.903; the shipped 20 random repeats 0.872; review panel, 2026-11-11).
 
@@ -466,11 +475,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fa-f2d2-7673-a757-142728cdfd4c |
-| checksum | v2:6972b53e8d88f2ce4f384612e30af8d5814ee00e2631e91f51f8f322b97a51d0 |
-| built_at | 2026-10-06T16:10:40+00:00 |
-| path | lung_cancer/01a111fa-f2d2-7673-a757-142728cdfd4c |
+| uuid | 01a217ff-0adb-746b-9d0e-9efab95cf35d |
+| checksum | v2:59a534733a457bfa993d02df2870ba758ac7f2c81d25c1bc7920fa4209737090 |
+| built_at | 2026-11-26T13:15:31+00:00 |
+| path | lung_adenocarcinoma_metastasis/01a217ff-0adb-746b-9d0e-9efab95cf35d |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:3a38875be946cbcdc2bfe64ea2e72ef9211c3cded55b3bdb8b7d48165545b612` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

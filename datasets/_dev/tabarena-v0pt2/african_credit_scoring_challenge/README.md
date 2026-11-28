@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: african_credit_scoring_challenge
 container_format: 2
-checksum: v2:cdfdc32980b138972a0ac79c62c63d64e03f4fafc73fff90d02a69a287909b8a
-build: null
+checksum: v2:d49b2c4678697db5426eb1a4b3500217421371683cfef9cdd9e5341271a73102
+build:
+  uuid: 01a21800-7bb1-7187-9a2f-49cb040fc3f6
+  checksum: v2:d49b2c4678697db5426eb1a4b3500217421371683cfef9cdd9e5341271a73102
+  built_at: '2026-11-26T13:16:56+00:00'
+  path: african_credit_scoring_challenge/01a21800-7bb1-7187-9a2f-49cb040fc3f6
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 52826
@@ -35,6 +48,20 @@ splits:
   time_horizon_unit: days
   time_gap: null
   time_gap_unit: null
+  reason: 'A lender scores each loan when it is disbursed and refits on the loans
+    whose outcome it knows, at least once a month; the six windows hold about a week
+    of loans each (6-11 days, the declared horizon 7 days). A loan''s label counts
+    as known 30 days after its due date, so each training side holds the loans whose
+    due date lies more than 30 days before the window starts; the loans of the five
+    weeks before a window are not in its training side. Six windows of about equal
+    numbers of rows cover the end of the product''s lending, newest first, from the
+    first day by which half of the rows have a settled label to the last Type_1 loan
+    on 2022-12-01; they hold 18-22 default rows each. Six of the nine windows an IID
+    split of this size would get: a label settles 37 days after disbursement, so only
+    the loans from 15 October 2022 have half the rows settled before them, and those
+    48 days hold six windows of about a week (Andrej, 2026-11-19). The 2022 windows
+    leave out the 8-18% of the rows of their dates whose lender funds less than one
+    unit (curation comments).'
   n_train:
     min: 26490
     max: 39722
@@ -49,10 +76,10 @@ bundle_checks:
   - dataset_duplicate_rows
   - dataset_conflicting_duplicate_rows
   accepted:
-    splits_below_target: 'Six of the nine windows an IID split of this size would
-      get: a label settles 37 days after disbursement, so only the loans from 15 October
-      2022 have half the rows settled before them, and those 48 days hold six windows
-      of about a week (Andrej, 2026-11-19).'
+    splits_dimensions_off_protocol: 'Six of the nine windows an IID split of this
+      size would get: a label settles 37 days after disbursement, so only the loans
+      from 15 October 2022 have half the rows settled before them, and those 48 days
+      hold six windows of about a week (Andrej, 2026-11-19).'
 decisions:
 - 'Total_Amount_to_Repay and Lender_portion_to_be_repaid are dropped: recorded after
   the outcome'
@@ -68,7 +95,7 @@ decisions:
 
 Binary classification of `default`, scored with `roc_auc` on temporal splits by `disbursement_date`. 52,826 rows and 8 features. Source: Zindi (2024).
 
-Not built yet. The current definition gives checksum `v2:cdfdc32980b138972a0ac79c62c63d64e03f4fafc73fff90d02a69a287909b8a`.
+Built as `01a21800-7bb1-7187-9a2f-49cb040fc3f6` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -219,6 +246,8 @@ We start with Train.csv of the Zindi African Credit Scoring Challenge, from a Ka
 
 ## Splits
 
+Custom temporal splits (`_make_splits`): 6 test window(s), each with its own train side. The test windows by `disbursement_date`, as listed: 2022-11-21 to 2022-12-01 (2,427 test, 39,722 train rows); 2022-11-14 to 2022-11-19 (1,952 test, 37,453 train rows); 2022-11-04 to 2022-11-12 (2,446 test, 33,785 train rows); 2022-10-27 to 2022-11-03 (2,274 test, 31,043 train rows); 2022-10-21 to 2022-10-26 (2,184 test, 28,746 train rows); 2022-10-15 to 2022-10-20 (1,821 test, 26,490 train rows).
+
 A lender scores each loan when it is disbursed and refits on the loans whose outcome it knows, at least once a month; the six windows hold about a week of loans each (6-11 days, the declared horizon 7 days). A loan's label counts as known 30 days after its due date, so each training side holds the loans whose due date lies more than 30 days before the window starts; the loans of the five weeks before a window are not in its training side. Six windows of about equal numbers of rows cover the end of the product's lending, newest first, from the first day by which half of the rows have a settled label to the last Type_1 loan on 2022-12-01; they hold 18-22 default rows each. Six of the nine windows an IID split of this size would get: a label settles 37 days after disbursement, so only the loans from 15 October 2022 have half the rows settled before them, and those 48 days hold six windows of about a week (Andrej, 2026-11-19). The 2022 windows leave out the 8-18% of the rows of their dates whose lender funds less than one unit (curation comments).
 
 6 repeat(s) x 1 fold(s) with seed 4267; train 26,490 to 39,722 rows, test 1,821 to 2,446 rows. Prediction horizon: 7 days.
@@ -309,7 +338,7 @@ Six windows of about equal numbers of rows run from the first day by which half 
 
 Accepted on purpose:
 
-- `splits_below_target`: Six of the nine windows an IID split of this size would get: a label settles 37 days after disbursement, so only the loans from 15 October 2022 have half the rows settled before them, and those 48 days hold six windows of about a week (Andrej, 2026-11-19).
+- `splits_dimensions_off_protocol`: Six of the nine windows an IID split of this size would get: a label settles 37 days after disbursement, so only the loans from 15 October 2022 have half the rows settled before them, and those 48 days hold six windows of about a week (Andrej, 2026-11-19).
 
 ## Data checks
 
@@ -374,4 +403,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a21800-7bb1-7187-9a2f-49cb040fc3f6 |
+| checksum | v2:d49b2c4678697db5426eb1a4b3500217421371683cfef9cdd9e5341271a73102 |
+| built_at | 2026-11-26T13:16:56+00:00 |
+| path | african_credit_scoring_challenge/01a21800-7bb1-7187-9a2f-49cb040fc3f6 |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

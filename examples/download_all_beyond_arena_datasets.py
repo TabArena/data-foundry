@@ -23,8 +23,9 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from data_foundry.collections import BEYOND_ARENA, get_collection, list_collections
 from tqdm import tqdm
+
+from data_foundry.collections import BEYOND_ARENA, get_collection, list_collections
 
 
 def print_collection_overview() -> None:

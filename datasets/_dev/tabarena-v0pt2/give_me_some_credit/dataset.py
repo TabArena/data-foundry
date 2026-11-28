@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, Source, TaskSummary, TimeBasis, set_missing
+
+from data_foundry.definition import AbstractCuratedDataset, Metric, Source, TaskSummary, TimeBasis, set_missing
 
 LATE_COUNTERS = [
     "NumberOfTime30-59DaysPastDueNotWorse",

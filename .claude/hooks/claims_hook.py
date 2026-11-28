@@ -5,7 +5,8 @@ Wired in ``.claude/settings.json``:
 * ``SessionStart``: fetches the board and adds it to the session's context: the other curators' claims, your own,
   and yours that expire within two days.
 * ``PreToolUse`` on ``Edit|Write|NotebookEdit``: when the file belongs to a dataset (``curation/records/<name>.md``
-  or ``datasets/_dev/<copy>/<name>/...``) that another curator holds, shows a warning to the user and to the agent.
+  or ``datasets/_dev/<copy>/<name>/...``; a folder sub-sampled to a row budget, ``<name>_1m``, belongs to the
+  record ``<name>``) that another curator holds, shows a warning to the user and to the agent.
   It never allows or denies anything: claims are advisory, and the normal permission flow goes on.
 
 The board is re-fetched at most every 60 s (else the cache of the last fetch is used). The hook fails open: without
@@ -17,21 +18,34 @@ from __future__ import annotations
 import json
 import re
 import sys
+from pathlib import Path
 
 PATTERNS = (
     re.compile(r"/curation/records/([^/]+)\.md$"),
     re.compile(r"/datasets/_dev/[^/]+/([^/_.][^/]*)/"),
 )
+BUDGET_FOLDER = re.compile(r"(.+)_\d+(?:p\d+)?[km]")
+"""A folder sub-sampled to a row budget (``_1m``, ``_2p5m``, ``_300k``), as ``curation/notebooks.py`` matches it."""
 MAX_NAMES = 60
 
 
 def dataset_of(path: str) -> str | None:
-    """The dataset a file belongs to, or ``None``."""
+    """The dataset (the record's name, which keys its claim) a file belongs to, or ``None``.
+
+    A v2 folder ``<name>_<budget>`` maps to the record ``<name>``, unless a record named after the folder itself
+    exists in the same repository.
+    """
     path = path.replace("\\", "/")
     for pattern in PATTERNS:
         match = pattern.search(path)
-        if match:
-            return match.group(1)
+        if not match:
+            continue
+        name = match.group(1)
+        budget = BUDGET_FOLDER.fullmatch(name) if pattern is PATTERNS[1] else None
+        if budget is None:
+            return name
+        records = Path(path[: path.index("/datasets/_dev/")]) / "curation" / "records"
+        return name if (records / f"{name}.md").is_file() else budget.group(1)
     return None
 
 

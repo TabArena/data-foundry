@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: blood_transfusion
 container_format: 2
-checksum: v2:0c8272d4433aae38f74eac1e434fe9e22476e4b35851a562ee7bdb4c39a66ce9
+checksum: v2:c5f3cf5941a09ad9e8c81ac6cbb6125045cffb7cabf6299550dfdc257726946d
 build:
-  uuid: 01a111fc-c9d3-70c1-ba1b-e4fe45899e78
-  checksum: v2:93e47e5b3ee11c67bcf87fbe3b8ae254f20261fc075653dfb34ccfb96d326847
-  built_at: '2026-10-06T16:12:21+00:00'
-  path: blood_transfusion/01a111fc-c9d3-70c1-ba1b-e4fe45899e78
+  uuid: 01a21800-b86c-7f87-bedc-29f47fb6d9df
+  checksum: v2:c5f3cf5941a09ad9e8c81ac6cbb6125045cffb7cabf6299550dfdc257726946d
+  built_at: '2026-11-26T13:17:10+00:00'
+  path: blood_transfusion/01a21800-b86c-7f87-bedc-29f47fb6d9df
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 748
   n_features: 3
@@ -46,6 +46,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 498
     max: 499
@@ -69,7 +70,7 @@ decisions: []
 
 Binary classification of `DonatedBloodInMarch2007`, scored with `roc_auc` on IID splits. 748 rows and 3 features. Source: UCI (2008).
 
-Built as `01a111fc-c9d3-70c1-ba1b-e4fe45899e78` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:0c8272d4433aae38f74eac1e434fe9e22476e4b35851a562ee7bdb4c39a66ce9`, so the build is stale. See [Build](#build).
+Built as `01a21800-b86c-7f87-bedc-29f47fb6d9df` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -196,7 +197,7 @@ The first 5 of 748 rows of the final frame (random rows: the frame is shuffled).
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `DonatedBloodInMarch2007`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 748 rows (SPLIT-33).
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 498 to 499 rows, test 249 to 250 rows.
 
@@ -312,11 +313,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-c9d3-70c1-ba1b-e4fe45899e78 |
-| checksum | v2:93e47e5b3ee11c67bcf87fbe3b8ae254f20261fc075653dfb34ccfb96d326847 |
-| built_at | 2026-10-06T16:12:21+00:00 |
-| path | blood_transfusion/01a111fc-c9d3-70c1-ba1b-e4fe45899e78 |
+| uuid | 01a21800-b86c-7f87-bedc-29f47fb6d9df |
+| checksum | v2:c5f3cf5941a09ad9e8c81ac6cbb6125045cffb7cabf6299550dfdc257726946d |
+| built_at | 2026-11-26T13:17:10+00:00 |
+| path | blood_transfusion/01a21800-b86c-7f87-bedc-29f47fb6d9df |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:0c8272d4433aae38f74eac1e434fe9e22476e4b35851a562ee7bdb4c39a66ce9` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

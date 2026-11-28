@@ -74,6 +74,8 @@ CC (2026-11-11, Lennart): accepted `time_newest_period_short` with its reason (c
 
 CC (2026-11-19, Andrej): a one-month gap before each test quarter (Review issue 3, B): the 30 days before a quarter improve log loss by 0.004 to 0.017 at equal training size, a shortcut a refit at the quarter's start would not have.
 
+CC (2026-11-26, Lennart): task-probe flag `no_spread` after the rebuild of 2026-11-26: kept as shipped (TP-3). The tuned configurations spread from log loss 0.410 to 0.565; the probe's flag rests on the untuned linear model's swings over the three windows.
+
 ## Review
 
 **Outcome:** added as `consumer_complaints_1m`. In the working copy since the migration. Resolved on 2026-11-10: the

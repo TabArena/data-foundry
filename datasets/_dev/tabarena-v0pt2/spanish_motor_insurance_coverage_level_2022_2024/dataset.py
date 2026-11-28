@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -236,15 +237,14 @@ class SpanishMotorInsuranceCoverageLevel20222024(AbstractCuratedDataset):
             "largest of 354,091 policy-years hold 75% of the year costs' sum of squares). The Gini sees neither the "
             "level nor the spread of the predicted costs; pricing sets the level separately."
         ),
-        inputs={"weight": "actual_exposure"},
         target_transform="log1p",
     )
-    sample_weight = "actual_exposure"
     scoring_columns = (
         ScoringColumn(
             column="actual_exposure",
             role="weight",
             used_by="normalized_weighted_gini",
+            fit=True,
             description=(
                 "the policy-year's time on risk as recorded (`total_exposure` of the release: days in force over 365, "
                 "in years), realized: shorter when the policy starts or is cancelled during the year. The cost per "

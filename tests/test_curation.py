@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import dataclasses
 import http.client
 import json
 import os
 import threading
+import time
 from collections.abc import Iterator
 from functools import partial
 from http.server import ThreadingHTTPServer
@@ -14,19 +16,23 @@ from pathlib import Path
 import pandas as pd
 import pydantic
 import pytest
-from data_foundry.curation import exporter, notebooks
+
+from data_foundry.curation import claims, exporter, notebooks
 from data_foundry.curation._paths import DATA_FOUNDRY_CURATION_ENV
 from data_foundry.curation.app import (
     GUIDELINE_SKILLS,
+    MTIME_KEY,
     START_DOC,
     START_REPO_PATH,
     START_SECTION,
     CurationHandler,
     _docs_payload,
+    _records_changed_payload,
     _records_payload,
     _schema_payload,
     _version_payload,
 )
+from data_foundry.curation.cli import main as cli_main
 from data_foundry.curation.notebooks import resolve_notebook, sync_notebook_paths
 from data_foundry.curation.record import (
     FIELDS,
@@ -36,6 +42,7 @@ from data_foundry.curation.record import (
 )
 from data_foundry.curation.site import build_site
 from data_foundry.curation.store import (
+    RecordFormatError,
     load_all,
     load_record,
     markdown_to_record,
@@ -87,7 +94,7 @@ def test_the_review_is_a_section_of_its_own(sample_record: CurationRecord) -> No
     the record is the one source of a dataset's curation); the flat view leaves it out (a sheet cell holds 50,000
     characters).
     """
-    from data_foundry.curation.exporter import to_dataframe  # noqa: PLC0415
+    from data_foundry.curation.exporter import to_dataframe
 
     text = record_to_markdown(sample_record)
     assert text.index("## Comments") < text.index("## Review") < text.index("## Reference")
@@ -226,6 +233,74 @@ def test_missing_front_matter_raises() -> None:
         markdown_to_record("# just a body\n\nno front matter here")
 
 
+_HEAD = "---\nunique_name: x\nname: X\ntype_adapter_id: curation-record-v1\n---\n"
+
+
+def test_text_before_the_first_section_is_an_error_not_dropped(tmp_path: Path) -> None:
+    """Stray text between the front matter and the first section used to vanish on the next save."""
+    path = tmp_path / "x.md"
+    path.write_text(_HEAD + "\nA stray note.\n\n## Comments\n\nhi\n", encoding="utf-8")
+    with pytest.raises(RecordFormatError, match=r"x\.md: text before the first section \(line 7\)"):
+        load_record(path)
+
+
+def test_a_section_heading_twice_is_an_error(tmp_path: Path) -> None:
+    """A second ``## Review`` used to overwrite the first, and a heading line inside the comments cut them there."""
+    path = tmp_path / "x.md"
+    path.write_text(_HEAD + "\n## Review\n\nold\n\n## Comments\n\nc\n\n## Review\n\nnew\n", encoding="utf-8")
+    with pytest.raises(RecordFormatError, match=r"x\.md: the heading '## Review' appears twice \(lines 7 and 15\)"):
+        load_record(path)
+    rec = _record("x", comments="intro\n\n## Review\n\nquoted old review", review="REAL REVIEW")
+    with pytest.raises(RecordFormatError, match="comments text has a line '## Review'"):
+        save_record(rec, tmp_path)
+    assert "REAL" not in path.read_text(encoding="utf-8")  # refused before anything was written
+    other = _record("y", comments="### Review of the source\n\n## Reviewed by\n\nok")  # not a section heading
+    assert load_record(save_record(other, tmp_path)) == other
+
+
+def test_a_crlf_record_loads() -> None:
+    """A record saved with Windows line endings parses like the LF one."""
+    text = _HEAD + "\n## Comments\n\nline one\nline two\n\n## Reference\n\nref\n"
+    rec = markdown_to_record(text.replace("\n", "\r\n"))
+    assert rec == markdown_to_record(text)
+    assert rec.comments == "line one\nline two"
+
+
+def test_a_reader_never_sees_a_half_written_record(tmp_path: Path) -> None:
+    """Records are written through a temporary file and a rename, so a reader during a write sees one whole file."""
+    rec = _record("x", review="r" * 300_000)
+    save_record(rec, tmp_path)
+    stop = threading.Event()
+
+    def writer() -> None:
+        while not stop.is_set():
+            save_record(rec, tmp_path)
+
+    thread = threading.Thread(target=writer)
+    thread.start()
+    failures, reads, end = 0, 0, time.monotonic() + 1.0
+    try:
+        while time.monotonic() < end:
+            reads += 1
+            try:
+                assert load_record(tmp_path / "x.md") == rec
+            except (AssertionError, RecordFormatError):
+                failures += 1
+    finally:
+        stop.set()
+        thread.join()
+    assert failures == 0, f"{failures} of {reads} reads saw a partial file"
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["x.md"]  # no temporary file left behind
+
+
+def test_export_to_a_file_needs_an_output_path(capsys: pytest.CaptureFixture[str]) -> None:
+    """``export --format csv`` without a path is a usage error, not a TypeError."""
+    with pytest.raises(SystemExit) as exc:
+        cli_main(["export", "--format", "csv"])
+    assert exc.value.code == 2
+    assert "the following arguments are required: output" in capsys.readouterr().err
+
+
 def test_unknown_vocab_values(sample_record: CurationRecord) -> None:
     """Values outside the vocabulary are reported per field."""
     vocab = {"problem_type": ["Regression"], "domain": ["chemistry & material science"]}
@@ -234,25 +309,10 @@ def test_unknown_vocab_values(sample_record: CurationRecord) -> None:
     assert "domain" not in unknown  # this value is allowed
 
 
-def test_a_wip_state_and_its_claim_go_together() -> None:
-    """A WIP state without a claim, or a claim without a WIP state, puts the record in the Review queue."""
-    vocab = {"claimed_by": ["Lennart"], "data_foundry_status": ["WIP (DF)"], "suggestion": ["Yes"]}
-    claimed = _record("a", suggestion="Yes", data_foundry_status=["WIP (DF)"], claimed_by="Lennart")
-    unclaimed = _record("b", suggestion="Yes", data_foundry_status=["WIP (DF)"])
-    left_behind = _record("c", suggestion="Yes", claimed_by="Lennart")
-
-    assert claimed.review_reasons(vocab) == []
-    assert unclaimed.review_reasons(vocab) == ["wip_unclaimed"]
-    assert left_behind.review_reasons(vocab) == ["claim_without_wip"]
-
-
-def test_claimed_by_sits_next_to_the_wip_state_in_the_front_matter() -> None:
-    """The claim is written right after the Data Foundry state and survives a round trip."""
-    record = _record("a", suggestion="Yes", data_foundry_status=["WIP (DF)"], claimed_by="Lennart")
-    text = record_to_markdown(record)
-
-    assert text.index("data_foundry_status:") < text.index("claimed_by: Lennart") < text.index("suggestion:")
-    assert markdown_to_record(text).claimed_by == "Lennart"
+def test_a_record_carries_no_claim() -> None:
+    """Claims live on the claims board only: a record refuses a ``claimed_by`` field."""
+    with pytest.raises(pydantic.ValidationError, match="claimed_by"):
+        markdown_to_record("---\nunique_name: a\nname: a\nclaimed_by: Lennart\n---\n")
 
 
 def test_repo_vocabularies_load() -> None:
@@ -281,7 +341,7 @@ def test_exporter_dataframe(tmp_path, sample_record: CurationRecord) -> None:
 
 
 def test_exporter_keeps_priority_an_integer_column(tmp_path, sample_record: CurationRecord) -> None:
-    """Priority and Source Row stay nullable integers: empty where unset, and the Parquet export still writes."""
+    """Priority and Source Row stay nullable integers: empty where unset, and the XLSX export still writes."""
     records = tmp_path / "records"
     save_record(sample_record, records)
     save_record(_record("unscreened"), records)
@@ -295,8 +355,8 @@ def test_exporter_keeps_priority_an_integer_column(tmp_path, sample_record: Cura
     csv = exporter.export_csv(tmp_path / "out.csv", records).read_text(encoding="utf-8").splitlines()
     header = csv[0].split(",")
     assert csv[1].split(",")[header.index("Priority")] == "4"
-    pytest.importorskip("pyarrow")
-    back = pd.read_parquet(exporter.export_parquet(tmp_path / "out.parquet", records))
+    pytest.importorskip("openpyxl")
+    back = pd.read_excel(exporter.export_xlsx(tmp_path / "out.xlsx", records))
     assert back.set_index("unique_name").loc["musk", "Priority"] == 4
 
 
@@ -639,6 +699,126 @@ def test_server_saves_a_priority(server: int, guideline_repo: Path, sample_recor
 
     assert _put(server, "/api/records/musk", {"priority": None})[0] == 200
     assert "priority:" not in path.read_text(encoding="utf-8")
+
+
+def test_server_edits_one_record_even_when_another_is_broken(server: int, guideline_repo: Path) -> None:
+    """An edit reads only its own record (it used to load all of them, and failed on any broken file)."""
+    records = guideline_repo / "curation" / "records"
+    path = save_record(_record("a"), records)
+    (records / "broken.md").write_text("no front matter", encoding="utf-8")
+    status, body = _put(server, "/api/records/a", {"priority": 2})
+    assert (status, body["priority"]) == (200, 2)
+    assert "priority: 2\n" in path.read_text(encoding="utf-8")
+    assert _put(server, "/api/records/missing", {"priority": 2})[0] == 404
+
+
+def test_server_refuses_to_edit_the_review(server: int, guideline_repo: Path, sample_record: CurationRecord) -> None:
+    """The review is read-only in the dashboard: a PUT that changes it answers 400 and leaves the file alone."""
+    path = save_record(sample_record, guideline_repo / "curation" / "records")
+    before = path.read_text(encoding="utf-8")
+    status, body = _put(server, "/api/records/musk", {"review": ""})
+    assert status == 400
+    assert "review" in body["error"]
+    assert path.read_text(encoding="utf-8") == before
+
+
+def test_server_refuses_an_edit_of_a_record_changed_since_it_was_read(
+    server: int, guideline_repo: Path, sample_record: CurationRecord
+) -> None:
+    """An edit with a stale mtime answers 409, so two tabs (or a tab and an agent) do not overwrite each other."""
+    path = save_record(sample_record, guideline_repo / "curation" / "records")
+    (row,) = json.loads(_get(server, "/api/records")[2])
+    seen = row[MTIME_KEY]
+    assert seen == str(path.stat().st_mtime_ns)  # a string: a JavaScript number would round the nanoseconds
+
+    sample_record.comments = "An agent's note."
+    save_record(sample_record, path.parent)
+    os.utime(path, ns=(int(seen) + 1_000_000, int(seen) + 1_000_000))  # a different mtime even on a coarse clock
+    status, body = _put(server, "/api/records/musk", {"priority": 1, MTIME_KEY: seen})
+    assert status == 409
+    assert "changed on disk" in body["error"]
+    assert load_record(path).comments == "An agent's note."
+
+    (row,) = json.loads(_get(server, "/api/records")[2])
+    status, body = _put(server, "/api/records/musk", {"priority": 1, MTIME_KEY: row[MTIME_KEY]})
+    assert status == 200
+    assert body[MTIME_KEY] == str(path.stat().st_mtime_ns)  # the tab's next edit sends this one
+    assert load_record(path).comments == "An agent's note."
+    assert _put(server, "/api/records/musk", {"priority": 2, MTIME_KEY: body[MTIME_KEY]})[0] == 200
+
+
+def test_the_edit_check_survives_a_javascript_number(
+    server: int, guideline_repo: Path, sample_record: CurationRecord
+) -> None:
+    """The page holds the mtime it sends back as JavaScript would: a string stays exact, a number (a double) is
+    rounded to 53 bits and fails the check for almost every real mtime.
+    """
+    path = save_record(sample_record, guideline_repo / "curation" / "records")
+    mtime = 1_795_686_619_839_148_732  # a real record's mtime_ns; a double rounds it to ...148800
+    os.utime(path, ns=(mtime, mtime))
+    (row,) = json.loads(_get(server, "/api/records")[2])
+    as_javascript = json.loads(json.dumps(row), parse_int=float)[MTIME_KEY]  # numbers parsed as doubles
+    assert as_javascript == str(mtime)
+    assert _put(server, "/api/records/musk", {"priority": 3, MTIME_KEY: as_javascript})[0] == 200
+
+
+def test_a_tab_catches_up_with_only_what_changed(
+    server: int, guideline_repo: Path, sample_record: CurationRecord
+) -> None:
+    """``/api/records?since=`` sends the records written at or after ``since`` and the names of all records, so a
+    tab sees an outside write and a deletion without fetching every record again.
+    """
+    folder = guideline_repo / "curation" / "records"
+    musk = save_record(sample_record, folder)
+    other = save_record(dataclasses.replace(sample_record, unique_name="other", name="other"), folder)
+    os.utime(musk, ns=(1_000_000_000_000, 1_000_000_000_000))
+    os.utime(other, ns=(2_000_000_000_000, 2_000_000_000_000))
+    rows = json.loads(_get(server, "/api/records")[2])
+    newest = max(int(r[MTIME_KEY]) for r in rows)
+
+    delta = json.loads(_get(server, f"/api/records?since={newest}&tip=")[2])
+    assert [r["unique_name"] for r in delta["records"]] == ["other"]  # at or after: the newest comes back
+    assert delta["names"] == ["musk", "other"]
+
+    sample_record.comments = "An agent's note."
+    save_record(sample_record, folder)  # an outside write: a newer mtime
+    delta = json.loads(_get(server, f"/api/records?since={newest}&tip=")[2])
+    assert {r["unique_name"]: r["comments"] for r in delta["records"]}["musk"] == "An agent's note."
+
+    other.unlink()
+    delta = json.loads(_get(server, f"/api/records?since={newest}&tip=")[2])
+    assert delta["names"] == ["musk"]  # the tab drops the row it no longer finds
+
+    assert _get(server, "/api/records?since=soon")[0] == 400
+
+
+def test_a_catch_up_sends_the_claim_columns_when_the_board_moved(
+    guideline_repo: Path, sample_record: CurationRecord, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Claims do not change a record file, so a catch-up whose tip differs from the board's carries every record's
+    claim columns; with the same tip it leaves them out.
+    """
+    folder = guideline_repo / "curation" / "records"
+    save_record(sample_record, folder)
+    monkeypatch.setattr(claims, "cached_board", lambda: None)  # no board: tip None, nobody holds anything
+    assert "claims" not in _records_changed_payload(folder, 0, None)
+    moved = _records_changed_payload(folder, 0, "an-older-tip")
+    assert moved["claims"] == {"musk": {"claim_holder": None, "live_claim": None}}
+
+
+def test_the_row_cache_follows_a_save_that_keeps_mtime_and_size(
+    guideline_repo: Path, sample_record: CurationRecord
+) -> None:
+    """Rows are cached per file under ``(mtime_ns, size, inode)``; a save replaces the file, so even a change of the
+    same length written within one timestamp tick is read again.
+    """
+    folder = guideline_repo / "curation" / "records"
+    path = save_record(dataclasses.replace(sample_record, comments="aaaa"), folder)
+    os.utime(path, ns=(5_000_000_000, 5_000_000_000))
+    assert _records_payload(folder)[0]["comments"] == "aaaa"
+    save_record(dataclasses.replace(sample_record, comments="bbbb"), folder)  # same size, a new file
+    os.utime(path, ns=(5_000_000_000, 5_000_000_000))
+    assert _records_payload(folder)[0]["comments"] == "bbbb"
 
 
 @pytest.mark.parametrize(

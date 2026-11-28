@@ -25,6 +25,7 @@ from pathlib import Path
 
 from data_foundry.curation._paths import records_dir
 from data_foundry.curation.app import (
+    MTIME_KEY,
     STATIC_DIR,
     _claims_payload,
     _docs_payload,
@@ -63,8 +64,11 @@ def build_site(
 
     records = records_dir() if directory is None else Path(directory)
     _write_json(out / "schema.json", _schema_payload())
-    _write_json(out / "records.json", _records_payload(records))
-    _write_json(out / "claims.json", _claims_payload())  # the board the records' Claimed by column shows
+    rows = _records_payload(records)
+    for row in rows:
+        row.pop(MTIME_KEY, None)  # the edit check of the live dashboard: no use in a read-only build
+    _write_json(out / "records.json", rows)
+    _write_json(out / "claims.json", _claims_payload())  # the board the Claimed by column shows
 
     # Every page gets the read-only flag: index.html drops its write affordances, guidelines.html reads
     # the frozen docs/manifest.json. Cross-links between the pages are relative, so they resolve whether

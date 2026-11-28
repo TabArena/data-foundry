@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: fremtpl2
 container_format: 2
-checksum: v2:e989fadbf1b2995ba21801edc4cb5ffbd8b218ebb4d360a426f8007c491ce58e
-build: null
+checksum: v2:f24fc5f06954b6a12cc6abc6849534b336131dc829dabe528697fc2c772bc826
+build:
+  uuid: 01a217ff-2459-7f5a-826b-f258d60038dc
+  checksum: v2:f24fc5f06954b6a12cc6abc6849534b336131dc829dabe528697fc2c772bc826
+  built_at: '2026-11-26T13:15:43+00:00'
+  path: fremtpl2/01a217ff-2459-7f5a-826b-f258d60038dc
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 677991
@@ -37,6 +50,49 @@ splits:
   time_horizon_unit: steps
   time_gap: null
   time_gap_unit: null
+  reason: 'Three windows on the IDpol blocks (Andrej, 2026-11-20): block 6, 5 and
+    4 are tested, each
+
+    trained on all earlier blocks (split 0: train blocks 0-5, 640,557 rows or 94.5%,
+    test 37,434; split 1: train
+
+    0-4, 597,998 or 93.4%, test 42,559; split 2: train 0-3, 488,801 or 81.7%, test
+    109,197). The release has no
+
+    dates: `idpol_block` (IDpol // 1,000,000) is read as a period because renewals
+    link each block to the next
+
+    (next_year_rows; the curation notes give the counts and the caveats: blocks 0-1,
+    2-3 and 4-6 look like three
+
+    sub-portfolios), so the periods are inferred, not dated, and the order is a judgement
+    call. A window stands for
+
+    the portfolio of a later period priced from the earlier ones. No gap: a period''s
+    claims are known at its end,
+
+    and the blocks are inferred periods, with no finer time to leave a gap in. Three
+    windows meet the target of
+
+    three for 677,991 rows (SPLIT-33), and the oldest train side is above half the
+    rows. The random folds shipped
+
+    before are replaced because the stationary-relation test reads not flat (LightGBM
+    weighted Poisson deviance gap
+
+    +0.0003 ± 0.0001 on block 4, +0.0014 ± 0.0006 on block 5, inconclusive on block
+    6, floor 0.0001; flat or
+
+    inconclusive inside the sub-portfolios); on the same rows at the same training
+    size, windows scored 0.0009 to
+
+    0.0038 worse than random folds. Under random folds 16% of test rows had the policy''s
+    next-year record on the
+
+    training side; here a policy''s later record never trains. The 19 rows of the
+    high-count profile (blocks 2-3)
+
+    only train.'
   n_train:
     min: 488801
     max: 640557
@@ -83,7 +139,7 @@ decisions:
 
 Regression of `claim_frequency`, scored with `mean_poisson_deviance` on temporal splits by `idpol_block`. 677,991 rows and 9 features. Source: Other (2014).
 
-Not built yet. The current definition gives checksum `v2:e989fadbf1b2995ba21801edc4cb5ffbd8b218ebb4d360a426f8007c491ce58e`.
+Built as `01a217ff-2459-7f5a-826b-f258d60038dc` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -114,6 +170,7 @@ Not built yet. The current definition gives checksum `v2:e989fadbf1b2995ba21801e
 
 - The curation record, with the triage decision, its sources and the review: [`curation/records/fremtpl2.md`](../../../../curation/records/fremtpl2.md)
 - The original source: <https://dutangc.github.io/CASdatasets/reference/freMTPL.html>
+- The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
 ## Rebuild
 
@@ -174,7 +231,7 @@ Only curators run `build`, when the dataset ships.
 
 **Scoring columns**
 
-Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.metrics.scorer(container)(y_test, y_pred, test_idx)`).
 
 | column | role | how the metric uses it | model input |
 |---|---|---|---|
@@ -256,6 +313,8 @@ We start with data/freMTPL2freq.rda (677,991 policies) and data/freMTPL2sev.rda 
 - CC (2026-11-08, Lennart): on D12, the claim-amount task: "which task is more representative of the real use case? use that one and the other is not created as we dont want to have duplicates". One task ships, the claims per year insured as implemented, the AI's pick on the numbers of the bullet "One task" (for Lennart to confirm); the claim cost per year insured is not created. Closes his CC of 2026-11-06 that kept the amounts out "for now".
 
 ## Splits
+
+Expanding-window temporal splits: 3 test window(s) of 1 time value, walking back from the newest data, newest first; train is all earlier data. The test windows by `idpol_block`, as listed: 6 (37,434 test, 640,557 train rows); 5 (42,559 test, 597,998 train rows); 4 (109,197 test, 488,801 train rows).
 
 Three windows on the IDpol blocks (Andrej, 2026-11-20): block 6, 5 and 4 are tested, each
 trained on all earlier blocks (split 0: train blocks 0-5, 640,557 rows or 94.5%, test 37,434; split 1: train
@@ -393,4 +452,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a217ff-2459-7f5a-826b-f258d60038dc |
+| checksum | v2:f24fc5f06954b6a12cc6abc6849534b336131dc829dabe528697fc2c772bc826 |
+| built_at | 2026-11-26T13:15:43+00:00 |
+| path | fremtpl2/01a217ff-2459-7f5a-826b-f258d60038dc |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

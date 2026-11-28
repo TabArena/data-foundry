@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     GroupBasis,
@@ -118,8 +119,8 @@ class DeafnessGeneCarrierHearingLoss(AbstractCuratedDataset):
         - Note: the one blank `GJB2_c.235delC` cell stays missing (CLEAN-10); imputing 0 would invent a value, and a missing indicator gains nothing (0.0000).
     """
     splits_comment = """
-        Default splits: 10 repeats of 3-fold cross-validation over all 1,725 shipped people of both files, stratified
-        on the label (curator's decision, 2026-11-25, Andrej), not the source's discovery-to-validation split. The two
+        The folds are random over the people of both files, stratified on the label (curator's decision, 2026-11-25,
+        Andrej), not the source's discovery-to-validation split. The two
         files hold three recruiting sources (the hospital's records; in the validation file, unmarked, 466 people of
         the Disabled Persons' Federation and 103 of a community screening), too few to hold sources out (the group
         basis). Trained on the discovery file and scored on the validation file, untuned gradient boosting reaches the
@@ -150,7 +151,7 @@ class DeafnessGeneCarrierHearingLoss(AbstractCuratedDataset):
     )
     group_basis = GroupBasis(
         """
-        ForcedIIDFromGrouped (Andrej, 2026-11-25): the source validates on a second recruiting source
+        the source validates on a second recruiting source
         (the validation file: 466 people of the Disabled Persons' Federation, Sanger, 2011.8-2017.4, and 103 of a
         community screening, NGS hotspot, 2020.5-2020.8, with no column or row block that tells them apart), and the
         use case reaches carriers from other clinics and screening programmes, which whole sources held out would
@@ -159,6 +160,8 @@ class DeafnessGeneCarrierHearingLoss(AbstractCuratedDataset):
         fold holds people of all sources, and relatives (no family id) and people with the same genotype sit on
         both sides, so the score is optimistic for a new source.
         """,
+        set_by="Andrej",
+        on="2026-11-25",
     )
 
     # Task

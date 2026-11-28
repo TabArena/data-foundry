@@ -3,9 +3,6 @@ unique_name: loan_default_prediction_imperial_college
 name: Loan Default Prediction - Imperial College London (Kaggle 2014)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 1
 tags:

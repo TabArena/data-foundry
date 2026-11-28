@@ -9,7 +9,8 @@ import tarfile
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis
+
+from data_foundry.definition import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis
 
 SERIES_MATRIX = "GSE83227_series_matrix.txt.gz"
 ARRAY_DIR = "gse83227_txt"

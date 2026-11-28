@@ -34,10 +34,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
-from data_foundry.collections import BEYOND_ARENA
-from data_foundry.schema import as_column_list
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import root_mean_squared_error
+
+from data_foundry.collections import BEYOND_ARENA
+from data_foundry.curation_container import feature_columns
 
 if TYPE_CHECKING:
     from data_foundry.curation_container import CuratedContainer
@@ -60,9 +61,8 @@ def benchmark_format_1(container: CuratedContainer) -> list[float]:
     df = container.dataset
     splits = container.experiment_metadata.splits
     target_name = container.task_metadata.target_column_name
-    # The group column of a grouped task is split metadata, never a feature: a test group is unseen.
-    # (`task_metadata.group_on` reads the same in both container formats.)
-    not_features = [target_name, *as_column_list(container.task_metadata.group_on)]
+    # Every column but the target and the group column of a grouped task (split metadata: a test group is unseen).
+    features = feature_columns(container)
 
     # Iterate over every (repeat, fold) split — same shape as the OpenML example.
     rmses: list[float] = []
@@ -71,9 +71,9 @@ def benchmark_format_1(container: CuratedContainer) -> list[float]:
         for fold_id, (train_indices, test_indices) in folds.items():
             train_data = df.iloc[train_indices]
             test_data = df.iloc[test_indices]
-            X_train = train_data.drop(columns=not_features)
+            X_train = train_data[features]
             y_train = train_data[target_name]
-            X_test = test_data.drop(columns=not_features)
+            X_test = test_data[features]
             y_test = test_data[target_name]
 
             model = RandomForestRegressor(n_estimators=100, random_state=42, n_jobs=-1)

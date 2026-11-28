@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: taiwanese_bankruptcy_prediction
 container_format: 2
-checksum: v2:aeda55fb161ca77fbe1a648c3f016eee7c18739fc464411c6331f2737fff00c8
+checksum: v2:4089e73ab81b884fab0b43be489c204c8b4280c6f81f2bb2f556729f8a65eff8
 build:
-  uuid: 01a111fc-bec6-75e8-b645-262ad3c192c3
-  checksum: v2:a027be8b51a224d179f31b7ea653a0012e5c8f38a916bcc581c5a625144788f4
-  built_at: '2026-10-06T16:12:19+00:00'
-  path: taiwanese_bankruptcy_prediction/01a111fc-bec6-75e8-b645-262ad3c192c3
+  uuid: 01a21800-a4ba-7ec6-9e85-e5a56d7b5db9
+  checksum: v2:4089e73ab81b884fab0b43be489c204c8b4280c6f81f2bb2f556729f8a65eff8
+  built_at: '2026-11-26T13:17:05+00:00'
+  path: taiwanese_bankruptcy_prediction/01a21800-a4ba-7ec6-9e85-e5a56d7b5db9
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 6819
   n_features: 92
@@ -46,6 +46,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 4546
     max: 4546
@@ -67,7 +68,7 @@ decisions: []
 
 Binary classification of `Bankrupt`, scored with `roc_auc` on IID splits. 6,819 rows and 92 features. Source: UCI (2020).
 
-Built as `01a111fc-bec6-75e8-b645-262ad3c192c3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:aeda55fb161ca77fbe1a648c3f016eee7c18739fc464411c6331f2737fff00c8`, so the build is stale. See [Build](#build).
+Built as `01a21800-a4ba-7ec6-9e85-e5a56d7b5db9` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -211,20 +212,11 @@ The first 5 of 6,819 rows of the final frame (random rows: the frame is shuffled
   repeats on the UCI file: random split LightGBM 0.941, kNN (k = 25) 0.884; grouped by rebuilt chains 0.939
   and 0.881; grouped by 10 contiguous file segments 0.934 (sd 0.031) and 0.877. The chains miss most bankrupt
   runs, so the grouped scores bound the leak loosely. Kept with the random split and this note.
-- Time basis: ForcedIIDFromTemporal: listed Taiwanese companies of 1999-2009, used to screen later statements;
-  no row carries its year or company. The raw file repeats its rows at a regular period (26 to about 200 rows;
-  one period after a row its closest match lies below the 1st percentile of random-pair distances for 34% of
-  rows, 13-17% at other offsets), so the rows look like company-years ordered by industry and year, but no block
-  can be dated (Time: Lost). Leak test across the split: a company's other years sit on the other side, and 69%
-  of bankrupt rows have a bankrupt row one period later (21-25% at other offsets); grouping on rebuilt chains or
-  on file segments moves ROC AUC from 0.941 to 0.939 and 0.934 (LightGBM). Years and company ids would allow a
-  split by time. Not tested: later years and companies not seen in training. Not taken as stationary (Andrej,
-  2026-11-18): The record already names crises within the span and the file holds undatable time structure;
-  bankruptcy relations are documented as period-dependent.
+- Time basis: ForcedIIDFromTemporal: listed Taiwanese companies of 1999-2009, used to screen later statements; no row carries its year or company. The raw file repeats its rows at a regular period (26 to about 200 rows; one period after a row its closest match lies below the 1st percentile of random-pair distances for 34% of rows, 13-17% at other offsets), so the rows look like company-years ordered by industry and year, but no block can be dated (Time: Lost). Leak test across the split: a company's other years sit on the other side, and 69% of bankrupt rows have a bankrupt row one period later (21-25% at other offsets); grouping on rebuilt chains or on file segments moves ROC AUC from 0.941 to 0.939 and 0.934 (LightGBM). Years and company ids would allow a split by time. Not tested: later years and companies not seen in training. Not taken as stationary (Andrej, 2026-11-18): The record already names crises within the span and the file holds undatable time structure; bankruptcy relations are documented as period-dependent.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `Bankrupt`: 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 6,819 rows (SPLIT-33).
 
 3 repeat(s) x 3 fold(s) with seed 4267; train 4,546 rows, test 2,273 rows.
 
@@ -309,11 +301,11 @@ Default splits.
 | Revenue_Per_Person | float64 | 0 | 0 | 5667 | 0.0136, 0.0238, 0.0082, 0.0076, 0.0087, 0.0274, 0.0111, 0.0083, 0.0157, 0.0091 |
 | Operating_Profit_Per_Person | float64 | 0 | 0 | 3023 | 0.3945, 0.3949, 0.3923, 0.3952, 0.3932, 0.3968, 0.3938, 0.394, 0.3945, 0.3942 |
 | Allocation_Rate_Per_Person | float64 | 0 | 0 | 6768 | 0.0, 0.0074, 0.0024, 0.0005, 0.0039, 0.0053, 0.0104, 0.0017, 0.0108, 0.0004 |
-| Working_Capital_to_Total_Assets | float64 | 0 | 0 | 6819 | 0.7179, 0.7616, 0.7998, 0.8126, 0.7882, 0.8098, 0.7816, 0.7786, 0.7837, 0.7814 |
-| Quick_Assets_to_Total_Assets | float64 | 0 | 0 | 6819 | 0.0917, 0.2878, 0.406, 0.1655, 0.1743, 0.3206, 0.2441, 0.2457, 0.3958, 0.3543 |
-| Current_Assets_to_Total_Assets | float64 | 0 | 0 | 6819 | 0.1014, 0.3555, 0.4428, 0.3171, 0.2801, 0.4093, 0.3265, 0.2844, 0.5967, 0.5194 |
-| Cash_to_Total_Assets | float64 | 0 | 0 | 6819 | 0.0303, 0.0353, 0.2135, 0.0711, 0.0073, 0.0883, 0.0483, 0.0378, 0.0177, 0.105 |
-| Quick_Assets_to_Current_Liability | float64 | 0 | 0 | 6819 | 0.0024, 0.0053, 0.009, 0.0105, 0.0071, 0.0096, 0.0067, 0.0079, 0.0048, 0.0051 |
+| Working_Capital_to_Total_Assets | float64 | 0 | 0 | 6819 | 0.8229, 0.7179, 0.7616, 0.934, 0.833, 0.8104, 0.958, 0.7673, 0.8191, 0.9261 |
+| Quick_Assets_to_Total_Assets | float64 | 0 | 0 | 6819 | 0.2935, 0.0917, 0.2878, 0.671, 0.3978, 0.3371, 0.0135, 0.5404, 0.533, 0.781 |
+| Current_Assets_to_Total_Assets | float64 | 0 | 0 | 6819 | 0.4729, 0.1014, 0.3555, 0.7237, 0.4163, 0.5065, 0.9221, 0.6091, 0.516, 0.7484 |
+| Cash_to_Total_Assets | float64 | 0 | 0 | 6819 | 0.1626, 0.0303, 0.0353, 0.1834, 0.0675, 0.0438, 0.0092, 0.0587, 0.0699, 0.6019 |
+| Quick_Assets_to_Current_Liability | float64 | 0 | 0 | 6819 | 0.0082, 0.0024, 0.0053, 0.0667, 0.0197, 0.0068, 0.0006, 0.0057, 0.0117, 0.0411 |
 
 (33 more rows not shown)
 
@@ -411,11 +403,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-bec6-75e8-b645-262ad3c192c3 |
-| checksum | v2:a027be8b51a224d179f31b7ea653a0012e5c8f38a916bcc581c5a625144788f4 |
-| built_at | 2026-10-06T16:12:19+00:00 |
-| path | taiwanese_bankruptcy_prediction/01a111fc-bec6-75e8-b645-262ad3c192c3 |
+| uuid | 01a21800-a4ba-7ec6-9e85-e5a56d7b5db9 |
+| checksum | v2:4089e73ab81b884fab0b43be489c204c8b4280c6f81f2bb2f556729f8a65eff8 |
+| built_at | 2026-11-26T13:17:05+00:00 |
+| path | taiwanese_bankruptcy_prediction/01a21800-a4ba-7ec6-9e85-e5a56d7b5db9 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:aeda55fb161ca77fbe1a648c3f016eee7c18739fc464411c6331f2737fff00c8` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis, set_missing
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+    set_missing,
+)
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -224,7 +233,7 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
         on="2026-11-19",
     )
     splits_comment = """
-        Default splits: stratified random 3-fold cross-validation with 10 repeats (seed 4267). Tests stand for other
+        Tests stand for other
         children of the same hospital and years.
         The relation is measured stationary (StationaryRelation; Andrej, 2026-11-19): children are admitted over 2016-2021 and a deployed model scores
         later admissions, but the file has no dates. Only two periods can be told apart: ultrasound case numbers up to

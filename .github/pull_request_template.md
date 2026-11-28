@@ -40,7 +40,7 @@ Before merging:
 
 Checklist:
 
-- [ ] Reviews are in the records' `## Review`, none in a dataset folder (`move_reviews_to_records.py --check` is clean).
+- [ ] Reviews are in the records' `## Review`; no `REVIEW.md` in the working copy (a test refuses one).
 - [ ] Each settled issue has its `**Resolved (<date>, <who>):**` turn and its CC line in the record.
 - [ ] A change to the working copy has its dated `CHANGELOG.md` entry.
 - [ ] A decision that departs from a rule is written as an exception or an amendment.

@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: wine_world_cost
 container_format: 2
-checksum: v2:f1fcec4bdbab2a7e509ba1dc3eb2680084ff11c71c9fc39860a86960fd8d3624
+checksum: v2:3972c5f201b51ecdffa8c7e64dea42573b261edd5d03a6a480d0263b2c52ed60
 build:
-  uuid: 01a111fc-bf3e-75e4-bd32-d489275dd877
-  checksum: v2:8c168087d0023ac94900336e032900e565a964201c4ad6c2a0b794fbc26f2a6a
-  built_at: '2026-10-06T16:12:19+00:00'
-  path: wine_world_cost/01a111fc-bf3e-75e4-bd32-d489275dd877
+  uuid: 01a21800-aaeb-7f45-87b0-57df5a67d53d
+  checksum: v2:3972c5f201b51ecdffa8c7e64dea42573b261edd5d03a6a480d0263b2c52ed60
+  built_at: '2026-11-26T13:17:06+00:00'
+  path: wine_world_cost/01a21800-aaeb-7f45-87b0-57df5a67d53d
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 1279
   n_features: 14
@@ -54,6 +54,9 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Grouped splits on the producer: all wines of one producer stay on one side,
+    so a model prices wines from producers it has not seen, from the same shop and
+    time. Wines of the same region, grape or style are on both sides.'
   n_train:
     min: 789
     max: 890
@@ -75,7 +78,7 @@ decisions: []
 
 Regression of `Price`, scored with `rmsle` on grouped splits by `Producer`. 1,279 rows and 14 features. Source: Kaggle (2023).
 
-Built as `01a111fc-bf3e-75e4-bd32-d489275dd877` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f1fcec4bdbab2a7e509ba1dc3eb2680084ff11c71c9fc39860a86960fd8d3624`, so the build is stale. See [Build](#build).
+Built as `01a21800-aaeb-7f45-87b0-57df5a67d53d` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -235,11 +238,11 @@ We start with the Kaggle version. We resolve several issues from the web scrappe
   Alamos and Catena). The shop's own-label ranges are one group each, although some of their copy names the
   maker (Definition Fleurie by Pardon et Fils): the shop prices the range, and the maker is not named for all.
   615 producers, 1 to 35 wines (Definition), 250 with more than one wine.
-- Time basis: RetrospectiveFillIn: one scrape of a UK online wine shop's range (most likely Majestic Wine) in 2023; the
-  shelf prices, sales copy and catalogue attributes of that moment; the vintage is a wine attribute, not a
-  time. Not tested: prices after 2023.
+- Time basis: RetrospectiveFillIn: one scrape of a UK online wine shop's range (most likely Majestic Wine) in 2023; the shelf prices, sales copy and catalogue attributes of that moment; the vintage is a wine attribute, not a time. Not tested: prices after 2023.
 
 ## Splits
+
+Repeated 3-fold cross-validation keeping each group of `Producer` whole (shuffled group k-fold, a new draw per repeat): 10 repeat(s) x 3 folds, 30 splits, the repeats set by the 1,279 rows (SPLIT-33).
 
 Grouped splits on the producer: all wines of one producer stay on one side, so a model prices wines from producers it has not seen, from the same shop and time. Wines of the same region, grape or style are on both sides.
 
@@ -305,7 +308,7 @@ One group is a producer: the house, estate, winery or cooperative that makes and
 | nearest neighbour in the same group | 3.0% of the rows (chance: 0.3%) |
 | label variance explained by the group | 0.80 (shuffled groups: 0.45) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
@@ -428,11 +431,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-bf3e-75e4-bd32-d489275dd877 |
-| checksum | v2:8c168087d0023ac94900336e032900e565a964201c4ad6c2a0b794fbc26f2a6a |
-| built_at | 2026-10-06T16:12:19+00:00 |
-| path | wine_world_cost/01a111fc-bf3e-75e4-bd32-d489275dd877 |
+| uuid | 01a21800-aaeb-7f45-87b0-57df5a67d53d |
+| checksum | v2:3972c5f201b51ecdffa8c7e64dea42573b261edd5d03a6a480d0263b2c52ed60 |
+| built_at | 2026-11-26T13:17:06+00:00 |
+| path | wine_world_cost/01a21800-aaeb-7f45-87b0-57df5a67d53d |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:f1fcec4bdbab2a7e509ba1dc3eb2680084ff11c71c9fc39860a86960fd8d3624` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

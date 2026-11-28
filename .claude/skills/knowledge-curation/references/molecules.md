@@ -210,15 +210,16 @@ The task is going from the structure to a prediction (Lennart, 2026-11-01). So:
     qsar_tid_11 (structures recovered from a ChEMBL release), drug_induced_autoimmunity_prediction (stereo pairs),
     nci_aids_antiviral_screen (an SD file, salts, unreadable records), apistox (a temporal molecule task).
   * The recipe: [definitions.md](../../knowledge-data-foundry/references/definitions.md), "The preprocessing recipe
-    (`_clean`)", step 6, and the `special_features` bullet of "Field mapping".
+    (`_clean`)", step 6, and the `special_features` bullet of
+    [definition_fields.md](../../knowledge-data-foundry/references/definition_fields.md).
 * **The container** records the column in `task_metadata.special_features` (kind `smiles`, layout `column`, encoding
   required, the recommended encoding's id); `special_features(container, "smiles")` lists it, and
-  `encode_special_feature(df, feature)` (`data_foundry.v2.special`) encodes it.
-* **Encodings:** `encode_smiles` and `DEFAULT_SMILES_ENCODING` (`data_foundry.v2.chemistry`); the date and text
-  encodings and `recommended_encodings()` are in `data_foundry.v2.encodings`.
+  `encode_special_feature(df, feature)` (`data_foundry.special`) encodes it.
+* **Encodings:** `encode_smiles` and `DEFAULT_SMILES_ENCODING` (`data_foundry.special.chemistry`); the date and text
+  encodings and `recommended_encodings()` are in `data_foundry.encodings`.
 * **Checks:** the bundle check `dataset_smiles_column` parses every value with the pinned RDKit, and a SMILES column
   raises no `dataset_identifier_column`.
-* **Probes:** they see the column in the recommended encoding (`dataset_io.py`); the blind reviewer's clean room keeps
-  the string.
+* **Probes:** they see the column in the recommended encoding (`data_foundry.probes.inputs`); the blind reviewer's clean
+  room keeps the string.
 * **What TabArena still needs** (the guard against the text embedding, the encoder, the cache, timing in the fit time):
-  `datasets/_dev/tabarena-v0pt2/BENCHMARK_CHANGES_TODO.md`, "Encodings and their caches".
+  `datasets/_dev/tabarena-v0pt2/BENCHMARK_CHANGES_TODO.md`, items 6 and 12.

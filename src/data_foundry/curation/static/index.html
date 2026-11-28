@@ -387,11 +387,15 @@ const RECORDS_URL = STATIC ? "./records.json" : "/api/records";
 // ----------------------------------------------------------------------------
 // Layout config — tweak freely.
 const PRIMARY = [
-  "checked_by", "unique_name", "data_foundry_status", "claimed_by", "suggestion", "priority", "decision_markers",
+  "checked_by", "unique_name", "data_foundry_status", "claim_holder", "suggestion", "priority", "decision_markers",
   "tags", "name", "source_links", "comments", "year", "domain", "reference",
 ];
 const EXTRA = ["original_source", "collections", "required_split", "problem_type", "original_data_state"];
 const HIDDEN = new Set(["data_modality", "usable_task_type", "given_task_type"]);
+// Shown but never edited in the grid (the server refuses them too): the review is long and is never deleted.
+const READ_ONLY = new Set(["review"]);
+// The record file's mtime when this tab read it; an edit sends it back and the server answers 409 if the file changed.
+const MTIME_KEY = "record_mtime_ns";
 const FROZEN = new Set(["_status", "checked_by", "unique_name"]);
 const YEARS = Array.from({ length: 2027 - 1950 + 1 }, (_, i) => String(2027 - i));  // recent first; also free-text
 // Number fields: the values their editor and column filter offer (the record schema allows exactly these).
@@ -436,7 +440,7 @@ const CUSTOM = {
   },
 };
 const SEMANTIC = {
-  data_foundry_status: { "DF: Yes": "good", "DF: Suspended": "warn", "WIP (DF)": "warn", "WIP (Triage)": "warn", "DF: Much work": "warn" },
+  data_foundry_status: { "DF: Yes": "good", "DF: Suspended": "warn", "DF: Much work": "warn" },
   suggestion: { "Yes": "good", "Yes (Disagreement)": "warn", "No": "bad", "No (Retired)": "bad", "TBD -> Yes": "warn", "TBD -> 2nd Tier": "warn", "Disagreement": "bad" },
   decision_markers: {
     // bad / disqualifying -> red
@@ -691,11 +695,9 @@ function rowStatus(d) {
   // A claim names its holder in the tooltip: others leave the dataset alone until it is released. The live
   // board's claim (live_claim) carries the stage, the expiry and the note.
   const lc = d.live_claim;
-  if (lc) {
-    const until = lc.expired ? `expired ${lc.expires_at.slice(0, 10)}` : `until ${lc.expires_at.slice(0, 10)}`;
-    return { ...st, t: `${st.t} · claimed by ${lc.holder} (${lc.stage}, ${until})` + (lc.note ? `: ${lc.note}` : "") };
-  }
-  return d.claimed_by ? { ...st, t: st.t + " · claimed by " + d.claimed_by } : st;
+  if (!lc) return st;
+  const until = lc.expired ? `expired ${lc.expires_at.slice(0, 10)}` : `until ${lc.expires_at.slice(0, 10)}`;
+  return { ...st, t: `${st.t} · claimed by ${lc.holder} (${lc.stage}, ${until})` + (lc.note ? `: ${lc.note}` : "") };
 }
 function rowStatusOf(d) {
   const sugg = d.suggestion, df = d.data_foundry_status || [], rev = (d.needs_review || []);
@@ -1301,11 +1303,19 @@ async function confirmVerify() {
 }
 
 async function putRecord(id, patch) {
+  const row = table.getRow(id);
+  const base = row ? row.getData()[MTIME_KEY] : undefined;
   const res = await fetch("/api/records/" + encodeURIComponent(id), {
-    method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(patch),
+    method: "PUT", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(base === undefined ? patch : { ...patch, [MTIME_KEY]: base }),
   });
   const data = await res.json();
+  if (res.status === 409) {
+    refreshPending = true;  // the poll reloads the rows once no editor is open
+    throw new Error(`${id} was changed elsewhere since this page loaded it. Reload the page, then edit again.`);
+  }
   if (data.error) throw new Error(data.error);
+  if (row && data[MTIME_KEY] !== undefined) row.update({ [MTIME_KEY]: data[MTIME_KEY] });  // our own write
   syncVersion();  // our own write moves the change token; don't reload for it
   return data;
 }
@@ -1323,13 +1333,15 @@ async function registerNew(vocabKey, values) {
 }
 
 // ---- live refresh (records changed on disk) ----------------------------------
-// The server re-reads the markdown files on every /api/records call, so only this tab goes
-// stale when a record is written from outside it: an agent's save_record, a dashboard edit in
-// another tab, a `git pull`, a hand edit. Poll the cheap change token (/api/version = newest
-// record mtime + count) and, when it moves, refetch the records and patch the table IN PLACE:
-// updateOrAddData keeps scroll position, sort, column filters, the URL-hash view and the pins,
-// all of which a page reload would drop. A refresh never lands while a cell editor, the extra-
-// fields modal or the verify dialog is open — it waits for the next tick instead. Live build only.
+// This tab goes stale when a record is written from outside it: an agent's save_record, a
+// dashboard edit in another tab, a `git pull`, a hand edit, or a claim on the board. Poll the
+// cheap change token (/api/version = newest record mtime + count + claims tip) and, when it
+// moves, fetch only what changed (/api/records?since=<newest mtime this tab holds>&tip=<claims
+// tip of its rows>: the records written since, the names of all records, and the claim columns
+// when the board moved) and patch the table IN PLACE: updateOrAddData keeps scroll position,
+// sort, column filters, the URL-hash view and the pins, all of which a page reload would drop.
+// A refresh never lands while a cell editor, the extra-fields modal or the verify dialog is
+// open — it waits for the next tick instead. Live build only.
 const REFRESH_MS = 2000;
 let lastVersion = null;      // token of the records this tab currently shows
 let refreshPending = false;  // the token moved while the UI was busy
@@ -1348,23 +1360,45 @@ function rowChanged(current, incoming) {
   if (!current) return true;
   return Object.keys(incoming).some(k => JSON.stringify(current[k]) !== JSON.stringify(incoming[k]));
 }
+let rowsTip = null;  // the claims tip of the claim columns this tab shows; null: unknown, so the next catch-up resends them
+function newestMtime() {
+  // The mtimes are strings of nanoseconds (a JavaScript number would round them): compare as BigInt.
+  let newest = 0n;
+  for (const d of table.getData()) {
+    if (d[MTIME_KEY] !== undefined && d[MTIME_KEY] !== null) {
+      const v = BigInt(d[MTIME_KEY]);
+      if (v > newest) newest = v;
+    }
+  }
+  return newest;
+}
 async function refreshRecords() {
   if (refreshInFlight) return;
   refreshInFlight = true;
   try {
     const schema = await (await fetch(SCHEMA_URL, { cache: "no-store" })).json();
     VOCAB = schema.vocabularies;  // editors and popovers read VOCAB live on open
-    const raw = await (await fetch(RECORDS_URL, { cache: "no-store" })).json();
-    const rows = raw.map(toRow);
+    const url = `${RECORDS_URL}?since=${newestMtime()}&tip=${encodeURIComponent(rowsTip || "")}`;
+    const delta = await (await fetch(url, { cache: "no-store" })).json();
     const current = new Map(table.getData().map(d => [d.unique_name, d]));
+    const rows = delta.records.map(toRow);
+    if (delta.claims) {  // the board moved: every row's claim columns, rows of this delta included
+      for (const r of rows) Object.assign(r, delta.claims[r.unique_name] || {});
+      const fresh = new Set(rows.map(r => r.unique_name));
+      for (const [id, d] of current) {
+        const c = delta.claims[id];
+        if (!fresh.has(id) && c && rowChanged(d, c)) rows.push({ unique_name: id, ...c });
+      }
+    }
+    rowsTip = delta.tip;
     const changed = rows.filter(r => rowChanged(current.get(r.unique_name), r)).map(r => r.unique_name);
-    const seen = new Set(rows.map(r => r.unique_name));
-    const gone = [...current.keys()].filter(id => !seen.has(id));
+    const names = new Set(delta.names);
+    const gone = [...current.keys()].filter(id => !names.has(id));
     if (!changed.length && !gone.length) return;
-    await table.updateOrAddData(rows);
+    if (changed.length) await table.updateOrAddData(rows.filter(r => changed.includes(r.unique_name)));  // never empty
     for (const id of gone) { pinned.delete(id); table.deleteRow(id); }
     for (const id of changed) { const row = table.getRow(id); if (row) row.reformat(); }
-    setExaminedHint(raw);
+    setExaminedHint(table.getData());
     applyFilters();
     updateCount();
     toast(`Reloaded from disk: ${changed.length + gone.length} record(s) changed`);
@@ -1430,7 +1464,8 @@ function columnDefs() {
       }
     }
     else if (f.kind === "select") {
-      c.editor = "list"; c.cssClass = "dd-cell"; c.titleFormatter = addBtnTitle(f.label, name);
+      c.editor = "list"; c.cssClass = "dd-cell";
+      if (!f.board) c.titleFormatter = addBtnTitle(f.label, name);  // the board's curators are not a vocabulary
       c.editorParams = listEditorParams(name, false);
       c.formatter = selectChip(name);
       // Tri-state popover: require (✓) / exclude (✕) any number of values. The state lives
@@ -1455,12 +1490,13 @@ function columnDefs() {
     }
     else if (f.kind === "links") { c.editor = "textarea"; c.editorParams = { shiftEnterSubmit: true }; c.formatter = linksFmt; c.width = 240; c.variableHeight = true; }
     else if (f.kind === "body") {
-      c.editor = "textarea"; c.editorParams = { shiftEnterSubmit: true };
+      c.editor = READ_ONLY.has(name) ? false : "textarea";
+      if (c.editor) c.editorParams = { shiftEnterSubmit: true };
       if (name === "comments") { c.width = 340; c.variableHeight = true; c.formatter = commentsFmt; }
       else { c.width = 200; c.cssClass = "single-line"; c.tooltip = true; c.formatter = cell => escapeHtml(String(cell.getValue() || "")); }
     }
     if (name === "data_foundry_status") c.width = 170;  // multiselect: DF state + benchmark tags
-    if (name === "claimed_by") c.width = 110;
+    if (name === "claim_holder") c.width = 110;
     cols.push(c);
   }
   cols.push({
@@ -1511,7 +1547,7 @@ async function onEdit(cell) {
     cell.restoreOldValue();
     return;
   }
-  if (f === "claimed_by") return claimEdit(cell, value);  // a claim goes to the live board, not only the record
+  if (f === "claim_holder") return claimEdit(cell, value);  // a claim goes to the live board, never to the record
   try {
     if (spec.kind !== "number") await registerNew(spec.vocab, asArray(value));  // a number has no vocabulary
     const updated = await putRecord(cell.getRow().getData().unique_name, { [f]: value });
@@ -1526,8 +1562,8 @@ async function onEdit(cell) {
 
 // ---- claims (the live board) --------------------------------------------------
 // The Claimed by column shows the live claims board (a git branch every curator pushes to), refreshed by the
-// server every 20 s. Picking your own name claims the dataset, emptying the cell releases it; the server pushes the
-// change to the board and mirrors it into the record. Someone else's name cannot be picked: they claim for themselves.
+// server every 20 s; it is not a record field. Picking your own name claims the dataset, emptying the cell releases
+// it; the server pushes the change to the board. Someone else's name cannot be picked: they claim for themselves.
 let CLAIMS = { me: null };
 async function refreshClaimsInfo() {
   try { CLAIMS = await (await fetch(STATIC ? "./claims.json" : "/api/claims", { cache: "no-store" })).json(); }
@@ -1566,7 +1602,7 @@ async function claimEdit(cell, value) {
     if (data.error) throw new Error(data.error);
     cell.getRow().update(toRow(data));
     cell.getRow().reformat();
-    syncVersion();  // our own push and record write moved the token
+    syncVersion();  // our own push moved the token
     updateCount(); applyFilters(); refreshClaimsInfo();
     toast(action === "claim" ? `Claimed ${id}: on the board for everyone` : `Released ${id}`);
   } catch (e) { cell.restoreOldValue(); toast((action === "claim" ? "Claim" : "Release") + " failed: " + e.message, true); }
@@ -1851,8 +1887,10 @@ async function copyShareLink() {
 // an avg-links-per-record × records estimate in EXAMINED_TITLE; updateCount() shows it as the hover
 // tooltip on the dotted-underlined total (Y).
 function setExaminedHint(rawRecords) {
+  // Records as served (links as an array) or as table rows (toRow joins them with newlines).
+  const count = v => (Array.isArray(v) ? v.length : String(v || "").split("\n").filter(Boolean).length);
   const total = rawRecords.length;
-  const links = rawRecords.reduce((s, r) => s + ((r.source_links || []).length), 0);
+  const links = rawRecords.reduce((s, r) => s + count(r.source_links), 0);
   const avg = total ? links / total : 0;
   EXAMINED_TITLE =
     `${total} curation records shown here — but many more datasets were examined. `

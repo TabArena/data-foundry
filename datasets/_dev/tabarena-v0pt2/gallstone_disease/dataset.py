@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -243,7 +244,7 @@ class GallstoneDisease(AbstractCuratedDataset):
 
         fig, axes = plt.subplots(2, 1, figsize=(8, 4.5), sharex=True)
         rows = np.arange(len(raw))
-        for ax, col in zip(axes, [VITAMIN_D, VMA]):
+        for ax, col in zip(axes, [VITAMIN_D, VMA], strict=False):
             filled = straight_line_fills(raw[col]).to_numpy()
             ax.plot(rows, raw[col], lw=0.7)
             ax.plot(rows[filled], raw[col][filled], "o", ms=2.5, color="tab:red", label="filled cell")

@@ -4,9 +4,6 @@ name: sendy-logistics-challenge
 checked_by:
 - Myunghwan
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 2
 tags:

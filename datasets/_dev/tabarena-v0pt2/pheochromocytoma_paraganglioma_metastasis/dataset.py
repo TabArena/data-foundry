@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -163,7 +164,7 @@ class PheochromocytomaParagangliomaMetastasis(AbstractCuratedDataset):
     )
     group_basis = GroupBasis(
         """
-        ForcedIIDFromGrouped (Andrej, 2026-11-25): the source's use is at other centres (it trains on the
+        the source's use is at other centres (it trains on the
         earlier cohorts and validates on the PMT trial), which whole centres held out would stand for, but the file
         names no centre, only two cohorts, too few groups to hold out; the cohort flag is no feature. Overlap left:
         every test fold holds patients of both cohorts and of centres seen in training; trained on the earlier
@@ -172,14 +173,16 @@ class PheochromocytomaParagangliomaMetastasis(AbstractCuratedDataset):
         location and category beyond chance (possibly patients enrolled twice, at most about 2% of rows); without
         IDs they cannot be linked, and the score from the earlier cohorts to the PMT trial shows no effect.
         """,
+        set_by="Andrej",
+        on="2026-11-25",
     )
 
     # Task
     target = "metastatic"
     problem_type = "binary_classification"
     splits_comment = """
-        Default splits: repeated 3-fold cross-validation over all 788 patients, stratified on the outcome, on the
-        forced random leaf L-PLACE.random (curator's decision, 2026-11-25, Andrej). The source trains on the 493
+        The folds are random over all patients, stratified on the outcome, on the forced random leaf L-PLACE.random
+        (curator's decision, 2026-11-25, Andrej). The source trains on the 493
         patients of the earlier cohorts and tests once on the 295 of the PMT trial; that split was weighed and not
         taken, as it gives a single training side and two cohorts are too few groups to test transfer to a centre.
     """
