@@ -468,7 +468,7 @@ def probe(name: str, root: Path, args: argparse.Namespace) -> dict:
     declared metric, and return the numbers and flags.
     """
     started = time.time()
-    data = inputs.load(name, root, built=args.built)
+    data = inputs.load(name, root, built=args.built).sample_features(inputs.feature_cap(args))
     grouping = data.grouping
     features = set(data.features)
     result = run(
@@ -490,7 +490,8 @@ def probe(name: str, root: Path, args: argparse.Namespace) -> dict:
         metric=data.declared_metric(),
     )
     head = {"name": name, "origin": data.origin, "regime": data.regime, "sample_weight": data.weight_column}
-    return head | result | {"seconds": round(time.time() - started)}
+    sample = {"feature_sample": data.feature_sample.as_dict()} if data.feature_sample is not None else {}
+    return head | result | sample | {"seconds": round(time.time() - started)}
 
 
 def weight_and_metric_lines(result: dict) -> list[str]:
@@ -538,6 +539,8 @@ def render(result: dict) -> str:
         + f", {result['splits_probed']} of {result['splits_shipped']} splits, {result['seconds']} s"
     )
     lines = [head, *weight_and_metric_lines(result)]
+    if sample := result.get("feature_sample"):
+        lines.append("  " + inputs.FeatureSample(**sample).line())
     for key in ["dummy", "drift", "linear", "selected_linear", "random_forest", "lightgbm", "single_feature"]:
         if key in t:
             cells = score_cells(t[key], keys, result.get("declared_metric"))

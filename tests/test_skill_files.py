@@ -18,6 +18,8 @@ import pytest
 import yaml
 
 from data_foundry.curation import comments
+from data_foundry.probes import inputs
+from data_foundry.probes.cli import PROBES, _shared_options
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ROOT / ".claude" / "skills"
@@ -237,6 +239,39 @@ def test_probe_package_docstring_names_every_module():
     assert named == present, (
         f"modules not listed: {sorted(present - named)}; listed, missing: {sorted(named - present)}"
     )
+
+
+def _probe_module_files() -> dict[str, Path]:
+    """Each ``data-foundry probe`` subcommand's module file (a package's ``__init__`` aside, its module's own file)."""
+    src = ROOT / "src"
+    return {name: src / (module.replace(".", "/") + ".py") for name, (module, _) in PROBES.items()}
+
+
+@pytest.mark.parametrize("probe", sorted(_probe_module_files()))
+def test_every_probe_takes_the_feature_cap(probe):
+    """Every probe reads the shared ``--max-features`` and draws the sample through ``inputs``, never its own way,
+    so a very wide table can be probed at all.
+    """
+    text = _probe_module_files()[probe].read_text(encoding="utf-8")
+    assert "inputs.feature_cap(args)" in text, f"probe {probe} does not read --max-features"
+    assert "sample_features(" in text or "sampled_columns(" in text, f"probe {probe} does not sample its columns"
+    assert "feature_sample" in text, f"probe {probe} does not report the sample it drew"
+
+
+def test_every_probe_command_takes_max_features():
+    """``--max-features`` is a shared option of ``data-foundry probe``, and its help states the package's default."""
+    parser = _shared_options()
+    assert parser.parse_args([]).max_features is None  # read as inputs.MAX_FEATURES by inputs.feature_cap
+    assert parser.parse_args(["--max-features", "0"]).max_features == 0
+    assert f"default {inputs.MAX_FEATURES:,}" in " ".join(parser.format_help().split())
+
+
+def test_the_probe_reference_documents_the_feature_cap():
+    """A reader of the probes finds the cap, the flag and the sampled-output line where the probes are described."""
+    text = (KDF / "references" / "checks_and_probes.md").read_text(encoding="utf-8")
+    assert "--max-features" in text
+    assert "10,000" in text
+    assert "feature sample" in text
 
 
 # --------------------------------------------------------------------------- the register on the repository

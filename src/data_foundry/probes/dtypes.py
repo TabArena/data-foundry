@@ -333,6 +333,12 @@ def probe(name: str, root: Path, args: argparse.Namespace) -> dict:
     else:
         frame, exclude = ds.make_splits().df, sorted(non_feature_columns(ds.task_metadata))
         result["origin"] = "definition"
+    keep, sample = inputs.sampled_columns(
+        list(frame.columns), set(exclude), inputs.feature_cap(args), inputs.FEATURE_SAMPLE_SEED
+    )
+    if sample is not None:
+        result["feature_sample"] = sample.as_dict()
+        frame = frame[keep]
     table = column_table(frame, exclude=exclude, codebook=codebook)
     result["columns"] = len(table)
     result["codebook_columns"] = len(codebook)
@@ -356,6 +362,8 @@ def render(r: dict) -> str:
     else:
         source = "no codebook"
     lines = [f"{r['name']}: {len(r['flagged'])} of {r['columns']} columns flagged; {source}"]
+    if sample := r.get("feature_sample"):
+        lines.append("  " + inputs.FeatureSample(**sample).line())
     for row in r["flagged"]:
         values = f", {row['value_min']:g} to {row['value_max']:g}" if row["value_min"] is not None else ""
         if row["other_levels"]:

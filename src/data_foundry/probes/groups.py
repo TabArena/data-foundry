@@ -236,6 +236,11 @@ def probe(name: str, root: Path, args: argparse.Namespace) -> dict:
         data = inputs.from_definition(ds)
     if data.grouping is None:
         return {"name": name, "origin": data.origin, "skipped": "not a grouped task"}
+    data = data.sample_features(inputs.feature_cap(args))
+    sample = {}
+    if data.feature_sample is not None:
+        print(data.feature_sample.line())
+        sample = {"feature_sample": data.feature_sample.as_dict()}
     result = run(
         data.df,
         data.target,
@@ -251,7 +256,7 @@ def probe(name: str, root: Path, args: argparse.Namespace) -> dict:
         sample_weight=data.weights,
         feature_cols=data.features,
     )
-    return result | {"origin": data.origin, "seconds": round(time.time() - started)}
+    return result | sample | {"origin": data.origin, "seconds": round(time.time() - started)}
 
 
 def render(result: dict) -> str:

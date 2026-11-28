@@ -35,6 +35,15 @@ and the copies before deduplication from them.
 Rows without a target are dropped from every input (``df``, the splits, the weights, the scoring values and the raw
 positions), since no probe can fit or score them; ``ProbeInput.target_note`` says how many, and the loader prints it
 to stderr.
+
+A very wide table is probed on a column budget: every probe (``data-foundry probe ...``) takes ``--max-features``
+(default :data:`MAX_FEATURES`, 10,000; 0 for every column; ``feature_cap`` reads it) and calls
+:meth:`ProbeInput.sample_features` (``dtypes``, on a bare frame, ``sampled_columns``), which draws that many
+feature columns at random with a fixed seed and keeps every non-feature column (the target, the group, time and
+scoring columns) whatever the cap. The draw never looks at the target, so it is no supervised selection; a frame at or
+under the cap is returned unchanged, so an ordinary dataset probes exactly as before. ``ProbeInput.feature_sample``
+records the cap, how many columns were drawn, how many there are and the seed, and every probe prints that line and
+writes it to its JSON, so a sampled result is never read as a full one.
 """
 
 from __future__ import annotations
@@ -57,6 +66,69 @@ from data_foundry.schema import as_column_list, resolve_warehouse_dir
 if TYPE_CHECKING:
     from data_foundry.definition import AbstractCuratedDataset
     from data_foundry.schema import Grouping
+
+
+MAX_FEATURES = 10_000
+"""The probes' default column budget (``--max-features``): above it the feature columns are sampled."""
+
+FEATURE_SAMPLE_SEED = 0
+"""The seed of the column sample: fixed, so the same cap on the same frame draws the same columns."""
+
+
+@dataclass(frozen=True)
+class FeatureSample:
+    """The column sample a probe ran on, when the frame held more feature columns than the cap.
+
+    Attributes:
+        cap: The budget asked for (``--max-features``).
+        drawn: The feature columns kept.
+        total: The feature columns the frame held.
+        seed: The seed the columns were drawn with.
+    """
+
+    cap: int
+    drawn: int
+    total: int
+    seed: int
+
+    def line(self) -> str:
+        """The one line a probe prints, so no reader takes a sampled result for a full one."""
+        return (
+            f"feature sample: {self.drawn:,} of {self.total:,} feature columns, drawn at random without looking at "
+            f"the target (cap {self.cap:,}, seed {self.seed}); every number below is from this sample, not from the "
+            "whole table"
+        )
+
+    def as_dict(self) -> dict:
+        """The sample as the JSON output carries it."""
+        return dataclasses.asdict(self)
+
+
+def sampled_columns(
+    columns: list[str], keep: set[str], max_features: int | None, seed: int
+) -> tuple[list[str], FeatureSample | None]:
+    """The columns to probe and the sample that was drawn, or ``(columns, None)`` when none was.
+
+    Everything in ``keep`` stays whatever the cap is; the rest are the feature columns, of which at most
+    ``max_features`` are drawn at random (the frame's own column order is kept, so the output reads as before). The
+    draw reads no values, so it cannot select on the target.
+
+    Args:
+        columns: The frame's columns, in its own order.
+        keep: The columns that are no model input and are never dropped.
+        max_features: The budget; None or 0 (or a frame at or under it) keeps every column.
+        seed: The seed of the draw.
+
+    Returns:
+        The columns to keep, and the :class:`FeatureSample` when one was drawn.
+    """
+    features = [c for c in columns if c not in keep]
+    if not max_features or max_features <= 0 or len(features) <= max_features:
+        return list(columns), None
+    rng = np.random.default_rng(seed)
+    drawn = {features[i] for i in rng.choice(len(features), size=max_features, replace=False)}
+    sample = FeatureSample(cap=int(max_features), drawn=len(drawn), total=len(features), seed=int(seed))
+    return [c for c in columns if c in keep or c in drawn], sample
 
 
 @dataclass
@@ -92,6 +164,7 @@ class ProbeInput:
         metric: The declared metric (the ``objective_metric`` spec), or None (a format-1 container).
         scoring: The values of every scoring column, row by row of ``df`` (index 0 to n - 1), or None.
         target_note: How many rows without a target were dropped, or empty when none.
+        feature_sample: The column sample ``sample_features`` drew, or None when every feature column is here.
     """
 
     df: pd.DataFrame
@@ -114,6 +187,7 @@ class ProbeInput:
     weight_column: str | None = None
     metric: Any = None
     scoring: pd.DataFrame | None = None
+    feature_sample: FeatureSample | None = None
     target_note: str = ""
 
     @property
@@ -130,6 +204,36 @@ class ProbeInput:
     def group_cols(self) -> list[str]:
         """The group columns (none for an IID or temporal task)."""
         return as_column_list(self.grouping.on) if self.grouping is not None else []
+
+    def non_feature_cols(self) -> set[str]:
+        """The columns of ``df`` that are no model input: the ones ``feature_cols`` leaves out, or, without it, the
+        target, the group columns and the time columns.
+        """
+        if self.feature_cols is not None:
+            return {c for c in self.df.columns if c not in set(self.feature_cols)}
+        named = {self.target, *self.group_cols, self.time_on, self.prediction_time}
+        return {c for c in self.df.columns if c in named}
+
+    def sample_features(
+        self, max_features: int | None = MAX_FEATURES, *, seed: int = FEATURE_SAMPLE_SEED
+    ) -> ProbeInput:
+        """This input with at most ``max_features`` feature columns, so a very wide table can be probed at all.
+
+        Above the cap, that many feature columns are drawn at random with ``seed`` and ``feature_sample`` records the
+        draw; the target, the group, time and scoring columns stay whatever the cap is, and the frame's column order
+        is kept. The draw reads no values and so never selects on the target. At or under the cap (and with
+        ``max_features`` 0 or None) the input is returned unchanged, so an ordinary dataset probes exactly as before.
+        """
+        keep, sample = sampled_columns(list(self.df.columns), self.non_feature_cols(), max_features, seed)
+        if sample is None:
+            return self
+        kept = set(keep)
+        return dataclasses.replace(
+            self,
+            df=self.df[keep],
+            feature_cols=None if self.feature_cols is None else tuple(c for c in self.feature_cols if c in kept),
+            feature_sample=sample,
+        )
 
     def flat_splits(self) -> list[tuple]:
         """Every split as ``(train_idx, test_idx)``, repeat by repeat."""
@@ -198,6 +302,14 @@ def _spec_fields(spec: Any) -> dict:
     if spec is None:
         return {}
     return dataclasses.asdict(spec) if dataclasses.is_dataclass(spec) else dict(spec)
+
+
+def feature_cap(args: Any) -> int:
+    """The column budget ``args`` asks for (``--max-features``; 0 for every column), :data:`MAX_FEATURES` when it
+    names none (a namespace built by hand, or the option left at its default).
+    """
+    cap = getattr(args, "max_features", None)
+    return MAX_FEATURES if cap is None else int(cap)
 
 
 def without_missing_target(data: ProbeInput) -> ProbeInput:

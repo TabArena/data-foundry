@@ -282,6 +282,101 @@ def test_probe_input_drops_the_scoring_columns(clean_room):
     assert inputs._without_scoring_columns(df, plain)[0] is df
 
 
+# --------------------------------------------------------------------------- the feature cap (--max-features)
+@pytest.fixture(scope="module")
+def io():
+    """``data_foundry.probes.inputs``, where the probes' column budget lives."""
+    return inputs
+
+
+def _wide(io, columns: int, *, feature_cols: bool = True):
+    """A ProbeInput of ``columns`` feature columns, a target, a group column and a time column."""
+    df = pd.DataFrame({f"p{i}": [float(i), float(i) + 1] for i in range(columns)})
+    df = df.assign(y=[1.0, 2.0], g=["u", "v"], t=[1, 2])
+    return io.ProbeInput(
+        df=df,
+        target="y",
+        problem_type="regression",
+        regime="grouped_non_iid",
+        splits={0: {0: ([0], [1])}},
+        grouping=SimpleNamespace(on="g", labels="per_sample"),
+        time_on="t",
+        origin="definition",
+        feature_cols=tuple(f"p{i}" for i in range(columns)) if feature_cols else None,
+    )
+
+
+def test_the_default_cap_is_ten_thousand_features(io):
+    """The curator's budget: 10,000 feature columns, drawn with a fixed seed."""
+    assert io.MAX_FEATURES == 10_000
+    assert io.FEATURE_SAMPLE_SEED == 0
+
+
+def test_a_frame_at_or_under_the_cap_is_untouched(io):
+    """An ordinary dataset probes exactly as before: the same object, no sample recorded."""
+    data = _wide(io, 50)
+    assert data.sample_features(50) is data
+    assert data.sample_features(10_000) is data
+    assert data.sample_features(0) is data  # 0 means every column
+    assert data.sample_features(None) is data
+    assert data.sample_features(50).feature_sample is None
+
+
+def test_over_the_cap_the_features_are_sampled_and_the_rest_kept(io):
+    """The draw keeps the cap's worth of features, every non-feature column, and the frame's column order."""
+    data = _wide(io, 200).sample_features(20)
+    kept = [c for c in data.df.columns if c.startswith("p")]
+    assert len(kept) == 20
+    assert {"y", "g", "t"} <= set(data.df.columns)  # the target, group and time columns stay whatever the cap is
+    assert kept == sorted(kept, key=lambda c: int(c[1:]))  # the frame's own order
+    assert data.feature_cols == tuple(kept)
+    assert data.feature_sample.as_dict() == {"cap": 20, "drawn": 20, "total": 200, "seed": 0}
+
+
+def test_the_draw_is_reproducible_and_never_reads_the_target(io):
+    """The same seed draws the same columns; the target's values cannot move the draw (no supervised selection)."""
+    first = _wide(io, 200).sample_features(20)
+    assert list(first.df.columns) == list(_wide(io, 200).sample_features(20).df.columns)
+    assert list(first.df.columns) != list(_wide(io, 200).sample_features(20, seed=1).df.columns)
+    flipped = _wide(io, 200)
+    flipped.df["y"] = [99.0, -99.0]
+    assert list(flipped.sample_features(20).df.columns) == list(first.df.columns)
+
+
+def test_without_feature_cols_the_named_columns_are_still_kept(io):
+    """A legacy input (no ``feature_cols``) keeps its target, group and time columns and stays legacy."""
+    data = _wide(io, 200, feature_cols=False).sample_features(20)
+    assert {"y", "g", "t"} <= set(data.df.columns)
+    assert len([c for c in data.df.columns if c.startswith("p")]) == 20
+    assert data.feature_cols is None
+
+
+def test_the_sample_line_says_the_cap_the_draw_and_the_total(io):
+    """No reader may take a sampled result for a full one, so the line carries all three numbers."""
+    line = io.FeatureSample(cap=10_000, drawn=10_000, total=473_034, seed=0).line()
+    assert "10,000 of 473,034 feature columns" in line
+    assert "cap 10,000, seed 0" in line
+    assert "not from the whole table" in line
+
+
+def test_sampled_columns_keeps_the_named_columns(io):
+    """The frame-level helper (``dtype_probes.py``) keeps ``keep`` whatever the cap is."""
+    columns = ["y", "g", *(f"p{i}" for i in range(100))]
+    kept, sample = io.sampled_columns(columns, {"y", "g"}, 10, 0)
+    assert kept[:2] == ["y", "g"]
+    assert len(kept) == 12
+    assert sample.total == 100
+    assert io.sampled_columns(columns, {"y", "g"}, 1000, 0) == (columns, None)
+
+
+def test_the_cap_is_read_from_the_command_line_or_defaults(io):
+    """``feature_cap`` takes ``--max-features`` when given (0 for every column), else the default budget."""
+    assert io.feature_cap(SimpleNamespace()) == io.MAX_FEATURES
+    assert io.feature_cap(SimpleNamespace(max_features=None)) == io.MAX_FEATURES
+    assert io.feature_cap(SimpleNamespace(max_features=0)) == 0
+    assert io.feature_cap(SimpleNamespace(max_features=50)) == 50
+
+
 def test_source_links_drop_the_notes(clean_room, tmp_path):
     """The record's ``#`` note lines are our notes, so the clean room leaves them out."""
     _record(tmp_path, "ds", suggestion="Yes", source_links=["# canonical: the curator's note", "https://a.org/x"])

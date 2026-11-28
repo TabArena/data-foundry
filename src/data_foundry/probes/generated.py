@@ -439,8 +439,10 @@ def check_frame(
 def probe(name: str, root: Path, args: argparse.Namespace) -> dict:
     """Run ``check_frame`` on one dataset's model inputs and target."""
     started = time.time()
-    data = inputs.load(name, root, built=args.built)
+    data = inputs.load(name, root, built=args.built).sample_features(inputs.feature_cap(args))
     result = {"name": name, "origin": data.origin}
+    if data.feature_sample is not None:
+        result["feature_sample"] = data.feature_sample.as_dict()
     result |= check_frame(data.df, data.target, data.problem_type, data.group_cols, feature_cols=data.features)
     result["seconds"] = round(time.time() - started)
     return result
@@ -471,6 +473,8 @@ def render(r: dict) -> str:
             f"; within {r['classes']} classes: {r['class_pair_share']:.1%} of {r['class_pairs']} pairs dependent, "
             f"{r['class_uniform_columns']} of {r['class_uniform_tested']} uniform"
         )
+    if sample := r.get("feature_sample"):
+        detail += "; " + inputs.FeatureSample(**sample).line()
     rules = r.get("flag_rules", {})
     flags = [f"{flag} ({rules[flag]})" if flag in rules else flag for flag in r["flags"]]
     return f"{r['name']} ({r['problem_type']}, {r['rows']} rows): {detail}; flags {flags}"

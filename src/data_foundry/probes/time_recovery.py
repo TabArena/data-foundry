@@ -649,7 +649,10 @@ def probe(name: str, root: Path, args: argparse.Namespace) -> dict:
                 "flags": []
             }
         data = inputs.from_definition(ds, raw=True)
+    data = data.sample_features(inputs.feature_cap(args))
     result = {"name": name, "origin": data.origin, "regime": data.regime}
+    if data.feature_sample is not None:
+        result["feature_sample"] = data.feature_sample.as_dict()
     if data.regime == "temporal_non_iid" and not include_temporal:
         return result | {"skipped": "temporal split", "flags": []}
     result |= check_frame(
@@ -724,6 +727,8 @@ def render(r: dict) -> str:
         parts.append("time columns " + ", ".join(f"{c} ({why})" for c, why in r["time_columns"].items()))
     if r.get("dropped_time_columns"):
         parts.append("dropped " + ", ".join(r["dropped_time_columns"]))
+    if sample := r.get("feature_sample"):
+        parts.append(inputs.FeatureSample(**sample).line())
     parts += _render_order(r)
     drifting = [c for c, o in r["id_orders"].items() if o["flag"]]
     if drifting:

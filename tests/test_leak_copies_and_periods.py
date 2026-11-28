@@ -255,6 +255,8 @@ def test_the_cli_runs_probe_13_alone_on_the_task_time_column(monkeypatch, capsys
     rng, t = _daily(days=200)
     df = pd.DataFrame({"when": t, "x": rng.normal(size=len(t)), "y": rng.integers(0, 2, len(t))})
     data = SimpleNamespace(df=df, target="y", problem_type="binary_classification", time_on="when")
+    data.feature_sample = None  # a hand-built stand-in for ProbeInput: 3 columns, well under the feature cap
+    data.sample_features = lambda *_a, **_kw: data
     monkeypatch.setattr(inputs, "definition", lambda *_a, **_kw: SimpleNamespace(raw=None))
     monkeypatch.setattr(inputs, "from_definition", lambda _ds: data)
     args = argparse.Namespace(time_on=None, period="W", tz=None, positive="1", tail=None, period_only=True)

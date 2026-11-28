@@ -3,7 +3,8 @@
 Usage::
 
     data-foundry probe {leak,task,group,hidden-groups,time,dtypes,generated} NAME... [--all] [--built]
-        [--root datasets/_dev/tabarena-v0pt2] [--jobs 1] [--n-jobs 8] [--out DIR] [probe options]
+        [--root datasets/_dev/tabarena-v0pt2] [--jobs 1] [--n-jobs 8] [--max-features 10000] [--out DIR]
+        [probe options]
 
 The options every probe shares:
 
@@ -15,6 +16,10 @@ The options every probe shares:
 * ``--jobs``: datasets probed in parallel (default 1); ``--n-jobs``: threads per model (default 8).
 * ``--out DIR``: one JSON per dataset (``DIR/<name>.json``) and ``DIR/summary.md`` (the dtype probe also writes
   ``flagged.csv``).
+* ``--max-features``: the column budget (default 10,000; 0 for every column). A frame with more feature columns is
+  probed on that many drawn at random with a fixed seed, never by the target; the target, group, time and scoring
+  columns are kept, and the output's ``feature sample`` line and the JSON's ``feature_sample`` say a sample was drawn
+  (``data_foundry.probes.inputs``: ``MAX_FEATURES``, ``ProbeInput.sample_features``).
 
 Each probe's own options follow its name (``data-foundry probe task --help``). The probe modules say what each number
 measures; the reading of the flags is in ``.claude/skills/knowledge-data-foundry/references/checks_and_probes.md``. A
@@ -67,6 +72,15 @@ def _shared_options() -> argparse.ArgumentParser:
     shared.add_argument("--jobs", type=int, default=1, help="Datasets probed in parallel (default 1).")
     shared.add_argument("--n-jobs", type=int, default=8, help="Threads per model (default 8).")
     shared.add_argument("--out", type=Path, help="Write one JSON per dataset and summary.md here.")
+    shared.add_argument(
+        "--max-features",
+        type=int,
+        help=(
+            "Feature columns probed, at most (default 10,000, inputs.MAX_FEATURES; 0 for every column). Above the cap "
+            "that many are drawn at random with seed 0, never by the target; the target, group, time and scoring "
+            "columns are kept whatever it is, and the output says a sample was drawn."
+        ),
+    )
     return shared
 
 

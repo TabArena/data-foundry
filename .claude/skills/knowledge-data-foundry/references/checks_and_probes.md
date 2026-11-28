@@ -59,8 +59,8 @@ metric's floor (`min_prediction`, MET-13).
 
 Every probe takes the same options: the datasets (`NAME...`, or `--all` for every definition under `--root`, the
 working copy by default), `--built`, `--jobs` (datasets in parallel, default 1), `--n-jobs` (threads per model,
-default 8) and `--out DIR` (one JSON per dataset and `summary.md`). Each probe's own options follow its name
-(`data-foundry probe task --help`):
+default 8), `--max-features` (the column budget, default 10,000; its own section is below) and `--out DIR` (one JSON
+per dataset and `summary.md`). Each probe's own options follow its name (`data-foundry probe task --help`):
 
 | Command | What it asks | Its own options (defaults) |
 |---|---|---|
@@ -177,6 +177,35 @@ A dataset that fails is reported and the others run on; the exit code is then 1.
   format-1 containers: say so when the v2 definition changed the split, the columns or the scoring.
 * `check_collection_bundles.py [--collection BeyondArena] [--json PATH]`: the bundle checks over every container of a
   registered collection, for the v1 collections ([DATA_FOUNDRY_V1.md](../../../../DATA_FOUNDRY_V1.md)).
+
+### The column budget: `--max-features`
+
+Every probe (`data-foundry probe ...`) takes `--max-features` (default **10,000**; `0` for every column). A frame
+with at most that many feature columns is probed exactly as before: the same columns, the same numbers, the same
+output. Above the cap the probe draws that many feature columns at random and runs on them, which is what lets a very
+wide table be probed at all: on `gse40279_methylation_age` (656 rows x 473,037 columns) three probes were killed at
+about 20 GB and the group probe produced nothing in 3.5 hours before the cap.
+
+* **The draw is honest.** It reads no values, so it cannot select on the target: this is a random subset, never the
+  supervised selection the rules forbid (`selected_linear` inside the task probe still picks its inputs on each
+  train side, as it always did). It uses a fixed seed (0), so the same cap on the same frame draws the same columns
+  and two runs are comparable.
+* **Nothing that is not a feature is dropped.** The target, the group columns, the time columns and the scoring
+  columns stay whatever the cap is; only model inputs are drawn from. The frame's own column order is kept.
+* **The output says so.** A probe that sampled prints
+  `feature sample: 10,000 of 473,034 feature columns, drawn at random without looking at the target (cap 10,000,
+  seed 0); every number below is from this sample, not from the whole table`, and writes the same four numbers to its
+  JSON as `feature_sample` (`cap`, `drawn`, `total`, `seed`). Never quote a sampled number as the dataset's: say
+  which sample it came from, and raise the cap when the decision turns on it.
+* **What the cap does not reach.** It is a budget on the frame the probes model, not on loading: the definition's
+  full frame is still built first, so the peak memory of reading a very wide source is unchanged, and
+  `probe leak --raw` and `probe time` still read the whole raw table for the checks that need it. The leak
+  probes' `--max-single-features` (default 300) applies on top, to the columns fitted one by one.
+
+The budget lives in one place, `data_foundry.probes.inputs`: `MAX_FEATURES`, `feature_cap(args)` (the option, or the
+default), `ProbeInput.sample_features` and, for the frame-level callers (the dtype probe), `sampled_columns`; the
+option itself is one of the shared ones in `data_foundry.probes.cli`. A new probe adds one `sample_features` call on
+`inputs.feature_cap(args)` and reports `feature_sample`; `tests/test_skill_files.py` checks that each one does.
 
 ### The stationary-relation test
 

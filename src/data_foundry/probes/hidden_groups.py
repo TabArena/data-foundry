@@ -957,10 +957,12 @@ def probe(name: str, root: Path, args: argparse.Namespace) -> dict:
     ``--include-grouped`` runs it as if it were IID (its known group marked).
     """
     started = time.time()
-    data = inputs.load(name, root, built=args.built)
+    data = inputs.load(name, root, built=args.built).sample_features(inputs.feature_cap(args))
     # the task's regime, not its time column: a grouped task can name a time column too
     regime = {"temporal_non_iid": "temporal", "grouped_non_iid": "grouped"}.get(data.regime, "iid")
     result: dict = {"name": name, "regime": regime, "origin": data.origin}
+    if data.feature_sample is not None:
+        result["feature_sample"] = data.feature_sample.as_dict()
     if regime == "grouped" and not args.include_grouped:
         return result | {"skipped": f"{regime} task"}
     result |= run(
@@ -1023,6 +1025,8 @@ def render(result: dict) -> str:
     lines = [f"== {result['name']} ({result.get('regime', '?')}, {result.get('rows', '?')} rows)"]
     if "skipped" in result or "error" in result:
         return lines[0] + f": {result.get('skipped') or result.get('error')}"
+    if sample := result.get("feature_sample"):
+        lines.append("   " + inputs.FeatureSample(**sample).line())
     if result["regime"] == "temporal":
         lines.append(f"   candidates {result['candidates']}; entity-like {result['entity_like']} (temporal: no hits)")
     else:
