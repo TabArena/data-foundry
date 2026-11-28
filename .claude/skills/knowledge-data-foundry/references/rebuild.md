@@ -24,8 +24,9 @@ The scripts are in [`scripts/`](../scripts/); run them from the repository root 
 
 1. Settle the open decisions that change a dataset (a retirement, an edited definition) before the rebuild, not
    after it: a second full rebuild costs another hour of machine time and another round of checks.
-2. Build in the repository's `.venv` (the `build` extra; pandas 2.3 or 3 give the same containers, scikit-learn
-   must stay below 1.8). `pytest -q` passes, and
+2. Build in the repository's `.venv` (the `build` extra, with pandas 2: pandas 3 parses a CSV's floats exactly where
+   pandas 2 rounds some in the last bit, so a dataset read from a CSV with long floats gets another checksum under
+   pandas 3; scikit-learn must stay below 1.8). `pytest -q` passes, and
    `.venv/bin/python -m data_foundry.curation.cli dataset list --root datasets/_dev/tabarena-v0pt2` lists every
    definition (it exits non-zero when one does not import).
 3. Commit the definitions first if the build record should carry a clean `git_sha`. A build from a dirty tree records

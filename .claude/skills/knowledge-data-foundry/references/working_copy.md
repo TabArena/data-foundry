@@ -62,8 +62,10 @@ CHANGELOG entry and never add it to `BEYOND_ARENA_UUIDS`. A build happens only w
 curator asks; `dataset check` gives the same container without saving. How to rebuild and verify many
 datasets at once: [rebuild.md](rebuild.md).
 
-* Build in the repository's `.venv` with the `build` extra. pandas 2.3 and 3 give the same containers; scikit-learn
-  stays below 1.8.
+* Build in the repository's `.venv` with the `build` extra, which locks pandas 2: pandas 3 parses a CSV's floats
+  exactly where pandas 2 rounds some in the last bit, so a dataset read from a CSV with long floats gets another
+  checksum under pandas 3 (fiat_500, airqo; `tests/test_cross_pandas.py`). Everything else builds the same under
+  both. scikit-learn stays below 1.8.
 * Commit the definitions first when the build record should carry a clean `git_sha`; a dirty tree records
   `<sha>-dirty`.
 * Never rebuild a shipped BeyondArena dataset to check it: the collection pins its UUIDs

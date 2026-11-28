@@ -12,7 +12,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # pandas 2 (the lock) and pandas 3 must build and load the same containers
+          # pandas 2 (the lock) and pandas 3 must build and load the same containers, except where pandas reads a file
+          # differently (tests/test_cross_pandas.py pins both)
           - python: "3.10"
             pandas: ""
           - python: "3.12"
@@ -39,3 +40,28 @@ jobs:
         run: |
           uvx ruff@0.15.15 check .
           uvx ruff@0.15.15 format --check .
+
+  browser:
+    # the dashboard, the static site, the review page and the split tree in headless Chromium (two dashboard bugs
+    # showed only in a browser); tests/test_pages_in_browser.py skips elsewhere
+    runs-on: ubuntu-latest
+    name: pages in a browser
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Set up Python
+        run: uv python install 3.12
+
+      - name: Install dependencies and Chromium
+        run: |
+          uv sync --extra tests --python 3.12
+          uv pip install playwright
+          uv run --no-sync playwright install --with-deps chromium
+
+      - name: Run the page tests
+        env:
+          DATA_FOUNDRY_REQUIRE_BROWSER: "1"
+        run: uv run --no-sync pytest tests/test_pages_in_browser.py

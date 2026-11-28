@@ -493,21 +493,56 @@ def _classes(target: pd.Series, problem_type: str) -> tuple[Any, ...] | None:
     return tuple(sorted(target.dropna().unique()))
 
 
+FORMAT_1_METRICS: dict[str, dict[str, Any]] = {
+    "MAPE": {"name": "mape"},
+    "normalized_gini_coefficient": {
+        "name": "roc_auc",
+        "note": "a binary target's normalized Gini is 2*AUC - 1, so it ranks models as ROC AUC does",
+    },
+    "amex_metric": {"name": "gini_top_capture", "params": {"top_fraction": 0.04, "negative_weight": 20}},
+    "PhysioNet2019UtilityFunction": {
+        "name": "normalized_early_detection_utility",
+        "inputs": {"group": "Patient_ID", "order": "Hour"},
+    },
+}
+"""The metric names of shipped format-1 (BeyondArena) containers that the registry holds under another name, each
+as the same dataset's v2 definition declares it (porto_seguro, amex_non_iid_1m, 5g_energy_consumption,
+sepsis_prediction_1m). ``tests/data/beyondarena_tasks.json`` records every shipped container's metric name, and a
+test resolves each one."""
+
+
 def _format_1_spec(task: Any) -> MetricSpec:
-    """A format-1 task's metric name as a spec: the registry's kind, prediction and direction."""
-    name = task.objective_metric_name
+    """A format-1 task's metric name as a spec: the registry's kind, prediction and direction.
+
+    A name the registry holds under another name comes from :data:`FORMAT_1_METRICS`; an empty name (the container
+    names no metric) is the problem type's default, which is what BeyondArena scores such a task with.
+    """
+    stored = (task.objective_metric_name or "").strip()
+    alias = FORMAT_1_METRICS.get(stored, {})
+    name = alias.get("name") or stored or FALLBACK_METRICS.get(task.problem_type, "")
     if name not in METRICS:
-        raise ValueError(f"format-1 metric {name!r} is not in the metric registry (data_foundry.metrics.METRICS).")
+        raise ValueError(f"format-1 metric {stored!r} is not in the metric registry (data_foundry.metrics.METRICS).")
     definition = METRICS[name]
-    default = FALLBACK_METRICS.get(task.problem_type) == name
+    reason = "Container format 1 stores the metric's name only (BeyondArena: the default of the problem type)."
+    if not stored:
+        reason = "The container names no metric, so the problem type's default scores it, as in BeyondArena."
+    elif alias:
+        reason = f"Container format 1 names it {stored!r}, the registry's {name!r}" + (
+            f": {alias['note']}." if "note" in alias else "."
+        )
     return MetricSpec(
         name=name,
         kind=definition.kind,
         prediction=definition.prediction,
         greater_is_better=definition.greater_is_better,
-        origin="fallback" if default else "context",
-        reason="Container format 1 stores the metric's name only (BeyondArena: the default of the problem type).",
+        origin="fallback"
+        if not stored or (not alias and FALLBACK_METRICS.get(task.problem_type) == name)
+        else "context",
+        reason=reason,
         definition=definition.definition,
+        params=dict(alias.get("params", {})),
+        inputs=dict(alias.get("inputs", {})),
+        original=stored if alias else None,
     )
 
 

@@ -112,6 +112,15 @@ def main() -> int:
         print(f"missing from this run: {len(missing)}", missing if len(missing) <= 20 else "(a partial run)")
     if expected:
         print("checksum differs from the full build:", names(lambda r: r["checksum_as_expected"] is False))
+        majors = {
+            run: sorted({str(r.get("pandas", "?")).split(".")[0] for r in found.values()})
+            for run, found in (("this run", results), ("the full build", expected))
+        }
+        if majors["this run"] != majors["the full build"]:
+            print(
+                f"pandas major version differs ({majors}): pandas 3 parses a CSV's floats exactly where pandas 2 "
+                "rounds some in the last bit, so datasets read from CSV files can differ for that reason alone."
+            )
     open_warnings = [w for r in rows for w in r["warnings"]]
     print(f"open warnings: {len(open_warnings)} in {len(names(lambda r: r['warnings']))} datasets")
     print(

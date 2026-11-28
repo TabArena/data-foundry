@@ -27,6 +27,7 @@ import sys
 import tempfile
 import time
 import traceback
+from importlib.metadata import version
 from pathlib import Path
 
 from data_foundry.schema import resolve_warehouse_dir
@@ -176,6 +177,7 @@ def main() -> int:
         record["read"] = sorted(READ)
     record["seconds"] = round(time.time() - started)
     record["max_rss_gb"] = round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024**2, 1)
+    record["pandas"] = version("pandas")  # pandas 3 parses CSV floats exactly, pandas 2 rounds some: compare_builds
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(record, indent=1, default=str))
     status = "CRASH" if "crash" in record else ("ok" if record.get("ok") else "ERRORS")
