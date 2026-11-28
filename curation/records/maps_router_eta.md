@@ -74,6 +74,8 @@ CC (2026-11-17, Andrej): the declared split (temporal on `timestamp`, windows of
 
 CC (2026-11-20, Andrej): split kept (Review issue 4, A as implemented): the three newest weeks; the oldest (44.8%) stays as the curator's exception, its acceptance reworded (not re-checked: the raw data is not on this machine).
 
+CC (2026-11-26, Lennart): task-probe flag `one_feature` after the rebuild of 2026-11-26: kept as shipped (TP-4). The anonymous `num_18`, chosen per window, reaches skill 0.761 against the random forest's 0.800, and all 21 BeyondArena configurations beat it (RMSE 0.157 to 0.167 on log s/km against 0.180).
+
 ## Review
 
 **Outcome:** added as `maps_router_eta_1m`. On 2026-11-11 you kept the three newest weeks, 20 November to 10

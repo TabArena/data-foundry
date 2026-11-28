@@ -5,8 +5,6 @@ checked_by:
 - Lennart
 - Mustafa
 - Gioia
-data_foundry_status:
-- WIP (Triage)
 suggestion: TBD -> Yes
 decision_markers:
 - Data Quality Issue
@@ -27,8 +25,6 @@ source_links:
 - https://www.magicbricks.com/
 - https://github.com/Juhibhojani/Web-Scraping
 source_row: 594
-needs_review:
-- wip_unclaimed
 type_adapter_id: curation-record-v1
 ---
 

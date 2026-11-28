@@ -2,7 +2,7 @@
 
 Procedure, at every rank. How we write the record comments, the notes on a dataset, the plain-language task summary and
 the questions for the curator. The general style rules (no em dashes, no bold-first bullets, no inflated wording) are
-the "AI Writing Tropes to Avoid" section of [AGENTS.md](../../../../AGENTS.md); they apply to everything below, to
+[style.md](style.md) ("AI Writing Tropes to Avoid"); they apply to everything below, to
 docstrings and to commit messages.
 
 ## The judgment record

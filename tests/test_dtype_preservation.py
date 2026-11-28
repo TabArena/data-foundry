@@ -8,12 +8,13 @@ import logging
 import numpy as np
 import pandas as pd
 import pandas.testing as pdt
+
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.schema import (
-    DatasetMetadata,
     PredictiveMLSplitsMetadata,
-    PredictiveMLTaskMetadata,
 )
+from data_foundry.v1 import PredictiveMLTaskMetadata
+from tests.helpers import toy_dataset_metadata
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -22,19 +23,7 @@ from data_foundry.schema import (
 
 def _make_metadata():
     """Return (dataset_metadata, task_metadata, splits_metadata) with target='target'."""
-    dataset_metadata = DatasetMetadata(
-        unique_name="dtype_test",
-        dataset_year="2025",
-        domain_str="finance",
-        dataset_source="Kaggle",
-        original_dataset_source_download_link="http://example",
-        download_description="desc",
-        academic_reference_bibtex="bib",
-        academic_reference_bibtex_key="key",
-        license=None,
-        data_tags=["IID"],
-        curation_comments=None,
-    )
+    dataset_metadata = toy_dataset_metadata(unique_name="dtype_test")
     task_metadata = PredictiveMLTaskMetadata(
         target_column_name="target",
         problem_type="binary_classification",

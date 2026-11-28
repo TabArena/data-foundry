@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: climate_model_weather_forecasting_1m
 container_format: 2
-checksum: v2:bbb1780b5a4b6cbf702afe33de8f7fc45d2e2b932bb744cd14ea34cb7ff9da83
+checksum: v2:4cc99a86fa5cdd7094413b7abd2f74f60e07c1c4107b30273db2f4999b6eda2a
 build:
-  uuid: 01a111fb-bc63-7614-a137-a3fd390bc4f1
-  checksum: v2:db33e0620375dca0b14660f5fa76165c01a9052eaf5882f9451ae2cd7405f4fc
-  built_at: '2026-10-06T16:11:36+00:00'
-  path: climate_model_weather_forecasting/versions/01a111fb-bc63-7614-a137-a3fd390bc4f1
+  uuid: 01a217f5-85a5-7a90-9926-13708d132fb0
+  checksum: v2:4cc99a86fa5cdd7094413b7abd2f74f60e07c1c4107b30273db2f4999b6eda2a
+  built_at: '2026-11-26T13:07:49+00:00'
+  path: climate_model_weather_forecasting_1m/01a217f5-85a5-7a90-9926-13708d132fb0
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 16807722
   n_features: 99
@@ -49,6 +49,33 @@ splits:
   time_horizon_unit: days
   time_gap: 3
   time_gap_unit: days
+  reason: 'Each test window is one week (the horizon checked, CC 2026-11-11). TabReD
+    tests one month (1-30 July 2023), which the curator judged long for weather, and
+    states no refit cadence; post-processing models are re-estimated every day on
+    the last 30-60 days (https://npg.copernicus.org/articles/27/23/2020/), so a weekly
+    refit is conservative and a week still spans several weather situations. One day
+    would test one weather situation per window and be shorter than a forecast''s
+    lead of up to three days, and 14 days is the upper bound of the rule on weather
+    windows. The windows, newest first (CC 2026-11-10 and 2026-11-11, the curator''s
+    pick): 2023-07-24 to 07-30, the newest; 2023-05-01 to 05-07, in the warmest month
+    (mean measured temperature 28.06 against 26.55 on its train side); and 2023-02-13
+    to 02-19, in late winter, when the models'' upper-air temperature forecasts (`gfs_temperature_5000`,
+    `gfs_temperature_7000`) differ most from training. TabReD''s year runs from 1
+    July 2022 to 30 July 2023, so no other year can be tested, and the one-week windows
+    that keep half the rows for training run from February to July 2023; the three
+    are 11 and 12 weeks apart. The floor as amended on 2026-11-11 would also admit
+    6-12 February (49.95% of the rows for training with the gap), the February week
+    first proposed; 13-19 February is the curator''s pick. The gap of three days:
+    a forecast is issued up to 74 hours before its measurement (`apply_time_rl`; median
+    31.5 hours, 99.2% within 72 hours), so 19.7%, 21.8% and 21.3% of the windows''
+    forecasts were issued before the window starts. Without the gap their train side
+    would hold readings of their own station taken after the forecast was issued,
+    and a station''s daily error carries over for days (the daily error minus the
+    station''s mean correlates 0.34, 0.23 and 0.18 at lags of one, two and three days,
+    0.14 at seven), so the model that corrects a forecast is trained only on what
+    was measured by the time it was issued: train is every measurement taken at least
+    three days before the window. The 144,106 rows of 21-23 July 2023, the newest
+    window''s gap, lie in no split, so the frame leaves them out.'
   n_train:
     min: 8739284
     max: 16429730
@@ -78,7 +105,7 @@ decisions: []
 
 Regression of `fact_temperature`, scored with `rmse` on temporal splits by `fact_time`. 16,807,722 rows and 99 features. Source: Kaggle (2024).
 
-Built as `01a111fb-bc63-7614-a137-a3fd390bc4f1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:bbb1780b5a4b6cbf702afe33de8f7fc45d2e2b932bb744cd14ea34cb7ff9da83`, so the build is stale. See [Build](#build).
+Built as `01a217f5-85a5-7a90-9926-13708d132fb0` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -86,7 +113,7 @@ Built as `01a111fb-bc63-7614-a137-a3fd390bc4f1` on 2026-10-06, but `dataset.py` 
 
 **Use case.** For example, a weather service corrects the raw forecasts of global weather models at each station, to publish a more accurate local temperature forecast (Yandex station data, released with the TabReD benchmark).
 
-**One row.** One forecast of the temperature at one of 1,948 weather stations, July 2022 to July 2023, as filtered and sub-sampled by TabReD; one measurement carries up to 16 forecasts issued at different times.
+**One row.** One temperature measurement at one of 1,864 weather stations, July 2022 to July 2023, as filtered and sub-sampled by TabReD.
 
 **Predicted.** The temperature measured at the station; the unit is not stated.
 
@@ -199,12 +226,13 @@ We start with data from TabRed, which already comes preprocessed.
 - Note: TabReD states no unit for the target ("the true temperature"). Its values, mostly whole numbers with median 27, fit degrees Celsius, the unit of Shifts.
 - We drop duplicated columns `cmc_0_1_66_0` , `cmc_0_1_67_0`, `cmc_0_1_68_0`, and `cmc_0_1_11_0`, which is like them 0.0 or missing in every row.
 - We set -9999 to missing in `gfs_soil_temperature` (31% of rows), `cmc_0_0_0_2_grad` (1.9%) and `gfs_temperature_sea_grad` (0.3%): it is a fill value, as the other values of these columns lie between about -21 and 52, and every row with -9999 in `gfs_temperature_sea_grad` also has it in `gfs_soil_temperature`.
-- Repeated measurements: a row is one forecast, and 95.7% of the rows share their station and measurement time with another row (5,141,583 measurements behind 16,951,828 rows, up to 16 forecasts each, one target value in all but 63 of the 4,412,203 repeated groups). The windows cut on the measurement time, so no measurement spans a train side and a window; the scored windows hold 98,285, 94,935 and 90,882 measurements. A benchmark cuts its inner validation folds by the time column, which keeps a measurement together.
 - The row budget: Each test window keeps at most 500k of its rows (v2 split protocol; all of them here, 271k to 386k), and each train side holds every row up to three days before its window, so the container holds every row a split uses (the three days before the newest window lie in no split). The container records the 1M train budget, and a benchmark sub-samples each train side to 1M rows before a fit (`subsample_train`; by default a random 1M of the newest year before the window). The data start in July 2022, so the newest year leaves out only part of July 2022 and the default is close to the random sub-sampling of TabReD, which keeps data from all periods of the history.
 
 ## Splits
 
-Each test window is one week (the horizon checked, CC 2026-11-11). TabReD tests one month (1-30 July 2023), which the curator judged long for weather, and states no refit cadence; post-processing models are re-estimated every day on the last 30-60 days (https://npg.copernicus.org/articles/27/23/2020/), so a weekly refit is conservative and a week still spans several weather situations. One day would test one weather situation per window and be shorter than a forecast's lead of up to three days, and 14 days is the upper bound of the rule on weather windows. The windows, newest first (CC 2026-11-10 and 2026-11-11, the curator's pick): 2023-07-24 to 07-30, the newest; 2023-05-01 to 05-07, in the warmest month (mean measured temperature 28.06 against 26.55 on its train side); and 2023-02-13 to 02-19, in late winter, when the models' upper-air temperature forecasts (`gfs_temperature_5000`, `gfs_temperature_7000`) differ most from training. TabReD's year runs from 1 July 2022 to 30 July 2023, so no other year can be tested, and the one-week windows that keep half the rows for training run from February to July 2023; the three are 11 and 12 weeks apart. The floor as amended on 2026-11-11 would also admit 6-12 February (49.95% of the rows for training with the gap), the February week first proposed; 13-19 February is the curator's pick. The gap of three days: a forecast is issued up to 74 hours before its measurement (`apply_time_rl`; median 31.5 hours, 99.2% within 72 hours), so 19.7%, 21.8% and 21.3% of the windows' forecasts were issued before the window starts. Without the gap their train side would hold readings of their own station taken after the forecast was issued, and a station's daily error carries over for days (the daily error minus the station's mean correlates 0.34, 0.23 and 0.18 at lags of one, two and three days, 0.14 at seven), so the model that corrects a forecast is trained only on what was measured by the time it was issued: train is every measurement taken at least three days before the window. Each window keeps at most 500k of its rows (all of them here: 377,992, 385,508 and 270,717); each train side holds every earlier row (16,429,730, 11,733,079 and 8,739,284: 96.9%, 69.2% and 51.6% of the 16,951,828 rows), and a benchmark sub-samples it to 1M rows, by default a random 1M of the newest year before the window (`subsample_train`). The 144,106 rows of 21-23 July 2023, the newest window's gap, lie in no split, so the frame leaves them out.
+Expanding-window temporal splits: 3 test window(s) of 7 days, starting at 2023-07-24, 2023-05-01, 2023-02-13, newest first; train is all earlier data up to a gap of 3 days. The test windows by `fact_time`, as listed: 2023-07-24 to 2023-07-30 (377,992 test, 16,429,730 train rows); 2023-05-01 to 2023-05-07 (385,508 test, 11,733,079 train rows); 2023-02-13 to 2023-02-19 (270,717 test, 8,739,284 train rows). Each test window keeps at most 500k of its rows, drawn at random; each train side holds every earlier row, and a benchmark sub-samples it to 1M rows (by default rows drawn at random from the newest year before each window, extended back in time until it holds that many rows, `subsample_train`).
+
+Each test window is one week (the horizon checked, CC 2026-11-11). TabReD tests one month (1-30 July 2023), which the curator judged long for weather, and states no refit cadence; post-processing models are re-estimated every day on the last 30-60 days (https://npg.copernicus.org/articles/27/23/2020/), so a weekly refit is conservative and a week still spans several weather situations. One day would test one weather situation per window and be shorter than a forecast's lead of up to three days, and 14 days is the upper bound of the rule on weather windows. The windows, newest first (CC 2026-11-10 and 2026-11-11, the curator's pick): 2023-07-24 to 07-30, the newest; 2023-05-01 to 05-07, in the warmest month (mean measured temperature 28.06 against 26.55 on its train side); and 2023-02-13 to 02-19, in late winter, when the models' upper-air temperature forecasts (`gfs_temperature_5000`, `gfs_temperature_7000`) differ most from training. TabReD's year runs from 1 July 2022 to 30 July 2023, so no other year can be tested, and the one-week windows that keep half the rows for training run from February to July 2023; the three are 11 and 12 weeks apart. The floor as amended on 2026-11-11 would also admit 6-12 February (49.95% of the rows for training with the gap), the February week first proposed; 13-19 February is the curator's pick. The gap of three days: a forecast is issued up to 74 hours before its measurement (`apply_time_rl`; median 31.5 hours, 99.2% within 72 hours), so 19.7%, 21.8% and 21.3% of the windows' forecasts were issued before the window starts. Without the gap their train side would hold readings of their own station taken after the forecast was issued, and a station's daily error carries over for days (the daily error minus the station's mean correlates 0.34, 0.23 and 0.18 at lags of one, two and three days, 0.14 at seven), so the model that corrects a forecast is trained only on what was measured by the time it was issued: train is every measurement taken at least three days before the window. The 144,106 rows of 21-23 July 2023, the newest window's gap, lie in no split, so the frame leaves them out.
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 8,739,284 to 16,429,730 rows, test 270,717 to 385,508 rows. Prediction horizon: 7 days. Gap between train and test: 3 days. Row budget: at most 500k test rows per split; a benchmark trains on at most 1M. The train sides keep every row available to them; `subsample_train` draws the 1M rows a benchmark fits on from the newest year before each window, extended back in time until it holds that many rows, at random, as rows.
 
@@ -229,7 +257,7 @@ Each test window against its train side, by statistics of the data, never of a m
 
 0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 1,680,772,200 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 1,680,772,200 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to run them; nothing else checks duplicate rows and columns.)
 
 ## Data checks
 
@@ -309,7 +337,7 @@ Each test window against its train side, by statistics of the data, never of a m
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | -0.286 | -1.195 | 15.245 | 0.022 | log1p | 1.44279e+07 | 1.35843e+19 | exponential |
+| 0 | 0 | 0 | -0.286 | -1.195 | 15.245 | 0.022 | log1p | 1.44279e+07 | 8.2928e+19 | exponential |
 
 ### Numeric features
 
@@ -353,7 +381,7 @@ Each test window against its train side, by statistics of the data, never of a m
 | cmc_0_2_3_850 | 1.64792e+06 | 0.0264825 | 3.79469 | -35.3855 | 50.0859 |
 | cmc_0_2_3_925 | 1.64792e+06 | 0.287175 | 3.9105 | -34.0205 | 45.2402 |
 | cmc_0_3_0_0 | 1.64792e+06 | 99230.7 | 3288.75 | 74272.6 | 103467 |
-| cmc_0_3_0_0_next | 1.64792e+06 | 99222.7 | 3291.58 | 74245.2 | 103481 |
+| cmc_0_3_0_0_next | 1.64792e+06 | 99222.8 | 3291.58 | 74245.2 | 103481 |
 | cmc_0_3_1_0 | 1.64792e+06 | 101098 | 408.505 | 97273.2 | 103621 |
 | cmc_0_3_5_1000 | 1.64792e+06 | 95.4566 | 35.6072 | -247.716 | 301.724 |
 | cmc_0_3_5_500 | 1.64792e+06 | 5871.51 | 25.0038 | 5454.48 | 5982.5 |
@@ -368,14 +396,14 @@ Each test window against its train side, by statistics of the data, never of a m
 | fact_longitude | 1.68077e+06 | 24.2598 | 91.8837 | -179.877 | 179.341 |
 | fact_temperature | 1.68077e+06 | 26.8787 | 3.90443 | 0 | 59 |
 | gfs_2m_dewpoint | 1.67553e+06 | 20.0472 | 4.37498 | -15.919 | 28.65 |
-| gfs_a_vorticity | 1.67553e+06 | 1.83226e-05 | 9.62245e-05 | -0.00150154 | 0.00242179 |
+| gfs_a_vorticity | 1.67553e+06 | 1.83225e-05 | 9.62245e-05 | -0.00150154 | 0.00242179 |
 | gfs_cloudness | 1.67553e+06 | 0.964884 | 0.728283 | 0 | 3 |
 | gfs_clouds_sea | 1.67553e+06 | 4.72289e-08 | 1.51781e-06 | 0 | 0.000269344 |
 | gfs_horizon_h | 1.67553e+06 | 41.4473 | 20.9242 | 3 | 90 |
 | gfs_humidity | 1.67553e+06 | 72.4966 | 17.7526 | 3.8 | 100 |
 | gfs_precipitable_water | 1.67553e+06 | 44.0914 | 13.1817 | 2.74671 | 81.6234 |
 | gfs_precipitations | 1.67553e+06 | 0.225801 | 0.673709 | -0.354167 | 61.1875 |
-| gfs_pressure | 1.67553e+06 | 743.794 | 25.3565 | 578.528 | 777.583 |
+| gfs_pressure | 1.67553e+06 | 743.793 | 25.3565 | 578.528 | 777.583 |
 | gfs_r_velocity | 1.67553e+06 | -0.0122577 | 0.202078 | -9.03956 | 3.52772 |
 | gfs_soil_temperature | 1.1545e+06 | 26.0803 | 3.99957 | 7.45001 | 51.9425 |
 
@@ -413,11 +441,10 @@ Each test window against its train side, by statistics of the data, never of a m
 
 | field | value |
 |---|---|
-| uuid | 01a111fb-bc63-7614-a137-a3fd390bc4f1 |
-| checksum | v2:db33e0620375dca0b14660f5fa76165c01a9052eaf5882f9451ae2cd7405f4fc |
-| built_at | 2026-10-06T16:11:36+00:00 |
-| path | climate_model_weather_forecasting/versions/01a111fb-bc63-7614-a137-a3fd390bc4f1 |
+| uuid | 01a217f5-85a5-7a90-9926-13708d132fb0 |
+| checksum | v2:4cc99a86fa5cdd7094413b7abd2f74f60e07c1c4107b30273db2f4999b6eda2a |
+| built_at | 2026-11-26T13:07:49+00:00 |
+| path | climate_model_weather_forecasting_1m/01a217f5-85a5-7a90-9926-13708d132fb0 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:bbb1780b5a4b6cbf702afe33de8f7fc45d2e2b932bb744cd14ea34cb7ff9da83` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

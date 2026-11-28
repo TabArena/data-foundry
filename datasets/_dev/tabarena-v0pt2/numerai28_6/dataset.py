@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, Metric, Source, TaskSummary, TimeBasis, decode
+
+from data_foundry.definition import AbstractCuratedDataset, Decision, Metric, Source, TaskSummary, TimeBasis, decode
 
 N_ORDER_BLOCKS = 10
 """File-order blocks for the decision table on hidden weeks (the raw file's row order)."""
@@ -106,7 +107,7 @@ class Numerai286(AbstractCuratedDataset):
         definition="Mean binary log loss of the uploaded probability that a row is of class 1",
     )
     splits_comment = """
-        Default splits (random rows, stratified on the target). Forced IID from temporal (SPLIT-8): the release has no era or date, so the weekly splits of Numerai's tournament cannot be rebuilt; see the curation notes for the hidden-week checks.
+        Forced IID from temporal (SPLIT-8): the release has no era or date, so the weekly splits of Numerai's tournament cannot be rebuilt; see the curation notes for the hidden-week checks.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

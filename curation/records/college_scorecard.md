@@ -52,3 +52,5 @@ CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note 
 **Assessment (AI, 2026-11-11):** `DISTANCEONLY` is missing in every cohort before 2011; the 2015 and 2016 windows train on 2001-2009 and 2001-2010.
 
 CC (2026-11-17, Andrej): the declared split (temporal on `cohort_year`, windows of 1 value, up to 9 windows while training keeps 50% of the rows (4 in the build), gap 5 values) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
+
+CC (2026-11-26, Lennart): accepted `splits_dimensions_off_protocol` (SPLIT-15) after the rebuild of 2026-11-26: four windows against SPLIT-33's nine; the five-year gap leaves no fifth above half of the cohorts.

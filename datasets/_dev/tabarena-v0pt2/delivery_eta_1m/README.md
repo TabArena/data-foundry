@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: delivery_eta_1m
 container_format: 2
-checksum: v2:2317fd614d09193f1d36cdf2dac28cd8324c2081118a7db8c7c3c9028bd9e54d
+checksum: v2:530817ab594591b8b89bb4623d7fbe6308b4148f751af8d7895ffc80061f2426
 build:
-  uuid: 01a111fc-e6b7-7547-8e7f-790705764eb1
-  checksum: v2:f63bdebe625bde55f891f2178c53431cf853f7d16663f160e5d68cc165e224f1
-  built_at: '2026-10-06T16:13:38+00:00'
-  path: delivery_eta/versions/01a111fc-e6b7-7547-8e7f-790705764eb1
+  uuid: 01a217f6-c218-7256-8cc6-3468f6e21a14
+  checksum: v2:530817ab594591b8b89bb4623d7fbe6308b4148f751af8d7895ffc80061f2426
+  built_at: '2026-11-26T13:14:21+00:00'
+  path: delivery_eta_1m/01a217f6-c218-7256-8cc6-3468f6e21a14
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 15969869
   n_features: 221
@@ -47,6 +47,22 @@ splits:
   time_horizon_unit: days
   time_gap: null
   time_gap_unit: null
+  reason: 'Each test window is one week, the length of TabReD''s own validation and
+    test periods (TabReD trains on 20 October to 11 December 2023, validates on 11-18
+    December and tests on 18-25 December). TabReD states no refit cadence, and a delivery
+    estimate looks only minutes ahead, so the length says how long one fitted model
+    serves. The orders run from 20 October 2023 to 7 January 2024, so only the five
+    weeks from 4 December on keep half the orders for training. Every other one of
+    them is a test window (CC 2026-11-10), newest first: 1-7 January 2024, the newest,
+    the New Year week; 18-24 December, TabReD''s test week, before Christmas; and
+    4-10 December, outside the holidays, an early-December week of long deliveries
+    (mean log minutes 1.910 against 1.778 in the newest week) with a train side that
+    holds only 10 days after the change of 23 November (curation_comments). 25-31
+    December and 11-17 December lie between them and are not tested. No gap is needed:
+    the orders pause overnight, and the last train order before each window is delivered
+    55 minutes to 2 hours 5 minutes before the window start (order time + delivery
+    time; before 4 December at 22:58 on 3 December), so no train label is unknown
+    at a refit (0 late orders in each of the 3 windows).'
   n_train:
     min: 9706793
     max: 15469869
@@ -81,7 +97,7 @@ decisions: []
 
 Regression of `delivery_eta_minutes`, scored with `rmse` on temporal splits by `timestamp`. 15,969,869 rows and 221 features. Source: Kaggle (2024).
 
-Built as `01a111fc-e6b7-7547-8e7f-790705764eb1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2317fd614d09193f1d36cdf2dac28cd8324c2081118a7db8c7c3c9028bd9e54d`, so the build is stale. See [Build](#build).
+Built as `01a217f6-c218-7256-8cc6-3468f6e21a14` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -195,7 +211,7 @@ The first 5 of 15,969,869 rows of the final frame (the oldest rows: the frame is
 
 We start with data from TabRed, which already comes preprocessed.
 
-- Potential leak, kept on purpose: TabReD releases the 217 numeric features only after a quantile transform to a normal distribution (all within ±5.1993, the clip of scikit-learn's QuantileTransformer; 152 reach it), and the raw features are not published. The fit set is TabReD's own training period, the orders before 11 December 2023 (Andrej, 2026-11-26): for 10 of 13 informative numeric columns the distribution is closest to an exact standard normal there, with a mean largest gap to a standard normal of 0.0014, against 0.0049 to 0.0152 at cutoffs two to four weeks away and 0.0082 over all rows. The 1-7 January and 18-24 December windows lie after the fit period; the 4-10 December window lies inside it, so its rows reach the mapping through their marginal distribution and no target. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way.
+- Potential leak, kept on purpose: TabReD releases the 217 numeric features only after a quantile transform to a normal distribution (all within ±5.1993, the clip of scikit-learn's QuantileTransformer; 152 reach it); which rows it was fit on is not documented, and the raw features are not published. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak, and data often come this way; revisit if the TabReD authors say the fit used all rows.
 - We drop orders with a delivery time under one minute (386k of 17.0M, 2.3%), as TabReD's preprocessing does.
 - The target is the natural log of the minutes, as in TabReD (the column keeps its name). TabReD's reason, stated for its cooking-time data and applied here too: the times are right-skewed, and squared error on the log is close to absolute error on the minutes, the error that matters for the task.
 - We drop a duplicated column `cat_2` in the preprocessing.
@@ -205,7 +221,9 @@ We start with data from TabRed, which already comes preprocessed.
 
 ## Splits
 
-Each test window is one week, the length of TabReD's own validation and test periods (TabReD trains on 20 October to 11 December 2023, validates on 11-18 December and tests on 18-25 December). TabReD states no refit cadence, and a delivery estimate looks only minutes ahead, so the length says how long one fitted model serves. The orders run from 20 October 2023 to 7 January 2024, so only the five weeks from 4 December on keep half the orders for training. Every other one of them is a test window (CC 2026-11-10), newest first: 1-7 January 2024, the newest, the New Year week; 18-24 December, TabReD's test week, before Christmas; and 4-10 December, outside the holidays, an early-December week of long deliveries (mean log minutes 1.910 against 1.778 in the newest week) with a train side that holds only 10 days after the change of 23 November (curation_comments). 25-31 December and 11-17 December lie between them and are not tested. Train is all prior data: 15,469,869, 12,517,876 and 9,706,793 orders (92.9%, 75.1% and 58.3%). No gap is needed: the orders pause overnight, and the last train order before each window is delivered 55 minutes to 2 hours 5 minutes before the window start (order time + delivery time; before 4 December at 22:58 on 3 December), so no train label is unknown at a refit (0 late orders in each of the 3 windows). The windows hold 1,188,182, 1,485,323 and 1,444,992 orders, of which each keeps at most 500k, drawn at random; each train side holds every earlier row, and a benchmark sub-samples it to 1M rows, by default a random 1M of the newest year before the window, here all of the history (`subsample_train`).
+Expanding-window temporal splits: 3 test window(s) of 7 days, starting at 2024-01-01, 2023-12-18, 2023-12-04, newest first; train is all earlier data. The test windows by `timestamp`, as listed: 2024-01-01 to 2024-01-07 (500,000 test, 15,469,869 train rows); 2023-12-18 to 2023-12-24 (500,000 test, 12,517,876 train rows); 2023-12-04 to 2023-12-10 (500,000 test, 9,706,793 train rows). Each test window keeps at most 500k of its rows, drawn at random; each train side holds every earlier row, and a benchmark sub-samples it to 1M rows (by default rows drawn at random from the newest year before each window, extended back in time until it holds that many rows, `subsample_train`).
+
+Each test window is one week, the length of TabReD's own validation and test periods (TabReD trains on 20 October to 11 December 2023, validates on 11-18 December and tests on 18-25 December). TabReD states no refit cadence, and a delivery estimate looks only minutes ahead, so the length says how long one fitted model serves. The orders run from 20 October 2023 to 7 January 2024, so only the five weeks from 4 December on keep half the orders for training. Every other one of them is a test window (CC 2026-11-10), newest first: 1-7 January 2024, the newest, the New Year week; 18-24 December, TabReD's test week, before Christmas; and 4-10 December, outside the holidays, an early-December week of long deliveries (mean log minutes 1.910 against 1.778 in the newest week) with a train side that holds only 10 days after the change of 23 November (curation_comments). 25-31 December and 11-17 December lie between them and are not tested. No gap is needed: the orders pause overnight, and the last train order before each window is delivered 55 minutes to 2 hours 5 minutes before the window start (order time + delivery time; before 4 December at 22:58 on 3 December), so no train label is unknown at a refit (0 late orders in each of the 3 windows).
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 9,706,793 to 15,469,869 rows, test 500,000 rows. Prediction horizon: 7 days. Row budget: at most 500k test rows per split; a benchmark trains on at most 1M. The train sides keep every row available to them; `subsample_train` draws the 1M rows a benchmark fits on from the newest year before each window, extended back in time until it holds that many rows, at random, as rows.
 
@@ -230,7 +248,7 @@ Each test window against its train side, by statistics of the data, never of a m
 
 0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 3,545,310,918 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 3,545,310,918 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to run them; nothing else checks duplicate rows and columns.)
 
 Accepted on purpose:
 
@@ -334,16 +352,16 @@ Accepted on purpose:
 | num_8 | 1.59699e+06 | 0.0328576 | 0.971263 | -3.21244 | 5.19934 |
 | num_9 | 1.59699e+06 | 0.00394741 | 0.997269 | -3.14285 | 5.19934 |
 | num_10 | 1.5959e+06 | 0.0325629 | 0.969083 | -2.83514 | 5.19934 |
-| num_11 | 1.5959e+06 | -0.00334134 | 0.980338 | -2.84878 | 3.81988 |
+| num_11 | 1.5959e+06 | -0.00334135 | 0.980338 | -2.84878 | 3.81988 |
 | num_12 | 1.59699e+06 | 0.00152585 | 0.999459 | -5.19934 | 4.68927 |
 | num_13 | 1.59699e+06 | -0.00187046 | 0.999836 | -5.19934 | 5.19934 |
 | num_14 | 1.59699e+06 | -0.000805796 | 1.00001 | -5.19934 | 5.19934 |
 | num_15 | 1.59699e+06 | -0.000955814 | 0.999834 | -5.19934 | 5.16658 |
 | num_16 | 1.59699e+06 | 0.00203783 | 0.999559 | -4.82906 | 5.19934 |
-| num_17 | 1.59699e+06 | -0.00600336 | 0.993602 | -5.19934 | 4.69836 |
+| num_17 | 1.59699e+06 | -0.00600335 | 0.993602 | -5.19934 | 4.69836 |
 | num_18 | 1.59699e+06 | -0.00498422 | 0.994086 | -5.19934 | 5.19934 |
 | num_19 | 1.59699e+06 | 0.00860164 | 1.00065 | -5.19934 | 5.19934 |
-| num_20 | 1.59699e+06 | -0.00308219 | 1.00618 | -4.78765 | 5.19934 |
+| num_20 | 1.59699e+06 | -0.00308218 | 1.00618 | -4.78765 | 5.19934 |
 | num_21 | 1.59699e+06 | -0.00659441 | 0.995934 | -5.19934 | 4.90096 |
 | num_22 | 1.59699e+06 | -0.000293133 | 1.00682 | -5.19934 | 3.394 |
 | num_23 | 1.59699e+06 | -0.00395028 | 1.00814 | -5.19934 | 5.19934 |
@@ -357,7 +375,7 @@ Accepted on purpose:
 | num_32 | 1.59699e+06 | 0.0141708 | 1.01156 | -5.19934 | 3.09091 |
 | num_33 | 1.59699e+06 | -0.0155367 | 1.02066 | -3.49 | 5.19934 |
 | num_34 | 1.59699e+06 | 0.0128333 | 1.00549 | -3.18062 | 5.19934 |
-| num_35 | 1.59699e+06 | 0.021445 | 0.994856 | -5.19934 | 3.28914 |
+| num_35 | 1.59699e+06 | 0.0214451 | 0.994856 | -5.19934 | 3.28914 |
 | num_37 | 1.59699e+06 | 0.0164461 | 1.006 | -3.08994 | 5.19934 |
 | num_38 | 1.59699e+06 | -0.0341256 | 0.712541 | -1.12298 | 3.09045 |
 | num_39 | 1.59699e+06 | 0.0164823 | 1.00666 | -3.08994 | 5.19934 |
@@ -371,12 +389,12 @@ Accepted on purpose:
 | num_47 | 1.59699e+06 | -0.0097061 | 1.01133 | -5.19934 | 5.19934 |
 | num_48 | 1.59699e+06 | 0.0086472 | 1.00076 | -4.77198 | 5.19934 |
 | num_49 | 1.59699e+06 | 0.0145223 | 1.00392 | -5.19934 | 5.19934 |
-| num_50 | 1.59699e+06 | 0.0110607 | 0.2325 | -0.00874287 | 5.19934 |
+| num_50 | 1.59699e+06 | 0.0110606 | 0.2325 | -0.00874287 | 5.19934 |
 | num_51 | 1.59699e+06 | 0.00964858 | 1.00108 | -5.19934 | 3.10267 |
 | num_52 | 1.59699e+06 | -0.00262278 | 0.854551 | -1.26525 | 5.19934 |
 | num_53 | 1.59699e+06 | 0.0110203 | 0.999671 | -5.19934 | 3.09383 |
 | num_54 | 1.59699e+06 | -0.0126383 | 1.00701 | -5.19934 | 5.19934 |
-| num_55 | 1.59699e+06 | 0.00768299 | 1.00241 | -3.87115 | 5.19934 |
+| num_55 | 1.59699e+06 | 0.007683 | 1.00241 | -3.87115 | 5.19934 |
 | num_56 | 1.59699e+06 | 0.00638531 | 1.00041 | -5.19934 | 3.37863 |
 | num_57 | 1.59699e+06 | 0.000594517 | 0.0422767 | 1.59865e-05 | 3.09338 |
 | num_58 | 1.59699e+06 | 0.010704 | 0.999285 | -3.15561 | 3.09988 |
@@ -419,11 +437,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-e6b7-7547-8e7f-790705764eb1 |
-| checksum | v2:f63bdebe625bde55f891f2178c53431cf853f7d16663f160e5d68cc165e224f1 |
-| built_at | 2026-10-06T16:13:38+00:00 |
-| path | delivery_eta/versions/01a111fc-e6b7-7547-8e7f-790705764eb1 |
+| uuid | 01a217f6-c218-7256-8cc6-3468f6e21a14 |
+| checksum | v2:530817ab594591b8b89bb4623d7fbe6308b4148f751af8d7895ffc80061f2426 |
+| built_at | 2026-11-26T13:14:21+00:00 |
+| path | delivery_eta_1m/01a217f6-c218-7256-8cc6-3468f6e21a14 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:2317fd614d09193f1d36cdf2dac28cd8324c2081118a7db8c7c3c9028bd9e54d` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -3,9 +3,6 @@ unique_name: liberty_mutual_fire_peril_loss_cost
 name: 'Liberty Mutual Group: Fire Peril Loss Cost (Kaggle 2014)'
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:

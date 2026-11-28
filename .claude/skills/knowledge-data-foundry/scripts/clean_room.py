@@ -7,12 +7,12 @@ Usage::
     python .claude/skills/knowledge-data-foundry/scripts/clean_room.py <unique_name> --out DIR/participant_kit
         --participant --prediction-point "the policy is quoted" [--root ...] [--records ...]
 
-Loads the v2 definition of ``<unique_name>`` through ``dataset_io.py`` (its curated frame and split plan, rebuilt from
-the raw files; ``--built`` reads the container of the README's build record instead) and the curation record for its
-source links, and writes two files:
+Loads the v2 definition of ``<unique_name>`` through ``data_foundry.probes.inputs`` (its curated frame and split plan,
+rebuilt from the raw files; ``--built`` reads the container of the README's build record instead) and the curation
+record for its source links, and writes two files:
 
 * ``DIR/data.parquet``: the curated frame with the target, without the scoring columns (metric inputs, never
-  features; ``dataset_io.py`` drops them), except the task's training weight (``sample_weight``), which ships as its
+  features; the loader drops them), except the task's training weight (``sample_weight``), which ships as its
   last column so that the reviewer can judge its use. A frame with more than ``--max-rows`` rows is a random
   sample of that many rows (seed 0, original order kept), and ``task.md`` says so.
 * ``DIR/task.md``: the target column, the problem type, rows x columns, the regime (IID, grouped with the group
@@ -28,7 +28,7 @@ gets and nothing more: ``data.parquet`` with every row, ``splits.parquet`` (the 
 ``side``, ``row``: positions into ``data.parquet``), ``scoring.parquet`` (the scoring columns, when the metric has
 inputs; the training weight is one of them), ``task.json`` and ``task.md`` (the facts above plus the metric, the
 training weight and the prediction point, one neutral sentence the main session writes), a copy of
-``src/data_foundry/v2/metrics.py`` and ``score.py``, which scores a prediction by the shipped metric as the benchmark
+``src/data_foundry/metrics.py`` and ``score.py``, which scores a prediction by the shipped metric as the benchmark
 does, and an empty ``work/`` for the agent's scripts. The kit's folder name must contain ``participant_kit``: the
 ``task_gamer_hook.py`` sandbox lets the agent touch nothing else.
 """
@@ -42,14 +42,15 @@ import shutil
 import sys
 from pathlib import Path
 
-import dataset_io
 import pandas as pd
+
 from data_foundry.curation._paths import records_dir, resolve_curation_root
 from data_foundry.curation.store import load_record
+from data_foundry.probes import inputs
 
 SEED = 0
 REGIMES = {"iid": "IID", "grouped_non_iid": "grouped", "temporal_non_iid": "temporal"}
-METRICS_PY = Path(__file__).resolve().parents[4] / "src" / "data_foundry" / "v2" / "metrics.py"
+METRICS_PY = Path(__file__).resolve().parents[4] / "src" / "data_foundry" / "metrics.py"
 # The spec fields a participant needs; ``origin``, ``original`` and ``reason`` are our curation notes.
 PARTICIPANT_METRIC_KEYS = (
     "name",
@@ -154,7 +155,7 @@ def source_links(name: str, records: Path, folder_class: type | None = None) -> 
     """
     path = records / f"{name}.md"
     if not path.exists() and folder_class is not None:
-        from data_foundry.v2.dataset import raw_name  # noqa: PLC0415 - the scripts import the package lazily
+        from data_foundry.definition.dataset import raw_name  # noqa: PLC0415 - the scripts import the package lazily
 
         path = records / f"{raw_name(folder_class)}.md"
     if not path.exists():
@@ -173,7 +174,7 @@ def _folder(name: str, root: Path, records: Path) -> tuple[str, Path]:
     raise SystemExit(f"no definition for {name!r}: neither {root / name / 'dataset.py'} nor a v2_path in {path}")
 
 
-def regime_line(data: dataset_io.ProbeInput) -> str:
+def regime_line(data: inputs.ProbeInput) -> str:
     """The regime in one line, with its group or time column."""
     regime = REGIMES.get(data.regime, data.regime)
     groups = ", ".join(f"`{c}`" for c in data.group_cols)
@@ -192,7 +193,7 @@ def regime_line(data: dataset_io.ProbeInput) -> str:
     return f"{regime} (random rows)"
 
 
-def splits_line(data: dataset_io.ProbeInput) -> str:
+def splits_line(data: inputs.ProbeInput) -> str:
     """The number of folds (IID, grouped) or test windows (temporal)."""
     repeats = data.repeats()
     total = sum(len(r) for r in repeats)
@@ -204,7 +205,7 @@ def splits_line(data: dataset_io.ProbeInput) -> str:
 
 
 def task_markdown(
-    data: dataset_io.ProbeInput, links: list[str], *, rows: int, sampled: int | None, weight: str | None = None
+    data: inputs.ProbeInput, links: list[str], *, rows: int, sampled: int | None, weight: str | None = None
 ) -> str:
     """The task.md of the clean room: only the facts the reviewer needs to start; ``weight``, the training weight's
     column when ``data.parquet`` ships it.
@@ -242,12 +243,12 @@ def task_markdown(
 def write(name: str, out: Path, *, root: Path, records: Path, max_rows: int, built: bool) -> dict:
     """Write ``data.parquet`` and ``task.md`` for ``name`` into ``out``; return what was written."""
     folder, folder_root = _folder(name, root, records)
-    ds = dataset_io.definition(folder, folder_root)
+    ds = inputs.definition(folder, folder_root)
     # the blind reviewer sees a special feature (a SMILES, a spectrum) as shipped, not in our encoding
     data = (
-        dataset_io.load(folder, folder_root, built=True, encode_special=False)
+        inputs.load(folder, folder_root, built=True, encode_special=False)
         if built
-        else dataset_io.from_definition(ds, encode_special=False)
+        else inputs.from_definition(ds, encode_special=False)
     )
     links = source_links(name, records, type(ds))
     df = data.df
@@ -264,7 +265,7 @@ def write(name: str, out: Path, *, root: Path, records: Path, max_rows: int, bui
     return {"name": name, "folder": folder, "rows": rows, "columns": df.shape[1], "sampled": sampled, "out": str(out)}
 
 
-def participant_task(ds, data: dataset_io.ProbeInput, scoring: list[str]) -> dict:
+def participant_task(ds, data: inputs.ProbeInput, scoring: list[str]) -> dict:
     """The ``task.json`` of the participant kit: the task as a benchmark harness reads it, without our notes."""
     task = ds.task_metadata
     spec = task.objective_metric
@@ -298,7 +299,7 @@ def prediction_point_line(prediction_point: str) -> str:
     return f"- Prediction point: the prediction is made when {text}."
 
 
-def participant_markdown(data: dataset_io.ProbeInput, links: list[str], task: dict, prediction_point: str) -> str:
+def participant_markdown(data: inputs.ProbeInput, links: list[str], task: dict, prediction_point: str) -> str:
     """The ``task.md`` of the participant kit: the clean room's facts, the prediction point, the metric, the files."""
     metric = task["metric"]
     params = f", params {json.dumps(metric['params'])}" if metric["params"] else ""
@@ -343,9 +344,9 @@ def write_participant(name: str, out: Path, *, root: Path, records: Path, predic
     if "participant_kit" not in out.resolve().as_posix():
         raise SystemExit(f"the kit's path must contain 'participant_kit' (the agent's sandbox allows only it): {out}")
     folder, folder_root = _folder(name, root, records)
-    ds = dataset_io.definition(folder, folder_root)
+    ds = inputs.definition(folder, folder_root)
     plan = ds.make_splits()
-    data = dataset_io.from_definition(ds, plan, encode_special=False)  # as shipped, like the clean room
+    data = inputs.from_definition(ds, plan, encode_special=False)  # as shipped, like the clean room
     scoring = list(data.scoring_cols)
     task = participant_task(ds, data, scoring)
     out.mkdir(parents=True, exist_ok=True)

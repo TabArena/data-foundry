@@ -18,10 +18,16 @@ Start it with::
 The server is meant to run locally per curator (edit -> git commit -> PR); it is
 not hardened for multi-user or public exposure.
 
+The page loads ``/api/records`` once (every record, about 17 MB for 2,100 records), then polls the cheap change token
+``/api/version`` and catches up with ``/api/records?since=<newest mtime_ns it holds>&tip=<claims tip>``: only the
+records written since, the names of all records and, when the claims board moved, the claim columns. Parsed rows are
+cached per file (:data:`_ROW_CACHE`), so a request re-reads only the files written since the last one.
+
 Claims come from the live claims board (:mod:`data_foundry.curation.claims`), not from the records: a background
 thread fetches the board every :data:`CLAIMS_REFRESH_S` seconds, the records payload shows each record's live holder
-in ``claimed_by`` (with the details in ``live_claim``), and editing the Claimed by cell claims (your own name) or
-releases (empty) through ``POST /api/claims/<name>``, which also mirrors the claim into the record.
+in ``claim_holder`` (with the details in ``live_claim``), a column of the grid that is not a record field, and editing
+the Claimed by cell claims (your own name) or releases (empty) through ``POST /api/claims/<name>``. The record file is
+never written for a claim.
 """
 
 from __future__ import annotations
@@ -35,14 +41,13 @@ from dataclasses import asdict
 from functools import partial
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import unquote, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 from data_foundry.curation import claims
 from data_foundry.curation._paths import records_dir, resolve_curation_root, skills_dir, vocabularies_path
 from data_foundry.curation.notebooks import resolve_notebook
 from data_foundry.curation.record import ACCEPTED_SUGGESTIONS, FIELDS, load_vocabularies, save_vocabularies
 from data_foundry.curation.store import (
-    load_all,
     load_record,
     record_from_dict,
     record_to_dict,
@@ -73,17 +78,38 @@ START_REPO_PATH: str = ".claude/skills/README.md"
 CLAIMS_REFRESH_S: float = 20.0
 """How often the dashboard server fetches the claims board."""
 
+BOARD_COLUMN: dict[str, object] = {
+    "name": "claim_holder",
+    "label": "Claimed by",
+    "kind": "select",
+    "vocab": None,
+    "help": "Who holds the dataset's claim on the live claims board; others leave it alone until it is released. "
+    "Not stored in the record.",
+    "board": True,
+}
+"""The grid's Claimed by column: the live board's holder (:func:`_overlay_claim`), listed with the record fields."""
+
+GRID_READ_ONLY: frozenset[str] = frozenset({"review"})
+"""Record fields a dashboard edit may not change: the review is written by the review workflows and never deleted."""
+
+MTIME_KEY: str = "record_mtime_ns"
+"""The record file's ``mtime_ns`` when the dashboard read it, as a string (a derived key, never written back). An edit
+that sends it back is refused with 409 when the file changed since, so two tabs (or a tab and an agent) do not
+overwrite each other. A string, because a JavaScript number holds 53 bits: a nanosecond mtime would come back rounded
+and every edit would look stale."""
+
+_WRITE_LOCK = threading.Lock()
+
 _FRONT_MATTER = re.compile(r"\A﻿?---[ \t]*\r?\n(?:.*?\r?\n)?(?:---|\.\.\.)[ \t]*(?:\r?\n|\Z)", re.DOTALL)
 _FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})")
 _H1 = re.compile(r"^ {0,3}#[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$")
 
 
 def _schema_payload() -> dict[str, object]:
+    fields = [{"name": f.name, "label": f.label, "kind": f.kind, "vocab": f.vocab_key, "help": f.help} for f in FIELDS]
     return {
-        "fields": [
-            {"name": f.name, "label": f.label, "kind": f.kind, "vocab": f.vocab_key, "help": f.help} for f in FIELDS
-        ],
-        "vocabularies": load_vocabularies(),
+        "fields": [*fields, BOARD_COLUMN],
+        "vocabularies": {**load_vocabularies(), BOARD_COLUMN["name"]: claims.curators()},
     }
 
 
@@ -126,20 +152,59 @@ def _claims_payload() -> dict[str, object]:
 
 
 def _overlay_claim(row: dict[str, object], board: claims.Board | None) -> dict[str, object]:
-    """Show the live holder in ``claimed_by`` and the claim in ``live_claim``.
-
-    Without a board (none fetched, or no claims branch yet) the row keeps the record's own value.
-    """
-    if board is None or board.tip is None:
-        return row
-    claim = board.claims.get(str(row["unique_name"]))
-    row["claimed_by"] = claim.holder if claim else None
+    """Show the live holder in ``claim_holder`` and the claim in ``live_claim`` (both empty without a fetched board)."""
+    claim = board.claims.get(str(row["unique_name"])) if board is not None and board.tip is not None else None
+    row["claim_holder"] = claim.holder if claim else None
     row["live_claim"] = {**asdict(claim), "expired": claim.expired()} if claim else None
     return row
 
 
-def _records_payload(directory: Path | None) -> list[dict[str, object]]:
-    """Serialise every record, augmented with read-only *derived* link fields.
+_ROW_CACHE: dict[Path, tuple[tuple[int, int, int], dict[str, object]]] = {}
+"""Each record file's row as :func:`_record_row` built it, under the file's ``(mtime_ns, size, inode)`` when read: a
+request parses only the files written since (a save replaces the file, so its inode changes too)."""
+
+_ROW_CACHE_LOCK = threading.Lock()
+
+
+def _record_paths(records_root: Path) -> list[Path]:
+    """The record files under ``records_root``, sorted; as ``load_all``, ``_template.md`` is no record."""
+    paths = sorted(records_root.glob("*.md")) if records_root.exists() else []
+    return [p for p in paths if not p.name.startswith("_")]
+
+
+def _record_row(path: Path, stat: os.stat_result, records_root: Path, repo_root: Path) -> dict[str, object]:
+    """One record as the grid reads it, without the claim overlay; from :data:`_ROW_CACHE` while the file is
+    unchanged. ``stat`` is taken before the file is read, so :data:`MTIME_KEY` never claims a newer file.
+    """
+    key = (stat.st_mtime_ns, stat.st_size, stat.st_ino)
+    with _ROW_CACHE_LOCK:
+        cached = _ROW_CACHE.get(path)
+    if cached is not None and cached[0] == key:
+        return cached[1]
+    r = load_record(path)
+    d = record_to_dict(r)
+    d[MTIME_KEY] = str(stat.st_mtime_ns)
+    rel = r.notebook_path or resolve_notebook(r)
+    if rel:
+        d["notebook_path"] = rel
+        d["notebook_url"] = f"{GITHUB_BLOB_BASE}/{rel}"
+    if r.v2_path:
+        d["v2_url"] = f"{GITHUB_BLOB_BASE}/{r.v2_path}"
+    try:
+        rec_rel = (records_root / f"{r.unique_name}.md").relative_to(repo_root).as_posix()
+    except ValueError:  # custom records dir outside the repo: no stable GitHub link
+        rec_rel = None
+    if rec_rel:
+        d["record_path"] = rec_rel
+        d["record_url"] = f"{GITHUB_BLOB_BASE}/{rec_rel}"
+    with _ROW_CACHE_LOCK:
+        _ROW_CACHE[path] = (key, d)
+    return d
+
+
+def _records_payload(directory: Path | None, since: int | None = None) -> list[dict[str, object]]:
+    """Serialise every record (with ``since``, only those whose file's ``mtime_ns`` is at least ``since``),
+    augmented with read-only *derived* link fields.
 
     ``notebook_path`` is a real record field, so the pointer a record carries is used as-is; only
     records that have none fall back to :func:`~data_foundry.curation.notebooks.resolve_notebook`
@@ -149,29 +214,45 @@ def _records_payload(directory: Path | None) -> list[dict[str, object]]:
     (``curation/records/<name>.md``), so a record can be referenced directly from the UI. The
     ``*_url`` keys are not part of the record schema and are never written back — the
     dashboard's per-row 📓 / 📄 buttons read them (live and on the static site). With a cached
-    claims board, ``claimed_by`` is the live holder and ``live_claim`` the claim (:func:`_overlay_claim`).
+    claims board, ``claim_holder`` is the live holder and ``live_claim`` the claim (:func:`_overlay_claim`).
+    :data:`MTIME_KEY` is the file's ``mtime_ns``, taken before the file is read, which an edit sends back.
+    Each row is a fresh dict: a caller may change it.
     """
     repo_root = resolve_curation_root().parent.resolve()
     records_root = (Path(directory) if directory is not None else records_dir()).resolve()
     board = claims.cached_board()
     payload: list[dict[str, object]] = []
-    for r in load_all(directory):
-        d = _overlay_claim(record_to_dict(r), board)
-        rel = r.notebook_path or resolve_notebook(r)
-        if rel:
-            d["notebook_path"] = rel
-            d["notebook_url"] = f"{GITHUB_BLOB_BASE}/{rel}"
-        if r.v2_path:
-            d["v2_url"] = f"{GITHUB_BLOB_BASE}/{r.v2_path}"
-        try:
-            rec_rel = (records_root / f"{r.unique_name}.md").relative_to(repo_root).as_posix()
-        except ValueError:  # custom records dir outside the repo: no stable GitHub link
-            rec_rel = None
-        if rec_rel:
-            d["record_path"] = rec_rel
-            d["record_url"] = f"{GITHUB_BLOB_BASE}/{rec_rel}"
-        payload.append(d)
+    for path in _record_paths(records_root):
+        stat = path.stat()
+        if since is not None and stat.st_mtime_ns < since:
+            continue
+        payload.append(_overlay_claim(dict(_record_row(path, stat, records_root, repo_root)), board))
     return payload
+
+
+def _records_changed_payload(directory: Path | None, since: int, tip: str | None) -> dict[str, object]:
+    """What a dashboard tab needs to catch up (``/api/records?since=<mtime_ns>&tip=<claims tip>``): the records
+    written at or after ``since``, the names of all records (a name the tab shows that is missing was deleted), and
+    when the claims board moved past ``tip``, every record's claim columns.
+
+    ``since`` is the newest :data:`MTIME_KEY` the tab holds; "at or after" re-sends the records of that instant, so a
+    file written twice within one timestamp tick is never missed.
+    """
+    records_root = (Path(directory) if directory is not None else records_dir()).resolve()
+    board = claims.cached_board()
+    current_tip = board.tip if board is not None else None
+    out: dict[str, object] = {
+        "records": _records_payload(directory, since=since),
+        "names": [p.stem for p in _record_paths(records_root)],
+        "tip": current_tip,
+    }
+    if tip != current_tip:
+        out["claims"] = {
+            name: {k: row[k] for k in ("claim_holder", "live_claim")}
+            for name in out["names"]
+            for row in [_overlay_claim({"unique_name": name}, board)]
+        }
+    return out
 
 
 def _version_payload(directory: Path | None) -> dict[str, object]:
@@ -350,6 +431,19 @@ class CurationHandler(BaseHTTPRequestHandler):
             return
         self._send_file(path, "text/markdown; charset=utf-8")
 
+    def _send_records(self, query: dict[str, list[str]]) -> None:
+        """All records, or with ``since`` what a tab needs to catch up (:func:`_records_changed_payload`)."""
+        if "since" not in query:
+            self._send_json(_records_payload(self._records_dir))
+            return
+        try:
+            since = int(query["since"][0])
+        except ValueError:
+            self._send_json({"error": "since must be an integer mtime_ns"}, status=400)
+            return
+        tip = query.get("tip", [None])[0] or None
+        self._send_json(_records_changed_payload(self._records_dir, since, tip))
+
     def _read_json_body(self) -> dict[str, object]:
         length = int(self.headers.get("Content-Length", 0))
         return json.loads(self.rfile.read(length) or b"{}")
@@ -360,7 +454,8 @@ class CurationHandler(BaseHTTPRequestHandler):
     # -- routing ---------------------------------------------------------
     def do_GET(self) -> None:
         """Serve the SPA, the schema, the records list, the on-disk change token, or the guideline docs."""
-        route = urlparse(self.path).path
+        url = urlparse(self.path)
+        route = url.path
         try:
             if route in ("/", "/index.html"):
                 self._send_file(STATIC_DIR / "index.html", "text/html; charset=utf-8")
@@ -369,7 +464,7 @@ class CurationHandler(BaseHTTPRequestHandler):
             elif route == "/api/schema":
                 self._send_json(_schema_payload())
             elif route == "/api/records":
-                self._send_json(_records_payload(self._records_dir))
+                self._send_records(parse_qs(url.query))
             elif route == "/api/version":
                 self._send_json(_version_payload(self._records_dir))
             elif route == "/api/docs":
@@ -410,22 +505,39 @@ class CurationHandler(BaseHTTPRequestHandler):
 
     # -- handlers --------------------------------------------------------
     def _update_record(self, unique_name: str) -> None:
+        """Merge a partial update into one record and rewrite its file.
+
+        A field of :data:`GRID_READ_ONLY` answers 400. With :data:`MTIME_KEY` in the body, a file that changed since
+        the client read it answers 409 and is left as it is.
+        """
         patch = self._read_json_body()
-        index = {r.unique_name: r for r in load_all(self._records_dir)}
-        if unique_name not in index:
-            self._send_json({"error": f"unknown record: {unique_name}"}, status=404)
+        base_mtime = patch.pop(MTIME_KEY, None)
+        if blocked := sorted(GRID_READ_ONLY & patch.keys()):
+            self._send_json({"error": f"read-only in the dashboard: {', '.join(blocked)}"}, status=400)
             return
-        merged = record_to_dict(index[unique_name])
-        merged.update(patch)
-        merged.pop("unique_name", None)  # renaming is out of scope for the grid
-        merged["unique_name"] = unique_name
-        record = record_from_dict(merged)
-        record.needs_review = record.review_reasons(load_vocabularies())
-        save_record(record, self._records_dir)
-        self._send_json(record_to_dict(record))
+        path = Path(self._records_dir) / f"{unique_name}.md"
+        with _WRITE_LOCK:  # the check and the write as one step against the server's other threads
+            if unique_name.startswith("_") or "/" in unique_name or not path.is_file():
+                self._send_json({"error": f"unknown record: {unique_name}"}, status=404)
+                return
+            if base_mtime is not None and str(path.stat().st_mtime_ns) != str(base_mtime):
+                self._send_json(
+                    {"error": f"{unique_name} changed on disk since this page read it; reload to see the change."},
+                    status=409,
+                )
+                return
+            merged = record_to_dict(load_record(path))
+            merged.update(patch)
+            merged["unique_name"] = unique_name  # renaming is out of scope for the grid
+            record = record_from_dict(merged)
+            record.needs_review = record.review_reasons(load_vocabularies())
+            save_record(record, self._records_dir)
+            out = record_to_dict(record)
+            out[MTIME_KEY] = str(path.stat().st_mtime_ns)
+        self._send_json(out)
 
     def _claim_action(self, unique_name: str) -> None:
-        """Claim (``{"action": "claim"}``) or release a dataset on the board, mirror it into the record, return the row.
+        """Claim (``{"action": "claim"}``) or release a dataset on the board and return the row.
 
         The stage follows the record: ``add`` for an accepted dataset, else ``triage``. A dataset another curator
         holds, a missing curator name or an unreachable remote answer 409 with the reason.
@@ -451,8 +563,9 @@ class CurationHandler(BaseHTTPRequestHandler):
         if unique_name in outcome.skipped:
             self._send_json({"error": f"{unique_name}: {outcome.skipped[unique_name]}"}, status=409)
             return
-        claims.mirror_to_records(outcome.board, [unique_name], self._records_dir)
-        self._send_json(_overlay_claim(record_to_dict(load_record(path)), outcome.board))
+        mtime = path.stat().st_mtime_ns
+        row = _overlay_claim(record_to_dict(load_record(path)), outcome.board)
+        self._send_json({**row, MTIME_KEY: str(mtime)})
 
     def _add_vocab_option(self) -> None:
         body = self._read_json_body()

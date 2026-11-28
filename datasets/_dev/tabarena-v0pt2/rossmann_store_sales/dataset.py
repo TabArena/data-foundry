@@ -6,7 +6,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+)
 
 # The calendar the day counters read: every store-day of train.csv (2013-01-01 to 2015-07-31) and test.csv (to
 # 2015-09-17), closed days included. A store-day without a row is unknown and counts as no event.
@@ -121,7 +130,7 @@ def _day_counters(calendar: pd.DataFrame, rows: pd.DataFrame, store: pd.DataFram
     p2_start = pd.Series(pd.NaT, index=st.index, dtype="datetime64[ns]")
     p2_start[has_p2] = [
         pd.Timestamp.fromisocalendar(int(y), int(w), 1)
-        for y, w in zip(st.loc[has_p2, "Promo2SinceYear"], st.loc[has_p2, "Promo2SinceWeek"])
+        for y, w in zip(st.loc[has_p2, "Promo2SinceYear"], st.loc[has_p2, "Promo2SinceWeek"], strict=False)
     ]
     interval = st["PromoInterval"].fillna("").map(lambda v: [_MONTHS[m] for m in v.split(",") if m])
     d = rows["Date"].reset_index(drop=True)
@@ -129,9 +138,9 @@ def _day_counters(calendar: pd.DataFrame, rows: pd.DataFrame, store: pd.DataFram
     months = rows["Store"].map(interval).reset_index(drop=True)
     started = (d >= starts).to_numpy()
     month = d.dt.month.to_numpy()
-    in_month = np.array([m in lst for m, lst in zip(month, months)])
+    in_month = np.array([m in lst for m, lst in zip(month, months, strict=False)])
     since_cycle = np.full(len(rows), np.nan)
-    for i, (m, lst, day) in enumerate(zip(month, months, d)):
+    for i, (m, lst, day) in enumerate(zip(month, months, d, strict=False)):
         if started[i] and lst:
             earlier = [x for x in lst if x <= m]
             first = pd.Timestamp(day.year, max(earlier), 1) if earlier else pd.Timestamp(day.year - 1, max(lst), 1)
@@ -276,12 +285,6 @@ class RossmannStoreSales(AbstractCuratedDataset):
     splits_comment = """
         The description says 'Rossmann store managers are tasked with predicting their daily sales for up to six weeks in advance', to plan staff schedules, and the competition's own test period (1 August to 17 September 2015, 48 days) is about as long, so each test window is six weeks (42 days; the horizon checked, CC 2026-11-11). We add one day between train and test as a planning gap: a day's turnover is known when the store closes, so no label arrives late, and the gap only drops the last day before each window from training. The three windows, newest first (CC 2026-11-11), evenly spaced over the 11 windows that keep half the store-days for training (the 1st, 6th and 11th): 2015-06-20 to 07-31, the newest; 2014-11-22 to 2015-01-02, the Christmas weeks, when sales are highest (8,478 per open store-day against 6,837 on the train side, 24% more) and staffing matters most; and 2014-04-26 to 06-06, late spring of the other year. So the test spans two years and three seasons. Test 40,282, 31,203 and 38,107 store-days; train 802,996, 617,355 and 443,771 (95.1%, 73.1% and 52.6% of the 844,392 open store-days); the 1,114 store-days of 19 June 2015, the newest window's gap day, lie in no split. 180 stores have no rows from 1 July to 31 December 2014, so the Christmas window tests 935 stores until 31 December and all 1,115 only on 2 January 2015; the other two windows test every store.
     """
-    accepted_check_warnings = {
-        "splits_rows_unused": (
-            "By design: the 1,114 store-days of 19 June 2015, the one-day gap before the newest window, are in no "
-            "split (Lennart, 2026-11-11)."
-        ),
-    }
     split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="Date",

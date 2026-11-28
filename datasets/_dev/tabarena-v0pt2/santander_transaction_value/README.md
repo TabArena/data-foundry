@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: santander_transaction_value
 container_format: 2
-checksum: v2:096f24950bee036a3661460c047e4ff507d8ccc1c116f6a12fb5ec27bd0e3419
+checksum: v2:75e1c13f598f49033d085cec2e6e705a330e43c4462a472b139dee03284844ad
 build:
-  uuid: 01a13a7e-21ec-73e1-9f26-93bf3dd5ae2b
-  checksum: v2:cd62d4dfd097894bde1efea6af2e715b69e3864da94d1060cf28e979736f44d2
-  built_at: '2026-10-14T12:58:28+00:00'
-  path: santander_transaction_value/01a13a7e-21ec-73e1-9f26-93bf3dd5ae2b
+  uuid: 01a217ff-591a-7fd7-9b55-895182e9dd37
+  checksum: v2:75e1c13f598f49033d085cec2e6e705a330e43c4462a472b139dee03284844ad
+  built_at: '2026-11-26T13:15:41+00:00'
+  path: santander_transaction_value/01a217ff-591a-7fd7-9b55-895182e9dd37
   data_foundry_version: 0.0.5
-  git_sha: f93df193827f5244586b178fd7199efb86d66359
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 4447
   n_features: 540
@@ -54,6 +54,19 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'A test fold holds 236 or 237 customers and 1,213 to 1,920 rows (the
+
+    folds take equal numbers of customers, not of rows); the largest customer is 4%
+    to 8% of a test fold. The
+
+    competition split its files by customer too; the file has no dates for a temporal
+    split. Each test row is
+
+    predicted from the training rows and its own features only; no feature or model
+    step may use other test rows,
+
+    since a later snapshot in the same test fold shows the target of 68% to 75% of
+    them.'
   n_train:
     min: 2527
     max: 3234
@@ -75,7 +88,7 @@ decisions: []
 
 Regression of `target`, scored with `rmsle` on grouped splits by `customer`. 4,447 rows and 540 features. Source: Kaggle (2018).
 
-Built as `01a13a7e-21ec-73e1-9f26-93bf3dd5ae2b` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:096f24950bee036a3661460c047e4ff507d8ccc1c116f6a12fb5ec27bd0e3419`, so the build is stale. See [Build](#build).
+Built as `01a217ff-591a-7fd7-9b55-895182e9dd37` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -250,18 +263,13 @@ We start with the train.csv from Kaggle (4,459 rows, 4,991 anonymised columns).
   test file. Only a method that compares test rows with each other can read it; the grouping's context is
   `none` (each row is predicted from its own values), and the splits comment states the protocol line that
   no model step may use other test rows (LEAK-9, as for medical_facility_operational_data and fremtpl2).
-- Time basis: ForcedGroupedFromTemporal: snapshots of customers at different steps, the target two steps after
-  the newest lag column, no calendar date: the steps of different customers cannot be aligned, only a customer's
-  own snapshots are ordered, through the shifted columns. A dated release would allow windows by calendar step,
-  testing later steps and the shocks that the customers of one month share, which the split by customer leaves
-  on both sides; it should be used if Santander releases the dates. Not taken as stationary (Andrej,
-  2026-11-18): Andrej's own earlier review already ruled out a stationary relation because transaction values
-  move with the period; an order within each entity alone does not argue for interchangeable later samples.
+- Time basis: ForcedGroupedFromTemporal: snapshots of customers at different steps, the target two steps after the newest lag column, no calendar date: the steps of different customers cannot be aligned, only a customer's own snapshots are ordered, through the shifted columns. A dated release would allow windows by calendar step, testing later steps and the shocks that the customers of one month share, which the split by customer leaves on both sides; it should be used if Santander releases the dates. Not taken as stationary (Andrej, 2026-11-18): Andrej's own earlier review already ruled out a stationary relation because transaction values move with the period; an order within each entity alone does not argue for interchangeable later samples.
 
 ## Splits
 
-Grouped 3-fold cross-validation over the 710 customers with 3 repeats (each snapshot has its own target, so
-the protocol counts the 4,447 rows). A test fold holds 236 or 237 customers and 1,213 to 1,920 rows (the
+Repeated 3-fold cross-validation keeping each group of `customer` whole (shuffled group k-fold, a new draw per repeat): 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 4,447 rows (SPLIT-33).
+
+A test fold holds 236 or 237 customers and 1,213 to 1,920 rows (the
 folds take equal numbers of customers, not of rows); the largest customer is 4% to 8% of a test fold. The
 competition split its files by customer too; the file has no dates for a temporal split. Each test row is
 predicted from the training rows and its own features only; no feature or model step may use other test rows,
@@ -311,7 +319,7 @@ temporal one.
 | nearest neighbour in the same group | 30.0% of the rows (chance: 0.7%) |
 | label variance explained by the group | 0.56 (shuffled groups: 0.17) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
@@ -478,11 +486,10 @@ No categorical/object features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a13a7e-21ec-73e1-9f26-93bf3dd5ae2b |
-| checksum | v2:cd62d4dfd097894bde1efea6af2e715b69e3864da94d1060cf28e979736f44d2 |
-| built_at | 2026-10-14T12:58:28+00:00 |
-| path | santander_transaction_value/01a13a7e-21ec-73e1-9f26-93bf3dd5ae2b |
+| uuid | 01a217ff-591a-7fd7-9b55-895182e9dd37 |
+| checksum | v2:75e1c13f598f49033d085cec2e6e705a330e43c4462a472b139dee03284844ad |
+| built_at | 2026-11-26T13:15:41+00:00 |
+| path | santander_transaction_value/01a217ff-591a-7fd7-9b55-895182e9dd37 |
 | data_foundry_version | 0.0.5 |
-| git_sha | f93df193827f5244586b178fd7199efb86d66359 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:096f24950bee036a3661460c047e4ff507d8ccc1c116f6a12fb5ec27bd0e3419` |

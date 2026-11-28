@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: noaa_storm_events_damage
 container_format: 2
-checksum: v2:960453b47332af762a952b413f6b39fee6541278772d733c71451b3740115168
-build: null
+checksum: v2:55060b71525e7c87789de87f9a587edd95fab8523cf2a8ad6cd03142c9cb90eb
+build:
+  uuid: 01a217fe-b6f1-79fb-86bc-bc159766aac2
+  checksum: v2:55060b71525e7c87789de87f9a587edd95fab8523cf2a8ad6cd03142c9cb90eb
+  built_at: '2026-11-26T13:15:05+00:00'
+  path: noaa_storm_events_damage/01a217fe-b6f1-79fb-86bc-bc159766aac2
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 843144
@@ -38,6 +51,35 @@ splits:
   time_horizon_unit: years
   time_gap: 3
   time_gap_unit: months
+  reason: 'A model refit at the start of each year estimates the damage of that year''s
+    events; the yearly cadence is ours (NCEI releases monthly). A year follows the
+    planner, who decides per jurisdiction and hazard on the loss expected in a year
+    (44 CFR 201.6; FEMA''s National Risk Index), keeps whole the county or zone, hazard
+    and year cells the score counts once, and holds a full cycle of the storm seasons
+    (tornadoes in spring, hurricanes in autumn, winter storms), since storm damage
+    is strongly seasonal and a shorter window would test one season (the horizon checked,
+    CC 2026-11-11). The test windows are the calendar years 2025, 2021 and 2017 (newest
+    first; CC 2026-11-11), spread evenly over the nine years whose windows keep half
+    the entries for training (2017 to 2025, the 1st, 5th and 9th): every candidate
+    is a whole year with every season, so walking back from the newest has no reason
+    of its own here. The damage per entry moves widely between years as the costliest
+    storms land in some years and not in others: 2025, the newest, is a low-damage
+    year ($97,300 per entry), 2021 a middle one ($479,200) and 2017 the costliest
+    year of the data ($1,941,000), which the planner''s uncapped annual loss includes.
+    Test 45,870, 39,249 and 41,367 entries; train 793,017, 622,584 and 451,520 (94.1%,
+    73.8% and 53.6% of the 843,144 entries); the 4,257 entries of October to December
+    2024, the newest window''s gap, lie in no split. The per-window results in the
+    notes (the signal under the declared metric, the worth of the duration spans,
+    the cell weight) were measured on the test years 2023, 2024 and 2025, the windows
+    until 2026-11-11. Each window trains on every earlier event from 2007 on except
+    the last three months before it: a Storm Data month is certified "no later than
+    60 days after the end of the month" (NWSI 10-1605, Sec. 3), and NCEI''s public
+    files are "updated monthly with up to a 120 day delay possible" (C00510). In archived
+    releases a month first appears complete 75-80 days after its end (the 2025 file
+    of 16 January 2026 holds all of October 2025 and no November), so at a refit on
+    1 January the public files hold the events through September. Offices and counties
+    recur across the years (SPLIT-13): the model estimates the damage of new events
+    in known places.'
   n_train:
     min: 451520
     max: 793017
@@ -51,10 +93,8 @@ bundle_checks:
   infos:
   - dataset_duplicate_rows
   - dataset_conflicting_duplicate_rows
+  - splits_rows_unused
   accepted:
-    splits_rows_unused: 'By design: the 4,257 entries of October to December 2024
-      lie in the three-month gap before the newest window (2025) and in no other window
-      (Lennart, 2026-11-11).'
     task_target_value_dominant: 'Zero-inflated: 68% of the entries are $0, kept as
       entered; part of the zeros are unestimated damage (13 of 121 EF4 and EF5 tornado
       segments at $0; kept under LEAK-25 as amended, Andrej, 2026-11-02).'
@@ -69,7 +109,7 @@ decisions:
 
 Regression of `property_damage_usd`, scored with `mean_tweedie_deviance` on temporal splits by `begin_time`. 843,144 rows and 13 features. Source: GOV Website (2026).
 
-Not built yet. The current definition gives checksum `v2:960453b47332af762a952b413f6b39fee6541278772d733c71451b3740115168`.
+Built as `01a217fe-b6f1-79fb-86bc-bc159766aac2` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -160,7 +200,7 @@ Only curators run `build`, when the dataset ships.
 
 **Scoring columns**
 
-Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.metrics.scorer(container)(y_test, y_pred, test_idx)`).
 
 | column | role | how the metric uses it | model input |
 |---|---|---|---|
@@ -251,6 +291,8 @@ We start with the yearly details files 2007-2025 of NOAA NCEI's Storm Events Dat
 
 ## Splits
 
+Expanding-window temporal splits: 3 test window(s) of 1 year, starting at 2025, 2021, 2017, newest first; train is all earlier data up to a gap of 3 months. The test windows by `begin_time`, as listed: 2025-01-01 to 2025-12-31 (45,870 test, 793,017 train rows); 2021-01-01 to 2021-12-31 (39,249 test, 622,584 train rows); 2017-01-01 to 2017-12-31 (41,367 test, 451,520 train rows).
+
 A model refit at the start of each year estimates the damage of that year's events; the yearly cadence is ours (NCEI releases monthly). A year follows the planner, who decides per jurisdiction and hazard on the loss expected in a year (44 CFR 201.6; FEMA's National Risk Index), keeps whole the county or zone, hazard and year cells the score counts once, and holds a full cycle of the storm seasons (tornadoes in spring, hurricanes in autumn, winter storms), since storm damage is strongly seasonal and a shorter window would test one season (the horizon checked, CC 2026-11-11). The test windows are the calendar years 2025, 2021 and 2017 (newest first; CC 2026-11-11), spread evenly over the nine years whose windows keep half the entries for training (2017 to 2025, the 1st, 5th and 9th): every candidate is a whole year with every season, so walking back from the newest has no reason of its own here. The damage per entry moves widely between years as the costliest storms land in some years and not in others: 2025, the newest, is a low-damage year ($97,300 per entry), 2021 a middle one ($479,200) and 2017 the costliest year of the data ($1,941,000), which the planner's uncapped annual loss includes. Test 45,870, 39,249 and 41,367 entries; train 793,017, 622,584 and 451,520 (94.1%, 73.8% and 53.6% of the 843,144 entries); the 4,257 entries of October to December 2024, the newest window's gap, lie in no split. The per-window results in the notes (the signal under the declared metric, the worth of the duration spans, the cell weight) were measured on the test years 2023, 2024 and 2025, the windows until 2026-11-11. Each window trains on every earlier event from 2007 on except the last three months before it: a Storm Data month is certified "no later than 60 days after the end of the month" (NWSI 10-1605, Sec. 3), and NCEI's public files are "updated monthly with up to a 120 day delay possible" (C00510). In archived releases a month first appears complete 75-80 days after its end (the 2025 file of 16 January 2026 holds all of October 2025 and no November), so at a refit on 1 January the public files hold the events through September. Offices and counties recur across the years (SPLIT-13): the model estimates the damage of new events in known places.
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 451,520 to 793,017 rows, test 39,249 to 45,870 rows. Prediction horizon: 1 years. Gap between train and test: 3 months.
@@ -308,14 +350,14 @@ Offices differ widely in how often they enter $0 for the same event type, and th
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 3 info (28 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 5,402 exact duplicate row(s) (0.6% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 621 row(s) (0.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+- **info** `splits_rows_unused`: 4,257 row(s) (0.5%) appear in no train and no test set. (hint: Expected of a temporal split (the rows of a gap, history no window trains on, rows a filter keeps out of every training side); say why in `splits_comment`.)
 
 Accepted on purpose:
 
-- `splits_rows_unused`: By design: the 4,257 entries of October to December 2024 lie in the three-month gap before the newest window (2025) and in no other window (Lennart, 2026-11-11).
 - `task_target_value_dominant`: Zero-inflated: 68% of the entries are $0, kept as entered; part of the zeros are unestimated damage (13 of 121 EF4 and EF5 tornado segments at $0; kept under LEAK-25 as amended, Andrej, 2026-11-02).
 
 ## Data checks
@@ -418,4 +460,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a217fe-b6f1-79fb-86bc-bc159766aac2 |
+| checksum | v2:55060b71525e7c87789de87f9a587edd95fab8523cf2a8ad6cd03142c9cb90eb |
+| built_at | 2026-11-26T13:15:05+00:00 |
+| path | noaa_storm_events_damage/01a217fe-b6f1-79fb-86bc-bc159766aac2 |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

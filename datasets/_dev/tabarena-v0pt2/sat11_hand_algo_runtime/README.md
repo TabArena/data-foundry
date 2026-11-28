@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: sat11_hand_algo_runtime
 container_format: 2
-checksum: v2:91d2aa96ada611c37313142aa33985e21890449600a6322933aa2ea3ba273c9a
+checksum: v2:8e221750ccb69c5c30414e11bda3bc1b539a20c3aad273c73f733af7198db11f
 build:
-  uuid: 01a111fc-eda8-7830-9b0d-905bf0c5bc1d
-  checksum: v2:082824cbfada42e34f46d496f770c9504874d054fc07938f04be92176b4fd0c0
-  built_at: '2026-10-06T16:12:31+00:00'
-  path: sat11_hand_algo_runtime/01a111fc-eda8-7830-9b0d-905bf0c5bc1d
+  uuid: 01a21800-ef6b-7fa6-a5ed-0093507e2570
+  checksum: v2:8e221750ccb69c5c30414e11bda3bc1b539a20c3aad273c73f733af7198db11f
+  built_at: '2026-11-26T13:17:24+00:00'
+  path: sat11_hand_algo_runtime/01a21800-ef6b-7fa6-a5ed-0093507e2570
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 1840
   n_features: 169
@@ -54,6 +54,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 840
     max: 1620
@@ -65,10 +66,18 @@ bundle_checks:
   errors: []
   warnings:
   - dataset_constant_column
-  - groups_test_groups_few
   infos:
   - meta_bibtex_fields_missing
-  accepted: {}
+  accepted:
+    groups_test_groups_few: 'Accepted (Andrej, 2026-11-23): a group is a problem family,
+      the instances of one generator, and the use case is a family not seen in training
+      (the 88 instances new in 2011 all came from new generators), so the 32 families
+      give 10 or 11 per test fold. The signal across families is real: on 3 x 3 family
+      folds (group_probes.py, R^2 on the log runtime) random forest reaches 0.345,
+      LightGBM 0.291 and kNN 0.242 against a baseline of 0. The spread is wide (LightGBM
+      0.041 +- 0.269 per fold, against 0.875 +- 0.031 on instance folds), which the
+      20 x 3 splits average over; repeats reuse the same families, so the spread across
+      repeats is descriptive, not 60 independent experiments.'
 decisions: []
 ---
 
@@ -78,7 +87,7 @@ decisions: []
 
 Regression of `runtime`, scored with `par_k` on grouped splits by `problem_family`. 1,840 rows and 169 features. Source: ASlib (2011).
 
-Built as `01a111fc-eda8-7830-9b0d-905bf0c5bc1d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:91d2aa96ada611c37313142aa33985e21890449600a6322933aa2ea3ba273c9a`, so the build is stale. See [Build](#build).
+Built as `01a21800-ef6b-7fa6-a5ed-0093507e2570` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -159,7 +168,7 @@ Only curators run `build`, when the dataset ships.
 
 **Scoring columns**
 
-Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.metrics.scorer(container)(y_test, y_pred, test_idx)`).
 
 | column | role | how the metric uses it | model input |
 |---|---|---|---|
@@ -242,14 +251,11 @@ We get the data from ASlib and merge them into one file.
   and this definition until 2026-11-18) put 91% of the test instances' families in training. The anonymised
   instance ships as a scoring column only (`instance_id`): PAR10 picks per instance the solver with the lowest
   predicted runtime. Never a feature.
-- Time basis: UnseenGroup: whole problem families held out. Every solver ran on every instance in one campaign
-  of the 2011 SAT competition with a 5,000 s cutoff; the features exist before any full run, and no run is
-  dated. The competition that first used an instance gives one window with half of the rows in training (2011,
-  52%; 2009 trains on 38%), so no split by competition (SPLIT-14). Not tested: newer solvers.
+- Time basis: UnseenGroup: whole problem families held out. Every solver ran on every instance in one campaign of the 2011 SAT competition with a 5,000 s cutoff; the features exist before any full run, and no run is dated. The competition that first used an instance gives one window with half of the rows in training (2011, 52%; 2009 trains on 38%), so no split by competition (SPLIT-14). Not tested: newer solvers.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation keeping each group of `problem_family` whole (shuffled group k-fold, a new draw per repeat): 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 184 scored units (SPLIT-33).
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 840 to 1,620 rows, test 220 to 1,000 rows.
 
@@ -343,15 +349,18 @@ One group is a problem family: the instances of one generator (32 families with 
 | nearest neighbour in the same group | 91.0% of the rows (chance: 6.6%) |
 | label variance explained by the group | 0.53 (shuffled groups: 0.02) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
-0 error(s), 2 warning(s), 1 info (28 checks run, plus the dataset's own checks).
+0 error(s), 1 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_constant_column`: 3 constant column(s) (1 distinct non-null value): ['POSNEG_RATIO_CLAUSE_max', 'UNARY', 'clustering_max']. (hint: Drop them unless the constant is meaningful for the task.)
-- **warning** `groups_test_groups_few`: A test fold holds 10 groups (10-11 per fold, 32 groups in all): a score per group rests on few independent units, and a score per row on not many more. (hint: Keep the dataset only if its signal across groups is real (`.claude/skills/knowledge-data-foundry/scripts/group_probes.py`), and accept the warning with that reason.)
 - **info** `meta_bibtex_fields_missing`: BibTeX entries miss recommended fields — xu-sat12a: year.
+
+Accepted on purpose:
+
+- `groups_test_groups_few`: Accepted (Andrej, 2026-11-23): a group is a problem family, the instances of one generator, and the use case is a family not seen in training (the 88 instances new in 2011 all came from new generators), so the 32 families give 10 or 11 per test fold. The signal across families is real: on 3 x 3 family folds (group_probes.py, R^2 on the log runtime) random forest reaches 0.345, LightGBM 0.291 and kNN 0.242 against a baseline of 0. The spread is wide (LightGBM 0.041 +- 0.269 per fold, against 0.875 +- 0.031 on instance folds), which the 20 x 3 splits average over; repeats reuse the same families, so the spread across repeats is descriptive, not 60 independent experiments.
 
 ## Data checks
 
@@ -524,11 +533,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-eda8-7830-9b0d-905bf0c5bc1d |
-| checksum | v2:082824cbfada42e34f46d496f770c9504874d054fc07938f04be92176b4fd0c0 |
-| built_at | 2026-10-06T16:12:31+00:00 |
-| path | sat11_hand_algo_runtime/01a111fc-eda8-7830-9b0d-905bf0c5bc1d |
+| uuid | 01a21800-ef6b-7fa6-a5ed-0093507e2570 |
+| checksum | v2:8e221750ccb69c5c30414e11bda3bc1b539a20c3aad273c73f733af7198db11f |
+| built_at | 2026-11-26T13:17:24+00:00 |
+| path | sat11_hand_algo_runtime/01a21800-ef6b-7fa6-a5ed-0093507e2570 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:91d2aa96ada611c37313142aa33985e21890449600a6322933aa2ea3ba273c9a` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

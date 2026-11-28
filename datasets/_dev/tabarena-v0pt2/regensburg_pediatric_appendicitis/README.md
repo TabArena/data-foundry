@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: regensburg_pediatric_appendicitis
 container_format: 2
-checksum: v2:39232fe02516529c2a3a3a0bf388c247d07e6564514d9be2e5ff51c23bc8a475
+checksum: v2:9c8080bfe7382618c8a2da9fec4e8596e1629a21f901472c325b5c45eb4959bd
 build:
-  uuid: 01a111fc-ee89-74ad-b25b-309464691fe6
-  checksum: v2:33d1e7ed244bae6b272fba7b043eb64e09987465a1a721142d8d57b597ca37d3
-  built_at: '2026-10-06T16:12:31+00:00'
-  path: regensburg_pediatric_appendicitis/01a111fc-ee89-74ad-b25b-309464691fe6
+  uuid: 01a21800-ee4e-7311-8de2-4a6a9eb36d3c
+  checksum: v2:9c8080bfe7382618c8a2da9fec4e8596e1629a21f901472c325b5c45eb4959bd
+  built_at: '2026-11-26T13:17:24+00:00'
+  path: regensburg_pediatric_appendicitis/01a21800-ee4e-7311-8de2-4a6a9eb36d3c
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 763
   n_features: 47
@@ -47,6 +47,44 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Tests stand for other
+
+    children of the same hospital and years.
+
+    The relation is measured stationary (StationaryRelation; Andrej, 2026-11-19):
+    children are admitted over 2016-2021 and a deployed model scores
+
+    later admissions, but the file has no dates. Only two periods can be told apart:
+    ultrasound case numbers up to
+
+    440 are 2016-2018 (every child also in the authors'' 2021 study of those years
+    has a number up to 440), higher
+
+    ones 2019-2021; within each period the numbers follow the children''s group, not
+    the admission order (curation
+
+    comments). Two periods give one test window, too few for a temporal split. The
+    period matters: the complicated
+
+    share rises from 12.0% to 18.8% (among operated children from 32% to 52%, with
+    the share operated at 38% and
+
+    36%), loss of appetite is recorded for 30% of the children in 2016-2018 and 77%
+    later, and the features tell
+
+    the two periods apart at ROC AUC 0.86. Against random splits of the same sizes,
+    training on 2016-2018 and
+
+    testing on 2019-2021 costs little in ranking and more in calibration: TabPFN 3.5
+    ROC AUC 0.931 against 0.935
+
+    and log loss 0.290 against 0.221; logistic regression 0.887 against 0.905 and
+    0.377 against 0.265. The
+
+    stationary-relation test on the two periods reads flat (Time basis line). Recover
+    the admission dates if a later
+
+    release has them.'
   n_train:
     min: 508
     max: 509
@@ -68,7 +106,7 @@ decisions: []
 
 Binary classification of `Severity`, scored with `roc_auc` on IID splits. 763 rows and 47 features. Source: Other (2023).
 
-Built as `01a111fc-ee89-74ad-b25b-309464691fe6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:39232fe02516529c2a3a3a0bf388c247d07e6564514d9be2e5ff51c23bc8a475`, so the build is stale. See [Build](#build).
+Built as `01a21800-ee4e-7311-8de2-4a6a9eb36d3c` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -268,17 +306,13 @@ We start with the tabular meta-data used in the paper. We create only one task o
   (`NOTHING_FOUND`). The three text columns alone told operated from not operated uncomplicated children at
   ROC AUC 0.572, 0.527 after (on the label 0.552, then 0.531); the full model scores the same with or without
   them (gradient boosting 0.905 and 0.906), so no model had used the route.
-- Time basis: StationaryRelation (SPLIT-32; Andrej, 2026-11-19): children are admitted over
-  2016-2021 and a deployed model scores later admissions, but the file has no dates; the ultrasound case
-  numbers tell only two periods apart (2016-2018 and 2019-2021), too few for windows. The stationary-relation
-  test (2026-11-19) on these two periods reads flat: tested on 2019-2021, training on 2016-2018 instead of as
-  many 2019-2021 children costs LightGBM +0.016 ± 0.016 ROC AUC (floor 0.004) and Kumo-Tabular +0.004 ±
-  0.010 (floor 0.004); the complicated share moves 1.63-fold (p 0.006), under the twofold move that counts as
-  a recording change. So children are split at random. Admission dates would allow a split by period.
+- Time basis: StationaryRelation (Andrej, 2026-11-19): children are admitted over 2016-2021 and a deployed model scores later admissions, but the file has no dates; the ultrasound case numbers tell only two periods apart (2016-2018 and 2019-2021), too few for windows. The stationary-relation test (2026-11-19) on these two periods reads flat: tested on 2019-2021, training on 2016-2018 instead of as many 2019-2021 children costs LightGBM +0.016 ± 0.016 ROC AUC (floor 0.004) and Kumo-Tabular +0.004 ± 0.010 (floor 0.004); the complicated share moves 1.63-fold (p 0.006), under the twofold move that counts as a recording change. So children are split at random. Admission dates would allow a split by period.
 
 ## Splits
 
-Default splits: stratified random 3-fold cross-validation with 10 repeats (seed 4267). Tests stand for other
+Repeated 3-fold cross-validation over the rows, stratified on `Severity`: 10 repeat(s) x 3 folds, 30 splits, the repeats set by the 763 rows (SPLIT-33).
+
+Tests stand for other
 children of the same hospital and years.
 The relation is measured stationary (StationaryRelation; Andrej, 2026-11-19): children are admitted over 2016-2021 and a deployed model scores
 later admissions, but the file has no dates. Only two periods can be told apart: ultrasound case numbers up to
@@ -507,11 +541,10 @@ release has them.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-ee89-74ad-b25b-309464691fe6 |
-| checksum | v2:33d1e7ed244bae6b272fba7b043eb64e09987465a1a721142d8d57b597ca37d3 |
-| built_at | 2026-10-06T16:12:31+00:00 |
-| path | regensburg_pediatric_appendicitis/01a111fc-ee89-74ad-b25b-309464691fe6 |
+| uuid | 01a21800-ee4e-7311-8de2-4a6a9eb36d3c |
+| checksum | v2:9c8080bfe7382618c8a2da9fec4e8596e1629a21f901472c325b5c45eb4959bd |
+| built_at | 2026-11-26T13:17:24+00:00 |
+| path | regensburg_pediatric_appendicitis/01a21800-ee4e-7311-8de2-4a6a9eb36d3c |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:39232fe02516529c2a3a3a0bf388c247d07e6564514d9be2e5ff51c23bc8a475` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_risk
 container_format: 2
-checksum: v2:9c26578d545f2169012c96993db5d223182d7d47b814bc2345d3f5399ae1924b
+checksum: v2:ed91c3ba205a1765cbfd256ed7b590cb74a0c2c8333f9387c4d51840f8b843a7
 build:
-  uuid: 01a111fb-c9a4-79ac-b807-b4b9dffd8068
-  checksum: v2:1a393d7cebaaa9c5dd20682edd3c56e7c65a975a8f94a37ce6528b23a311ad2f
-  built_at: '2026-10-06T16:11:32+00:00'
-  path: home_credit_default_risk/01a111fb-c9a4-79ac-b807-b4b9dffd8068
+  uuid: 01a217fb-6f75-7c86-aae3-e9cc82c11dc3
+  checksum: v2:ed91c3ba205a1765cbfd256ed7b590cb74a0c2c8333f9387c4d51840f8b843a7
+  built_at: '2026-11-26T13:11:42+00:00'
+  path: home_credit_default_risk/01a217fb-6f75-7c86-aae3-e9cc82c11dc3
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 307507
   n_features: 709
@@ -47,6 +47,22 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Stratified 3-fold cross-validation with 3 repeats over each client''s latest
+    application (299,590 rows;
+
+    one-application clients included, a client''s same-day applications in one fold).
+    The 7,917 earlier
+
+    applications of returning clients (2.6% of rows) are added to every train side
+    and never tested, so a
+
+    returning client''s later application is scored with the earlier one known, as
+    a lender meets it. The client
+
+    is the same sex and the same days between birth and ID issue and between birth
+    and registration; the
+
+    release has no application dates, so this stands in for a split by time.'
   n_train:
     min: 207621
     max: 207663
@@ -78,7 +94,7 @@ decisions: []
 
 Binary classification of `TARGET`, scored with `roc_auc` on IID splits. 307,507 rows and 709 features. Source: Kaggle (2018).
 
-Built as `01a111fb-c9a4-79ac-b807-b4b9dffd8068` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9c26578d545f2169012c96993db5d223182d7d47b814bc2345d3f5399ae1924b`, so the build is stale. See [Build](#build).
+Built as `01a217fb-6f75-7c86-aae3-e9cc82c11dc3` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -204,18 +220,6 @@ We start from this file.
 - We compute no statistic over all rows (Lennart, 2026-10-19): the kernel's median income per organisation type (`NEW_INC_BY_ORG`) is dropped, `NEW_SCORES_STD` stays missing where the kernel filled in its mean, and the kernel's feature selection (columns without LightGBM importance, measured on all labelled rows) is not applied, so 709 features ship instead of 504. The kernel computed these over Kaggle's train and test applications, as a competition allows; whether to keep that transductive setting for this task can be checked later.
 - Potential leak, kept on purpose: the 43 building columns (`*_AVG`, `*_MODE`, `*_MEDI`, `TOTALAREA_MODE`) are "normalized information about building where the client lives" (HomeCredit_columns_description.csv) and each spans exactly 0 to 1, so Home Credit likely scaled them over all applications, ours included; the method is not documented and no raw values exist. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak; revisit if Home Credit documents it.
 - We replace values that became inf after aggregation with NaN. This occurred across several aggregated columns.
-- Time basis: ForcedIIDFromTemporal: loan applications over a period Home Credit does not state, the label
-  payment difficulties on the first instalments; a lender scores later applicants. Every date is relative to the
-  application ("time only relative to the application", HomeCredit_columns_description.csv), the default rate is
-  flat along SK_ID_CURR (7.9% to 8.3% per tenth), and the earlier applications' ids do not follow their decision
-  day (Spearman 0.02), so no date can be rebuilt (Time: Lost). Leak test across the split: 5.4% of the
-  applications share a client with another (same sex and the same days between birth and ID issue and between
-  birth and registration); the split tests each client's latest application and keeps the client's earlier ones
-  in training only (below), so no test row has its client's later application in training. The random split
-  cannot test how the score holds for later applicants; application dates would allow a split by time. Not taken
-  as stationary (Andrej, 2026-11-18): The same lender documents score decay and recording changes in its dated
-  data; no mechanism makes later applicants interchangeable. A stationary-relation test on
-  home_credit_default_stability_1m would add a measured similar case but cannot set ASR here.
 - Returning clients (Andrej, 2026-11-11): 16,489 applications (5.4%) share a client key with another
   (8,004 clients); inside a client the order is exact, as `DAYS_BIRTH` counts back from each application, so
   the older (more negative) row is the later application, and in 61% of the pairs the later one lists the
@@ -239,8 +243,11 @@ We start from this file.
   numbers (`SCORES`): `REGION_RATING_CLIENT`, `REGION_RATING_CLIENT_W_CITY`.
 - The target (2026-11-01, CLEAN-25): `TARGET` ships its classes as words (1 is the event). Binary: "Yes" is the
   event, the class that sorts second, so it is the metrics' positive class.
+- Time basis: ForcedIIDFromTemporal: loan applications over a period Home Credit does not state, the label payment difficulties on the first instalments; a lender scores later applicants. Every date is relative to the application ("time only relative to the application", HomeCredit_columns_description.csv), the default rate is flat along SK_ID_CURR (7.9% to 8.3% per tenth), and the earlier applications' ids do not follow their decision day (Spearman 0.02), so no date can be rebuilt (Time: Lost). Leak test across the split: 5.4% of the applications share a client with another (same sex and the same days between birth and ID issue and between birth and registration); the split tests each client's latest application and keeps the client's earlier ones in training only (below), so no test row has its client's later application in training. The random split cannot test how the score holds for later applicants; application dates would allow a split by time. Not taken as stationary (Andrej, 2026-11-18): The same lender documents score decay and recording changes in its dated data; no mechanism makes later applicants interchangeable. A stationary-relation test on home_credit_default_stability_1m would add a measured similar case but cannot set ASR here.
 
 ## Splits
+
+Custom splits (`_make_splits`): 3 repeat(s) x 3 folds, 9 splits.
 
 Stratified 3-fold cross-validation with 3 repeats over each client's latest application (299,590 rows;
 one-application clients included, a client's same-day applications in one fold). The 7,917 earlier
@@ -267,7 +274,7 @@ release has no application dates, so this stands in for a split by time.
 
 0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 218,329,970 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 218,329,970 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to run them; nothing else checks duplicate rows and columns.)
 - **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 218,329,970 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
 
 Accepted on purpose:
@@ -504,11 +511,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fb-c9a4-79ac-b807-b4b9dffd8068 |
-| checksum | v2:1a393d7cebaaa9c5dd20682edd3c56e7c65a975a8f94a37ce6528b23a311ad2f |
-| built_at | 2026-10-06T16:11:32+00:00 |
-| path | home_credit_default_risk/01a111fb-c9a4-79ac-b807-b4b9dffd8068 |
+| uuid | 01a217fb-6f75-7c86-aae3-e9cc82c11dc3 |
+| checksum | v2:ed91c3ba205a1765cbfd256ed7b590cb74a0c2c8333f9387c4d51840f8b843a7 |
+| built_at | 2026-11-26T13:11:42+00:00 |
+| path | home_credit_default_risk/01a217fb-6f75-7c86-aae3-e9cc82c11dc3 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:9c26578d545f2169012c96993db5d223182d7d47b814bc2345d3f5399ae1924b` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

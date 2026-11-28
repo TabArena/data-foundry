@@ -11,8 +11,9 @@ a decision stands against the precedents and ask.
 Read first: `.claude/skills/knowledge-curation/references/principles.md` (above all "Consistent judgement",
 "Exceptions and amendments", "Tensions"). The main session gives you the decisions to check (or the dataset and the
 panel's draft recommendations), and usually the output of
-`.claude/skills/knowledge-data-foundry/scripts/decision_register.py` (decisions grouped by rule, with flags). The
-register's flags are candidates, not findings: read the cases behind each one.
+`.claude/skills/knowledge-data-foundry/scripts/decision_register.py` (decisions grouped by rule, with flags; a
+review's issues appear as kind `issue` with their state, open, resolved or deferred, a closed one dated by its closing
+turn). The register's flags are candidates, not findings: read the cases behind each one.
 
 For each decision:
 

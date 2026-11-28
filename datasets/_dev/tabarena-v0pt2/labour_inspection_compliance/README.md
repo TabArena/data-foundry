@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: labour_inspection_compliance
 container_format: 2
-checksum: v2:42770b68b4f19569fbcd3b56b4d5254cc1a38b0e136a388df34b4b21e15c6ed4
+checksum: v2:1140161e4ebfc172087046ee17093bf739c7cc3c60ff20e9e8c25782f2383596
 build:
-  uuid: 01a111fb-c91d-7b12-beaf-b56406cfc014
-  checksum: v2:f6e38a18770cdade76cba8a95794eee525dba553b2d59acab9aed90e3261cf63
-  built_at: '2026-10-06T16:11:28+00:00'
-  path: labour_inspection_compliance/01a111fb-c91d-7b12-beaf-b56406cfc014
+  uuid: 01a217ff-00e1-750f-9837-8821a1b937e8
+  checksum: v2:1140161e4ebfc172087046ee17093bf739c7cc3c60ff20e9e8c25782f2383596
+  built_at: '2026-11-26T13:15:40+00:00'
+  path: labour_inspection_compliance/01a217ff-00e1-750f-9837-8821a1b937e8
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 63634
   n_features: 376
@@ -49,6 +49,28 @@ splits:
   time_horizon_unit: steps
   time_gap: null
   time_gap_unit: null
+  reason: 'The order is the export''s and coarse: it resolves time only to about 10,000
+    rows (some 14 months
+
+    of the 7.5 years), so the windows are a sixth of the rows each, wider than that
+    resolution, and a test window
+
+    is later on average, not row by row. The windows follow the file''s own order:
+    the checklists of one visit lie
+
+    a median 1,211 rows apart, so a window''s start cuts some visits (0.3% to 1.0%
+    of test rows have another row of
+
+    their visit in training, against 4.0% on random folds). An inspection''s result
+    is known when it ends, so there
+
+    is no gap (2026-11-11, Andrej). Three of the nine windows an IID split of this
+    size would
+
+    get: the order resolves time to about 10,000 rows, so windows are a sixth of the
+    rows, and the half-data floor
+
+    leaves room for three (Andrej, 2026-11-20).'
   n_train:
     min: 31819
     max: 53029
@@ -60,12 +82,12 @@ bundle_checks:
   errors: []
   warnings:
   - dataset_constant_column
-  - dataset_sequential_id_column
   infos: []
   accepted:
-    splits_below_target: 'Three of the nine windows an IID split of this size would
-      get: the order resolves time to about 10,000 rows, so windows are a sixth of
-      the rows, and the half-data floor leaves room for three (Andrej, 2026-11-20).'
+    splits_dimensions_off_protocol: 'Three of the nine windows an IID split of this
+      size would get: the order resolves time to about 10,000 rows, so windows are
+      a sixth of the rows, and the half-data floor leaves room for three (Andrej,
+      2026-11-20).'
 decisions: []
 ---
 
@@ -75,7 +97,7 @@ decisions: []
 
 Binary classification of `NonCompliance`, scored with `precision_at_k` on temporal splits by `file_row`. 63,634 rows and 376 features. Source: Other (2022).
 
-Built as `01a111fb-c91d-7b12-beaf-b56406cfc014` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:42770b68b4f19569fbcd3b56b4d5254cc1a38b0e136a388df34b4b21e15c6ed4`, so the build is stale. See [Build](#build).
+Built as `01a217ff-00e1-750f-9837-8821a1b937e8` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -226,9 +248,9 @@ We start with the data from dataverse. We create a task for the Non-compliance C
 
 ## Splits
 
-Three test windows of 10,605 inspections (a sixth of the rows) in the raw file's order, walking back from the
-newest; each trains on all earlier rows (50%, 67% and 83%), so no window trains on less than half of the data
-(SPLIT-14). The order is the export's and coarse: it resolves time only to about 10,000 rows (some 14 months
+Expanding-window temporal splits: 3 test window(s) of 10605 rows, walking back from the newest data, newest first; train is all earlier data. The test windows by `file_row`, as listed: 53029 to 63633 (10,605 test, 53,029 train rows); 42424 to 53028 (10,605 test, 42,424 train rows); 31819 to 42423 (10,605 test, 31,819 train rows).
+
+The order is the export's and coarse: it resolves time only to about 10,000 rows (some 14 months
 of the 7.5 years), so the windows are a sixth of the rows each, wider than that resolution, and a test window
 is later on average, not row by row. The windows follow the file's own order: the checklists of one visit lie
 a median 1,211 rows apart, so a window's start cuts some visits (0.3% to 1.0% of test rows have another row of
@@ -258,14 +280,13 @@ Each test window against its train side, by statistics of the data, never of a m
 
 ## Bundle checks
 
-0 error(s), 2 warning(s), 0 info (28 checks run, plus the dataset's own checks).
+0 error(s), 1 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_constant_column`: 3 constant column(s) (1 distinct non-null value): ['Credit losses on certificates, bonds and other interest-bearing securities', 'Holdings of own shares/equity certificates', 'Extraordinary costs']. (hint: Drop them unless the constant is meaningful for the task.)
-- **warning** `dataset_sequential_id_column`: 1 integer column(s) hold one value per row, densely numbered like a running id: ['file_row']. (hint: A running id often encodes the order of collection (time) or the origin (a prefix per source), which a model then learns. Drop it, or declare it `NonFeature(column, 'identifier')` in the parent.)
 
 Accepted on purpose:
 
-- `splits_below_target`: Three of the nine windows an IID split of this size would get: the order resolves time to about 10,000 rows, so windows are a sixth of the rows, and the half-data floor leaves room for three (Andrej, 2026-11-20).
+- `splits_dimensions_off_protocol`: Three of the nine windows an IID split of this size would get: the order resolves time to about 10,000 rows, so windows are a sixth of the rows, and the half-data floor leaves room for three (Andrej, 2026-11-20).
 
 ## Data checks
 
@@ -477,11 +498,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fb-c91d-7b12-beaf-b56406cfc014 |
-| checksum | v2:f6e38a18770cdade76cba8a95794eee525dba553b2d59acab9aed90e3261cf63 |
-| built_at | 2026-10-06T16:11:28+00:00 |
-| path | labour_inspection_compliance/01a111fb-c91d-7b12-beaf-b56406cfc014 |
+| uuid | 01a217ff-00e1-750f-9837-8821a1b937e8 |
+| checksum | v2:1140161e4ebfc172087046ee17093bf739c7cc3c60ff20e9e8c25782f2383596 |
+| built_at | 2026-11-26T13:15:40+00:00 |
+| path | labour_inspection_compliance/01a217ff-00e1-750f-9837-8821a1b937e8 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:42770b68b4f19569fbcd3b56b4d5254cc1a38b0e136a388df34b4b21e15c6ed4` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

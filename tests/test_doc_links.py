@@ -18,10 +18,19 @@ DOCS = [
     *sorted((ROOT / ".claude" / "agents").glob("*.md")),
     *(
         ROOT / name
-        for name in ("AGENTS.md", "CLAUDE.md", "README.md", "CONTRIBUTING_DATASETS.md", "DATA_FOUNDRY_V1.md")
+        for name in (
+            "AGENTS.md",
+            "CLAUDE.md",
+            "README.md",
+            "CONTRIBUTING_DATASETS.md",
+            "DATA_FOUNDRY_V1.md",
+            "DEVELOPMENT.md",
+            "datasets/README.md",
+            "examples/README.md",
+        )
     ),
+    *sorted((ROOT / "docs").glob("*.md")),
     *(ROOT / "datasets" / "_dev" / "tabarena-v0pt2" / name for name in ("README.md", "GETTING_STARTED.md")),
-    ROOT / "datasets" / "_dev" / "tabarena-v0pt2" / "REVIEW.md",
     # The records with a review: its links were written relative to a dataset folder before 2026-11-11.
     *(p for p in sorted((ROOT / "curation" / "records").glob("*.md")) if "\n## Review\n" in p.read_text()),
 ]

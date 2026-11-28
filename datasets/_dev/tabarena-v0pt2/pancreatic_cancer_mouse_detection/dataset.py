@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Grouping,
@@ -15,7 +16,6 @@ from data_foundry.v2 import (
     Spectrum,
     TaskSummary,
     TimeBasis,
-    UnitWeight,
 )
 
 
@@ -125,20 +125,19 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
             "a sample weighs 1 over its mouse's number of samples (`mouse_weight`; 1 to 6 samples per mouse), where "
             "unweighted a mouse bled six times would count as six patients (Lennart, 2026-11-08)."
         ),
-        inputs={"weight": "mouse_weight"},
     )
     scoring_columns = (
         ScoringColumn(
             column="mouse_weight",
             role="weight",
             used_by="roc_auc",
+            unit="mouse_id",
             description=(
                 "1 over the number of serum samples of the row's mouse (from 1/6 to 1), so that each mouse counts "
                 "once in the ROC AUC; for scoring only, never a feature or a training weight"
             ),
         ),
     )
-    unit_weight = UnitWeight(column="mouse_weight", unit="mouse_id")
     grouping = Grouping(
         on="mouse_id",
         labels="per_group",
@@ -178,7 +177,7 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
                 # Filename format: {id}_{group_id}_{rest}.txt_PQ.csv
                 group_id = filepath.stem.split("_")[1]
 
-                row = dict(zip("M/Z:" + sample["M/Z"].astype(str), sample["Intensity"]))
+                row = dict(zip("M/Z:" + sample["M/Z"].astype(str), sample["Intensity"], strict=False))
                 row["mouse_id"] = group_id
                 row["HasPanIN"] = label
                 rows.append(row)

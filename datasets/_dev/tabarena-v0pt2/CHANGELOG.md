@@ -31,6 +31,198 @@ containers are untouched; each definition gains what the data showed.
   2.x. The failure is in code this entry does not touch (its edits are comment text), and it reproduces on the
   unmodified definition, so the loader needs a polars 2 migration of its own before the dataset can be rebuilt.
 
+## 2026-11-26, every definition rebuilt on the restructured package (174 containers)
+
+- All 174 definitions were rebuilt at the top of the codebase-review stack (#138 to #149). The generated READMEs now
+  name `data-foundry probe group` instead of `group_probes.py` (airfoil_self_noise and sat11_hand_algo_runtime keep
+  the script name in their dated notes), carry the splits reason and the merged check slugs, and every container
+  writes its `benchmark_task.json`. All 174 build, reload and match their stored checksums; container format 2.
+- Raw files fetched for the three definitions whose inputs were not in this warehouse, as their
+  `download_description` says: gossis_icu_hospital_mortality (Kaggle, widsdatathon2020), thyroid_discordant_archive
+  (UCI, thyroid0387) and kdd_cup_09_appetency (the large training data's five chunks and its labels, kdd.org).
+- Rows or splits differ from the committed READMEs in 22 datasets, all from changes on main since those READMEs were
+  last built: the 15 `_1m` versions keep every training row (2026-11-10; a benchmark samples them by
+  `train_sampling`), and acquire_valued_shoppers_challenge, airqo_low_cost_air_quality_monitor_calibration_challenge,
+  chicago_traffic_crashes, huesken_sirna_efficacy, mortgage, onlinenewspopularity and rain_in_australia get the
+  windows and repeats of the split rules of 2026-11-24. Main's own `dataset check` gives the same rows and splits for
+  those seven and for sepsis_prediction_1m, fraud_detection_in_electricity_and_gas_consumption_1m,
+  nyc_taxi_trip_duration_1m and expresso_churn_prediction_1m.
+- Warnings new against the committed READMEs, none from this rebuild:
+  - apistox and thyroid_discordant_archive (`splits_below_target`) and loan_default_prediction_imperial_college
+    (`dataset_sequential_id_column`) show the merged slugs, `splits_dimensions_off_protocol` and
+    `dataset_identifier_column`;
+  - 2024_lusaka_mobility_prediction_hackathon, ames_housing, brazilian_ecommerce, college_scorecard,
+    numerai_v5_2_1m and sf_permit_time get SPLIT-15's window count (`splits_dimensions_off_protocol`), which their
+    READMEs predate; main's check gives it for lusaka, college_scorecard and sf_permit_time as well;
+  - numerai_v5_2_1m's committed README was never from a build. Its build adds `task_feature_looks_like_exposure`
+    (the name heuristic reads "swept" in the anonymised `feature_swept_irrespirable_grillade`) and
+    `task_target_value_dominant` (the five-level target is 0.5 on half the rows).
+  - Accepted (Lennart, 2026-11-26): `splits_dimensions_off_protocol` in those eight definitions, each acceptance
+    naming SPLIT-33's target, the windows reached and what stops more (SPLIT-15); the splits comments of
+    2024_lusaka_mobility_prediction_hackathon and numerai_v5_2_1m now name the target as well. numerai_v5_2_1m also
+    accepts its two new warnings. A CC line in each record; the eight datasets were rebuilt.
+- Open warnings after the acceptances: 27 in 17 datasets. `dataset_constant_column` (aps_failure,
+  asp_potassco_classification, labour_inspection_compliance, mercedes_benz_greener_manufacturing,
+  pva_revenue_prediction_kddcup98, sat11_hand_algo_runtime); `dataset_conflicting_duplicate_rows`
+  (asp_potassco_classification, blood_transfusion, hr_analytics, ljubljana_primary_tumor, superconductivity,
+  website_phishing); `dataset_duplicate_rows` (blood_transfusion, concrete_compressive_strength, hr_analytics,
+  ljubljana_primary_tumor, website_phishing); `dataset_pure_feature_value` (amazon_employee_access, aps_failure); one
+  each of `task_feature_looks_like_exposure` (early_learning_predictors), `task_target_value_dominant`,
+  `dataset_missing_value_label` and `meta_license_unknown` (pva_revenue_prediction_kddcup98),
+  `dataset_identifier_column` (loan_default_prediction_imperial_college), `dataset_duplicate_columns`
+  (mercedes_benz_greener_manufacturing), `dataset_missing_value_sentinel` (musk) and `splits_test_minority_few`
+  (seismic_bumps).
+- Inputs: the build traced 2,658 raw files (107.3 GB), and a check-only rebuild from links to those files alone gives
+  every checksum again. The tracer missed SQLite reads (aeolus_rebuilt_1m's `stations.db`,
+  noaa_afsc_bottom_trawl_survey_cpue's strata GeoPackage): `build_one.py` now notes `sqlite3.connect`, both were
+  rebuilt with the same checksums and reproduce. `minimal_inputs.py links` copies a traced `.prepared_raw_files.json`
+  instead of linking it, and `compare_builds.py` reads a README's front matter up to its closing line (a splits
+  reason may hold a table).
+- Task probes (`data-foundry probe task --built`) on the 22 datasets whose rows or splits changed. Flags with a
+  decision already: numerai_v5_2_1m and g_research_crypto_forecasting_1m (no_signal, drift_baseline, unstable: R^2
+  of untuned models under a correlation metric, as their records say), expresso_churn_prediction_1m (one_feature,
+  kept 2026-10-07). New flags, each kept as shipped (Lennart, 2026-11-26, on a review page; CC lines in the
+  records and rows in task_probes.md's cases):
+  - maps_router_eta_1m, one_feature (TP-4): `num_18` alone reaches skill 0.761 against the random forest's 0.800
+    (RMSE 0.183 against 0.168; the constant 0.375), and all 21 BeyondArena configurations beat it;
+  - consumer_complaints_1m, no_spread (TP-3): LightGBM log loss 0.403, random forest 0.413, linear 0.569 (paired SE
+    0.19); the tuned configurations spread from 0.410 to 0.565;
+  - acquire_valued_shoppers_challenge, drift_baseline beside its decided no_spread (TP-1, TP-2): the newest rows'
+    class shares have log loss 0.623 against the random forest's 0.615, but ROC AUC, the metric, ignores them, and
+    all 21 tuned configurations beat 0.5 in 5 of 5 folds.
+  On the `_1m` containers, which now hold every training row, the task probe loads the whole container before it
+  caps the sides: 490 GB peak for maps_router_eta_1m and 634 GB for numerai_v5_2_1m, so they run one at a time.
+- The superseded containers were deleted from the local warehouse (Lennart, 2026-11-26): 276 of the working
+  copy's datasets, 80 GB, none a README's current build or a UUID pinned in the collections registry. The 103
+  containers in the folders of datasets outside the working copy were left alone.
+- Group probes re-run (`data-foundry probe group`, mean of three splits each) for the four definitions with a unit
+  weight, whose runs before 2026-11-09 read the unit column as a feature (only boreal had been measured again):
+  boreal_postfire_lichen_biomass R^2 0.408 on random folds against -0.035 on grouped ones (gap 0.443, as on
+  2026-11-10); dementia_prediction ROC AUC 0.864 against 0.785; pancreatic_cancer_mouse_detection ROC AUC 0.676
+  against 0.634 (across groups, the linear model 0.645, permutation p 0.03); superconductivity R^2 0.915 against
+  0.909. No split changes: each grouping follows its use case, as its record says.
+
+## 2026-11-26, leave one group out is a declaration; group bases carry their attribution (no container built)
+
+- `leave_one_group_out = True` became `grouped_splits = GroupedSplits(kind="leave_one_group_out")` beside the
+  `grouping`, and the split checks accept one fold per group without an acceptance. heart_disease and
+  online_shoppers_purchasing_intention_dataset declare it and drop their `splits_dimensions_off_protocol` acceptance;
+  their repeats, folds, train and test positions, frame and splits comment are identical on the real data.
+- bioresponse and covertype moved "ForcedIIDFromGrouped (Andrej, 2026-11-16)" out of the `GroupBasis` reason into
+  `set_by` and `on`; the README's `Group basis:` line now names the tag itself, so the line reads as before.
+
+## 2026-11-26, split declarations replace nine custom splits; the splits comment is generated first (no container built)
+
+- New declarations (`data_foundry.definition`): `TemporalSplits(window=None, cutoffs=...)` runs each window to the next
+  start; `Temporal(label_known_on=...)` trains only on labels known before a window;
+  `Temporal(exclude_test_entities_on=...)` leaves out the training rows of the entities a window tests;
+  `leave_one_group_out = True` holds out one group per fold. Nine custom `_make_splits` became declarations, each
+  with identical repeats, folds, train and test positions
+  and frame on the real data: bank_marketing, sdss_17 and 2_month_survival_rate_prediction (windows to the next start),
+  brazilian_ecommerce and sf_permit_time (labels known), lending_club and alfa_battle_2_0_task_2 (entities of the
+  window), heart_disease and online_shoppers_purchasing_intention_dataset (one group out). Six stay custom:
+  african_credit_scoring_challenge, chicago_traffic_crashes, home_credit_default_risk, hotel_booking_demand,
+  medical_facility_operational_data and predict_students_dropout_and_academic_success.
+  The `splits_rows_unused` acceptances of brazilian_ecommerce, lending_club and alfa_battle_2_0_task_2 are not kept:
+  rows a temporal split leaves out are an info since the overlapping checks were merged.
+- The splits comment of a container and its README is now the generated description of the splits (the windows with
+  their times and sizes, the folds and repeats and the units that set them, the gap, the budget and the train
+  sampling), then the definition's `splits_comment` as the reason; the description replaces "Default splits.".
+  The `splits_comment` of 55 definitions lost the 72 sentences that only restated it (window dates and sizes, fold and
+  repeat counts, the budget and sampling text); every reason, decision and attribution stays word for word. The other
+  metadata of all 174 definitions is unchanged (compared). The generated `README.md` files change at the next rebuild.
+
+## 2026-11-26, a weight is declared once and the time basis is data (no container built)
+
+- A weight is declared on its scoring column alone (codebase review of 2026-11-25): `ScoringColumn(..., fit=True)` is
+  the training weight and `ScoringColumn(..., unit="<unit column>")` a unit weight, and the metric's `inputs` are
+  derived from the scoring columns' roles. The class attributes `sample_weight` and `unit_weight` are gone; the task
+  metadata still stores both, unchanged. 18 definitions changed their declaration only, with the same task metadata:
+  asp_potassco_classification, australian_vehicle_insurance_2004_2005, bemtpl97, boreal_postfire_lichen_biomass,
+  dementia_prediction, frempl_french_motor_personal_line, fremtpl2, g_research_crypto_forecasting_1m,
+  liberty_mutual_fire_peril_loss_cost, noaa_afsc_bottom_trawl_survey_cpue, noaa_storm_events_damage,
+  pancreatic_cancer_mouse_detection, pricing_game_2016_french_fleet, sat11_hand_algo_runtime,
+  spanish_motor_insurance_coverage_level_2022_2024, superconductivity, wadden_sea_sibes_macoma_abundance and
+  wisconsin_local_government_property_insurance_fund.
+- The time basis and the group basis are stored in the dataset metadata (`time_basis`, `group_basis`) instead of a
+  bullet rendered into `curation_comments`; the README shows the same line under the curation notes. A rebuilt
+  container of the 106 definitions with a time basis carries the field and no bullet.
+- Regime tags in `data_tags` are refused: amex_non_iid_1m, electric_motor_temperature_prediction and
+  sepsis_prediction_1m listed `Non-IID` and `Grouped` by hand and now get the derived tags, `GroupedTemporal` in place
+  of `Grouped`, since each orders the rows inside a group (`grouping.time_on`), as
+  force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition already does. Their splits are
+  unchanged.
+
+## 2026-11-26, GETTING_STARTED.md brought up to date (no container built)
+
+- `GETTING_STARTED.md` no longer says the folder's `README.md` lists the datasets (it has no table), names the skills
+  folder by what it holds instead of retired skill names, drops the date from "the recommended workflow", lists the
+  task gamer and the review editor among the review panel, and explains the row budget in one sentence with a link to
+  `split_protocol.md`. No definition changed.
+
+## 2026-11-26, the probes run as `data-foundry probe` (no container built)
+
+- The probes moved into the package (`data_foundry.probes`) and run as one command,
+  `data-foundry probe {leak,task,group,hidden-groups,time,dtypes,generated} NAME...` (codebase review of 2026-11-25);
+  the skill scripts `*_probes.py`, `hidden_groups.py` and `dataset_io.py` are gone. The README of this folder names the
+  command; the generated `README.md` of 48 grouped datasets still points to `group_probes.py` until its next `dataset
+  check`, since a generated README is never edited by hand. No definition changed: the dated notes of airfoil_self_noise, sat11_hand_algo_runtime and infrared_thermography_temperature still
+  name the scripts they ran then.
+
+## 2026-11-26, overlapping checks merged; accepted slugs renamed (no container built)
+
+- One finding per cause (Lennart, 2026-11-26): the checks that reported one cause under several slugs are merged, 177
+  slugs to 165 (`check_slugs.md`). In `accepted_check_warnings`, `splits_below_target` is now
+  `splits_dimensions_off_protocol` (17 definitions), `splits_test_class_missing` is `splits_class_missing`
+  (cardiotocography, ecoli_proteins, force_2020_...), `groups_labels_constant` is `task_group_labels_mismatch`
+  (allstate_claim_prediction_challenge_1m, emscad). bank_marketing's acceptance of `dataset_sequential_id_column` is
+  removed: it had not fired since `time_index` stopped being a model input (2026-11-21). `task_group_count_low` is part of `groups_test_groups_few`: in heart_disease,
+  lung_cancer_epithelial_genexp, online_shoppers_purchasing_intention_dataset and sendy_logistics_challenge its
+  reason joins that entry.
+- `splits_rows_unused` is an info on a temporal split (the gap, history no window trains on), so its acceptance is
+  removed from the 13 temporal definitions that had one; their READMEs list it as an info at the next rebuild.
+- `dataset check` on 60 definitions (30 temporal, 17 grouped, 13 IID) before and after: every finding maps to one
+  after, none lost. The READMEs change at the next rebuild.
+
+## 2026-11-26, the benchmark hand-off names the task view (no container built)
+
+- `BENCHMARK_CHANGES_TODO.md` names the task view (`container.task()`, `data_foundry.task`) where it named the helpers:
+  `task.X` / `task.features`, `task.split_columns`, `task.folds()`, `task.train_weight`, `task.validation_weights`,
+  `task.unit_column`, `task.grouping` and `task.score`. Item 3 records that the optimum per metric and the row positions
+  from a pandas `y_true` are done; decision B that `task.error` raises for its two metrics until it is decided. The
+  content is otherwise unchanged. A rebuilt container also writes `benchmark_task.json`, its task view, next to its
+  metadata (outside the checksum).
+
+## 2026-11-25, every definition imports `data_foundry.definition` (no container built)
+
+- The package's `v2/` moved into the package proper (codebase review of 2026-11-25): the definition API is
+  `data_foundry.definition`, the metrics `data_foundry.metrics`, the train sampler `data_foundry.sampling`, special
+  features `data_foundry.special` and the encodings `data_foundry.encodings`. All 174 definitions and the template
+  changed their import lines; the nine SMILES definitions (apistox, drug_induced_autoimmunity_prediction,
+  nci_aids_antiviral_screen and the six qsar_*) also name the encoder's new module in their notes. Nothing else of the
+  metadata changed (compared on all 174). `data_foundry.v2` is gone: a definition on an open branch changes its
+  imports when it is rebased, by this table:
+
+  | Before | Now |
+  |---|---|
+  | `from data_foundry.v2 import ...` (the definition API) | `from data_foundry.definition import ...` |
+  | `data_foundry.v2.dataset`, `preprocessing`, `registry`, `report`, `splits`, `windows`, `workbench`, `cli` | `data_foundry.definition.<same name>` |
+  | `data_foundry.v2.metrics` (`scorer`, `score`, `Metric`) | `data_foundry.metrics` |
+  | `data_foundry.v2.splits.subsample_train`, `sample_train_positions` | `data_foundry.sampling` |
+  | `data_foundry.v2.special`, `chemistry`, `spectra` | `data_foundry.special`, `data_foundry.special.chemistry`, `data_foundry.special.spectra` |
+  | `data_foundry.v2.encodings` | `data_foundry.encodings` |
+  | `data_foundry.v2.task_checks`, `group_checks`; `bundle_checks`, `dataset_checks` | `data_foundry.checks.task`, `checks.groups`, `checks.bundle`, `checks.tables` |
+  | `data_foundry.schema.DatasetMetadata`, `PredictiveMLTaskMetadata` (format 1) | `data_foundry.v1` |
+
+## 2026-11-25, the cross-dataset REVIEW.md removed; the benchmark hand-off rewritten (no container built)
+
+- `REVIEW.md` deleted: its 37 items were all settled, their decisions in the knowledge skills, the definitions and
+  the entries below. An item that spans datasets now becomes a draft rule in the knowledge skills or a GitHub issue
+  (Lennart, 2026-11-25); the review page of `/review-added-datasets` has no across-datasets tab any more.
+- `BENCHMARK_CHANGES_TODO.md` rewritten as the hand-off to the TabArena refactor: the changes in the order an adapter
+  meets them, the open decisions apart, and every dataset list recomputed from the 174 definitions (the metric table
+  of 2026-10-21 was out of date: 26 metric names in use, 19 tasks on `rmsle`).
+
 ## 2026-11-23, every definition names its split-tree leaf; `RetrospectiveFillIn` and `Target: Fixed Delay` in use (no container built)
 
 - `split_leaf` in all 174 definitions: the leaf of `split_tree.md` the split comes from. Where the tree names the

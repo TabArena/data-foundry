@@ -3,9 +3,6 @@ unique_name: allstate_claim_prediction_challenge
 name: Allstate Claim Prediction Challenge (Kaggle 2011, ClaimPredictionChallenge)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:

@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Grouping,
@@ -14,7 +15,6 @@ from data_foundry.v2 import (
     Source,
     TaskSummary,
     TimeBasis,
-    UnitWeight,
 )
 
 # Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
@@ -148,20 +148,19 @@ class DementiaPrediction(AbstractCuratedDataset):
             "weighs 1 over its person's number of visits (`person_weight`; 1 to 5 visits per person), where "
             "unweighted a person seen five times would count five times (Lennart, 2026-11-08)."
         ),
-        inputs={"weight": "person_weight"},
     )
     scoring_columns = (
         ScoringColumn(
             column="person_weight",
             role="weight",
             used_by="log_loss",
+            unit="Subject ID",
             description=(
                 "1 over the number of visits of the row's person (from 1/5 to 1), so that each person counts once "
                 "in the log loss; for scoring only, never a feature or a training weight"
             ),
         ),
     )
-    unit_weight = UnitWeight(column="person_weight", unit="Subject ID")
     grouping = Grouping(
         on="Subject ID",
         labels="per_sample",
@@ -174,7 +173,7 @@ class DementiaPrediction(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        We create stratified grouped 20-repeated 3-fold split. This puts about 50 subjects (112-138 visits) in each test fold.
+        This puts about 50 subjects (112-138 visits) in each test fold.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

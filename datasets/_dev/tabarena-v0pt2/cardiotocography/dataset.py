@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -134,7 +135,7 @@ class Cardiotocography(AbstractCuratedDataset):
         Three of the thirty windows an IID split of this size would get: the exams fall on 47 dates, so finer windows would test single days, and these reuse the same exams without steadying the score (2026-11-11). The split stays temporal because the relation is measured not flat: in the stationary-relation test (2026-11-19, log loss, 5 seeds, exams kept whole), models trained on earlier exams lose 0.30 to 0.78 log loss on the two newest windows against models trained on as many segments of the window itself (LightGBM +0.777 ± 0.148 and +0.305 ± 0.123, Kumo-Tabular +0.759 ± 0.181 and +0.201 ± 0.129, floors 0.001-0.003), and the label mix moves sixteenfold (suspect 35.5% of the segments in January to March 1995 against 2.2% in April to June 1998), so no random or grouped folds could stand for the windows (Andrej, 2026-11-20).
     """
     accepted_check_warnings = {
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Three of the thirty windows an IID split of this size would get: the exams fall on 47 dates, so finer "
             "windows would test single days, and these reuse the same exams without steadying the score "
             "(2026-11-11; Andrej, 2026-11-20)."
@@ -142,7 +143,7 @@ class Cardiotocography(AbstractCuratedDataset):
         "meta_time_horizon_mismatch": "The exams fall on 47 dates and the data ends on 1998-06-06, so the newest "
         "nine-month window (from 1998-04-01) holds exams of 6 April to 6 June 1998 only; the windows are nine "
         "calendar months.",
-        "splits_test_class_missing": "The July 1997 to March 1998 window holds no suspect segment (normal 255, "
+        "splits_class_missing": "The July 1997 to March 1998 window holds no suspect segment (normal 255, "
         "pathologic 50): the experts' suspect share falls from 14% of the segments in 1996 to 1% in 1997, the shift "
         "the date split is chosen to test (2026-11-11, Andrej). Every train side holds all three classes, and log "
         "loss is defined on the classes a fold holds.",

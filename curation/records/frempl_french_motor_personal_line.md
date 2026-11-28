@@ -3,9 +3,6 @@ unique_name: frempl_french_motor_personal_line
 name: freMPL1-10 (CASdatasets, French motor personal line insurance, private insurer, 2004)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:

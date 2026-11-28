@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: polish_companies_bankruptcy
 container_format: 2
-checksum: v2:6a225e613d9560724efa97427e56db6c585b00dea9f9e31a3bb3a67c63aa0fff
+checksum: v2:9741e354e179d7dcd2f44e9ff39c1efb220c43c9897a3b579dcbb4c5a966e0e8
 build:
-  uuid: 01a111fc-ea70-7bb1-9ee9-8875a112b674
-  checksum: v2:e805deec0030e15c329f9a454287c23219ecc355db0b7647cea809dc23c09407
-  built_at: '2026-10-06T16:12:30+00:00'
-  path: polish_companies_bankruptcy/01a111fc-ea70-7bb1-9ee9-8875a112b674
+  uuid: 01a21800-e507-796a-a88f-ab0eecfe2f1b
+  checksum: v2:9741e354e179d7dcd2f44e9ff39c1efb220c43c9897a3b579dcbb4c5a966e0e8
+  built_at: '2026-11-26T13:17:22+00:00'
+  path: polish_companies_bankruptcy/01a21800-e507-796a-a88f-ab0eecfe2f1b
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 5790
   n_features: 64
@@ -46,6 +46,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 3860
     max: 3860
@@ -67,7 +68,7 @@ decisions: []
 
 Binary classification of `company_bankrupt`, scored with `roc_auc` on IID splits. 5,790 rows and 64 features. Source: UCI (2016).
 
-Built as `01a111fc-ea70-7bb1-9ee9-8875a112b674` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6a225e613d9560724efa97427e56db6c585b00dea9f9e31a3bb3a67c63aa0fff`, so the build is stale. See [Build](#build).
+Built as `01a21800-e507-796a-a88f-ab0eecfe2f1b` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -188,14 +189,11 @@ The first 5 of 5,790 rows of the final frame (random rows: the frame is shuffled
 - We created semantically meaningful feature names.
 - We removed duplicates.
 - Anomaly: the data contains a lot of features created by feature engineering.
-- Time basis: ForcedIIDFromTemporal: the statements come from several years, and the file has no dates, so the
-  time is lost and part of the signal may be the period. A dated release would test statements later than those
-  used for training. Not taken as stationary (Andrej, 2026-11-18): The class/period confounding is explicit in
-  the source, and bankruptcy-ratio relations are documented as non-stationary across economic periods.
+- Time basis: ForcedIIDFromTemporal: the statements come from several years, and the file has no dates, so the time is lost and part of the signal may be the period. A dated release would test statements later than those used for training. Not taken as stationary (Andrej, 2026-11-18): The class/period confounding is explicit in the source, and bankruptcy-ratio relations are documented as non-stationary across economic periods.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `company_bankrupt`: 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 5,790 rows (SPLIT-33).
 
 3 repeat(s) x 3 fold(s) with seed 4267; train 3,860 rows, test 1,930 rows.
 
@@ -380,11 +378,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-ea70-7bb1-9ee9-8875a112b674 |
-| checksum | v2:e805deec0030e15c329f9a454287c23219ecc355db0b7647cea809dc23c09407 |
-| built_at | 2026-10-06T16:12:30+00:00 |
-| path | polish_companies_bankruptcy/01a111fc-ea70-7bb1-9ee9-8875a112b674 |
+| uuid | 01a21800-e507-796a-a88f-ab0eecfe2f1b |
+| checksum | v2:9741e354e179d7dcd2f44e9ff39c1efb220c43c9897a3b579dcbb4c5a966e0e8 |
+| built_at | 2026-11-26T13:17:22+00:00 |
+| path | polish_companies_bankruptcy/01a21800-e507-796a-a88f-ab0eecfe2f1b |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6a225e613d9560724efa97427e56db6c585b00dea9f9e31a3bb3a67c63aa0fff` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

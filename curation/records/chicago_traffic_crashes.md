@@ -4,9 +4,6 @@ name: Chicago Traffic Crashes - Crashes (CPD E-Crash)
 checked_by:
 - Myunghwan
 - Lennart
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 3
 decision_markers:

@@ -3,9 +3,6 @@ unique_name: spanish_motor_insurance_coverage_level_2022_2024
 name: A detailed dataset of motor insurance policies with coverage-specific financial information (Spanish insurer, 2022-2024, Mendeley)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:

@@ -1,6 +1,6 @@
 ---
 name: knowledge-curation
-description: "Reference knowledge, no workflow: how we decide whether a tabular dataset belongs in TabArena and how we curate it, independent of the tooling, as ranked rules with IDs and strengths. The principles and how to decide (rank, Must / Should / Weigh, tensions, exceptions, consistent judgement), ethics and scope, the use case and prediction point, leaks, IID / grouped / temporal splits, sources and duplicates, whether a task is trivial or too small, which metric scores it, cleaning and features; guides to molecule datasets (SMILES, salts, scaffolds) and spectrum datasets (mass, Raman, infrared); plus evidence and reading probes, the verification checklist, writing for the curator, and a general probe library. Load it when advising on any of these, or when a workflow skill (/screen-candidates, /review-screened-candidates, /add-dataset, /review-added-datasets) points to one of its files."
+description: "Reference knowledge, no workflow: how we decide whether a tabular dataset belongs in TabArena and how we curate it, independent of the tooling, as ranked rules with IDs and strengths. The principles and how to decide (rank, Must / Should / Weigh, tensions, exceptions, consistent judgement), ethics and scope, the use case and prediction point, leaks, IID / grouped / temporal splits, sources and duplicates, whether a task is trivial or too small, which metric scores it, cleaning and features; guides to molecule datasets (SMILES, salts, scaffolds) and spectrum datasets (mass, Raman, infrared); plus evidence and reading probes, the verification checklist, and writing for the curator. Load it when advising on any of these, or when a workflow skill (/screen-candidates, /review-screened-candidates, /add-dataset, /review-added-datasets) points to one of its files."
 user-invocable: false
 ---
 
@@ -34,6 +34,7 @@ Procedure, at every rank:
 | [evidence.md](references/evidence.md) | `EV` | weighing evidence, settling a disputed fact, reading a probe flag |
 | [verification.md](references/verification.md) | | the last step of every workflow: the checklist and which stage runs which check |
 | [writing.md](references/writing.md) | | writing anything the curator will read: comments, notes, issues, the judgment record, reports |
+| [style.md](references/style.md) | | writing any prose a person reads (docstrings, docs, commit messages, PR bodies, chat replies): the AI writing tropes to avoid |
 | [split_tree.md](references/split_tree.md) | | deciding or checking a split: the decision tree SPLIT-36 asks you to walk from the record's data collection type to a leaf |
 
 Domain guides, which add no rules but show how the rules above apply to one kind of data:
@@ -43,9 +44,9 @@ Domain guides, which add no rules but show how the rules above apply to one kind
 | [molecules.md](references/molecules.md) | a dataset's rows are molecules (a SMILES, a structure file, molecule identifiers, or descriptor or fingerprint columns computed from a structure): what ships, copies and salts, scaffold splits, recovering structures, the pitfalls and the measured evidence |
 | [spectra.md](references/spectra.md) | a dataset's features are a spectrum (mass, Raman, infrared or near-infrared intensities along an axis, or numbered bins): what ships and how it is declared, the raw, processed and peak states, replicate groups, the encodings and their evidence, the pitfalls |
 
-The general probe methods (leak, task, group, hidden-group and generated-data probes, as functions on a frame, a
-target and splits) are in [scripts/](scripts/); the commands that run them on a Data Foundry dataset are in the sibling
-skill.
+The probe methods (leak, task, group, hidden-group, time, generated-data and dtype probes, as functions on a frame, a
+target and splits) are in the package, `data_foundry.probes`; the command that runs them on a Data Foundry dataset,
+`data-foundry probe`, is in the sibling skill's `checks_and_probes.md`.
 
 ## Keeping it current
 

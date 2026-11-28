@@ -3,9 +3,6 @@ unique_name: msha_mine_injury_frequency
 name: 'usMSHA1316: injuries per US mine-year from Mine Safety and Health Administration data, 2013-2016 (SOA exam data, CASdatasets)'
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Lennart
 suggestion: TBD -> Yes
 priority: 3
 tags:

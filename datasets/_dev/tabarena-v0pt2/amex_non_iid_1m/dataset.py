@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Grouping,
@@ -70,7 +71,7 @@ class AmexNonIid1m(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("Non-IID", "Grouped", "Anonymized")
+    data_tags = ("Anonymized",)
     download_description = """
         We start with the preprocessed version of the dataset in Parquet format provided by
         the user 'raddar' on Kaggle. At the root of this project, I ran on linux with

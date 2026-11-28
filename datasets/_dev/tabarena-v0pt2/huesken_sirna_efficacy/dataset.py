@@ -8,7 +8,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -40,6 +41,7 @@ DG = dict(
             -3.26,
             -3.42,
         ),
+        strict=False,
     )
 )
 DH = dict(
@@ -63,6 +65,7 @@ DH = dict(
             -13.39,
             -14.88,
         ),
+        strict=False,
     )
 )
 TD_NAMES = (

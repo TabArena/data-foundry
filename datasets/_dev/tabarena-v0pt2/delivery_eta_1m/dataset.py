@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -100,7 +101,7 @@ class DeliveryEta1m(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Each test window is one week, the length of TabReD's own validation and test periods (TabReD trains on 20 October to 11 December 2023, validates on 11-18 December and tests on 18-25 December). TabReD states no refit cadence, and a delivery estimate looks only minutes ahead, so the length says how long one fitted model serves. The orders run from 20 October 2023 to 7 January 2024, so only the five weeks from 4 December on keep half the orders for training. Every other one of them is a test window (CC 2026-11-10), newest first: 1-7 January 2024, the newest, the New Year week; 18-24 December, TabReD's test week, before Christmas; and 4-10 December, outside the holidays, an early-December week of long deliveries (mean log minutes 1.910 against 1.778 in the newest week) with a train side that holds only 10 days after the change of 23 November (curation_comments). 25-31 December and 11-17 December lie between them and are not tested. Train is all prior data: 15,469,869, 12,517,876 and 9,706,793 orders (92.9%, 75.1% and 58.3%). No gap is needed: the orders pause overnight, and the last train order before each window is delivered 55 minutes to 2 hours 5 minutes before the window start (order time + delivery time; before 4 December at 22:58 on 3 December), so no train label is unknown at a refit (0 late orders in each of the 3 windows). The windows hold 1,188,182, 1,485,323 and 1,444,992 orders, of which each keeps at most 500k, drawn at random; each train side holds every earlier row, and a benchmark sub-samples it to 1M rows, by default a random 1M of the newest year before the window, here all of the history (`subsample_train`).
+        Each test window is one week, the length of TabReD's own validation and test periods (TabReD trains on 20 October to 11 December 2023, validates on 11-18 December and tests on 18-25 December). TabReD states no refit cadence, and a delivery estimate looks only minutes ahead, so the length says how long one fitted model serves. The orders run from 20 October 2023 to 7 January 2024, so only the five weeks from 4 December on keep half the orders for training. Every other one of them is a test window (CC 2026-11-10), newest first: 1-7 January 2024, the newest, the New Year week; 18-24 December, TabReD's test week, before Christmas; and 4-10 December, outside the holidays, an early-December week of long deliveries (mean log minutes 1.910 against 1.778 in the newest week) with a train side that holds only 10 days after the change of 23 November (curation_comments). 25-31 December and 11-17 December lie between them and are not tested. No gap is needed: the orders pause overnight, and the last train order before each window is delivered 55 minutes to 2 hours 5 minutes before the window start (order time + delivery time; before 4 December at 22:58 on 3 December), so no train label is unknown at a refit (0 late orders in each of the 3 windows).
     """
     split_leaf = "L-ORDER.windows"
     temporal = Temporal(

@@ -1,4 +1,4 @@
-"""Tests for the metric registry and the scorers (``data_foundry.v2.metrics``)."""
+"""Tests for the metric registry and the scorers (``data_foundry.metrics``)."""
 
 from __future__ import annotations
 
@@ -12,14 +12,16 @@ import pandas as pd
 import pytest
 import scipy.special
 import scipy.stats
-from data_foundry import bundle_checks
-from data_foundry.schema import MetricSpec, PredictiveMLTaskMetadataV2, ScoringColumn
-from data_foundry.v2 import metrics as m
-from data_foundry.v2.dataset import metric_spec
-from data_foundry.v2.metrics import METRICS, Metric, row_weight_column, score, scorer, to_sklearn_scorer
 from pydantic import TypeAdapter
 from sklearn import metrics as skm
+from sklearn.dummy import DummyClassifier
 from sklearn.linear_model import LinearRegression, LogisticRegression
+
+from data_foundry import metrics as m
+from data_foundry.checks import bundle as bundle_checks
+from data_foundry.definition.dataset import metric_spec
+from data_foundry.metrics import METRICS, Metric, row_weight_column, score, scorer, to_sklearn_scorer
+from data_foundry.schema import MetricSpec, PredictiveMLTaskMetadataV2, ScoringColumn
 
 N = 500
 RNG = np.random.default_rng(0)
@@ -336,16 +338,6 @@ def test_cost_matrix_takes_its_own_labels_with_named_probabilities() -> None:
     assert scorer(container)(y, pd.DataFrame({"good": 1 - p_bad, "bad": p_bad})) == pytest.approx(expected)
 
 
-def test_local_metric_scores_with_its_own_code_but_its_spec_does_not() -> None:
-    local = Metric.local(lambda y, p, **_: float(np.max(np.abs(y - p))), name="max_error", prediction="value",
-                         greater_is_better=False)  # fmt: skip
-    assert score(local, Y_REG, P_REG) == pytest.approx(np.max(np.abs(Y_REG - P_REG)))
-    spec = metric_spec(local, "regression")
-    assert spec.kind == "local"
-    with pytest.raises(ValueError, match="local"):
-        score(spec, Y_REG, P_REG)
-
-
 def test_to_sklearn_scorer_matches_cross_validation_use() -> None:
     x = RNG.normal(size=(200, 3))
     y = np.where(x[:, 0] + RNG.normal(size=200) > 0, "yes", "no")
@@ -381,7 +373,7 @@ def test_metric_spec_fields_are_the_spec_dict() -> None:
 def test_scorer_aggregates_per_group_as_the_grouping_says():
     from types import SimpleNamespace
 
-    from data_foundry.v2.metrics import Metric, scorer
+    from data_foundry.metrics import Metric, scorer
 
     frame = pd.DataFrame(
         {
@@ -404,7 +396,7 @@ def test_scorer_aggregates_per_group_as_the_grouping_says():
 
 
 def test_a_metric_from_context_needs_a_reason():
-    from data_foundry.v2.metrics import Metric
+    from data_foundry.metrics import Metric
 
     spec = Metric.from_context("rmsle", reason="a price's error matters relative to the price").spec("regression")
     assert (spec["name"], spec["origin"]) == ("rmsle", "context")
@@ -816,3 +808,33 @@ def test_mean_tweedie_deviance_needs_a_power_and_a_floor() -> None:
     )
     with pytest.raises(ValueError, match="NaN or infinite"):
         score(_tweedie(1.5, 1.0), y, [1.0, np.nan, 2.0])
+
+
+@pytest.mark.parametrize("name", ["f1", "precision", "recall"])
+def test_the_positive_class_of_one_class_labels_is_never_guessed(name: str) -> None:
+    """A fold whose truth and prediction are all "no" scored 1.0: "no" was taken as the positive class. Without
+    ``labels`` the classes must be two; with them the positive class is ``labels[-1]``.
+    """
+    all_no = np.array(["no"] * 10)
+    with pytest.raises(ValueError, match="pass `labels`"):
+        score(Metric.source(name).spec("binary_classification"), all_no, all_no)
+    assert score(Metric.source(name).spec("binary_classification"), all_no, all_no, labels=["no", "yes"]) == 0.0
+    model = DummyClassifier(strategy="constant", constant="no").fit(np.zeros((2, 1)), ["no", "yes"])
+    sk = to_sklearn_scorer(Metric.source(name), labels=["no", "yes"])  # forwarded to every fold it scores
+    assert sk(model, np.zeros((10, 1)), all_no) == 0.0
+
+
+@pytest.mark.parametrize("name", ["f1_macro", "f1_weighted", "f1_micro"])
+def test_an_average_over_the_classes_counts_every_class_of_labels(name: str) -> None:
+    """A class that neither truth nor prediction of a fold holds was dropped from the average; with ``labels`` it
+    counts (F1 0 for the macro mean), as in scikit-learn with ``labels``.
+    """
+    y_true = np.array(["a", "a", "b", "b", "b"])
+    y_pred = np.array(["a", "b", "b", "b", "a"])
+    average = name.removeprefix("f1_")
+    expected = skm.f1_score(y_true, y_pred, labels=["a", "b", "c"], average=average, zero_division=0.0)
+    spec = Metric.source(name).spec("multiclass_classification")
+    assert score(spec, y_true, y_pred, labels=["a", "b", "c"]) == pytest.approx(expected)
+    assert score(spec, y_true, y_pred) == pytest.approx(skm.f1_score(y_true, y_pred, average=average))
+    if name == "f1_macro":
+        assert score(spec, y_true, y_pred, labels=["a", "b", "c"]) == pytest.approx(score(spec, y_true, y_pred) * 2 / 3)

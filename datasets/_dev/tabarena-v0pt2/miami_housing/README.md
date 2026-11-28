@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: miami_housing
 container_format: 2
-checksum: v2:6e61771e8f7d0b7515ab05dc074726d9ba2cad14eeddd214708fc04e73eba08c
+checksum: v2:2a9fb8bd053ab4c040ed3793935c76b43f002439072461155c949171ceb5b109
 build:
-  uuid: 01a111fc-b2f3-70cf-951c-6cf119716e45
-  checksum: v2:bd320b218fcee1f7a1671353adce650be061341a6b03d25957fdd692a9e8b59c
-  built_at: '2026-10-06T16:12:16+00:00'
-  path: miami_housing/01a111fc-b2f3-70cf-951c-6cf119716e45
+  uuid: 01a21800-db6f-7754-b71e-f9a7e9cb404e
+  checksum: v2:2a9fb8bd053ab4c040ed3793935c76b43f002439072461155c949171ceb5b109
+  built_at: '2026-11-26T13:17:20+00:00'
+  path: miami_housing/01a21800-db6f-7754-b71e-f9a7e9cb404e
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 13932
   n_features: 16
@@ -47,6 +47,34 @@ splits:
   time_horizon_unit: months
   time_gap: null
   time_gap_unit: null
+  reason: 'A price model refit every month predicts the next month''s sales: five
+    test windows of one calendar month,
+
+    December back to August 2016, newest first, each trained on all earlier months
+    (92%, 83%, 76%, 67% and 58%
+
+    of the 13,932 sales; 1,057 to 1,275 test sales). No gap: sales are dated by month,
+    longer than the delay from a
+
+    sale to its record (SPLIT-10). The data hold one year, so training history is
+    under a year. The earlier random
+
+    split (3 x 3 folds) read the task as an appraiser valuing the year''s homes from
+    the same year''s sales; it was
+
+    replaced so that this dated house-sale table follows the regime of the others
+    (2026-11-11, Andrej). At equal
+
+    training size, training on earlier months only cost +0.001 RMSLE against sales
+    from all other months
+
+    (untuned LightGBM 0.147 against 0.146; ridge 0.268 against 0.267; 2026-11-06).
+    Five of the nine windows an
+
+    IID split of this size would get: sales are dated by month and the data hold one
+    year, so July 2016 and
+
+    earlier would train on under half the sales (49.2% for July; Andrej, 2026-11-19).'
   n_train:
     min: 8062
     max: 12771
@@ -64,9 +92,10 @@ bundle_checks:
       (the source gives no day), so each one-month test window holds a single date
       and its span reads as 1 day; the windows are calendar months (as perth_house_prices
       and zillow_prize).'
-    splits_below_target: 'Five of the nine windows an IID split of this size would
-      get: sales are dated by month and the data hold one year, so July 2016 and earlier
-      would train on under half the sales (49.2% for July; Andrej, 2026-11-19).'
+    splits_dimensions_off_protocol: 'Five of the nine windows an IID split of this
+      size would get: sales are dated by month and the data hold one year, so July
+      2016 and earlier would train on under half the sales (49.2% for July; Andrej,
+      2026-11-19).'
 decisions: []
 ---
 
@@ -76,7 +105,7 @@ decisions: []
 
 Regression of `SALE_PRC`, scored with `rmsle` on temporal splits by `sale_month`. 13,932 rows and 16 features. Source: OpenML (2021).
 
-Built as `01a111fc-b2f3-70cf-951c-6cf119716e45` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6e61771e8f7d0b7515ab05dc074726d9ba2cad14eeddd214708fc04e73eba08c`, so the build is stale. See [Build](#build).
+Built as `01a21800-db6f-7754-b71e-f9a7e9cb404e` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -220,6 +249,8 @@ The first 5 of 13,932 rows of the final frame (the oldest rows: the frame is sor
 
 ## Splits
 
+Expanding-window temporal splits: 5 test window(s) of 1 month, walking back from the newest data, newest first; train is all earlier data. The test windows by `sale_month`, as listed: 2016-12-01 (1,161 test, 12,771 train rows); 2016-11-01 (1,159 test, 11,612 train rows); 2016-10-01 (1,057 test, 10,555 train rows); 2016-09-01 (1,218 test, 9,337 train rows); 2016-08-01 (1,275 test, 8,062 train rows).
+
 A price model refit every month predicts the next month's sales: five test windows of one calendar month,
 December back to August 2016, newest first, each trained on all earlier months (92%, 83%, 76%, 67% and 58%
 of the 13,932 sales; 1,057 to 1,275 test sales). No gap: sales are dated by month, longer than the delay from a
@@ -263,7 +294,7 @@ Each test window against its train side, by statistics of the data, never of a m
 Accepted on purpose:
 
 - `meta_time_horizon_mismatch`: `sale_month` holds the first day of the sale month (the source gives no day), so each one-month test window holds a single date and its span reads as 1 day; the windows are calendar months (as perth_house_prices and zillow_prize).
-- `splits_below_target`: Five of the nine windows an IID split of this size would get: sales are dated by month and the data hold one year, so July 2016 and earlier would train on under half the sales (49.2% for July; Andrej, 2026-11-19).
+- `splits_dimensions_off_protocol`: Five of the nine windows an IID split of this size would get: sales are dated by month and the data hold one year, so July 2016 and earlier would train on under half the sales (49.2% for July; Andrej, 2026-11-19).
 
 ## Data checks
 
@@ -341,11 +372,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-b2f3-70cf-951c-6cf119716e45 |
-| checksum | v2:bd320b218fcee1f7a1671353adce650be061341a6b03d25957fdd692a9e8b59c |
-| built_at | 2026-10-06T16:12:16+00:00 |
-| path | miami_housing/01a111fc-b2f3-70cf-951c-6cf119716e45 |
+| uuid | 01a21800-db6f-7754-b71e-f9a7e9cb404e |
+| checksum | v2:2a9fb8bd053ab4c040ed3793935c76b43f002439072461155c949171ceb5b109 |
+| built_at | 2026-11-26T13:17:20+00:00 |
+| path | miami_housing/01a21800-db6f-7754-b71e-f9a7e9cb404e |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6e61771e8f7d0b7515ab05dc074726d9ba2cad14eeddd214708fc04e73eba08c` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

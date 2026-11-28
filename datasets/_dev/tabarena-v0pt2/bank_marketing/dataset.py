@@ -6,14 +6,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
     Source,
-    Splits,
     TaskSummary,
     Temporal,
+    TemporalSplits,
     set_missing,
 )
 
@@ -139,15 +140,12 @@ class BankMarketing(AbstractCuratedDataset):
         "dataset_missing_value_sentinel": "pdays = -1 is the source's code for 'client was not previously contacted' "
         "(UCI codebook), not a missing value: it matches previous == 0 row for row (36,954 rows), so it stays as a "
         "code with a meaning (CLEAN-10).",
-        "dataset_sequential_id_column": "`time_index` is the record's position in the file, which the source orders "
-        'by the date of the last contact: it is the declared temporal order (`Temporal(on="time_index", '
-        'time_of="label")`), it sets the test windows, and since 2026-11-21 it is no model input. It is kept in '
-        "the frame because the split needs it and the file holds no date.",
     }
     split_leaf = "L-ORDER.windows"
-    # Splits: ten windows of unequal length from `WINDOW_STARTS` (`_make_splits`); declared windows have one length
+    # Splits: ten windows of unequal length from `WINDOW_STARTS`, each running to the next start (`window=None`)
     temporal = Temporal(
         on="time_index",
+        splits=TemporalSplits(window=None, unit="unique", cutoffs=tuple(position for _, position in WINDOW_STARTS)),
         horizon=3,
         horizon_unit="months",
         # The file position dates the last call, which ends the client's calls: it orders the split and is no input
@@ -255,18 +253,6 @@ class BankMarketing(AbstractCuratedDataset):
             },
         )
         return df
-
-    def _make_splits(self, df: pd.DataFrame) -> Splits:
-        """The windows of `WINDOW_STARTS`, newest first, each up to the next start and trained on every earlier record."""
-        time_index = df["time_index"].to_numpy()  # the frame arrives sorted by `time_index` with a RangeIndex
-        positions = np.arange(len(df))
-        splits: Splits = {}
-        end = None
-        for _, start in WINDOW_STARTS:
-            test = (time_index >= start) & (time_index < end) if end is not None else time_index >= start
-            splits[len(splits)] = {0: (positions[time_index < start].tolist(), positions[test].tolist())}
-            end = start
-        return splits
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(

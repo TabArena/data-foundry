@@ -2,11 +2,24 @@
 report_format: data-foundry-report-v2
 unique_name: nyc_taxi_trip_duration_1m
 container_format: 2
-checksum: v2:1eb91606762fbe4bce657bc6cad98dd12b66bf61707010b3f7196a37d5ebce18
-build: null
+checksum: v2:593b09d390a6b60f1cf87ca279ad34f1f7a57050949d2f4f759c621b187d4e3a
+build:
+  uuid: 01a217ff-7634-71b3-b9be-45b56e41ec3e
+  checksum: v2:593b09d390a6b60f1cf87ca279ad34f1f7a57050949d2f4f759c621b187d4e3a
+  built_at: '2026-11-26T13:15:59+00:00'
+  path: nyc_taxi_trip_duration_1m/01a217ff-7634-71b3-b9be-45b56e41ec3e
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
-  n_rows: 1165967
+  n_rows: 1434623
   n_features: 7
   dtypes:
     category: 1
@@ -34,21 +47,56 @@ splits:
   time_horizon_unit: days
   time_gap: 1
   time_gap_unit: days
+  reason: 'The competition gives no horizon: its test set is a random 30% of the same
+    days (curation_comments), so a random split is optimistic here. An ETA service
+    refits often; a week is the shortest window that holds each weekday once, and
+    no source speaks for a calendar month here (unlike pkdd_15_taxi_trip_time_prediction_ii_1m,
+    whose challenge used one model for months), though under the floor as amended
+    on 2026-11-11 months would give three windows (June, May, and April on 49.1% of
+    the trips). The trips cover January to June 2016, and only the weeks from 8 April
+    on keep half the trips for training, so another year or the winter cannot be tested:
+    January to March (New Year''s Day, Martin Luther King Day, Presidents'' Day, the
+    blizzard of 23 January) are training only. Of the 12 eligible weeks (Friday to
+    Thursday) we test three (CC 2026-11-10), newest first: 24-30 June, the newest;
+    27 May to 2 June, the week of Memorial Day (Monday 30 May), the one public holiday
+    among them (7,041 trips a day against 7,973 and 8,065 in the weeks before and
+    after, median straight-line speed 13.3 km/h against 12.2 and 12.4); and 8-14 April,
+    a spring week (8,522 trips a day, 12.6 km/h). The features do not drift in any
+    eligible week (largest population stability index 0.003), so the choice rests
+    on the calendar. The gap of one day is part of the task: a trip lasts up to 3
+    hours, so at a refit the last trips before it have no duration yet; without the
+    gap 77, 112 and 100 train trips per window would end after the window start, with
+    it none. The 8,028 trips of 23 June, the gap day before the newest window, lie
+    in no split, so the frame leaves them out. Measured before 2026-11-10, with the
+    last three weeks of June as the windows: LightGBM (300 trees, learning rate 0.1,
+    63 leaves, a random 200k of each train side, one fit per split) scored RMSE 0.357-0.381
+    on the weekly windows, 0.355-0.364 on 3 folds of whole days and 0.353-0.355 on
+    3 random folds when the encoding keeps the hour (skrub''s DatetimeEncoder), and
+    0.414-0.441, 0.401-0.410 and 0.390-0.392 with AutoGluon''s date parts. Trips of
+    one day sharing traffic and weather explain about 0.01 of the gap; the rest is
+    the distance in time.'
   n_train:
-    min: 1000000
-    max: 1000000
+    min: 766644
+    max: 1382016
   n_test:
-    min: 52607
-    max: 54373
+    min: 49284
+    max: 59653
   row_budget:
     train: 1000000
     test: 500000
+  train_sampling:
+    default: newest_year
+    unit: rows
+    stratify_on: null
 bundle_checks:
   ok: true
   errors: []
   warnings: []
   infos: []
-  accepted: {}
+  accepted:
+    meta_license_unknown: The TLC trip records carry no explicit licence (NYC Open
+      Data terms of use); the Kaggle sample we download is under the competition's
+      rules.
 decisions:
 - Trips under 30 s or over 3 h are dropped
 - Trips whose drop-off lies within 100 m of the pickup are dropped
@@ -60,9 +108,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `log1p_trip_duration`, scored with `rmsle` on temporal splits by `pickup_datetime`. 1,165,967 rows and 7 features. Source: GOV Website (2016).
+Regression of `log1p_trip_duration`, scored with `rmsle` on temporal splits by `pickup_datetime`. 1,434,623 rows and 7 features. Source: GOV Website (2016).
 
-Not built yet. The current definition gives checksum `v2:1eb91606762fbe4bce657bc6cad98dd12b66bf61707010b3f7196a37d5ebce18`.
+Built as `01a217ff-7634-71b3-b9be-45b56e41ec3e` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -70,13 +118,13 @@ Not built yet. The current definition gives checksum `v2:1eb91606762fbe4bce657bc
 
 **Use case.** When a passenger gets in and names the destination, the taxi's system estimates the arrival time with a model refit every week on the trips since January.
 
-**One row.** One yellow-cab trip in New York City, January to June 2016, from a sample of the Taxi and Limousine Commission's trip records (1,447,167 trips after cleaning, of which the 1,166,477 that a split uses are kept).
+**One row.** One yellow-cab trip in New York City, January to June 2016, from a sample of the Taxi and Limousine Commission's trip records (1,442,651 trips after cleaning; the 8,028 of 23 June 2016, the gap day before the newest window, are in no split).
 
 **Predicted.** The trip's duration in seconds, on a log scale.
 
 **Known at prediction time.** The pickup time and point, the drop-off point taken as the destination, the number of passengers and the company of the cab's meter system.
 
-**What the test data stands for.** Each of the last three weeks of June 2016 is a test window; training is a random million trips picked up at least a day before the window, as for a model refit weekly.
+**What the test data stands for.** The test windows are three weeks of 2016: the newest (24-30 June), the Memorial Day week (27 May-2 June) and a spring week (8-14 April); a week is the shortest window that holds each weekday once. Training is every trip picked up at least a day before the window, of which a benchmark fits on at most a random million.
 
 **Our changes to the source.** We split by week instead of the competition's random sample of the same days, drop a flag set only after the trip, non-rides under 30 seconds, broken clocks over 3 hours and trips whose drop-off lies within 100 m of the pickup, blank impossible passenger counts, and correct trips across the daylight-saving switch.
 
@@ -89,8 +137,9 @@ Not built yet. The current definition gives checksum `v2:1eb91606762fbe4bce657bc
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/nyc_taxi_trip_duration.md`](../../../../curation/records/nyc_taxi_trip_duration.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/nyc_taxi_trip_duration.md`](../../../../curation/records/nyc_taxi_trip_duration.md)
 - The original source: <https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page>
+- A copy (the Kaggle competition's sample of the 2016 trips, which we download): <https://www.kaggle.com/c/nyc-taxi-trip-duration>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
 ## Rebuild
@@ -126,11 +175,11 @@ Only curators run `build`, when the dataset ships.
 | source | GOV Website: https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page |
 | year | 2016 |
 | domain | industry & manufacturing |
-| license | Kaggle Competition Rules |
+| license |  |
 | data_tags | Non-IID, Temporal, Spatial |
 | reference | nyctlc2016trips,risdal2017nyctaxi |
-| version of | nyc_taxi_trip_duration |
-| rows x columns | 1,165,967 x 8 |
+| copy: the Kaggle competition's sample of the 2016 trips, which we download | Kaggle (2017): https://www.kaggle.com/c/nyc-taxi-trip-duration; license: Kaggle Competition Rules |
+| rows x columns | 1,434,623 x 8 |
 | task.target | log1p_trip_duration |
 | task.problem_type | regression |
 | task.metric | rmsle |
@@ -180,15 +229,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 1,165,967 rows of the final frame (the oldest rows: the frame is sorted by `pickup_datetime`). Cells are cut at 40 characters.
+The first 5 of 1,434,623 rows of the final frame (the oldest rows: the frame is sorted by `pickup_datetime`). Cells are cut at 40 characters.
 
 | log1p_trip_duration | vendor_id | pickup_datetime | passenger_count | pickup_longitude | pickup_latitude | dropoff_longitude | dropoff_latitude |
 |---|---|---|---|---|---|---|---|
 | 6.74524 | VeriFone | 2016-01-01 00:00:17 | 5 | -73.9817 | 40.7192 | -73.9388 | 40.8292 |
 | 7.16627 | Creative Mobile Technologies | 2016-01-01 00:00:53 | 1 | -73.9851 | 40.7472 | -73.958 | 40.7175 |
 | 6.01372 | VeriFone | 2016-01-01 00:01:01 | 5 | -73.9653 | 40.801 | -73.9475 | 40.8152 |
+| 5.63835 | Creative Mobile Technologies | 2016-01-01 00:01:14 | 1 | -73.9823 | 40.7513 | -73.9913 | 40.7503 |
 | 6.60259 | Creative Mobile Technologies | 2016-01-01 00:01:20 | 1 | -73.9701 | 40.7598 | -73.9894 | 40.743 |
-| 6.56948 | VeriFone | 2016-01-01 00:01:33 | 1 | -73.985 | 40.7739 | -73.9365 | 40.8478 |
 
 ## Curation notes
 
@@ -206,23 +255,35 @@ We start with train.csv of the Kaggle playground competition "New York City Taxi
 - We drop the trips whose drop-off lies within 100 m of the pickup (Lennart, CC 2026-10-26, USE-7; the radius of pkdd_15_taxi_trip_time_prediction_ii_1m): nobody names a destination that close to where they are picked up, so these rows lack the input the ETA acts on. They are the 4,539 trips (0.31%, 0.29-0.34% in every month, 73% VeriFone) whose drop-off coordinates equal the pickup coordinates to the last digit, mean target 6.04 against 6.47 for the other trips, and about 4,500 more at other coordinates: 1,082 within 10 m (median 69 s) and 3,436 at 10 to 100 m (median 230 s) (decision table).
 - We set passenger_count to missing where it is 0 (the driver did not enter it) or above the 6 seats of a cab (8 and 9), 23 trips in all, and keep the trips.
 - Anomaly: 46 kept trips imply more than 100 km/h. We keep them, as they cannot be told from real trips with certainty.
-- Split: weekly test windows over the last 3 weeks of June 2016 (splits_comment). The competition's test set is a random 30% of every day of the same half-year, so its leaderboard measures interpolation within the period; we do not use test.csv.
-- Note: pickup_datetime is the only time feature, and the hour matters most. LightGBM (300 trees, learning rate 0.1, 63 leaves, a random 200k of each train side, one fit per window) scores RMSE 0.373, 0.357 and 0.381 on the weekly windows (newest first) when the encoding keeps the hour (skrub's DatetimeEncoder in tabarena_default) and 0.429, 0.414 and 0.441 with AutoGluon's date parts, which lose it.
+- Split: three weekly test windows, the newest week (24-30 June 2016), the Memorial Day week (27 May-2 June) and a week in April (8-14 April) (splits_comment; CC 2026-11-10). The competition's test set is a random 30% of every day of the same half-year, so its leaderboard measures interpolation within the period; we do not use test.csv.
+- Note: pickup_datetime is the only time feature, and the hour matters most. LightGBM (300 trees, learning rate 0.1, 63 leaves, a random 200k of each train side, one fit per window) scored RMSE 0.373, 0.357 and 0.381 on the windows before 2026-11-10, the last three weeks of June (newest first), when the encoding keeps the hour (skrub's DatetimeEncoder in tabarena_default) and 0.429, 0.414 and 0.441 with AutoGluon's date parts, which lose it.
 - Note: the Kaggle rules (Sec. 7) allow academic research and other non-commercial use and forbid redistribution; the TLC publishes the same records on NYC Open Data without an explicit licence.
-
-Version of `nyc_taxi_trip_duration`: Every train side holds 1.28M to 1.39M trips, above the 1M-row budget, so the dataset ships only as this version (definitions.md, Lennart 2026-10-21). We sample per test window (v2 split protocol): each window keeps at most 500k of its rows (none reaches it), and its train side is a random 1M of all trips picked up at least a day before the window, drawn in one random order for all windows so the train sides overlap; the frame keeps only the rows a split uses. As in delivery_eta_1m, the sample is random rather than the latest trips, so the train sides cover the whole half-year.
+- The row budget: The two newer train sides hold 1,382,016 and 1,169,775 trips, above the 1M-row budget, so the dataset ships only as this version (definitions.md, Lennart 2026-10-21); the April one holds 766,644. Each test window keeps at most 500k of its rows (none reaches it), and each train side holds every trip picked up at least a day before the window, so the frame keeps every trip a split uses: all but the 8,028 of 23 June, the gap day before the newest window. The 1M train budget is recorded, not applied: a benchmark sub-samples each train side over 1M to 1M before a fit with `subsample_train`, by default a random 1M of the newest year before the window. The data cover six months of 2016, so the newest year is all earlier trips: as in delivery_eta_1m, the sample is random rather than the latest trips, and it covers the whole half-year.
 
 ## Splits
 
-An ETA model refit every week predicts the trips of the next week, as for the other ETA tasks of the collection (delivery_eta_1m, maps_router_eta_1m). We use each of the last 3 weeks of June 2016 as a test window (newest first, 52,779 to 54,532 trips each) and the trips picked up at least one day before it as train data: 3 windows, the 1 x 3 an IID task of this size would get, and every train side holds at least 88% of the trips. The gap of one day is part of the task: a trip lasts up to 3 hours, so at a refit the last trips before it have no duration yet; without the gap 77, 119 and 127 train trips per window would end after the window start. Each train side (1.28M to 1.39M trips before the cap) is a random 1M of the earlier trips, drawn in one random order for all windows so the train sides overlap, and no test window reaches 500k rows; the frame keeps only the trips a split uses (version_comment). The competition's test set is a random sample of the same days (curation_comments); a random split is optimistic here. LightGBM (300 trees, learning rate 0.1, 63 leaves, a random 200k of each train side, one fit per split) scores RMSE 0.357-0.381 on the weekly windows, 0.355-0.364 on 3 folds of whole days and 0.353-0.355 on 3 random folds when the encoding keeps the hour (skrub's DatetimeEncoder), and 0.414-0.441, 0.401-0.410 and 0.390-0.392 with AutoGluon's date parts. Trips of one day sharing traffic and weather explain about 0.01 of the gap; the rest is the distance in time.
+Expanding-window temporal splits: 3 test window(s) of 7 days, starting at 2016-06-24, 2016-05-27, 2016-04-08, newest first; train is all earlier data up to a gap of 1 days. The test windows by `pickup_datetime`, as listed: 2016-06-24 to 2016-06-30 (52,607 test, 1,382,016 train rows); 2016-05-27 to 2016-06-02 (49,284 test, 1,169,775 train rows); 2016-04-08 to 2016-04-14 (59,653 test, 766,644 train rows). Each test window keeps at most 500k of its rows, drawn at random; each train side holds every earlier row, and a benchmark sub-samples it to 1M rows (by default rows drawn at random from the newest year before each window, extended back in time until it holds that many rows, `subsample_train`).
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 52,607 to 54,373 rows. Prediction horizon: 7 days. Gap between train and test: 1 days. Row budget: at most 1M train / 500k test rows per split.
+The competition gives no horizon: its test set is a random 30% of the same days (curation_comments), so a random split is optimistic here. An ETA service refits often; a week is the shortest window that holds each weekday once, and no source speaks for a calendar month here (unlike pkdd_15_taxi_trip_time_prediction_ii_1m, whose challenge used one model for months), though under the floor as amended on 2026-11-11 months would give three windows (June, May, and April on 49.1% of the trips). The trips cover January to June 2016, and only the weeks from 8 April on keep half the trips for training, so another year or the winter cannot be tested: January to March (New Year's Day, Martin Luther King Day, Presidents' Day, the blizzard of 23 January) are training only. Of the 12 eligible weeks (Friday to Thursday) we test three (CC 2026-11-10), newest first: 24-30 June, the newest; 27 May to 2 June, the week of Memorial Day (Monday 30 May), the one public holiday among them (7,041 trips a day against 7,973 and 8,065 in the weeks before and after, median straight-line speed 13.3 km/h against 12.2 and 12.4); and 8-14 April, a spring week (8,522 trips a day, 12.6 km/h). The features do not drift in any eligible week (largest population stability index 0.003), so the choice rests on the calendar. The gap of one day is part of the task: a trip lasts up to 3 hours, so at a refit the last trips before it have no duration yet; without the gap 77, 112 and 100 train trips per window would end after the window start, with it none. The 8,028 trips of 23 June, the gap day before the newest window, lie in no split, so the frame leaves them out. Measured before 2026-11-10, with the last three weeks of June as the windows: LightGBM (300 trees, learning rate 0.1, 63 leaves, a random 200k of each train side, one fit per split) scored RMSE 0.357-0.381 on the weekly windows, 0.355-0.364 on 3 folds of whole days and 0.353-0.355 on 3 random folds when the encoding keeps the hour (skrub's DatetimeEncoder), and 0.414-0.441, 0.401-0.410 and 0.390-0.392 with AutoGluon's date parts. Trips of one day sharing traffic and weather explain about 0.01 of the gap; the rest is the distance in time.
+
+3 repeat(s) x 1 fold(s) with seed 4267; train 766,644 to 1,382,016 rows, test 49,284 to 59,653 rows. Prediction horizon: 7 days. Gap between train and test: 1 days. Row budget: at most 500k test rows per split; a benchmark trains on at most 1M. The train sides keep every row available to them; `subsample_train` draws the 1M rows a benchmark fits on from the newest year before each window, extended back in time until it holds that many rows, at random, as rows.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 1000000 | 52607 | 2016-01-01 00:00:53 | 2016-06-22 23:59:46 | 2016-06-24 00:00:01 | 2016-06-30 23:59:39 |
-| 1 | 0 | 1000000 | 52772 | 2016-01-01 00:00:17 | 2016-06-15 23:59:40 | 2016-06-17 00:00:01 | 2016-06-23 23:59:59 |
-| 2 | 0 | 1000000 | 54373 | 2016-01-01 00:00:17 | 2016-06-08 23:59:53 | 2016-06-10 00:00:15 | 2016-06-16 23:59:43 |
+| 0 | 0 | 1382016 | 52607 | 2016-01-01 00:00:17 | 2016-06-22 23:59:46 | 2016-06-24 00:00:01 | 2016-06-30 23:59:39 |
+| 1 | 0 | 1169775 | 49284 | 2016-01-01 00:00:17 | 2016-05-25 23:59:55 | 2016-05-27 00:00:41 | 2016-06-02 23:59:54 |
+| 2 | 0 | 766644 | 59653 | 2016-01-01 00:00:17 | 2016-04-06 23:59:57 | 2016-04-08 00:00:29 | 2016-04-14 23:59:54 |
+
+
+### The test windows
+
+Each test window against its train side, by statistics of the data, never of a model: the target, and the population stability index (PSI) of each feature, its largest value and the features that drift most (below 0.1 little shift, above 0.25 a large one), and the share of test rows with a category the train side never shows. Up to 20,000 rows per side. The candidates the windows were chosen from: `.venv/bin/python -m data_foundry.curation.cli dataset windows nyc_taxi_trip_duration_1m`.
+
+| window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
+|---|---|---|---|---|---|---|---|---|
+| 0 | Jun 2016 | 52607 | 0.963 | mean 6.512, median 6.526, p10 5.553, p90 7.463 | mean 6.478, median 6.497, p10 5.529, p90 7.401 | 0.003 | dropoff_longitude (0.00), pickup_latitude (0.00), dropoff_latitude (0.00) | 0 |
+| 1 | May 2016 - Jun 2016 | 49284 | 0.815 | mean 6.483, median 6.512, p10 5.501, p90 7.424 | mean 6.465, median 6.483, p10 5.517, p90 7.386 | 0.003 | pickup_longitude (0.00), dropoff_latitude (0.00), pickup_latitude (0.00) | 0 |
+| 2 | Apr 2016 | 59653 | 0.534 | mean 6.487, median 6.51, p10 5.533, p90 7.407 | mean 6.451, median 6.479, p10 5.513, p90 7.353 | 0.002 | pickup_longitude (0.00), pickup_latitude (0.00), dropoff_longitude (0.00) | 0 |
 
 ## Decisions
 
@@ -275,8 +336,12 @@ The times are wall-clock times, so a trip picked up before 02:00 on 2016-03-13 a
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
+
+Accepted on purpose:
+
+- `meta_license_unknown`: The TLC trip records carry no explicit licence (NYC Open Data terms of use); the Kaggle sample we download is under the competition's rules.
 
 ## Data checks
 
@@ -285,43 +350,51 @@ The times are wall-clock times, so a trip picked up before 02:00 on 2016-03-13 a
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | vendor_id | category | 0 | 0 | 2 | VeriFone, Creative Mobile Technologies |
-| pickup_datetime | datetime64\[ns\] | 0 | 0 | 1.11537e+06 | 2016-03-04 00:43:02, 2016-02-19 10:17:34, 2016-02-25 20:28:12, 2016-05-15 04:02… |
-| passenger_count | float64 | 12 | 0 | 6 | 1.0, 2.0, 5.0, 3.0, 6.0, 4.0 |
-| pickup_longitude | float64 | 0 | 0 | 20956 | -73.9822, -73.9822, -73.982, -73.9941, -73.9823, -73.9821, -73.9915, -73.9822, … |
-| pickup_latitude | float64 | 0 | 0 | 42768 | 40.774, 40.7741, 40.7741, 40.7738, 40.7741, 40.7502, 40.7738, 40.7737, 40.7737,… |
-| dropoff_longitude | float64 | 0 | 0 | 31277 | -73.9821, -73.982, -73.9913, -73.9821, -73.9911, -73.9781, -73.9788, -73.9824, … |
-| dropoff_latitude | float64 | 0 | 0 | 59318 | 40.7646, 40.7523, 40.7743, 40.7743, 40.7647, 40.7502, 40.7638, 40.7516, 40.7502… |
-| log1p_trip_duration | float64 | 0 | 0 | 5865 | 5.9915, 5.793, 5.8665, 5.9269, 6.073, 5.6058, 5.9814, 5.8972, 5.8081, 5.9349 |
+| pickup_datetime | datetime64\[ns\] | 0 | 0 | 1.35822e+06 | 2016-01-13 08:25:24, 2016-05-07 18:34:41, 2016-05-30 14:17:36, 2016-06-24 23:00… |
+| passenger_count | float64 | 15 | 0 | 6 | 1.0, 2.0, 5.0, 3.0, 6.0, 4.0 |
+| pickup_longitude | float64 | 0 | 0 | 21829 | -73.9821, -73.9823, -73.982, -73.9822, -73.9821, -73.9823, -73.982, -73.9822, -… |
+| pickup_latitude | float64 | 0 | 0 | 44376 | 40.7741, 40.7741, 40.7741, 40.7511, 40.7742, 40.7741, 40.7741, 40.7741, 40.774,… |
+| dropoff_longitude | float64 | 0 | 0 | 33021 | -73.9821, -73.9774, -73.9823, -73.982, -73.9911, -73.9921, -73.9822, -73.9912, … |
+| dropoff_latitude | float64 | 0 | 0 | 61983 | 40.7743, 40.7504, 40.7617, 40.7502, 40.7501, 40.75, 40.7743, 40.7564, 40.7577, … |
+| log1p_trip_duration | float64 | 0 | 0 | 5997 | 6.1549, 6.1654, 6.0845, 5.8289, 5.9162, 6.0307, 5.8435, 6.1463, 5.7071, 5.7621 |
 
 ### Target distribution
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | -0.184 | -0.569 | 0.54 | 0.014 | log | 755884 | 7.8981e+16 | exponential |
+| 0 | 0 | 0 | -0.181 | -0.57 | 0.537 | 0.014 | log | 930045 | 3.059e+16 | exponential |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| passenger_count | 116596 | 1.65946 | 1.30946 | 1 | 6 |
-| pickup_longitude | 116597 | -73.9737 | 0.0373991 | -74.2505 | -73.6398 |
-| pickup_latitude | 116597 | 40.7511 | 0.0276563 | 40.577 | 41.1574 |
-| dropoff_longitude | 116597 | -73.9734 | 0.0360199 | -74.5668 | -72.9059 |
-| dropoff_latitude | 116597 | 40.7521 | 0.032338 | 40.271 | 41.3198 |
-| log1p_trip_duration | 116597 | 6.4747 | 0.73499 | 3.43399 | 9.27847 |
+| passenger_count | 143462 | 1.66765 | 1.31848 | 1 | 6 |
+| pickup_longitude | 143462 | -73.9737 | 0.0375089 | -74.1788 | -73.4773 |
+| pickup_latitude | 143462 | 40.751 | 0.0277326 | 40.5319 | 41.006 |
+| dropoff_longitude | 143462 | -73.9735 | 0.0353647 | -74.6475 | -73.3328 |
+| dropoff_latitude | 143462 | 40.7519 | 0.0321314 | 40.2933 | 41.4214 |
+| log1p_trip_duration | 143462 | 6.47473 | 0.732793 | 3.43399 | 9.25455 |
 
 ### Categorical features
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| pickup_datetime | 1 | 2016-03-04 00:43:02 | 3 | 0 |
-| pickup_datetime | 2 | 2016-02-19 10:17:34 | 3 | 0 |
-| pickup_datetime | 3 | 2016-02-25 20:28:12 | 2 | 0 |
-| pickup_datetime | 4 | 2016-05-15 04:02:21 | 2 | 0 |
-| pickup_datetime | 5 | 2016-06-28 12:33:33 | 2 | 0 |
-| vendor_id | 1 | VeriFone | 62149 | 53.3 |
-| vendor_id | 2 | Creative Mobile Technologies | 54448 | 46.7 |
+| pickup_datetime | 1 | 2016-01-13 08:25:24 | 3 | 0 |
+| pickup_datetime | 2 | 2016-05-07 18:34:41 | 3 | 0 |
+| pickup_datetime | 3 | 2016-05-30 14:17:36 | 3 | 0 |
+| pickup_datetime | 4 | 2016-06-24 23:00:23 | 3 | 0 |
+| pickup_datetime | 5 | 2016-06-21 18:07:01 | 2 | 0 |
+| vendor_id | 1 | VeriFone | 76592 | 53.39 |
+| vendor_id | 2 | Creative Mobile Technologies | 66870 | 46.61 |
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a217ff-7634-71b3-b9be-45b56e41ec3e |
+| checksum | v2:593b09d390a6b60f1cf87ca279ad34f1f7a57050949d2f4f759c621b187d4e3a |
+| built_at | 2026-11-26T13:15:59+00:00 |
+| path | nyc_taxi_trip_duration_1m/01a217ff-7634-71b3-b9be-45b56e41ec3e |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
