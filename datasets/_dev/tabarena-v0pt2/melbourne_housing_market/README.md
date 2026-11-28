@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: melbourne_housing_market
 container_format: 2
-checksum: v2:d5c544887cd789c92172e54d4103d13aa19bb2ea7090c6c33f4ec045620ddd0f
-build: null
+checksum: v2:11549215aa4a9e97047a508c660b2a813af8918f228c029fb435e8b4d019f027
+build:
+  uuid: 01a21800-5fec-7f2a-94f1-18673806b025
+  checksum: v2:11549215aa4a9e97047a508c660b2a813af8918f228c029fb435e8b4d019f027
+  built_at: '2026-11-26T13:16:51+00:00'
+  path: melbourne_housing_market/01a21800-5fec-7f2a-94f1-18673806b025
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 21266
@@ -36,6 +49,38 @@ splits:
   time_horizon_unit: weeks
   time_gap: null
   time_gap_unit: null
+  reason: 'Before the auction, a price model fitted once per window on all earlier
+    sales predicts the sales of the next three weekly result sheets: 9 test windows
+    of 3 consecutive auction dates of the file (one weekly sheet each), from 3-17
+    March 2018 back to 12-26 August 2017, newest first. Each window trains on all
+    earlier sales (55-95% of the rows), without a gap: a price is published in the
+    sheet of its week. Three sheets lie within a Melbourne auction campaign of about
+    four weeks ("Before the auction takes place, there is a sales campaign that runs
+    for approximately four weeks", Nelson Alexander, https://www.nelsonalexander.com.au/news/auction-private-sale-and-expressions-interest-explained),
+    so a price estimated during the campaign looks one to four sheets ahead; the Kaggle
+    upload names no task or horizon, and three sheets give nine windows that each
+    train on at least 55.3% of the sales (CC 2026-11-11). The windows walk back from
+    the newest for two reasons. Nine is the count of splits an IID task of this size
+    gets (3 x 3). Further back, the train sides hold mostly the sales before 27 May
+    2017, when the file holds only the inner suburbs (79.2% of the train side of the
+    tenth window, 15-29 July 2017, and all of it from the window of 27 May 2017 on),
+    and a window before 27 May 2017 tests the inner suburbs only. The nine cover winter,
+    the spring auction season, the summer lull and early autumn. The horizon is three
+    sheets, up to 7 calendar weeks: the file lacks the sheets of 10 June, 5 August
+    and 2 December 2017 and 13 January 2018, so a window can span 4 calendar weeks,
+    and the window of 20 January to 3 February 2018 trains on sales up to 16 December
+    2017. Calendar windows do not fit the file: it has no sheet between 16 December
+    2017 and 20 January 2018 and 18 sales on 20 and 27 January 2018, so a monthly
+    window would test January 2018 on 18 sales and a four-week one on 9. Three sheets
+    put them in a window of 93 sales (20 January to 3 February 2018); the other windows
+    hold 868-1,550. Recording delay (SPLIT-10; measured 2026-10-21 as ames_housing
+    did): the newest sheets are not short. Every weekly sheet of the full file from
+    August 2017 to 17 March 2018 holds as many sales as the same sheet of the companion
+    file, read up to October 2018 (558 of 558 on 17 March 2018), so no sale reached
+    a sheet after it was first read. The three sheets of March 2018 hold 1,121 sales,
+    against 1,174 in the same three sheets of 2017 (companion file, all suburbs),
+    and the newest window''s mean residual log price is +0.009 (one LightGBM fit per
+    window), inside the range of the other windows (-0.013 to +0.022). No gap.'
   n_train:
     min: 11753
     max: 20147
@@ -62,7 +107,7 @@ decisions:
 
 Regression of `log_price`, scored with `rmsle` on temporal splits by `Date`. 21,266 rows and 19 features. Source: Kaggle (2017).
 
-Not built yet. The current definition gives checksum `v2:d5c544887cd789c92172e54d4103d13aa19bb2ea7090c6c33f4ec045620ddd0f`.
+Built as `01a21800-5fec-7f2a-94f1-18673806b025` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -76,7 +121,7 @@ Not built yet. The current definition gives checksum `v2:d5c544887cd789c92172e54
 
 **Known at prediction time.** The address, suburb, postcode, council area, region, distance to the centre and the suburb's number of properties; the property type, rooms, agent and auction date; and, from a lookup on realestate.com.au made after the sale, the coordinates and six attributes (bedrooms, bathrooms, car spaces, land and building size, year built), blank for the sales before April 2017, looked up months later.
 
-**What the test data stands for.** Nine test windows of three consecutive weekly sheets, from August 2017 to March 2018; each trains on all earlier sales and predicts up to 7 calendar weeks ahead.
+**What the test data stands for.** Nine test windows of three consecutive weekly sheets, from August 2017 to March 2018, within an auction campaign of about four weeks; each trains on all earlier sales (55% to 95%) and predicts up to 7 calendar weeks ahead.
 
 **Our changes to the source.** We drop results without a sale price (passed in, vendor bid) and the auction outcome, known only after the auction, blank the attributes looked up months after the sale, and test on later weekly sheets instead of random sales.
 
@@ -89,7 +134,7 @@ Not built yet. The current definition gives checksum `v2:d5c544887cd789c92172e54
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/melbourne_housing_market.md`](../../../../curation/records/melbourne_housing_market.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/melbourne_housing_market.md`](../../../../curation/records/melbourne_housing_market.md)
 - The original source: <https://www.kaggle.com/datasets/anthonypino/melbourne-housing-market>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -142,7 +187,7 @@ Only curators run `build`, when the dataset ships.
 |---|---|
 | name | `rmsle` (standard; takes value; lower is better) |
 | origin | context: obvious from the task: the source defines no metric |
-| definition | sqrt(mean((log1p(y) - log1p(p))^2)); y and p non-negative |
+| definition | sqrt(mean((log1p(y) - log1p(max(p, 0)))^2)); y >= 0, a prediction below 0 counts as 0 |
 | reason | A Kaggle dataset without a task or metric. For a sale price the error that matters is relative to the price, so RMSLE on the price. |
 | target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
@@ -203,7 +248,9 @@ We start with Melbourne_housing_FULL.csv of the Kaggle dataset anthonypino/melbo
 
 ## Splits
 
-Before the auction, a price model fitted once per window on all earlier sales predicts the sales of the next three weekly result sheets: 9 test windows of 3 consecutive auction dates of the file (one weekly sheet each), from 3-17 March 2018 back to 12-26 August 2017, newest first. Each window trains on all earlier sales (55-95% of the rows), without a gap: a price is published in the sheet of its week. The horizon is three sheets, up to 7 calendar weeks: the file lacks the sheets of 10 June, 5 August and 2 December 2017 and 13 January 2018, so a window can span 4 calendar weeks, and the window of 20 January to 3 February 2018 trains on sales up to 16 December 2017. An IID task of this size would get 3 x 3 splits. Calendar windows do not fit the file: it has no sheet between 16 December 2017 and 20 January 2018 and 18 sales on 20 and 27 January 2018, so a monthly window would test January 2018 on 18 sales and a four-week one on 9. Three sheets put them in a window of 93 sales (20 January to 3 February 2018); the other windows hold 868-1,550. Recording delay (SPLIT-10; measured 2026-10-21 as ames_housing did): the newest sheets are not short. Every weekly sheet of the full file from August 2017 to 17 March 2018 holds as many sales as the same sheet of the companion file, read up to October 2018 (558 of 558 on 17 March 2018), so no sale reached a sheet after it was first read. The three sheets of March 2018 hold 1,121 sales, against 1,174 in the same three sheets of 2017 (companion file, all suburbs), and the newest window's mean residual log price is +0.009 (one LightGBM fit per window), inside the range of the other windows (-0.013 to +0.022). No gap.
+Expanding-window temporal splits: 9 test window(s) of 3 time values, walking back from the newest data, newest first; train is all earlier data. The test windows by `Date`, as listed: 2018-03-03 to 2018-03-17 (1,119 test, 20,147 train rows); 2018-02-10 to 2018-02-24 (1,069 test, 19,078 train rows); 2018-01-20 to 2018-02-03 (93 test, 18,985 train rows); 2017-11-25 to 2017-12-16 (1,526 test, 17,459 train rows); 2017-11-04 to 2017-11-18 (1,033 test, 16,426 train rows); 2017-10-14 to 2017-10-28 (1,550 test, 14,876 train rows); 2017-09-23 to 2017-10-07 (868 test, 14,008 train rows); 2017-09-03 to 2017-09-16 (1,140 test, 12,868 train rows); 2017-08-12 to 2017-08-26 (1,115 test, 11,753 train rows).
+
+Before the auction, a price model fitted once per window on all earlier sales predicts the sales of the next three weekly result sheets: 9 test windows of 3 consecutive auction dates of the file (one weekly sheet each), from 3-17 March 2018 back to 12-26 August 2017, newest first. Each window trains on all earlier sales (55-95% of the rows), without a gap: a price is published in the sheet of its week. Three sheets lie within a Melbourne auction campaign of about four weeks ("Before the auction takes place, there is a sales campaign that runs for approximately four weeks", Nelson Alexander, https://www.nelsonalexander.com.au/news/auction-private-sale-and-expressions-interest-explained), so a price estimated during the campaign looks one to four sheets ahead; the Kaggle upload names no task or horizon, and three sheets give nine windows that each train on at least 55.3% of the sales (CC 2026-11-11). The windows walk back from the newest for two reasons. Nine is the count of splits an IID task of this size gets (3 x 3). Further back, the train sides hold mostly the sales before 27 May 2017, when the file holds only the inner suburbs (79.2% of the train side of the tenth window, 15-29 July 2017, and all of it from the window of 27 May 2017 on), and a window before 27 May 2017 tests the inner suburbs only. The nine cover winter, the spring auction season, the summer lull and early autumn. The horizon is three sheets, up to 7 calendar weeks: the file lacks the sheets of 10 June, 5 August and 2 December 2017 and 13 January 2018, so a window can span 4 calendar weeks, and the window of 20 January to 3 February 2018 trains on sales up to 16 December 2017. Calendar windows do not fit the file: it has no sheet between 16 December 2017 and 20 January 2018 and 18 sales on 20 and 27 January 2018, so a monthly window would test January 2018 on 18 sales and a four-week one on 9. Three sheets put them in a window of 93 sales (20 January to 3 February 2018); the other windows hold 868-1,550. Recording delay (SPLIT-10; measured 2026-10-21 as ames_housing did): the newest sheets are not short. Every weekly sheet of the full file from August 2017 to 17 March 2018 holds as many sales as the same sheet of the companion file, read up to October 2018 (558 of 558 on 17 March 2018), so no sale reached a sheet after it was first read. The three sheets of March 2018 hold 1,121 sales, against 1,174 in the same three sheets of 2017 (companion file, all suburbs), and the newest window's mean residual log price is +0.009 (one LightGBM fit per window), inside the range of the other windows (-0.013 to +0.022). No gap.
 
 9 repeat(s) x 1 fold(s) with seed 4267; train 11,753 to 20,147 rows, test 93 to 1,550 rows. Prediction horizon: 3 weeks.
 
@@ -218,6 +265,23 @@ Before the auction, a price model fitted once per window on all earlier sales pr
 | 6 | 0 | 14008 | 868 | 2016-01-28 00:00:00 | 2017-09-16 00:00:00 | 2017-09-23 00:00:00 | 2017-10-07 00:00:00 |
 | 7 | 0 | 12868 | 1140 | 2016-01-28 00:00:00 | 2017-08-26 00:00:00 | 2017-09-03 00:00:00 | 2017-09-16 00:00:00 |
 | 8 | 0 | 11753 | 1115 | 2016-01-28 00:00:00 | 2017-07-29 00:00:00 | 2017-08-12 00:00:00 | 2017-08-26 00:00:00 |
+
+
+### The test windows
+
+Each test window against its train side, by statistics of the data, never of a model: the target, and the population stability index (PSI) of each feature, its largest value and the features that drift most (below 0.1 little shift, above 0.25 a large one), and the share of test rows with a category the train side never shows. Up to 20,000 rows per side. The candidates the windows were chosen from: `.venv/bin/python -m data_foundry.curation.cli dataset windows melbourne_housing_market`.
+
+| window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
+|---|---|---|---|---|---|---|---|---|
+| 0 | Mar 2018 | 1119 | 0.947 | mean 13.71, median 13.65, p10 13.16, p90 14.36 | mean 13.71, median 13.66, p10 13.1, p90 14.36 | 0.575 | Landsize (0.57), Bedroom2 (0.32), Bathroom (0.26) | 0.0045 |
+| 1 | Feb 2018 | 1069 | 0.897 | mean 13.65, median 13.59, p10 13.13, p90 14.29 | mean 13.71, median 13.66, p10 13.1, p90 14.36 | 0.329 | Landsize (0.33), Bedroom2 (0.24), Latitude (0.20) | 0.0056 |
+| 2 | Jan 2018 - Feb 2018 | 93 | 0.893 | mean 13.46, median 13.44, p10 13.02, p90 13.92 | mean 13.71, median 13.67, p10 13.1, p90 14.36 | 2.482 | Agent (2.48), Postcode (2.46), CouncilArea (2.19) | 0.0215 |
+| 3 | Nov 2017 - Dec 2017 | 1526 | 0.821 | mean 13.64, median 13.57, p10 13.08, p90 14.27 | mean 13.72, median 13.68, p10 13.1, p90 14.37 | 0.311 | Latitude (0.31), Longitude (0.28), Distance (0.23) | 0.0066 |
+| 4 | Nov 2017 | 1033 | 0.772 | mean 13.68, median 13.63, p10 13.13, p90 14.33 | mean 13.72, median 13.68, p10 13.1, p90 14.38 | 0.534 | Longitude (0.53), Latitude (0.50), Distance (0.29) | 0.0058 |
+| 5 | Oct 2017 | 1550 | 0.7 | mean 13.74, median 13.69, p10 13.14, p90 14.39 | mean 13.72, median 13.68, p10 13.1, p90 14.37 | 0.546 | Bedroom2 (0.55), Bathroom (0.46), Car (0.39) | 0.0058 |
+| 6 | Sep 2017 - Oct 2017 | 868 | 0.659 | mean 13.6, median 13.57, p10 13.09, p90 14.14 | mean 13.72, median 13.69, p10 13.1, p90 14.38 | 0.853 | Bedroom2 (0.85), Bathroom (0.84), Car (0.74) | 0.0092 |
+| 7 | Sep 2017 | 1140 | 0.605 | mean 13.73, median 13.7, p10 13.14, p90 14.38 | mean 13.72, median 13.69, p10 13.1, p90 14.38 | 1.585 | Bedroom2 (1.58), Bathroom (1.58), Car (1.37) | 0.0105 |
+| 8 | Aug 2017 | 1115 | 0.553 | mean 13.74, median 13.71, p10 13.12, p90 14.42 | mean 13.72, median 13.69, p10 13.1, p90 14.38 | 1.77 | Bedroom2 (1.77), Bathroom (1.77), Car (1.59) | 0.0072 |
 
 ## Decisions
 
@@ -277,7 +341,7 @@ A sale reported again within 60 days keeps its first report; two reports of one 
 
 ### 5. Test windows of three weekly sheets
 
-The file has no sheet between 16 December 2017 and 20 January 2018 and 18 sales in January 2018: calendar windows leave a window of 9-18 sales, four sheets per window leave 2 of 9 windows below half of the rows for training.
+Three sheets lie within an auction campaign of about four weeks, and each of the nine windows trains on at least half of the rows. The file has no sheet between 16 December 2017 and 20 January 2018 and 18 sales in January 2018: calendar windows leave a window of 9-18 sales; four sheets per window leave 2 of 9 windows below half of the rows for training.
 
 | index | windows | fewest test rows | most test rows | smallest training share |
 |---|---|---|---|---|
@@ -288,7 +352,7 @@ The file has no sheet between 16 December 2017 and 20 January 2018 and 18 sales 
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -401,4 +465,12 @@ The file has no sheet between 16 December 2017 and 20 January 2018 and 18 sales 
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a21800-5fec-7f2a-94f1-18673806b025 |
+| checksum | v2:11549215aa4a9e97047a508c660b2a813af8918f228c029fb435e8b4d019f027 |
+| built_at | 2026-11-26T13:16:51+00:00 |
+| path | melbourne_housing_market/01a21800-5fec-7f2a-94f1-18673806b025 |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: indian_liver_patient_dataset
 container_format: 2
-checksum: v2:c001df30ecd1bfa541c5ca2d9ed16fafd393f377417432a9dba83220d943a446
+checksum: v2:b39887194c3a81a048c4c3f59ebcc3b639f4802caaa065826b8a28336788b0a0
 build:
-  uuid: 01a111fc-e244-78f8-9686-1c2a0bf3b820
-  checksum: v2:e7039f8157260832229136963282d84e47ed2500e1bf7067d3d6f1b20c7e8a85
-  built_at: '2026-10-06T16:12:28+00:00'
-  path: indian_liver_patient_dataset/01a111fc-e244-78f8-9686-1c2a0bf3b820
+  uuid: 01a21800-d93a-78d6-94be-cb41adf6dec4
+  checksum: v2:b39887194c3a81a048c4c3f59ebcc3b639f4802caaa065826b8a28336788b0a0
+  built_at: '2026-11-26T13:17:18+00:00'
+  path: indian_liver_patient_dataset/01a21800-d93a-78d6-94be-cb41adf6dec4
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 570
   n_features: 10
@@ -47,6 +47,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 380
     max: 380
@@ -68,7 +69,7 @@ decisions: []
 
 Binary classification of `Selector`, scored with `roc_auc` on IID splits. 570 rows and 10 features. Source: UCI (2012).
 
-Built as `01a111fc-e244-78f8-9686-1c2a0bf3b820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c001df30ecd1bfa541c5ca2d9ed16fafd393f377417432a9dba83220d943a446`, so the build is stale. See [Build](#build).
+Built as `01a21800-d93a-78d6-94be-cb41adf6dec4` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -194,14 +195,6 @@ The first 5 of 570 rows of the final frame (random rows: the frame is shuffled).
   records: 85 of the 167 others have low albumin and 18 high bilirubin or liver enzymes, and 55 of the 416
   patients have normal bilirubin, ALT, AST and albumin. The number format of the values gives ROC AUC 0.50
   for the label, so no recording difference shows between the two groups.
-- Time basis: ForcedIIDFromTemporal: patients seen over a period the sources do not state; the file keeps no
-  date, so random patients stand in for the patients to come. The file order carries some structure (lag-1
-  correlation of 0.10 to 0.26 for age and the lab values, none for the label: 0.03) but no cost: held out by
-  file position (contiguous 5-fold, or the last third after the first two) ROC AUC stays within the spread of
-  random splits for logistic regression, random forest and TabPFN 3.5. A dated release would test later patients
-  and whether the two groups were collected in different periods, which this split cannot. Not taken as
-  stationary (Andrej, 2026-11-18): The physiology is stable but the label and the group collection are
-  undocumented, and a flat file order is not a dated measurement; mixed.
 - Repeated records (2026-11-11, LEAK-18, LEAK-19): 13 records appear twice, equal in age, sex and all eight
   blood tests and with the same label; each pair sits on adjacent rows of the UCI file (rows 19/20 to 201/202),
   and none of 500 tables with each column shuffled on its own held a repeated row. They are one record
@@ -214,10 +207,11 @@ The first 5 of 570 rows of the final frame (random rows: the frame is shuffled).
 - Ages above 89 are recorded as 90 (UCI); this concerns 1 row and is kept as published.
 - The target (2026-11-01, CLEAN-25): `Selector` ships its classes as words (1 means a liver patient (UCI)).
   Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
+- Time basis: ForcedIIDFromTemporal: patients seen over a period the sources do not state; the file keeps no date, so random patients stand in for the patients to come. The file order carries some structure (lag-1 correlation of 0.10 to 0.26 for age and the lab values, none for the label: 0.03) but no cost: held out by file position (contiguous 5-fold, or the last third after the first two) ROC AUC stays within the spread of random splits for logistic regression, random forest and TabPFN 3.5. A dated release would test later patients and whether the two groups were collected in different periods, which this split cannot. Not taken as stationary (Andrej, 2026-11-18): The physiology is stable but the label and the group collection are undocumented, and a flat file order is not a dated measurement; mixed.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `Selector`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 570 rows (SPLIT-33).
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 380 rows, test 190 rows.
 
@@ -351,11 +345,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-e244-78f8-9686-1c2a0bf3b820 |
-| checksum | v2:e7039f8157260832229136963282d84e47ed2500e1bf7067d3d6f1b20c7e8a85 |
-| built_at | 2026-10-06T16:12:28+00:00 |
-| path | indian_liver_patient_dataset/01a111fc-e244-78f8-9686-1c2a0bf3b820 |
+| uuid | 01a21800-d93a-78d6-94be-cb41adf6dec4 |
+| checksum | v2:b39887194c3a81a048c4c3f59ebcc3b639f4802caaa065826b8a28336788b0a0 |
+| built_at | 2026-11-26T13:17:18+00:00 |
+| path | indian_liver_patient_dataset/01a21800-d93a-78d6-94be-cb41adf6dec4 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c001df30ecd1bfa541c5ca2d9ed16fafd393f377417432a9dba83220d943a446` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

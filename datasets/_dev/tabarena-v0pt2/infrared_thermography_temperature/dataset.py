@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -229,14 +230,14 @@ class InfraredThermographyTemperature(AbstractCuratedDataset):
         time_of="label",
     )
     accepted_check_warnings = {
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Three windows of the 30 splits an IID split of 1,001 subjects would get: two-month windows on half the "
             "subjects or more leave room for three. A table this small with three windows gets the stationary-relation "
             "test, and it reads Nov-Dec 2017 not flat, so the windows ship (Andrej, 2026-11-23)."
         ),
     }
     splits_comment = """
-        Three expanding two-month windows on the visit date, newest first: from 15 March 2018 to the last visit (14 May 2018), from 15 January and from 15 November 2017. Each trains on every subject imaged before the window starts (89%, 60% and 53% of the subjects), so every window meets the half-data floor. Target: the 30 splits an IID split of 1,001 subjects would get; three two-month windows fit above the floor. A table this small with only three windows also gets the stationary-relation test, which reads Nov-Dec 2017 not flat, so the windows ship. No gap: the oral reading that sets the label is taken minutes after the image, in the same visit. The visit date comes from the date part of `SubjectID` and is no input (`time_of="label"`): it orders and splits the subjects only. The windows start mid-month because the newest window must hold the newest visits; starting on the 1st (Mar, Jan, Nov) would need a newest window stretched into May and a 48% window under the floor. The set-up changed between the study years (two locations, the median distance from 0.80 to 0.60 m), a first-year calibration over-predicts by 0.06-0.09 °C, and the stationary-relation test reads Nov-Dec 2017 not flat (Kumo-Tabular +0.010 ± 0.003 RMSE, floor 0.001). A screening camera calibrated once is used on later people, which these windows test (Andrej, 2026-11-23). Wang et al. (2022, Sec. 2.5) calibrated on a random 60% of the subjects and note that a random split of one pool may bias the estimate upwards (Sec. 4.5); the earlier random 10 x 3 folds (Lennart, 2026-10-21) are compared in the curation notes.
+        Target: the 30 splits an IID split of 1,001 subjects would get; three two-month windows fit above the floor. A table this small with only three windows also gets the stationary-relation test, which reads Nov-Dec 2017 not flat, so the windows ship. No gap: the oral reading that sets the label is taken minutes after the image, in the same visit. The visit date comes from the date part of `SubjectID` and is no input (`time_of="label"`): it orders and splits the subjects only. The windows start mid-month because the newest window must hold the newest visits; starting on the 1st (Mar, Jan, Nov) would need a newest window stretched into May and a 48% window under the floor. The set-up changed between the study years (two locations, the median distance from 0.80 to 0.60 m), a first-year calibration over-predicts by 0.06-0.09 °C, and the stationary-relation test reads Nov-Dec 2017 not flat (Kumo-Tabular +0.010 ± 0.003 RMSE, floor 0.001). A screening camera calibrated once is used on later people, which these windows test (Andrej, 2026-11-23). Wang et al. (2022, Sec. 2.5) calibrated on a random 60% of the subjects and note that a random split of one pool may bias the estimate upwards (Sec. 4.5); the earlier random 10 x 3 folds (Lennart, 2026-10-21) are compared in the curation notes.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

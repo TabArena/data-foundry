@@ -4,8 +4,6 @@ name: telangana-crop-health-challenge
 checked_by:
 - Andrej
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
 suggestion: TBD -> Yes
 priority: 3
 decision_markers:
@@ -25,7 +23,6 @@ source_links:
 source_row: 880
 needs_review:
 - ai_unverified
-- wip_unclaimed
 type_adapter_id: curation-record-v1
 ---
 

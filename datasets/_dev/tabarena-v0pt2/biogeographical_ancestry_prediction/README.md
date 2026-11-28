@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: biogeographical_ancestry_prediction
 container_format: 2
-checksum: v2:ca744d974223418081ef1774a9258e16526a6d153a8afa75983a01f7be3b58af
+checksum: v2:8bb2000e94ff7d7c1ba6ffe4ca6b0f638ee302b94cf28951d481e2b3c27de41f
 build:
-  uuid: 01a111fc-9b9e-7d5b-bb54-5ba4424f3c12
-  checksum: v2:756da0d9ffa37ad6880e28e58cb2f12202f9717e6b4843cce912fbe19b61fd1e
-  built_at: '2026-10-06T16:12:10+00:00'
-  path: biogeographical_ancestry_prediction/01a111fc-9b9e-7d5b-bb54-5ba4424f3c12
+  uuid: 01a21800-7af4-75e9-a375-a91ff6723748
+  checksum: v2:8bb2000e94ff7d7c1ba6ffe4ca6b0f638ee302b94cf28951d481e2b3c27de41f
+  built_at: '2026-11-26T13:16:54+00:00'
+  path: biogeographical_ancestry_prediction/01a21800-7af4-75e9-a375-a91ff6723748
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 607
   n_features: 102
@@ -45,6 +45,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 404
     max: 405
@@ -69,7 +70,7 @@ decisions: []
 
 Multiclass classification of `Population`, scored with `log_loss` on IID splits. 607 rows and 102 features. Source: Other (2023).
 
-Built as `01a111fc-9b9e-7d5b-bb54-5ba4424f3c12` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ca744d974223418081ef1774a9258e16526a6d153a8afa75983a01f7be3b58af`, so the build is stale. See [Build](#build).
+Built as `01a21800-7af4-75e9-a375-a91ff6723748` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -212,18 +213,11 @@ We take the targets from the paper by Heinzel et al. (2025) and only rename the 
 - "NN" genotypes are no-calls and are set to missing. They occur only in the HGDP classes (24 rows: Russian 8, French 7, Sardinian 5, Basque 4), never in 1000 Genomes, so missingness weakly hints at the source. The hint is small: a predictor that knows only whether a row has a failed call scores log loss 1.95 against 2.03 for the class shares (over all 607 people, an upper bound), at most a tenth of what the best methods gain; kept as missing (Andrej, 2026-11-10).
 - rs2789823 is AG in 7 rows, all Iberian; it may be a smaller artefact of the same kind and is kept.
 - Class-dependent recording (record marker `Class-dependent Recording`): Turkey comes from a separate source with its own genotyping artefact, as described above; the class is dropped.
-- Time basis: Timeless: genotypes are fixed at birth and the population label was set when the reference person
-  was sampled (1000 Genomes, HGDP-CEPH); no date is recorded and the table is ordered by population. No
-  duplicate genotypes, and no excess of related pairs beyond chance at 102 markers (2026-11-06). The one
-  arrival wave the sample identifiers recover is the reference project, not an entry date: 364 of the 503
-  1000 Genomes people were in its phase-1 release (2010), 139 arrived by phase 3 (93 of them Iberian), and
-  the 104 HGDP-CEPH people are in no 1000 Genomes release, so a split by arrival would test the project,
-  which is the label (2026-11-12). Not tested: people typed outside the reference project of their
-  population.
+- Time basis: Timeless: genotypes are fixed at birth and the population label was set when the reference person was sampled (1000 Genomes, HGDP-CEPH); no date is recorded and the table is ordered by population. No duplicate genotypes, and no excess of related pairs beyond chance at 102 markers (2026-11-06). The one arrival wave the sample identifiers recover is the reference project, not an entry date: 364 of the 503 1000 Genomes people were in its phase-1 release (2010), 139 arrived by phase 3 (93 of them Iberian), and the 104 HGDP-CEPH people are in no 1000 Genomes release, so a split by arrival would test the project, which is the label (2026-11-12). Not tested: people typed outside the reference project of their population.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `Population`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 607 rows (SPLIT-33).
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 404 to 405 rows, test 202 to 203 rows.
 
@@ -472,11 +466,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-9b9e-7d5b-bb54-5ba4424f3c12 |
-| checksum | v2:756da0d9ffa37ad6880e28e58cb2f12202f9717e6b4843cce912fbe19b61fd1e |
-| built_at | 2026-10-06T16:12:10+00:00 |
-| path | biogeographical_ancestry_prediction/01a111fc-9b9e-7d5b-bb54-5ba4424f3c12 |
+| uuid | 01a21800-7af4-75e9-a375-a91ff6723748 |
+| checksum | v2:8bb2000e94ff7d7c1ba6ffe4ca6b0f638ee302b94cf28951d481e2b3c27de41f |
+| built_at | 2026-11-26T13:16:54+00:00 |
+| path | biogeographical_ancestry_prediction/01a21800-7af4-75e9-a375-a91ff6723748 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ca744d974223418081ef1774a9258e16526a6d153a8afa75983a01f7be3b58af` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

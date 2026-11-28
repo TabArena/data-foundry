@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: loan_default_prediction_imperial_college
 container_format: 2
-checksum: v2:e143a131a5bd803eab26a1030417726b6e40956d8c9c9f23a49a89990096e7dc
-build: null
+checksum: v2:7f27856a63bc0173a43de192de22901a5aeaafb3be9712aa773a0f709373304d
+build:
+  uuid: 01a217fd-9b4e-782d-9adb-b06db65cf54c
+  checksum: v2:7f27856a63bc0173a43de192de22901a5aeaafb3be9712aa773a0f709373304d
+  built_at: '2026-11-26T13:13:55+00:00'
+  path: loan_default_prediction_imperial_college/01a217fd-9b4e-782d-9adb-b06db65cf54c
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 105471
@@ -34,6 +47,31 @@ splits:
   time_horizon_unit: steps
   time_gap: 5800
   time_gap_unit: steps
+  reason: 'The loans are in time order (`time_index`, the source''s id; the data page
+    and the Kaggle admin, topic 6871), and the competition split by time too: its
+    test file holds later loans, whose labels were never released. Nine windows match
+    the 3 x 3 splits a random split of this size gets; each holds 461 to 527 loans
+    with a loss. The window is a count of loans because the file has no dates, so
+    the time a window spans is unknown.
+
+    Gap (SPLIT-10): a loan''s loss is settled only after its term (the host: terms
+    "vary by a factor from 1 to 3") and the workout, so a model refit at a window''s
+    start would not yet know the outcomes of the newest loans. Without dates the delay
+    cannot be sized, and 5,800 loans is a guess; against training up to the window,
+    the gap changes the hurdle model''s Gini by -0.002 and its ROC AUC for a loss
+    by -0.003 on average over the 9 windows (open question in the Review).
+
+    Rows of one hidden entity recur from period to period: 68.0% to 72.4% of a window''s
+    loans have the entity''s previous row, 61.2% to 63.5% inside the same window,
+    6.1% to 8.3% in the gap and 0.3% to 0.7% on the training side. None has the entity''s
+    next row on the training side, against 46.5% under a random 3-fold split.
+
+    Protocol (LEAK-9): a test loan''s next row of the same entity is often in its
+    own test window (found from f521 in 88.7% of the cases), and that row''s f615/f617
+    record whether this loan defaulted (normalized Gini 0.63 against 0.20 for a model
+    that reads them); each test loan is predicted from the training rows and its own
+    features only, no feature or model step may use other test rows, and a method
+    that reads another test row of the same entity is called out and not benchmarked.'
   n_train:
     min: 54671
     max: 94671
@@ -44,7 +82,7 @@ bundle_checks:
   ok: true
   errors: []
   warnings:
-  - dataset_sequential_id_column
+  - dataset_identifier_column
   infos:
   - dataset_duplicates_skipped
   accepted:
@@ -67,7 +105,7 @@ decisions:
 
 Regression of `loss`, scored with `normalized_gini` on temporal splits by `time_index`. 105,471 rows and 638 features. Source: Kaggle (2014).
 
-Not built yet. The current definition gives checksum `v2:e143a131a5bd803eab26a1030417726b6e40956d8c9c9f23a49a89990096e7dc`.
+Built as `01a217fd-9b4e-782d-9adb-b06db65cf54c` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -210,7 +248,9 @@ We start with train_v2.csv from the Kaggle research competition "Loan Default Pr
 
 ## Splits
 
-The loans are in time order (`time_index`, the source's id; the data page and the Kaggle admin, topic 6871), and the competition split by time too: its test file holds later loans, whose labels were never released. We hold out 9 windows of 5,000 loans, the newest first, each trained on the loans before a gap of 5,800 loans: the oldest window trains on 51.8% of the rows, the newest on 89.8% (SPLIT-11, SPLIT-14). Nine windows match the 3 x 3 splits a random split of this size gets; each holds 461 to 527 loans with a loss. The window is a count of loans because the file has no dates, so the time a window spans is unknown.
+Expanding-window temporal splits: 9 test window(s) of 5000 rows, walking back from the newest data, newest first; train is all earlier data up to a gap of 5800 rows. The test windows by `time_index`, as listed: 100472 to 105471 (5,000 test, 94,671 train rows); 95472 to 100471 (5,000 test, 89,671 train rows); 90472 to 95471 (5,000 test, 84,671 train rows); 85472 to 90471 (5,000 test, 79,671 train rows); 80472 to 85471 (5,000 test, 74,671 train rows); 75472 to 80471 (5,000 test, 69,671 train rows); 70472 to 75471 (5,000 test, 64,671 train rows); 65472 to 70471 (5,000 test, 59,671 train rows); 60472 to 65471 (5,000 test, 54,671 train rows).
+
+The loans are in time order (`time_index`, the source's id; the data page and the Kaggle admin, topic 6871), and the competition split by time too: its test file holds later loans, whose labels were never released. Nine windows match the 3 x 3 splits a random split of this size gets; each holds 461 to 527 loans with a loss. The window is a count of loans because the file has no dates, so the time a window spans is unknown.
 Gap (SPLIT-10): a loan's loss is settled only after its term (the host: terms "vary by a factor from 1 to 3") and the workout, so a model refit at a window's start would not yet know the outcomes of the newest loans. Without dates the delay cannot be sized, and 5,800 loans is a guess; against training up to the window, the gap changes the hurdle model's Gini by -0.002 and its ROC AUC for a loss by -0.003 on average over the 9 windows (open question in the Review).
 Rows of one hidden entity recur from period to period: 68.0% to 72.4% of a window's loans have the entity's previous row, 61.2% to 63.5% inside the same window, 6.1% to 8.3% in the gap and 0.3% to 0.7% on the training side. None has the entity's next row on the training side, against 46.5% under a random 3-fold split.
 Protocol (LEAK-9): a test loan's next row of the same entity is often in its own test window (found from f521 in 88.7% of the cases), and that row's f615/f617 record whether this loan defaulted (normalized Gini 0.63 against 0.20 for a model that reads them); each test loan is predicted from the training rows and its own features only, no feature or model step may use other test rows, and a method that reads another test row of the same entity is called out and not benchmarked.
@@ -280,8 +320,8 @@ ROC AUC for the loss of the entity's previous loan, by how many loans earlier it
 
 0 error(s), 1 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `dataset_sequential_id_column`: 1 integer column(s) hold one value per row, densely numbered like a running id: ['time_index']. (hint: A running id often encodes the order of collection (time) or the origin (a prefix per source), which a model then learns. Drop it, or declare it `NonFeature(column, 'identifier')` in the parent.)
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 67,395,969 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+- **warning** `dataset_identifier_column`: 1 integer column(s) hold one value per row, densely numbered like a running id: ['time_index']. (hint: A running id often encodes the order of collection (time) or the origin (a prefix per source), which a model then learns. Drop it, declare it `NonFeature(column, 'identifier')` in the parent, or, where it is the rebuilt order the split cuts on, declare it `Temporal(..., time_of='label')`.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 67,395,969 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to run them; nothing else checks duplicate rows and columns.)
 
 Accepted on purpose:
 
@@ -466,4 +506,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a217fd-9b4e-782d-9adb-b06db65cf54c |
+| checksum | v2:7f27856a63bc0173a43de192de22901a5aeaafb3be9712aa773a0f709373304d |
+| built_at | 2026-11-26T13:13:55+00:00 |
+| path | loan_default_prediction_imperial_college/01a217fd-9b4e-782d-9adb-b06db65cf54c |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -171,7 +172,6 @@ class MedicalFacilityOperationalData(AbstractCuratedDataset):
         one level of target. The MAE and bias figures were measured before 2026-11-27, when the newest window ended 28
         days before the last arrival; they were not measured again on the window that now ends at the last arrival.
     """
-    accepted_check_warnings = {}
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         tables = pd.read_excel(

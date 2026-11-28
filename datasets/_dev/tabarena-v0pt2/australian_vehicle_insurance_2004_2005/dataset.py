@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -239,7 +240,6 @@ class AustralianVehicleInsurance20042005(AbstractCuratedDataset):
             "GLM, gains 0.6% of the constant's deviance (0.64 of 105.46, SE 0.26, better on 8 of 9 splits), while the "
             "Gini separates the honest models (GLM minus LightGBM +0.071, SE 0.012, 9 of 9)."
         ),
-        inputs={"weight": "exposure"},
         definition=(
             "WG(y, p) / WG(y, y) over the claim cost per year y and the predicted cost per year p, w = exposure (years "
             "observed): rows sorted by descending p, R the cumulative share of exposure, L the cumulative share of "
@@ -252,6 +252,7 @@ class AustralianVehicleInsurance20042005(AbstractCuratedDataset):
             column="exposure",
             role="weight",
             used_by="normalized_weighted_gini",
+            fit=True,
             description=(
                 "years observed (days / 365.25, 1 to 365 days): the share of the policy's one-year term inside the "
                 "data's observation period, realized and cut short by some claims (write-offs). The claim cost per "
@@ -259,7 +260,6 @@ class AustralianVehicleInsurance20042005(AbstractCuratedDataset):
             ),
         ),
     )
-    sample_weight = "exposure"
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         # round_trip: pandas 2's default parser reads some exposures a few units off in the last place; the exact

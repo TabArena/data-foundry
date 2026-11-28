@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -111,19 +112,10 @@ class ChicagoTrafficCrashes(AbstractCuratedDataset):
     metric = Metric.fallback(
         reason="The original City portal, field dictionary and linked SR1050 manual define a crash-report release, not a scored prediction competition or a single defining model-selection metric. Use multiclass log loss for the accepted five-class probability task. On July-September 2026 about 35% of the loss is in the 'reported, not evident' class and about 10% in incapacitating plus fatal; skill over the class prior is 18.0% on all rows against 11.8% on on-scene reports alone (one quick LightGBM on most of the shipped inputs, 2026-11-05)."
     )
-    accepted_check_warnings = {
-        "splits_rows_unused": (
-            "9,539 crashes are in no split: the 9,529 of August 2026, the newest window's gap month, which falls in no "
-            "test month; 9 of January to July 2026 notified to the police only after 1 September 2026, the newest "
-            "refit, and in no test month; and one crash (11 March 2018) notified before its recorded event, so no "
-            "training side takes it, and before the oldest test window. They stay in the frame unused rather than "
-            "being dropped by their timestamps."
-        ),
-    }
     split_leaf = "L-ORDER.windows"
     temporal = Temporal(on="crash_date", horizon=1, horizon_unit="months", gap=1, gap_unit="months")
     splits_comment = """
-        Nine one-month test windows, newest first, on event time CRASH_DATE, each with expanding earlier history: September 2026, April 2026, October 2025, May 2025, November 2024, June 2024, December 2023, July 2023 and January 2023. Training starts on 2017-09-01; no side is sampled.
+        Training starts on 2017-09-01; no side is sampled.
         October 2026 is excluded because the source snapshot ends within that month; the newest test month is September 2026.
         The length is the refit cadence, one month (the curator's pick, 2026-11-11): the one documented cycle of the
         analyst's work is monthly, as CDOT compiles its list of traffic fatalities "after monthly reviews of fatal

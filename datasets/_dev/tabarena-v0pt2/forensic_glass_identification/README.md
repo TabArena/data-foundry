@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: forensic_glass_identification
 container_format: 2
-checksum: v2:515c95e963d35721df2a34aa4583fd2be7597ddeccf6028cd8aabe92e3bc59e3
+checksum: v2:e4827e14d0d0b3e9814579729dc840caee499ce863d4bba5f3fe3e8bc6d94bdd
 build:
-  uuid: 01a111fc-a27d-7f21-999e-eb82f18aaf21
-  checksum: v2:de970f5266371fcd98c9a0f2deba0e93336a1f4adbc1ecf3539b8445cc24c18b
-  built_at: '2026-10-06T16:12:11+00:00'
-  path: forensic_glass_identification/01a111fc-a27d-7f21-999e-eb82f18aaf21
+  uuid: 01a21800-fac3-75ef-8d01-450b489f294e
+  checksum: v2:e4827e14d0d0b3e9814579729dc840caee499ce863d4bba5f3fe3e8bc6d94bdd
+  built_at: '2026-11-26T13:17:27+00:00'
+  path: forensic_glass_identification/01a21800-fac3-75ef-8d01-450b489f294e
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 212
   n_features: 9
@@ -46,6 +46,28 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'The random split is a deliberate choice
+
+    (2026-11-12, Andrej), weighed against a split grouped on glass objects: no clean
+    groups
+
+    govern how the collection was made. Only 7 objects (14 rows, 7%) are tied together
+    by a link calibrated against
+
+    chance (identical refractive index, the same type and every oxide within the tolerance
+    of two analyses: 7
+
+    pairs where chance gives 1.8, so one or two may be chance), and their fragments
+    can sit on both sides. The
+
+    other near-copies are different objects of the same kind of glass, which a reference
+    collection holds, so a
+
+    random split over them matches the use. Holding out the 7 objects cost TabPFN
+    0.009 log loss (0.571 against
+
+    0.562) and the random forest 0.008, and left the ranking of models unchanged (2026-11-06,
+    on 213 rows).'
   n_train:
     min: 141
     max: 142
@@ -67,7 +89,7 @@ decisions: []
 
 Multiclass classification of `Type_of_glass`, scored with `log_loss` on IID splits. 212 rows and 9 features. Source: UCI (1987).
 
-Built as `01a111fc-a27d-7f21-999e-eb82f18aaf21` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:515c95e963d35721df2a34aa4583fd2be7597ddeccf6028cd8aabe92e3bc59e3`, so the build is stale. See [Build](#build).
+Built as `01a21800-fac3-75ef-8d01-450b489f294e` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -188,15 +210,13 @@ We start with the data from UCI. Its documentation (`glass.names`) gives the cre
 - The source file is sorted by class and, within a class, in a few blocks that each run roughly from high to low magnesium; the features predict the order (Spearman 0.67-0.90 per class). We shuffle the rows, so the order carries no information here. Beyond that sort, fragments of one object sit next to each other in the file (Ids 67 and 69 share the refractive index), but holding out blocks of 3 neighbouring rows costs at most 0.06 log loss and leaves the ranking of models unchanged. Near-copies: 6 rows have a copy within 0.08 SD on RI, Mg, Al, K and Ca (all of the same type, 4 of them file neighbours), 75 (35%) within 0.16 SD (95% of the same type, 31% file neighbours; about six times what a within-class shuffle of the columns gives); looking such copies up gains an explicit model 0.03 to 0.045 log loss on random splits. 7 glass objects (14 rows) share an identical refractive index with every oxide within the tolerance of two analyses (7 such pairs where chance gives 1.8); they are not grouped, and the split stays random by decision (splits comment).
 - The target (2026-11-01, CLEAN-25): `Type_of_glass` ships its classes as words (glass.names, 11. Type of
   glass).
-- Time basis: Timeless: the glass type is a property of the object the fragment came from, and the refractive
-  index and oxides are measured on the fragment, so nothing in a row arrives later. The Home Office laboratory
-  gathered the fragments from casework before September 1987 and no date is published; the Id order is a sort by
-  class and by magnesium within it. Not tested: glass made since then (36% of the rows are non-float window
-  glass, hardly made since the mid-1970s) and today's trace-element casework.
+- Time basis: Timeless: the glass type is a property of the object the fragment came from, and the refractive index and oxides are measured on the fragment, so nothing in a row arrives later. The Home Office laboratory gathered the fragments from casework before September 1987 and no date is published; the Id order is a sort by class and by magnesium within it. Not tested: glass made since then (36% of the rows are non-float window glass, hardly made since the mid-1970s) and today's trace-element casework.
 
 ## Splits
 
-Default splits: random fragments, stratified on the glass type. The random split is a deliberate choice
+Repeated 3-fold cross-validation over the rows, stratified on `Type_of_glass`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 212 rows (SPLIT-33).
+
+The random split is a deliberate choice
 (2026-11-12, Andrej), weighed against a split grouped on glass objects: no clean groups
 govern how the collection was made. Only 7 objects (14 rows, 7%) are tied together by a link calibrated against
 chance (identical refractive index, the same type and every oxide within the tolerance of two analyses: 7
@@ -336,11 +356,10 @@ random split over them matches the use. Holding out the 7 objects cost TabPFN 0.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-a27d-7f21-999e-eb82f18aaf21 |
-| checksum | v2:de970f5266371fcd98c9a0f2deba0e93336a1f4adbc1ecf3539b8445cc24c18b |
-| built_at | 2026-10-06T16:12:11+00:00 |
-| path | forensic_glass_identification/01a111fc-a27d-7f21-999e-eb82f18aaf21 |
+| uuid | 01a21800-fac3-75ef-8d01-450b489f294e |
+| checksum | v2:e4827e14d0d0b3e9814579729dc840caee499ce863d4bba5f3fe3e8bc6d94bdd |
+| built_at | 2026-11-26T13:17:27+00:00 |
+| path | forensic_glass_identification/01a21800-fac3-75ef-8d01-450b489f294e |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:515c95e963d35721df2a34aa4583fd2be7597ddeccf6028cd8aabe92e3bc59e3` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

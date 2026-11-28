@@ -14,7 +14,8 @@ record's screening block and verify its claims; a measurement on the data supers
 * Loop on `dataset check` until it has no errors and every warning is fixed or proposed for acceptance; run
   `dataset check` again after every `ruff --fix`.
 * Run the leak and task probes, the group probes for a grouped task, the hidden-group probe for an IID one, the time
-  probe for a split that is not temporal; read each flag by `evidence.md`, "Reading a probe", highest-ranked reading
+  probe for a split that is not temporal (`data-foundry probe <probe> <name> --out <run folder>`, with
+  `--n-jobs 2`); read each flag by `evidence.md`, "Reading a probe", highest-ranked reading
   first; take the mildest remedy.
 * Run the verification checks marked "add" in rank order with evidence and rule IDs; fix what you can.
 * Records only through the store API, right after a reload. Thread caps on every Python run (`OMP_NUM_THREADS=2`,

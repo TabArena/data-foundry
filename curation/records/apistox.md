@@ -5,8 +5,6 @@ checked_by:
 - Andrej
 data_foundry_status:
 - 'DF: Yes'
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)
@@ -75,6 +73,8 @@ CC (2026-11-17, Andrej): Review issue 3, A, as implemented: Four ten-year window
 CC (2026-11-17, Andrej): verdict ship (blind split walk).
 
 CC (2026-11-17, Andrej): the declared split (temporal on `first_publication_year`, windows of 10 values, 4 windows at fixed cutoffs, no gap) is checked: split mark in the blind split walk.
+
+CC (2026-11-26, Lennart): accepted `splits_dimensions_off_protocol` (SPLIT-15) after the rebuild of 2026-11-26: four ten-year windows against SPLIT-33's 30; the newest half of the data holds 526 compounds.
 
 ## Review
 

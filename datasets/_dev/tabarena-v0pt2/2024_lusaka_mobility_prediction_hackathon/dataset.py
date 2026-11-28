@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -171,8 +172,7 @@ class LusakaMobility2024(AbstractCuratedDataset):
         ),
     )
     splits_comment = """
-        Nine one-day windows, from 2023-01-23 03:00 to 2023-02-01 03:00, newest first (the cutoffs are 2023-01-31 03:00
-        back to 2023-01-23 03:00). A model is refit every day, a cadence an operator can run; the source names none.
+        A model is refit every day, a cadence an operator can run; the source names none.
         The days run from 03:00 because the file ends at 02:09 on 1 February: a midnight boundary would leave the
         newest 70 trips outside every window, and the newest window must hold the newest rows. The newest window covers
         23 hours for the same reason; the missing hour is the end of the file, not a censored label. Each training
@@ -180,10 +180,10 @@ class LusakaMobility2024(AbstractCuratedDataset):
         hours (the longest 175 minutes), so training trips finish before each test-start/refit time. Subsequent label
         reporting delay and original cohort extraction/follow-up timing are undocumented. The test windows hold 3,223
         to 4,444 trips and the training sides 73,465 to 103,313 (a training share of 0.666 to 0.936, far above the
-        half-data floor), so the check has no count warning. No performance was used to choose windows. Each weekday is tested at
-        least once (Monday and Tuesday twice); trips are shorter on all five Sundays (11.1 to 12.1 minutes on average,
-        against 13.7 to 14.7 on other days), a weekly pattern, not drift. Earlier figures of this dataset on three four-day windows (RMSE, tail shares) were measured on
-        those windows and not repeated on these.
+        half-data floor), so the check has no count warning. No performance was used to choose windows. Each weekday is
+        tested at least once (Monday and Tuesday twice); trips are shorter on all five Sundays (11.1 to 12.1 minutes on
+        average, against 13.7 to 14.7 on other days), a weekly pattern, not drift. Earlier figures of this dataset on
+        three four-day windows (RMSE, tail shares) were measured on those windows and not repeated on these.
         Missing starts, trips ending within 100 m of their start, trips over 3 hours and trips faster than 120 km/h in
         a straight line are excluded; other rows, target units and dates are preserved.
     """

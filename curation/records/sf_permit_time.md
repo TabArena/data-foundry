@@ -9,8 +9,6 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -74,6 +72,8 @@ CC (2026-11-10, Andrej): Review issue 1, option C: the half-year windows, the si
 CC (2026-11-11, Andrej): record field set from the definition: `domain` business & marketing (was industry & manufacturing).
 
 CC (2026-11-17, Andrej): the declared split (temporal on `Filed Date`, horizon 6 months, gap 6 months) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
+
+CC (2026-11-26, Lennart): accepted `splits_dimensions_off_protocol` (SPLIT-15) after the rebuild of 2026-11-26: eight windows against SPLIT-33's nine; a ninth would train on less than half the permits.
 
 ## Review
 

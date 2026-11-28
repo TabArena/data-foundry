@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: website_phishing
 container_format: 2
-checksum: v2:081acdc9084ccd7f0c0be051a59c4cd54c21bc6a33e9145fdafd386aa4a4dce3
+checksum: v2:2340f2ff6806453a769ab208263875c75ac736ca3511ca6d95a5393a4b4ec813
 build:
-  uuid: 01a13a7d-c2c0-77e5-80e6-a355a6e11902
-  checksum: v2:c7cde63c8fb7303d3381838fca364ad477533b018a05b5f96c01e8cf0c9b4948
-  built_at: '2026-10-14T12:58:02+00:00'
-  path: website_phishing/01a13a7d-c2c0-77e5-80e6-a355a6e11902
+  uuid: 01a21801-049a-72ab-96c6-66c0aa32c1cf
+  checksum: v2:2340f2ff6806453a769ab208263875c75ac736ca3511ca6d95a5393a4b4ec813
+  built_at: '2026-11-26T13:17:29+00:00'
+  path: website_phishing/01a21801-049a-72ab-96c6-66c0aa32c1cf
   data_foundry_version: 0.0.5
-  git_sha: f93df193827f5244586b178fd7199efb86d66359-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 1250
   n_features: 9
@@ -45,6 +45,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 833
     max: 834
@@ -72,7 +73,7 @@ decisions: []
 
 Binary classification of `is_phishing`, scored with `roc_auc` on IID splits. 1,250 rows and 9 features. Source: UCI (2016).
 
-Built as `01a13a7d-c2c0-77e5-80e6-a355a6e11902` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:081acdc9084ccd7f0c0be051a59c4cd54c21bc6a33e9145fdafd386aa4a4dce3`, so the build is stale. See [Build](#build).
+Built as `01a21801-049a-72ab-96c6-66c0aa32c1cf` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -208,17 +209,11 @@ The first 5 of 1,250 rows of the final frame (random rows: the frame is shuffled
   `having_IP_Address` = 1 (an IP address in the URL, 11% of sites) and the rare `popUpWidnow` = 1, so 1 is their
   phishy end, while `web_traffic` runs against them, as the data page codes it. `age_of_domain` and
   `having_IP_Address` have two levels.
-- Time basis: ForcedIIDFromTemporal: phishing sites reported to PhishTank and legitimate sites gathered from
-  directories, at times the source does not give; a filter rates sites made later, and phishing pages change
-  with the period. The file has no date or URL, and its order interleaves the classes (Time: Lost). Leak test
-  across the split: 47% of the rows repeat another row's codes (kept, about 0.01 ROC AUC); the dates of the
-  domain-age and traffic look-ups are unknown. Collection dates would allow a split by time. Not taken as
-  stationary (Andrej, 2026-11-18): An adversarial domain whose central feature (HTTPS) is known to have reversed
-  its meaning; nothing supports interchangeable later samples.
+- Time basis: ForcedIIDFromTemporal: phishing sites reported to PhishTank and legitimate sites gathered from directories, at times the source does not give; a filter rates sites made later, and phishing pages change with the period. The file has no date or URL, and its order interleaves the classes (Time: Lost). Leak test across the split: 47% of the rows repeat another row's codes (kept, about 0.01 ROC AUC); the dates of the domain-age and traffic look-ups are unknown. Collection dates would allow a split by time. Not taken as stationary (Andrej, 2026-11-18): An adversarial domain whose central feature (HTTPS) is known to have reversed its meaning; nothing supports interchangeable later samples.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `is_phishing`: 10 repeat(s) x 3 folds, 30 splits, the repeats set by the 1,250 rows (SPLIT-33).
 
 10 repeat(s) x 3 fold(s) with seed 4267; train 833 to 834 rows, test 416 to 417 rows.
 
@@ -340,11 +335,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a13a7d-c2c0-77e5-80e6-a355a6e11902 |
-| checksum | v2:c7cde63c8fb7303d3381838fca364ad477533b018a05b5f96c01e8cf0c9b4948 |
-| built_at | 2026-10-14T12:58:02+00:00 |
-| path | website_phishing/01a13a7d-c2c0-77e5-80e6-a355a6e11902 |
+| uuid | 01a21801-049a-72ab-96c6-66c0aa32c1cf |
+| checksum | v2:2340f2ff6806453a769ab208263875c75ac736ca3511ca6d95a5393a4b4ec813 |
+| built_at | 2026-11-26T13:17:29+00:00 |
+| path | website_phishing/01a21801-049a-72ab-96c6-66c0aa32c1cf |
 | data_foundry_version | 0.0.5 |
-| git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:081acdc9084ccd7f0c0be051a59c4cd54c21bc6a33e9145fdafd386aa4a4dce3` |

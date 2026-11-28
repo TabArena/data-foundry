@@ -14,8 +14,9 @@ import warnings
 
 import numpy as np
 import pytest
-from data_foundry.v2.dataset import metric_spec
-from data_foundry.v2.metrics import METRICS, Metric, score
+
+from data_foundry.definition.dataset import metric_spec
+from data_foundry.metrics import METRICS, Metric, score
 
 EXAMPLE_PARAMS = {
     ("cost_matrix", "binary_classification"): {"labels": [0, 1], "matrix": [[0, 1], [5, 0]]},
@@ -204,3 +205,48 @@ def test_a_fold_that_leaves_the_metric_undefined_gives_nan_or_a_value_error(name
         assert not np.isinf(value), (name, label, value)
         if np.isfinite(value) and name not in {"rmse", "mse", "mae", "median_absolute_error", "par_k"}:
             assert abs(value) < 1e6, (name, label, value)  # scale-free metrics: a huge value is rounding noise
+
+
+NO_FIXED_OPTIMUM = {"net_revenue_at_cost", "ordered_lorenz_gini"}
+"""The metrics whose best value changes with the scored rows (BENCHMARK_CHANGES_TODO.md, decision B)."""
+
+
+def test_every_metric_but_two_declares_its_optimum():
+    """A metric added to the registry states its best value, or is named here with the reason it has none."""
+    without = {name for name, d in METRICS.items() if d.optimum is None}
+    assert without == NO_FIXED_OPTIMUM
+
+
+@pytest.mark.parametrize(("name", "problem_type"), CASES, ids=IDS)
+def test_no_prediction_passes_the_optimum(name: str, problem_type: str) -> None:
+    """Every prediction, random or degenerate, scores on the right side of the metric's optimum."""
+    from data_foundry.metrics import metric_optimum
+
+    spec = _spec(name, problem_type)
+    optimum = metric_optimum(spec)
+    if optimum is None:
+        pytest.skip(f"{name} has no fixed optimum")
+    y = _truth(problem_type)
+    sign = 1.0 if METRICS[name].greater_is_better else -1.0
+    rng = np.random.default_rng(7)
+    random = {
+        "value": rng.normal(y.mean(), y.std(), len(y)),
+        "label": rng.integers(0, _n_classes(problem_type), len(y)),
+        "proba": rng.dirichlet(np.ones(_n_classes(problem_type)), len(y)),
+    }[METRICS[name].prediction]
+    if METRICS[name].prediction == "proba" and problem_type == "binary_classification":
+        random = random[:, 1]
+    predictions = [
+        random,
+        *(
+            p
+            for kind in ("fair", "constant", "zero", "tied")
+            if (p := _prediction(name, problem_type, y, kind)) is not None
+        ),
+    ]
+    for p in predictions:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            value = _score(name, problem_type, y, p, **_inputs(name, len(y)))
+        if np.isfinite(value):
+            assert sign * (optimum - value) >= -1e-9, (name, value, optimum)

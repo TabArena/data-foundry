@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -685,8 +686,16 @@ class AmesHousing(AbstractCuratedDataset):
     # Splits: two-month calendar windows down to half of the rows for training (13 windows of 46-191 sales).
     temporal = Temporal(on="Month Sold", splits=TemporalSplits(window=2, unit="months", min_train_fraction=0.5))
     splits_comment = """
-        A price model refit every two months predicts the sales of the next two months: 13 test windows of two calendar months, from May-June 2010 back to May-June 2008, newest first, each trained on all earlier sales. The windows stop where the training side would fall below half of the rows (a March-April 2008 window would train on 47% of them). An IID task of this size would get 10 x 3 splits; monthly windows would hold 19-109 sales, so we use two months (46-187 sales per window). Each window trains on every earlier month without a gap. Sales reach the file with a delay: the extract's last full month, June 2010, holds 82 sales against 97-112 in the Junes of 2006-2009, about 78% of a usual June. Its 73 normal sales show no price selection (mean residual -0.001 of a 500-tree LightGBM), and June 2010 is only ever tested, never trained on. A one-month gap changes LightGBM's RMSE by +0.0004 to +0.0010 and a two-month gap by +0.0016 to +0.0026 (500-tree LightGBM, 3 seeds, 13 windows), within noise. Exception to SPLIT-10 (2026-10-26, Lennart): no gap. The only visible recording shortfall is the extract's last month, and its normal sales show no price selection; sales are dated by month, so the smallest possible gap is a whole month, longer than the delay. The windows train on every recorded sale before them, as a valuation model refit each month on all earlier sales would (P4).
+        A price model refit every two months predicts the sales of the next two months: 13 test windows of two calendar months, from May-June 2010 back to May-June 2008, newest first, each trained on all earlier sales. The windows stop where the training side would fall below half of the rows (a March-April 2008 window would train on 47% of them). An IID task of this size would get 10 x 3 splits; monthly windows would hold 19-109 sales, so we use two months (46-187 sales per window). Sales reach the file with a delay: the extract's last full month, June 2010, holds 82 sales against 97-112 in the Junes of 2006-2009, about 78% of a usual June. Its 73 normal sales show no price selection (mean residual -0.001 of a 500-tree LightGBM), and June 2010 is only ever tested, never trained on. A one-month gap changes LightGBM's RMSE by +0.0004 to +0.0010 and a two-month gap by +0.0016 to +0.0026 (500-tree LightGBM, 3 seeds, 13 windows), within noise. Exception to SPLIT-10 (2026-10-26, Lennart): no gap. The only visible recording shortfall is the extract's last month, and its normal sales show no price selection; sales are dated by month, so the smallest possible gap is a whole month, longer than the delay. The windows train on every recorded sale before them, as a valuation model refit each month on all earlier sales would (P4).
     """
+    accepted_check_warnings = {
+        "splits_dimensions_off_protocol": (
+            "Thirteen windows against the 30 an IID split of 2,837 sales would get (SPLIT-33): a fourteenth two-month "
+            "window (March-April 2008) would train on 47% of the sales, below the floor of half the data, and monthly "
+            "windows would hold only 19 to 109 sales. The splits comment names the target, the count reached and what "
+            "stops more (SPLIT-15; Lennart, 2026-11-26)."
+        ),
+    }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         # "NA" is a documented level in 14 columns and empty fields are missing, so only "" is read as missing. The

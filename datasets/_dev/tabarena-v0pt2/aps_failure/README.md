@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: aps_failure
 container_format: 2
-checksum: v2:6e5e05b2c046956af9d313d2e51beb40f83fb3fe97d9fe6632b59cc4e78805ab
+checksum: v2:9353f41f95f10377f6ef9d9ab097d1b406059b089805bfbc8b565f1135a396bf
 build:
-  uuid: 01a111fc-0ce6-78ed-a870-52ce14ff98d0
-  checksum: v2:cae1c7b65ce55c1256886d454fc3d2a43dde6e99193119792535d6f71a0acec6
-  built_at: '2026-10-06T16:11:42+00:00'
-  path: aps_failure/01a111fc-0ce6-78ed-a870-52ce14ff98d0
+  uuid: 01a217ff-c2ff-74d3-8bf4-e7c443522e43
+  checksum: v2:9353f41f95f10377f6ef9d9ab097d1b406059b089805bfbc8b565f1135a396bf
+  built_at: '2026-11-26T13:16:14+00:00'
+  path: aps_failure/01a217ff-c2ff-74d3-8bf4-e7c443522e43
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 63937
   n_features: 170
@@ -55,6 +55,18 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Each test fold
+
+    holds 20,488 or 20,489 trucks, about 21,300 rows and about 420 failures. 0.05%
+    of the test rows keep a linked
+
+    row in training (a pair sharing 5 rare values but fewer than 60 equal counters,
+    left apart), against 25% under
+
+    random folds on all 76,000 rows. The challenge''s own split held out its last
+    16,000 rows, with 4,458 pairs of
+
+    copies across its two files; the files have no dates for a temporal split.'
   n_train:
     min: 42597
     max: 42656
@@ -79,7 +91,7 @@ decisions: []
 
 Binary classification of `AirPressureSystemFailure`, scored with `cost_matrix` on grouped splits by `truck`. 63,937 rows and 170 features. Source: Other (2016).
 
-Built as `01a111fc-0ce6-78ed-a870-52ce14ff98d0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6e5e05b2c046956af9d313d2e51beb40f83fb3fe97d9fe6632b59cc4e78805ab`, so the build is stale. See [Build](#build).
+Built as `01a217ff-c2ff-74d3-8bf4-e7c443522e43` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -138,7 +150,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2016 |
 | domain | industry & manufacturing |
 | license | CC BY 4.0 |
-| data_tags | Non-IID, Grouped, ForcedGroupedFromTemporal, Anonymized |
+| data_tags | Non-IID, Grouped, Anonymized, ForcedGroupedFromTemporal |
 | reference | ida2016challenge |
 | copy: UCI 414, the re-hosted challenge zip | UCI: https://doi.org/10.24432/C5V60Q; license: CC BY 4.0 |
 | rows x columns | 63,937 x 172 |
@@ -228,20 +240,13 @@ The first 5 of 63,937 rows of the final frame (random rows: the frame is shuffle
     test rows with a linked row in training, 25.2% under random folds on all 76,000 rows (cost per
     row 1.145), 5.1% with one row per copied read-out and random folds (1.530), 0.05% split by truck (1.625;
     1.539 with each truck counted once).
-- Time basis: ForcedGroupedFromTemporal: failed trucks read out over a period Scania does not state; the release
-  has no date, and the challenge's two files are not shown to be two periods (near copies across them have the
-  larger counters in the test file in 2,237 pairs, the smaller in 2,220), and the one counter that changes
-  between copies, `bx_000`, is a cumulative usage counter that moves by a small step in either direction, no
-  clock. Which component fails can move with season and fleet, so whole trucks held out stand in for the trucks
-  to come. Not tested: trucks read out later than the training trucks, which a dated release (as
-  `scania_component_x`) would allow. Not taken as stationary (Andrej, 2026-11-18): A physical-measurement
-  argument exists, but the label depends on fleet and workshop practice that the definition itself says moves
-  with season and fleet, and no comparable dated set tested flat.
+- Time basis: ForcedGroupedFromTemporal: failed trucks read out over a period Scania does not state; the release has no date, and the challenge's two files are not shown to be two periods (near copies across them have the larger counters in the test file in 2,237 pairs, the smaller in 2,220), and the one counter that changes between copies, `bx_000`, is a cumulative usage counter that moves by a small step in either direction, no clock. Which component fails can move with season and fleet, so whole trucks held out stand in for the trucks to come. Not tested: trucks read out later than the training trucks, which a dated release (as `scania_component_x`) would allow. Not taken as stationary (Andrej, 2026-11-18): A physical-measurement argument exists, but the label depends on fleet and workshop practice that the definition itself says moves with season and fleet, and no comparable dated set tested flat.
 
 ## Splits
 
-Stratified grouped 3-fold cross-validation over the 61,466 trucks with 3 repeats: a truck's rows stay on one
-side, and the folds are drawn over trucks, stratified by label (no truck carries two labels). Each test fold
+Repeated 3-fold cross-validation over the groups of `truck` (one label each), stratified on `AirPressureSystemFailure`: 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 61,466 groups (SPLIT-33).
+
+Each test fold
 holds 20,488 or 20,489 trucks, about 21,300 rows and about 420 failures. 0.05% of the test rows keep a linked
 row in training (a pair sharing 5 rare values but fewer than 60 equal counters, left apart), against 25% under
 random folds on all 76,000 rows. The challenge's own split held out its last 16,000 rows, with 4,458 pairs of
@@ -287,7 +292,7 @@ counters; no truck's rows carry two labels.
 | nearest neighbour in the same group | 1.2% of the rows (chance: 0.0%) |
 | label variance explained by the group | 1.00 (shuffled groups: 0.96) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
@@ -295,7 +300,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 - **warning** `dataset_constant_column`: 1 constant column(s) (1 distinct non-null value): ['cd_000']. (hint: Drop them unless the constant is meaningful for the task.)
 - **warning** `dataset_pure_feature_value`: 8 feature value(s) determine the class on their own: bk_000 = <NA>: 25,916 rows, 99.7% AirPressureSystemFailure=neg (overall 98.0%); bl_000 = <NA>: 30,201 rows, 99.7% AirPressureSystemFailure=neg (overall 98.0%); bm_000 = <NA>: 41,652 rows, 99.8% AirPressureSystemFailure=neg (overall 98.0%); bn_000 = <NA>: 46,030 rows, 99.8% AirPressureSystemFailure=neg (overall 98.0%); bo_000 = <NA>: 48,372 rows, 99.8% AirPressureSystemFailure=neg (overall 98.0%); bp_000 = <NA>: 49,758 rows, 99.8% AirPressureSystemFailure=neg (overall 98.0%); bq_000 = <NA>: 50,747 rows, 99.8% AirPressureSystemFailure=neg (overall 98.0%); br_000 = <NA>: 51,294 rows, 99.8% AirPressureSystemFailure=neg (overall 98.0%). (hint: Often a leak: a column derived from the outcome or recorded after it. Check the column's documentation; drop it if so, otherwise accept the warning with the reason.)
-- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (1.2% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (1.00 vs 0.96). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.)
+- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (1.2% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (1.00 vs 0.96). (hint: The grouping may not be needed: compare IID and grouped scores with `data-foundry probe group`.)
 
 ## Data checks
 
@@ -461,11 +466,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-0ce6-78ed-a870-52ce14ff98d0 |
-| checksum | v2:cae1c7b65ce55c1256886d454fc3d2a43dde6e99193119792535d6f71a0acec6 |
-| built_at | 2026-10-06T16:11:42+00:00 |
-| path | aps_failure/01a111fc-0ce6-78ed-a870-52ce14ff98d0 |
+| uuid | 01a217ff-c2ff-74d3-8bf4-e7c443522e43 |
+| checksum | v2:9353f41f95f10377f6ef9d9ab097d1b406059b089805bfbc8b565f1135a396bf |
+| built_at | 2026-11-26T13:16:14+00:00 |
+| path | aps_failure/01a217ff-c2ff-74d3-8bf4-e7c443522e43 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6e5e05b2c046956af9d313d2e51beb40f83fb3fe97d9fe6632b59cc4e78805ab` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

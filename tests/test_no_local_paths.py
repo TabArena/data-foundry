@@ -3,7 +3,7 @@
 Only one machine has such a folder, so a pointer to it leads nowhere for every other reader; the evidence goes into the
 text and a script worth keeping into the repository (knowledge-data-foundry, house rules; Lennart, 2026-11-11). The
 BeyondArena notebooks (v1, frozen) keep the paths in their saved outputs and are not checked. Dot folders in a home
-(the caches, the Kaggle and gspread credentials) are standard locations, not someone's files, and pass.
+(the caches, the Kaggle credentials) are standard locations, not someone's files, and pass.
 """
 
 from __future__ import annotations

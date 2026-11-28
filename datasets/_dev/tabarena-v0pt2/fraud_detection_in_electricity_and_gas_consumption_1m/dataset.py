@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -254,9 +255,7 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Default grouped 3-fold cross-validation by client over the full frame (1,862,650 invoices): each fold tests on
-        at most 500k rows, whole clients drawn from its third, and trains on every other row (about 1.36M), which a
-        benchmark sub-samples to 1M rows by whole clients (`subsample_train`). The grouped cross-section stands in for a
+        The grouped cross-section stands in for a
         deployment over time, in which STEG would train on the findings of earlier campaigns and score its clients
         forward: the labels are undated findings of 2013-2019, one per client, so no test window or gap can be set,
         and train and test clients share the same years, as in the challenge.

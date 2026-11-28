@@ -82,6 +82,8 @@ CC (2026-11-04, Lennart): SPLIT-10 is amended (on lt_vehicle_loan_default_predic
 
 CC (2026-11-17, Andrej): the declared split (temporal on `Month Sold`, windows of 2 months, windows while training keeps 50% of the rows (13 in the build), no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-26, Lennart): accepted `splits_dimensions_off_protocol` (SPLIT-15) after the rebuild of 2026-11-26: thirteen windows against SPLIT-33's 30; a fourteenth would train on 47% of the sales.
+
 ## Reference
 
 @article{de2011ames,

@@ -7,8 +7,6 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
-- WIP (DF)
-claimed_by: Lennart
 suggestion: 'Yes'
 decision_markers:
 - Wrong Domain / Source Modality

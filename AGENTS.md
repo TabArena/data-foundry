@@ -1,11 +1,8 @@
 # AGENTS.md
 
-Guidance for autonomous coding agents (Claude Code, Cursor, Aider, …)
-working inside the **Data Foundry** repository.
-
-If you are an interactive contributor and just want to know the repo layout,
-read [`README.md`](README.md) first. This document is the part of that
-information an agent needs in order to act safely.
+Guidance for coding agents (Claude Code, Cursor, Aider and others) working inside the **Data Foundry** repository:
+what the code is, where a change goes, the conventions, and the things that look like blockers but aren't. People
+start with [`README.md`](README.md); curation work runs through the skills in `.claude/skills/`.
 
 ---
 
@@ -27,28 +24,28 @@ Data Foundry is the data-layer toolkit behind
   and resolves them against a local warehouse or a Hugging Face mirror, with cache + force-download semantics
   (`collections/`). It is how every collection ships, both container formats: BeyondArena today, the TabArena v0.2
   collection next;
-* the **v2 dataset format** (`v2/`): one `dataset.py` class per dataset, its split protocol, checks and generated
-  README, on top of the exploratory data checks (`dataset_checks.py`) and the post-hoc bundle integrity checks
-  (`bundle_checks.py`);
-* a git-native **curation backlog** (`src/data_foundry/curation/`) that replaces
-  the legacy curation Google Sheet. The source of truth is **one markdown record
-  per candidate dataset** (YAML front-matter for the structured/dropdown fields +
-  a free-text body for `## Comments` / `## Review` / `## Reference`) under `curation/records/`; `## Review` is the
-  dataset's review, the questions for the curator, open and settled.
-  Add or triage a dataset by creating/editing its `<unique_name>.md` file — by
-  hand, with an agent, or via the dashboard. A local **Sheets-like dashboard**
-  (`.venv/bin/python -m data_foundry.curation.cli serve` → http://127.0.0.1:8765) edits those records in
-  place and ships a **Guidelines** page that renders the two knowledge skills
-  (`.claude/skills/knowledge-*`). The per-record schema is `CurationRecord` (`curation/record.py`); the
-  editable dropdown vocabularies live in `curation/vocabularies.yaml`. The CLI
-  (`.venv/bin/python -m data_foundry.curation.cli -h`) also covers `sync-notebooks` (refreshes each
-  record's two stored pointers: `notebook_path`, its BeyondArena notebook, and
-  `v2_path`, its `dataset.py` in the TabArena v0.2 working copy), `validate`,
-  `export`, `dataset` (list / check / build / new for v2 folders)
-  and `build-site` (a read-only static site). That static site is published to
-  GitHub Pages at https://tabarena.github.io/data-foundry/ — regenerated from
-  `curation/records/` on every push to `main` by `.github/workflows/pages.yaml`,
-  so editing a record and merging to `main` is what updates the public site.
+* the format-2 **task metadata** and its consumer side: `schema.py` (`DatasetMetadataV2`,
+  `PredictiveMLTaskMetadataV2`, `Grouping`, `MetricSpec`), the task view `container.task()` (`task.py`), `metrics.py`,
+  `sampling.py` (the row budget's train sampler), `special/` and `encodings.py`; format 1 is in `v1/`;
+* the **v2 dataset format** (`definition/`): one `dataset.py` class per dataset, its split protocol, the checks
+  that need the definition class (`checks.py`) and generated README;
+* the **checks** (`checks/`): the bundle checks of a container and the round trip of a saved one (`bundle.py`), the
+  checks of a v2 task (`task.py`, `groups.py`), the split protocol's numbers and checks (`protocol.py`), the README's
+  summary tables (`tables.py`), and the registry of every check slug (`registry.py`). `checks/` imports nothing of
+  `definition/` (a test holds it); `definition/` uses `checks/`. The consumer side (`task.py`, the task view;
+  `metrics.py`, `sampling.py`, `special/`, `encodings.py`) loads none of `definition/` and `checks/`;
+* the **probes** (`probes/`, the `probes` extra): leak, task, group, hidden-group, time, dtype and generated-data probes
+  on a definition or a built container, run as `data-foundry probe <probe> NAME...`;
+* a git-native **curation backlog** (`curation/`): one markdown record per candidate dataset under
+  `curation/records/` (YAML front matter for the structured fields, then `## Comments`, `## Review`, the dataset's
+  review, and `## Reference`). The schema is `CurationRecord` (`curation/record.py`), the dropdown vocabularies are in
+  `curation/vocabularies.yaml`, and `curation/review.py` is the one parser of a `## Review` section. The CLI
+  (`.venv/bin/python -m data_foundry.curation.cli -h`; `data-foundry` and `data-foundry-curation` are the same command)
+  has `serve` (the local dashboard at http://127.0.0.1:8765, whose Guidelines page renders the knowledge skills),
+  `validate`, `sync-notebooks` (refreshes each record's `notebook_path` and `v2_path`), `export`, `dataset` (new /
+  check / build / list for v2 folders), `probe`, `claims` and `build-site`. The static site is published to
+  https://tabarena.github.io/data-foundry/ from `curation/records/` on every push to `main` (`pages.yaml`), so merging
+  a record change is what updates the public site.
 
 The actual curation work happens in `datasets/` ([`datasets/README.md`](datasets/README.md) maps it): every new
 dataset is a v2 folder (`dataset.py` + a generated `README.md`; its review is in its curation record), and the
@@ -69,7 +66,7 @@ apply lives in two reference skills, read by every workflow at the step that nee
 * [`knowledge-curation`](.claude/skills/knowledge-curation/SKILL.md): how we decide whether a dataset belongs in
   TabArena and how we curate it, independent of the tooling, as ranked rules with IDs and strengths (principles,
   scope, use case, leaks, splits, provenance, task quality, cleaning; evidence, the verification checklist, writing
-  for the curator), plus the general probe library;
+  for the curator);
 * [`knowledge-data-foundry`](.claude/skills/knowledge-data-foundry/SKILL.md): how this repository implements it
   (records, dashboard, the v2 `dataset.py` API, checks and probe commands, the working copy, batch runs) and the house
   rules.
@@ -77,7 +74,8 @@ apply lives in two reference skills, read by every workflow at the step that nee
 The workflows form one pipeline of two stages, in each of which the AI works and the curator verifies: screening
 (`/screen-candidates`, a quick pass from the source with a priority, then `/review-screened-candidates` in the
 dashboard) and adding (`/add-dataset`, which builds the definition, runs a review panel of agents and leaves the open
-questions in each record's `## Review`, then `/review-added-datasets` on the review page). Builds
+questions in each record's `## Review`, then `/review-added-datasets` on the review page); `/review-split-tree`
+shows the split decision tree for review. Builds
 ([`rebuild.md`](.claude/skills/knowledge-data-foundry/references/rebuild.md)) and commits happen only on the curator's
 ask. Read the skill before doing its task; it names the knowledge files to read at each step. The dashboard's
 Guidelines page renders the skills README and the two knowledge skills.
@@ -86,17 +84,17 @@ Guidelines page renders the skills README and the two knowledge skills.
 
 When changing core code:
 
-* **Tests live in `tests/`.** Run `pytest -q` after any change. The suite
-  is fast (~2s); there is no excuse for not running it.
-* **Linting:** `ruff check .` and `ruff format .`. Settings are in
-  `pyproject.toml` (`[tool.ruff]`). `from __future__ import annotations`
-  is mandatory in every file; 120-char lines; Google-style docstrings.
+* **Tests live in `tests/`.** Run `pytest -q` after any change (about two to five minutes; a single file with
+  `pytest tests/test_x.py` while iterating).
+* **Linting:** `uvx ruff@0.15.15 check .` and `uvx ruff@0.15.15 format .` (the pinned version CI runs; the frozen v1
+  trees are excluded in `pyproject.toml`). `from __future__ import annotations` is mandatory in every file; 120-char
+  lines; Google-style docstrings.
 * **Examples in `examples/` are part of the docs surface.** When you add a
   feature, add or update the matching example, and (only if it's a major
   use case) link it from `README.md`.
-* **`describe()` methods** on `DatasetMetadata`, `PredictiveMLTaskMetadata`, `PredictiveMLTaskMetadataV2`,
-  `PredictiveMLSplitsMetadata`, and `CuratedContainer` are the human-facing
-  surface — keep them in sync if you add or rename schema fields.
+* **`describe()` methods** on `DatasetMetadataV2`, `PredictiveMLTaskMetadataV2`, `PredictiveMLSplitsMetadata`
+  (`schema.py`), the format-1 `DatasetMetadata` and `PredictiveMLTaskMetadata` (`v1/`) and `CuratedContainer` are the
+  human-facing surface: keep them in sync if you add or rename schema fields.
 * **Two container formats, one reader.** `CuratedContainer.format_version` is 2 for a v2 definition's container
   (`PredictiveMLTaskMetadataV2`: the group fields stored once, in `grouping`) and 1 for the shipped BeyondArena
   containers (`PredictiveMLTaskMetadata`, built with v1). Keep the format-1 classes at the shape
@@ -106,35 +104,39 @@ When changing core code:
 
 ### Curation tooling work (checks, recommended splits, helpers)
 
-**There are four check layers; put a new check in the right one.**
+**There are four check layers; put a new check in the right one.** Every finding's slug is listed in
+`src/data_foundry/checks/registry.py` with its severities, stage and whether a definition may accept it; a new slug
+goes there too (a test fails otherwise), and the page
+[`check_slugs.md`](.claude/skills/knowledge-data-foundry/references/check_slugs.md) is regenerated from it.
 
 | Layer | Where | Scope |
 |---|---|---|
 | creation-time | `schema.py` `__post_init__` | coherence of *one* metadata object, no DataFrame needed (e.g. `group_labels` requires `group_on`, `time_horizon` requires its unit, a `Grouping` with `prediction_unit="group"` needs an aggregation). Runs on every `CuratedContainer.load`, so a new rule here **must hold for every already-shipped container** — verify against the BeyondArena collection before making one hard. |
-| exploratory | `dataset_checks.run_all_checks(...)` | statistics a human reads while curating. Returns five DataFrames, rendered in each dataset's README (and committed in the v1 notebooks) — don't change its output shape lightly. |
-| post-hoc / bundle | `bundle_checks.py` | *cross-referential* checks over the assembled bundle (DataFrame + task + splits + dataset metadata) and, after export, the save/load round-trip. It also checks the shipped format-1 containers: keep its format-1 behaviour unchanged. The split protocol follows the container format: format 1 by the v1 protocol checks here, format 2 by `v2.splits.protocol_checks` (called from here). |
-| v2 definition | `src/data_foundry/v2/` (`_validate_definition` and `_definition_checks` in `dataset.py`, `splits.protocol_checks`, `group_checks.py`, `task_checks.py`) | rules of the v2 protocol and the v2 definition format, run by `dataset check` / `dataset build` next to the bundle checks. The default home for a new v2 rule. |
+| summary tables | `checks/tables.py` `run_all_checks(...)` | the tables of each dataset's README ("Data checks": feature summary, numeric and categorical statistics, the target). Statistics, no findings. |
+| post-hoc / bundle | `checks/bundle.py` | *cross-referential* checks over the assembled bundle (DataFrame + task + splits + dataset metadata) and, after export, the save/load round-trip. It also checks the shipped format-1 containers: keep its format-1 behaviour unchanged. The split protocol follows the container format: format 2 by `checks/protocol.py` `protocol_checks` (called from here). |
+| v2 definition | `definition/checks.py`, `checks/task.py`, `checks/groups.py`, `checks/protocol.py`, `_validate_definition` in `definition/dataset.py` | rules of the v2 protocol and the v2 definition format, run by `dataset check` / `dataset build` next to the bundle checks. The default home for a new v2 rule. `_validate_definition` refuses a malformed definition before anything runs. |
 
-* `bundle_checks.run_bundle_checks(container)` returns a `BundleCheckReport`
+* `checks.run_bundle_checks(container)` returns a `BundleCheckReport`
   (errors / warnings / infos, each with a stable `slug`). `dataset build` raises on errors before saving and runs
-  `verify_saved_container` after it. A check that fires on a legitimately unusual dataset is accepted with a reason:
-  `accepted_check_warnings = {slug: reason}` in the definition.
+  `verify_saved_container` after it. A warning that fires on a legitimately unusual dataset is accepted with a
+  reason: `accepted_check_warnings = {slug: reason}` in the definition. An error is accepted only when the registry
+  lists it in `ACCEPTABLE_ERRORS` with the rule that allows the exception.
 * When adding a check, calibrate it against the shipped collection before
   choosing its severity (`error` only for "no consumer can use this"), and
   keep O(rows x cols) work behind the `heavy_cell_budget` guard.
-* `dataset_checks.run_all_checks(...)` returns five DataFrames — see
-  `simple_metadata_exploration_v2.py` (in `scripts/beyond_arena/`) for how
-  the warehouse-wide stats are computed; that file's dtype categorization
-  is the reference for `CuratedContainer._feature_dtype_counts`.
-* Splits: definitions use `src/data_foundry/v2/splits.py` (the v2 protocol, declarative `TemporalSplits`). The v1
+* `checks.run_all_checks(...)` returns the four README tables by name; the dtype categorization of a container's
+  features is `CuratedContainer._feature_dtype_counts`.
+* Splits: definitions use `src/data_foundry/definition/splits.py` (the v2 protocol, declarative `TemporalSplits`). The v1
   helpers of the BeyondArena notebooks were removed on 2026-11-12 (in git at `6cc3c945`;
   [`DATA_FOUNDRY_V1.md`](DATA_FOUNDRY_V1.md)).
 
 ### Repo plumbing (CI, packaging, release)
 
-`pyproject.toml` carries PyPI metadata. The release flow is documented in
-`README.md` under "Releasing to PyPI" — `uv build` + `uv publish`. Don't
-bump versions or publish without explicit human authorization.
+`pyproject.toml` carries the PyPI metadata and the extras. CI (`.github/workflows/`) runs the tests and the pinned
+ruff on every PR (`main.yaml`), publishes the static backlog site on every push to `main` (`pages.yaml`), and a dev
+wheel when a push to `main` changed the package (`dev-release.yaml`). The release flow (`scripts/release.sh`, the tag
+push that fires `release.yaml`, the prereleases) is in [`DEVELOPMENT.md`](DEVELOPMENT.md). Don't bump versions or
+publish without explicit human authorization.
 
 ---
 
@@ -147,36 +149,29 @@ bump versions or publish without explicit human authorization.
 * **Don't commit changes unless the user explicitly asks.** Same for
   pushes, PRs, and PyPI publishes.
 * **Pull requests follow
-  [`pull_requests.md`](.claude/skills/knowledge-data-foundry/references/pull_requests.md).** The body opens with a
-  summary a curator reads in a minute (what changes and why, what to decide, what to know before merging) and folds
-  the details into `<details>` sections. Each independent change is its own PR against `main`, updated with `main`
-  when it is about to be merged. A PR is stacked only when it needs another unmerged PR, and then as a GitHub stack
-  (`gh stack link`), merged bottom up with `gh stack merge`.
+  [`pull_requests.md`](.claude/skills/knowledge-data-foundry/references/pull_requests.md);** read it before opening,
+  updating, stacking or merging one.
 * **Don't write README files, planning docs, or analysis files** unless
   asked. The repo intentionally has very few `.md` files.
 * **Don't add comments that describe what the code does** — only *why*,
   when the why is non-obvious.
 * **Notebooks must stay valid JSON** (the v1 notebooks). Edit them with
   `nbformat` or as structured data; do not hand-edit the cell `source` array without verifying the result parses.
-* **Prose you write is held to the style rules in
-  [AI Writing Tropes to Avoid](#ai-writing-tropes-to-avoid)** at the bottom of
-  this file — docstrings, markdown, commit messages, and chat replies alike.
+* **Prose you write follows
+  [`style.md`](.claude/skills/knowledge-curation/references/style.md)** ("AI Writing Tropes to Avoid"): docstrings,
+  markdown, commit messages, PR bodies and chat replies alike.
 
 ---
 
 ## Things that look like blockers but aren't
 
-* **`local-data-warehouse/` is gitignored** and may be empty on a fresh
-  clone. That's fine — only the toy container (in
-  `src/data_foundry/examples/toy_container/`) ships in-tree; everything
-  else is downloaded on demand via the collections API.
-* **Huggingface_hub is an optional runtime requirement** for `prefetch` /
-  `get_dataset` cache *misses* — if every container is already cached,
-  the package does not import it. So a fresh dev env without HF set up
-  can still run all of `pytest tests/`.
-* **The toy container is regenerated by `scripts/build_toy_container.py`,**
-  not edited by hand. If a test fails on a UUID/checksum mismatch, the
-  fix is to regenerate, not to update the test expectation.
+* **`local-data-warehouse/` is gitignored** and may be empty on a fresh clone. That's fine: only the two toy containers
+  (`src/data_foundry/examples/toy_container/`, one per container format) ship in-tree; everything else is downloaded
+  on demand through the collections API.
+* **`huggingface_hub` is a core dependency, imported lazily:** only a cache *miss* of `prefetch` / `get_dataset`
+  imports it and reaches the network. A warm cache never imports it, and the test suite needs no Hugging Face login.
+* **The toy containers are regenerated by `scripts/build_toy_container.py`,** not edited by hand. If a test fails on a
+  UUID or checksum mismatch, the fix is to regenerate, not to update the test expectation.
 
 ---
 
@@ -196,356 +191,14 @@ bump versions or publish without explicit human authorization.
 | Data Foundry knowledge (records, dashboard, `dataset.py`, checks and probes, working copy, house rules) | [`.claude/skills/knowledge-data-foundry/SKILL.md`](.claude/skills/knowledge-data-foundry/SKILL.md) |
 | The curation skills for people (commands, pipeline, review panel) | [`.claude/skills/README.md`](.claude/skills/README.md) |
 | Screen candidates (quick pass, priority) and review the screening (dashboard) | [`.claude/skills/screen-candidates/SKILL.md`](.claude/skills/screen-candidates/SKILL.md) · [`.claude/skills/review-screened-candidates/SKILL.md`](.claude/skills/review-screened-candidates/SKILL.md) |
-| Leak checks and the probes | [`leak_checks.md`](.claude/skills/knowledge-curation/references/leak_checks.md) · [`checks_and_probes.md`](.claude/skills/knowledge-data-foundry/references/checks_and_probes.md) |
+| Leak checks and the probes | [`leak_checks.md`](.claude/skills/knowledge-curation/references/leak_checks.md) · [`checks_and_probes.md`](.claude/skills/knowledge-data-foundry/references/checks_and_probes.md) · [`src/data_foundry/probes/`](src/data_foundry/probes/) |
 | Container save/load + describe | [`src/data_foundry/curation_container.py`](src/data_foundry/curation_container.py) |
-| Bundle integrity checks (post-hoc + post-export) | [`src/data_foundry/bundle_checks.py`](src/data_foundry/bundle_checks.py) |
+| The checks (bundle, task, definition, saved files) and the registry of their slugs | [`src/data_foundry/checks/`](src/data_foundry/checks/) · [`check_slugs.md`](.claude/skills/knowledge-data-foundry/references/check_slugs.md) |
 | Collections + cache helpers | [`src/data_foundry/collections/`](src/data_foundry/collections/) |
-| Add a dataset: its v2 folder, checks, probes and the review panel ("is X ready?" too) | [`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md) · [`src/data_foundry/v2/`](src/data_foundry/v2/) |
+| Add a dataset: its v2 folder, checks, probes and the review panel ("is X ready?" too) | [`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md) · [`src/data_foundry/definition/`](src/data_foundry/definition/) |
 | Review a batch of added datasets (the review page) | [`.claude/skills/review-added-datasets/SKILL.md`](.claude/skills/review-added-datasets/SKILL.md) |
 | Rebuild the TabArena v0.2 working copy and verify the build | [`rebuild.md`](.claude/skills/knowledge-data-foundry/references/rebuild.md) |
-| Load / browse / benchmark shipped datasets (format 2: score by `objective_metric` with `data_foundry.v2.metrics.scorer`, inputs from `feature_columns`, which drops the scoring columns; a task with a training weight names it, `sample_weight(container)`, and every model is fitted with it as the row weight, never as a feature; a weight column's test-row values are for the scorer only, never read when predicting; a container with a row budget, a `_1m` version, keeps every training row and a model fits on `subsample_train(container, repeat, fold)`; format 1: `objective_metric_name`) | [`CLAUDE.md`](CLAUDE.md) (*Using shipped datasets*) · [`examples/`](examples) · [`src/data_foundry/v2/metrics.py`](src/data_foundry/v2/metrics.py) |
+| Load / browse / benchmark shipped datasets (both formats: `container.task()` gives the folds within the row budget, the inputs, the weights, the scorer and the error) | [`docs/benchmark_integration.md`](docs/benchmark_integration.md) · [`CLAUDE.md`](CLAUDE.md) (*Using shipped datasets*) · [`examples/`](examples) · [`src/data_foundry/task.py`](src/data_foundry/task.py) |
 | Pull requests: the body, one PR per independent change, stacked PRs with `gh stack` | [`pull_requests.md`](.claude/skills/knowledge-data-foundry/references/pull_requests.md) |
 | Dataset template | [`datasets/_template/`](datasets/_template/) |
 | Examples (use-case anchors) | [`examples/`](examples) · [`examples/README.md`](examples/README.md) |
-
----
-
-# AI Writing Tropes to Avoid
-
-Applies to everything you write in this repo that a human reads: docstrings,
-comments, markdown docs, commit messages, PR descriptions, user-facing copy,
-and your replies in the chat.
-
-Source: [tropes.fyi](https://tropes.fyi) by [ossama.is](https://ossama.is)
-
----
-
-## Word Choice
-
-### "Quietly" and Other Magic Adverbs
-
-Overuse of "quietly" and similar adverbs to convey subtle importance or understated power. AI reaches for these adverbs to make mundane descriptions feel significant. Also includes: "deeply", "fundamentally", "remarkably", "arguably".
-
-**Avoid patterns like:**
-- "quietly orchestrating workflows, decisions, and interactions"
-- "the one that quietly suffocates everything else"
-- "a quiet intelligence behind it"
-
-### "Delve" and Friends
-
-Used to be the most infamous AI tell. "Delve" went from an uncommon English word to appearing in a staggering percentage of AI-generated text. Part of a family of overused AI vocabulary including "certainly", "utilize", "leverage" (as a verb), "robust", "streamline", and "harness".
-
-**Avoid patterns like:**
-- "Let's delve into the details..."
-- "Delving deeper into this topic..."
-- "We certainly need to leverage these robust frameworks..."
-
-### "Tapestry" and "Landscape"
-
-Overuse of ornate or grandiose nouns where simpler words would do. "Tapestry" is used to describe anything interconnected. "Landscape" is used to describe any field or domain. Other offenders: "paradigm", "synergy", "ecosystem", "framework".
-
-**Avoid patterns like:**
-- "The rich tapestry of human experience..."
-- "Navigating the complex landscape of modern AI..."
-- "The ever-evolving landscape of technology..."
-
-### The "Serves As" Dodge
-
-Replacing simple "is" or "are" with pompous alternatives like "serves as", "stands as", "marks", or "represents". AI avoids basic copulas because its repetition penalty pushes it toward fancier constructions (I've studied this!).
-
-**Avoid patterns like:**
-- "The building serves as a reminder of the city's heritage."
-- "Gallery 825 serves as LAAA's exhibition space for contemporary art."
-- "The station marks a pivotal moment in the evolution of regional transit."
-
----
-
-## Sentence Structure
-
-### Negative Parallelism
-
-The "It's not X -- it's Y" pattern, often with an em dash. The single most commonly identified AI writing tell. Man I f*cking hate it. AI uses this to create false profundity by framing everything as a surprising reframe. One in a piece can be effective; ten in a blog post is a genuine insult to the reader. Before LLMs, people simply did not write like this at scale. Includes the causal variant "not because X, but because Y" where every explanation is framed as a surprise reveal, the em-dash dismissal "X -- not Y", and the cross-sentence reframe where the same noun is negated then repositioned: "The question isn't X. The question is Y."
-
-**Avoid patterns like:**
-- "It's not bold. It's backwards."
-- "Feeding isn't nutrition. It's dialysis."
-- "Half the bugs you chase aren't in your code. They're in your head."
-
-### "Not X. Not Y. Just Z."
-
-The dramatic countdown pattern. AI builds tension by negating two or more things before revealing the actual point. Creates a false sense of narrowing down to the truth.
-
-**Avoid patterns like:**
-- "Not a bug. Not a feature. A fundamental design flaw."
-- "Not ten. Not fifty. Five hundred and twenty-three lint violations across 67 files."
-- "not recklessly, not completely, but enough"
-
-### "The X? A Y."
-
-Self-posed rhetorical questions answered immediately in the next sentence or clause. The model asks a question nobody was asking, then answers it for dramatic effect. Thinks this is the epitome of great writing.
-
-**Avoid patterns like:**
-- "The result? Devastating."
-- "The worst part? Nobody saw it coming."
-- "The scary part? This attack vector is perfect for developers."
-
-### Anaphora Abuse
-
-Repeating the same sentence opening multiple times in quick succession.
-
-**Avoid patterns like:**
-- "They assume that users will pay... They assume that developers will build... They assume that ecosystems will emerge... They assume that..."
-- "They could expose... They could offer... They could provide... They could create... They could let... They could unlock..."
-- "They have built engines, but not vehicles. They have built power, but not leverage. They have built walls, but not doors."
-
-### Tricolon Abuse
-
-Overuse of the rule-of-three pattern, often extended to four or five. A single tricolon is elegant; three back-to-back tricolons are a pattern recognition failure.
-
-**Avoid patterns like:**
-- "Products impress people; platforms empower them. Products solve problems; platforms create worlds. Products scale linearly; platforms scale exponentially."
-- "identity, payments, compute, distribution"
-- "workflows, decisions, and interactions"
-
-### "It's Worth Noting"
-
-Filler transitions that signal nothing. AI uses these phrases to introduce new points without actually connecting them to the previous argument. Also includes: "It bears mentioning", "Importantly", "Interestingly", "Notably".
-
-**Avoid patterns like:**
-- "It's worth noting that this approach has limitations."
-- "Importantly, we must consider the broader implications."
-- "Interestingly, this pattern repeats across industries."
-
-### Superficial Analyses
-
-Tacking a present participle ("-ing") phrase onto the end of a sentence to inject shallow analysis that says nothing. The model attaches significance, legacy, or broader meaning to mundane facts using phrases like "highlighting its importance", "reflecting broader trends", or "contributing to the development of...".
-
-**Avoid patterns like:**
-- "contributing to the region's rich cultural heritage"
-- "This etymology highlights the enduring legacy of the community's resistance and the transformative power of unity in shaping its identity."
-- "underscoring its role as a dynamic hub of activity and culture"
-
-### False Ranges
-
-Using "from X to Y" constructions where X and Y aren't on any real scale. In legitimate use, "from X to Y" implies a spectrum with a meaningful middle. AI uses it as a fancy way to list two loosely related things. "From innovation to cultural transformation" -- what's in between???? Nothing!
-
-**Avoid patterns like:**
-- "From innovation to implementation to cultural transformation."
-- "From the singularity of the Big Bang to the grand cosmic web."
-- "From problem-solving and tool-making to scientific discovery, artistic expression, and technological innovation."
-
----
-
-## Paragraph Structure
-
-### Short Punchy Fragments
-
-Excessive use of very short sentences or sentence fragments as standalone paragraphs for manufactured emphasis. RLHF training has pushed models toward "writing for readability" aimed at the lowest common denominator: one thought per sentence, no mental state-keeping required. It's an inhuman style. No real person writes first drafts this way because it doesn't match how humans think or speak.
-
-**Avoid patterns like:**
-- "He published this. Openly. In a book. As a priest."
-- "These weren't just products. And the software side matched. Then it professionalised. But I adapted."
-- "Platforms do."
-
-### Listicle in a Trench Coat
-
-Numbered or labeled points dressed up as continuous prose. The model writes what is essentially a listicle but wraps each point in a paragraph that starts with "The first... The second... The third..." to disguise the format. Perhaps you told it to stop generating lists and it decided to do this instead... still very common.
-
-**Avoid patterns like:**
-- "The first wall is the absence of a free, scoped API... The second wall is the lack of delegated access... The third wall is the absence of scoped permissions..."
-- "The second takeaway is that... The third takeaway is that... The fourth takeaway is that..."
-
----
-
-## Tone
-
-### "Here's the Kicker"
-
-False suspense transitions that promise a revelation but deliver a point that did NOT need the buildup. The model uses these phrases to manufacture drama before an otherwise unremarkable observation LOL. Also includes: "Here's the thing", "Here's where it gets interesting", "Here's what most people miss", "Here's the starting point", "Here's the deal".
-
-**Avoid patterns like:**
-- "Here's the kicker."
-- "Here's the thing about AI adoption."
-- "Here's where it gets interesting."
-
-### "Think of It As..."
-
-The patronizing analogy. AI constantly reaches for "Think of it as..." or "It's like a..." to simplify concepts. The model defaults to teacher mode and assumes the reader needs a metaphor to understand anything. Often produces analogies that are less clear than the original concept.
-
-**Avoid patterns like:**
-- "Think of it like a highway system for data."
-- "Think of it as a Swiss Army knife for your workflow."
-- "It's like asking someone to buy a car they're only allowed to sit in while it's parked."
-
-### "Imagine a World Where..."
-
-The classic AI invitation to futurism. To sell the argument usually begins with "Imagine" followed by a list of wonderful things that will happen if the reader agrees with the premise.
-
-**Avoid patterns like:**
-- "Imagine a world where every tool you use -- your calendar, your inbox, your documents, your CRM, your code editor -- has a quiet intelligence behind it..."
-- "In that world, workflows stop being collections of manual steps and start becoming orchestrations."
-
-### False Vulnerability
-
-Simulated self-awareness or honesty that reads as performative. The model pretends to break the fourth wall or admit a bias, creating a false sense of authenticity. Real vulnerability is specific and uncomfortable; AI vulnerability is polished and risk-free!!!!
-
-**Avoid patterns like:**
-- "And yes, I'm openly in love with the platform model"
-- "And yes, since we're being honest: I'm looking at you, OpenAI, Google, Anthropic, Meta"
-- "This is not a rant; it's a diagnosis"
-
-### "The Truth Is Simple"
-
-Asserting that something is obvious, clear or simple instead of actually proving it. If you have to tell the reader your point is clear, it very likely isn't. Also includes the dramatic reveal variant: "but none of them is the real story. The real story is..." -- claiming privileged insight while waving away everything before it.
-
-**Avoid patterns like:**
-- "The reality is simpler and less flattering"
-- "History is unambiguous on this point"
-- "History is clear, the metrics are clear, the examples are clear"
-
-### Grandiose Stakes Inflation
-
-Everything is the most important thing ever. AI inflates the stakes of every argument to world-historical significance. A blog post about API pricing becomes a meditation on the fate of civilization.
-
-**Avoid patterns like:**
-- "This will fundamentally reshape how we think about everything."
-- "will define the next era of computing"
-- "something entirely new"
-
-### "Let's Break This Down"
-
-The pedagogical voice that assumes the reader needs hand-holding. AI defaults to a teacher-student dynamic even when writing for expert audiences. Also includes: "Let's unpack this", "Let's explore", "Let's dive in".
-
-**Avoid patterns like:**
-- "Let's break this down step by step."
-- "Let's unpack what this really means."
-- "Let's explore this idea further."
-
-### Vague Attributions
-
-Attributing claims to unnamed authorities instead of being specific. AI loves to invoke "experts", "observers", "industry reports", and "several publications" without naming anyone. It also inflates the quantity of sources -- presenting what one person said as a widely held view, or writing "several publications have cited" when it means two. If you can't name the expert, you don't have a source.
-
-**Avoid patterns like:**
-- "Experts argue that this approach has significant drawbacks."
-- "Industry reports suggest that adoption is accelerating."
-- "Observers have cited the initiative as a turning point."
-
-### Invented Concept Labels
-
-AI clusters invented compound labels that sound analytical without being grounded. It appends abstract problem-nouns (paradox, trap, creep, divide, vacuum, inversion) to domain words -- "supervision paradox", "acceleration trap", "workload creep" -- and uses them as if they're established, rigorously defined terms. They function as rhetorical shorthand: name a thing, skip the argument. Multiple such labels in the same piece is a strong signal of AI slop.
-
-**Avoid patterns like:**
-- "the supervision paradox"
-- "the acceleration trap"
-- "workload creep"
-
----
-
-## Formatting
-
-### Em-Dash Addiction
-
-Compulsive overuse of em dashes for dramatic pauses, parenthetical asides and pivot points. A human writer might use 2-3 per piece (and naturally); AI will use 20+.
-
-**Avoid patterns like:**
-- "The problem -- and this is the part nobody talks about -- is systemic."
-- "The tinkerer spirit didn't die of natural causes -- it was bought out."
-- "Not recklessly, not completely -- but enough -- enough to matter."
-
-### Double-Hyphen Dash
-
-The em dash wearing a false moustache. Once "em dash means AI" became common knowledge, the character started getting swapped for a double hyphen: sometimes because the text passed through a markdown conversion, sometimes because someone ran a find-and-replace to look more human, sometimes because the model was steered off the character while keeping the habit. Either way the compulsive mid-sentence pivot survives the substitution, which is what actually gives it away. Writers who reach for double hyphens honestly do so once or twice out of typographic laziness, rarely fifteen times in one post. Flagged at five or more per thousand words.
-
-**Avoid patterns like:**
-- "The problem -- and this is the part nobody talks about -- is systemic."
-- "It's not a rewrite -- it's a reckoning."
-- "We shipped it fast -- maybe too fast -- and paid for it later."
-
-### Bold-First Bullets
-
-Every bullet point or list item starts with a bolded phrase or sentence. Extremely common in Claude and ChatGPT markdown output. Almost nobody formats lists this way when writing by hand. It's a telltale sign of AI-generated documentation and blog posts AND README files (especially with emojis).
-
-**Avoid patterns like:**
-- "Every single bullet point begins with a bold keyword."
-- "**Security**: Environment-based configuration with..."
-- "**Performance**: Lazy loading of expensive resources..."
-
-### Unicode Decoration
-
-Use of unicode arrows (->), smart/curly quotes, and other special characters that can't be easily typed on a standard keyboard. Real writers typing in a text editor produce straight quotes and -> or =>. Claude in particular loves the -> arrow.
-
-**Avoid patterns like:**
-- "Input → Processing → Output"
-- "This leads to better outcomes → which means higher engagement"
-- "“Smart quotes” instead of straight "quotes" that you’d actually type"
-
----
-
-## Composition
-
-### Fractal Summaries
-
-"What I'm going to tell you; what I'm telling you; what I just told you" -- applied at every level of the document. Every subsection gets a summary. Every section gets a summary. The document itself gets a summary.
-
-**Avoid patterns like:**
-- "In this section, we'll explore... [3000 words later] ...as we've seen in this section."
-- "A conclusion that restates every point already made in the previous 3000 words"
-- "And so we return to where we began."
-
-### The Dead Metaphor
-
-Latching onto a single metaphor and beating it into the ground across the entire thing. A human writer would introduce a metaphor, use it then move on. AI will repeat the same metaphor 5-10 times.
-
-**Avoid patterns like:**
-- "The ecosystem needs ecosystems to build ecosystem value."
-- "Walls and doors used 30+ times in the same article"
-- "Every paragraph finds a way to say "primitives" again"
-
-### Historical Analogy Stacking
-
-ESPECIALLY COMMON IN TECHNICAL WRITING: Rapid-fire listing of historical companies or tech revolutions to build false authority.
-
-**Avoid patterns like:**
-- "Apple didn't build Uber. Facebook didn't build Spotify. Stripe didn't build Shopify. AWS didn't build Airbnb."
-- "Every major technological shift -- the web, mobile, social, cloud -- followed the same pattern."
-- "Take Spotify... Or consider Uber... Airbnb followed a similar path... Shopify is another example... Even Discord..."
-
-### One-Point Dilution
-
-Making a single argument and restating it in 10 different ways across thousands of words. The model pads a simple thesis to feel "comprehensive" by rephrasing the same idea with different metaphors, examples, and framings. An 800-word argument becomes 4000 words of circular repetition.
-
-**Avoid patterns like:**
-- "The same point, restated eight ways across 4000 words."
-- "Each section rephrases the thesis with a different metaphor but adds nothing new"
-
-### Content Duplication
-
-Repeating entire sections or paragraphs verbatim within the same piece. This happens when the model loses track of what it has already written, especially in longer pieces. A dead giveaway of unedited AI output. Less common nowadays.
-
-**Avoid patterns like:**
-- "The same section appeared twice, word-for-word identical."
-- "Paragraph 3 and paragraph 17 are the same sentence reworded"
-
-### The Signposted Conclusion
-
-Explicitly announcing the conclusion with "In conclusion", "To sum up", or "In summary". Competent writing doesn't need to tell you it's concluding. The reader can feel it. AI signals its structural moves because it's following a template, not writing organically.
-
-**Avoid patterns like:**
-- "In conclusion, the future of AI depends on..."
-- "To sum up, we've explored three key themes..."
-- "In summary, the evidence suggests..."
-
-### "Despite Its Challenges..."
-
-The rigid formula where AI acknowledges problems only to immediately dismiss them. Always follows the same beat: "Despite its [positive words], [subject] faces challenges..." then ends with "Despite these challenges, [optimistic conclusion].".
-
-**Avoid patterns like:**
-- "Despite these challenges, the initiative continues to thrive."
-- "Despite its industrial and residential prosperity, Korattur faces challenges typical of urban areas."
-- "Despite their promising applications, pyroelectric materials face several challenges that must be addressed for broader adoption."
-
----
-
-Remember: any of these patterns used once might be fine. The problem is when
-multiple tropes appear together or when a single trope is used repeatedly.
-Write like a human: varied, imperfect, specific.

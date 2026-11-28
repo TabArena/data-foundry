@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -130,9 +131,7 @@ class LabourInspectionCompliance(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Three test windows of 10,605 inspections (a sixth of the rows) in the raw file's order, walking back from the
-        newest; each trains on all earlier rows (50%, 67% and 83%), so no window trains on less than half of the data
-        (SPLIT-14). The order is the export's and coarse: it resolves time only to about 10,000 rows (some 14 months
+        The order is the export's and coarse: it resolves time only to about 10,000 rows (some 14 months
         of the 7.5 years), so the windows are a sixth of the rows each, wider than that resolution, and a test window
         is later on average, not row by row. The windows follow the file's own order: the checklists of one visit lie
         a median 1,211 rows apart, so a window's start cuts some visits (0.3% to 1.0% of test rows have another row of
@@ -142,7 +141,7 @@ class LabourInspectionCompliance(AbstractCuratedDataset):
         leaves room for three (Andrej, 2026-11-20).
     """
     accepted_check_warnings = {
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Three of the nine windows an IID split of this size would get: the order resolves time to about 10,000 "
             "rows, so windows are a sixth of the rows, and the half-data floor leaves room for three (Andrej, "
             "2026-11-20)."

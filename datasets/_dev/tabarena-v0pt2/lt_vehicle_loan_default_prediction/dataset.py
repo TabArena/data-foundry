@@ -6,7 +6,8 @@ import hashlib
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -132,7 +133,7 @@ class LtVehicleLoanDefaultPrediction(AbstractCuratedDataset):
         splits=TemporalSplits(window=7, unit="days", n_windows=5, min_train_fraction=0.5),
     )
     accepted_check_warnings = {
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Signed off (Andrej, 2026-11-27): 5 weekly windows against the 9 an IID split gets. The source gives no "
             "horizon and a week is the length with a reason that does not follow the count; seven-day windows keep 5 "
             "above the 50% floor (oldest train 51.73%), ten days 3, fourteen days 2 and a calendar month 1."

@@ -5,9 +5,6 @@ checked_by:
 - Myunghwan
 - Lennart
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 2
 tags:
@@ -86,6 +83,8 @@ CC (2026-11-05, Lennart): the declared metric (RMSE on minutes, the source's) is
 CC (2026-11-05, Lennart): ship. Every issue of the second-pass review is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
 
 CC (2026-11-17, Andrej): the declared split (temporal on `trip_start`, windows of 4 days, 3 windows at fixed cutoffs, gap 1 day) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
+
+CC (2026-11-26, Lennart): accepted `splits_dimensions_off_protocol` (SPLIT-15) after the rebuild of 2026-11-26: three windows against SPLIT-33's nine; a fourth would train on less than half the trips.
 
 CC (2026-11-27, Andrej): Review issue 11, E ("Option E: Nine one-day windows (23 to 31 January, days from 03:00), gap 1 day."): the declared split (temporal on `trip_start`, windows of 1 day, 9 windows at fixed cutoffs from 2023-01-23 03:00 to 2023-01-31 03:00, gap 1 day) is checked and changed from three four-day windows: a daily refit is a cadence an operator can run, the count warning goes away without an accepted warning, and each weekday is tested.
 

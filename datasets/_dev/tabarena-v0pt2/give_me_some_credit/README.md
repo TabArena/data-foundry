@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: give_me_some_credit
 container_format: 2
-checksum: v2:a7159bb5fb72db0a649a2e346adc76f98272dec894c6fd052196d1a64312f7e3
+checksum: v2:23a49911b3c8f78797464e515917492a8e9d75a5f36a8edefdb41e788707acca
 build:
-  uuid: 01a111fc-8c6a-7513-9b7c-cd856ad168b6
-  checksum: v2:48c4ae718a4ffb7d095981cb1e862a1fdf2f7587ec477cdd9f3987f997f01abd
-  built_at: '2026-10-06T16:12:07+00:00'
-  path: give_me_some_credit/01a111fc-8c6a-7513-9b7c-cd856ad168b6
+  uuid: 01a21800-911c-77e4-8535-273068cbf434
+  checksum: v2:23a49911b3c8f78797464e515917492a8e9d75a5f36a8edefdb41e788707acca
+  built_at: '2026-11-26T13:17:01+00:00'
+  path: give_me_some_credit/01a21800-911c-77e4-8535-273068cbf434
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 150000
   n_features: 10
@@ -47,6 +47,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 100000
     max: 100000
@@ -70,7 +71,7 @@ decisions: []
 
 Binary classification of `FinancialDistressNextTwoYears`, scored with `roc_auc` on IID splits. 150,000 rows and 10 features. Source: Kaggle (2011).
 
-Built as `01a111fc-8c6a-7513-9b7c-cd856ad168b6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a7159bb5fb72db0a649a2e346adc76f98272dec894c6fd052196d1a64312f7e3`, so the build is stale. See [Build](#build).
+Built as `01a21800-911c-77e4-8535-273068cbf434` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -197,7 +198,7 @@ The first 5 of 150,000 rows of the final frame (random rows: the frame is shuffl
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `FinancialDistressNextTwoYears`: 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 150,000 rows (SPLIT-33).
 
 3 repeat(s) x 3 fold(s) with seed 4267; train 100,000 rows, test 50,000 rows.
 
@@ -276,11 +277,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-8c6a-7513-9b7c-cd856ad168b6 |
-| checksum | v2:48c4ae718a4ffb7d095981cb1e862a1fdf2f7587ec477cdd9f3987f997f01abd |
-| built_at | 2026-10-06T16:12:07+00:00 |
-| path | give_me_some_credit/01a111fc-8c6a-7513-9b7c-cd856ad168b6 |
+| uuid | 01a21800-911c-77e4-8535-273068cbf434 |
+| checksum | v2:23a49911b3c8f78797464e515917492a8e9d75a5f36a8edefdb41e788707acca |
+| built_at | 2026-11-26T13:17:01+00:00 |
+| path | give_me_some_credit/01a21800-911c-77e4-8535-273068cbf434 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:a7159bb5fb72db0a649a2e346adc76f98272dec894c6fd052196d1a64312f7e3` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

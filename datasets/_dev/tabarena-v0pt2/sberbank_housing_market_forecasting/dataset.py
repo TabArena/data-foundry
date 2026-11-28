@@ -7,7 +7,8 @@ from pathlib import Path
 
 import pandas as pd
 import polars as pl
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -289,11 +290,7 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         months, 1 December 2014 to 30 June 2015; the competition the eleven months after its training data, July 2015
         to May 2016). So the windows follow the count: half the sales lie before 21 February 2014, so a window trains
         on half or more only from March 2014, and one calendar month is the simplest length that fits nine windows
-        above half into March 2014 to June 2015. The windows are every other month from June 2015 back to April 2014,
-        and March 2014. Test sales, then the train side and its share of the 28,321 sales: June 2015 394, 27,927
-        (98.6%); April 2015 724, 26,687 (94.2%); February 2015 451, 25,651 (90.6%); December 2014 1,583, 23,674
-        (83.6%); October 2014 1,044, 21,466 (75.8%); August 2014 771, 19,646 (69.4%); June 2014 1,179, 17,790 (62.8%);
-        April 2014 1,214, 15,524 (54.8%); March 2014 1,117, 14,407 (50.9%). The windows hold 2015 with 394 to 724
+        above half into March 2014 to June 2015. The windows hold 2015 with 394 to 724
         sales a month, the rush of December 2014 (the month the ruble fell) and the busy 2014 at 771 to 1,214 a month.
         No gap: a sale's price is known when it is signed, and the economic statistics are already read one period
         back for their release delay.
