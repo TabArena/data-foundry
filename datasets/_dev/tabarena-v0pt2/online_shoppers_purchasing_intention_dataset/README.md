@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: online_shoppers_purchasing_intention_dataset
 container_format: 2
-checksum: v2:62c643e0c8daddd5f56bb2f12e43edff2aab6de1f2f3ebd674e7a9f0ff3b9dab
+checksum: v2:3a5f5f3b8c3946af070bab09dcf3affe7ab01cfe591934dac37e15aebf687ed0
 build:
-  uuid: 01a111fc-b5f1-748b-a755-99b0a7c15a25
-  checksum: v2:97076c1ab7ef8a7b53470378967dcdb5fc10d5358da47b31dbcde92a3b9a5ec2
-  built_at: '2026-10-06T16:12:16+00:00'
-  path: online_shoppers_purchasing_intention_dataset/01a111fc-b5f1-748b-a755-99b0a7c15a25
+  uuid: 01a21800-e00d-7c78-88fd-98e49ebd9ea8
+  checksum: v2:3a5f5f3b8c3946af070bab09dcf3affe7ab01cfe591934dac37e15aebf687ed0
+  built_at: '2026-11-26T13:17:21+00:00'
+  path: online_shoppers_purchasing_intention_dataset/01a21800-e00d-7c78-88fd-98e49ebd9ea8
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 6875
   n_features: 15
@@ -54,6 +54,14 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Leave one month out (Andrej, 2026-11-19): seven splits, one repeat, each
+    testing one month and training on the other six. The months and their visits,
+    each with the train side''s share of the 6,875 visits: June 288 (95.8%), July
+    432 (93.7%), August 433 (93.7%), September 448 (93.5%), October 549 (92.0%), November
+    2,998 (56.4%) and December 1,727 (74.9%). A split by time is out: only December
+    can train on half the visits in time order, and the file order within a month
+    is not the order of days. The month is the group column and no model input. Repeats
+    would give the same seven splits.'
   n_train:
     min: 3877
     max: 6587
@@ -68,12 +76,9 @@ bundle_checks:
   - dataset_duplicate_rows
   - groups_not_clustered
   accepted:
-    task_group_count_low: 'Decided (Andrej, 2026-11-19): the seven months June to
-      December are all the data holds; each is held out once.'
-    splits_dimensions_off_protocol: 'Decided (Andrej, 2026-11-19): leave one month
-      out gives exactly seven splits; repeats would give the same seven.'
-    groups_test_groups_few: 'Decided (Andrej, 2026-11-19): testing one unseen month
-      at a time is the split; each fold still scores 288 to 2,998 visits.'
+    groups_test_groups_few: 'Decided (Andrej, 2026-11-19): the seven months June to
+      December are all the data holds, each held out once; testing one unseen month
+      at a time is the split, and each fold still scores 288 to 2,998 visits.'
     groups_largest_share_high: 'November is a real month, not a catch-all value: 2,998
       of the 6,875 visits (44%) as published; when it is the test month the model
       trains on the other six (3,877 visits, 56.4%).'
@@ -86,7 +91,7 @@ decisions: []
 
 Binary classification of `Revenue`, scored with `roc_auc` on grouped splits by `Month`. 6,875 rows and 15 features. Source: UCI (2018).
 
-Built as `01a111fc-b5f1-748b-a755-99b0a7c15a25` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:62c643e0c8daddd5f56bb2f12e43edff2aab6de1f2f3ebd674e7a9f0ff3b9dab`, so the build is stale. See [Build](#build).
+Built as `01a21800-e00d-7c78-88fd-98e49ebd9ea8` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -226,6 +231,8 @@ The first 5 of 6,875 rows of the final frame (random rows: the frame is shuffled
 
 ## Splits
 
+Leave one group out: one repeat of 7 folds, fold i testing the i-th group of `Month` (June, Jul, Aug, Sep, Oct, Nov, Dec) and training on all the others.
+
 Leave one month out (Andrej, 2026-11-19): seven splits, one repeat, each testing one month and training on the other six. The months and their visits, each with the train side's share of the 6,875 visits: June 288 (95.8%), July 432 (93.7%), August 433 (93.7%), September 448 (93.5%), October 549 (92.0%), November 2,998 (56.4%) and December 1,727 (74.9%). A split by time is out: only December can train on half the visits in time order, and the file order within a month is not the order of days. The month is the group column and no model input. Repeats would give the same seven splits.
 
 1 repeat(s) x 7 fold(s) with seed 4267; train 3,877 to 6,587 rows, test 288 to 2,998 rows.
@@ -262,20 +269,18 @@ One group is a calendar month of visits, June to December of one year (the year 
 | nearest neighbour in the same group | 30.2% of the rows (chance: 27.3%) |
 | label variance explained by the group | 0.02 (shuffled groups: 0.00) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
 0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 40 exact duplicate row(s) (0.6% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (30.2% of nearest neighbours vs 27.3%), and the group explains no more of the label than shuffled groups (0.02 vs 0.00). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.)
+- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (30.2% of nearest neighbours vs 27.3%), and the group explains no more of the label than shuffled groups (0.02 vs 0.00). (hint: The grouping may not be needed: compare IID and grouped scores with `data-foundry probe group`.)
 
 Accepted on purpose:
 
-- `task_group_count_low`: Decided (Andrej, 2026-11-19): the seven months June to December are all the data holds; each is held out once.
-- `splits_dimensions_off_protocol`: Decided (Andrej, 2026-11-19): leave one month out gives exactly seven splits; repeats would give the same seven.
-- `groups_test_groups_few`: Decided (Andrej, 2026-11-19): testing one unseen month at a time is the split; each fold still scores 288 to 2,998 visits.
+- `groups_test_groups_few`: Decided (Andrej, 2026-11-19): the seven months June to December are all the data holds, each held out once; testing one unseen month at a time is the split, and each fold still scores 288 to 2,998 visits.
 - `groups_largest_share_high`: November is a real month, not a catch-all value: 2,998 of the 6,875 visits (44%) as published; when it is the test month the model trains on the other six (3,877 visits, 56.4%).
 
 ## Data checks
@@ -374,11 +379,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-b5f1-748b-a755-99b0a7c15a25 |
-| checksum | v2:97076c1ab7ef8a7b53470378967dcdb5fc10d5358da47b31dbcde92a3b9a5ec2 |
-| built_at | 2026-10-06T16:12:16+00:00 |
-| path | online_shoppers_purchasing_intention_dataset/01a111fc-b5f1-748b-a755-99b0a7c15a25 |
+| uuid | 01a21800-e00d-7c78-88fd-98e49ebd9ea8 |
+| checksum | v2:3a5f5f3b8c3946af070bab09dcf3affe7ab01cfe591934dac37e15aebf687ed0 |
+| built_at | 2026-11-26T13:17:21+00:00 |
+| path | online_shoppers_purchasing_intention_dataset/01a21800-e00d-7c78-88fd-98e49ebd9ea8 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:62c643e0c8daddd5f56bb2f12e43edff2aab6de1f2f3ebd674e7a9f0ff3b9dab` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

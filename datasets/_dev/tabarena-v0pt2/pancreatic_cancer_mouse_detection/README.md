@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: pancreatic_cancer_mouse_detection
 container_format: 2
-checksum: v2:ed7adaf247f57bd40567d93523c9a72c7898d8927c1787d9fd2ce05aadff50ec
+checksum: v2:35808104994cb4891a6a3cbf4a74fb3850ee729a16d720a87a7318b1800da51f
 build:
-  uuid: 01a111fc-4ee4-7a63-9a02-e4ac045fac79
-  checksum: v2:59cb0f0821d490ba01b3fac29a19152347d6c9626d569ac6c6d994a23c47d014
-  built_at: '2026-10-06T16:11:59+00:00'
-  path: pancreatic_cancer_mouse_detection/01a111fc-4ee4-7a63-9a02-e4ac045fac79
+  uuid: 01a21800-1478-78d7-883a-dd48c44d92aa
+  checksum: v2:35808104994cb4891a6a3cbf4a74fb3850ee729a16d720a87a7318b1800da51f
+  built_at: '2026-11-26T13:16:34+00:00'
+  path: pancreatic_cancer_mouse_detection/01a21800-1478-78d7-883a-dd48c44d92aa
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 181
   n_features: 6771
@@ -60,6 +60,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 108
     max: 137
@@ -84,7 +85,7 @@ decisions: []
 
 Binary classification of `HasPanIN`, scored with `roc_auc` on grouped splits by `mouse_id`. 181 rows and 6,771 features. Source: Other (2003).
 
-Built as `01a111fc-4ee4-7a63-9a02-e4ac045fac79` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ed7adaf247f57bd40567d93523c9a72c7898d8927c1787d9fd2ce05aadff50ec`, so the build is stale. See [Build](#build).
+Built as `01a21800-1478-78d7-883a-dd48c44d92aa` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -172,7 +173,7 @@ Only curators run `build`, when the dataset ships.
 
 **Scoring columns**
 
-Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.metrics.scorer(container)(y_test, y_pred, test_idx)`).
 
 | column | role | how the metric uses it | model input |
 |---|---|---|---|
@@ -234,13 +235,11 @@ The task in the original data is grouped as multiple serums per mouse were taken
 - Each mouse counts once in the score (Lennart, 2026-11-08; MET-17): the ROC AUC weights a sample by 1 over its mouse's number of samples (`mouse_weight`), a scoring column for the metric only, no feature and no training weight, so the score is the chance that a random sample of a random PanIN mouse scores above a random sample of a random control mouse. The 73 mice gave 1 to 6 samples (median 2, 29 mice one), the label is the mouse's, and each mouse stands for one patient; unweighted, a mouse bled six times counted as six patients. Each sample is still read on its own. On 30 of the shipped splits the weighted ROC AUC ranks 8 untuned predictors (two logistic regressions, random forest, extra trees, two LightGBM, kNN, the class shares; raw spectrum standardized per bin) like the per-sample one at Kendall tau 0.66 per split on average (lowest -0.07, on 24 test mice) and 0.86 for the ranking by the mean over the splits, the same best model on 23 of 30. The weight is for scoring only (MET-15 as amended 2026-11-08): training a regularised logistic regression with it changes the weighted ROC AUC by -0.015 (SE 0.006, lower on 39 of 60 grouped random splits).
 - The spectrum ships raw, as the NCI-FDA page publishes it, and is declared as one (`special_features`, CLEAN-26, 2026-11-02): the container records its 6,771 columns in m/z order, and a benchmark encodes it row by row, by default with MALDIquant's steps (square root, Savitzky-Golay smoothing, SNIP baseline, total ion current). Processing the spectra lifts every model tested by 0.07 to 0.13 ROC AUC (Andrej, 2026-10-21); the page itself recommends "appropriate normalization, baseline correction, and alignment prior to any such analysis".
 - Selection bias (Andrej, 2026-11-11; marker `Selection Bias`): the classes were bled at different ages: mutants 5.5 ± 0.25 months, controls 6.5 ± 0.2 months (Hingorani et al. 2003, Table 2, prospective study), though the text calls the controls "aged-matched"; the pilot study, not in this download, was matched (9.4 against 9.0 months, Table 1). The release has no age per bleed, so the share of the signal that is age cannot be measured; the mouse grouping cannot remove it, since the gap runs between the classes. The measurement itself is alike for both classes: the same 6,771-bin grid and number format in every file, and both classes measured mixed on the same chips (record, 2026-10-21).
-- Time basis: Timeless: the label is the genotype, fixed at birth; each mouse gave 1 to 6 bleeds at least 5 days
-  apart, undated, all held out with the mouse (Hingorani et al. 2003). Not tested: mice of another cohort, or
-  spectra from another instrument run.
+- Time basis: Timeless: the label is the genotype, fixed at birth; each mouse gave 1 to 6 bleeds at least 5 days apart, undated, all held out with the mouse (Hingorani et al. 2003). Not tested: mice of another cohort, or spectra from another instrument run.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the groups of `mouse_id` (one label each), stratified on `HasPanIN`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 73 groups (SPLIT-33).
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 108 to 137 rows, test 44 to 73 rows.
 
@@ -334,7 +333,7 @@ One group is a mouse; its rows are serum samples from 1 to 6 bleeds, collected "
 | nearest neighbour in the same group | 5.0% of the rows (chance: 1.4%) |
 | label variance explained by the group | 1.00 (shuffled groups: 0.45) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
@@ -515,11 +514,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-4ee4-7a63-9a02-e4ac045fac79 |
-| checksum | v2:59cb0f0821d490ba01b3fac29a19152347d6c9626d569ac6c6d994a23c47d014 |
-| built_at | 2026-10-06T16:11:59+00:00 |
-| path | pancreatic_cancer_mouse_detection/01a111fc-4ee4-7a63-9a02-e4ac045fac79 |
+| uuid | 01a21800-1478-78d7-883a-dd48c44d92aa |
+| checksum | v2:35808104994cb4891a6a3cbf4a74fb3850ee729a16d720a87a7318b1800da51f |
+| built_at | 2026-11-26T13:16:34+00:00 |
+| path | pancreatic_cancer_mouse_detection/01a21800-1478-78d7-883a-dd48c44d92aa |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ed7adaf247f57bd40567d93523c9a72c7898d8927c1787d9fd2ce05aadff50ec` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

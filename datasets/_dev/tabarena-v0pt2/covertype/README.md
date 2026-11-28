@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: covertype
 container_format: 2
-checksum: v2:8f757530504a9a88477ad57961edcd9e3bb1add2b86fea185c65f19da8546914
+checksum: v2:a9865ec0c7b7faad8c57440ae50258f05b693ebacff8bbfa3bec30753ca52db4
 build:
-  uuid: 01a111fc-5b2f-72b3-983a-85ec312c2e8f
-  checksum: v2:8b59376d1ce32c48c1fb0023a14c193e8fe1b640c393153f40f15361b6c541da
-  built_at: '2026-10-06T16:11:55+00:00'
-  path: covertype/01a111fc-5b2f-72b3-983a-85ec312c2e8f
+  uuid: 01a21800-48ff-700b-93ca-dc8611913139
+  checksum: v2:a9865ec0c7b7faad8c57440ae50258f05b693ebacff8bbfa3bec30753ca52db4
+  built_at: '2026-11-26T13:16:43+00:00'
+  path: covertype/01a21800-48ff-700b-93ca-dc8611913139
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 581012
   n_features: 14
@@ -46,6 +46,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 387341
     max: 387342
@@ -67,7 +68,7 @@ decisions: []
 
 Multiclass classification of `Cover_Type`, scored with `log_loss` on IID splits. 581,012 rows and 14 features. Source: UCI (1998).
 
-Built as `01a111fc-5b2f-72b3-983a-85ec312c2e8f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8f757530504a9a88477ad57961edcd9e3bb1add2b86fea185c65f19da8546914`, so the build is stale. See [Build](#build).
+Built as `01a21800-48ff-700b-93ca-dc8611913139` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -213,19 +214,12 @@ Other steps:
   59.6% of the test cells have a training cell within one cell's distance on the four location columns, and
   LightGBM is as accurate on the others (0.972 against 0.969): a stand is recognised from location values
   within a few cells. The score mostly measures interpolation between mapped cells inside the four areas.
-- Time basis: RetrospectiveFillIn: one extract of the Forest Service's stand map of four wilderness areas and of terrain,
-  road and fire-point layers (date not documented, before the August 1998 donation); the task fills in cells
-  of the same areas at that moment, and cells of one stand share its label (see the look-up above). Not
-  tested: a later map of the same areas, or land outside the four areas.
-- Group basis: ForcedIIDFromGrouped (Andrej, 2026-11-16): the use case maps land with no inventory, which comes
-  as whole stands of 20 to 900 cells; the data has no stand id or coordinates, and its four wilderness areas
-  are too few groups (see above), so the split is random. Overlap left: a random test cell usually has cells
-  of its own stand in training, so the score is optimistic for unmapped tracts. Not measured: how much of the
-  score comes from recognising stands through the terrain and distance features (SPLIT-25).
+- Time basis: RetrospectiveFillIn: one extract of the Forest Service's stand map of four wilderness areas and of terrain, road and fire-point layers (date not documented, before the August 1998 donation); the task fills in cells of the same areas at that moment, and cells of one stand share its label (see the look-up above). Not tested: a later map of the same areas, or land outside the four areas.
+- Group basis: ForcedIIDFromGrouped (Andrej, 2026-11-16): the use case maps land with no inventory, which comes as whole stands of 20 to 900 cells; the data has no stand id or coordinates, and its four wilderness areas are too few groups (see above), so the split is random. Overlap left: a random test cell usually has cells of its own stand in training, so the score is optimistic for unmapped tracts. Not measured: how much of the score comes from recognising stands through the terrain and distance features (SPLIT-25).
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `Cover_Type`: 1 repeat(s) x 3 folds, 3 splits, the repeats set by the 581,012 rows (SPLIT-33).
 
 1 repeat(s) x 3 fold(s) with seed 4267; train 387,341 to 387,342 rows, test 193,670 to 193,671 rows.
 
@@ -331,11 +325,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-5b2f-72b3-983a-85ec312c2e8f |
-| checksum | v2:8b59376d1ce32c48c1fb0023a14c193e8fe1b640c393153f40f15361b6c541da |
-| built_at | 2026-10-06T16:11:55+00:00 |
-| path | covertype/01a111fc-5b2f-72b3-983a-85ec312c2e8f |
+| uuid | 01a21800-48ff-700b-93ca-dc8611913139 |
+| checksum | v2:a9865ec0c7b7faad8c57440ae50258f05b693ebacff8bbfa3bec30753ca52db4 |
+| built_at | 2026-11-26T13:16:43+00:00 |
+| path | covertype/01a21800-48ff-700b-93ca-dc8611913139 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8f757530504a9a88477ad57961edcd9e3bb1add2b86fea185c65f19da8546914` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: dementia_prediction
 container_format: 2
-checksum: v2:c5516793c30c505f7b686737e1990b6132f1d5ef8348db73a85d8cf74ee72ab0
+checksum: v2:0459ad7518b49a2f53d66fd15ca96a74e28e4dfaf9e8cf6022c39956181f093d
 build:
-  uuid: 01a111fc-d5b5-7da4-8ffe-99dd2600b6e0
-  checksum: v2:9ddc612f5674f4b595dfba519a28785aa6b30e0cf85e35380aab666fff024a7c
-  built_at: '2026-10-06T16:12:25+00:00'
-  path: dementia_prediction/01a111fc-d5b5-7da4-8ffe-99dd2600b6e0
+  uuid: 01a21800-cad4-7803-8c63-bac16eced55d
+  checksum: v2:0459ad7518b49a2f53d66fd15ca96a74e28e4dfaf9e8cf6022c39956181f093d
+  built_at: '2026-11-26T13:17:15+00:00'
+  path: dementia_prediction/01a21800-cad4-7803-8c63-bac16eced55d
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 370
   n_features: 8
@@ -58,6 +58,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: This puts about 50 subjects (112-138 visits) in each test fold.
   n_train:
     min: 232
     max: 258
@@ -79,7 +80,7 @@ decisions: []
 
 Multiclass classification of `CDR`, scored with `log_loss` on grouped splits by `Subject ID`. 370 rows and 8 features. Source: Other (2010).
 
-Built as `01a111fc-d5b5-7da4-8ffe-99dd2600b6e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c5516793c30c505f7b686737e1990b6132f1d5ef8348db73a85d8cf74ee72ab0`, so the build is stale. See [Build](#build).
+Built as `01a21800-cad4-7803-8c63-bac16eced55d` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -161,7 +162,7 @@ Only curators run `build`, when the dataset ships.
 
 **Scoring columns**
 
-Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.metrics.scorer(container)(y_test, y_pred, test_idx)`).
 
 | column | role | how the metric uses it | model input |
 |---|---|---|---|
@@ -238,7 +239,9 @@ We start with the data from Mendeley.
 
 ## Splits
 
-We create stratified grouped 20-repeated 3-fold split. This puts about 50 subjects (112-138 visits) in each test fold.
+Repeated 3-fold cross-validation keeping each group of `Subject ID` whole (shuffled group k-fold, a new draw per repeat), stratified on `CDR`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 370 rows (SPLIT-33).
+
+This puts about 50 subjects (112-138 visits) in each test fold.
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 232 to 258 rows, test 112 to 138 rows.
 
@@ -332,7 +335,7 @@ One group is a subject of OASIS-2: older adults scanned on two or more visits at
 | nearest neighbour in the same group | 88.9% of the rows (chance: 0.5%) |
 | label variance explained by the group | 0.83 (shuffled groups: 0.41) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
@@ -354,7 +357,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | SES | float64 | 19 | 5.14 | 5 | 2.0, 1.0, 3.0, 4.0, 5.0 |
 | MMSE | float64 | 2 | 0.54 | 18 | 30.0, 29.0, 28.0, 27.0, 26.0, 23.0, 25.0, 21.0, 22.0, 20.0 |
 | eTIV | float64 | 0 | 0 | 286 | 1483.0, 1475.0, 1344.0, 1333.0, 1453.0, 1390.0, 1506.0, 1484.0, 1295.0, 1463.0 |
-| nWBV | float64 | 0 | 0 | 370 | 0.7701, 0.7412, 0.8195, 0.7479, 0.6817, 0.7069, 0.7573, 0.7707, 0.74, 0.7248 |
+| nWBV | float64 | 0 | 0 | 370 | 0.8049, 0.7701, 0.7412, 0.8195, 0.7479, 0.6817, 0.7069, 0.7573, 0.7707, 0.74 |
 | ASF | float64 | 0 | 0 | 263 | 1.184, 1.19, 1.134, 1.183, 1.335, 1.317, 1.208, 1.162, 1.262, 1.214 |
 | person_weight | float64 | 0 | 0 | 5 | 0.5, 0.3333, 0.25, 0.2, 1.0 |
 | Age | int64 | 0 | 0 | 38 | 73, 75, 78, 80, 71, 81, 82, 76, 77, 68 |
@@ -402,11 +405,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-d5b5-7da4-8ffe-99dd2600b6e0 |
-| checksum | v2:9ddc612f5674f4b595dfba519a28785aa6b30e0cf85e35380aab666fff024a7c |
-| built_at | 2026-10-06T16:12:25+00:00 |
-| path | dementia_prediction/01a111fc-d5b5-7da4-8ffe-99dd2600b6e0 |
+| uuid | 01a21800-cad4-7803-8c63-bac16eced55d |
+| checksum | v2:0459ad7518b49a2f53d66fd15ca96a74e28e4dfaf9e8cf6022c39956181f093d |
+| built_at | 2026-11-26T13:17:15+00:00 |
+| path | dementia_prediction/01a21800-cad4-7803-8c63-bac16eced55d |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c5516793c30c505f7b686737e1990b6132f1d5ef8348db73a85d8cf74ee72ab0` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

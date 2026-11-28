@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: allstate_claim_prediction_challenge_1m
 container_format: 2
-checksum: v2:e7f4547b2ccadeb9692db6e8113ac908d76416eeeb0e2071b8b30c7feee73257
-build: null
+checksum: v2:38fa57f21076188927e89e0e754e4e75255cb11673fb4c49d07f2a2be38bee52
+build:
+  uuid: 01a217fc-515a-7603-8861-c6e6af0efe8c
+  checksum: v2:38fa57f21076188927e89e0e754e4e75255cb11673fb4c49d07f2a2be38bee52
+  built_at: '2026-11-26T13:12:59+00:00'
+  path: allstate_claim_prediction_challenge_1m/01a217fc-515a-7603-8861-c6e6af0efe8c
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 2754936
@@ -41,6 +54,31 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Default splits, grouped by household (Household_ID): 3 folds over the 2.75M
+    rows of the 2006 renewal book (claim rate 0.82%), each testing on at most 500k
+    rows, whole households drawn at random from its third, and training on every other
+    row (about 2.25M), which a benchmark sub-samples to 1M rows by whole households
+    (`subsample_train`). The task is temporal by its use case: the competition gave
+    2005-2007 for training and scored 2008 (public leaderboard) and 2009 (final ranking),
+    whose claims were never published. With 2007 dropped (its large claims look unsettled)
+    and 2005 used as the history of 2006, one labelled target year is left, so no
+    window of a temporal split exists and the task ships under SPLIT-8 (ForcedGroupedFromTemporal):
+    the folds hold out whole households, whose vehicles share the household''s record,
+    so random rows would put a household''s other cars on both sides. Before the history
+    was built, trained on 2005 and scored on 2006 all rows reached 0.064, above the
+    folds by household of that build (0.022 to 0.054) and inside the nine folds of
+    the renewal book (0.022 to 0.106), so the forced split shows no cost this noise
+    can measure. The training rows are the test year''s other households, their amounts
+    read at the release (about 2011, the file''s date), more developed than Allstate
+    had at the 2006 renewal, when it would have trained on 2005 and earlier; both
+    sides of every fold hold amounts of the same maturity. What the folds do not test:
+    new business (the cars that joined during 2006 are left out), vehicle series not
+    seen in training (0.02% of test rows on the earlier folds), and a rating at a
+    known date within the year. A release with dates beyond 2007 should get a temporal
+    split. Shipped forced on the curator''s call (Andrej, 2026-11-02: "Forced group
+    splits should be fine"; 2026-11-03: the 2006 renewal book; Lennart, 2026-11-08:
+    only the cars on the policy at the start of 2006; Andrej, 2026-11-09: the split
+    by household stays).'
   n_train:
     min: 2254936
     max: 2254936
@@ -62,7 +100,7 @@ bundle_checks:
   - dataset_duplicates_skipped
   - groups_not_clustered
   accepted:
-    groups_labels_constant: The label is one per vehicle-year and claims are rare
+    task_group_labels_mismatch: The label is one per vehicle-year and claims are rare
       (0.82%), so 98.2% of the households with two or more rows of the 2006 renewal
       book have a single label (2026-11-03; restated 2026-11-08).
     task_target_value_dominant: 'A zero-inflated target, not a cap or a placeholder:
@@ -80,7 +118,7 @@ decisions:
 
 Regression of `log1p_claim_amount`, scored with `normalized_gini` on grouped splits by `Household_ID`. 2,754,936 rows and 31 features. Source: Kaggle (2011).
 
-Not built yet. The current definition gives checksum `v2:e7f4547b2ccadeb9692db6e8113ac908d76416eeeb0e2071b8b30c7feee73257`.
+Built as `01a217fc-515a-7603-8861-c6e6af0efe8c` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -140,7 +178,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2011 |
 | domain | insurance |
 | license | Kaggle Competition Rules |
-| data_tags | Non-IID, Grouped, ForcedGroupedFromTemporal, Anonymized |
+| data_tags | Non-IID, Grouped, Anonymized, ForcedGroupedFromTemporal |
 | reference | Allstate2011ClaimPredictionChallenge |
 | rows x columns | 2,754,936 x 33 |
 | task.target | log1p_claim_amount |
@@ -225,12 +263,11 @@ We start with train_set.csv of the Kaggle competition (13,184,290 vehicle-years 
 - CC (2026-11-09, Andrej): the folds test on all rows of the renewal book, the gaps kept as missing (as implemented); the missing-values bullet names the mismatch with the competition's complete test rows.
 - CC (2026-11-09, Andrej): the split stays by household over the 2006 book (as implemented); the splits comment gives the 2005-to-2006 score as above the household folds of that build and names the training side's year and the maturity of its amounts.
 - The row budget (1M train, 500k test rows): We keep the whole 2006 renewal book (2.75M rows) and use grouped 3-fold cross-validation over it (v2 split protocol). Each fold tests on at most 500k rows, whole households drawn from its third, and trains on every other row (about 2.25M). The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M rows with `subsample_train`, whose default draws whole households. Both draws take households at random, not stratified (a regression target), so the claim rate stays that of the book. The 2005 history is built on the full file before the filter.
-- Time basis: ForcedGroupedFromTemporal (SPLIT-8): the use case scores later years (the competition trained on
-  2005-2007 and scored 2008 and 2009, whose claims were never published), but with 2007 dropped and 2005 the
-  history of 2006 one labelled year is left, too few periods for windows; whole households are held out instead
-  (`splits_comment`). Released claims of later years would allow a split by year.
+- Time basis: ForcedGroupedFromTemporal: the use case scores later years (the competition trained on 2005-2007 and scored 2008 and 2009, whose claims were never published), but with 2007 dropped and 2005 the history of 2006 one labelled year is left, too few periods for windows; whole households are held out instead (`splits_comment`). Released claims of later years would allow a split by year.
 
 ## Splits
+
+Repeated 3-fold cross-validation keeping each group of `Household_ID` whole (shuffled group k-fold, a new draw per repeat): 1 repeat(s) x 3 folds, 3 splits, the repeats set by the 2,754,936 rows (SPLIT-33). Each fold tests on at most 500k rows of its third (whole groups) and trains on every other row; a benchmark sub-samples the train side to 1M rows (by default whole groups drawn at random, `subsample_train`).
 
 Default splits, grouped by household (Household_ID): 3 folds over the 2.75M rows of the 2006 renewal book (claim rate 0.82%), each testing on at most 500k rows, whole households drawn at random from its third, and training on every other row (about 2.25M), which a benchmark sub-samples to 1M rows by whole households (`subsample_train`). The task is temporal by its use case: the competition gave 2005-2007 for training and scored 2008 (public leaderboard) and 2009 (final ranking), whose claims were never published. With 2007 dropped (its large claims look unsettled) and 2005 used as the history of 2006, one labelled target year is left, so no window of a temporal split exists and the task ships under SPLIT-8 (ForcedGroupedFromTemporal): the folds hold out whole households, whose vehicles share the household's record, so random rows would put a household's other cars on both sides. Before the history was built, trained on 2005 and scored on 2006 all rows reached 0.064, above the folds by household of that build (0.022 to 0.054) and inside the nine folds of the renewal book (0.022 to 0.106), so the forced split shows no cost this noise can measure. The training rows are the test year's other households, their amounts read at the release (about 2011, the file's date), more developed than Allstate had at the 2006 renewal, when it would have trained on 2005 and earlier; both sides of every fold hold amounts of the same maturity. What the folds do not test: new business (the cars that joined during 2006 are left out), vehicle series not seen in training (0.02% of test rows on the earlier folds), and a rating at a known date within the year. A release with dates beyond 2007 should get a temporal split. Shipped forced on the curator's call (Andrej, 2026-11-02: "Forced group splits should be fine"; 2026-11-03: the 2006 renewal book; Lennart, 2026-11-08: only the cars on the policy at the start of 2006; Andrej, 2026-11-09: the split by household stays).
 
@@ -264,7 +301,7 @@ One group is a household, "a household identification number that allows year-to
 | nearest neighbour in the same group | 0.0% of the rows (chance: 0.0%) |
 | label variance explained by the group | 0.71 (shuffled groups: 0.71) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Decisions
 
@@ -309,12 +346,12 @@ The source removed the records with a missing value from its test file and asked
 
 0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 90,912,888 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
-- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (0.0% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (0.71 vs 0.71). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 90,912,888 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to run them; nothing else checks duplicate rows and columns.)
+- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (0.0% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (0.71 vs 0.71). (hint: The grouping may not be needed: compare IID and grouped scores with `data-foundry probe group`.)
 
 Accepted on purpose:
 
-- `groups_labels_constant`: The label is one per vehicle-year and claims are rare (0.82%), so 98.2% of the households with two or more rows of the 2006 renewal book have a single label (2026-11-03; restated 2026-11-08).
+- `task_group_labels_mismatch`: The label is one per vehicle-year and claims are rare (0.82%), so 98.2% of the households with two or more rows of the 2006 renewal book have a single label (2026-11-03; restated 2026-11-08).
 - `task_target_value_dominant`: A zero-inflated target, not a cap or a placeholder: 0 is a vehicle-year without a bodily-injury claim, 99.18% of the rows of the 2006 renewal book (see the curation notes; 2026-11-03; restated 2026-11-08).
 
 ## Data checks
@@ -471,4 +508,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a217fc-515a-7603-8861-c6e6af0efe8c |
+| checksum | v2:38fa57f21076188927e89e0e754e4e75255cb11673fb4c49d07f2a2be38bee52 |
+| built_at | 2026-11-26T13:12:59+00:00 |
+| path | allstate_claim_prediction_challenge_1m/01a217fc-515a-7603-8861-c6e6af0efe8c |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

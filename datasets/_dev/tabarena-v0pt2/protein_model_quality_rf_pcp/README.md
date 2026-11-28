@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: protein_model_quality_rf_pcp
 container_format: 2
-checksum: v2:5fafcacddb15a639e4680686c439cf47d8414f82353b46f3bc2da4b58fd69796
+checksum: v2:90b8fac322d798d51d569749f53b45689703cca23fec565d6d92922a958a8d00
 build:
-  uuid: 01a18ba2-013a-7001-a61c-686e78b112d7
-  checksum: v2:9c815361646dd91564cc761b59da41b5dd13244b9911968281ce056688cc1d7a
-  built_at: '2026-10-30T07:06:53+00:00'
-  path: protein_model_quality_rf_pcp/01a18ba2-013a-7001-a61c-686e78b112d7
+  uuid: 01a217ff-dfb9-73cb-aa98-9c3da7b12fc6
+  checksum: v2:90b8fac322d798d51d569749f53b45689703cca23fec565d6d92922a958a8d00
+  built_at: '2026-11-26T13:16:20+00:00'
+  path: protein_model_quality_rf_pcp/01a217ff-dfb9-73cb-aa98-9c3da7b12fc6
   data_foundry_version: 0.0.5
-  git_sha: ea35638cb7c9dc88ff6b7f6f6316594207a68393
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
     python: 3.12.3
-    pandas: 3.1.0
-    numpy: 2.5.4
-    pyarrow: 26.0.0
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
     scikit-learn: 1.7.2
-    polars: 2.0.0
-build_stale: true
+    polars: 1.41.1
+build_stale: false
 data:
   n_rows: 94083
   n_features: 6
@@ -54,6 +54,32 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'All rows of each recovered target key stay
+
+    together, including verified same-protein accession aliases. The selected GDT
+    task and preserved target alternatives share test groups;
+
+    membership is verified explicitly.
+
+    All 342 CASP identities are verified; three retain source IDs. Sequence-family
+    independence is not claimed.
+
+    The source''s own files train on CASP5-9 and the classic sets and validate on
+    CASP10. Forward windows by CASP
+
+    round (train on all earlier rows, untuned LightGBM, per-protein correlation) score
+    CASP8 0.339, CASP9 0.484
+
+    and CASP10 0.009; through CASP9 they match the grouped folds within 0.04 (2026-11-05,
+    without the relaxed
+
+    natives; 0.340, 0.483, 0.016 and 0.03 with them), so the rounds show no drift,
+    and
+
+    CASP10''s low score comes from its other descriptor convention (the SL note),
+    not from time. The grouped
+
+    split is kept (Andrej, 2026-11-12: "I go back to by split by protein").'
   n_train:
     min: 50557
     max: 71679
@@ -76,7 +102,7 @@ decisions: []
 
 Regression of `GDT`, scored with `mean_group_pearsonr` on grouped splits by `protein_id`. 94,083 rows and 6 features. Source: Other (2014).
 
-Built as `01a18ba2-013a-7001-a61c-686e78b112d7` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:5fafcacddb15a639e4680686c439cf47d8414f82353b46f3bc2da4b58fd69796`, so the build is stale. See [Build](#build).
+Built as `01a217ff-dfb9-73cb-aa98-9c3da7b12fc6` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -291,8 +317,9 @@ The first 5 of 94,083 rows of the final frame (random rows: the frame is shuffle
 
 ## Splits
 
-Twenty repeats of three-fold grouped evaluation with seed 4267: the metric scores one correlation per
-protein, so the split count counts proteins (297 on the train side). All rows of each recovered target key stay
+Repeated 3-fold cross-validation keeping each group of `protein_id` whole (shuffled group k-fold, a new draw per repeat): 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 445 scored units (SPLIT-33).
+
+All rows of each recovered target key stay
 together, including verified same-protein accession aliases. The selected GDT task and preserved target alternatives share test groups;
 membership is verified explicitly.
 All 342 CASP identities are verified; three retain source IDs. Sequence-family independence is not claimed.
@@ -395,7 +422,7 @@ A group collects candidates for one canonical protein. CASP uses T identifiers a
 | nearest neighbour in the same group | 82.2% of the rows (chance: 1.0%) |
 | label variance explained by the group | 0.60 (shuffled groups: 0.00) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
@@ -450,11 +477,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a18ba2-013a-7001-a61c-686e78b112d7 |
-| checksum | v2:9c815361646dd91564cc761b59da41b5dd13244b9911968281ce056688cc1d7a |
-| built_at | 2026-10-30T07:06:53+00:00 |
-| path | protein_model_quality_rf_pcp/01a18ba2-013a-7001-a61c-686e78b112d7 |
+| uuid | 01a217ff-dfb9-73cb-aa98-9c3da7b12fc6 |
+| checksum | v2:90b8fac322d798d51d569749f53b45689703cca23fec565d6d92922a958a8d00 |
+| built_at | 2026-11-26T13:16:20+00:00 |
+| path | protein_model_quality_rf_pcp/01a217ff-dfb9-73cb-aa98-9c3da7b12fc6 |
 | data_foundry_version | 0.0.5 |
-| git_sha | ea35638cb7c9dc88ff6b7f6f6316594207a68393 |
-| libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:5fafcacddb15a639e4680686c439cf47d8414f82353b46f3bc2da4b58fd69796` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

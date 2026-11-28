@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+)
 
 ZERO_WITH_BLOCK_MISSINGNESS = (
     "TVA_CAF125",
@@ -90,7 +99,7 @@ class TunisianFraudDetectionChallenge(AbstractCuratedDataset):
         - The score: 56-60% of the squared error (HistGradientBoosting, test years 2015-2017) comes from the true zeros, 25% of rows, so RMSE on the log label mostly rewards telling whether an inspection finds anything, not the size of the adjustment.
     """
     accepted_check_warnings = {
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Three windows, against the 9 an IID split of 20,930 taxpayer-years would get: the release has five "
             "fiscal years after the 2018 cut, and a 2014 window would train on 2013 alone, 29.0% of the rows, under "
             "the 30% floor (Andrej, 2026-11-20)."

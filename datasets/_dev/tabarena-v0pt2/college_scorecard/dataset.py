@@ -8,7 +8,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -283,7 +284,7 @@ class CollegeScorecard(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Expanding-window temporal splits by entering cohort: 4 test windows of one cohort each (the falls of 2018, 2017, 2016 and 2015), newest first. Train is every cohort that entered at least six years before the test cohort (a gap of five cohort years): a cohort's 150% completion rate is published six Scorecard files after it entered, in the file that also publishes the entry data of the cohort being predicted, so the five cohorts in between have no label yet at the prediction point. The windows roll back from the newest cohort while train keeps at least half of the 18 cohorts, which allows 4 windows instead of the 9 an IID task of this size would get. The cohorts of 2013 and 2014 are in no split: they sit in the gap of every window and before the oldest test window. Without the gap, untuned LightGBM reaches R² 0.86 instead of 0.81 (mean of the 4 windows): training on cohorts whose rate is not yet published overstates the scores.
+        Train is every cohort that entered at least six years before the test cohort (a gap of five cohort years): a cohort's 150% completion rate is published six Scorecard files after it entered, in the file that also publishes the entry data of the cohort being predicted, so the five cohorts in between have no label yet at the prediction point. The windows roll back from the newest cohort while train keeps at least half of the 18 cohorts, which allows 4 windows instead of the 9 an IID task of this size would get. The cohorts of 2013 and 2014 are in no split: they sit in the gap of every window and before the oldest test window. Without the gap, untuned LightGBM reaches R² 0.86 instead of 0.81 (mean of the 4 windows): training on cohorts whose rate is not yet published overstates the scores.
     """
     split_leaf = "L-ORDER.windows"
     temporal = Temporal(
@@ -296,9 +297,12 @@ class CollegeScorecard(AbstractCuratedDataset):
         time_unit="years",
     )
     accepted_check_warnings = {
-        "splits_rows_unused": "By design: the cohorts of 2013 and 2014 (3,676 rows) lie in the five-year label gap of "
-        "every window (the newest window trains on 2001-2012) and before the oldest test window (2015, the last one "
-        "whose train side keeps half of the cohorts).",
+        "splits_dimensions_off_protocol": (
+            "Four windows against the nine an IID split of 34,431 institution cohorts would get (SPLIT-33): the "
+            "five-year gap until a cohort's completion rate is published leaves no fifth window that trains on half of "
+            "the 18 cohorts. The splits comment names the target, the count reached and what stops more "
+            "(SPLIT-15; Lennart, 2026-11-26)."
+        ),
         "splits_feature_missing_in_test": (
             "Decided (Lennart, 2026-11-11): `DISTANCEONLY` is recorded from the 2011 cohort on, so "
             "the 2015 and 2016 windows train on cohorts without it (curation_comments)."

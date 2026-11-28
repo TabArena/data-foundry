@@ -6,13 +6,13 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
     Metric,
     Source,
-    SplitPlan,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -144,14 +144,21 @@ class BrazilianEcommerce(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        A model refit at the start of each month predicts the delivery time of the orders placed during that month. It trains on the orders placed at least one month before the refit whose delivery is known by then. The month just before the refit is a gap: many of its orders are still in transit at the refit, and the delivered ones are the fast ones, so a model that sees the purchase time as a number (AutoGluon keeps the epoch value next to the date parts) would learn that new orders are fast (see the decisions and curation_comments). The few older orders still in transit at the refit are left out of that window's training rows, as in hotel_booking_demand. The test windows are calendar months walking back from July 2018, the newest month the review sample covers in full (see curation_comments), until the training side would fall below 50% of the rows: 5 windows, March to July 2018, newest first. The convention's 9 windows for a dataset of this size do not fit above the 50% floor with monthly windows.
+        A model refit at the start of each month predicts the delivery time of the orders placed during that month. The month just before the refit is a gap: many of its orders are still in transit at the refit, and the delivered ones are the fast ones, so a model that sees the purchase time as a number (AutoGluon keeps the epoch value next to the date parts) would learn that new orders are fast (see the decisions and curation_comments). The few older orders still in transit at the refit are left out of that window's training rows, as in hotel_booking_demand. The test windows are calendar months walking back from July 2018, the newest month the review sample covers in full (see curation_comments), until the training side would fall below 50% of the rows: 5 windows, March to July 2018, newest first. The convention's 9 windows for a dataset of this size do not fit above the 50% floor with monthly windows.
     """
-    split_leaf = "L-ORDER.windows"
-    temporal = Temporal(on="order_purchase_timestamp", horizon=1, horizon_unit="months", gap=1, gap_unit="months")
     accepted_check_warnings = {
-        "splits_rows_unused": "Four orders placed in January and February 2018 (148 to 208 days to delivery) are in no "
-        "split: they were placed before the oldest test window and were still in transit when the newest one started.",
+        "splits_dimensions_off_protocol": (
+            "Five windows against the nine an IID split of 88,721 orders would get (SPLIT-33): with monthly windows "
+            "and the one-month gap, a sixth window would train on less than half the orders. The splits comment names "
+            "the target, the count reached and what stops more (SPLIT-15; Lennart, 2026-11-26)."
+        ),
     }
+    split_leaf = "L-ORDER.windows"
+    temporal = Temporal(
+        on="order_purchase_timestamp",
+        splits=TemporalSplits(window=1, unit="months", gap=1, min_train_fraction=0.5),
+        label_known_on="order_delivered_customer_date",  # train only on orders delivered before the window
+    )
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         return {
@@ -238,7 +245,8 @@ class BrazilianEcommerce(AbstractCuratedDataset):
         df["log_delivery_days"] = np.log(_days(df["order_delivered_customer_date"] - purchase))
 
         # Recorded after checkout, identifiers, the promised date (now in days) and the constant seller count. The
-        # delivery date stays until `_make_splits`, which needs it to keep in-transit orders out of training.
+        # delivery date stays for the split (`label_known_on`), which keeps in-transit orders out of training and
+        # then drops it.
         return drop_columns(
             df,
             [
@@ -267,21 +275,6 @@ class BrazilianEcommerce(AbstractCuratedDataset):
             ],
             datetime=["order_purchase_timestamp", "order_delivered_customer_date"],
         )
-
-    def _make_splits(self, df: pd.DataFrame) -> SplitPlan:
-        """Monthly windows after a one-month gap; train keeps only the orders delivered before the window starts."""
-        time_on = self.temporal.on
-        windows = TemporalSplits(window=1, unit="months", gap=1, min_train_fraction=0.5).splits(df, time_on)
-        purchase = df[time_on]
-        delivered = df["order_delivered_customer_date"].to_numpy()
-        splits = {}
-        for split, folds in windows.items():
-            train, test = folds[0]
-            start = purchase.iloc[test].min().normalize().replace(day=1)
-            train = np.asarray(train)
-            known = delivered[train] < np.datetime64(start)
-            splits[split] = {0: (train[known].tolist(), test)}
-        return SplitPlan(splits=splits, df=df.drop(columns=["order_delivered_customer_date"]))
 
     def _decisions(self, raw: dict[str, pd.DataFrame], df: pd.DataFrame) -> list[Decision]:
         orders = raw["orders"]

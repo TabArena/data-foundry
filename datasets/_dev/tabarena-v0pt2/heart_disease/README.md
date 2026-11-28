@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: heart_disease
 container_format: 2
-checksum: v2:de5d1b9abe25e43478626fe755d04231d6e7627dee8f7b801e41b30f872a154b
-build: null
+checksum: v2:6f0ae14d9667a4b3634f2e496db35efc7910f2d6b98f7e3b15baed4514adca38
+build:
+  uuid: 01a21800-f8e2-707f-80e4-68d67fbe16ca
+  checksum: v2:6f0ae14d9667a4b3634f2e496db35efc7910f2d6b98f7e3b15baed4514adca38
+  built_at: '2026-11-26T13:17:27+00:00'
+  path: heart_disease/01a21800-f8e2-707f-80e4-68d67fbe16ca
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 796
@@ -40,6 +53,14 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Leave one hospital out: three splits, each training on two hospitals and
+    testing on the third (Cleveland, Hungary, then Long Beach), one repeat, since
+    repeating a split of three groups into three folds gives the same splits. The
+    source built its model in Cleveland and applied it at the other hospitals; leaving
+    each hospital out in turn generalises that design so that every hospital is tested
+    once. With three hospitals the scores are three numbers and differ by hospital
+    (Long Beach is the hardest). Unlike `covertype`''s three areas, the transfer is
+    the source''s design and no class drops out (curation notes).'
   n_train:
     min: 493
     max: 597
@@ -53,18 +74,14 @@ bundle_checks:
   infos:
   - dataset_duplicate_rows
   accepted:
-    task_group_count_low: 'Three hospitals by design: the source built its model at
-      one hospital and applied it at the others. The fourth hospital (Switzerland)
+    groups_test_groups_few: 'Three hospitals by design: the source built its model
+      at one hospital and applied it at the others. The fourth hospital (Switzerland)
       is left out because its published file kept only 8 of its about 27 patients
-      without disease.'
-    splits_dimensions_off_protocol: Leave one hospital out gives exactly three splits.
-      More repeats would split the same three hospitals the same way, so they would
-      add copies, not information.
-    groups_test_groups_few: 'Testing on one unseen hospital at a time is the task.
-      Each fold still scores 199 to 303 patients one by one (smallest class: 51).
-      The signal carries over to unseen hospitals: the linear model beats the class
-      shares at each of the three (task probes, ROC AUC 0.880, 0.898, 0.732). Most
-      of the variation between folds comes from Long Beach, the hardest hospital.'
+      without disease. Testing on one unseen hospital at a time is the task. Each
+      fold still scores 199 to 303 patients one by one (smallest class: 51). The signal
+      carries over to unseen hospitals: the linear model beats the class shares at
+      each of the three (task probes, ROC AUC 0.880, 0.898, 0.732). Most of the variation
+      between folds comes from Long Beach, the hardest hospital.'
     groups_largest_share_high: Cleveland is a real hospital, one of three, not a catch-all
       value. When it is the test hospital, the model trains on the other two (493
       patients), where two of Cleveland's tests were rarely recorded (`ca` for 5,
@@ -79,7 +96,7 @@ decisions:
 
 Binary classification of `heart_disease_diagnosis`, scored with `roc_auc` on grouped splits by `hospital`. 796 rows and 13 features. Source: UCI (1988).
 
-Not built yet. The current definition gives checksum `v2:de5d1b9abe25e43478626fe755d04231d6e7627dee8f7b801e41b30f872a154b`.
+Built as `01a21800-f8e2-707f-80e4-68d67fbe16ca` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -214,11 +231,11 @@ We start with the processed files of three hospitals from UCI's Heart Disease co
 - Duplicates: the Long Beach pair of equal rows is one patient entered twice (the raw file gives both the same exercise and angiogram dates and the same ten vessel readings, which no other Long Beach pair shares), so one is dropped. The Hungarian pair is two patients (exams in March and May 1986) and stays.
 - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
   categories in the order of the source's codebook (`ORDINAL_LEVELS`).
-- Time basis: UnseenGroup: the source's question is whether a model carries over to another hospital (Detrano et al.
-  built it on the Cleveland patients and applied it to Budapest and Long Beach), so the split holds out each
-  hospital and does not weigh the patients' dates. It cannot test a later period at a hospital the model knows.
+- Time basis: UnseenGroup: the source's question is whether a model carries over to another hospital (Detrano et al. built it on the Cleveland patients and applied it to Budapest and Long Beach), so the split holds out each hospital and does not weigh the patients' dates. It cannot test a later period at a hospital the model knows.
 
 ## Splits
+
+Leave one group out: one repeat of 3 folds, fold i testing the i-th group of `hospital` (Cleveland, Hungary, VA Long Beach) and training on all the others.
 
 Leave one hospital out: three splits, each training on two hospitals and testing on the third (Cleveland, Hungary, then Long Beach), one repeat, since repeating a split of three groups into three folds gives the same splits. The source built its model in Cleveland and applied it at the other hospitals; leaving each hospital out in turn generalises that design so that every hospital is tested once. With three hospitals the scores are three numbers and differ by hospital (Long Beach is the hardest). Unlike `covertype`'s three areas, the transfer is the source's design and no class drops out (curation notes).
 
@@ -252,7 +269,7 @@ One group is a hospital: Cleveland Clinic, the Hungarian Institute of Cardiology
 | nearest neighbour in the same group | 74.2% of the rows (chance: 34.3%) |
 | label variance explained by the group | 0.09 (shuffled groups: 0.00) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Decisions
 
@@ -274,9 +291,7 @@ The source built its model at one hospital and applied it at the others (Detrano
 
 Accepted on purpose:
 
-- `task_group_count_low`: Three hospitals by design: the source built its model at one hospital and applied it at the others. The fourth hospital (Switzerland) is left out because its published file kept only 8 of its about 27 patients without disease.
-- `splits_dimensions_off_protocol`: Leave one hospital out gives exactly three splits. More repeats would split the same three hospitals the same way, so they would add copies, not information.
-- `groups_test_groups_few`: Testing on one unseen hospital at a time is the task. Each fold still scores 199 to 303 patients one by one (smallest class: 51). The signal carries over to unseen hospitals: the linear model beats the class shares at each of the three (task probes, ROC AUC 0.880, 0.898, 0.732). Most of the variation between folds comes from Long Beach, the hardest hospital.
+- `groups_test_groups_few`: Three hospitals by design: the source built its model at one hospital and applied it at the others. The fourth hospital (Switzerland) is left out because its published file kept only 8 of its about 27 patients without disease. Testing on one unseen hospital at a time is the task. Each fold still scores 199 to 303 patients one by one (smallest class: 51). The signal carries over to unseen hospitals: the linear model beats the class shares at each of the three (task probes, ROC AUC 0.880, 0.898, 0.732). Most of the variation between folds comes from Long Beach, the hardest hospital.
 - `groups_largest_share_high`: Cleveland is a real hospital, one of three, not a catch-all value. When it is the test hospital, the model trains on the other two (493 patients), where two of Cleveland's tests were rarely recorded (`ca` for 5, `thal` for 62).
 
 ## Data checks
@@ -365,4 +380,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a21800-f8e2-707f-80e4-68d67fbe16ca |
+| checksum | v2:6f0ae14d9667a4b3634f2e496db35efc7910f2d6b98f7e3b15baed4514adca38 |
+| built_at | 2026-11-26T13:17:27+00:00 |
+| path | heart_disease/01a21800-f8e2-707f-80e4-68d67fbe16ca |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: heart_failure_followup_survival
 container_format: 2
-checksum: v2:8615727c306974f122796c76ffedc96b931bc0460d90c63730c4e44321b7d1ba
+checksum: v2:d26a5dde3a98a83ade94c7d3b95957d5b264b95234c4e87e299ddd8849ee9158
 build:
-  uuid: 01a111fc-aabc-7a8e-a658-bf88e5751de1
-  checksum: v2:66c2f80349b67a92deaa7355d0d759f8a9c6fdffc0af9ae20100475c318d07c5
-  built_at: '2026-10-06T16:12:13+00:00'
-  path: heart_failure_followup_survival/01a111fc-aabc-7a8e-a658-bf88e5751de1
+  uuid: 01a21800-d303-78fe-b4b0-3ebc05a5e5b3
+  checksum: v2:d26a5dde3a98a83ade94c7d3b95957d5b264b95234c4e87e299ddd8849ee9158
+  built_at: '2026-11-26T13:17:17+00:00'
+  path: heart_failure_followup_survival/01a21800-d303-78fe-b4b0-3ebc05a5e5b3
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 291
   n_features: 11
@@ -47,6 +47,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 194
     max: 194
@@ -70,7 +71,7 @@ decisions:
 
 Binary classification of `death_within_60_days`, scored with `roc_auc` on IID splits. 291 rows and 11 features. Source: Other (2017).
 
-Built as `01a111fc-aabc-7a8e-a658-bf88e5751de1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8615727c306974f122796c76ffedc96b931bc0460d90c63730c4e44321b7d1ba`, so the build is stale. See [Build](#build).
+Built as `01a21800-d303-78fe-b4b0-3ebc05a5e5b3` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -206,7 +207,7 @@ We start with the UCI copy (519) of the S1 data of Ahmad et al. 2017 (PLoS ONE 1
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `death_within_60_days`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 291 rows (SPLIT-33).
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 194 rows, test 97 rows.
 
@@ -374,11 +375,10 @@ The source filled missing values with a mean without saying so; for serum creati
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-aabc-7a8e-a658-bf88e5751de1 |
-| checksum | v2:66c2f80349b67a92deaa7355d0d759f8a9c6fdffc0af9ae20100475c318d07c5 |
-| built_at | 2026-10-06T16:12:13+00:00 |
-| path | heart_failure_followup_survival/01a111fc-aabc-7a8e-a658-bf88e5751de1 |
+| uuid | 01a21800-d303-78fe-b4b0-3ebc05a5e5b3 |
+| checksum | v2:d26a5dde3a98a83ade94c7d3b95957d5b264b95234c4e87e299ddd8849ee9158 |
+| built_at | 2026-11-26T13:17:17+00:00 |
+| path | heart_failure_followup_survival/01a21800-d303-78fe-b4b0-3ebc05a5e5b3 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8615727c306974f122796c76ffedc96b931bc0460d90c63730c4e44321b7d1ba` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

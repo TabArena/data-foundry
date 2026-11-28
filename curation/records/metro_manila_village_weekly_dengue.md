@@ -3,7 +3,7 @@ unique_name: metro_manila_village_weekly_dengue
 name: Weekly dengue incidence and environment, Metropolitan Manila villages 2009-2013 (Francisco et al. 2024)
 checked_by:
 - Andrej
-suggestion: 'Yes'
+suggestion: TBD -> 2nd Tier
 priority: 3
 tags:
 - Two-Regime Zeros
@@ -112,6 +112,9 @@ a7ba83fc8cdb1b0533420e2d29f9d6100652ca9524b75b223c982cceb3a89865, equal to the s
 also matches its digest. 113,620 data rows and 36 columns (437 villages x 260 weeks). Raw in
 `local-data-warehouse/metro_manila_village_weekly_dengue/dryad_x3ffbg7ss_v20251204/`. The manual-download reason for
 2nd Tier no longer holds; TP-10 leg 1 is still to test at /add-dataset.
+
+CC (2026-11-27, Andrej): `TBD -> 2nd Tier`, in chat: "Put both to 2nd Tier" (this record and the other zero-inflated
+`Yes` left without a v2 folder).
 
 ## Reference
 

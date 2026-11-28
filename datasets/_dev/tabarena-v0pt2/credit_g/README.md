@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: credit_g
 container_format: 2
-checksum: v2:10c9ede0749ee88b6eaeb69a4fe7e0138bd99d21b16f510d32b34c9e1b377036
+checksum: v2:9ff8b32562a8c9eda3872c8d6ad4bc304a4b132c6b0fd25cfff7d37986947265
 build:
-  uuid: 01a111fc-cf4e-7841-a626-e0358b0042c6
-  checksum: v2:db7592c8a2928f6e03ba79421d5bb29644dea45e047e9e09e439f3b9857441f2
-  built_at: '2026-10-06T16:12:23+00:00'
-  path: credit_g/01a111fc-cf4e-7841-a626-e0358b0042c6
+  uuid: 01a21800-c626-70de-a7b1-e0c9ba2df788
+  checksum: v2:9ff8b32562a8c9eda3872c8d6ad4bc304a4b132c6b0fd25cfff7d37986947265
+  built_at: '2026-11-26T13:17:13+00:00'
+  path: credit_g/01a21800-c626-70de-a7b1-e0c9ba2df788
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 1000
   n_features: 20
@@ -46,6 +46,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 666
     max: 667
@@ -67,7 +68,7 @@ decisions: []
 
 Binary classification of `good_or_bad_customer`, scored with `cost_matrix` on IID splits. 1,000 rows and 20 features. Source: UCI (1994).
 
-Built as `01a111fc-cf4e-7841-a626-e0358b0042c6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:10c9ede0749ee88b6eaeb69a4fe7e0138bd99d21b16f510d32b34c9e1b377036`, so the build is stale. See [Build](#build).
+Built as `01a21800-c626-70de-a7b1-e0c9ba2df788` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -219,7 +220,7 @@ The first 5 of 1,000 rows of the final frame (random rows: the frame is shuffled
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `good_or_bad_customer`: 10 repeat(s) x 3 folds, 30 splits, the repeats set by the 1,000 rows (SPLIT-33).
 
 10 repeat(s) x 3 fold(s) with seed 4267; train 666 to 667 rows, test 333 to 334 rows.
 
@@ -390,11 +391,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-cf4e-7841-a626-e0358b0042c6 |
-| checksum | v2:db7592c8a2928f6e03ba79421d5bb29644dea45e047e9e09e439f3b9857441f2 |
-| built_at | 2026-10-06T16:12:23+00:00 |
-| path | credit_g/01a111fc-cf4e-7841-a626-e0358b0042c6 |
+| uuid | 01a21800-c626-70de-a7b1-e0c9ba2df788 |
+| checksum | v2:9ff8b32562a8c9eda3872c8d6ad4bc304a4b132c6b0fd25cfff7d37986947265 |
+| built_at | 2026-11-26T13:17:13+00:00 |
+| path | credit_g/01a21800-c626-70de-a7b1-e0c9ba2df788 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:10c9ede0749ee88b6eaeb69a4fe7e0138bd99d21b16f510d32b34c9e1b377036` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

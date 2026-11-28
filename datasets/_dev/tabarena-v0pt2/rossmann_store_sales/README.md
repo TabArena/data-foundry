@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: rossmann_store_sales
 container_format: 2
-checksum: v2:ebd313a09fbecf8934a2b7c098625033781075eedcef3a695854cb4350d236cd
+checksum: v2:54f5cc7f58d1b0c58874a8882f7306ce633f906691b9c5cf73117f1916f12a28
 build:
-  uuid: 01a111fc-4eab-762b-baa6-12fb81c7e2ee
-  checksum: v2:baba7a6d8e2a40857f30a6179d720541ce4faf14ac918c45d3c5116107201d6e
-  built_at: '2026-10-06T16:11:55+00:00'
-  path: rossmann_store_sales/01a111fc-4eab-762b-baa6-12fb81c7e2ee
+  uuid: 01a217ff-7973-708e-8684-b139a5343503
+  checksum: v2:54f5cc7f58d1b0c58874a8882f7306ce633f906691b9c5cf73117f1916f12a28
+  built_at: '2026-11-26T13:16:01+00:00'
+  path: rossmann_store_sales/01a217ff-7973-708e-8684-b139a5343503
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 844392
   n_features: 47
@@ -48,6 +48,24 @@ splits:
   time_horizon_unit: days
   time_gap: 1
   time_gap_unit: days
+  reason: 'The description says ''Rossmann store managers are tasked with predicting
+    their daily sales for up to six weeks in advance'', to plan staff schedules, and
+    the competition''s own test period (1 August to 17 September 2015, 48 days) is
+    about as long, so each test window is six weeks (42 days; the horizon checked,
+    CC 2026-11-11). We add one day between train and test as a planning gap: a day''s
+    turnover is known when the store closes, so no label arrives late, and the gap
+    only drops the last day before each window from training. The three windows, newest
+    first (CC 2026-11-11), evenly spaced over the 11 windows that keep half the store-days
+    for training (the 1st, 6th and 11th): 2015-06-20 to 07-31, the newest; 2014-11-22
+    to 2015-01-02, the Christmas weeks, when sales are highest (8,478 per open store-day
+    against 6,837 on the train side, 24% more) and staffing matters most; and 2014-04-26
+    to 06-06, late spring of the other year. So the test spans two years and three
+    seasons. Test 40,282, 31,203 and 38,107 store-days; train 802,996, 617,355 and
+    443,771 (95.1%, 73.1% and 52.6% of the 844,392 open store-days); the 1,114 store-days
+    of 19 June 2015, the newest window''s gap day, lie in no split. 180 stores have
+    no rows from 1 July to 31 December 2014, so the Christmas window tests 935 stores
+    until 31 December and all 1,115 only on 2 January 2015; the other two windows
+    test every store.'
   n_train:
     min: 443771
     max: 802996
@@ -58,10 +76,9 @@ bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos: []
-  accepted:
-    splits_rows_unused: 'By design: the 1,114 store-days of 19 June 2015, the one-day
-      gap before the newest window, are in no split (Lennart, 2026-11-11).'
+  infos:
+  - splits_rows_unused
+  accepted: {}
 decisions: []
 ---
 
@@ -71,7 +88,7 @@ decisions: []
 
 Regression of `Sales`, scored with `rmspe` on temporal splits by `Date`. 844,392 rows and 47 features. Source: Kaggle (2015).
 
-Built as `01a111fc-4eab-762b-baa6-12fb81c7e2ee` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ebd313a09fbecf8934a2b7c098625033781075eedcef3a695854cb4350d236cd`, so the build is stale. See [Build](#build).
+Built as `01a217ff-7973-708e-8684-b139a5343503` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -240,6 +257,8 @@ The first 5 of 844,392 rows of the final frame (the oldest rows: the frame is so
 
 ## Splits
 
+Expanding-window temporal splits: 3 test window(s) of 42 days, starting at 2015-06-20, 2014-11-22, 2014-04-26, newest first; train is all earlier data up to a gap of 1 days. The test windows by `Date`, as listed: 2015-06-20 to 2015-07-31 (40,282 test, 802,996 train rows); 2014-11-22 to 2015-01-02 (31,203 test, 617,355 train rows); 2014-04-26 to 2014-06-06 (38,107 test, 443,771 train rows).
+
 The description says 'Rossmann store managers are tasked with predicting their daily sales for up to six weeks in advance', to plan staff schedules, and the competition's own test period (1 August to 17 September 2015, 48 days) is about as long, so each test window is six weeks (42 days; the horizon checked, CC 2026-11-11). We add one day between train and test as a planning gap: a day's turnover is known when the store closes, so no label arrives late, and the gap only drops the last day before each window from training. The three windows, newest first (CC 2026-11-11), evenly spaced over the 11 windows that keep half the store-days for training (the 1st, 6th and 11th): 2015-06-20 to 07-31, the newest; 2014-11-22 to 2015-01-02, the Christmas weeks, when sales are highest (8,478 per open store-day against 6,837 on the train side, 24% more) and staffing matters most; and 2014-04-26 to 06-06, late spring of the other year. So the test spans two years and three seasons. Test 40,282, 31,203 and 38,107 store-days; train 802,996, 617,355 and 443,771 (95.1%, 73.1% and 52.6% of the 844,392 open store-days); the 1,114 store-days of 19 June 2015, the newest window's gap day, lie in no split. 180 stores have no rows from 1 July to 31 December 2014, so the Christmas window tests 935 stores until 31 December and all 1,115 only on 2 January 2015; the other two windows test every store.
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 443,771 to 802,996 rows, test 31,203 to 40,282 rows. Prediction horizon: 42 days. Gap between train and test: 1 days.
@@ -263,12 +282,9 @@ Each test window against its train side, by statistics of the data, never of a m
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
-
-Accepted on purpose:
-
-- `splits_rows_unused`: By design: the 1,114 store-days of 19 June 2015, the one-day gap before the newest window, are in no split (Lennart, 2026-11-11).
+- **info** `splits_rows_unused`: 1,114 row(s) (0.1%) appear in no train and no test set. (hint: Expected of a temporal split (the rows of a gap, history no window trains on, rows a filter keeps out of every training side); say why in `splits_comment`.)
 
 ## Data checks
 
@@ -437,11 +453,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-4eab-762b-baa6-12fb81c7e2ee |
-| checksum | v2:baba7a6d8e2a40857f30a6179d720541ce4faf14ac918c45d3c5116107201d6e |
-| built_at | 2026-10-06T16:11:55+00:00 |
-| path | rossmann_store_sales/01a111fc-4eab-762b-baa6-12fb81c7e2ee |
+| uuid | 01a217ff-7973-708e-8684-b139a5343503 |
+| checksum | v2:54f5cc7f58d1b0c58874a8882f7306ce633f906691b9c5cf73117f1916f12a28 |
+| built_at | 2026-11-26T13:16:01+00:00 |
+| path | rossmann_store_sales/01a217ff-7973-708e-8684-b139a5343503 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ebd313a09fbecf8934a2b7c098625033781075eedcef3a695854cb4350d236cd` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: horse_colic_survival
 container_format: 2
-checksum: v2:462ca9b668adadcf2273c6a39617880345c5bad28e5d6913ffdf3d6a6ae3dc46
+checksum: v2:be95fa8bc78a0abaa7c739c792019f1d96b9334cce417e10fc28066264b24ebf
 build:
-  uuid: 01a111fc-df0b-7d08-9ad5-3bfee18c9b55
-  checksum: v2:3edea035ca49ff4f42bfa2eb137a98817c67387f49f0fb111c2fd7cf979fa727
-  built_at: '2026-10-06T16:12:27+00:00'
-  path: horse_colic_survival/01a111fc-df0b-7d08-9ad5-3bfee18c9b55
+  uuid: 01a21800-7a89-77f5-895b-ad08f5808339
+  checksum: v2:be95fa8bc78a0abaa7c739c792019f1d96b9334cce417e10fc28066264b24ebf
+  built_at: '2026-11-26T13:16:54+00:00'
+  path: horse_colic_survival/01a21800-7a89-77f5-895b-ad08f5808339
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 344
   n_features: 20
@@ -54,6 +54,23 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Stratified grouped 20-repeated 3-fold split on `case_number`: the 334 horses
+    (about 111 per test fold), a
+
+    horse''s return visits on the side of its first visit. The case number is the
+    only time order (no dates);
+
+    along it the relation of survival to the examination measures stationary for horses
+    held out whole (v3 test,
+
+    2026-11-18; `Time basis: StationaryRelation` in the curation notes), so random
+    horses stand for later
+
+    admissions; the grouping by case is part of that basis (Andrej, 2026-11-20). Not
+    tested: a later change of recording or of practice. From 2026-11-10 to 2026-11-12
+    the split was three windows of 57 horses in case-number order
+
+    (2026-11-12, Andrej, on Lennart''s question).'
   n_train:
     min: 226
     max: 232
@@ -76,7 +93,7 @@ decisions: []
 
 Binary classification of `did_not_survive`, scored with `roc_auc` on grouped splits by `case_number`. 344 rows and 20 features. Source: UCI (1989).
 
-Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:462ca9b668adadcf2273c6a39617880345c5bad28e5d6913ffdf3d6a6ae3dc46`, so the build is stale. See [Build](#build).
+Built as `01a21800-7a89-77f5-895b-ad08f5808339` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -245,25 +262,16 @@ We start with the data from UCI and merge the train and test data.
   time column of three windows of 57 horses and a feature; on those windows' test rows, training on as many
   random horses instead of the earlier ones scored 0.045 log loss better for LightGBM, 0.009 for TabPFN 3.5
   and 0.003 for logistic regression (harmonised recording).
-- Time basis: StationaryRelation (SPLIT-32; Andrej, 2026-11-20): admissions to one hospital, in the order of their case numbers, which stand in for
-  the missing admission dates (`Time: Inferred`; an inferred order serves the measurement as it would a
-  temporal split). The stationary-relation test (v3, 2026-11-18, ROC AUC, 5 seeds) on six runs of 57 cases in
-  case-number order, the newest three tested, reads flat pooled: Kumo-Tabular -0.001 ± 0.012, floor 0.003;
-  LightGBM +0.010 ± 0.014; each run alone is inconclusive, and in none does the forward model do clearly worse.
-  The relation is measured stationary for cases held out whole (grouped by case: a horse's return visits stay
-  on one side); random folds over visits would not be covered by it. Earlier evidence: survival is flat along
-  the order (62.2% in the first half, 62.8% in the second, Fisher p = 1.0), and for the 60 horses at positions
-  200 to 259 training on their history instead of as many random horses moved log loss by no interval excluding
-  zero (2026-11-12). The recording change is harmonised (above); what
-  remains of it, 55 missing cells, is unrelated to survival. Not tested: a later change of recording or of
-  practice.
 - Return visits kept (2026-11-10, Andrej): nine cases appear two or three times under one
   six-digit case number with a suffix (10 later rows; the codebook: "may not be unique if the horse is treated >
   1 time"), all first visits survived. A return visit is an admission to score; the split groups by case, so no
   fold trains on one visit of a horse and tests another (2026-11-12; until then the time
   order kept each later visit after its first).
+- Time basis: StationaryRelation (Andrej, 2026-11-20): admissions to one hospital, in the order of their case numbers, which stand in for the missing admission dates (`Time: Inferred`; an inferred order serves the measurement as it would a temporal split). The stationary-relation test (v3, 2026-11-18, ROC AUC, 5 seeds) on six runs of 57 cases in case-number order, the newest three tested, reads flat pooled: Kumo-Tabular -0.001 ± 0.012, floor 0.003; LightGBM +0.010 ± 0.014; each run alone is inconclusive, and in none does the forward model do clearly worse. The relation is measured stationary for cases held out whole (grouped by case: a horse's return visits stay on one side); random folds over visits would not be covered by it. Earlier evidence: survival is flat along the order (62.2% in the first half, 62.8% in the second, Fisher p = 1.0), and for the 60 horses at positions 200 to 259 training on their history instead of as many random horses moved log loss by no interval excluding zero (2026-11-12). The recording change is harmonised (above); what remains of it, 55 missing cells, is unrelated to survival. Not tested: a later change of recording or of practice.
 
 ## Splits
+
+Repeated 3-fold cross-validation keeping each group of `case_number` whole (shuffled group k-fold, a new draw per repeat), stratified on `did_not_survive`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 344 rows (SPLIT-33).
 
 Stratified grouped 20-repeated 3-fold split on `case_number`: the 334 horses (about 111 per test fold), a
 horse's return visits on the side of its first visit. The case number is the only time order (no dates);
@@ -364,13 +372,13 @@ One group is a case number of the hospital: a horse's first visit and, for 9 cas
 | nearest neighbour in the same group | 0.0% of the rows (chance: 0.0%) |
 | label variance explained by the group | 0.96 (shuffled groups: 0.97) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
 0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
-- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (0.0% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (0.96 vs 0.97). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.)
+- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (0.0% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (0.96 vs 0.97). (hint: The grouping may not be needed: compare IID and grouped scores with `data-foundry probe group`.)
 
 ## Data checks
 
@@ -499,11 +507,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-df0b-7d08-9ad5-3bfee18c9b55 |
-| checksum | v2:3edea035ca49ff4f42bfa2eb137a98817c67387f49f0fb111c2fd7cf979fa727 |
-| built_at | 2026-10-06T16:12:27+00:00 |
-| path | horse_colic_survival/01a111fc-df0b-7d08-9ad5-3bfee18c9b55 |
+| uuid | 01a21800-7a89-77f5-895b-ad08f5808339 |
+| checksum | v2:be95fa8bc78a0abaa7c739c792019f1d96b9334cce417e10fc28066264b24ebf |
+| built_at | 2026-11-26T13:16:54+00:00 |
+| path | horse_colic_survival/01a21800-7a89-77f5-895b-ad08f5808339 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:462ca9b668adadcf2273c6a39617880345c5bad28e5d6913ffdf3d6a6ae3dc46` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: predict_students_dropout_and_academic_success
 container_format: 2
-checksum: v2:d4ea60a639feb65efbeb1758e50039c58cc34eb2b0da68937046128f8e5f1471
+checksum: v2:325111cc91c3224bca64804a6f17059ee7765fef0a694166fb7732df47220bc4
 build:
-  uuid: 01a111fc-b7bd-7c0b-a919-1a848957caf4
-  checksum: v2:29ca775f9fd8e27edc7509838682f54ddfd2065cad22627f86c60139287afe39
-  built_at: '2026-10-06T16:12:17+00:00'
-  path: predict_students_dropout_and_academic_success/01a111fc-b7bd-7c0b-a919-1a848957caf4
+  uuid: 01a21800-e3f0-7484-898c-c88d1ceb3716
+  checksum: v2:325111cc91c3224bca64804a6f17059ee7765fef0a694166fb7732df47220bc4
+  built_at: '2026-11-26T13:17:23+00:00'
+  path: predict_students_dropout_and_academic_success/01a21800-e3f0-7484-898c-c88d1ceb3716
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 4424
   n_features: 35
@@ -47,6 +47,28 @@ splits:
   time_horizon_unit: years
   time_gap: 1
   time_gap_unit: years
+  reason: 'A window''s model is fitted when its cohort ends its first year. The label
+    is the status at the end of the
+
+    course''s normal length (three years, four for Nursing; Realinho et al. 2022,
+    Sec. 3.1), so training holds only
+
+    the students whose normal end came before that: for a three-year course the cohorts
+    up to two years older
+
+    (a gap of one cohort), for Nursing up to three years older (a gap of two). Measured
+    2026-11-11 (untuned LightGBM, log loss): 0.740 (2017), 0.791, 0.694, 0.706
+
+    (2014), +0.02 to +0.14 above training on as many students drawn from all cohorts;
+    the random split this
+
+    replaces flattered log loss by that much. Four of the nine windows an IID split
+    of this size would get: one
+
+    window is one cohort, and with the gap the label needs, the 2013 cohort would
+    train on 43.9% of the students
+
+    (Andrej, 2026-11-19).'
   n_train:
     min: 2379
     max: 3560
@@ -60,9 +82,9 @@ bundle_checks:
   infos:
   - meta_time_horizon_unit
   accepted:
-    splits_below_target: 'Four of the nine windows an IID split of this size would
-      get: one window is one cohort, and with the gap the label needs, the 2013 cohort
-      would train on 43.9% of the students (Andrej, 2026-11-19).'
+    splits_dimensions_off_protocol: 'Four of the nine windows an IID split of this
+      size would get: one window is one cohort, and with the gap the label needs,
+      the 2013 cohort would train on 43.9% of the students (Andrej, 2026-11-19).'
 decisions: []
 ---
 
@@ -72,7 +94,7 @@ decisions: []
 
 Multiclass classification of `AcademicOutcome`, scored with `log_loss` on temporal splits by `enrolment_year`. 4,424 rows and 35 features. Source: UCI (2021).
 
-Built as `01a111fc-b7bd-7c0b-a919-1a848957caf4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d4ea60a639feb65efbeb1758e50039c58cc34eb2b0da68937046128f8e5f1471`, so the build is stale. See [Build](#build).
+Built as `01a21800-e3f0-7484-898c-c88d1ceb3716` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -216,12 +238,12 @@ The first 5 of 4,424 rows of the final frame (the oldest rows: the frame is sort
 
 ## Splits
 
-Four test windows, one enrolment cohort each, newest first (2017, 2016, 2015, 2014; 368, 414, 445 and 390
-students). A window's model is fitted when its cohort ends its first year. The label is the status at the end of the
+Custom temporal splits (`_make_splits`): 4 test window(s), each with its own train side. The test windows by `enrolment_year`, as listed: 2017 (368 test, 3,560 train rows); 2016 (414 test, 3,113 train rows); 2015 (445 test, 2,739 train rows); 2014 (390 test, 2,379 train rows).
+
+A window's model is fitted when its cohort ends its first year. The label is the status at the end of the
 course's normal length (three years, four for Nursing; Realinho et al. 2022, Sec. 3.1), so training holds only
 the students whose normal end came before that: for a three-year course the cohorts up to two years older
-(a gap of one cohort), for Nursing up to three years older (a gap of two). The training sides hold 54% to 80%
-of the 4,424 students. Measured 2026-11-11 (untuned LightGBM, log loss): 0.740 (2017), 0.791, 0.694, 0.706
+(a gap of one cohort), for Nursing up to three years older (a gap of two). Measured 2026-11-11 (untuned LightGBM, log loss): 0.740 (2017), 0.791, 0.694, 0.706
 (2014), +0.02 to +0.14 above training on as many students drawn from all cohorts; the random split this
 replaces flattered log loss by that much. Four of the nine windows an IID split of this size would get: one
 window is one cohort, and with the gap the label needs, the 2013 cohort would train on 43.9% of the students
@@ -252,11 +274,11 @@ Each test window against its train side, by statistics of the data, never of a m
 
 0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
-- **info** `meta_time_horizon_unit`: `time_horizon_unit='years'` implies calendar time, but `time_on='enrolment_year'` has dtype int64, so the horizon cannot be cross-checked. (hint: Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use `time_horizon_unit='steps'` for a plain numeric time index.)
+- **info** `meta_time_horizon_unit`: `time_horizon_unit='years'` implies calendar time, but `time_on='enrolment_year'` has dtype int64, so the horizon cannot be cross-checked. (hint: Declare what one step of the time column counts, `Temporal(..., time_unit=...)`, so the horizon can be cross-checked.)
 
 Accepted on purpose:
 
-- `splits_below_target`: Four of the nine windows an IID split of this size would get: one window is one cohort, and with the gap the label needs, the 2013 cohort would train on 43.9% of the students (Andrej, 2026-11-19).
+- `splits_dimensions_off_protocol`: Four of the nine windows an IID split of this size would get: one window is one cohort, and with the gap the label needs, the 2013 cohort would train on 43.9% of the students (Andrej, 2026-11-19).
 
 ## Data checks
 
@@ -418,11 +440,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-b7bd-7c0b-a919-1a848957caf4 |
-| checksum | v2:29ca775f9fd8e27edc7509838682f54ddfd2065cad22627f86c60139287afe39 |
-| built_at | 2026-10-06T16:12:17+00:00 |
-| path | predict_students_dropout_and_academic_success/01a111fc-b7bd-7c0b-a919-1a848957caf4 |
+| uuid | 01a21800-e3f0-7484-898c-c88d1ceb3716 |
+| checksum | v2:325111cc91c3224bca64804a6f17059ee7765fef0a694166fb7732df47220bc4 |
+| built_at | 2026-11-26T13:17:23+00:00 |
+| path | predict_students_dropout_and_academic_success/01a21800-e3f0-7484-898c-c88d1ceb3716 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:d4ea60a639feb65efbeb1758e50039c58cc34eb2b0da68937046128f8e5f1471` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

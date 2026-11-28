@@ -134,8 +134,8 @@ another's debate runs.
 * The task gamer gets only the participant kit and the interpreter's path; the hook denies the rest. The same discard
   rule applies to its report. The agent registry and the hooks load when a session starts: a session that started
   before `task-gamer.md` existed runs the agent from a fresh `claude -p`.
-* An exploit the task gamer finds that no probe covers, once it has turned up on two datasets, becomes a probe in the
-  probe library (`curation_probes/leak.py`, a row in the probe table of
+* An exploit the task gamer finds that no probe covers, once it has turned up on two datasets, becomes a leak probe in
+  the package (`data_foundry.probes.leak`, a row in the probe table of
   [leak_checks.md](../../knowledge-curation/references/leak_checks.md)), so the cheap check finds it the next time.
 * An agent's claim without a test is a question, not a finding (evidence.md, EV-6 and EV-7).
 * Every agent reports 0 to N findings. An attack that finds nothing is a result ("no leak found", with what was

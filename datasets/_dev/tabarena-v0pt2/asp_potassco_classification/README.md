@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: asp_potassco_classification
 container_format: 2
-checksum: v2:bedcb1248ace8a5696de8c0f748c968b6972ba24f7e379d85472cb6fa83f421d
+checksum: v2:3d24d53d6dd3f00352b74ea35c69825d06bb70a1798630cd456ee90b4b324721
 build:
-  uuid: 01a111fc-9534-79ba-a1c0-efe7268f38e0
-  checksum: v2:b6bc3fcf579023a6bb681f97aa24b90c306eda42a2358ed61c14dcd15012cdb3
-  built_at: '2026-10-06T16:12:08+00:00'
-  path: asp_potassco_classification/01a111fc-9534-79ba-a1c0-efe7268f38e0
+  uuid: 01a21800-880d-7d30-b1b7-e477259637b7
+  checksum: v2:3d24d53d6dd3f00352b74ea35c69825d06bb70a1798630cd456ee90b4b324721
+  built_at: '2026-11-26T13:16:59+00:00'
+  path: asp_potassco_classification/01a21800-880d-7d30-b1b7-e477259637b7
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 13332
   n_features: 137
@@ -54,6 +54,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 6446
     max: 10956
@@ -78,7 +79,7 @@ decisions: []
 
 Regression of `runtime`, scored with `par_k` on grouped splits by `problem_family`. 13,332 rows and 137 features. Source: ASlib (2014).
 
-Built as `01a111fc-9534-79ba-a1c0-efe7268f38e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:bedcb1248ace8a5696de8c0f748c968b6972ba24f7e379d85472cb6fa83f421d`, so the build is stale. See [Build](#build).
+Built as `01a21800-880d-7d30-b1b7-e477259637b7` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -162,7 +163,7 @@ Only curators run `build`, when the dataset ships.
 
 **Scoring columns**
 
-Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.metrics.scorer(container)(y_test, y_pred, test_idx)`).
 
 | column | role | how the metric uses it | model input |
 |---|---|---|---|
@@ -235,7 +236,7 @@ We get the data from ASlib and merge them into one file.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation keeping each group of `problem_family` whole (shuffled group k-fold, a new draw per repeat): 10 repeat(s) x 3 folds, 30 splits, the repeats set by the 1,212 scored units (SPLIT-33).
 
 10 repeat(s) x 3 fold(s) with seed 4267; train 6,446 to 10,956 rows, test 2,376 to 6,886 rows.
 
@@ -296,10 +297,10 @@ One group is a problem family of the Potassco ASP benchmark set: the instances o
 | largest group | 11.1% of the rows |
 | test groups per fold | 25 |
 | groups of two or more rows with a single label | 0.0% |
-| nearest neighbour in the same group | 98.6% of the rows (chance: 3.8%) |
+| nearest neighbour in the same group | 98.7% of the rows (chance: 3.8%) |
 | label variance explained by the group | 0.58 (shuffled groups: 0.00) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
@@ -319,7 +320,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | Tight | category | 176 | 1.32 | 2 | 1.0, 0.0 |
-| instance_id | category | 0 | 0 | 1212 | 004f5cda67b8, 008b8faad4b7, 00ab017c53cb, 00b2e91df90a, 00be9d6a0860, 00c3a51d1… |
+| instance_id | category | 0 | 0 | 1212 | ff84cbf9a1a2, 004f5cda67b8, 008b8faad4b7, 00ab017c53cb, 00b2e91df90a, 00be9d6a0… |
 | algorithm | category | 0 | 0 | 11 | clasp/2.1.3/h1-n1, clasp/2.1.3/h10-n1, clasp/2.1.3/h11-n1, clasp/2.1.3/h2-n1, c… |
 | problem_family | category | 0 | 0 | 75 | 222a85a4193a, adf8c72fb97e, c40240438f96, 178243f37719, 26164589427a, f4a1efb39… |
 | Choices-4 | float64 | 2398 | 17.99 | 751 | 528.0, 200.0, 644.0, 415.0, 557.0, 634.0, 716.0, 974.0, 194.0, 539.0 |
@@ -387,7 +388,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 33.63 | -0.067 | nan | 11.038 | 0.931 | log1p | 40686.9 | 7.82174e+16 | exponential |
+| 0 | 0 | 33.63 | -0.067 | nan | 11.038 | 0.931 | log1p | 40686.9 | 7.07753e+16 | exponential |
 
 ### Numeric features
 
@@ -476,11 +477,11 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | algorithm | 3 | clasp/2.1.3/h11-n1 | 1212 | 9.09 |
 | algorithm | 4 | clasp/2.1.3/h2-n1 | 1212 | 9.09 |
 | algorithm | 5 | clasp/2.1.3/h3-n1 | 1212 | 9.09 |
-| instance_id | 1 | 004f5cda67b8 | 11 | 0.08 |
-| instance_id | 2 | 008b8faad4b7 | 11 | 0.08 |
-| instance_id | 3 | 00ab017c53cb | 11 | 0.08 |
-| instance_id | 4 | 00b2e91df90a | 11 | 0.08 |
-| instance_id | 5 | 00be9d6a0860 | 11 | 0.08 |
+| instance_id | 1 | ff84cbf9a1a2 | 11 | 0.08 |
+| instance_id | 2 | 004f5cda67b8 | 11 | 0.08 |
+| instance_id | 3 | 008b8faad4b7 | 11 | 0.08 |
+| instance_id | 4 | 00ab017c53cb | 11 | 0.08 |
+| instance_id | 5 | 00b2e91df90a | 11 | 0.08 |
 | problem_family | 1 | 222a85a4193a | 1474 | 11.06 |
 | problem_family | 2 | adf8c72fb97e | 979 | 7.34 |
 | problem_family | 3 | c40240438f96 | 814 | 6.11 |
@@ -493,11 +494,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-9534-79ba-a1c0-efe7268f38e0 |
-| checksum | v2:b6bc3fcf579023a6bb681f97aa24b90c306eda42a2358ed61c14dcd15012cdb3 |
-| built_at | 2026-10-06T16:12:08+00:00 |
-| path | asp_potassco_classification/01a111fc-9534-79ba-a1c0-efe7268f38e0 |
+| uuid | 01a21800-880d-7d30-b1b7-e477259637b7 |
+| checksum | v2:3d24d53d6dd3f00352b74ea35c69825d06bb70a1798630cd456ee90b4b324721 |
+| built_at | 2026-11-26T13:16:59+00:00 |
+| path | asp_potassco_classification/01a21800-880d-7d30-b1b7-e477259637b7 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:bedcb1248ace8a5696de8c0f748c968b6972ba24f7e379d85472cb6fa83f421d` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: pricing_game_2016_french_fleet
 container_format: 2
-checksum: v2:0bf40f2167eae8b751c7db5250c6e2c69a6a0cf4658d86e0a7b2c1b1b7667661
-build: null
+checksum: v2:72b12552f4f674b1c6203345264a03f3b9610aebb60ae7fe7bba44166ff2ba91
+build:
+  uuid: 01a21800-9b46-78fa-9d68-310df124bbe6
+  checksum: v2:72b12552f4f674b1c6203345264a03f3b9610aebb60ae7fe7bba44166ff2ba91
+  built_at: '2026-11-26T13:17:03+00:00'
+  path: pricing_game_2016_french_fleet/01a21800-9b46-78fa-9d68-310df124bbe6
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 87228
@@ -44,6 +57,127 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Grouped 3-fold splits by contract, repeated three times, forced from temporal
+    (SPLIT-8,
+
+    ForcedGroupedFromTemporal; Lennart, 2026-11-08). The group column `fleet_group`
+    is the
+
+    contract, with the three contracts that share a registration joined, so every
+    period of a
+
+    fleet''s contract, in every year, and every period of a vehicle stays on one side;
+    a test fold holds 6,011 or
+
+    6,012 groups and 28,625 to 29,517 periods, 1,216 to 1,271 of them with a positive
+    charge. The use case is
+
+    a tariff fit on the closed years and applied to the next (the game priced 2014
+    from 2011-2013, and the claims of
+
+    2014 were never published), but rows are cut at 31 December and the claims carry
+    no dates, so the windows of a
+
+    temporal split are whole years: 2013 trained on 2011-2012 (64.4% of the rows)
+    is the one valid window, and 2012
+
+    trained on 2011 holds 30.4%, below SPLIT-14''s floor. Windows inside 2013 either
+    share that training side, one
+
+    model scored on three cohorts of period lengths, which SPLIT-14 as amended on
+    2026-11-02 counts as one window
+
+    (shipped from 2026-11-06 to 2026-11-08), or train on the 2013 periods that ended
+    before the window starts,
+
+    chosen by their realized end, which LEAK-41 bars (Andrej''s expanding windows
+    of 2026-11-02). What the dates
+
+    would change, on the folds'' 2013 periods (regularised Tweedie LightGBM fitted
+    with the weight, 3 seeds, 9
+
+    folds): the forced model scores 84.27 on the declared metric against 84.11 for
+    the valid window''s model,
+
+    trained on every period of 2011-2012 (+0.16, SD 0.45 over the folds, better on
+    4 of 9), and 0.172 against
+
+    0.184 on the normalized weighted Gini (-0.011, SD 0.011, better on 2 of 9), so
+    the forced split is no more
+
+    optimistic on 2013 than the valid window, a little harder on the Gini. The hold-out
+    of the last year (2013
+
+    trained on 2011-2012) is the reference design, but it allows no repeated splits,
+    so the shipped split is its
+
+    approximation, measured against it (Andrej, 2026-11-10): 8 models fitted with
+    the weight
+
+    on the hold-out and on each repeated design, the folds by contract rank 7 of them
+    as the hold-out does
+
+    (Kendall''s tau 1.00, and 1.00 for the 5 sound ones), their margins over the constant
+    0.20 from the hold-out''s on
+
+    average, within its own noise (SE of a margin 0.33 to 0.54), and their out-of-fold
+    score on 2013 matches the
+
+    hold-out''s for the Tweedie GLM (83.45 against 83.43, bootstrap SE 0.12). The
+    same folds scored on their 2013
+
+    periods only (E) come 0.14 from the hold-out, within that noise, but test 437
+    to 477 positive charges per fold
+
+    against about 1,240, so every year is tested for the larger test size (A over
+    E). The valid window''s model without the
+
+    test fleets'' periods, a new fleet''s cold start on about two thirds of the training
+    periods, loses 1.13 on the
+
+    declared metric (SD 0.73) and 0.021 of the Gini (SD 0.019; 0.004, SD 0.013, on
+    the review panel''s folds of
+
+    2026-11-06). In the valid window 79% to 81% of the folds'' 2013 periods
+
+    belong to a contract insured in 2011-2012, where the forced split tests fleets
+    never seen. A fold also mixes the
+
+    years: the charge per vehicle-year rises from 160 in 2011 to 184 in 2013, a level
+    a model can read from the
+
+    start date where a tariff for the next year would have to extrapolate it, and
+    a tariff fit on 1 January would
+
+    miss the late-reported claims of 2012 (the notes). The leak test across the split,
+    as for
+
+    wisconsin_local_government_property_insurance_fund (each test year scored by a
+    model trained without that
+
+    year''s training periods, against one trained without as many random training
+    periods; 9 folds), finds no
+
+    year-level leak: on the declared metric the year''s own training periods gain
+    -0.33 pooled (SD 0.33, a gain on
+
+    2 of 9 folds) with the start as its day of the year and -0.43 (SD 0.52, 2 of 9)
+    with the start as a date; on
+
+    the Gini -0.009 (SD 0.010, 1 of 9) and -0.001 (SD 0.017, 4 of 9), -0.005 within
+    a year, against wisconsin''s
+
+    +0.113 pooled; the claims per vehicle-year are flat across the years (0.117, 0.119,
+    0.119). Probe 23 agrees:
+
+    the year''s own training periods gain -0.38 pooled (SE 0.25, 3 of 9 splits), and
+    no lookup of a shared profile
+
+    gains on the test periods that have one (the notes). The other leak probes on
+    the folds find nothing, and IID
+
+    and grouped folds score alike (the notes). A vehicle keeps its group, so a test
+    fleet''s vehicles are new too.'
   n_train:
     min: 57711
     max: 58603
@@ -84,7 +218,7 @@ decisions:
 
 Regression of `claim_charge_per_vehicle_year`, scored with `rescaled_mean_tweedie_deviance` on grouped splits by `fleet_group`. 87,228 rows and 16 features. Source: Other (2016).
 
-Not built yet. The current definition gives checksum `v2:0bf40f2167eae8b751c7db5250c6e2c69a6a0cf4658d86e0a7b2c1b1b7667661`.
+Built as `01a21800-9b46-78fa-9d68-310df124bbe6` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -182,7 +316,7 @@ Only curators run `build`, when the dataset ships.
 
 **Scoring columns**
 
-Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.metrics.scorer(container)(y_test, y_pred, test_idx)`).
 
 | column | role | how the metric uses it | model input |
 |---|---|---|---|
@@ -269,14 +403,11 @@ We start with train_contrats.csv and train_sinistres.csv, the files the organise
 - CC (2026-11-09, Andrej): no record of the fleet's earlier periods, a recorded and provisional decision (A with the split as its reason: "I go with your recommendation"): under the split by contract the record would carry test periods' claims into test periods' features, and the one test found no gain; revisited when the split is settled (the Note above; an exception to CLEAN-19). The split by contract was kept on 2026-11-10, so the exception stands.
 - CC (2026-11-09, Andrej): the metric stays `rescaled_mean_tweedie_deviance` ((a): "Keep the rescaled deviance"): measured on the 9 shipped folds, it orders 8 models at Kendall's W 0.85 against 0.87 for the weighted Gini, so the reason of 2026-11-08 stands (the metric bullet).
 - CC (2026-11-10, Andrej): the split by contract stays, 3 x 3 folds by `fleet_group` over 2011-2013 with every year tested (A: "Disagree: We go with A over E because it provides the larger test size."). The hold-out of the last year (2013 trained on 2011-2012) is the reference design but allows no repeated splits, so the shipped split is its approximation, measured against it (splits_comment). A over E, the same folds scored on their 2013 periods only, for the larger test size: about 1,240 positive charges per fold against 437 to 477. A ranks 7 models as the hold-out does (Kendall's tau 1.00, and 1.00 for the 5 sound ones); its mean distance from the hold-out's margins over the constant is 0.20 against E's 0.14, within the hold-out's own noise (SE of a margin 0.33 to 0.54).
-- Time basis: ForcedGroupedFromTemporal (SPLIT-8): a tariff is fit on the closed years and applied to the next,
-  but rows are cut at 31 December and the claims carry no dates, so 2011-2013 give one valid yearly window where
-  three are needed; whole fleet contracts are held out (Lennart, 2026-11-08; Andrej, 2026-11-10). Published 2014
-  claims would add a window. The stationary-relation test over the policy years (2026-11-18, 2012 and 2013
-  tested forward) is inconclusive: LightGBM does not beat the constant, and Kumo-Tabular's deviance gap (-0.31 ±
-  0.28) spans 113 floors, so the forced tag stays.
+- Time basis: ForcedGroupedFromTemporal: a tariff is fit on the closed years and applied to the next, but rows are cut at 31 December and the claims carry no dates, so 2011-2013 give one valid yearly window where three are needed; whole fleet contracts are held out (Lennart, 2026-11-08; Andrej, 2026-11-10). Published 2014 claims would add a window. The stationary-relation test over the policy years (2026-11-18, 2012 and 2013 tested forward) is inconclusive: LightGBM does not beat the constant, and Kumo-Tabular's deviance gap (-0.31 ± 0.28) spans 113 floors, so the forced tag stays.
 
 ## Splits
+
+Repeated 3-fold cross-validation keeping each group of `fleet_group` whole (shuffled group k-fold, a new draw per repeat): 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 87,228 rows (SPLIT-33).
 
 Grouped 3-fold splits by contract, repeated three times, forced from temporal (SPLIT-8,
 ForcedGroupedFromTemporal; Lennart, 2026-11-08). The group column `fleet_group` is the
@@ -356,7 +487,7 @@ One group is a fleet contract, the organisers' "Numéro d'affaire" (rules, Sec. 
 | nearest neighbour in the same group | 3.9% of the rows (chance: 0.0%) |
 | label variance explained by the group | 0.18 (shuffled groups: 0.22) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Decisions
 
@@ -526,4 +657,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a21800-9b46-78fa-9d68-310df124bbe6 |
+| checksum | v2:72b12552f4f674b1c6203345264a03f3b9610aebb60ae7fe7bba44166ff2ba91 |
+| built_at | 2026-11-26T13:17:03+00:00 |
+| path | pricing_game_2016_french_fleet/01a21800-9b46-78fa-9d68-310df124bbe6 |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

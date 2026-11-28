@@ -1,0 +1,249 @@
+"""Recommended encodings for the columns a tabular model cannot take as they are (Lennart, 2026-11-01).
+
+Data Foundry ships such columns as they are, typed by what they hold: a date as ``datetime`` and free text as
+``string`` (their dtype says what they are), and what a dtype cannot say as a special feature (a definition's
+``special_features``, recorded in the container as :class:`~data_foundry.schema.SpecialFeature`): a molecule's SMILES
+column, a spectrum's group of columns. It does not encode them in the data. It recommends how to encode them,
+so a benchmark can do it the same way for every method (and cache it), and so this repository's tests of a dataset
+see what a model would see. A benchmark may use these encodings, take inspiration from them, or use its own.
+
+========  ========================================  ==========================================================
+kind      recommended (:func:`recommended_encodings`)  what it computes
+========  ========================================  ==========================================================
+smiles    ``rdkit2d-maccs-ecfp4`` (:func:`~data_foundry.special.chemistry.encode_smiles`)  RDKit's 2D descriptors,
+          the 166 MACCS keys and the ECFP4 counts, per molecule
+datetime  ``skrub-datetime`` (:func:`encode_datetime`)  skrub's ``DatetimeEncoder(add_weekday=True,
+          periodic_encoding="circular")``, as BeyondArena and TabArena's ``tabarena_default`` pipeline
+text      ``tfidf-svd`` (:func:`encode_text_tfidf`) and ``e5-small-v2`` (:func:`encode_text_e5`): check both
+spectrum  by technique and state (:func:`~data_foundry.special.encodings_for`): a raw mass spectrum
+          ``ms-sqrt-sg21-snip100-tic`` (MALDIquant's steps; DRIAMS's and Cromwell's chains the candidates to
+          compare), any other ``spectrum-as-is``; for a vibrational spectrum the candidates to compare are
+          ``vib-als-snv`` (RamanBench's linear-model default), ``vib-snv`` and ``vib-sg11-d1`` (a first derivative)
+========  ========================================  ==========================================================
+
+Text has two recommendations because neither wins everywhere: TF-IDF fitted on the training rows reads the words (or
+the character n-grams of codes and identifiers) of this dataset, while a sentence embedding reads meaning a small
+dataset cannot teach. Compare both on a dataset with text.
+
+Each encoding has an :class:`Encoding` spec whose ``id`` names it, the library release that fixes its values when
+there is one, and a revision: a cache of encoded values is keyed by it. Its ``scope`` says what a cache holds: one row
+per distinct ``value`` (SMILES, dates, e5), one per ``row`` with no fitting (spectra), or a fit per ``split`` on its
+training rows (TF-IDF). A special feature is encoded through one entry point,
+:func:`~data_foundry.special.encode_special_feature`, whatever its kind. The libraries are optional:
+RDKit is in the ``build`` extra, skrub and sentence-transformers in the ``encodings`` extra.
+"""
+
+from __future__ import annotations
+
+import logging
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Literal
+
+import numpy as np
+import pandas as pd
+
+from data_foundry.utils.optional import import_build_dependency
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass(frozen=True)
+class Encoding:
+    """A fixed encoding of one kind of column into numeric columns, identified by :attr:`id`."""
+
+    kind: str
+    """The kind of column it encodes: ``smiles``, ``datetime``, ``text`` or ``spectrum`` (a group of columns)."""
+    name: str
+    """What it computes, e.g. ``rdkit2d-maccs-ecfp4``."""
+    revision: int
+    """Bumped for any change that alters the values or the columns."""
+    description: str
+    """The columns it makes, for the container and a benchmark's cache."""
+    scope: Literal["value", "row", "split"]
+    """What a cache holds: one row per distinct ``value``, one per ``row`` (no fitting), or a fit per ``split``."""
+    library: str | None = None
+    """The library release that fixes its values (``rdkit2026.03.6``), when one is pinned."""
+
+    @property
+    def id(self) -> str:
+        """The spec id, e.g. ``rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1``: a cache of encoded values is keyed by it."""
+        return "-".join(part for part in (self.name, self.library, f"r{self.revision}") if part)
+
+
+DATETIME_ENCODING = Encoding(
+    scope="value",
+    kind="datetime",
+    name="skrub-datetime",
+    revision=1,
+    description=(
+        "skrub's DatetimeEncoder(add_weekday=True, periodic_encoding='circular'), as BeyondArena and TabArena's "
+        "tabarena_default pipeline: the year and the total seconds, and a circular (sine/cosine) pair for each "
+        "periodic part down to the column's resolution (month, day, hour, ...) and for the weekday, named "
+        "<column>_<part>_circular_0/1."
+    ),
+)
+"""The recommended encoding of a ``datetime`` column."""
+
+TEXT_COMPONENTS = 16
+"""The SVD components :data:`TEXT_TFIDF_ENCODING` keeps per text column."""
+
+ONE_TOKEN_SHARE = 0.9
+"""A text column whose values are a single token in at least this share of rows is read by character n-grams."""
+
+TEXT_TFIDF_ENCODING = Encoding(
+    scope="split",
+    kind="text",
+    name="tfidf-svd",
+    revision=1,
+    description=(
+        f"TF-IDF fitted on the training rows (words; character 2- to 5-grams when at least {ONE_TOKEN_SHARE:.0%} of "
+        f"the values are one token, as codes and identifiers are), reduced to {TEXT_COMPONENTS} components by "
+        "truncated SVD: columns tfidf_0 to tfidf_15."
+    ),
+)
+"""One of the two recommended encodings of a text column (``string``): fitted per split."""
+
+E5_MODEL = "intfloat/e5-small-v2"
+"""The sentence-transformer of :data:`TEXT_E5_ENCODING` (384 dimensions)."""
+
+TEXT_E5_ENCODING = Encoding(
+    scope="value",
+    kind="text",
+    name="e5-small-v2",
+    revision=1,
+    description=(
+        f"{E5_MODEL} sentence embeddings of each value with the 'query: ' prefix, L2-normalised: columns e5_0 to "
+        "e5_383, one row per distinct value."
+    ),
+)
+"""One of the two recommended encodings of a text column (``string``): per value, cacheable."""
+
+
+def recommended_encodings() -> dict[str, tuple[Encoding, ...]]:
+    """Every registered encoding by kind: ``datetime`` and ``text`` (by dtype), ``smiles`` and ``spectrum`` (special
+    features). Text has two to compare. Which encodings fit one special feature, the recommended one first, depends on
+    it (a spectrum's technique and state): :func:`~data_foundry.special.encodings_for`.
+    """
+    from data_foundry.special.chemistry import DEFAULT_SMILES_ENCODING  # noqa: PLC0415 - chemistry imports this module
+    from data_foundry.special.spectra import (  # noqa: PLC0415 - spectra imports this module
+        AS_IS_ENCODING,
+        CROMWELL_LOG2_ENCODING,
+        DRIAMS_ENCODING,
+        MS_RAW_ENCODING,
+        VIBRATIONAL_ALS_SNV_ENCODING,
+        VIBRATIONAL_SG1_ENCODING,
+        VIBRATIONAL_SNV_ENCODING,
+    )
+
+    return {
+        "smiles": (DEFAULT_SMILES_ENCODING,),
+        "datetime": (DATETIME_ENCODING,),
+        "text": (TEXT_TFIDF_ENCODING, TEXT_E5_ENCODING),
+        "spectrum": (
+            MS_RAW_ENCODING,
+            DRIAMS_ENCODING,
+            CROMWELL_LOG2_ENCODING,
+            AS_IS_ENCODING,
+            VIBRATIONAL_ALS_SNV_ENCODING,
+            VIBRATIONAL_SNV_ENCODING,
+            VIBRATIONAL_SG1_ENCODING,
+        ),
+    }
+
+
+def encode_datetime(values: pd.Series, *, prefix: str | None = None) -> pd.DataFrame:
+    """A ``datetime`` column in the recommended encoding (:data:`DATETIME_ENCODING`), on the index of ``values``.
+
+    The columns are skrub's, named ``<column>_<part>``; ``prefix`` replaces the column name in them.
+    """
+    skrub = import_build_dependency("skrub", extra="encodings")
+    encoder = skrub.DatetimeEncoder(add_weekday=True, periodic_encoding="circular")
+    name = values.name if values.name is not None else "datetime"
+    out = encoder.fit_transform(values.rename(name))
+    out.index = values.index
+    if prefix is not None:
+        out.columns = [f"{prefix}{c.removeprefix(f'{name}_')}" for c in out.columns]
+    return out
+
+
+def _text_vectorizer(values: pd.Series, *, min_df: int = 2) -> object:
+    """Word TF-IDF for prose; character 2- to 5-grams when most values are one token (codes, identifiers)."""
+    from sklearn.feature_extraction.text import TfidfVectorizer  # noqa: PLC0415 - scikit-learn is in `build`
+
+    sample = values.head(5_000).astype("string").fillna("")
+    one_token = float((~sample.str.strip().str.contains(r"\s")).mean()) if len(sample) else 0.0
+    if one_token >= ONE_TOKEN_SHARE:
+        return TfidfVectorizer(
+            analyzer="char", ngram_range=(2, 5), max_features=20_000, min_df=min_df, sublinear_tf=True, dtype=np.float32
+        )
+    return TfidfVectorizer(max_features=20_000, min_df=min_df, sublinear_tf=True, dtype=np.float32)
+
+
+def encode_text_tfidf(
+    train: pd.Series, test: pd.Series, *, prefix: str = "tfidf_", components: int = TEXT_COMPONENTS
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """A text column in the TF-IDF encoding (:data:`TEXT_TFIDF_ENCODING`), fitted on ``train`` only.
+
+    Returns the train and the test rows, each on its own index, with columns ``<prefix>0`` onwards (fewer than
+    ``components`` when the vocabulary is smaller). Missing values are empty text.
+
+    A term must appear in two training rows. When no term does (a small training side, or one fold of a small
+    dataset), the vocabulary is refitted with terms seen once. When the training side holds no term at all (every
+    value missing or blank), both frames come back with no columns and a warning is logged, so one fold does not
+    stop a benchmark run.
+    """
+    from sklearn.decomposition import TruncatedSVD  # noqa: PLC0415 - scikit-learn is in `build`
+
+    fit = train.astype("string").fillna("")
+    matrix = None
+    for min_df in (2, 1):
+        vectorizer = _text_vectorizer(fit, min_df=min_df)
+        try:
+            matrix = vectorizer.fit_transform(fit.to_numpy())
+            break
+        except ValueError:  # "empty vocabulary" or "After pruning, no terms remain"
+            continue
+    if matrix is None:
+        logger.warning(
+            "encode_text_tfidf: `%s` has no term in its %d training row(s); the column is encoded as no columns.",
+            train.name,
+            len(train),
+        )
+        return pd.DataFrame(index=train.index), pd.DataFrame(index=test.index)
+    n = max(1, min(components, matrix.shape[1] - 1, matrix.shape[0] - 1))
+    svd = TruncatedSVD(n_components=n, random_state=0)
+    columns = [f"{prefix}{i}" for i in range(n)]
+    out_train = pd.DataFrame(svd.fit_transform(matrix), index=train.index, columns=columns)
+    test_matrix = vectorizer.transform(test.astype("string").fillna("").to_numpy())
+    out_test = pd.DataFrame(svd.transform(test_matrix), index=test.index, columns=columns)
+    return out_train, out_test
+
+
+def encode_text_e5(
+    values: pd.Series,
+    *,
+    prefix: str = "e5_",
+    batch_size: int = 64,
+    model_factory: Callable[[str], object] | None = None,
+) -> pd.DataFrame:
+    """A text column in the e5 encoding (:data:`TEXT_E5_ENCODING`): one row per value, each distinct value once.
+
+    Missing values are empty text. ``model_factory`` builds the encoder from :data:`E5_MODEL` (default:
+    ``sentence_transformers.SentenceTransformer``; tests pass a stub).
+    """
+    if model_factory is None:
+        model_factory = import_build_dependency("sentence_transformers", extra="encodings").SentenceTransformer
+    text = values.astype("string").fillna("")
+    unique = pd.Index(pd.unique(text), dtype="object")
+    model = model_factory(E5_MODEL)
+    vectors = np.asarray(
+        model.encode([f"query: {v}" for v in unique], batch_size=batch_size, normalize_embeddings=True),
+        dtype=np.float32,
+    )
+    table = pd.DataFrame(vectors, index=unique, columns=[f"{prefix}{i}" for i in range(vectors.shape[1])])
+    out = table.reindex(text.to_numpy(dtype="object"))
+    out.index = values.index
+    return out

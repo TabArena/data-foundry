@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: tunisian_fraud_detection_challenge
 container_format: 2
-checksum: v2:c9ac4ae8643a246f82b23dc0d2a75249b7eb5b6758de913d8faf3e877ff9c14d
+checksum: v2:37e97a4a071fa604b62487505c62a5847a9f7fb52ff53e0ae03843b5f9d10711
 build:
-  uuid: 01a19475-b104-7ff0-82db-ed3aeb71f3a7
-  checksum: v2:84d2d72d5ffe91a80168cd461f4367b63635ee74467d97d96c89e6de9ce57972
-  built_at: '2026-11-01T00:15:05+00:00'
-  path: tunisian_fraud_detection_challenge/01a19475-b104-7ff0-82db-ed3aeb71f3a7
+  uuid: 01a21800-a3cc-75dc-9a59-e533cd889f79
+  checksum: v2:37e97a4a071fa604b62487505c62a5847a9f7fb52ff53e0ae03843b5f9d10711
+  built_at: '2026-11-26T13:17:06+00:00'
+  path: tunisian_fraud_detection_challenge/01a21800-a3cc-75dc-9a59-e533cd889f79
   data_foundry_version: 0.0.5
-  git_sha: 4bc27fd6d8b49f8c9c16446bb7e85132ce90943b
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
     python: 3.12.3
-    pandas: 3.1.0
-    numpy: 2.5.4
-    pyarrow: 26.0.0
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
     scikit-learn: 1.7.2
-    polars: 2.0.0
-build_stale: true
+    polars: 1.41.1
+build_stale: false
 data:
   n_rows: 20930
   n_features: 100
@@ -47,6 +47,52 @@ splits:
   time_horizon_unit: years
   time_gap: null
   time_gap_unit: null
+  reason: 'Leaf (SPLIT-36): Panel data -> fill in the covered period -> the rows that
+    lack the target lie later in time
+
+    (audits close years after the fiscal year; the newest years'' adjustments are
+    still open) -> Temporal · labels
+
+    arrive later (the labels-arrive-later step, Andrej, 2026-11-20). No gap: an audit''s
+    delay runs to years, and a
+
+    gap that long would leave fewer than three windows in five fiscal years (gap 0,
+    Lennart, 2026-11-05; confirmed
+
+    under the new leaf, Andrej, 2026-11-20). Three one-calendar-year cohort windows,
+    newest first: 2017, 2016, 2015 (fiscal year 2018 is cut, LEAK-24). Each
+
+    model trains on every earlier fiscal cohort with its labels, which the retrospective
+    analyst holds, and the
+
+    scored cohort''s labels are withheld. The previous adjustment reads only strictly
+    earlier years of the same
+
+    taxpayer, so for every test row that has one (1,216, 2,210 and 2,776 rows) it
+    comes from a training row, never
+
+    from its own window. January 1 represents an annual accounting cohort, not a verified
+    audit date. These windows
+
+    test the ranking of a later fiscal cohort, not models refitted at historical year
+    starts; audit-completion dates
+
+    are unavailable, and the 2018 cut shows that labels arrive late, so when a previous
+    label became known is not
+
+    established. One year is the evaluation-window duration, not a promised one-year
+    inspection or adjustment
+
+    horizon. The source''s own test file spans every fiscal year 2013-2018 and its
+    labels were never released, so
+
+    its split cannot be followed (SPLIT-19); these windows are our own. Three windows,
+    against the 9 an IID split
+
+    of 20,930 taxpayer-years would get: the release has five fiscal years after the
+    2018 cut, and a 2014 window
+
+    would train on 2013 alone, 29.0% of the rows, under the 30% floor (Andrej, 2026-11-20).'
   n_train:
     min: 11833
     max: 19301
@@ -61,10 +107,10 @@ bundle_checks:
   - dataset_duplicate_rows
   - dataset_conflicting_duplicate_rows
   accepted:
-    splits_below_target: 'Three windows, against the 9 an IID split of 20,930 taxpayer-years
-      would get: the release has five fiscal years after the 2018 cut, and a 2014
-      window would train on 2013 alone, 29.0% of the rows, under the 30% floor (Andrej,
-      2026-11-20).'
+    splits_dimensions_off_protocol: 'Three windows, against the 9 an IID split of
+      20,930 taxpayer-years would get: the release has five fiscal years after the
+      2018 cut, and a 2014 window would train on 2013 alone, 29.0% of the rows, under
+      the 30% floor (Andrej, 2026-11-20).'
     task_time_on_few_unique: Only five genuine fiscal-year cohorts exist (2018 is
       cut); three outer windows meet the training floor. Validation must respect the
       available annual support; finer timestamps are unavailable.
@@ -80,7 +126,7 @@ decisions: []
 
 Regression of `target`, scored with `rmse` on temporal splits by `fiscal_year`. 20,930 rows and 100 features. Source: Zindi (2019).
 
-Built as `01a19475-b104-7ff0-82db-ed3aeb71f3a7` on 2026-11-01, but `dataset.py` has changed since: it now gives checksum `v2:c9ac4ae8643a246f82b23dc0d2a75249b7eb5b6758de913d8faf3e877ff9c14d`, so the build is stale. See [Build](#build).
+Built as `01a21800-a3cc-75dc-9a59-e533cd889f79` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -109,6 +155,7 @@ Built as `01a19475-b104-7ff0-82db-ed3aeb71f3a7` on 2026-11-01, but `dataset.py` 
 
 - The curation record, with the triage decision, its sources and the review: [`curation/records/tunisian_fraud_detection_challenge.md`](../../../../curation/records/tunisian_fraud_detection_challenge.md)
 - The original source: <https://zindi.world/competitions/tunisian-fraud-detection>
+- The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
 ## Rebuild
 
@@ -219,6 +266,8 @@ The first 5 of 20,930 rows of the final frame (the oldest rows: the frame is sor
 
 ## Splits
 
+Expanding-window temporal splits: 3 test window(s) of 1 year, starting at 2017, 2016, 2015, newest first; train is all earlier data. The test windows by `fiscal_year`, as listed: 2017-01-01 (1,629 test, 19,301 train rows); 2016-01-01 (3,100 test, 16,201 train rows); 2015-01-01 (4,368 test, 11,833 train rows).
+
 Leaf (SPLIT-36): Panel data -> fill in the covered period -> the rows that lack the target lie later in time
 (audits close years after the fiscal year; the newest years' adjustments are still open) -> Temporal · labels
 arrive later (the labels-arrive-later step, Andrej, 2026-11-20). No gap: an audit's delay runs to years, and a
@@ -264,7 +313,7 @@ Each test window against its train side, by statistics of the data, never of a m
 
 Accepted on purpose:
 
-- `splits_below_target`: Three windows, against the 9 an IID split of 20,930 taxpayer-years would get: the release has five fiscal years after the 2018 cut, and a 2014 window would train on 2013 alone, 29.0% of the rows, under the 30% floor (Andrej, 2026-11-20).
+- `splits_dimensions_off_protocol`: Three windows, against the 9 an IID split of 20,930 taxpayer-years would get: the release has five fiscal years after the 2018 cut, and a 2014 window would train on 2013 alone, 29.0% of the rows, under the 30% floor (Andrej, 2026-11-20).
 - `task_time_on_few_unique`: Only five genuine fiscal-year cohorts exist (2018 is cut); three outer windows meet the training floor. Validation must respect the available annual support; finer timestamps are unavailable.
 - `meta_time_horizon_mismatch`: Every row is an annual cohort represented at January 1; the one-year horizon denotes the calendar cohort, while observed timestamp span is one point. No daily sampling or audit-duration claim is made.
 
@@ -300,18 +349,18 @@ Accepted on purpose:
 | CTR_OBLTCL | category | 0 | 0 | 3 | 3, 1, 2 |
 | CTR_RATISS | category | 0 | 0 | 2 | 0, 2 |
 | fiscal_year | datetime64\[ns\] | 0 | 0 | 5 | 2013-01-01 00:00:00, 2014-01-01 00:00:00, 2015-01-01 00:00:00, 2016-01-01 00:00… |
-| SND_MNTPRD_E | float64 | 19722 | 94.23 | 1208 | 2271398950.0, 16797000.0, 3952711.0, 108869185.0, 1077471224.0, 47374000.0, 497… |
+| SND_MNTPRD_E | float64 | 19722 | 94.23 | 1208 | 673978648.0, 2271398950.0, 16797000.0, 3952711.0, 108869185.0, 1077471224.0, 47… |
 | SND_MNTTAX_E | float64 | 19722 | 94.23 | 82 | 0.0, 23097900.0, 4161015.0, 1836279.0, 264755600.0, 88410.0, 24960000.0, 587931… |
 | FAC_MNTPRI_F | float64 | 19136 | 91.43 | 1791 | 700000.0, 3200000.0, 307203750.0, 2220301774.0, 100609920.0, 31711587249.0, 270… |
-| FAC_MFODEC_F | float64 | 19136 | 91.43 | 335 | 0.0, 41087928.0, 210574.0, 728893.0, 1436924.0, 282530.0, 120242.0, 4385224.0, … |
+| FAC_MFODEC_F | float64 | 19136 | 91.43 | 335 | 0.0, 225000.0, 3389011.0, 709186.0, 17421325.0, 843810.0, 7626497.0, 6906863.0,… |
 | FAC_MNTDCO_F | float64 | 19136 | 91.43 | 11 | 0.0, 1995604.0, 18000.0, 18.0, 101210.0, 1000.0, 918000.0, 1.0, 54700.0, 152991… |
 | FAC_MNTTVA_F | float64 | 19136 | 91.43 | 1755 | 0.0, 126000.0, 576000.0, 35964395.0, 2359440.0, 13579661439.0, 4140158.0, 39007… |
 | FAC_MNTPRI_C | float64 | 18884 | 90.22 | 1953 | 7068360.0, 28279188.0, 50055588.0, 26132556.0, 8320980.0, 22716768.0, 57647808.… |
-| FAC_MFODEC_C | float64 | 18884 | 90.22 | 480 | 0.0, 1135352.0, 712.0, 9904.0, 41582.0, 12829.0, 641293.0, 831944.0, 23825.0, 4… |
+| FAC_MFODEC_C | float64 | 18884 | 90.22 | 480 | 0.0, 128786.0, 3371066.0, 2100.0, 221782.0, 220218.0, 150000.0, 15400.0, 4082.0… |
 | FAC_MNTDCO_C | float64 | 18884 | 90.22 | 36 | 0.0, 1000.0, 2500.0, 18000.0, 1845053.0, 400.0, 357953.0, 1200.0, 1354.0, 16166… |
 | FAC_MNTTVA_C | float64 | 18884 | 90.22 | 1918 | 0.0, 1272300.0, 10376424.0, 16193412.0, 17510544.0, 4265652.0, 9009792.0, 50902… |
 | SND_MNTPRD_A | float64 | 18077 | 86.37 | 2032 | 1000000.0, 2000000.0, 3000000.0, 4000000.0, 6000000.0, 1500000.0, 8000000.0, 50… |
-| SND_MNTTVA_A | float64 | 18077 | 86.37 | 257 | 0.0, 62200186.0, 5142357.0, 32462170.0, 1966841.0, 3304266.0, 2522661.0, 544064… |
+| SND_MNTTVA_A | float64 | 18077 | 86.37 | 257 | 0.0, 390092.0, 104777508.0, 102908.0, 258090.0, 1656653.0, 802546.0, 13033216.0… |
 | SND_MNTDRC_A | float64 | 18077 | 86.37 | 11 | 0.0, 25320.0, 1613439012.0, 6074122.0, 257169454.0, 5416.0, 793188421.0, 220609… |
 | SND_MNTTAX_A | float64 | 18077 | 86.37 | 587 | 10000.0, 20000.0, 30000.0, 40000.0, 50000.0, 60000.0, 0.0, 70000.0, 80000.0, 90… |
 | SND_MNTPAY_A | float64 | 18077 | 86.37 | 622 | 10000.0, 20000.0, 30000.0, 40000.0, 50000.0, 60000.0, 0.0, 70000.0, 80000.0, 90… |
@@ -496,11 +545,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a19475-b104-7ff0-82db-ed3aeb71f3a7 |
-| checksum | v2:84d2d72d5ffe91a80168cd461f4367b63635ee74467d97d96c89e6de9ce57972 |
-| built_at | 2026-11-01T00:15:05+00:00 |
-| path | tunisian_fraud_detection_challenge/01a19475-b104-7ff0-82db-ed3aeb71f3a7 |
+| uuid | 01a21800-a3cc-75dc-9a59-e533cd889f79 |
+| checksum | v2:37e97a4a071fa604b62487505c62a5847a9f7fb52ff53e0ae03843b5f9d10711 |
+| built_at | 2026-11-26T13:17:06+00:00 |
+| path | tunisian_fraud_detection_challenge/01a21800-a3cc-75dc-9a59-e533cd889f79 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 4bc27fd6d8b49f8c9c16446bb7e85132ce90943b |
-| libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:c9ac4ae8643a246f82b23dc0d2a75249b7eb5b6758de913d8faf3e877ff9c14d` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

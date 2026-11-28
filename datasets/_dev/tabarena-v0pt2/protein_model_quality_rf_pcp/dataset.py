@@ -8,7 +8,16 @@ import re
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary, TimeBasis
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+)
 
 
 def protein_key(name: str) -> str:
@@ -233,8 +242,7 @@ class RfPcp(AbstractCuratedDataset):
         ),
     )
     splits_comment = """
-        Twenty repeats of three-fold grouped evaluation with seed 4267: the metric scores one correlation per
-        protein, so the split count counts proteins (297 on the train side). All rows of each recovered target key stay
+        All rows of each recovered target key stay
         together, including verified same-protein accession aliases. The selected GDT task and preserved target alternatives share test groups;
         membership is verified explicitly.
         All 342 CASP identities are verified; three retain source IDs. Sequence-family independence is not claimed.

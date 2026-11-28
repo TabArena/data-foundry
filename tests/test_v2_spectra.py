@@ -1,21 +1,15 @@
-"""The recommended encodings of a spectrum (``data_foundry.v2.spectra``)."""
+"""The recommended encodings of a spectrum (``data_foundry.special.spectra``)."""
 
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry.v2 import (
-    Spectrum,
-    encode_special_feature,
-    encode_spectrum,
-    encodings_for,
-    spectra,
-    spectrum_encoding,
-)
-from data_foundry.v2.encodings import recommended_encodings
-from data_foundry.v2.special import SpecialFeatureError
-from data_foundry.v2.spectra import (
+
+from data_foundry.definition import Spectrum
+from data_foundry.encodings import recommended_encodings
+from data_foundry.special import SpecialFeatureError, encode_special_feature, encodings_for, spectra
+from data_foundry.special.spectra import (
     AS_IS_ENCODING,
     CROMWELL_FILTER,
     CROMWELL_LOG2_ENCODING,
@@ -24,7 +18,9 @@ from data_foundry.v2.spectra import (
     VIBRATIONAL_ALS_SNV_ENCODING,
     VIBRATIONAL_SG1_ENCODING,
     VIBRATIONAL_SNV_ENCODING,
+    encode_spectrum,
     snip_baseline,
+    spectrum_encoding,
 )
 
 pytest.importorskip("scipy")
@@ -96,7 +92,7 @@ def test_the_first_derivative_is_savitzky_golay_over_11_points_of_order_2() -> N
     """The encoding equals scipy's savgol_filter(window 11, order 2, deriv 1, mode "interp") per position, and is
     exact on a quadratic: the derivative of i**2 is 2i at every position, the edges included.
     """
-    from scipy.signal import savgol_filter  # noqa: PLC0415 - scipy is checked at import
+    from scipy.signal import savgol_filter
 
     rng = np.random.default_rng(0)
     values = rng.normal(size=(3, 30)).cumsum(axis=1)
@@ -264,3 +260,13 @@ def test_cromwell_denoises_and_ends_on_a_log2_scale_free_of_the_intensity_scale(
     np.testing.assert_allclose(values[0], values[3], atol=1e-6)
     with pytest.raises(ValueError, match="too few"):
         encode_spectrum(frame.iloc[:, :300], axis[:300], CROMWELL_LOG2_ENCODING)
+
+
+@pytest.mark.parametrize("dtype", [bool, "boolean"])
+def test_a_spectrum_of_booleans_is_not_numeric(dtype) -> None:
+    """Both the numpy and the nullable boolean dtype are flags, not intensities."""
+    spectrum = Spectrum(name="s", prefix="cm_", unit="cm-1", technique="raman", state="raw", description="d")
+    frame = pd.DataFrame({"cm_1": [1.0, 2.0], "cm_2": pd.Series([True, False], dtype=dtype)})
+    feature = spectrum.record(frame.columns)
+    findings = list(Spectrum.check(frame, feature))
+    assert [(f.slug, f.severity) for f in findings] == [("dataset_spectrum", "error")]

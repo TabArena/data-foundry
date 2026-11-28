@@ -41,9 +41,8 @@ Lessons of the review rounds of 2026-11-10 and 11, where up to six agents applie
   session scratchpad: a restart wiped the scratchpad and the window tables in it.
 * Each agent writes under its own name (`apply_<agent>.md`, `<dataset>_windows.csv`); a shared file name (`out.md`,
   `check.md`) is overwritten by the next agent.
-* A file several agents would edit (`CHANGELOG.md`, the working copy's cross-dataset `REVIEW.md`, a knowledge file,
-  the review page) is edited by the main session only: the agents return drafts. Two edits of one file at once lose
-  one of them.
+* A file several agents would edit (`CHANGELOG.md`, a knowledge file, the review page) is edited by the main session
+  only: the agents return drafts. Two edits of one file at once lose one of them.
 * An agent's summary is not the change: read the diff (a mark word copied wrong, a claim its own numbers
   contradict).
 * Never `git stash`, `git checkout` or `git switch` while agents edit the working tree: the tree changes under them

@@ -4,9 +4,6 @@ name: BCSC Risk Estimation Dataset
 checked_by:
 - AI (UNVERIFIED)
 - Andrej
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Andrej
 suggestion: 'Yes'
 decision_markers:
 - Outdated

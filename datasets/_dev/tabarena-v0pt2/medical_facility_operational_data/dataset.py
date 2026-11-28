@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -157,11 +158,6 @@ class MedicalFacilityOperationalData(AbstractCuratedDataset):
         precede the oldest window. Each test visit is predicted from the training rows and its own features only; no
         feature or model step may use other test rows. No held-out-facility or new-patient guarantee is asserted.
     """
-    accepted_check_warnings = {
-        "splits_rows_unused": "By design (Lennart, 2026-11-05): the nine 14-day windows start at the nine "
-        "equal-count points of the arrival instants and do not tile the period, so the 2,921 visits after the newest "
-        "window's last day are in no split; every visit before it is in a training side.",
-    }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         tables = pd.read_excel(

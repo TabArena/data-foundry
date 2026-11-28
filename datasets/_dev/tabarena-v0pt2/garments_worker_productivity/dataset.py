@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+)
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -110,7 +119,6 @@ class GarmentsWorkerProductivity(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        We define 30 splits with one day for testing each, resulting in small test sizes of 17-24 samples per split. The split with the smallest train sizes uses exactly half of the available samples.
         A day's productivity and its other end-of-day values are in the efficiency report written after the shift; the
         prediction is made at the start of the next day, so every training label is known and no gap is needed. The
         end-of-day values enter lagged to the team's previous recorded day (no team has two rows on one day), and each

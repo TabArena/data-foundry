@@ -9,27 +9,28 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.metrics import mean_poisson_deviance
+
+from data_foundry.checks import run_all_checks
 from data_foundry.curation_container import CuratedContainer
-from data_foundry.dataset_checks import run_all_checks
+from data_foundry.definition.dataset import metric_spec
 from data_foundry.examples import (
     TOY_CONTAINER_UNIQUE_NAME,
     TOY_CONTAINER_UUID,
     get_toy_container_path,
     load_toy_container,
 )
+from data_foundry.metrics import Metric, scorer
+from data_foundry.sampling import subsample_train
 from data_foundry.schema import (
-    DatasetMetadata,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadataV2,
     RowBudget,
     ScoringColumn,
     TrainSampling,
 )
-from data_foundry.v2.dataset import metric_spec
-from data_foundry.v2.metrics import Metric, scorer
-from data_foundry.v2.splits import subsample_train
-from sklearn.ensemble import HistGradientBoostingRegressor
-from sklearn.metrics import mean_poisson_deviance
+from tests.helpers import make_v2_container, toy_dataset_metadata, unit_container
 
 
 def test_toy_container_path_exists_inside_package():
@@ -72,7 +73,6 @@ def test_toy_container_satisfies_curation_contract():
         data=container.dataset,
         problem_type=container.task_metadata.problem_type,
         target_feature=container.task_metadata.target_column_name,
-        print_report=False,
     )
 
 
@@ -86,22 +86,6 @@ def _example(name: str):
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
-
-
-def _format_2_metadata(unique_name: str) -> DatasetMetadata:
-    return DatasetMetadata(
-        unique_name=unique_name,
-        dataset_year="2025",
-        domain_str="finance",
-        dataset_source="Kaggle",
-        original_dataset_source_download_link="http://example",
-        download_description="desc",
-        academic_reference_bibtex="bib",
-        academic_reference_bibtex_key="key",
-        license=None,
-        data_tags=[],
-        curation_comments=None,
-    )
 
 
 def _format_2_toy(tmp_path: Path, extra: dict | None = None, budget: RowBudget | None = None) -> Path:
@@ -137,7 +121,7 @@ def _format_2_toy(tmp_path: Path, extra: dict | None = None, budget: RowBudget |
     splits = {0: {0: (index[index % 2 == 0].tolist(), index[index % 2 == 1].tolist())}}
     container = CuratedContainer(
         dataset=df,
-        dataset_metadata=_format_2_metadata("toy_eras"),
+        dataset_metadata=toy_dataset_metadata(unique_name="toy_eras", data_tags=[]),
         task_metadata=task,
         experiment_metadata=PredictiveMLSplitsMetadata(
             splits_comment="toy",
@@ -232,8 +216,8 @@ def test_benchmark_container_example_encodes_every_feature_type(tmp_path, capsys
 def test_benchmark_container_example_scores_an_ordered_target_as_scikit_learn_does(tmp_path):
     """An ordered multiclass target (low < mid < high): the score is scikit-learn's log loss on classes_ order."""
     pytest.importorskip("sklearn")
-    from sklearn.ensemble import HistGradientBoostingClassifier  # noqa: PLC0415 - scikit-learn is optional
-    from sklearn.metrics import log_loss  # noqa: PLC0415 - scikit-learn is optional
+    from sklearn.ensemble import HistGradientBoostingClassifier
+    from sklearn.metrics import log_loss
 
     example = _example("benchmark_container")
     rng = np.random.default_rng(2)
@@ -255,7 +239,7 @@ def test_benchmark_container_example_scores_an_ordered_target_as_scikit_learn_do
     train, test = index[index % 3 != 0], index[index % 3 == 0]
     container = CuratedContainer(
         dataset=df,
-        dataset_metadata=_format_2_metadata("toy_ordered"),
+        dataset_metadata=toy_dataset_metadata(unique_name="toy_ordered", data_tags=[]),
         task_metadata=task,
         experiment_metadata=PredictiveMLSplitsMetadata(
             splits_comment="toy", splits={0: {0: (train.tolist(), test.tolist())}}
@@ -306,7 +290,7 @@ def _rate_toy(tmp_path: Path) -> Path:
     splits = {0: {0: (index[index % 3 != 0].tolist(), index[index % 3 == 0].tolist())}}
     container = CuratedContainer(
         dataset=df,
-        dataset_metadata=_format_2_metadata("toy_rates"),
+        dataset_metadata=toy_dataset_metadata(unique_name="toy_rates", data_tags=[]),
         task_metadata=task,
         experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="toy", splits=splits),
         uuid="u",
@@ -336,24 +320,70 @@ def test_both_examples_weight_a_rate_by_its_training_weight(tmp_path, capsys):
     assert "Training weight: Exposure" in capsys.readouterr().out
 
 
-def test_the_family_example_checks_a_parent_and_its_tasks(tmp_path, capsys):
-    spec = importlib.util.spec_from_file_location("example_run_family", EXAMPLES / "dataset_family" / "run_family.py")
-    example = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(example)
-    first = example.main(tmp_path / "warehouse")
-    assert set(first) == {"exam_scores", "exam_scores_math", "exam_scores_reading"}
-    assert example.main(tmp_path / "again") == first  # the raw files and every checksum are reproducible
+@pytest.mark.parametrize("format_version", [1, 2])
+def test_minimal_adapter_fits_and_scores_every_fold_of_both_toys(format_version, capsys):
+    """The minimal adapter runs on both toys: one finite error per fold, as the task view scores it."""
+    example = _example("minimal_adapter")
+    path = get_toy_container_path(format_version)
+    errors = example.main(path)
+    container = CuratedContainer.load(path)
+    assert len(errors) == sum(len(folds) for folds in container.experiment_metadata.splits.values())
+    assert all(np.isfinite(e) and e >= 0 for e in errors)
+    assert container.dataset_metadata.unique_name in capsys.readouterr().out
+
+
+def test_load_curated_container_example_runs_on_both_toys(capsys):
+    """The inspection example prints every part of a container, for the format-1 and the format-2 toy."""
+    example = _example("load_curated_container")
+    for format_version in (1, 2):
+        example.main(get_toy_container_path(format_version))
+        out = capsys.readouterr().out
+        assert "-- Dataset metadata --" in out
+        assert f"container format:   {format_version}" in out
+
+
+def test_curation_records_example_runs_on_the_repository(capsys):
+    """The backlog example reads the records, round-trips a draft in a temporary folder and snapshots them."""
+    _example("curation_records").main()
     out = capsys.readouterr().out
-    assert "exam_scores_math       grouped_non_iid  <- exam_scores" in out
-    assert "derived from `exam_scores`: The math score as the target" in out
-    assert "0 error(s)" in out
-    assert "exam_scores_math_iid: folder None" in out
-    assert "dropped as no features: ['reading_score', 'source_file', 'source_row', 'source_id']" in out
-    assert "raw files in its metadata: ['Ashford.csv'" in out
-    assert not list((EXAMPLES / "dataset_family").glob("*/README.md")), "the example writes no README"
+    assert "round-trips cleanly" in out
+    assert "Flat snapshot:" in out
 
 
 @pytest.mark.parametrize("path", sorted(EXAMPLES.rglob("*.py")), ids=lambda p: p.relative_to(EXAMPLES).as_posix())
 def test_every_example_parses(path):
     """An example that does not run in the tests (it needs the network) must still be valid Python."""
     ast.parse(path.read_text(), filename=str(path))
+
+
+def _parity_containers() -> dict[str, CuratedContainer]:
+    """Format-2 toys whose non-features go beyond the target: a label time, a grouping with one, a unit weight."""
+    from data_foundry.schema import Grouping
+
+    n = 8
+    rows = np.arange(n)
+    halves = {0: {0: (rows[:4].tolist(), rows[4:].tolist())}}
+    target = pd.Categorical(["yes", "no"] * (n // 2))
+    frame = pd.DataFrame({"sold": rows, "listed": rows - 1, "x": rows * 1.0, "target": target})
+    temporal = make_v2_container(frame, time_on="sold", time_of="label", prediction_time="listed", splits=halves)
+    grouped_frame = frame.assign(g=np.repeat([1, 2, 3, 4], 2))
+    grouping = Grouping(on="g", labels="per_sample", time_on="sold", time_of="label", prediction_time="listed")
+    grouped = make_v2_container(
+        grouped_frame, grouping=grouping, splits={0: {0: (rows[:4].tolist(), rows[4:].tolist())}}
+    )
+    return {"label_time": temporal, "grouped": grouped, "unit_weight": unit_container()}
+
+
+@pytest.mark.parametrize("kind", ["label_time", "grouped", "unit_weight"])
+def test_read_metric_without_data_foundry_takes_the_features_data_foundry_takes(tmp_path, kind):
+    """The plain-json example reads the same features as `feature_columns` from the saved task view, a label time and a
+    unit included.
+    """
+    from data_foundry.curation_container import feature_columns
+
+    container = _parity_containers()[kind]
+    folder = container.save(save_dir=tmp_path)
+    example = _example("read_metric_without_data_foundry")
+    columns = list(pd.read_parquet(folder / "dataset.parquet").columns)
+    task = example.read_json(folder, "task_metadata")
+    assert example.feature_list(folder, task, columns) == feature_columns(container)

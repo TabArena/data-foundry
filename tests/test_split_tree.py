@@ -12,6 +12,7 @@ from __future__ import annotations
 import re
 
 import pytest
+
 from data_foundry.curation._paths import records_dir, resolve_curation_root
 from data_foundry.curation.consistency import COLLECTION_TYPES
 from data_foundry.curation.split_tree import (
@@ -26,9 +27,9 @@ from data_foundry.curation.split_tree import (
     placement_problems,
 )
 from data_foundry.curation.store import load_all
+from data_foundry.definition import discover_datasets
 from data_foundry.schema import FORCED_TIME_TAGS
-from data_foundry.time_basis import ALLOW_UNSTRUCTURED, tags_of
-from data_foundry.v2 import discover_definitions
+from data_foundry.time_basis import tags_of
 
 REPO = resolve_curation_root().parent
 V02 = REPO / "datasets/_dev/tabarena-v0pt2"
@@ -47,7 +48,7 @@ def tree() -> SplitTree:
 @pytest.fixture(scope="module")
 def definitions() -> dict:
     """The working copy's definition classes by folder name."""
-    return discover_definitions(V02, strict=False) if V02.is_dir() else {}
+    return discover_datasets(V02, strict=False) if V02.is_dir() else {}
 
 
 def shipped(cls: type) -> tuple[str, set[str]]:
@@ -161,15 +162,8 @@ def test_departures_name_a_leaf(tree: SplitTree) -> None:
         assert row["definition"] not in leaf.examples, f"{row['definition']} departs from {leaf.id}"
 
 
-@pytest.mark.skipif(
-    ALLOW_UNSTRUCTURED, reason="the definitions still move to the split rules; the tree names where they land"
-)
 def test_examples_ship_their_leaf(tree: SplitTree, definitions: dict) -> None:
-    """An example ships its leaf's split and tag.
-
-    Checked once every definition has moved to the split rules, which the change that completes the move marks by
-    setting `ALLOW_UNSTRUCTURED` false: the examples name where the definitions land.
-    """
+    """An example ships its leaf's split and tag."""
     bad = []
     for leaf in tree.leaves():
         if leaf.family == "Retire":
@@ -290,9 +284,10 @@ def test_parse_names_what_breaks_the_grammar(change: tuple[str, str], message: s
 
 
 def test_placement_problems() -> None:
-    """A definition's split and tag against its leaf; an old tag name counts as its new one."""
+    """A definition's split and tag against its leaf."""
     leaf = parse(TINY).leaf("L-FILL.random")
-    assert placement_problems(leaf, leaf.id, "random", {"Retrospective"}) == []
+    assert placement_problems(leaf, leaf.id, "random", {"RetrospectiveFillIn"}) == []
+    assert "carries `RetrospectiveFillIn`" in placement_problems(leaf, leaf.id, "random", {"Timeless"})[0]
     assert placement_problems(leaf, leaf.id, "grouped", {"RetrospectiveFillIn"}) == [
         "L-FILL.random is a random split, the definition ships a grouped one"
     ]

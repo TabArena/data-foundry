@@ -35,7 +35,7 @@ jobs:
       - name: Run tests
         run: uv run --no-sync pytest tests/
 
-      - name: Lint v2 dataset definitions
+      - name: Lint (everything but the frozen v1 trees, see pyproject.toml)
         run: |
-          uvx ruff@0.15.15 check datasets/_dev/tabarena-v0pt2/*/dataset.py datasets/_template/dataset.py
-          uvx ruff@0.15.15 format --check datasets/_dev/tabarena-v0pt2/*/dataset.py datasets/_template/dataset.py
+          uvx ruff@0.15.15 check .
+          uvx ruff@0.15.15 format --check .

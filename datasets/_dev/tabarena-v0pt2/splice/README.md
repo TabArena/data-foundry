@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: splice
 container_format: 2
-checksum: v2:541449b4051bab62b8113f474b97415f59d3dd48b5cc7839e61b4f66a913d378
+checksum: v2:6ec842474a623c42974a9379596557555995d81a4d0816eedf638e7785752351
 build:
-  uuid: 01a111fc-bcd5-72b6-a429-8e9aea326bca
-  checksum: v2:8d3d839f08ce793535f9b2f133bfe4e23f3b4bd65a9795cbb4efc9d679c5c4af
-  built_at: '2026-10-06T16:12:18+00:00'
-  path: splice/01a111fc-bcd5-72b6-a429-8e9aea326bca
+  uuid: 01a21800-a6fa-7e5b-9991-10540ff086ee
+  checksum: v2:6ec842474a623c42974a9379596557555995d81a4d0816eedf638e7785752351
+  built_at: '2026-11-26T13:17:06+00:00'
+  path: splice/01a21800-a6fa-7e5b-9991-10540ff086ee
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 3017
   n_features: 60
@@ -53,6 +53,23 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Grouped 3-fold cross-validation over the 1,440 GenBank entry components
+    with 10 repeats: the windows of an
+
+    entry, and of every entry that shares an identical 60-base window with it, stay
+    on one side. Each test fold
+
+    holds 877 to 1,121 windows. No test window has an identical window in training
+    (0.6% under random folds of
+
+    the same rows), and 1.6% have one within 3 of 60 bases (3.7% at random), in entries
+    no exact key links. A
+
+    split by GenBank entry year was measured and leaves as many close relatives as
+    a random draw, so the entry
+
+    component stands (curation notes). The source scored ten-fold cross-validation
+    on 1,000 random windows.'
   n_train:
     min: 1896
     max: 2140
@@ -75,7 +92,7 @@ decisions: []
 
 Multiclass classification of `SiteType`, scored with `log_loss` on grouped splits by `gene_group`. 3,017 rows and 60 features. Source: UCI (1992).
 
-Built as `01a111fc-bcd5-72b6-a429-8e9aea326bca` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:541449b4051bab62b8113f474b97415f59d3dd48b5cc7839e61b4f66a913d378`, so the build is stale. See [Build](#build).
+Built as `01a21800-a6fa-7e5b-9991-10540ff086ee` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -219,18 +236,11 @@ The first 5 of 3,017 rows of the final frame (random rows: the frame is shuffled
   folds of the same rows (0.6% identical). The grouping cost nothing in score (untuned LightGBM log loss 0.118
   against 0.120 at random, logistic regression 0.160 both; 10 x 3, 2026-11-10). Orthologs and sister genes in
   other entries share no identical window and still cross; grouping them by sequence similarity is barred.
-- Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before): the use case predicts the junctions of a gene
-  the training windows do not hold, which whole entry components held out stand for. A splice junction is a
-  property of the sequence; the windows were cut in 1992 from GenBank 64.1 and labelled by its annotation. The
-  windows' GenBank entries, dated by their earliest reference year at NCBI (1,388 of 1,475 entries, 94%, 1974 to
-  1990), show no wave: the junction share and the difficulty show no trend with the year, and predicting each
-  later year from the earlier ones leaves as many close relatives as a random draw of the same size (4.1%
-  against 4.0% of the test windows with a training window within 3 of 60 bases; 2.3% when the draw keeps out the
-  test windows' entry components), so the family key stands. Grouped by entry component, 1.6% of the test
-  windows keep a training window within 3 of 60 bases, in entries no exact key links: the same gene in another
-  primate or a sister gene. Not tested: a gene with no relative among the training windows.
+- Time basis: UnseenGroup (Andrej, 2026-11-13; `Timeless` before): the use case predicts the junctions of a gene the training windows do not hold, which whole entry components held out stand for. A splice junction is a property of the sequence; the windows were cut in 1992 from GenBank 64.1 and labelled by its annotation. The windows' GenBank entries, dated by their earliest reference year at NCBI (1,388 of 1,475 entries, 94%, 1974 to 1990), show no wave: the junction share and the difficulty show no trend with the year, and predicting each later year from the earlier ones leaves as many close relatives as a random draw of the same size (4.1% against 4.0% of the test windows with a training window within 3 of 60 bases; 2.3% when the draw keeps out the test windows' entry components), so the family key stands. Grouped by entry component, 1.6% of the test windows keep a training window within 3 of 60 bases, in entries no exact key links: the same gene in another primate or a sister gene. Not tested: a gene with no relative among the training windows.
 
 ## Splits
+
+Repeated 3-fold cross-validation keeping each group of `gene_group` whole (shuffled group k-fold, a new draw per repeat), stratified on `SiteType`: 10 repeat(s) x 3 folds, 30 splits, the repeats set by the 3,017 rows (SPLIT-33).
 
 Grouped 3-fold cross-validation over the 1,440 GenBank entry components with 10 repeats: the windows of an
 entry, and of every entry that shares an identical 60-base window with it, stay on one side. Each test fold
@@ -304,7 +314,7 @@ component carry different site types.
 | groups of two or more rows with a single label | 34.1% |
 | label variance explained by the group | 0.46 (shuffled groups: 0.48) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
@@ -476,11 +486,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-bcd5-72b6-a429-8e9aea326bca |
-| checksum | v2:8d3d839f08ce793535f9b2f133bfe4e23f3b4bd65a9795cbb4efc9d679c5c4af |
-| built_at | 2026-10-06T16:12:18+00:00 |
-| path | splice/01a111fc-bcd5-72b6-a429-8e9aea326bca |
+| uuid | 01a21800-a6fa-7e5b-9991-10540ff086ee |
+| checksum | v2:6ec842474a623c42974a9379596557555995d81a4d0816eedf638e7785752351 |
+| built_at | 2026-11-26T13:17:06+00:00 |
+| path | splice/01a21800-a6fa-7e5b-9991-10540ff086ee |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:541449b4051bab62b8113f474b97415f59d3dd48b5cc7839e61b4f66a913d378` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

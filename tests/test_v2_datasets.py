@@ -21,9 +21,10 @@ import re
 from pathlib import Path
 
 import pytest
+
 from data_foundry.collections import TABARENA_V0PT2_ROW_BUDGET as V0PT2_ROW_BUDGET
-from data_foundry.v2 import discover_datasets, load_definition, read_report
-from data_foundry.v2.dataset import collection_row_budget, effective_row_budget
+from data_foundry.definition import discover_datasets, load_definition, read_report
+from data_foundry.definition.dataset import collection_row_budget, effective_row_budget
 
 ROOT = Path(__file__).resolve().parents[1] / "datasets" / "_dev" / "tabarena-v0pt2"
 FOLDERS = sorted(path.parent.name for path in ROOT.glob("*/dataset.py")) if ROOT.is_dir() else []

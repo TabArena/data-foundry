@@ -3,9 +3,6 @@ unique_name: australian_vehicle_insurance_2004_2005
 name: dataCar (insuranceData) / ausprivauto0405 (CASdatasets) / Car (de Jong and Heller 2008)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:

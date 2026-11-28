@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -344,13 +345,10 @@ class Rosbank1(AbstractCuratedDataset):
         splits=TemporalSplits(window=1, unit="months", gap=LABEL_MONTHS, min_train_fraction=0.5),
     )
     accepted_check_warnings = {
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Three windows, against the 9 an IID split of 4,791 clients would get: with one-month windows and the "
             "three-month label gap, September 2017 would train on 44.5% of the clients (Andrej, 2026-11-20)."
         ),
-        "splits_rows_unused": "The 524 clients whose period ends in September 2017 fall in the three-month label gap "
-        "of every window: the newest window (December 2017) trains on the periods that ended by 31 August 2017, the "
-        "last whose outcome is known when it starts.",
         "time_newest_period_short": (
             "Decided (Lennart, 2026-11-11): the periods ending in November and December 2017 hold 123 "
             "and 63 clients against 416 to 524 a month from May to October, the thin tail of the client intake the notes "

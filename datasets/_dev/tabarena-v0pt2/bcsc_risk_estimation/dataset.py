@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -236,6 +237,8 @@ class BcscRiskEstimation(AbstractCuratedDataset):
         used for training. Not taken as stationary (Andrej, 2026-11-27): hormone therapy use, the density
         scale and the imaging changed after 2002, and nothing dated can measure it.
         """,
+        set_by="Andrej",
+        on="2026-11-27",
     )
 
     # Task

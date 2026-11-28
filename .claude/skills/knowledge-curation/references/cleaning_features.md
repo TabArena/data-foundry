@@ -124,7 +124,7 @@ RDKit fragment count, `NoOfURLRedirect`, `mosque_count_500`, an aggregate over a
 An ordinal scale (a grade, a stage, binned ranges, answers on a survey scale) is no measured quantity: it is decided
 case by case, categorical by default. A column whose meaning is unknown is looked up (the codebook, the paper, the
 descriptor software's manual) before it is typed: qsar_biodeg's two atom-centred fragments were typed categorical as
-"no idea what this might be", and they are counts. Test: the dtype probe (`dtype_probes.py`,
+"no idea what this might be", and they are counts. Test: the dtype probe (`data-foundry probe dtypes`,
 [checks_and_probes.md](../../knowledge-data-foundry/references/checks_and_probes.md)) lists the columns whose dtype
 disagrees with their values, their name or the source's codebook; the meaning decides.
 
@@ -406,8 +406,8 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 ## In Data Foundry
 
 A SMILES and a spectrum are special features, declared in `special_features` (`Smiles(column=...)`, one column;
-`Spectrum(name=..., prefix=...)`, a group of columns; `data_foundry.v2.special`); their encodings are in
-`data_foundry.v2.chemistry` and `data_foundry.v2.spectra` ([molecules.md](molecules.md) and [spectra.md](spectra.md),
-"In Data Foundry"). The order of these steps in `_clean`, the helpers (`drop_columns`,
+`Spectrum(name=..., prefix=...)`, a group of columns; `data_foundry.special`); their encodings are in
+`data_foundry.special.chemistry` and `data_foundry.special.spectra` ([molecules.md](molecules.md) and
+[spectra.md](spectra.md), "In Data Foundry"). The order of these steps in `_clean`, the helpers (`drop_columns`,
 `canonical_smiles`, `anonymize_ids`) and the bundle checks that catch what is missed: [definitions.md](../../knowledge-data-foundry/references/definitions.md),
 "The preprocessing recipe".

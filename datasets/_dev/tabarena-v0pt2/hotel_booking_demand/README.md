@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: hotel_booking_demand
 container_format: 2
-checksum: v2:a99e4584e0a8338476f9c71be09e9b522e8b6bb92441ff5835ac12124e0b3949
+checksum: v2:df1b6121610bd34bb016333e9f6dd0b459b9bdee0c770ca378a4e304d829d83c
 build:
-  uuid: 01a111fc-83ac-7d29-9b51-a07539b9d67c
-  checksum: v2:2f18db4b72cd822107064f59371e2b6ab9ea2d9c03fd57e1842ec43f79c7d30c
-  built_at: '2026-10-06T16:12:05+00:00'
-  path: hotel_booking_demand/01a111fc-83ac-7d29-9b51-a07539b9d67c
+  uuid: 01a21800-2df6-7792-a9da-1dce6793979d
+  checksum: v2:df1b6121610bd34bb016333e9f6dd0b459b9bdee0c770ca378a4e304d829d83c
+  built_at: '2026-11-26T13:16:36+00:00'
+  path: hotel_booking_demand/01a21800-2df6-7792-a9da-1dce6793979d
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 81418
   n_features: 27
@@ -48,6 +48,56 @@ splits:
   time_horizon_unit: months
   time_gap: null
   time_gap_unit: null
+  reason: "To define train/test splits, we define 9 points in time, the first of each\
+    \ month from 1 October 2016 to 1 June 2017 (Lennart, 2026-11-11; Andrej, 2026-11-19:\
+    \ nine, the target count; 1 September 2016 dropped). Using the available time\
+    \ stamps we separate bookings that lie in the future, arrive within three months\
+    \ and were not canceled yet as the test data. \\\n    The horizon, three months\
+    \ of arrivals at monthly dates, is ours (checked by Lennart on 2026-11-11): the\
+    \ source's system trains daily on all bookings on the books and predicts every\
+    \ future arrival, showing demand a year ahead (Antonio, de Almeida and Nunes 2019,\
+    \ Data Science Journal 18, 32), so no source sets three months; the length and\
+    \ the dates come from the use case's revenue manager. Three months hold 38% to\
+    \ 69% of the bookings open at a date (measured at 1 September 2016 to 1 January\
+    \ 2017), where one month holds 15% to 36%, and they let the newest complete date\
+    \ reach June 2017, where six months would stop at March. No gap is needed: a booking's\
+    \ outcome is known by its arrival date, and training holds only bookings that\
+    \ arrived before the date. \\\n    To account for the fact that, the available\
+    \ bookings suddenly stop at the latest month (arrivals to 31 August 2017), the\
+    \ latest prediction point is 1 June 2017, the newest date whose three months of\
+    \ arrivals lie in the recorded period. This is necessary to avoid an unrealistic\
+    \ distribution shift in the test data, as the later prediction points don't include\
+    \ bookings  for later time points that would typically be available. \\\n    Newest\
+    \ first, the nine dates test 6,511, 6,390, 6,015, 5,768, 4,578, 2,500, 2,474,\
+    \ 3,228 and 4,314 bookings and train on 64,524, 60,693, 57,112, 53,850, 50,982,\
+    \ 48,617, 45,946, 42,942 and 39,297 (79.3%, 74.5%, 70.1%, 66.1%, 62.6%, 59.7%,\
+    \ 56.4%, 52.7% and 48.3% of the 81,418 bookings). One date trains on less than\
+    \ half the bookings: 1 October 2016 (48.3%), the curator's exception (Lennart,\
+    \ 2026-11-11; Andrej, 2026-11-19), beside the eight on 52.7% to 79.3%; no first-of-month\
+    \ date before 1 November 2016 trains on half (the first date on half is 14 October\
+    \ 2016, 50.1%). It adds the autumn arrivals of 2016, and 1 June 2017 the summer\
+    \ peak of 2017. The test windows overlap in arrival months by design: each date\
+    \ tests the next three months with the bookings known then. \\\n    To make sure\
+    \ that the training data reflects the forecasting horizon, we remove all historical\
+    \ bookings that were canceled more than three months in advance. Tested 2026-11-06:\
+    \ training only on the arrived bookings that were open on one of the three monthly\
+    \ prediction dates before their arrival, the condition of the test rows, ranks\
+    \ the same (LightGBM, the nine dates of then, September 2016 to May 2017, ROC\
+    \ AUC 0.810) and lowers the mean prediction from 0.216 to 0.176 against 0.149\
+    \ cancelled in test (log loss 0.364 to 0.349), but leaves 30% to 50% of the bookings\
+    \ for training; the 90-day rule stays (Andrej, 2026-11-11). \\\n    Training data\
+    \ holds only bookings that arrive before the prediction point. Bookings with a\
+    \ future arrival that were already cancelled at the prediction point are left\
+    \ out: the future bookings known at that point are only the cancelled ones, so\
+    \ they taught \"arrival in the test window = cancelled\" (100% of 867 such rows\
+    \ on the split of 1 May 2017, against 12.5% cancelled in its test set; leak audit\
+    \ 2026-09-24 and an independent probe, 2026-08-20). \\\n    We drop BookingChanges,\
+    \ AssignedRoomType and RequiredCarParkingSpaces (and DepositType, see the curation\
+    \ notes): per the data paper (Antonio et al. 2019, Table 1) they are recorded\
+    \ until check-in or cancellation, and no cancelled booking has a parking space.\
+    \ Note that the data paper takes every variable as of \"the day prior to each\
+    \ booking's arrival\", later than our prediction point (up to three months before\
+    \ arrival), so small post-prediction changes may remain in other columns."
   n_train:
     min: 39297
     max: 64524
@@ -60,13 +110,11 @@ bundle_checks:
   warnings: []
   infos:
   - dataset_conflicting_duplicate_rows
+  - splits_rows_unused
   accepted:
     dataset_duplicate_rows: Rows identical after dropping the post-outcome columns
       are separate bookings with the same attributes (e.g. several rooms of one group);
       exact source duplicates were already removed.
-    splits_rows_unused: 'By design: each prediction point uses bookings made before
-      it; rows outside every window (e.g. bookings cancelled more than three months
-      ahead) are in no split.'
     splits_train_under_half: 'The curator''s exception (Lennart, 2026-11-11; Andrej,
       2026-11-19): 1 October 2016 trains on 48.3% of the bookings, beside eight dates
       on 52.7% to 79.3%; 1 September 2016 (44.0%) was dropped to reach the nine windows
@@ -80,7 +128,7 @@ decisions: []
 
 Binary classification of `IsCanceled`, scored with `roc_auc` on temporal splits by `arrival_date`. 81,418 rows and 27 features. Source: Other (2018).
 
-Built as `01a111fc-83ac-7d29-9b51-a07539b9d67c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a99e4584e0a8338476f9c71be09e9b522e8b6bb92441ff5835ac12124e0b3949`, so the build is stale. See [Build](#build).
+Built as `01a21800-2df6-7792-a9da-1dce6793979d` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -236,6 +284,8 @@ The first 5 of 81,418 rows of the final frame (the oldest rows: the frame is sor
 
 ## Splits
 
+Custom temporal splits (`_make_splits`): 9 test window(s), each with its own train side. The test windows by `arrival_date`, as listed: 2017-06-02 to 2017-08-31 (6,511 test, 64,524 train rows); 2017-05-02 to 2017-07-31 (6,390 test, 60,693 train rows); 2017-04-02 to 2017-06-30 (6,015 test, 57,112 train rows); 2017-03-02 to 2017-05-31 (5,768 test, 53,850 train rows); 2017-02-02 to 2017-04-30 (4,578 test, 50,982 train rows); 2017-01-02 to 2017-03-31 (2,500 test, 48,617 train rows); 2016-12-02 to 2017-02-28 (2,474 test, 45,946 train rows); 2016-11-02 to 2017-01-31 (3,228 test, 42,942 train rows); 2016-10-02 to 2016-12-31 (4,314 test, 39,297 train rows).
+
 To define train/test splits, we define 9 points in time, the first of each month from 1 October 2016 to 1 June 2017 (Lennart, 2026-11-11; Andrej, 2026-11-19: nine, the target count; 1 September 2016 dropped). Using the available time stamps we separate bookings that lie in the future, arrive within three months and were not canceled yet as the test data. \
     The horizon, three months of arrivals at monthly dates, is ours (checked by Lennart on 2026-11-11): the source's system trains daily on all bookings on the books and predicts every future arrival, showing demand a year ahead (Antonio, de Almeida and Nunes 2019, Data Science Journal 18, 32), so no source sets three months; the length and the dates come from the use case's revenue manager. Three months hold 38% to 69% of the bookings open at a date (measured at 1 September 2016 to 1 January 2017), where one month holds 15% to 36%, and they let the newest complete date reach June 2017, where six months would stop at March. No gap is needed: a booking's outcome is known by its arrival date, and training holds only bookings that arrived before the date. \
     To account for the fact that, the available bookings suddenly stop at the latest month (arrivals to 31 August 2017), the latest prediction point is 1 June 2017, the newest date whose three months of arrivals lie in the recorded period. This is necessary to avoid an unrealistic distribution shift in the test data, as the later prediction points don't include bookings  for later time points that would typically be available. \
@@ -277,14 +327,14 @@ Each test window against its train side, by statistics of the data, never of a m
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
 - **info** `dataset_conflicting_duplicate_rows`: 296 row(s) (0.4%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+- **info** `splits_rows_unused`: 9,906 row(s) (12.2%) appear in no train and no test set. (hint: Expected of a temporal split (the rows of a gap, history no window trains on, rows a filter keeps out of every training side); say why in `splits_comment`.)
 
 Accepted on purpose:
 
 - `dataset_duplicate_rows`: Rows identical after dropping the post-outcome columns are separate bookings with the same attributes (e.g. several rooms of one group); exact source duplicates were already removed.
-- `splits_rows_unused`: By design: each prediction point uses bookings made before it; rows outside every window (e.g. bookings cancelled more than three months ahead) are in no split.
 - `splits_train_under_half`: The curator's exception (Lennart, 2026-11-11; Andrej, 2026-11-19): 1 October 2016 trains on 48.3% of the bookings, beside eight dates on 52.7% to 79.3%; 1 September 2016 (44.0%) was dropped to reach the nine windows of the target, and no first-of-month date before 1 November 2016 trains on half.
 
 ## Data checks
@@ -431,11 +481,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-83ac-7d29-9b51-a07539b9d67c |
-| checksum | v2:2f18db4b72cd822107064f59371e2b6ab9ea2d9c03fd57e1842ec43f79c7d30c |
-| built_at | 2026-10-06T16:12:05+00:00 |
-| path | hotel_booking_demand/01a111fc-83ac-7d29-9b51-a07539b9d67c |
+| uuid | 01a21800-2df6-7792-a9da-1dce6793979d |
+| checksum | v2:df1b6121610bd34bb016333e9f6dd0b459b9bdee0c770ca378a4e304d829d83c |
+| built_at | 2026-11-26T13:16:36+00:00 |
+| path | hotel_booking_demand/01a21800-2df6-7792-a9da-1dce6793979d |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:a99e4584e0a8338476f9c71be09e9b522e8b6bb92441ff5835ac12124e0b3949` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -3,9 +3,6 @@ unique_name: pricing_game_2016_french_fleet
 name: 'Pricing Game 2016 of the Institut des Actuaires: French fleet vehicles, claim charge per vehicle-year, 2011-2013 (organisers'' train_contrats / train_sinistres; CASdatasets pg16 a copy)'
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 4
 tags:

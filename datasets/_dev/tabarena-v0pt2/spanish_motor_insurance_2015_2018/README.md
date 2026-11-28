@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: spanish_motor_insurance_2015_2018
 container_format: 2
-checksum: v2:9d0d658ef5992cf97a97a7c71a03559fd7267b0e59794b489d361ae532b5eeb9
-build: null
+checksum: v2:b9c5196c0d08c2da2dca55e91bc31ea8177c11ae015b08127fe9b086ee1fabcb
+build:
+  uuid: 01a21800-9f2e-76ff-a5f8-3f9f9d1f227d
+  checksum: v2:b9c5196c0d08c2da2dca55e91bc31ea8177c11ae015b08127fe9b086ee1fabcb
+  built_at: '2026-11-26T13:17:05+00:00'
+  path: spanish_motor_insurance_2015_2018/01a21800-9f2e-76ff-a5f8-3f9f9d1f227d
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 37090
@@ -35,6 +48,54 @@ splits:
   time_horizon_unit: months
   time_gap: 12
   time_gap_unit: months
+  reason: 'A new-business price is refit on the policy-years whose claims are known
+    and applied to the next contracts:
+
+    5 test windows of one calendar month, December 2017 back to August 2017, newest
+    first, each trained on the
+
+    policy-years that had ended by the window''s start, that is those that started
+    at least twelve months before
+
+    it (53-73% of the rows; the newest window trains on November 2015 to November
+    2016). A year''s claims are
+
+    known only when it ends, hence the 12-month gap (SPLIT-10); July 2017 would train
+    on less than half of the
+
+    rows (45%, SPLIT-14). The 5,685 rows that start from December 2016 to July 2017
+    fall in every window''s gap
+
+    and are in no split. The test windows hold new contracts, apart from 12 first
+    rows of contracts written earlier
+
+    in 2017 or dated after the year''s start (763 to 973 a month, 261 to 371 with
+    a claim); the other older
+
+    contracts'' first years in the release start before December 2016 and train only,
+    apart from 5 in the gap. TabPFN
+
+    ranks the windows at 0.330, 0.277, 0.275, 0.135 and 0.086 (August to December),
+    with no sign of run-off in the
+
+    newest labels; they stay (SPLIT-21). Keeping every customer (design S of the review,
+    2026-11-03) leaves the
+
+    windows where they were and about doubles each window''s claims against the earlier
+    one-policy design (117 to
+
+    195). On that earlier design one window''s Gini had a bootstrap standard error
+    of 0.08 to 0.11, and without the
+
+    gap untuned LightGBM ranked the windows at a mean Gini of 0.141, against 0.116
+    with it.
+
+
+    Five windows, against the 9 an IID split of 37,090 first years would get: with
+    one-month windows and the
+
+    twelve-month gap, July 2017 would train on 45.4% of the rows (Andrej, 2026-11-03
+    and 2026-11-19).'
   n_train:
     min: 19629
     max: 27043
@@ -48,15 +109,13 @@ bundle_checks:
   infos:
   - dataset_duplicate_rows
   - dataset_conflicting_duplicate_rows
+  - splits_rows_unused
   accepted:
     task_target_value_dominant: '65% zeros: policy-years without a claim cost (Andrej,
       2026-11-03: zero-inflated targets are natural for these tasks and a core challenge).'
-    splits_rows_unused: 'The 12-month gap of every window: a year''s claims are known
-      only when it ends, so the 5,685 first years that start from December 2016 to
-      July 2017 are in no window (splits_comment).'
-    splits_below_target: 'Five windows, against the 9 an IID split of 37,090 first
-      years would get: with one-month windows and the twelve-month gap, July 2017
-      would train on 45.4% of the rows (Andrej, 2026-11-03 and 2026-11-19).'
+    splits_dimensions_off_protocol: 'Five windows, against the 9 an IID split of 37,090
+      first years would get: with one-month windows and the twelve-month gap, July
+      2017 would train on 45.4% of the rows (Andrej, 2026-11-03 and 2026-11-19).'
 decisions:
 - Only each policy's first year in the release is a task row
 - Years that start in 2018 are dropped
@@ -70,7 +129,7 @@ decisions:
 
 Regression of `log1p_cost_claims_year`, scored with `normalized_gini` on temporal splits by `period_start`. 37,090 rows and 18 features. Source: Other (2023).
 
-Not built yet. The current definition gives checksum `v2:9d0d658ef5992cf97a97a7c71a03559fd7267b0e59794b489d361ae532b5eeb9`.
+Built as `01a21800-9f2e-76ff-a5f8-3f9f9d1f227d` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -237,6 +296,8 @@ We start with "Motor vehicle insurance data.csv" of Mendeley Data 5cxyb5fp4f, ve
 
 ## Splits
 
+Expanding-window temporal splits: 5 test window(s) of 1 month, walking back from the newest data, newest first; train is all earlier data up to a gap of 12 months. The test windows by `period_start`, as listed: 2017-12-01 to 2017-12-31 (973 test, 27,043 train rows); 2017-11-01 to 2017-11-30 (922 test, 26,221 train rows); 2017-10-01 to 2017-10-31 (938 test, 23,882 train rows); 2017-09-01 to 2017-09-30 (763 test, 21,673 train rows); 2017-08-01 to 2017-08-31 (766 test, 19,629 train rows).
+
 A new-business price is refit on the policy-years whose claims are known and applied to the next contracts:
 5 test windows of one calendar month, December 2017 back to August 2017, newest first, each trained on the
 policy-years that had ended by the window's start, that is those that started at least twelve months before
@@ -327,16 +388,16 @@ The claims per row grow with the customer's policies in force over the calendar 
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 3 info (28 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 2 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 1 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+- **info** `splits_rows_unused`: 5,685 row(s) (15.3%) appear in no train and no test set. (hint: Expected of a temporal split (the rows of a gap, history no window trains on, rows a filter keeps out of every training side); say why in `splits_comment`.)
 
 Accepted on purpose:
 
 - `task_target_value_dominant`: 65% zeros: policy-years without a claim cost (Andrej, 2026-11-03: zero-inflated targets are natural for these tasks and a core challenge).
-- `splits_rows_unused`: The 12-month gap of every window: a year's claims are known only when it ends, so the 5,685 first years that start from December 2016 to July 2017 are in no window (splits_comment).
-- `splits_below_target`: Five windows, against the 9 an IID split of 37,090 first years would get: with one-month windows and the twelve-month gap, July 2017 would train on 45.4% of the rows (Andrej, 2026-11-03 and 2026-11-19).
+- `splits_dimensions_off_protocol`: Five windows, against the 9 an IID split of 37,090 first years would get: with one-month windows and the twelve-month gap, July 2017 would train on 45.4% of the rows (Andrej, 2026-11-03 and 2026-11-19).
 
 ## Data checks
 
@@ -428,4 +489,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a21800-9f2e-76ff-a5f8-3f9f9d1f227d |
+| checksum | v2:b9c5196c0d08c2da2dca55e91bc31ea8177c11ae015b08127fe9b086ee1fabcb |
+| built_at | 2026-11-26T13:17:05+00:00 |
+| path | spanish_motor_insurance_2015_2018/01a21800-9f2e-76ff-a5f8-3f9f9d1f227d |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

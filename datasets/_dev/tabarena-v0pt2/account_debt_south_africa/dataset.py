@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -70,7 +71,7 @@ def in_no_debt_run(raw: pd.DataFrame) -> np.ndarray:
     """A mask over the rows of ``raw`` (file order): True inside one of the runs of :func:`no_debt_runs`."""
     runs = no_debt_runs(raw)
     mask = np.zeros(len(raw), dtype=bool)
-    for first, n in zip(runs["first_row"], runs["rows"]):
+    for first, n in zip(runs["first_row"], runs["rows"], strict=False):
         mask[first : first + n] = True
     return mask
 
@@ -211,7 +212,7 @@ class AccountDebtSouthAfrica(AbstractCuratedDataset):
         billed_never_paid = _billed_never_paid(raw)
         mask = in_no_debt_run(raw)
         rows = []
-        for first, n in zip(runs["first_row"], runs["rows"]):
+        for first, n in zip(runs["first_row"], runs["rows"], strict=False):
             part = slice(first, first + n)
             rows.append(
                 {
@@ -255,7 +256,7 @@ class AccountDebtSouthAfrica(AbstractCuratedDataset):
         fig, ax = plt.subplots(figsize=(8, 3))
         position = np.arange(len(raw))
         ax.plot(position, has_debt.astype(float).rolling(500, center=True, min_periods=1).mean(), lw=0.8)
-        for first, n in zip(runs["first_row"], runs["rows"]):
+        for first, n in zip(runs["first_row"], runs["rows"], strict=False):
             ax.axvspan(first, first + n, color="tab:red", alpha=0.25, lw=0)
         ax.set_xlabel("row of MunicipalDebtAnalysis.csv")
         ax.set_ylabel("share with debt 90+ days\nor write-off (500 rows)")

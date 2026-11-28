@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: allstate_claims_severity
 container_format: 2
-checksum: v2:5578ae9c2ade8c0d358302c5cad21a1a67b65260078eecdba7fc621d98339e38
+checksum: v2:aadc44958322597c26a47e9f83f58203048ebdc3ec6aebefb66417b9f8c7f4f8
 build:
-  uuid: 01a111fc-59f8-730c-b058-7264a71a29bc
-  checksum: v2:9bd68a8cd28f8fa26681521215dc26941632195f1a568a197a26eeb59caa380c
-  built_at: '2026-10-06T16:11:56+00:00'
-  path: allstate_claims_severity/01a111fc-59f8-730c-b058-7264a71a29bc
+  uuid: 01a21800-3447-7ce7-aaf7-dc2a35d9566d
+  checksum: v2:aadc44958322597c26a47e9f83f58203048ebdc3ec6aebefb66417b9f8c7f4f8
+  built_at: '2026-11-26T13:16:39+00:00'
+  path: allstate_claims_severity/01a21800-3447-7ce7-aaf7-dc2a35d9566d
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 188317
   n_features: 130
@@ -46,6 +46,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 125544
     max: 125545
@@ -67,7 +68,7 @@ decisions: []
 
 Regression of `loss`, scored with `mae` on IID splits. 188,317 rows and 130 features. Source: Kaggle (2016).
 
-Built as `01a111fc-59f8-730c-b058-7264a71a29bc` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5578ae9c2ade8c0d358302c5cad21a1a67b65260078eecdba7fc621d98339e38`, so the build is stale. See [Build](#build).
+Built as `01a21800-3447-7ce7-aaf7-dc2a35d9566d` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -197,17 +198,11 @@ We start with the train.csv from Kaggle.
   RMSE on twin rows only from 0.552 to 0.551, and holding twins out together costs 0.0002 (0.5382 against
   0.5380). The release has no policy id, and a key rebuilt from the values would tie a quarter to almost half
   of the twin groups on a coincidence, so the split does not group on it.
-- Time basis: ForcedIIDFromTemporal: claims filed one by one over a period Allstate does not state, each cost
-  known after a settlement time that differs by claim; the release keeps no claim date and the id is a random
-  draw (a model tells low from high ids at ROC AUC 0.501; training on the first 80% of ids scores RMSE 0.535
-  against 0.538 to 0.541 on random splits), so random claims stand in for the claims to come. A dated release
-  would allow a split by filing date and show whether `loss` is final. Not taken as stationary (Andrej,
-  2026-11-18): Claim severity is driven by prices, litigation and settlement practice, all documented to drift;
-  no domain reason makes later claims interchangeable.
+- Time basis: ForcedIIDFromTemporal: claims filed one by one over a period Allstate does not state, each cost known after a settlement time that differs by claim; the release keeps no claim date and the id is a random draw (a model tells low from high ids at ROC AUC 0.501; training on the first 80% of ids scores RMSE 0.535 against 0.538 to 0.541 on random splits), so random claims stand in for the claims to come. A dated release would allow a split by filing date and show whether `loss` is final. Not taken as stationary (Andrej, 2026-11-18): Claim severity is driven by prices, litigation and settlement practice, all documented to drift; no domain reason makes later claims interchangeable.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows: 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 188,317 rows (SPLIT-33).
 
 3 repeat(s) x 3 fold(s) with seed 4267; train 125,544 to 125,545 rows, test 62,772 to 62,773 rows.
 
@@ -409,11 +404,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-59f8-730c-b058-7264a71a29bc |
-| checksum | v2:9bd68a8cd28f8fa26681521215dc26941632195f1a568a197a26eeb59caa380c |
-| built_at | 2026-10-06T16:11:56+00:00 |
-| path | allstate_claims_severity/01a111fc-59f8-730c-b058-7264a71a29bc |
+| uuid | 01a21800-3447-7ce7-aaf7-dc2a35d9566d |
+| checksum | v2:aadc44958322597c26a47e9f83f58203048ebdc3ec6aebefb66417b9f8c7f4f8 |
+| built_at | 2026-11-26T13:16:39+00:00 |
+| path | allstate_claims_severity/01a21800-3447-7ce7-aaf7-dc2a35d9566d |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:5578ae9c2ade8c0d358302c5cad21a1a67b65260078eecdba7fc621d98339e38` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

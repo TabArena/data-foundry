@@ -6,12 +6,12 @@ Subcommands::
     data-foundry-curation build-site OUT_DIR            # read-only static site + guidelines (GitHub Pages)
     data-foundry-curation validate                      # check records against the vocab
     data-foundry-curation sync-notebooks [--check]      # refresh each record's notebook_path and v2_path
-    data-foundry-curation export --format csv OUT.csv   # flat snapshot (csv|parquet)
-    data-foundry-curation export --format gsheet --spreadsheet <id-or-url>
-    data-foundry-curation dataset {list,check,build,new}   # v2 dataset folders (see data_foundry.v2.cli)
-    data-foundry-curation claims {list,claim,release,renew,check,sync,import-records,init}   # live claims board
+    data-foundry-curation export --format csv OUT.csv   # flat snapshot (csv|xlsx)
+    data-foundry-curation dataset {list,check,build,new}   # v2 dataset folders (see data_foundry.definition.cli)
+    data-foundry-curation probe {leak,task,group,...} NAME...   # the probes (see data_foundry.probes.cli)
+    data-foundry-curation claims {list,claim,release,renew,check,init}   # live claims board
 
-Run ``python -m data_foundry.curation.cli <subcommand> -h`` for details.
+``data-foundry`` is the same command. Run ``python -m data_foundry.curation.cli <subcommand> -h`` for details.
 """
 
 from __future__ import annotations
@@ -29,7 +29,8 @@ from data_foundry.curation.notebooks import sync_notebook_paths, sync_v2_paths
 from data_foundry.curation.record import ACCEPTED_SUGGESTIONS, load_vocabularies
 from data_foundry.curation.site import build_site
 from data_foundry.curation.store import load_all, load_index
-from data_foundry.v2.cli import add_dataset_parser
+from data_foundry.definition.cli import add_dataset_parser
+from data_foundry.probes.cli import add_probe_parser
 
 
 def _cmd_serve(args: argparse.Namespace) -> int:
@@ -84,23 +85,8 @@ def _cmd_sync_notebooks(args: argparse.Namespace) -> int:
 
 
 def _cmd_export(args: argparse.Namespace) -> int:
-    if args.format == "csv":
-        print("Wrote", exporter.export_csv(args.output, args.records_dir))
-    elif args.format == "parquet":
-        print("Wrote", exporter.export_parquet(args.output, args.records_dir))
-    elif args.format == "xlsx":
-        print("Wrote", exporter.export_xlsx(args.output, args.records_dir))
-    elif args.format == "gsheet":
-        if not args.spreadsheet:
-            print("error: --spreadsheet is required for --format gsheet", file=sys.stderr)
-            return 2
-        n = exporter.push_to_gsheet(
-            args.spreadsheet,
-            args.worksheet,
-            service_account_file=args.service_account_file,
-            directory=args.records_dir,
-        )
-        print(f"Pushed {n} rows to '{args.spreadsheet}' / {args.worksheet}.")
+    export = exporter.export_csv if args.format == "csv" else exporter.export_xlsx
+    print("Wrote", export(args.output, args.records_dir))
     return 0
 
 
@@ -157,14 +143,6 @@ def _report(outcome: claims.Outcome, verb: str) -> None:
         print(f"skipped {name}: {reason}")
 
 
-def _sync_names(args: argparse.Namespace, outcome: claims.Outcome) -> None:
-    if args.no_sync or not outcome.changed:
-        return
-    changed = claims.mirror_to_records(outcome.board, outcome.changed, args.records_dir)
-    if changed:
-        print(f"records updated (claimed_by, WIP): {', '.join(changed)}")
-
-
 def _cmd_claims_claim(args: argparse.Namespace) -> int:
     index = load_index(args.records_dir)
     unknown = [n for n in args.names if n not in index]
@@ -178,7 +156,6 @@ def _cmd_claims_claim(args: argparse.Namespace) -> int:
     for stage, names in groups.items():
         outcome = claims.claim(names, stage=stage, note=args.note, ttl_days=args.ttl, steal=args.steal)
         _report(outcome, f"claimed ({stage})")
-        _sync_names(args, outcome)
         complete &= not outcome.skipped
     return 0 if complete else 1
 
@@ -186,7 +163,6 @@ def _cmd_claims_claim(args: argparse.Namespace) -> int:
 def _cmd_claims_release(args: argparse.Namespace) -> int:
     outcome = claims.release(args.names, force=args.force)
     _report(outcome, "released")
-    _sync_names(args, outcome)
     return 0 if not outcome.skipped else 1
 
 
@@ -210,25 +186,6 @@ def _cmd_claims_check(args: argparse.Namespace) -> int:
                 f"WARNING {name}: claimed by {c.describe()}" + (" - can be taken over (--steal)" if c.expired() else "")
             )
     return 0  # advisory: the check warns, it never blocks
-
-
-def _cmd_claims_sync(args: argparse.Namespace) -> int:
-    board = _load_board(args)
-    changed = claims.mirror_to_records(board, None, args.records_dir, write=not args.check)
-    if not changed:
-        print("Every record's claimed_by and WIP value match the claims board. ✓")
-        return 0
-    verb = "would change" if args.check else "updated"
-    print(f"{len(changed)} record(s) {verb} (claimed_by before -> after):")
-    for name, (before, after) in changed.items():
-        print(f"  {name}: {before or '(none)'} -> {after or '(none)'}")
-    return 1 if args.check else 0
-
-
-def _cmd_claims_import(args: argparse.Namespace) -> int:
-    outcome = claims.import_from_records(args.records_dir, ttl_days=args.ttl)
-    _report(outcome, "imported")
-    return 0
 
 
 def _cmd_claims_init(args: argparse.Namespace) -> int:
@@ -270,7 +227,6 @@ def _add_claims_parser(sub: argparse._SubParsersAction) -> None:
     p.set_defaults(func=_run_claims(_cmd_claims_list))
 
     ttl = {"type": float, "default": claims.DEFAULT_TTL_DAYS, "help": "Days until the claim expires."}
-    no_sync = {"action": "store_true", "help": "Leave the records' claimed_by and WIP value alone."}
 
     p = csub.add_parser("claim", help="Claim datasets (skips the ones someone else holds; exit 1 then).")
     p.add_argument("names", nargs="+")
@@ -279,13 +235,11 @@ def _add_claims_parser(sub: argparse._SubParsersAction) -> None:
     p.add_argument("--ttl", **ttl)
     p.add_argument("--steal", action="store_true", help="Take over expired claims of others.")
     p.add_argument("--allow-unknown", action="store_true", help="Claim names that have no record yet.")
-    p.add_argument("--no-sync", **no_sync)
     p.set_defaults(func=_run_claims(_cmd_claims_claim))
 
     p = csub.add_parser("release", help="Release your claims.")
     p.add_argument("names", nargs="+")
     p.add_argument("--force", action="store_true", help="Release another curator's claim (logged).")
-    p.add_argument("--no-sync", **no_sync)
     p.set_defaults(func=_run_claims(_cmd_claims_release))
 
     p = csub.add_parser("renew", help="Extend your claims (all, or the names given).")
@@ -297,15 +251,6 @@ def _add_claims_parser(sub: argparse._SubParsersAction) -> None:
     p.add_argument("names", nargs="+")
     board_options(p)
     p.set_defaults(func=_run_claims(_cmd_claims_check))
-
-    p = csub.add_parser("sync", help="Mirror the board into the records' claimed_by and WIP values.")
-    p.add_argument("--check", action="store_true", help="Report drift and exit non-zero instead of writing.")
-    board_options(p)
-    p.set_defaults(func=_run_claims(_cmd_claims_sync))
-
-    p = csub.add_parser("import-records", help="Once: put the claims the records carry on the board.")
-    p.add_argument("--ttl", **ttl)
-    p.set_defaults(func=_run_claims(_cmd_claims_import))
 
     p = csub.add_parser("init", help="Create the claims branch if missing.")
     p.add_argument(
@@ -342,14 +287,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_sync.set_defaults(func=_cmd_sync_notebooks)
 
     p_export = sub.add_parser("export", help="Compile records into a flat snapshot.")
-    p_export.add_argument("--format", choices=("csv", "parquet", "xlsx", "gsheet"), default="csv")
-    p_export.add_argument("output", nargs="?", help="Output path (for csv/parquet).")
-    p_export.add_argument("--spreadsheet", help="Sheet id/URL (for gsheet).")
-    p_export.add_argument("--worksheet", default="Main")
-    p_export.add_argument("--service-account-file", default=None)
+    p_export.add_argument("--format", choices=("csv", "xlsx"), default="csv")
+    p_export.add_argument("output", help="Output path.")
     p_export.set_defaults(func=_cmd_export)
 
     add_dataset_parser(sub)
+    add_probe_parser(sub)
     _add_claims_parser(sub)
 
     return parser

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: mercedes_benz_greener_manufacturing
 container_format: 2
-checksum: v2:6975db83d99ba0d042b11c35d5773ccd320446d46b24e0fcc56f255423f3e0e2
+checksum: v2:b8629e3d00921aba00d5e2c984318cbea4a19a968f5956ac364f4bbc3d67d244
 build:
-  uuid: 01a13a7d-bd39-75dc-a072-0eebbfca32cb
-  checksum: v2:e5b90fec72713909e24c47766fb5622903ee1b52743f8b773f716092aa277e58
-  built_at: '2026-10-14T12:58:03+00:00'
-  path: mercedes_benz_greener_manufacturing/01a13a7d-bd39-75dc-a072-0eebbfca32cb
+  uuid: 01a21800-41be-73a4-9ad1-3eab14ef72b3
+  checksum: v2:b8629e3d00921aba00d5e2c984318cbea4a19a968f5956ac364f4bbc3d67d244
+  built_at: '2026-11-26T13:16:42+00:00'
+  path: mercedes_benz_greener_manufacturing/01a21800-41be-73a4-9ad1-3eab14ef72b3
   data_foundry_version: 0.0.5
-  git_sha: f93df193827f5244586b178fd7199efb86d66359
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 4204
   n_features: 374
@@ -47,6 +47,27 @@ splits:
   time_horizon_unit: steps
   time_gap: null
   time_gap_unit: null
+  reason: 'The car ID is the only order: the competition ships no dates, does not
+    confirm that the IDs follow the order of testing, and held out its own test cars
+    at random. Each test window is a run of 233 consecutive cars in ID order, trained
+    on every earlier car (Andrej, 2026-11-19). No source gives a length (the 320 cars
+    used until then were the arithmetic of the first curation''s scikit-learn TimeSeriesSplit):
+    half the cars come before ID 4,230, so nine windows, the count an IID task of
+    this size gets (3 x 3), all train on half the cars or more only at 233 cars each,
+    which fill the newest half (2,097 test cars). The windows walk back from the newest;
+    with no dates there is no season or period to choose between. No gap is needed:
+    a car''s testing time is known when it leaves the bench, and no row carries a
+    date to measure a longer delay.
+
+    How the data arrives (Andrej, 2026-11-06): the bench time is known when the car
+    leaves the bench, minutes after its configuration is fixed, so a model refit at
+    a window''s start knows every earlier car. The ID is taken as the testing order;
+    the dropped code X5 forms 29 levels in 31 contiguous runs of IDs, about 200 cars
+    each in this file, likely production periods. A window''s first cars share their
+    block with the newest training cars, but the block explains about 1% of the variance
+    of the bench time (block means 96.1 to 102.6 s). A configuration tested again
+    (15% to 27% of a window''s test cars, with the six coded categories kept) is the
+    car''s known history, not a leak.'
   n_train:
     min: 2107
     max: 3971
@@ -70,7 +91,7 @@ decisions: []
 
 Regression of `y`, scored with `r2` on temporal splits by `time_index`. 4,204 rows and 374 features. Source: Kaggle (2017).
 
-Built as `01a13a7d-bd39-75dc-a072-0eebbfca32cb` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:6975db83d99ba0d042b11c35d5773ccd320446d46b24e0fcc56f255423f3e0e2`, so the build is stale. See [Build](#build).
+Built as `01a21800-41be-73a4-9ad1-3eab14ef72b3` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -199,7 +220,9 @@ We start with the train.csv from Kaggle.
 
 ## Splits
 
-The car ID is the only order: the competition ships no dates, does not confirm that the IDs follow the order of testing, and held out its own test cars at random. Each test window is a run of 233 consecutive cars in ID order, trained on every earlier car (Andrej, 2026-11-19). No source gives a length (the 320 cars used until then were the arithmetic of the first curation's scikit-learn TimeSeriesSplit): half the cars come before ID 4,230, so nine windows, the count an IID task of this size gets (3 x 3), all train on half the cars or more only at 233 cars each, which fill the newest half (2,097 test cars). The windows walk back from the newest; with no dates there is no season or period to choose between. Newest first, they test the cars with IDs 7,973-8,417, 7,499-7,972, 7,005-7,498, 6,539-7,004, 6,111-6,538, 5,630-6,103, 5,163-5,627, 4,701-5,162 and 4,230-4,699, 233 each. Train is every earlier car: 3,971, 3,738, 3,505, 3,272, 3,039, 2,806, 2,573, 2,340 and 2,107 cars (94.5%, 88.9%, 83.4%, 77.8%, 72.3%, 66.8%, 61.2%, 55.7% and 50.1%). No gap is needed: a car's testing time is known when it leaves the bench, and no row carries a date to measure a longer delay.
+Expanding-window temporal splits: 9 test window(s) of 233 rows, walking back from the newest data, newest first; train is all earlier data. The test windows by `time_index`, as listed: 7973 to 8417 (233 test, 3,971 train rows); 7499 to 7972 (233 test, 3,738 train rows); 7005 to 7498 (233 test, 3,505 train rows); 6539 to 7004 (233 test, 3,272 train rows); 6111 to 6538 (233 test, 3,039 train rows); 5630 to 6103 (233 test, 2,806 train rows); 5163 to 5627 (233 test, 2,573 train rows); 4701 to 5162 (233 test, 2,340 train rows); 4230 to 4699 (233 test, 2,107 train rows).
+
+The car ID is the only order: the competition ships no dates, does not confirm that the IDs follow the order of testing, and held out its own test cars at random. Each test window is a run of 233 consecutive cars in ID order, trained on every earlier car (Andrej, 2026-11-19). No source gives a length (the 320 cars used until then were the arithmetic of the first curation's scikit-learn TimeSeriesSplit): half the cars come before ID 4,230, so nine windows, the count an IID task of this size gets (3 x 3), all train on half the cars or more only at 233 cars each, which fill the newest half (2,097 test cars). The windows walk back from the newest; with no dates there is no season or period to choose between. No gap is needed: a car's testing time is known when it leaves the bench, and no row carries a date to measure a longer delay.
 How the data arrives (Andrej, 2026-11-06): the bench time is known when the car leaves the bench, minutes after its configuration is fixed, so a model refit at a window's start knows every earlier car. The ID is taken as the testing order; the dropped code X5 forms 29 levels in 31 contiguous runs of IDs, about 200 cars each in this file, likely production periods. A window's first cars share their block with the newest training cars, but the block explains about 1% of the variance of the bench time (block means 96.1 to 102.6 s). A configuration tested again (15% to 27% of a window's test cars, with the six coded categories kept) is the car's known history, not a leak.
 
 9 repeat(s) x 1 fold(s) with seed 4267; train 2,107 to 3,971 rows, test 233 rows. Prediction horizon: 233 steps.
@@ -238,7 +261,7 @@ Each test window against its train side, by statistics of the data, never of a m
 0 error(s), 2 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_constant_column`: 11 constant column(s) (1 distinct non-null value): ['X93', 'X107', 'X233', 'X235', 'X268']. (hint: Drop them unless the constant is meaningful for the task.)
-- **warning** `dataset_duplicate_columns`: 45 duplicated column pair(s): [('X31', 'X35'), ('X31', 'X37'), ('X33', 'X39'), ('X54', 'X76'), ('X71', 'X84')]. (hint: Keep one of each pair.)
+- **warning** `dataset_duplicate_columns`: 45 duplicated column pair(s): [('X31', 'X35'), ('X31', 'X37'), ('X33', 'X39'), ('X54', 'X76'), ('X71', 'X84')]. (hint: Keep one column of each pair.)
 
 ## Data checks
 
@@ -403,11 +426,10 @@ Each test window against its train side, by statistics of the data, never of a m
 
 | field | value |
 |---|---|
-| uuid | 01a13a7d-bd39-75dc-a072-0eebbfca32cb |
-| checksum | v2:e5b90fec72713909e24c47766fb5622903ee1b52743f8b773f716092aa277e58 |
-| built_at | 2026-10-14T12:58:03+00:00 |
-| path | mercedes_benz_greener_manufacturing/01a13a7d-bd39-75dc-a072-0eebbfca32cb |
+| uuid | 01a21800-41be-73a4-9ad1-3eab14ef72b3 |
+| checksum | v2:b8629e3d00921aba00d5e2c984318cbea4a19a968f5956ac364f4bbc3d67d244 |
+| built_at | 2026-11-26T13:16:42+00:00 |
+| path | mercedes_benz_greener_manufacturing/01a21800-41be-73a4-9ad1-3eab14ef72b3 |
 | data_foundry_version | 0.0.5 |
-| git_sha | f93df193827f5244586b178fd7199efb86d66359 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6975db83d99ba0d042b11c35d5773ccd320446d46b24e0fcc56f255423f3e0e2` |

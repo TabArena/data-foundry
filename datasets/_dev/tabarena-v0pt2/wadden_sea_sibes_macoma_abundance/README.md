@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: wadden_sea_sibes_macoma_abundance
 container_format: 2
-checksum: v2:a6b33ff1a146d7db87f948d891f79ac01648984cca7ebe38b32c78a3196cfe8b
-build: null
+checksum: v2:7df28dcb18bdc31ec77b542cae94d6532b9b31e1bf91cabed76723426a7f153c
+build:
+  uuid: 01a217fe-e595-7625-9faa-4f709ac556af
+  checksum: v2:7df28dcb18bdc31ec77b542cae94d6532b9b31e1bf91cabed76723426a7f153c
+  built_at: '2026-11-26T13:15:11+00:00'
+  path: wadden_sea_sibes_macoma_abundance/01a217fe-e595-7625-9faa-4f709ac556af
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 59044
@@ -42,6 +55,26 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Default grouped splits on the station: every sample of a station, in all
+    years, stays on one side, so a test station is a place without a fauna sample.
+    Its neighbouring stations and the other stations of the same survey year are in
+    training, as for a map drawn between the stations of a survey. The moment is a
+    map of a past survey drawn from the whole archive, so the later surveys are in
+    training too; they add rows, not the test year''s outcome: trained only on the
+    years up to its own, a test year scores R^2 0.317 on log1p, against 0.299 on as
+    many random training rows (untuned LightGBM, one repeat). The test is somewhat
+    stricter than a map: a test sample lies a median 500 m from the nearest training
+    station of its year, a map pixel 195 m from the nearest station. Grouped rather
+    than temporal: the use case maps a surveyed year between stations, not a future
+    year (SPLIT-3); expanding yearly windows score R^2 0.16-0.33. Leak test across
+    the split (CC 2026-11-02, Andrej): no test row has a feature copy in training;
+    merging stations within 50, 100 or 250 m into one group moves R^2 from 0.377 by
+    +0.000, -0.002 and -0.006, so no nearby station is a hidden copy; 6.8% of the
+    test rows have a training sample of their year within 100 m, against 14.5% of
+    map pixels; no input is built from another row''s outcome. Removing the test year''s
+    training rows costs R^2 0.085, as many random rows 0.002 (9 of 9 splits): the
+    score leans on the same survey''s other stations, which is the map''s own input,
+    not a leak.'
   n_train:
     min: 39089
     max: 39598
@@ -69,7 +102,7 @@ decisions:
 
 Regression of `log1p_macoma_per_m2`, scored with `mean_group_normalized_rmse` on grouped splits by `station`. 59,044 rows and 8 features. Source: Other (2024).
 
-Not built yet. The current definition gives checksum `v2:a6b33ff1a146d7db87f948d891f79ac01648984cca7ebe38b32c78a3196cfe8b`.
+Built as `01a217fe-e595-7625-9faa-4f709ac556af` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -159,7 +192,7 @@ Only curators run `build`, when the dataset ships.
 
 **Scoring columns**
 
-Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.metrics.scorer(container)(y_test, y_pred, test_idx)`).
 
 | column | role | how the metric uses it | model input |
 |---|---|---|---|
@@ -233,11 +266,11 @@ We start with samples.csv and biota.csv of the SIBES dataset, version 6 (NIOZ, 2
 - CC (2026-11-06, Lennart): decision D13 of the exposure study: the 39 single boat cores stay, with the note above, and the notes name the effort the density folds in (the core area and the subsample fraction, chosen after the sample is seen and not released). No earlier call covered them: the definition has kept them without a note since the review panel of 2026-11-01, which counted them and raised nothing; the exposure study of 2026-11-05 found that the descriptor does not describe them and measured their zeros (79.5% against 57.4% for two-core boat samples).
 - CC (2026-11-10, Andrej): "Per-year normalised RMSE (C)": the score is `mean_group_normalized_rmse` over the survey years on the density, each survey's map one vote, in place of the pooled RMSE of 2026-11-02.
 - CC (2026-11-09, Andrej): as implemented, "Go ahead" on the consistency check's (a): the elevation stays the latest vaklodingen survey stamped on or before the sample's date, though the map of a past survey could also take a later one. The reason: the survey nearest in time would move the elevation by a median 0.08 m (90th percentile 0.30 m, for the 49.7% of the samples it changes), about the median 0.07 m between two successive surveys of a cell, too little to move a settled join.
-- Time basis: RetrospectiveFillIn: the use case fills in the map of a survey year already run, at places between its
-  stations (the prediction point); the split holds out whole stations with all their years, 2008-2022. It cannot
-  test a later survey year.
+- Time basis: RetrospectiveFillIn: the use case fills in the map of a survey year already run, at places between its stations (the prediction point); the split holds out whole stations with all their years, 2008-2022. It cannot test a later survey year.
 
 ## Splits
+
+Repeated 3-fold cross-validation keeping each group of `station` whole (shuffled group k-fold, a new draw per repeat): 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 59,044 rows (SPLIT-33).
 
 Default grouped splits on the station: every sample of a station, in all years, stays on one side, so a test station is a place without a fauna sample. Its neighbouring stations and the other stations of the same survey year are in training, as for a map drawn between the stations of a survey. The moment is a map of a past survey drawn from the whole archive, so the later surveys are in training too; they add rows, not the test year's outcome: trained only on the years up to its own, a test year scores R^2 0.317 on log1p, against 0.299 on as many random training rows (untuned LightGBM, one repeat). The test is somewhat stricter than a map: a test sample lies a median 500 m from the nearest training station of its year, a map pixel 195 m from the nearest station. Grouped rather than temporal: the use case maps a surveyed year between stations, not a future year (SPLIT-3); expanding yearly windows score R^2 0.16-0.33. Leak test across the split (CC 2026-11-02, Andrej): no test row has a feature copy in training; merging stations within 50, 100 or 250 m into one group moves R^2 from 0.377 by +0.000, -0.002 and -0.006, so no nearby station is a hidden copy; 6.8% of the test rows have a training sample of their year within 100 m, against 14.5% of map pixels; no input is built from another row's outcome. Removing the test year's training rows costs R^2 0.085, as many random rows 0.002 (9 of 9 splits): the score leans on the same survey's other stations, which is the map's own input, not a leak.
 
@@ -277,7 +310,7 @@ One group is a SIBES sampling station, a fixed position on the 500 m grid or a r
 | nearest neighbour in the same group | 31.4% of the rows (chance: 0.0%) |
 | label variance explained by the group | 0.42 (shuffled groups: 0.09) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Decisions
 
@@ -405,4 +438,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a217fe-e595-7625-9faa-4f709ac556af |
+| checksum | v2:7df28dcb18bdc31ec77b542cae94d6532b9b31e1bf91cabed76723426a7f153c |
+| built_at | 2026-11-26T13:15:11+00:00 |
+| path | wadden_sea_sibes_macoma_abundance/01a217fe-e595-7625-9faa-4f709ac556af |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
