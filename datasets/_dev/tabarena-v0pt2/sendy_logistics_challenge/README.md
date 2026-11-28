@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: sendy_logistics_challenge
 container_format: 2
-checksum: v2:200c7583887ed9bba0549100b56006665b9bccbe0048a375b3cc32014e3c8e4f
+checksum: v2:957977c05fca4e6d93543cb60a541ade439c47efbc1bfe76f3853d782124c989
 build:
-  uuid: 01a18a16-1f77-7fc2-b293-c8d8ca2eeefc
-  checksum: v2:de47fa29784e3225f35fd7700d297905b233fab9369501a4d222bcca2baad69f
-  built_at: '2026-10-29T23:54:28+00:00'
-  path: sendy_logistics_challenge/01a18a16-1f77-7fc2-b293-c8d8ca2eeefc
+  uuid: 01a21800-a05c-7810-bca3-cfafaa05f16e
+  checksum: v2:957977c05fca4e6d93543cb60a541ade439c47efbc1bfe76f3853d782124c989
+  built_at: '2026-11-26T13:17:05+00:00'
+  path: sendy_logistics_challenge/01a21800-a05c-7810-bca3-cfafaa05f16e
   data_foundry_version: 0.0.5
-  git_sha: b58e9ac9185941edb42d19f681fe534aad8ec734
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
     python: 3.12.3
-    pandas: 3.1.0
-    numpy: 2.5.4
-    pyarrow: 26.0.0
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
     scikit-learn: 1.7.2
-    polars: 2.0.0
-build_stale: true
+    polars: 1.41.1
+build_stale: false
 data:
   n_rows: 20461
   n_features: 19
@@ -55,6 +55,70 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Grouped 3-fold cross-validation over the seven month classes with 3 repeats:
+    a class is the months that
+
+    started on the same weekday, (placement weekday - placement day of month) mod
+    7, as the release has the day of
+
+    the month and the weekday but no month or year. Each test fold holds two or three
+    whole classes, 3,775 to
+
+    8,394 orders (18% to 41% of the 20,461), so the test orders come from calendar
+    months the model has not seen
+
+    (Andrej, 2026-11-19, decision B; random folds before):
+
+
+    | repeat | test classes (orders)                  | test orders | train share
+    |
+
+    |--------|----------------------------------------|-------------|-------------|
+
+    | 1      | 1, 3, 6 (2,666; 1,785; 1,109)          | 5,560       | 72.8%       |
+
+    | 1      | 0, 2 (3,660; 3,300)                    | 6,960       | 66.0%       |
+
+    | 1      | 4, 5 (4,632; 3,309)                    | 7,941       | 61.2%       |
+
+    | 2      | 3, 4, 6                                | 7,526       | 63.2%       |
+
+    | 2      | 0, 1                                   | 6,326       | 69.1%       |
+
+    | 2      | 2, 5                                   | 6,609       | 67.7%       |
+
+    | 3      | 2, 3, 5                                | 8,394       | 59.0%       |
+
+    | 3      | 0, 4                                   | 8,292       | 59.5%       |
+
+    | 3      | 1, 6                                   | 3,775       | 81.6%       |
+
+
+    Why grouped: the stationary-relation test reads not flat (v3 pooled +4.6 ± 1.1
+    s RMSE for LightGBM and
+
+    +4.0 ± 0.8 s for Kumo-Tabular from training on other periods, against noise floors
+    of 2.2-2.5 s), so orders of
+
+    the same months on both sides would flatter the score. The classes are not in
+    time order (a class mixes months
+
+    from across the year), so no window can test later months: the split is forced
+    from temporal (SPLIT-8) to
+
+    grouped. Customers and riders recur across classes, as both are known at pickup.
+    CC (2026-10-29, Myunghwan):
+
+    a supported order sequence would permit a cutoff. Sorting by the number in `Order
+    No` gives day/weekday
+
+    adjacency of 0.669% against 0.693% at random over all 28,269 Train/Test orders
+    (the 2026-10-29 audit; 0.627%
+
+    against 0.731% on Train alone), so it holds no chronology. If a later release
+    supplies full dates, build
+
+    chronological windows.'
   n_train:
     min: 12067
     max: 16686
@@ -67,11 +131,10 @@ bundle_checks:
   warnings: []
   infos: []
   accepted:
-    task_group_count_low: 'Decided (Andrej, 2026-11-23): the seven month classes are
-      the finest period the release gives (no month or year), so no more groups exist.'
-    groups_test_groups_few: 'Decided (Andrej, 2026-11-23): each test fold holds two
-      or three whole month classes, all seven classes split three ways; each fold
-      still scores 3,775 to 8,394 orders.'
+    groups_test_groups_few: 'Decided (Andrej, 2026-11-23): the seven month classes
+      are the finest period the release gives (no month or year), so no more groups
+      exist; each test fold holds two or three whole month classes, all seven classes
+      split three ways, and each fold still scores 3,775 to 8,394 orders.'
     groups_largest_share_high: 'Decided (Andrej, 2026-11-23): the largest class, 4,632
       of the 20,461 orders (22.6%), is a real class of months that started on the
       same weekday, not a catch-all value; with it in the test fold the model trains
@@ -86,7 +149,7 @@ decisions:
 
 Regression of `Time from Pickup to Arrival`, scored with `rmse` on grouped splits by `month_class`. 20,461 rows and 19 features. Source: Zindi (2019).
 
-Built as `01a18a16-1f77-7fc2-b293-c8d8ca2eeefc` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:200c7583887ed9bba0549100b56006665b9bccbe0048a375b3cc32014e3c8e4f`, so the build is stale. See [Build](#build).
+Built as `01a21800-a05c-7810-bca3-cfafaa05f16e` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -274,6 +337,8 @@ We start with Train.csv of the Zindi Sendy Logistics Challenge (21,201 labelled 
 
 ## Splits
 
+Repeated 3-fold cross-validation keeping each group of `month_class` whole (shuffled group k-fold, a new draw per repeat): 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 20,461 rows (SPLIT-33).
+
 Grouped 3-fold cross-validation over the seven month classes with 3 repeats: a class is the months that
 started on the same weekday, (placement weekday - placement day of month) mod 7, as the release has the day of
 the month and the weekday but no month or year. Each test fold holds two or three whole classes, 3,775 to
@@ -338,7 +403,7 @@ One group is a month class: the orders placed in calendar months that started on
 | nearest neighbour in the same group | 36.9% of the rows (chance: 16.3%) |
 | label variance explained by the group | 0.00 (shuffled groups: 0.00) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Decisions
 
@@ -360,8 +425,7 @@ The rider marked the pickup at the destination (the winners' page), so the custo
 
 Accepted on purpose:
 
-- `task_group_count_low`: Decided (Andrej, 2026-11-23): the seven month classes are the finest period the release gives (no month or year), so no more groups exist.
-- `groups_test_groups_few`: Decided (Andrej, 2026-11-23): each test fold holds two or three whole month classes, all seven classes split three ways; each fold still scores 3,775 to 8,394 orders.
+- `groups_test_groups_few`: Decided (Andrej, 2026-11-23): the seven month classes are the finest period the release gives (no month or year), so no more groups exist; each test fold holds two or three whole month classes, all seven classes split three ways, and each fold still scores 3,775 to 8,394 orders.
 - `groups_largest_share_high`: Decided (Andrej, 2026-11-23): the largest class, 4,632 of the 20,461 orders (22.6%), is a real class of months that started on the same weekday, not a catch-all value; with it in the test fold the model trains on 59.5% to 63.2% of the orders.
 
 ## Data checks
@@ -460,11 +524,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a18a16-1f77-7fc2-b293-c8d8ca2eeefc |
-| checksum | v2:de47fa29784e3225f35fd7700d297905b233fab9369501a4d222bcca2baad69f |
-| built_at | 2026-10-29T23:54:28+00:00 |
-| path | sendy_logistics_challenge/01a18a16-1f77-7fc2-b293-c8d8ca2eeefc |
+| uuid | 01a21800-a05c-7810-bca3-cfafaa05f16e |
+| checksum | v2:957977c05fca4e6d93543cb60a541ade439c47efbc1bfe76f3853d782124c989 |
+| built_at | 2026-11-26T13:17:05+00:00 |
+| path | sendy_logistics_challenge/01a21800-a05c-7810-bca3-cfafaa05f16e |
 | data_foundry_version | 0.0.5 |
-| git_sha | b58e9ac9185941edb42d19f681fe534aad8ec734 |
-| libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:200c7583887ed9bba0549100b56006665b9bccbe0048a375b3cc32014e3c8e4f` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: spanish_motor_insurance_coverage_level_2022_2024
 container_format: 2
-checksum: v2:0c80c7b70f6fd19664c88e17cf7f50e760b5cac4d0a7ab685b7765bf1cef91f6
-build: null
+checksum: v2:8e862e9f77e3dcaf788efd6f3e25bed616c0bf9dc6d92fdbcafbdbfd7025a2d9
+build:
+  uuid: 01a21800-2bd9-7b26-9020-b0efdd7a21fb
+  checksum: v2:8e862e9f77e3dcaf788efd6f3e25bed616c0bf9dc6d92fdbcafbdbfd7025a2d9
+  built_at: '2026-11-26T13:16:38+00:00'
+  path: spanish_motor_insurance_coverage_level_2022_2024/01a21800-2bd9-7b26-9020-b0efdd7a21fb
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 354091
@@ -43,6 +56,116 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Grouped 3-fold splits by policy (`insured_id`), on a relation measured
+    stationary (StationaryRelation):
+
+    every year of a policy stays on
+
+    one side. A pricing model is refit each year and applied to the next year''s policies,
+    but the release holds
+
+    three calendar years and no finer date, so a split by year gives one window that
+    keeps half the rows for
+
+    training (2024, 47.5% of the rows, against 2022-2023), where SPLIT-14 asks for
+    three; no finer date exists
+
+    (the days in force date some starts, but no claim is dated). What the window would
+    change: the test rows''
+
+    year before would be training data, so a renewal could carry its last-year claims
+    as a feature (+0.004 to
+
+    +0.007 on renewal rows, 9 splits), and the score would be the 2024 window''s.
+    Under this split the same
+
+    feature would put each test row''s claims into its next year''s row, also a test
+    row, so the renewals carry no
+
+    claims of the year before. Protocol (LEAK-9): all years of a test policy are in
+    its test
+
+    fold, and its next year''s premium gives this year''s claims away (+0.12 on the
+    declared metric for LightGBM
+
+    that reads it); each test policy-year is predicted from the training rows and
+    its own features only, and no
+
+    feature or model step may use other test rows.
+
+    Measured on the shipped definition (2026-11-06; untuned LightGBM weighted by the
+    time on risk, fit by L2 on
+
+    log1p and by Tweedie on the cost per year): the 2024 window scores 0.300 to 0.307
+    (L2) and 0.305 to 0.316
+
+    (Tweedie) over 3 seeds, bootstrap SE 0.011 to 0.012, against 0.274 to 0.333 and
+    0.292 to 0.332 (means 0.309
+
+    and 0.311) on the 2024 rows of the 9 splits'' folds, so the forced split is no
+    more optimistic for the newest
+
+    year than the valid window. The pooled score (0.28 to 0.34 over the 9 splits)
+    mixes years: within the same
+
+    folds 2023 rows rank more easily than 2024 rows (0.326 against 0.309 under L2)
+    and 2022 rows a little
+
+    (0.317), which comes from the years, not from shared policies. Random policy-years
+    score about the same as
+
+    the grouped folds (0.318 against 0.315 under L2, 0.314 against 0.317 under Tweedie),
+    so the grouping follows
+
+    the use case, not a measured gap (SPLIT-4). This is not the forced IID split rejected
+    for
+
+    how_much_did_it_rain: whole policies are held out, so no test row shares a policy''s
+    outcomes with training,
+
+    and the cost of the window is measured. The leak test across the split, in the
+    form used for
+
+    wisconsin_local_government_property_insurance_fund (each test year scored by a
+    model trained without that
+
+    year''s training rows, against one trained without as many random rows; 9 splits),
+    finds a small shared
+
+    period: the test year''s own training rows add +0.010 under L2 (SE 0.002, 9 of
+    9) and +0.0045 under Tweedie
+
+    (SE 0.003, 6 of 9) pooled, at most +0.029 in one year (2022 under L2, SE 0.010,
+    7 of 9), and +0.006 and
+
+    +0.008 with the year out of the features. It sits within each year (the cost per
+    exposure-year is flat at 285
+
+    to 302 a year): the year''s own mapping from prices and factors to cost, not a
+    year''s claim level as there
+
+    (+0.113). No column carries it; at most 3% of the score and within the window''s
+    SE, it is the forced split''s
+
+    optimism over a model that cannot see its year. Before 2026-11-02 (row Gini, first
+    three splits): 30 exact
+
+    feature copies across the split shared no outcome (the leak probe of 2026-11-06
+    finds copies for 0.0% of the
+
+    test rows), the outcomes of training rows with the same car and driver under another
+    id added +0.0011 (a
+
+    shifted-key control +0.0010), and the training side''s mean outcome of the row''s
+    year added 0.0000 and of year
+
+    x area +0.0009; no feature is built from another row''s outcome. The year stays
+    a feature (the flat claim
+
+    amount of the CICOS agreement changes each year). A release with more
+
+    years or dates should get a temporal split. Shipped forced on the curator''s call
+    (Andrej, 2026-11-02: "Forced group splits should be fine"; kept on 2026-11-09).'
   n_train:
     min: 235823
     max: 236294
@@ -71,7 +194,7 @@ decisions:
 
 Regression of `log1p_incurred_per_exposure_year`, scored with `normalized_weighted_gini` on grouped splits by `insured_id`. 354,091 rows and 23 features. Source: Other (2026).
 
-Not built yet. The current definition gives checksum `v2:0c80c7b70f6fd19664c88e17cf7f50e760b5cac4d0a7ab685b7765bf1cef91f6`.
+Built as `01a21800-2bd9-7b26-9020-b0efdd7a21fb` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -165,7 +288,7 @@ Only curators run `build`, when the dataset ships.
 
 **Scoring columns**
 
-Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.metrics.scorer(container)(y_test, y_pred, test_idx)`).
 
 | column | role | how the metric uses it | model input |
 |---|---|---|---|
@@ -252,14 +375,11 @@ We start with "Dataset of motor insurance portfolio.csv" of Mendeley Data sw4jmd
 - CC (2026-11-09, Andrej): the metric stays the normalized Gini of the cost per year weighted by the time on risk (as implemented), not the Gini against the premium charged (Frees, Meyers and Cummings' form, `ordered_lorenz_gini` with the earned premium as the base); the call of 2026-11-02 stands.
 - CC (2026-11-09, Andrej): the renewals get no claims or cost of the year before, and the notes carry the LEAK-9 protocol line against reading other test rows ("No history, a protocol line").
 - CC (2026-11-09, Andrej): the forced split by policy stays, with that protocol line; the one 2024 window is not adopted ("Split by policy"). The release has no date finer than the year.
-- Time basis: StationaryRelation (SPLIT-32; Andrej, 2026-11-19): a pricing model refit each
-  year scores the next year's book, but the release has three calendar years and no finer date, too few for
-  three yearly windows; whole policies are held out with all their years (2026-11-09).
-  The stationary-relation test (2026-11-18) reads flat when pooled over 2023 and 2024: LightGBM +0.001 ±
-  0.010 normalized weighted Gini (floor 0.003; 2024 +0.004 ± 0.014, 2023 -0.001 ± 0.015); Kumo-Tabular's 2023
-  gap (+0.076 ± 0.059) is inconclusive and not counted. More years would allow yearly windows.
+- Time basis: StationaryRelation (Andrej, 2026-11-19): a pricing model refit each year scores the next year's book, but the release has three calendar years and no finer date, too few for three yearly windows; whole policies are held out with all their years (2026-11-09). The stationary-relation test (2026-11-18) reads flat when pooled over 2023 and 2024: LightGBM +0.001 ± 0.010 normalized weighted Gini (floor 0.003; 2024 +0.004 ± 0.014, 2023 -0.001 ± 0.015); Kumo-Tabular's 2023 gap (+0.076 ± 0.059) is inconclusive and not counted. More years would allow yearly windows.
 
 ## Splits
+
+Repeated 3-fold cross-validation keeping each group of `insured_id` whole (shuffled group k-fold, a new draw per repeat): 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 354,091 rows (SPLIT-33).
 
 Grouped 3-fold splits by policy (`insured_id`), on a relation measured stationary (StationaryRelation):
 every year of a policy stays on
@@ -336,7 +456,7 @@ One group is a policy: `insured_id`, the authors' recoded policy number, "consta
 | nearest neighbour in the same group | 1.1% of the rows (chance: 0.0%) |
 | label variance explained by the group | 0.53 (shuffled groups: 0.52) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Decisions
 
@@ -403,7 +523,7 @@ The premiums are earned pro rata: the earned total premium follows the time on r
 
 0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
-- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (1.1% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (0.53 vs 0.52). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.)
+- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (1.1% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (0.53 vs 0.52). (hint: The grouping may not be needed: compare IID and grouped scores with `data-foundry probe group`.)
 
 Accepted on purpose:
 
@@ -519,4 +639,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a21800-2bd9-7b26-9020-b0efdd7a21fb |
+| checksum | v2:8e862e9f77e3dcaf788efd6f3e25bed616c0bf9dc6d92fdbcafbdbfd7025a2d9 |
+| built_at | 2026-11-26T13:16:38+00:00 |
+| path | spanish_motor_insurance_coverage_level_2022_2024/01a21800-2bd9-7b26-9020-b0efdd7a21fb |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

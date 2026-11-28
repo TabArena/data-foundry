@@ -7,8 +7,6 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
-- WIP (DF)
-claimed_by: Andrej
 suggestion: No (Retired)
 decision_markers:
 - Data Quality Issue

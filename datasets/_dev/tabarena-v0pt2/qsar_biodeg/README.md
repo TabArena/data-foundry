@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_biodeg
 container_format: 2
-checksum: v2:b516e717b5c6ff9c440fa4e15e46f434784fcd5b1b74ffea5626160c4c63e4cd
+checksum: v2:3f8e1d5d61e5df387f1e1e5893983e0224756da7696547bd5d3a4f11a4b33ea9
 build:
-  uuid: 01a13a7d-c2bf-742d-b04d-f9b569da1f3d
-  checksum: v2:5d0dcabbc947ec79fe0e230bddca7b95568e2a8cc0ce95f85fb21a9c114d1739
-  built_at: '2026-10-14T12:58:02+00:00'
-  path: qsar_biodeg/01a13a7d-c2bf-742d-b04d-f9b569da1f3d
+  uuid: 01a21800-9e67-7ac5-a484-70002ecedb6e
+  checksum: v2:3f8e1d5d61e5df387f1e1e5893983e0224756da7696547bd5d3a4f11a4b33ea9
+  built_at: '2026-11-26T13:17:03+00:00'
+  path: qsar_biodeg/01a21800-9e67-7ac5-a484-70002ecedb6e
   data_foundry_version: 0.0.5
-  git_sha: f93df193827f5244586b178fd7199efb86d66359
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 1055
   n_features: 1
@@ -55,6 +55,10 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Grouped splits on the Bemis-Murcko scaffold: all chemicals of one series
+    stay on one side, so a model predicts chemicals of a series it has not seen; chemicals
+    without a ring are held out one by one. Chemicals with similar but not identical
+    scaffolds can be on both sides.'
   n_train:
     min: 656
     max: 761
@@ -76,7 +80,7 @@ decisions: []
 
 Binary classification of `Biodegradable`, scored with `roc_auc` on grouped splits by `scaffold`. 1,055 rows and 1 features. Source: UCI (2013).
 
-Built as `01a13a7d-c2bf-742d-b04d-f9b569da1f3d` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:b516e717b5c6ff9c440fa4e15e46f434784fcd5b1b74ffea5626160c4c63e4cd`, so the build is stale. See [Build](#build).
+Built as `01a21800-9e67-7ac5-a484-70002ecedb6e` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -206,7 +210,7 @@ The first 5 of 1,055 rows of the final frame (random rows: the frame is shuffled
   356 readily biodegradable, as on UCI.
 - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form
   (`canonical_smiles`; no salts or mixtures here), declared in `special_features`, so a benchmark encodes it as a
-  structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's
+  structure and never as text; the recommended encoding is `data_foundry.special.chemistry.encode_smiles` (RDKit's
   2D descriptors, the 166 MACCS keys and the ECFP4 counts).
 - The authors' 41 descriptors leave (Lennart, 2026-11-01, as for qsar_tid_11: the task goes from the structure
   to a prediction, and the descriptors are one modelling choice of the authors). They were Dragon descriptors
@@ -230,20 +234,11 @@ The first 5 of 1,055 rows of the final frame (random rows: the frame is shuffled
   are groups of their own. A screener judges an untested chemical, often of a series not yet measured, so whole
   series are held out; qsar_bioconcentration, qsar_oral_toxicity, qsar_fish_toxicity, qsar_aquatic_toxicity and
   qsar_tid_11 group the same way. The source split at random.
-- Time basis: UnseenGroup (Andrej, 2026-11-13; no prototype tag before, 2026-11-12). The source
-  builds a regulatory screen: Mansouri et al. (2013) open with REACH, which "requires information on ready
-  biodegradation" and encourages QSAR predictions in place of tests, and they validate on 670 chemicals from
-  other sources (the external set above). Its question is a chemical from outside the collection, so the
-  scaffold split stands (SPLIT-37, the source's scope), and the order in which Japan's programme tested its
-  existing chemicals lies outside it. That order was measured and is recorded here: NITE's workbook of the CSCL
-  biodegradation results of existing chemicals (https://www.nite.go.jp/data/000064112.xlsx) dates 1,006
-  chemicals by CAS-RN and J-CHECK's bulletin year 44 more (1,050 of 1,055, 1971 to 2008); the test moved from 14
-  days (80% of the tests before 1980) to 28 days (88% from 2000 on), and the share readily biodegradable swings
-  by decade (40%, 28%, 45%, 27%), a fact about the labels. A forward split by test year leaves 10.3% of the test
-  chemicals a close training analog, as the scaffold split does, against 11.8% at random.
-  The split cannot test how labels from the older 14-day tests differ from today's 28-day ones.
+- Time basis: UnseenGroup (Andrej, 2026-11-13; no prototype tag before, 2026-11-12): The source builds a regulatory screen: Mansouri et al. (2013) open with REACH, which "requires information on ready biodegradation" and encourages QSAR predictions in place of tests, and they validate on 670 chemicals from other sources (the external set above). Its question is a chemical from outside the collection, so the scaffold split stands (SPLIT-37, the source's scope), and the order in which Japan's programme tested its existing chemicals lies outside it. That order was measured and is recorded here: NITE's workbook of the CSCL biodegradation results of existing chemicals (https://www.nite.go.jp/data/000064112.xlsx) dates 1,006 chemicals by CAS-RN and J-CHECK's bulletin year 44 more (1,050 of 1,055, 1971 to 2008); the test moved from 14 days (80% of the tests before 1980) to 28 days (88% from 2000 on), and the share readily biodegradable swings by decade (40%, 28%, 45%, 27%), a fact about the labels. A forward split by test year leaves 10.3% of the test chemicals a close training analog, as the scaffold split does, against 11.8% at random. The split cannot test how labels from the older 14-day tests differ from today's 28-day ones.
 
 ## Splits
+
+Repeated 3-fold cross-validation keeping each group of `scaffold` whole (shuffled group k-fold, a new draw per repeat), stratified on `Biodegradable`: 10 repeat(s) x 3 folds, 30 splits, the repeats set by the 1,055 rows (SPLIT-33).
 
 Grouped splits on the Bemis-Murcko scaffold: all chemicals of one series stay on one side, so a model predicts chemicals of a series it has not seen; chemicals without a ring are held out one by one. Chemicals with similar but not identical scaffolds can be on both sides.
 
@@ -308,7 +303,7 @@ One group is a chemical series: the chemicals that share one Bemis-Murcko scaffo
 | groups of two or more rows with a single label | 63.0% |
 | label variance explained by the group | 0.92 (shuffled groups: 0.83) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
@@ -322,7 +317,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | Biodegradable | category | 0 | 0 | 2 | No, Yes |
-| SMILES | string | 0 | 0 | 1055 | CC(CCO)CCO, CCCCOCCOP(=O)(OCCOCCCC)OCCOCCCC, O=C1NC(=O)C(c2ccccc2)(c2ccccc2)N1,… |
+| SMILES | string | 0 | 0 | 1055 | FC(F)(Cl)C(F)(Cl)Cl, CC(CCO)CCO, CCCCOCCOP(=O)(OCCOCCCC)OCCOCCCC, O=C1NC(=O)C(c… |
 | scaffold | string | 0 | 0 | 872 | c1ccc(Cc2ccccc2)cc1, c1ccc2ccccc2c1, C1CCCCC1, c1ccncc1, c1ccc(-c2ccccc2)cc1, O… |
 
 ### Target distribution
@@ -345,11 +340,11 @@ No numeric features to summarize.
 |---|---|---|---|---|
 | Biodegradable | 1 | No | 699 | 66.26 |
 | Biodegradable | 2 | Yes | 356 | 33.74 |
-| SMILES | 1 | CC(CCO)CCO | 1 | 0.09 |
-| SMILES | 2 | CCCCOCCOP(=O)(OCCOCCCC)OCCOCCCC | 1 | 0.09 |
-| SMILES | 3 | O=C1NC(=O)C(c2ccccc2)(c2ccccc2)N1 | 1 | 0.09 |
-| SMILES | 4 | CCCCCCCCO | 1 | 0.09 |
-| SMILES | 5 | CCC(Oc1ccc(C(C)(C)CC)cc1C(C)(C)CC)C(=O)Nc1ccc(NC(=O)C(F)(F)C(F)(... | 1 | 0.09 |
+| SMILES | 1 | FC(F)(Cl)C(F)(Cl)Cl | 1 | 0.09 |
+| SMILES | 2 | CC(CCO)CCO | 1 | 0.09 |
+| SMILES | 3 | CCCCOCCOP(=O)(OCCOCCCC)OCCOCCCC | 1 | 0.09 |
+| SMILES | 4 | O=C1NC(=O)C(c2ccccc2)(c2ccccc2)N1 | 1 | 0.09 |
+| SMILES | 5 | CCCCCCCCO | 1 | 0.09 |
 | scaffold | 1 | c1ccc(Cc2ccccc2)cc1 | 26 | 2.46 |
 | scaffold | 2 | c1ccc2ccccc2c1 | 20 | 1.9 |
 | scaffold | 3 | C1CCCCC1 | 16 | 1.52 |
@@ -362,11 +357,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a13a7d-c2bf-742d-b04d-f9b569da1f3d |
-| checksum | v2:5d0dcabbc947ec79fe0e230bddca7b95568e2a8cc0ce95f85fb21a9c114d1739 |
-| built_at | 2026-10-14T12:58:02+00:00 |
-| path | qsar_biodeg/01a13a7d-c2bf-742d-b04d-f9b569da1f3d |
+| uuid | 01a21800-9e67-7ac5-a484-70002ecedb6e |
+| checksum | v2:3f8e1d5d61e5df387f1e1e5893983e0224756da7696547bd5d3a4f11a4b33ea9 |
+| built_at | 2026-11-26T13:17:03+00:00 |
+| path | qsar_biodeg/01a21800-9e67-7ac5-a484-70002ecedb6e |
 | data_foundry_version | 0.0.5 |
-| git_sha | f93df193827f5244586b178fd7199efb86d66359 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:b516e717b5c6ff9c440fa4e15e46f434784fcd5b1b74ffea5626160c4c63e4cd` |

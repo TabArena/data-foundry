@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: seismic_bumps
 container_format: 2
-checksum: v2:1ada4c49587e53e8aae0c74b3ee62100cca212d017111f12eed2c3034e67733b
-build: null
+checksum: v2:8d2724f83c0e5016446916f69fd145a713e58233dfb9fbe7c20fee3fd41381d1
+build:
+  uuid: 01a21800-edbf-74c4-a143-77043ae0d364
+  checksum: v2:8d2724f83c0e5016446916f69fd145a713e58233dfb9fbe7c20fee3fd41381d1
+  built_at: '2026-11-26T13:17:24+00:00'
+  path: seismic_bumps/01a21800-edbf-74c4-a143-77043ae0d364
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 2578
@@ -35,6 +48,72 @@ splits:
   time_horizon_unit: steps
   time_gap: null
   time_gap_unit: null
+  reason: 'Leaf (SPLIT-36): Database Snapshot -> new cases that arrive one by one
+    -> the arrival order rebuilt from the
+
+    data and checked (the file order; each row''s label equals the next row''s recorded
+    bump in 2,577 of 2,577
+
+    pairs) -> at least three windows of the use case''s size -> Temporal · rebuilt
+    order. The bump rate moves
+
+    strongly along the order (positives per tenth of the shipped rows 11, 72, 33,
+    2, 3, 8, 15, 8, 11, 7), so later shifts
+
+    are tested on earlier ones; another mine or a new longwall''s first weeks stay
+    untested. Each test window is a run
+
+    of 84 consecutive shifts (`shift_order`), trained on every earlier shift (SPLIT-11);
+    the windows walk back from
+
+    the newest and do not overlap (Andrej, 2026-11-20). Window length (SPLIT-12):
+    four weeks of
+
+    the file''s measured week, a monthly refit of the service''s model (Andrej, 2026-11-20).
+    The
+
+    shift types of rows 150-905 follow a 21-row week (18 coal-getting and 3 preparation
+    shifts, three a day;
+
+    autocorrelation of the preparation flag 0.37 at lag 21, 0.38 at lag 84), so four
+    weeks are 84 shifts; the cycle
+
+    is not visible after row 1105, where the test windows lie. The source states no
+    refit cadence; the monthly
+
+    cadence remains our assumption (Andrej, 2026-11-20): within each of the 15 windows,
+
+    a model refit every day (every 3 shifts) on all earlier shifts did not beat the
+    window''s model (ROC AUC refit
+
+    better in 3-8 of 15 windows per model, worse on average for logistic regression
+    and Kumo-Tabular; log loss
+
+    better in 10 of 15, p 0.14-0.33, not significant). With no dates there is no season
+    or month to choose between, so the windows walk back
+
+    (SPLIT-15). Target: 30 windows (SPLIT-33 for two thirds of 2,578 shifts); 15 are
+    reached: 84-shift windows
+
+    within the newest half (1,289 shifts) fit 15 times. What stops more: the window
+    length and the 50% floor
+
+    (SPLIT-14). Every window holds a bump (1 to 10, 49 in all; TP-9, SPLIT-16), and
+    each trains on 51.1% to 96.7%
+
+    of the shifts. No gap: the label (a bump in the next
+
+    shift) is known when that shift ends, which is the prediction point of the next
+    row, so the label of the
+
+    last training row is known when the first test row is rated (one step of the order,
+    SPLIT-10). `shift_order`
+
+    orders the split and is no input. Protocol (LEAK-9): each test shift is predicted
+    from the training rows and its
+
+    own features only; a method that reads other test rows (whose next row holds a
+    row''s label) is called out.'
   n_train:
     min: 1318
     max: 2494
@@ -45,14 +124,13 @@ bundle_checks:
   ok: true
   errors: []
   warnings:
-  - dataset_sequential_id_column
   - splits_test_minority_few
   infos: []
   accepted:
-    splits_below_target: '15 of the 30 windows an IID split of this size would get:
-      windows of four weeks (84 shifts) fit 15 times within the newest half, so the
-      window length and the 50% training floor stop more; overlapping windows are
-      not used, so each test shift is scored once (Andrej, 2026-11-20).'
+    splits_dimensions_off_protocol: '15 of the 30 windows an IID split of this size
+      would get: windows of four weeks (84 shifts) fit 15 times within the newest
+      half, so the window length and the 50% training floor stop more; overlapping
+      windows are not used, so each test shift is scored once (Andrej, 2026-11-20).'
 decisions: []
 ---
 
@@ -62,7 +140,7 @@ decisions: []
 
 Binary classification of `bump_next_shift`, scored with `roc_auc` on temporal splits by `shift_order`. 2,578 rows and 15 features. Source: UCI (2013).
 
-Not built yet. The current definition gives checksum `v2:1ada4c49587e53e8aae0c74b3ee62100cca212d017111f12eed2c3034e67733b`.
+Built as `01a21800-edbf-74c4-a143-77043ae0d364` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -228,6 +306,8 @@ We start with seismic-bumps.arff from UCI (2,584 shifts, 18 features and the cla
 
 ## Splits
 
+Expanding-window temporal splits: 15 test window(s) of 84 rows, walking back from the newest data, newest first; train is all earlier data. The test windows by `shift_order`, as listed: 2500 to 2583 (84 test, 2,494 train rows); 2416 to 2499 (84 test, 2,410 train rows); 2332 to 2415 (84 test, 2,326 train rows); 2248 to 2331 (84 test, 2,242 train rows); 2164 to 2247 (84 test, 2,158 train rows); 2080 to 2163 (84 test, 2,074 train rows); 1996 to 2079 (84 test, 1,990 train rows); 1912 to 1995 (84 test, 1,906 train rows); 1828 to 1911 (84 test, 1,822 train rows); 1744 to 1827 (84 test, 1,738 train rows); 1660 to 1743 (84 test, 1,654 train rows); 1576 to 1659 (84 test, 1,570 train rows); 1492 to 1575 (84 test, 1,486 train rows); 1408 to 1491 (84 test, 1,402 train rows); 1324 to 1407 (84 test, 1,318 train rows).
+
 Leaf (SPLIT-36): Database Snapshot -> new cases that arrive one by one -> the arrival order rebuilt from the
 data and checked (the file order; each row's label equals the next row's recorded bump in 2,577 of 2,577
 pairs) -> at least three windows of the use case's size -> Temporal · rebuilt order. The bump rate moves
@@ -302,14 +382,13 @@ Each test window against its train side, by statistics of the data, never of a m
 
 ## Bundle checks
 
-0 error(s), 2 warning(s), 0 info (28 checks run, plus the dataset's own checks).
+0 error(s), 1 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `dataset_sequential_id_column`: 1 integer column(s) hold one value per row, densely numbered like a running id: ['shift_order']. (hint: A running id often encodes the order of collection (time) or the origin (a prefix per source), which a model then learns. Drop it, or declare it `NonFeature(column, 'identifier')` in the parent.)
 - **warning** `splits_test_minority_few`: 14 of 15 test fold(s) hold fewer than 10 rows of the rarer class (smallest: 1): ['r0f0', 'r1f0', 'r2f0', 'r3f0', 'r4f0']. (hint: The score of such a fold rests on a handful of rows. Widen the test windows, or accept it when the folds together hold enough positives.)
 
 Accepted on purpose:
 
-- `splits_below_target`: 15 of the 30 windows an IID split of this size would get: windows of four weeks (84 shifts) fit 15 times within the newest half, so the window length and the 50% training floor stop more; overlapping windows are not used, so each test shift is scored once (Andrej, 2026-11-20).
+- `splits_dimensions_off_protocol`: 15 of the 30 windows an IID split of this size would get: windows of four weeks (84 shifts) fit 15 times within the newest half, so the window length and the 50% training floor stop more; overlapping windows are not used, so each test shift is scored once (Andrej, 2026-11-20).
 
 ## Data checks
 
@@ -336,7 +415,7 @@ Accepted on purpose:
 | nbumps5 | float64 | 0 | 0 | 2 | 0.0, 1.0 |
 | energy | float64 | 0 | 0 | 242 | 0.0, 4000.0, 3000.0, 2000.0, 300.0, 1000.0, 400.0, 5000.0, 200.0, 600.0 |
 | maxenergy | float64 | 0 | 0 | 33 | 0.0, 3000.0, 2000.0, 4000.0, 1000.0, 5000.0, 300.0, 400.0, 6000.0, 20000.0 |
-| shift_order | int64 | 0 | 0 | 2578 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
+| shift_order | int64 | 0 | 0 | 2578 | 2583, 0, 1, 2, 3, 4, 5, 6, 7, 8 |
 
 </details>
 
@@ -393,4 +472,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a21800-edbf-74c4-a143-77043ae0d364 |
+| checksum | v2:8d2724f83c0e5016446916f69fd145a713e58233dfb9fbe7c20fee3fd41381d1 |
+| built_at | 2026-11-26T13:17:24+00:00 |
+| path | seismic_bumps/01a21800-edbf-74c4-a143-77043ae0d364 |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

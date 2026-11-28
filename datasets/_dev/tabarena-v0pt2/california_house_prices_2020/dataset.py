@@ -7,7 +7,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+)
 
 # Entries of one sale scraped twice: the same address, ZIP code and sold price, with the same year built (51 pairs, a
 # median 61 Kaggle IDs apart) or, where one copy lacks the year, the same living area (6 pairs). One of the 6 older copies would leave anyway with the listings that
@@ -160,7 +169,7 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Nine test windows in sale order, each a ninth of the newest half of the sales (2,165 rows), each trained on all earlier sales (Andrej, 2026-11-19): 50.0%, 55.6%, 61.1%, 66.7%, 72.2%, 77.8%, 83.3%, 88.9% and 94.4% of the 38,986 rows, so no window trains on less than half of the data (SPLIT-14). Each window is a separate repeat with one fold. We simulate deploying a model at one point in the sale order for the next stretch of sales. As the time_index gives the order but no dates, the windows are counts of sales, not calendar periods; 2,165 sales span about two to three weeks of listings. The use case (a price estimate at listing) sets no window length and no source gives a refit cadence, so the windows follow the nine an IID split of this size would get; until 2026-11-19 three windows of a sixth of the sales (6,497 rows) shipped, and before 2026-10-21 quarters, whose oldest trained on 25% of the rows.
+        Nine test windows in sale order, each a ninth of the newest half of the sales (2,165 rows), each trained on all earlier sales (Andrej, 2026-11-19): 50.0%, 55.6%, 61.1%, 66.7%, 72.2%, 77.8%, 83.3%, 88.9% and 94.4% of the 38,986 rows, so no window trains on less than half of the data (SPLIT-14). We simulate deploying a model at one point in the sale order for the next stretch of sales. As the time_index gives the order but no dates, the windows are counts of sales, not calendar periods; 2,165 sales span about two to three weeks of listings. The use case (a price estimate at listing) sets no window length and no source gives a refit cadence, so the windows follow the nine an IID split of this size would get; until 2026-11-19 three windows of a sixth of the sales (6,497 rows) shipped, and before 2026-10-21 quarters, whose oldest trained on 25% of the rows.
         The windows are cut in sale order, the time the label arrives, while a home is predicted at its listing: a test
         home listed before its window began meets training sales that closed after its listing (97-100% of each
         window's test homes listed before the latest training listing, 2026-11-19; on the sixths a gap of a third or a

@@ -7,7 +7,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -149,9 +150,7 @@ class ThyroidDiscordantArchive(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Three test windows of four months of request dates, newest first: October 1986 to January 1987 (the end of the
-        archive), June to September 1986 and February to May 1986; each trains on every earlier request (87%, 73% and
-        61% of the rows). The windows hold 1,215, 1,230 and 1,145 requests with 25, 54 and 24 discordant results. They
+        The windows hold 1,215, 1,230 and 1,145 requests with 25, 54 and 24 discordant results. They
         follow option C of thyroid_discordant's split decision (train on 1984-1985; test on the first half of 1986, its third
         quarter, and its fourth quarter with January 1987), as four-month windows, which one declaration can express:
         the archive holds only 2 requests in January 1986 and 1 in June 1986, none discordant, so the windows differ
@@ -171,6 +170,12 @@ class ThyroidDiscordantArchive(AbstractCuratedDataset):
         splits=TemporalSplits(window=4, unit="months", cutoffs=("1986-02-01", "1986-06-01", "1986-10-01")),
     )
     accepted_check_warnings = {
+        "splits_dimensions_off_protocol": (
+            "Three windows against the nine an IID split of 9,162 requests would get (SPLIT-33): they follow "
+            "thyroid_discordant's split decision, and five four-month windows fit only down to 30% training, the "
+            "curator's exception (SPLIT-14). The splits comment names the target, the count reached and what stops "
+            "more (SPLIT-15; Lennart, 2026-11-26)."
+        ),
         "dataset_pure_feature_value": "on_thyroxine and TSH_measured are on the request, before the report comment: "
         "a patient on thyroxine or without a TSH result is rarely commented as discordant (1 of 1,239 and 1 of 834); "
         "no leak",

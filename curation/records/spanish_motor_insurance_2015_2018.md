@@ -3,9 +3,6 @@ unique_name: spanish_motor_insurance_2015_2018
 name: Spanish motor insurance portfolio 2015-2018 (Lledó and Pavía, Mendeley 5cxyb5fp4f)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:

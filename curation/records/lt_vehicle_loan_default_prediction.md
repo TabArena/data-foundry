@@ -5,9 +5,6 @@ checked_by:
 - Lennart
 - Myunghwan
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 3
 decision_markers:

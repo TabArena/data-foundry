@@ -3,9 +3,6 @@ unique_name: noaa_afsc_bottom_trawl_survey_cpue
 name: NOAA AFSC bottom trawl surveys (Groundfish Assessment Program, FOSS haul / catch / species tables), 1982-2026
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:

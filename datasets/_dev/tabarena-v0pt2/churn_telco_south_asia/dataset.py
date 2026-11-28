@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, TimeBasis
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+)
 
 RAW_FILE = "South Asian Wireless Telecom Operator (SATO 2015).csv"
 """The one file of the Kaggle dataset mahreen/sato2015; OpenML 44227 holds the same values."""

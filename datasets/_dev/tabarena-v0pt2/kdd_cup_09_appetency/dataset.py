@@ -8,7 +8,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis, decode
+
+from data_foundry.definition import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis, decode
 
 N_NUMERIC = 14740  # Var1-Var14740 numeric, Var14741-Var15000 categorical
 GENERATED_COLUMNS = ["Var5963", "Var11750"]

@@ -4,14 +4,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
     Source,
-    SplitPlan,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -38,7 +37,7 @@ ORDINAL_LEVELS = {
 }
 
 # Test windows: October-December 2015, April-June 2015 and October-December 2014 (Lennart, 2026-11-11);
-# `_make_splits` builds them and then drops the repeat borrowers of each window from its training side.
+# `Temporal(exclude_test_entities_on="borrower_key")` drops the repeat borrowers of each window from its training side.
 SPLIT_WINDOWS = TemporalSplits(window=3, unit="months", cutoffs=("2015-10-01", "2015-04-01", "2014-10-01"))
 
 # Fields LendingClub first reported in December 2015: empty before, so no training side holds a value of them
@@ -181,11 +180,6 @@ class LendingClub(AbstractCuratedDataset):
             "loans (45.7% after the repeat-borrower filter), beside October to December 2015 and April to June 2015 on 85.5% and 62.8%; kept as the curator's "
             "exception to the half-data floor (Andrej, 2026-11-20)."
         ),
-        "splits_rows_unused": (
-            "By design (Andrej, 2026-11-11): a loan whose borrower key matches a test loan in every window it could "
-            "train for, and is in no test window, is in no split (324 loans, 0.1%; the repeat-borrower filter in "
-            "`_make_splits`)."
-        ),
     }
 
     # Task
@@ -209,8 +203,7 @@ class LendingClub(AbstractCuratedDataset):
         and no source names a refit cadence: Sanz-Guerrero and Arroyo (2025) shuffle the loans into 5 folds, so the
         quarter matches the release, not a stated cadence (CC 2026-11-11), and a month of loans is a small test set.
         The 3 test windows (CC 2026-11-11), newest first: October to December 2015, the newest quarter; April to June 2015; and October to
-        December 2014, a quarter of another year. They hold 88,667, 64,222 and 49,197 loans, and each trains on all
-        loans issued before it: 520,877, 383,088 and 279,567 loans (85.5%, 62.8% and 45.9% of the 609,544). October
+        December 2014, a quarter of another year. October
         to December 2014 trains on less than half the loans (45.9%), beside 85.5% and 62.8%. The windows are spread
         over two years instead of walking back from the newest: 46% of the loans were issued in 2015, so before 2015
         only 2014 Q4, Q3 and Q2 keep 30% of the loans for training (45.9%, 39.2% and 33.0%), and 2014 Q4 adds the
@@ -241,7 +234,9 @@ class LendingClub(AbstractCuratedDataset):
         against 0.708 (2026-11-23).
     """
     split_leaf = "L-ORDER.exception"
-    temporal = Temporal(on="issue_d", horizon=3, horizon_unit="months")  # the windows: `SPLIT_WINDOWS`
+    # No loan of a borrower who takes a loan in the window trains it: the earlier default was recorded after the test
+    # loan was issued (splits comment)
+    temporal = Temporal(on="issue_d", splits=SPLIT_WINDOWS, exclude_test_entities_on="borrower_key")
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         original_df = pd.read_csv(raw_dir / "accepted_2007_to_2018Q4.csv.gz")
@@ -343,7 +338,7 @@ class LendingClub(AbstractCuratedDataset):
         # finished by the 2018Q4 snapshot, so later or longer loans are missing while they were being repaid.
         issued = pd.to_datetime(df["issue_d"], format="%b-%Y")
         df = df[(df["term"].str.strip() == "36 months") & (issued < "2016-01-01")]
-        # The borrower, for `_make_splits`: there is no borrower id, so the exact match of four stable fields (the
+        # The borrower, for the split's filter: there is no borrower id, so the exact match of four stable fields (the
         # month of the earliest credit line, 3-digit ZIP code, state, employer title); not a feature.
         title = df["emp_title"].astype("string").str.strip().str.lower()
         key = df["earliest_cr_line"].astype("string") + "|" + df["zip_code"].astype("string") + "|"
@@ -367,19 +362,6 @@ class LendingClub(AbstractCuratedDataset):
             },
         )
         return df
-
-    def _make_splits(self, df: pd.DataFrame) -> SplitPlan:
-        # The declared windows, then each training side without the loans of borrowers who take a loan in the
-        # window: their earlier default was recorded after the test loan was issued (splits comment).
-        windows = SPLIT_WINDOWS.splits(df, self.temporal.on)
-        key = df["borrower_key"]
-        splits = {}
-        for repeat, folds in windows.items():
-            train, test = (np.asarray(side) for side in folds[0])
-            test_keys = key.iloc[test].dropna().unique()
-            same_borrower = key.iloc[train].isin(test_keys).to_numpy()
-            splits[repeat] = {0: (train[~same_borrower].tolist(), test.tolist())}
-        return SplitPlan(splits=splits, df=drop_columns(df, ["borrower_key"]))
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(

@@ -7,7 +7,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -416,7 +417,7 @@ class HouseSales(AbstractCuratedDataset):
         on="date", splits=TemporalSplits(window=3, unit="weeks", n_windows=9, min_train_fraction=0.5, gap=1)
     )
     splits_comment = """
-        9 test windows of three weeks (21 days), from 10-30 April 2015 back to 24 October-13 November 2014, newest first, each trained on the sales up to one week before the window. The gap is the delay before a sale is recorded and a refit can learn its price: from the deed date to the recording date the delay has a median of 6 days, and 91% of sales are recorded within 14 days. The window length follows the window count, not a refit cadence the source states: nine windows are the 3 x 3 splits an IID task of this size gets; they hold 643 to 1,518 sales each, and the oldest trains on 52% of the rows. Calendar months (a monthly refit) would give 6 windows of 953 to 2,189 sales. With one year of data the windows cover late October to April only, and the training history is under one year.
+        The gap is the delay before a sale is recorded and a refit can learn its price: from the deed date to the recording date the delay has a median of 6 days, and 91% of sales are recorded within 14 days. The window length follows the window count, not a refit cadence the source states: nine windows are the 3 x 3 splits an IID task of this size gets; they hold 643 to 1,518 sales each, and the oldest trains on 52% of the rows. Calendar months (a monthly refit) would give 6 windows of 953 to 2,189 sales. With one year of data the windows cover late October to April only, and the training history is under one year.
     """
 
     prepared_raw_files = (CHANGES_FILE, BATHS_FILE, WARNINGS_FILE)
@@ -572,7 +573,7 @@ class HouseSales(AbstractCuratedDataset):
         building = changes[(changes["record"] == "Bldg 1") & changes["attribute"].isin([a for _, a in CHANGED_COLUMNS])]
         building = building[(building["updated"] >= "2015-06-22") & (building["updated"] < "2015-08-17")]
         column = building["attribute"].map({a: c for (_, a), c in CHANGED_COLUMNS.items()})
-        in_file = [house.at[i, c] if i in house.index else np.nan for i, c in zip(building["id"], column)]
+        in_file = [house.at[i, c] if i in house.index else np.nan for i, c in zip(building["id"], column, strict=False)]
         week = building["updated"].dt.to_period("W-SUN").astype(str)
         snapshot = (
             pd.DataFrame({"week of the change": week, "equal": building["old"].to_numpy() == np.asarray(in_file)})

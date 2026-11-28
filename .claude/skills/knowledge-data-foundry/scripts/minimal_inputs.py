@@ -25,8 +25,8 @@ import zipfile
 from collections import defaultdict
 from pathlib import Path
 
+from data_foundry.definition.dataset import PREPARED_MARKER
 from data_foundry.schema import resolve_warehouse_dir
-from data_foundry.v2.dataset import PREPARED_MARKER
 
 STORED = (".gz", ".parquet", ".zip", ".xlsx", ".bz2", ".7z", ".xz", ".png", ".jpg")
 """Already compressed: stored as they are rather than deflated again."""
@@ -100,7 +100,7 @@ def main() -> int:
             link = args.target / rel
             link.parent.mkdir(parents=True, exist_ok=True)
             if not link.exists() and not link.is_symlink():
-                if rel in prepared:
+                if rel in prepared or Path(rel).name == PREPARED_MARKER:  # a marker the build read is copied too
                     shutil.copy2(warehouse / rel, link)
                 else:
                     link.symlink_to(warehouse / rel)

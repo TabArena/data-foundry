@@ -82,15 +82,15 @@ format is the review skill's [review_file_format.md](../../review-added-datasets
   the agents that built the dataset and the reports of the panel.
 * A record without a dataset folder (not added) keeps its open issues in the same section, in the same format, with
   an outcome that starts `not added`.
-* `/review-added-datasets` builds its page from the records' reviews (`collect_reviews.py`). Applying a decision
-  writes the curator's turn and the `**Resolved (<date>, <who>):**` turn into the review and the `CC` line into the
-  comments, all in the one record.
+* `/review-added-datasets` builds its page from the records' reviews (`review_page.py`, which reads them through
+  `data_foundry.curation.review`, the one parser of the section; the decision register reads them the same way).
+  Applying a decision writes the curator's turn and the `**Resolved (<date>, <who>):**` turn into the review and the
+  `CC` line into the comments, all in the one record.
 * A review is never deleted (Andrej, 2026-11-02): a settled issue keeps its Resolved turn, and a retired dataset's
   record keeps its review, so the record says how the dataset was decided.
-* No dataset folder holds a `REVIEW.md`, and none is created. `collect_reviews.py` stops at one and a test fails the
-  PR that adds one; `.claude/skills/review-added-datasets/scripts/move_reviews_to_records.py` moves it into its record
-  (for a branch rebased onto the change; `--check` lists what it would move). The working copy's cross-dataset
-  `REVIEW.md` is the one review file outside the records ([working_copy.md](working_copy.md)).
+* No `REVIEW.md` exists in the working copy, and none is created. The parser stops at one and a test fails the PR
+  that adds one. An item that spans datasets is a draft rule in the knowledge skills or a GitHub issue
+  ([working_copy.md](working_copy.md)).
 * The dashboard and the public site show the review with the record; the flat export (CSV, the sheet) leaves it out.
 
 Edit the review on the current file, in one of two ways: an exact-string edit of the record file (the Edit tool), or
@@ -124,7 +124,6 @@ record that already has a verdict gets an `**Assessment (AI)**` instead.
 | `name` | The names the dataset is published under, joined with ` / `. The body has no title heading. |
 | `checked_by` | The curators who reviewed it, or `AI (UNVERIFIED)`. |
 | `data_foundry_status` | Work state and collection membership in one list (below). |
-| `claimed_by` | The curator holding the claim, mirrored from the claims board ([claims.md](claims.md)); one name, never the AI. |
 | `suggestion` | The verdict; the one required field. |
 | `priority` | 1-5: how urgently a curator should act on the record at its stage (5 first): verify the screening and send it to `/add-dataset`, then review what `/add-dataset` added. Set by `/screen-candidates`, set again by `/add-dataset` from what it measured, changed by the curator; none on a rejected record. The factors are in [selection.md](../../knowledge-curation/references/selection.md), "Priority". |
 | `decision_markers` | Issue flags (`Duplicate`, `Trivial`, `Image`, `Too Small`, `Data Quality Issue`, ...); a clean dataset has none. |
@@ -148,9 +147,8 @@ the review queue: add a new option through the dashboard's ＋ header button or 
 
 ### `data_foundry_status`
 
-* The work state: `DF: Yes` (in Data Foundry), `WIP (Triage)` (the verdict is open and someone is settling it),
-  `WIP (DF)` (the verdict is a final `Yes` and the definition is in progress; never without a final `Yes`),
-  `DF: Much work`, `DF: Suspended`.
+* The work state: `DF: Yes` (in Data Foundry), `DF: Much work`, `DF: Suspended`. Work in progress is a claim on the
+  board, never a value here (below).
 * Collection membership: `TabArena (v0.1)`, `BeyondArena`. Every shipped dataset carries its collection tags and
   `DF: Yes` (51 TabArena v0.1 and 142 BeyondArena datasets, 144 in their union). A `DF: ...` value without a
   collection tag is valid: the dataset is in Data Foundry but in no shipped collection (`datasets/_maintenance/`,
@@ -164,9 +162,8 @@ the review queue: add a new option through the dashboard's ＋ header button or 
 Who works on which dataset lives on the claims board, a branch every curator pushes to directly
 ([claims.md](claims.md)): `claims claim <names>` before the work, `claims release <names>` when it reaches `main` or is
 dropped. Leave a dataset another curator holds alone (no triage, no edits, only a note to the curator). The record
-mirrors the claim: `claimed_by` names the holder and a WIP value says the stage, both written by the `claims` commands
-and carried to `main` by the work's own PR, which sets the final state. `claims sync` repairs a record that drifted
-from the board.
+carries nothing about the claim; the work's own PR sets the final state (`DF: Yes`, the verdict). Older comments that
+mention a record's claim or a WIP value are history ([claims.md](claims.md)).
 
 ### Duplicates and retirements
 
@@ -181,9 +178,8 @@ from the board.
 ## The review queue
 
 `needs_review` is derived, never set by hand: `CurationRecord.review_reasons()` recomputes it on every save. Today it
-holds `suggestion` (no verdict), a dropdown value outside the vocabulary, `ai_unverified`, `ship_conflict`,
-`wip_unclaimed` and `claim_without_wip`. A new automated check goes into `review_reasons()` with a matching assertion
-in `tests/test_records_integrity.py`.
+holds `suggestion` (no verdict), a dropdown value outside the vocabulary, `ai_unverified` and `ship_conflict`. A new
+automated check goes into `review_reasons()` with a matching assertion in `tests/test_records_integrity.py`.
 
 ## The definition pointers (`v2_path`, `notebook_path`)
 

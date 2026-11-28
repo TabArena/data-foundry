@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: rosbank1
 container_format: 2
-checksum: v2:ebdeb5c6270140a42de8622ff602725f22ae15fd0619668c1a8bbdff1d67b8bc
-build: null
+checksum: v2:3578a8d6d237017f8a1711e4f02035aafe0c79b199931f32bb05f481a6ffa309
+build:
+  uuid: 01a217fd-b6a7-7f62-95bc-bb660168a36c
+  checksum: v2:3578a8d6d237017f8a1711e4f02035aafe0c79b199931f32bb05f481a6ffa309
+  built_at: '2026-11-26T13:13:57+00:00'
+  path: rosbank1/01a217fd-b6a7-7f62-95bc-bb660168a36c
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 4791
@@ -35,6 +48,26 @@ splits:
   time_horizon_unit: months
   time_gap: 3
   time_gap_unit: months
+  reason: 'A churn model is refit, for example every month, and scores the clients
+    whose grace period ends in that month. A client''s label covers the three months
+    after its period, so it is known three months after period_end: each window trains
+    on the clients whose period ended at least three months before the window starts.
+    Windows of one calendar month of period_end, newest first: December 2017 (63 clients,
+    23 churned), November 2017 (123, 49) and October 2017 (515, 179), training on
+    3,566, 3,078 and 2,559 clients. Three windows, against the 9 an IID split of 4,791
+    clients would get: with one-month windows and the three-month label gap, September
+    2017 would train on 44.5% of the clients (Andrej, 2026-11-20); two-month windows
+    would leave one window above the half-data floor. The periods ending from January
+    2018 on are not in the dataset (curation_comments, "Cohort"). The client intake
+    drops after July 2017 (first transactions 400 to 800 a month, then about 50 to
+    110), so November and December are a thin tail of late or irregular clients; the
+    period end is estimated from the last transaction for 11%, 29% and 38% of the
+    October, November and December clients. Every test label window spans the New
+    Year and no training label window does. The competition split its clients at random
+    (its unlabelled test file covers the same months); this split mirrors the refit,
+    and on the same test windows a random training side scores about 0.01 AUC higher,
+    while 3 x 3 random folds score lower (0.817 against 0.860) as the later clients
+    are easier to score.'
   n_train:
     min: 2559
     max: 3566
@@ -47,14 +80,11 @@ bundle_checks:
   warnings: []
   infos:
   - dataset_duplicate_rows
+  - splits_rows_unused
   accepted:
-    splits_below_target: 'Three windows, against the 9 an IID split of 4,791 clients
-      would get: with one-month windows and the three-month label gap, September 2017
-      would train on 44.5% of the clients (Andrej, 2026-11-20).'
-    splits_rows_unused: 'The 524 clients whose period ends in September 2017 fall
-      in the three-month label gap of every window: the newest window (December 2017)
-      trains on the periods that ended by 31 August 2017, the last whose outcome is
-      known when it starts.'
+    splits_dimensions_off_protocol: 'Three windows, against the 9 an IID split of
+      4,791 clients would get: with one-month windows and the three-month label gap,
+      September 2017 would train on 44.5% of the clients (Andrej, 2026-11-20).'
     time_newest_period_short: 'Decided (Lennart, 2026-11-11): the periods ending in
       November and December 2017 hold 123 and 63 clients against 416 to 524 a month
       from May to October, the thin tail of the client intake the notes describe (curation_comments,
@@ -76,7 +106,7 @@ decisions:
 
 Binary classification of `churn`, scored with `roc_auc` on temporal splits by `period_end`. 4,791 rows and 695 features. Source: Other (2018).
 
-Not built yet. The current definition gives checksum `v2:ebdeb5c6270140a42de8622ff602725f22ae15fd0619668c1a8bbdff1d67b8bc`.
+Built as `01a217fd-b6a7-7f62-95bc-bb660168a36c` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -105,6 +135,7 @@ Not built yet. The current definition gives checksum `v2:ebdeb5c6270140a42de8622
 
 - The curation record, with the triage decision, its sources and the review: [`curation/records/rosbank1.md`](../../../../curation/records/rosbank1.md)
 - The original source: <https://boosters.pro/championship/rosbank1/overview>
+- The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
 ## Rebuild
 
@@ -222,6 +253,8 @@ We start with train.csv.gz of Rosbank's ML Competition on Boosters.pro (2018), f
 - Note: the task probes flag `no_spread` (LightGBM leads linear by 0.017 AUC, a skill gap of 0.034 with paired standard error 0.087), a gap 3 windows cannot test; we keep the task.
 
 ## Splits
+
+Expanding-window temporal splits: 3 test window(s) of 1 month, walking back from the newest data, newest first; train is all earlier data up to a gap of 3 months. The test windows by `period_end`, as listed: 2017-12-01 to 2017-12-30 (63 test, 3,566 train rows); 2017-11-01 to 2017-11-30 (123 test, 3,078 train rows); 2017-10-01 to 2017-10-31 (515 test, 2,559 train rows).
 
 A churn model is refit, for example every month, and scores the clients whose grace period ends in that month. A client's label covers the three months after its period, so it is known three months after period_end: each window trains on the clients whose period ended at least three months before the window starts. Windows of one calendar month of period_end, newest first: December 2017 (63 clients, 23 churned), November 2017 (123, 49) and October 2017 (515, 179), training on 3,566, 3,078 and 2,559 clients. Three windows, against the 9 an IID split of 4,791 clients would get: with one-month windows and the three-month label gap, September 2017 would train on 44.5% of the clients (Andrej, 2026-11-20); two-month windows would leave one window above the half-data floor. The periods ending from January 2018 on are not in the dataset (curation_comments, "Cohort"). The client intake drops after July 2017 (first transactions 400 to 800 a month, then about 50 to 110), so November and December are a thin tail of late or irregular clients; the period end is estimated from the last transaction for 11%, 29% and 38% of the October, November and December clients. Every test label window spans the New Year and no training label window does. The competition split its clients at random (its unlabelled test file covers the same months); this split mirrors the refit, and on the same test windows a random training side scores about 0.01 AUC higher, while 3 x 3 random folds score lower (0.817 against 0.860) as the later clients are easier to score.
 
@@ -357,14 +390,14 @@ currency holds ISO 4217 numeric codes (810 and 643 are rubles): converted at the
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 2 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
+- **info** `splits_rows_unused`: 524 row(s) (10.9%) appear in no train and no test set. (hint: Expected of a temporal split (the rows of a gap, history no window trains on, rows a filter keeps out of every training side); say why in `splits_comment`.)
 
 Accepted on purpose:
 
-- `splits_below_target`: Three windows, against the 9 an IID split of 4,791 clients would get: with one-month windows and the three-month label gap, September 2017 would train on 44.5% of the clients (Andrej, 2026-11-20).
-- `splits_rows_unused`: The 524 clients whose period ends in September 2017 fall in the three-month label gap of every window: the newest window (December 2017) trains on the periods that ended by 31 August 2017, the last whose outcome is known when it starts.
+- `splits_dimensions_off_protocol`: Three windows, against the 9 an IID split of 4,791 clients would get: with one-month windows and the three-month label gap, September 2017 would train on 44.5% of the clients (Andrej, 2026-11-20).
 - `time_newest_period_short`: Decided (Lennart, 2026-11-11): the periods ending in November and December 2017 hold 123 and 63 clients against 416 to 524 a month from May to October, the thin tail of the client intake the notes describe (curation_comments, Cohort).
 
 ## Data checks
@@ -554,4 +587,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a217fd-b6a7-7f62-95bc-bb660168a36c |
+| checksum | v2:3578a8d6d237017f8a1711e4f02035aafe0c79b199931f32bb05f481a6ffa309 |
+| built_at | 2026-11-26T13:13:57+00:00 |
+| path | rosbank1/01a217fd-b6a7-7f62-95bc-bb660168a36c |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

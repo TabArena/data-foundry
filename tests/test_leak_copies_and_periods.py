@@ -1,35 +1,19 @@
-"""Leak probes 5 (exact copies by label on every split) and 13 (the target by period), and the model inputs the probe
-scripts take from a definition.
+"""Leak probes 5 (exact copies by label on every split) and 13 (the target by period), and the model inputs the
+probes take from a definition.
 """
 
 from __future__ import annotations
 
-import importlib.util
+import argparse
 import json
-import sys
-from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
 import pandas as pd
 import pytest
 
-pytest.importorskip("lightgbm")  # curation_probes.leak imports it
-
-SCRIPTS = Path(__file__).resolve().parents[1] / ".claude/skills/knowledge-data-foundry/scripts"
-sys.path.insert(0, str(SCRIPTS.parents[1] / "knowledge-curation/scripts"))
-sys.path.insert(0, str(SCRIPTS))
-
-import dataset_io  # noqa: E402 - from the skill's script folder, put on the path above
-from curation_probes import leak  # noqa: E402
-
-
-def _cli():
-    spec = importlib.util.spec_from_file_location("leak_probes_cli", SCRIPTS / "leak_probes.py")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
+from data_foundry.probes import inputs, leak
+from data_foundry.probes.leak import modes
 
 # Probe 5
 
@@ -120,12 +104,12 @@ def test_a_scoring_only_time_key_stays_in_the_frame_but_is_no_model_input(origin
         ds = SimpleNamespace(
             make_splits=lambda: SimpleNamespace(df=frame, splits=splits), task_metadata_for=lambda _df: task
         )
-        data = dataset_io.from_definition(ds)
+        data = inputs.from_definition(ds)
     else:
         container = SimpleNamespace(
             dataset=frame, task_metadata=task, grouping=None, experiment_metadata=SimpleNamespace(splits=splits)
         )
-        data = dataset_io.from_container(container, "built")
+        data = inputs.from_container(container, "built")
     assert "date" in data.df
     assert data.feature_cols == ("x",)
     counts = leak.copy_counts(leak.profile_codes(data.df[list(data.feature_cols)]), data.df["y"], data.flat_splits())
@@ -268,19 +252,16 @@ def test_unusable_inputs_are_rejected_with_the_reason(times, kwargs, message):
 
 def test_the_cli_runs_probe_13_alone_on_the_task_time_column(monkeypatch, capsys):
     """``--period-only`` runs probe 13 on the task's time column and says why when there is none."""
-    cli = _cli()
     rng, t = _daily(days=200)
     df = pd.DataFrame({"when": t, "x": rng.normal(size=len(t)), "y": rng.integers(0, 2, len(t))})
     data = SimpleNamespace(df=df, target="y", problem_type="binary_classification", time_on="when")
-    monkeypatch.setattr(cli.dataset_io, "definition", lambda *_a, **_kw: SimpleNamespace(raw=None))
-    monkeypatch.setattr(cli.dataset_io, "from_definition", lambda _ds: data)
-    args = cli.argparse.Namespace(
-        name="example", root=".", time_on=None, period="W", tz=None, positive="1", tail=None, period_only=True
-    )
-    result = cli.probe(args)
+    monkeypatch.setattr(inputs, "definition", lambda *_a, **_kw: SimpleNamespace(raw=None))
+    monkeypatch.setattr(inputs, "from_definition", lambda _ds: data)
+    args = argparse.Namespace(time_on=None, period="W", tz=None, positive="1", tail=None, period_only=True)
+    result = modes.probe("example", ".", args)
     assert result["target_by_period"]["period"] == "W"
     assert result["target_by_period"]["positive"] == 1
     assert "target by period (probe 13): 29 weekly periods" in capsys.readouterr().out
     data.time_on = None
-    assert cli.probe(args)["target_by_period"] is None
+    assert modes.probe("example", ".", args)["target_by_period"] is None
     assert "not run (no time column" in capsys.readouterr().out

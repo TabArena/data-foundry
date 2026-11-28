@@ -6,7 +6,8 @@ from pathlib import Path
 
 import arff
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -252,7 +253,7 @@ class QsarTid11(AbstractCuratedDataset):
         - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01): ChEMBL 17's SMILES in RDKit's
           canonical form (`canonical_smiles`; the 549 salts as ChEMBL records them), declared in `special_features`, so a
           benchmark encodes it as a structure and never as text; the recommended encoding is
-          `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). The source's
+          `data_foundry.special.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). The source's
           1,024 FCFP6 bits leave (Lennart, 2026-11-01: "the real task here is going from smiles to a prediction, the
           bits are just one possible modelling choice by the authors"). RDKit computes the same kind of fingerprint, but
           not these columns: with its closest settings (radius 3, feature invariants, 1,024 bits) no source bit is
@@ -308,7 +309,7 @@ class QsarTid11(AbstractCuratedDataset):
         time_of="label",  # the publication year arrives with the target: no model input (2026-11-12, Andrej)
     )
     splits_comment = """
-        Expanding-window temporal splits on the year a compound first appears in ChEMBL 17's human thrombin records: 9 test windows of one year (2013 back to 2005), newest first; train is every compound first published before the window (Andrej, 2026-11-19). The windows hold 49, 110, 638, 106, 105, 185, 308, 290 and 253 compounds (2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006, 2005), and their train sides 5,655, 5,545, 4,907, 4,801, 4,696, 4,511, 4,203, 3,913 and 3,660 compounds (99.1%, 97.2%, 86.0%, 84.2%, 82.3%, 79.1%, 73.7%, 68.6% and 64.2% of all 5,704). A model trained on the compounds known up to a year predicts the potency of the compounds that appear in the next. The use case sets no refit cadence, and the date gives whole years only: one year is the finest step, and nine whole-year windows reach the count an IID split of 5,704 compounds would get, all training on more than half the data; 2004 (57.5%) would be a tenth. The windows of 2013 (49), 2010 (106) and 2009 (105) are small and noisier. Until 2026-11-19 five two-year windows (2004-05 to 2012-13) shipped, a length cut from the newest half of the 22 years. The 518 compounds of the undated PubChem BioAssay deposit take 2011, the year ChEMBL 9 loaded it, which puts them in the 2010-11 window. The scaffold-grouped split this replaces trained on same-year siblings of the test compounds (curation notes).
+        Expanding-window temporal splits on the year a compound first appears in ChEMBL 17's human thrombin records: 9 test windows of one year (2013 back to 2005), newest first; train is every compound first published before the window (Andrej, 2026-11-19). A model trained on the compounds known up to a year predicts the potency of the compounds that appear in the next. The use case sets no refit cadence, and the date gives whole years only: one year is the finest step, and nine whole-year windows reach the count an IID split of 5,704 compounds would get, all training on more than half the data; 2004 (57.5%) would be a tenth. The windows of 2013 (49), 2010 (106) and 2009 (105) are small and noisier. Until 2026-11-19 five two-year windows (2004-05 to 2012-13) shipped, a length cut from the newest half of the 22 years. The 518 compounds of the undated PubChem BioAssay deposit take 2011, the year ChEMBL 9 loaded it, which puts them in the 2010-11 window. The scaffold-grouped split this replaces trained on same-year siblings of the test compounds (curation notes).
     """
 
     prepared_raw_files = (PREPARED_FILE,)

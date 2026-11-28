@@ -6,7 +6,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary, TimeBasis
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+)
 
 # GEO characteristic -> column: the clinical findings known at the bronchoscopy (Beane et al. 2008's clinical model);
 # never bronch_status, subjective_assessment, biomarker_score, cancer_status or sample_id
@@ -113,14 +122,15 @@ class LungCancerEpithelialGenexp(AbstractCuratedDataset):
 
     # Task
     accepted_check_warnings = {
-        "task_group_count_low": "Six scan periods by design (2026-11-12, Andrej): the 163 arrays "
-        "cannot form forward windows of a usable size, and periods of about half a year of scans keep each period's "
-        "scan signature on one side; each test fold holds 54 or 55 arrays.",
-        "groups_test_groups_few": "Two periods per test fold is what six periods allow; each fold still scores 54 or 55 "
-        "arrays one by one. The signal carries across held-out periods: on the 163 arrays with the clinical findings, "
-        "untuned LightGBM (ROC AUC 0.668 to 0.917, mean 0.793) and logistic regression (0.650 to 0.905, mean 0.769) "
-        "beat chance on all 14 test pairs that occur (run of 2026-11-13). The repeats reuse the same pairs, so the "
-        "spread across repeats is descriptive.",
+        "groups_test_groups_few": (
+            "Six scan periods by design (2026-11-12, Andrej): the 163 arrays cannot form forward windows of a "
+            "usable size, and periods of about half a year of scans keep each period's scan signature on one "
+            "side; each test fold holds 54 or 55 arrays. Two periods per test fold is what six periods allow; "
+            "each fold still scores 54 or 55 arrays one by one. The signal carries across held-out periods: on "
+            "the 163 arrays with the clinical findings, untuned LightGBM (ROC AUC 0.668 to 0.917, mean 0.793) and "
+            "logistic regression (0.650 to 0.905, mean 0.769) beat chance on all 14 test pairs that occur (run of "
+            "2026-11-13). The repeats reuse the same pairs, so the spread across repeats is descriptive."
+        ),
     }
     target = "DiagnosedCancer"
     problem_type = "binary_classification"

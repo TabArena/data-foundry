@@ -1,9 +1,10 @@
 # Curating datasets with Claude: start here
 
-This folder holds the Claude Code skills we curate datasets with. Four of them are commands you type (`/name`); two
-hold the knowledge every command applies and are never typed. This page is for people: what to type when, what Claude
-does, what it leaves for you, and how your own decisions are checked. The dashboard shows it as "Start here" on its
-Guidelines page.
+This folder holds the Claude Code skills we curate datasets with. Five of them are commands you type (`/name`): four
+make the pipeline below, and `/review-split-tree` shows the split decision tree for review ([The split
+tree](#the-split-tree)). Two hold the knowledge every command applies and are never typed. This page is for people: what
+to type when, what Claude does, what it leaves for you, and how your own decisions are checked. The dashboard shows it
+as "Start here" on its Guidelines page.
 
 ## The pipeline in one picture
 

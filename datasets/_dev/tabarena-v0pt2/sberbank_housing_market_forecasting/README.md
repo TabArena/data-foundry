@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: sberbank_housing_market_forecasting
 container_format: 2
-checksum: v2:b612f3d78579b10197937c1b70faf3aefca4d832313c59402736094e2f3e2553
+checksum: v2:7a7d99420a9b7a80146738e44a08debb9b78439e475db65ac6fc67c6beed7c26
 build:
-  uuid: 01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7
-  checksum: v2:53a44153b4da1976a157742f955d2dbea5f4e85c85e25e48af1746db3acc846c
-  built_at: '2026-10-14T12:58:08+00:00'
-  path: sberbank_housing_market_forecasting/01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7
+  uuid: 01a21800-0ccc-7c5e-8046-df2c8f33cff1
+  checksum: v2:7a7d99420a9b7a80146738e44a08debb9b78439e475db65ac6fc67c6beed7c26
+  built_at: '2026-11-26T13:16:31+00:00'
+  path: sberbank_housing_market_forecasting/01a21800-0ccc-7c5e-8046-df2c8f33cff1
   data_foundry_version: 0.0.5
-  git_sha: f93df193827f5244586b178fd7199efb86d66359-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 28321
   n_features: 386
@@ -49,6 +49,33 @@ splits:
   time_horizon_unit: months
   time_gap: null
   time_gap_unit: null
+  reason: 'Nine test windows of one calendar month (Andrej, 2026-11-19); each trains
+    on every earlier
+
+    sale, with no gap. The use case (a lender values a flat at its sale) ties no window
+    length and no source gives
+
+    Sberbank''s refit cadence: the sources fix only benchmark test periods for one
+    frozen model (TabReD seven
+
+    months, 1 December 2014 to 30 June 2015; the competition the eleven months after
+    its training data, July 2015
+
+    to May 2016). So the windows follow the count: half the sales lie before 21 February
+    2014, so a window trains
+
+    on half or more only from March 2014, and one calendar month is the simplest length
+    that fits nine windows
+
+    above half into March 2014 to June 2015. The windows hold 2015 with 394 to 724
+
+    sales a month, the rush of December 2014 (the month the ruble fell) and the busy
+    2014 at 771 to 1,214 a month.
+
+    No gap: a sale''s price is known when it is signed, and the economic statistics
+    are already read one period
+
+    back for their release delay.'
   n_train:
     min: 14407
     max: 27927
@@ -78,7 +105,7 @@ decisions: []
 
 Regression of `price_doc`, scored with `rmse` on temporal splits by `timestamp`. 28,321 rows and 386 features. Source: Kaggle (2017).
 
-Built as `01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:b612f3d78579b10197937c1b70faf3aefca4d832313c59402736094e2f3e2553`, so the build is stale. See [Build](#build).
+Built as `01a21800-0ccc-7c5e-8046-df2c8f33cff1` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -238,17 +265,15 @@ We follow the preprocessing from TabRed (https://github.com/yandex-research/tabr
 
 ## Splits
 
+Expanding-window temporal splits: 9 test window(s) of 1 month, starting at 2015-06-01, 2015-04-01, 2015-02-01, 2014-12-01, 2014-10-01, 2014-08-01, 2014-06-01, 2014-04-01, 2014-03-01, newest first; train is all earlier data. The test windows by `timestamp`, as listed: 2015-06-01 to 2015-06-30 (394 test, 27,927 train rows); 2015-04-01 to 2015-04-30 (724 test, 26,687 train rows); 2015-02-02 to 2015-02-28 (451 test, 25,651 train rows); 2014-12-01 to 2014-12-31 (1,583 test, 23,674 train rows); 2014-10-01 to 2014-10-31 (1,044 test, 21,466 train rows); 2014-08-01 to 2014-08-30 (771 test, 19,646 train rows); 2014-06-02 to 2014-06-30 (1,179 test, 17,790 train rows); 2014-04-01 to 2014-04-30 (1,214 test, 15,524 train rows); 2014-03-01 to 2014-03-31 (1,117 test, 14,407 train rows).
+
 Nine test windows of one calendar month (Andrej, 2026-11-19); each trains on every earlier
 sale, with no gap. The use case (a lender values a flat at its sale) ties no window length and no source gives
 Sberbank's refit cadence: the sources fix only benchmark test periods for one frozen model (TabReD seven
 months, 1 December 2014 to 30 June 2015; the competition the eleven months after its training data, July 2015
 to May 2016). So the windows follow the count: half the sales lie before 21 February 2014, so a window trains
 on half or more only from March 2014, and one calendar month is the simplest length that fits nine windows
-above half into March 2014 to June 2015. The windows are every other month from June 2015 back to April 2014,
-and March 2014. Test sales, then the train side and its share of the 28,321 sales: June 2015 394, 27,927
-(98.6%); April 2015 724, 26,687 (94.2%); February 2015 451, 25,651 (90.6%); December 2014 1,583, 23,674
-(83.6%); October 2014 1,044, 21,466 (75.8%); August 2014 771, 19,646 (69.4%); June 2014 1,179, 17,790 (62.8%);
-April 2014 1,214, 15,524 (54.8%); March 2014 1,117, 14,407 (50.9%). The windows hold 2015 with 394 to 724
+above half into March 2014 to June 2015. The windows hold 2015 with 394 to 724
 sales a month, the rush of December 2014 (the month the ruble fell) and the busy 2014 at 771 to 1,214 a month.
 No gap: a sale's price is known when it is signed, and the economic statistics are already read one period
 back for their release delay.
@@ -374,7 +399,7 @@ Accepted on purpose:
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | -0.944 | -1.175 | 0.155 | 0.001 | log | 248444 | 2.72491e+17 | exponential |
+| 0 | 0 | 0 | -0.944 | -1.175 | 0.155 | 0.001 | log | 248444 | 2.73861e+17 | exponential |
 
 ### Numeric features
 
@@ -524,11 +549,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7 |
-| checksum | v2:53a44153b4da1976a157742f955d2dbea5f4e85c85e25e48af1746db3acc846c |
-| built_at | 2026-10-14T12:58:08+00:00 |
-| path | sberbank_housing_market_forecasting/01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7 |
+| uuid | 01a21800-0ccc-7c5e-8046-df2c8f33cff1 |
+| checksum | v2:7a7d99420a9b7a80146738e44a08debb9b78439e475db65ac6fc67c6beed7c26 |
+| built_at | 2026-11-26T13:16:31+00:00 |
+| path | sberbank_housing_market_forecasting/01a21800-0ccc-7c5e-8046-df2c8f33cff1 |
 | data_foundry_version | 0.0.5 |
-| git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:b612f3d78579b10197937c1b70faf3aefca4d832313c59402736094e2f3e2553` |

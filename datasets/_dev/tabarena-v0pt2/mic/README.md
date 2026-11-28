@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: mic
 container_format: 2
-checksum: v2:3deab1997521b731613a92e83dc9b77bb8e9976958ee4dd7191bdcb671bea126
+checksum: v2:6869e69eeea795c5ac1a4a6f2ebf07666d3ebad3177361e26056985615b699ef
 build:
-  uuid: 01a111fc-88a2-7b7e-86e3-99576cde774e
-  checksum: v2:a64ea123c6016422c656182848fc75bc4e27f2b94031a6b15a01fffb634ab238
-  built_at: '2026-10-06T16:12:05+00:00'
-  path: mic/01a111fc-88a2-7b7e-86e3-99576cde774e
+  uuid: 01a21800-df73-73e4-a553-a2831100b6d7
+  checksum: v2:6869e69eeea795c5ac1a4a6f2ebf07666d3ebad3177361e26056985615b699ef
+  built_at: '2026-11-26T13:17:20+00:00'
+  path: mic/01a21800-df73-73e4-a553-a2831100b6d7
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 1700
   n_features: 102
@@ -46,6 +46,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 1133
     max: 1134
@@ -67,7 +68,7 @@ decisions: []
 
 Multiclass classification of `LET_IS`, scored with `log_loss` on IID splits. 1,700 rows and 102 features. Source: Other (2020).
 
-Built as `01a111fc-88a2-7b7e-86e3-99576cde774e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3deab1997521b731613a92e83dc9b77bb8e9976958ee4dd7191bdcb671bea126`, so the build is stale. See [Build](#build).
+Built as `01a21800-df73-73e4-a553-a2831100b6d7` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -201,20 +202,11 @@ The first 5 of 1,700 rows of the final frame (random rows: the frame is shuffled
   each level is carries the words, a score without them is a number): 9 ordered codes carry their codebook's
   words (`CODE_LABELS`), in the same order; 2 unordered codes carry their words: `ZSN_A`, `SEX`; 2 scores with
   no words per level are numbers (`SCORES`): `FK_STENOK`, `GB`.
-- Time basis: ForcedIIDFromTemporal: patients admitted one by one in 1992-1995 to one hospital, the outcome
-  known at death or discharge; a model at admission is used on later patients. No admission date survives and
-  the file is sorted by outcome (survivors, survivors with a complication, deaths), so no time order can be
-  rebuilt (Time: Lost). Care drifts inside each block (Trental in the ICU 15% to 35% over the first; a model
-  tells a block's first from its second half at ROC AUC 0.82, 0.58 and 0.72), but the drifts run in opposite
-  directions across blocks, so the blocks share no calendar; the last fifth of each block scores death ROC AUC
-  0.77 against 0.84 for a random fifth (logistic regression, SD 0.02 over 30 draws). Leak test across the split:
-  no duplicates, no recurring patients, no same-day clusters (neighbouring rows differ in 21.5% of coded fields,
-  rows 100 apart in 22.2%). Admission dates would allow a split by time. Not taken as stationary (Andrej,
-  2026-11-18): Care drifts measurably within the file and has changed since; both are facts against.
+- Time basis: ForcedIIDFromTemporal: patients admitted one by one in 1992-1995 to one hospital, the outcome known at death or discharge; a model at admission is used on later patients. No admission date survives and the file is sorted by outcome (survivors, survivors with a complication, deaths), so no time order can be rebuilt (Time: Lost). Care drifts inside each block (Trental in the ICU 15% to 35% over the first; a model tells a block's first from its second half at ROC AUC 0.82, 0.58 and 0.72), but the drifts run in opposite directions across blocks, so the blocks share no calendar; the last fifth of each block scores death ROC AUC 0.77 against 0.84 for a random fifth (logistic regression, SD 0.02 over 30 draws). Leak test across the split: no duplicates, no recurring patients, no same-day clusters (neighbouring rows differ in 21.5% of coded fields, rows 100 apart in 22.2%). Admission dates would allow a split by time. Not taken as stationary (Andrej, 2026-11-18): Care drifts measurably within the file and has changed since; both are facts against.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `LET_IS`: 10 repeat(s) x 3 folds, 30 splits, the repeats set by the 1,700 rows (SPLIT-33).
 
 10 repeat(s) x 3 fold(s) with seed 4267; train 1,133 to 1,134 rows, test 566 to 567 rows.
 
@@ -448,11 +440,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-88a2-7b7e-86e3-99576cde774e |
-| checksum | v2:a64ea123c6016422c656182848fc75bc4e27f2b94031a6b15a01fffb634ab238 |
-| built_at | 2026-10-06T16:12:05+00:00 |
-| path | mic/01a111fc-88a2-7b7e-86e3-99576cde774e |
+| uuid | 01a21800-df73-73e4-a553-a2831100b6d7 |
+| checksum | v2:6869e69eeea795c5ac1a4a6f2ebf07666d3ebad3177361e26056985615b699ef |
+| built_at | 2026-11-26T13:17:20+00:00 |
+| path | mic/01a21800-df73-73e4-a553-a2831100b6d7 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:3deab1997521b731613a92e83dc9b77bb8e9976958ee4dd7191bdcb671bea126` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

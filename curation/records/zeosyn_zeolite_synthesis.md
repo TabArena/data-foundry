@@ -3,9 +3,6 @@ unique_name: zeosyn_zeolite_synthesis
 name: 'ZeoSyn: zeolite hydrothermal synthesis routes and their product framework'
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Lennart
 suggestion: TBD -> Yes
 priority: 3
 tags:

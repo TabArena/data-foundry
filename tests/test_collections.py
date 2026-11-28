@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import ast
 import dataclasses
 from pathlib import Path
 
 import pytest
+
 from data_foundry.collections import (
     BEYOND_ARENA,
     DATA_FOUNDRY_CACHE_ENV,
@@ -18,11 +20,11 @@ from data_foundry.collections import (
     list_collections,
     resolve_cache_dir,
 )
+from data_foundry.collections._registry import BEYOND_ARENA_UUIDS
 from data_foundry.collections._sources import has_core_files
 from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
 from data_foundry.schema import PredictiveMLSplitsMetadata, RowBudget, TrainSampling
-
-from tests.test_bundle_checks import make_container, make_iid_splits
+from tests.helpers import make_container, make_iid_splits
 
 
 # --- CollectionEntry parsing ---
@@ -189,6 +191,28 @@ def test_beyond_arena_has_unique_names():
     assert len(set(names)) == len(names), "duplicate unique_names in BEYOND_ARENA"
 
 
+def _name_and_uuid(path: str) -> tuple[str, str]:
+    """``(unique_name, uuid)`` of a ``<unique_name>/[versions/]<uuid>`` pointer."""
+    return path.split("/", 1)[0], path.rsplit("/", 1)[-1]
+
+
+def test_beyond_arena_pins_match_the_notebook_tree():
+    """The registry and ``datasets/beyond_iid/final_uuid_list.py`` pin the same (name, uuid) pairs.
+
+    The notebook tree's list is parsed, not imported: it is outside the package and its folder holds the v1 notebooks.
+    """
+    path = Path(__file__).resolve().parents[1] / "datasets" / "beyond_iid" / "final_uuid_list.py"
+    pinned = []
+    for node in ast.parse(path.read_text(encoding="utf-8")).body:
+        if isinstance(node, ast.Assign) and isinstance(node.value, ast.List):
+            pinned += ast.literal_eval(node.value)
+    assert len(pinned) == len(set(pinned)), "a pointer is listed twice in final_uuid_list.py"
+    registry = {_name_and_uuid(p) for p in BEYOND_ARENA_UUIDS}
+    notebooks = {_name_and_uuid(p) for p in pinned}
+    only_registry, only_notebooks = sorted(registry - notebooks), sorted(notebooks - registry)
+    assert registry == notebooks, f"only in the registry: {only_registry}; only in final_uuid_list.py: {only_notebooks}"
+
+
 # --- HuggingFaceSource caching ---
 def _core_files(path: Path) -> Path:
     """Create ``path`` with the (empty) core files of a container and return it."""
@@ -231,10 +255,24 @@ def test_find_cached_returns_none_when_cache_empty(tmp_path):
     assert src._find_cached(tmp_path, "name/uuid") is None
 
 
-def test_find_cached_picks_any_snapshot_when_no_revision(tmp_path):
+def test_find_cached_falls_back_to_a_snapshot_when_no_revision_and_no_ref(tmp_path):
     expected = _make_hf_snapshot(tmp_path, "org/repo", sha="abc123", relative="name/uuid")
     src = HuggingFaceSource(repo_id="org/repo")
     assert src._find_cached(tmp_path, "name/uuid") == expected
+
+
+def test_find_cached_reads_refs_main_when_no_revision(tmp_path):
+    _make_hf_snapshot(tmp_path, "org/repo", sha="aaa_stale", relative="name/uuid")  # sorts first
+    expected = _make_hf_snapshot(tmp_path, "org/repo", sha="zzz_main", relative="name/uuid", ref="main")
+    src = HuggingFaceSource(repo_id="org/repo")
+    assert src._find_cached(tmp_path, "name/uuid") == expected
+
+
+def test_find_cached_misses_when_refs_main_lacks_the_entry(tmp_path):
+    _make_hf_snapshot(tmp_path, "org/repo", sha="aaa_stale", relative="name/uuid")
+    _make_hf_snapshot(tmp_path, "org/repo", sha="zzz_main", relative="other/uuid", ref="main")
+    src = HuggingFaceSource(repo_id="org/repo")
+    assert src._find_cached(tmp_path, "name/uuid") is None  # a download fetches it from main
 
 
 def test_find_cached_skips_snapshots_missing_the_entry(tmp_path):

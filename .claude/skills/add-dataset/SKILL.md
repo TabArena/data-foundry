@@ -45,8 +45,8 @@ You have not seen the data until it is downloaded. Pre-fill structure, never fac
   plausible guess is not. `domain`, a source's `platform` and `problem_type` take fixed values, so pick the closest
   match and say so.
 
-The markers are enforced: `meta_placeholder_left`, `definition_license_placeholder` and `definition_todo_left` are
-errors, and `dataset build` refuses to save while any remains.
+The markers are enforced: `meta_placeholder_left` (a `TODO` in the metadata, the license included, or a
+`TODO(verify)` in `dataset.py`) is an error, and `dataset build` refuses to save while any remains.
 
 ## Step 0: Gather inputs and claim
 
@@ -55,8 +55,8 @@ source, the use case, the collection facts and the regime, the risks) and the re
 `Samples:`, `Time:`, `Target:`, `Entities:` and `Features:` tags; SPLIT-32). Verify its claims as you go instead of
 redoing its research; a measurement on the data supersedes what screening read from the page. No record: stop and
 point to `/screen-candidates`. Claim the records first, in the curator's name: `claims claim <names> --stage add
---note "add-dataset"` ([claims.md](../knowledge-data-foundry/references/claims.md)); it pushes the claim to the board
-and writes `WIP (DF)` and `claimed_by` into the records. Never work on a dataset another curator holds: a name the
+--note "add-dataset"` ([claims.md](../knowledge-data-foundry/references/claims.md)); it pushes the claim to the board,
+and the records carry nothing about it. Never work on a dataset another curator holds: a name the
 command skips is left out and reported.
 
 A batch (several names or a dashboard filter) runs one `dataset-builder` agent per source unit for steps 0-6
@@ -88,7 +88,7 @@ also point to checks; in the review of 98 v0.2 definitions they found more leaks
   (eryhemato_squamous_disease's two file parts); the time probe looks for them.
 * A catalogue: which identifier a parent source could date its items by (qsar_tid_11 through ChEMBL).
 
-Then map the fields (definitions.md, "Field mapping"); for a grouped task note what one real-world
+Then map the fields (definition_fields.md, "Field mapping"); for a grouped task note what one real-world
 prediction is and what is known about a new group.
 
 Find the metric the source scored before falling back (MET-1): the competition's evaluation page (Kaggle's Evaluation
@@ -130,9 +130,12 @@ domain and source from the record.
 4. The regime: walk the decision tree from the record's data collection type
    ([split_tree.md](../knowledge-curation/references/split_tree.md), SPLIT-36) and implement the leaf you reach: nothing
    for IID, `grouping = Grouping(...)` or `temporal = Temporal(...)`, the leaf's ID in `split_leaf`, and a
-   `splits_comment` saying which leaf and why this window (and any gap, sub-sampling or trimming). The leaf's tag and
+   `splits_comment` saying which leaf and why this window (and any gap, sub-sampling or trimming); the code describes
+   the windows, their sizes and the budget before it, so it never restates them
+   ([definitions.md](../knowledge-data-foundry/references/definitions.md), The splits comment). The leaf's tag and
    its reason go into `time_basis = TimeBasis(tag, reason)` (and `group_basis = GroupBasis(reason)` for
-   `ForcedIIDFromGrouped`), which render the `Time basis:` (and `Group basis:`) line. A forced leaf, a leaf no
+   `ForcedIIDFromGrouped`), which the dataset metadata stores and the README shows as the `Time basis:` (and
+   `Group basis:`) line. A forced leaf, a leaf no
    definition reaches yet, a question only a person answers (the tree's "Who answers"), or a question no answer fits
    goes to the curator as an issue with the split you suggest. The record's collection facts and the
    use-case prototypes of SPLIT-32 ([splits.md](../knowledge-curation/references/splits.md)) are information for the
@@ -148,23 +151,23 @@ domain and source from the record.
    target rate with earlier periods.
 5. The metric: `metric = Metric.source(name, original=..., reference=..., params=..., inputs=...)`,
    `Metric.stand_in(name, original=..., reason=..., reference=...)` or `Metric.fallback(reason=<where we looked, and
-   which source metric was rejected and why>)` (definitions.md, "Field mapping", `metric`; MET-11). A standard name
+   which source metric was rejected and why>)` (definition_fields.md, `metric`; MET-11). A standard name
    for a standard metric, a general one for a custom metric (MET-12). Every column the metric reads (a group, a time,
    a weight) stays in the frame and is declared in `scoring_columns = (ScoringColumn(column=..., role=..., used_by=...,
    description=...),)`; it is never a feature. A custom metric that is not yet in `METRICS` is added to
-   `src/data_foundry/v2/metrics.py` in the same change (MET-13, definitions.md, "Metrics"): the fastest well-tested
+   `src/data_foundry/metrics.py` in the same change (MET-13, definitions.md, "Metrics"): the fastest well-tested
    implementation (scikit-learn or scipy, otherwise vectorised numpy; for a competition whose official code is slow,
    look for the faster versions in its Kaggle discussions and notebooks and check them), tested in
    `tests/test_v2_metrics_custom.py` to equal the official code on random inputs, on one hand-computed case, and timed
-   on 1M rows. Never `Metric.local` in the working copy.
+   on 1M rows.
 6. `accepted_check_warnings` stays empty: the curator fills it once the warnings are known, one reason per slug. A
    temporal task with a window under half the rows (`splits_train_under_half`) always gets an issue in the record's
    review for the curator's exception: the windows and their shares, the reason for each, and an option without them
-   (SPLIT-14); one with fewer windows than an IID split would get (`splits_below_target`) names the target, the count
-   and what stops more in the splits comment, and where only overlapping windows would reach it, offers them as an
-   option. So does a feature that stops or starts being recorded within the history (`splits_feature_missing_in_test`)
-   and a newest period cut short (`time_newest_period_short`).
-7. `_decisions` and `_extra_checks` only when there is something to show or test.
+   (SPLIT-14); one with fewer windows than an IID split would get (`splits_dimensions_off_protocol`) names the
+   target, the count and what stops more in the splits comment, and where only overlapping windows would reach it,
+   offers them as an option. So does a feature that stops or starts being recorded within the history
+   (`splits_feature_missing_in_test`) and a newest period cut short (`time_newest_period_short`).
+7. `_decisions` only when there is something to show.
 
 Then point the record at the definition:
 `.venv/bin/python -m data_foundry.curation.cli sync-notebooks` (`--check` must stay clean).
@@ -190,7 +193,8 @@ there are no errors and every warning is fixed or proposed for acceptance with a
 every `ruff --fix`.
 
 Then run the leak probes and the task probes, the group probes for a grouped task, the hidden-group probe for an IID
-one, the time probe for a split that is not temporal and the dtype probe
+one, the time probe for a split that is not temporal and the dtype probe:
+`data-foundry probe {leak,task,group,hidden-groups,time,dtypes} <name> --out <run folder>`
 ([checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md)). Every column the dtype probe
 flags gets its meaning from the codebook, and its dtype from CLEAN-14. The time probe lists signs that the data
 carries time (date columns, a drifting row order or ID, figures of a period), as information for the split. Read every
@@ -249,9 +253,9 @@ and the editor) for a re-check after a small change. Say which tier ran.
    short, but not lost!)"). Never build: a build is the curator's call
    ([rebuild.md](../knowledge-data-foundry/references/rebuild.md)).
 6. Set the record's `priority` again from what was measured, so the review page puts the most important datasets
-   first ([selection.md](../knowledge-curation/references/selection.md), "Priority"): `priority_factors.py <name>`
-   (in `knowledge-data-foundry/scripts/`) gives the gap and the shape; judge the use case, the source and the risk
-   from the source and the open issues (the recommendation not to ship is a risk). End the assessment line with
+   first ([selection.md](../knowledge-curation/references/selection.md), "Priority"): `benchmark_coverage.py priority
+   <name>` (in `knowledge-data-foundry/scripts/`) gives the gap and the shape; judge the use case, the source and the
+   risk from the source and the open issues (the recommendation not to ship is a risk). End the assessment line with
    `Priority <n>: gap ±, use case ±, source ±, shape ±, risk ± (<the reason for each sign that is not obvious>).`
 
 Report: the folder and its outcome in one line; the panel's recommendation and the disputed points; the issues for the

@@ -53,6 +53,8 @@ CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the o
 
 CC (2026-11-17, Andrej): the declared split (temporal on `order_purchase_timestamp`, horizon 1 month, 5 windows, gap 1 month) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-26, Lennart): accepted `splits_dimensions_off_protocol` (SPLIT-15) after the rebuild of 2026-11-26: five windows against SPLIT-33's nine; a sixth would train on less than half the orders.
+
 CC (2026-11-27, Andrej): the declared metric (RMSLE on the delivery time in days, computed on the original scale after the log target is inverted) is checked and stays as declared.
 
 CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).

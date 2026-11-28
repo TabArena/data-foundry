@@ -7,7 +7,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -160,7 +161,6 @@ class Bemtpl97(AbstractCuratedDataset):
         original="Mean Poisson deviance of observed claims against expected observed-period claim counts",
         reference="https://github.com/henckr/treeML/blob/2ee8accc6df49168bd865cdf49efa1b7a5c8f4de/treeML.Rmd#L641-L657",
         params={"min_prediction": 1e-4},
-        inputs={"weight": "expo"},
         definition=(
             "2*sum(w*(y*log(y/mu)-y+mu))/sum(w) over the claims per year y and the predicted rates mu, w = expo (the "
             "share of 1997 insured); zero y log term is zero; mu below 1e-4 claims per year counts as 1e-4. Equals the "
@@ -173,6 +173,7 @@ class Bemtpl97(AbstractCuratedDataset):
             column="expo",
             role="weight",
             used_by="mean_poisson_deviance",
+            fit=True,
             description=(
                 "the share of 1997 the policy was in force (one day to one year), realized: shorter when the policy "
                 "started or was surrendered during the year, a surrender often after a claim. The rate's denominator; "
@@ -180,7 +181,6 @@ class Bemtpl97(AbstractCuratedDataset):
             ),
         ),
     )
-    sample_weight = "expo"
     accepted_check_warnings = {
         "task_target_value_dominant": (
             "The 144,936 zero rates are policyholders without a claim in 1997, not censoring or missing-value "
@@ -188,8 +188,6 @@ class Bemtpl97(AbstractCuratedDataset):
         ),
     }
     splits_comment = """
-        Default IID protocol: random 3-fold cross-validation repeated 3 times for this population, with the
-        benchmark split seed 4267 after the base class's content ordering and shuffle with seed 42.
         Each row is a distinct policyholder; test customers are unseen, while municipalities may recur.
         This evaluates comparable customers within the historical portfolio, not future years or insurers.
     """

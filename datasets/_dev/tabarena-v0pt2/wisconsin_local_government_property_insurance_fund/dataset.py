@@ -9,7 +9,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -44,9 +45,10 @@ def _from_flags(df: pd.DataFrame, flags: dict) -> pd.Series:
 
 def _two_years_in_file(df: pd.DataFrame) -> pd.Series:
     """True where the file holds the member's two policy years before the row's year."""
-    keys = set(zip(df["PolicyNum"], df["Year"]))
+    keys = set(zip(df["PolicyNum"], df["Year"], strict=False))
     return pd.Series(
-        [(p, y - 1) in keys and (p, y - 2) in keys for p, y in zip(df["PolicyNum"], df["Year"])], index=df.index
+        [(p, y - 1) in keys and (p, y - 2) in keys for p, y in zip(df["PolicyNum"], df["Year"], strict=False)],
+        index=df.index,
     )
 
 
@@ -186,7 +188,6 @@ class WisconsinLocalGovernmentPropertyInsuranceFund(AbstractCuratedDataset):
             "2011, JASA 106:1085-1098), computed with the premium the fund collected as the denominator"
         ),
         reference="https://doi.org/10.3390/risks4010004",
-        inputs={"weight": "Premium"},
     )
     scoring_columns = (
         ScoringColumn(
@@ -225,7 +226,7 @@ class WisconsinLocalGovernmentPropertyInsuranceFund(AbstractCuratedDataset):
             "Decided (Lennart, 2026-11-11): `NoClaimCredit` is missing in 2006 and 2007 by "
             "construction, so the 2008 window trains on years without it (curation_comments)."
         ),
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Three windows, against the 9 an IID split of 5,639 member-years would get: the release has five years, "
             "and a 2007 window would train on 2006 alone, 20.5% of the rows, under the 30% floor (Andrej, 2026-11-19)."
         ),
@@ -251,8 +252,7 @@ class WisconsinLocalGovernmentPropertyInsuranceFund(AbstractCuratedDataset):
         good to remove because of the 50% floor", Lennart, 2026-11-06). The short window changes the order of the two
         simplest predictors: on the two windows above the floor coverage alone (0.368) beats a Tweedie GLM (0.312), with
         the 2008 window the GLM comes first (0.291 against 0.251). In that window the no-claim credit is unknown on
-        every training row (the file starts in 2006), so it informs only the two later windows. No test year has a row
-        on its training side, and no gap separates the sides. Exception to SPLIT-10 (2026-11-08, Lennart): every policy
+        every training row (the file starts in 2006), so it informs only the two later windows. Exception to SPLIT-10 (2026-11-08, Lennart): every policy
         year ships with its final claim amounts, so no label is selected by the release end, and a one-year gap would
         leave the 2009 window 2006-2007 and the 2008 window one year, below the floor in two of the three windows; it
         serves SPLIT-14. The training years carry final claim amounts, which the fund knew only in part when it rated

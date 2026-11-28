@@ -56,6 +56,8 @@ CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note 
 
 CC (2026-11-17, Andrej): the declared split (temporal on `cohort_year`, windows of 1 value, up to 9 windows while training keeps 50% of the rows (4 in the build), gap 5 values) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-26, Lennart): accepted `splits_dimensions_off_protocol` (SPLIT-15) after the rebuild of 2026-11-26: four windows against SPLIT-33's nine; the five-year gap leaves no fifth above half of the cohorts.
+
 CC (2026-11-27, Andrej): Review issue 1: Option B, `Selection Bias` marker and a `fit_reason` sentence, keep `Yes` ("Selection Bias marker and a fit_reason sentence, keep Yes"). The record carries `Selection Bias`; the fit reason and the notes name the survivor cut (a row exists only if the college is still in the file six years after entry: 699 of 3,335 entry rows absent in the 2015 test cohort, 409 of 3,111 in 2018, for-profit colleges most, and the absent colleges completed less); `fit` stays direct.
 
 CC (2026-11-27, Andrej): Review issue 2: Option B, narrow the wording ("Narrow the wording"). The use case now names the college, or an agency that receives its entry-year report, as the actor and drops "published"; the task, data and split are unchanged.

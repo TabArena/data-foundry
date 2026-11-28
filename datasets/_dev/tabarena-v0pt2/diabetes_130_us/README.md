@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: diabetes_130_us
 container_format: 2
-checksum: v2:d297b14d461bd49d6520cdf1c6ae91ff0789eba25fb53de696123cba63f685b1
+checksum: v2:c2f60ac931cfb0b1f55f9f10802ceea7f08e19fa12974b15dad869d7b50a4b5c
 build:
-  uuid: 01a111fc-82d1-7838-bf50-fa314882cfef
-  checksum: v2:eb9b004418443ea085fa8272aedde899f8b4e3492dd152825acedb8110288e02
-  built_at: '2026-10-06T16:12:04+00:00'
-  path: diabetes_130_us/01a111fc-82d1-7838-bf50-fa314882cfef
+  uuid: 01a21800-4027-7674-8c7b-0a39d373a926
+  checksum: v2:c2f60ac931cfb0b1f55f9f10802ceea7f08e19fa12974b15dad869d7b50a4b5c
+  built_at: '2026-11-26T13:16:42+00:00'
+  path: diabetes_130_us/01a21800-4027-7674-8c7b-0a39d373a926
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 99343
   n_features: 45
@@ -46,6 +46,40 @@ splits:
   time_horizon_unit: steps
   time_gap: null
   time_gap_unit: null
+  reason: 'Nine test windows of 5,519 stays in encounter order (`time_index`), walking
+    back from the newest; each trains on
+
+    every earlier stay (50.0% to 94.4% of the rows), so no window trains on less than
+    half of the data (SPLIT-14),
+
+    and nine windows match the 3 x 3 folds a random split of this size gets (SPLIT-15).
+    Each window holds 573 to 645
+
+    readmissions within 30 days (10.4% to 11.7%). The encounter number runs as a calendar
+    over 1999-2008 (curation
+
+    notes), so the windows are later care, but they count stays, not days. No gap:
+    the outcome horizon is a fixed 30
+
+    days, and a 30-day gap before each window changed nothing measurable (untuned
+    LightGBM over every stay, three
+
+    windows of the newest half: 0.652 with, 0.654 without; SPLIT-10). A patient''s
+    earlier stays can train a window
+
+    that tests their later ones (22% to 37% of the test stays, the most in the newest
+    window), as when a hospital
+
+    scores a returning patient (USE-10, SPLIT-13). The split stays temporal, not grouped:
+    the cut is in time, and
+
+    the test mixes returning and new patients as a hospital''s next discharges do;
+    holding returning patients out
+
+    would test new patients only, which is not the use case. The windows cost little
+    against random folds over every stay (LightGBM
+
+    0.654 against 0.662; on the first stays 0.625 against 0.643). (2026-11-11, Andrej.)'
   n_train:
     min: 49672
     max: 93824
@@ -67,7 +101,7 @@ decisions: []
 
 Binary classification of `EarlyReadmission`, scored with `roc_auc` on temporal splits by `time_index`. 99,343 rows and 45 features. Source: UCI (2014).
 
-Built as `01a111fc-82d1-7838-bf50-fa314882cfef` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d297b14d461bd49d6520cdf1c6ae91ff0789eba25fb53de696123cba63f685b1`, so the build is stale. See [Build](#build).
+Built as `01a21800-4027-7674-8c7b-0a39d373a926` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -205,6 +239,8 @@ The first 5 of 99,343 rows of the final frame (the oldest rows: the frame is sor
 
 ## Splits
 
+Expanding-window temporal splits: 9 test window(s) of 5519 rows, walking back from the newest data, newest first; train is all earlier data. The test windows by `time_index`, as listed: 61801590 to 73977870 (5,519 test, 93,824 train rows); 49239874 to 61800621 (5,519 test, 88,305 train rows); 44607381 to 49239434 (5,519 test, 82,786 train rows); 40394065 to 44607098 (5,519 test, 77,267 train rows); 36160503 to 40391900 (5,519 test, 71,748 train rows); 31760927 to 36160404 (5,519 test, 66,229 train rows); 28872029 to 31759243 (5,519 test, 60,710 train rows); 27023156 to 28871985 (5,519 test, 55,191 train rows); 25372516 to 27022319 (5,519 test, 49,672 train rows).
+
 Nine test windows of 5,519 stays in encounter order (`time_index`), walking back from the newest; each trains on
 every earlier stay (50.0% to 94.4% of the rows), so no window trains on less than half of the data (SPLIT-14),
 and nine windows match the 3 x 3 folds a random split of this size gets (SPLIT-15). Each window holds 573 to 645
@@ -308,7 +344,7 @@ Each test window against its train side, by statistics of the data, never of a m
 | number_emergency | int64 | 0 | 0 | 33 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 10 |
 | number_inpatient | int64 | 0 | 0 | 21 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | number_diagnoses | int64 | 0 | 0 | 16 | 9, 5, 8, 7, 6, 4, 3, 2, 1, 16 |
-| time_index | int64 | 0 | 0 | 99343 | 2087, 2623, 2780, 4706, 5959, 6150, 6821, 7095, 9307, 10376 |
+| time_index | int64 | 0 | 0 | 99343 | 73977870, 2087, 2623, 2780, 4706, 5959, 6150, 6821, 7095, 9307 |
 
 </details>
 
@@ -409,11 +445,10 @@ Each test window against its train side, by statistics of the data, never of a m
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-82d1-7838-bf50-fa314882cfef |
-| checksum | v2:eb9b004418443ea085fa8272aedde899f8b4e3492dd152825acedb8110288e02 |
-| built_at | 2026-10-06T16:12:04+00:00 |
-| path | diabetes_130_us/01a111fc-82d1-7838-bf50-fa314882cfef |
+| uuid | 01a21800-4027-7674-8c7b-0a39d373a926 |
+| checksum | v2:c2f60ac931cfb0b1f55f9f10802ceea7f08e19fa12974b15dad869d7b50a4b5c |
+| built_at | 2026-11-26T13:16:42+00:00 |
+| path | diabetes_130_us/01a21800-4027-7674-8c7b-0a39d373a926 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:d297b14d461bd49d6520cdf1c6ae91ff0789eba25fb53de696123cba63f685b1` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
