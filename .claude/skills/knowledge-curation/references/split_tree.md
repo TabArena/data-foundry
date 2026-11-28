@@ -359,9 +359,9 @@ or a follow-up that closes after the record → later)_
     **Does a unit have several rows, and does the use case meet new units?** [FILL.units] _(data and documentation;
     the unit check: a stone, a car, a survey cluster, a respondent's several items)_
     - yes → **Grouped · `RetrospectiveFillIn` (the unit or cluster)** [L-FILL.unit]. Whole units or sampling clusters
-      held out. Examples: boreal_postfire_lichen_biomass, diamonds.
+      held out. Examples: boreal_postfire_lichen_biomass, diamonds, fiat_500.
     - no → **Random · `RetrospectiveFillIn`** [L-FILL.random]. Random is the use case; a unit's other rows in training
-      are no leak. Examples: fiat_500, houses, immoscout_german_house_prices.
+      are no leak. Examples: houses, immoscout_german_house_prices.
   - whole units, areas or groups →
     **Does the data contain a key for them?** [FILL.key] _(data and documentation; reads a unit, group or site column,
     or a location fine enough to cut blocks)_

@@ -756,6 +756,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 
 | Rule | Dataset | Decision (date, curator) | Kind |
 |---|---|---|---|
+| SPLIT-10 | ga_merchandise_store_sessions | a one-day gap before each monthly window for the lag between building a model and applying it, though the label (a purchase in the visit) needs none; the training side loses the previous month's last day (424 to 1,320 visits) at an unchanged ROC AUC (mean 0.8773 against 0.8770) | applied |
 | SPLIT-1 | airfoil_self_noise | grouped by setup, not by run: under the run split 91.5% of the test runs had their chord and angle in training at another speed, and a new angle or size is the query a tunnel cannot answer with one more run; treated like concrete_compressive_strength's mix (2026-10-20, Lennart) | applied |
 | SPLIT-4 | superconductivity | grouped by composition: a model is used for compositions nobody has measured, though a random split costs at most 0.009 R^2 (2026-10-06) | applied |
 | SPLIT-5, SPLIT-6 (SEL-10) | appliances_energy_prediction | 10-minute readings over 4.5 months, evaluated with a random split by its authors; it is forecasting, `No` | applied |

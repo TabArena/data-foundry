@@ -139,6 +139,7 @@ The metrics in use:
 | `net_revenue_at_cost` | custom, value | pva_revenue_prediction_kddcup98 |
 | `cost_matrix` | custom, proba or label | aps_failure, credit_g (proba); force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition (label) |
 | `precision_at_k`, `average_precision_at_k` | custom, proba | coil_2000, labour_inspection_compliance; huntprohibited_1m |
+| `average_precision_at_base_rate` | custom, proba | phreshphish_phishing_pages (`base_rate` 0.01, since 2026-11-26) |
 | `gini_top_capture` | custom, proba | amex_non_iid_1m (per customer, item 9) |
 | `hierarchical_balanced_accuracy` | custom, label; input `group` | micro_mass |
 | `normalized_early_detection_utility` | custom, label; inputs `group`, `order` | sepsis_prediction_1m |

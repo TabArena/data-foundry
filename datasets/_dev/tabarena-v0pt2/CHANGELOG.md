@@ -1,5 +1,131 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-28, the better-data work ported to the restructured package (no container built)
+
+- Main (the codebase-review stack #138 to #161) merged into this branch. The nine new definitions import
+  `data_foundry.definition` (`data_foundry.definition.splits` for gusto_i_mi_mortality's grouped k-fold,
+  `data_foundry.special.chemistry` for ready_biodegradability_huang_zhang's RDKit pin, also named in its notes and
+  aquatic_toxicity_lunghini_consensus's), and fiat_500 and heart_disease keep main's imports and declarations with
+  this branch's changes on top.
+- Accepted `splits_below_target` is `splits_dimensions_off_protocol` in craigslist_used_vehicles_f150,
+  ga_merchandise_store_sessions, nhanes_dxa_body_fat and phreshphish_phishing_pages; the reasons are unchanged.
+- sdss_dr17_star_galaxy_quasar_1m: a `_1m` version may not split in `_make_splits` any more, so its three windows are
+  declared, `TemporalSplits(window=None, unit="years", cutoffs=WINDOWS)` with `(start, end)` pairs, a form new in
+  `TemporalSplits` for windows that end where they say (here 2019 to the end of the data, 2016 and 2013); the test
+  sampling is the build's own, stratified by the target as before. The paragraph of its splits comment that
+  restated the window sizes and the train sampling is dropped, since the generated description gives both. Not checked
+  on the data (`dataset check` not run): the positions should be identical, and the next check confirms them.
+- The new records drop `claimed_by` and the `WIP (Triage)` status (claims live on the board). The cross-dataset
+  `REVIEW.md` stays deleted; its item on new metrics was resolved and lives in `metrics.md` and the entry "PhreshPhish
+  metric and the new-metric rule" below. `BENCHMARK_CHANGES_TODO.md` takes main's rewrite and gains the
+  `average_precision_at_base_rate` row; its dataset lists still date from 2026-11-25.
+- No rows, splits or metrics changed; the generated READMEs of the nine new datasets, fiat_500 and heart_disease are
+  this branch's and change at the next `dataset check`.
+
+## 2026-11-26 (late), loose ends of the better-data work
+
+- ready_biodegradability_huang_zhang and aquatic_toxicity_lunghini_consensus: the notes name qsar_biodeg and
+  qsar_fish_toxicity as retired `Duplicate`s of these sets, not as siblings with an open decision.
+- nhanes_dxa_body_fat: `task_time_on_few_unique` accepted (eight survey cycles, the release's only time key).
+  Check 0 errors, 0 warnings.
+- sdss_dr17_star_galaxy_quasar: the DESI consistency question is closed as not pursued (record only).
+- seismic_bumps, lung_adenocarcinoma_metastasis: their metric precedent lists note heart_disease's move to log loss.
+
+## 2026-11-26 (late), polish retired, fiat kept
+
+- polish_companies_bankruptcy retired (`No (Retired)`, `Class-dependent Recording`, `Selection Bias`; issue 4, B):
+  replaced by `american_companies_bankruptcy` (one extraction for both classes, a dated split); the 27-ratio rebuild
+  of the same day left the record formats told apart at 0.81 to 0.84 within a class. Issue 7 (B, forced from
+  temporal) recorded, moot. Folder removed, `v2_path` cleared.
+- fiat_500 kept and ships next to `craigslist_used_vehicles_f150` (issue 7, A; issue 4 closes with it); record only.
+
+## 2026-11-26 (evening), retirements for better data, and fiat and polish decisions
+
+Retired (verdict dont), folders removed, `v2_path` cleared:
+- body_density_prediction (`No (Retired)`, no new marker): replaced by `nhanes_dxa_body_fat` (38,708 people with a
+  measured DXA scan against 252 men of 1985; the target is DXA percent fat instead of density by underwater weighing).
+- qsar_biodeg (`No (Retired)`, `Duplicate`): `ready_biodegradability_huang_zhang` holds 1,011 of its 1,055 chemicals and
+  gives 976 the same class, with 5.8 times the chemistry.
+- qsar_fish_toxicity (`No (Retired)`, `Duplicate`): `aquatic_toxicity_lunghini_consensus` holds 808 of its 908
+  compounds at the same values and adds 1,392 more.
+- sdss_17 (`No (Retired)`, `Duplicate`): a 100,000-row cut of the DR17 query `sdss_dr17_star_galaxy_quasar_1m` builds
+  in full.
+- mic (`No (Retired)`, `Class-dependent Recording`): blank fields follow the outcome through how the file was filed
+  (blanks alone 0.78 ROC AUC on death); `gusto_i_mi_mortality` ships in its place (its issue 2, B).
+- online_shoppers_purchasing_intention_dataset (`No (Retired)`, `Class-dependent Recording`, `Not Representative`):
+  page values credited by the buyers' own purchases in February-May, and rows that sum up the finished visit;
+  replaced by `ga_merchandise_store_sessions`.
+- website_phishing (`No (Retired)`, `Data Quality Issue`, `Selection Bias`): `phreshphish_phishing_pages` carries the
+  phishing task.
+- web_page_phishing_detection (`No`, `Selection Bias`, `Class-dependent Recording`): removed before shipping.
+
+Changed:
+- fiat_500: one row per car on trim, engine power, age and mileage (1,420 rows); the 56,779 km mileage kept as
+  recorded; the split is random grouped by car (`car_id`, 1,406 cars), leaf `L-FILL.unit`. Check 0 errors, 0 warnings.
+- polish_companies_bankruptcy: the bankrupt and operating companies came from separate extraction runs whose
+  conventions models recognised (10 label-free run flags alone ROC AUC 0.964); 27 ratios are rebuilt from one set of
+  amounts per statement by one label-free rule, the other 37 dropped, values rounded to 4 significant digits; ROC AUC
+  0.797 / 0.811 (LightGBM / logistic regression). `Class-dependent Recording` added. Check 0 errors, 0 warnings.
+- phreshphish_phishing_pages and gusto_i_mi_mortality: verdict ship, nothing open.
+
+## 2026-11-26 (evening), PhreshPhish metric and the new-metric rule
+
+- phreshphish_phishing_pages: the metric is `average_precision_at_base_rate` with `base_rate` 0.01, new in the metric
+  library (average precision with the benign pages weighted so that phishing pages are 1% of each window), a stand-in
+  for the source's average precision on test subsets at fixed phishing rates of 0.05% to 5%, replacing the fallback
+  ROC AUC (issue 1, c). Untuned LightGBM scores 0.782 / 0.662 / 0.794, newest window first. The split is checked;
+  nothing open. Check 0 errors, 0 warnings, 4 accepted.
+- Rules: a metric that scores something no metric of the library scores counts for it, and its work counts against no
+  option (MET-10); a stand-in is the closest metric computable on our data, implemented or not (MET-11); an option's
+  work is an effort note, never a con, in review options tables (cross-dataset item, adopted).
+
+## 2026-11-26 (afternoon), curator's third round of marks on the better-data datasets
+
+- phreshphish_phishing_pages: the page's HTML `<title>` ships as a text column (`title`), read the same way from both
+  classes in the definition's own pass over the HTML, with no brand list (issue 3, e); missing for 2.4% of benign and
+  4.0% of phishing pages. Untuned LightGBM's partial ROC AUC up to a 1% false-positive rate rises from 0.832 / 0.798 /
+  0.843 to 0.848 / 0.799 / 0.858. The metric (issue 1) stays open with a recommendation. Check 0 errors, 0 warnings.
+- nhanes_dxa_body_fat: the four one-cycle windows kept after the stationary-relation test (issue 5, a);
+  `splits_comment` notes it (flat on the three newest cycles, not flat across the 2011 scanner change). The split is
+  checked and nothing is open. Check 0 errors, 1 warning.
+- craigslist_used_vehicles_f150: the declared metric (rmsle) and split (five scrape windows) checked; record only.
+
+## 2026-11-26 (later), curator's second round of marks on the better-data datasets
+
+- craigslist_used_vehicles_f150: no test truck in training any more: a truck relisted in a later scrape, linked by
+  VIN or by title, model year and mileage, keeps only its copies from its last test scrape on (7,843 rows dropped,
+  97,291 left; issue 2, c). The advert's title from the url ships as text (`advert_title`) with every number of
+  1,000 or more that is no model year and every "<n>k" removed, asserted in `_clean` (issue 1, b). The five one-scrape
+  windows are signed off unchanged (H), training on 52.0% to 87.7%. Untuned LightGBM RMSLE 0.302 against 0.314.
+  Check 0 errors, 0 warnings.
+- nhanes_dxa_body_fat: metric checked, verdict ship; the stationary-relation test reads flat on the three newest
+  cycles and not flat across the 2011 scanner change, so the four temporal windows stay; whether to note it in the
+  splits comment is open (issue 5).
+- phreshphish_phishing_pages: issue 3 answered: the hand brand list's gain is one campaign of the test windows
+  (Robinhood); lists fixed before the windows add little; the page title as a text column encoded on each training
+  side is recommended. Issue 1 records the curator's note on new metrics. Both open.
+- aquatic_toxicity_lunghini_consensus and ga_merchandise_store_sessions: split (and metric) checked, verdict ship.
+- REVIEW.md: a cross-dataset item on counting a new metric as a gain for the collection (rule wording).
+
+## 2026-11-26, curator's marks on the better-data datasets
+
+- nhanes_dxa_body_fat: the sagittal abdominal diameter dropped again (issue 4, B, superseding issue 2's d): every
+  2017-2018 test row lacks it, and there it worsened LightGBM's RMSE (3.405 against 3.350); back to the eleven
+  measures every cycle shares, `splits_feature_missing_in_test` no longer accepted. Check 0 errors, 1 warning.
+- phreshphish_phishing_pages: horizon signed off (three four-week windows, one-day gap) and the canonical URL kept as
+  a text input (issue 2); `splits_below_target`, `task_label_time_gap`, `dataset_pure_feature_value` and
+  `dataset_identifier_column` accepted. The metric (issue 1) and a brand feature (issue 3) are answered with
+  measurements and stay open. Check 0 errors, 0 warnings.
+- craigslist_used_vehicles_f150: the earlier-scrapes split kept (issue 3, a); `task_summary` names the use case as
+  ours (a price guide refit once per scrape) and `splits_comment` records what the same-scrape design would score.
+  The title (issue 1) and the relisted trucks (issue 2) are answered and stay open. Check 0 errors.
+- aquatic_toxicity_lunghini_consensus: `rmse` recorded as the source's criterion (issue 2, b); no row or score
+  changes. Check 0 errors, 0 warnings.
+- Record-only: ga_merchandise_store_sessions keeps eight windows (issue 2, b); fiat_500's time basis settled as
+  `RetrospectiveFillIn` (issue 6, B, already declared); thyroid_discordant_archive kept as the better data (issue 2,
+  A) and shipped; gusto_i_mi_mortality, sdss_dr17_star_galaxy_quasar and ready_biodegradability_huang_zhang have
+  their split (and metric) checked and verdict ship.
+
 ## 2026-11-26, every definition rebuilt on the restructured package (174 containers)
 
 - All 174 definitions were rebuilt at the top of the codebase-review stack (#138 to #149). The generated READMEs now
@@ -161,6 +287,96 @@
   from a pandas `y_true` are done; decision B that `task.error` raises for its two metrics until it is decided. The
   content is otherwise unchanged. A rebuilt container also writes `benchmark_task.json`, its task view, next to its
   metadata (outside the checksum).
+
+## 2026-11-25 (night), phreshphish_phishing_pages: added (no container built)
+
+- New folder: PhreshPhish v1.0.1 (Dalton et al. 2025, Hugging Face, CC BY 4.0), the dated phishing task decided in
+  website_phishing's review (issue 10, B): 348,287 web pages of Aug-Oct 2024 and 1 Jun-7 Sep 2025 (21% phishing), 50
+  URL and HTML counts of ours plus the language and the canonical URL as text; fallback roc_auc (original: average
+  precision at 0.05-5% base rates). Three four-week windows, 16 Jun-7 Sep 2025, a one-day gap, training 63.3-85.5%.
+- Class-dependent recordings removed for both classes: the URL form (query, scheme, host case, default port,
+  characters stored for phishing only), one row per URL, Oct-Nov 2025 (HTML capture form) and a 10,000-character page
+  floor the release applied to benign pages only. Data end 2025-09-07, before the source's pruned test split. Fit
+  approximate; `Selection Bias` and `Class-dependent Recording` markers; a protocol line for same-day bursts.
+- Full review panel: ship after changes. Open for the curator: the horizon (H), roc_auc or partial ROC AUC at a false
+  positive rate up to 1% (issue 1), the `url` warning (2), a brand-against-host feature (3). Check 0 errors, 4 warnings
+  (proposed, not accepted).
+
+## 2026-11-25 (late evening), better-data replacements: the curator's second and third marks (no container built)
+
+- american_companies_bankruptcy (Andrej): verdict ship, metric and split checked; the anonymised company id ships as a
+  categorical input; the protocol line for the next-year rows stays. Check 0 errors, 0 warnings.
+- ga_merchandise_store_sessions (Andrej): eight monthly windows, December 2016 and January 2017 as the curator's
+  exception (training shares 35.7% and 46.0%), a one-day gap before each window, the metric checked; six or eight
+  windows asked again and answered (issue 2, open).
+- gusto_i_mi_mortality and heart_disease (Andrej, decided together): log loss from context for both; heart_disease's
+  source (Detrano 1989) scored calibration and accuracy over thresholds, never ROC AUC.
+- nhanes_dxa_body_fat (Andrej): `Selection Bias`; year 2008; the horizon signed off; the 893 newer-scanner scans
+  with an invalid region dropped (38,708 people); the sagittal abdominal diameter an input again, its cost on the
+  newest window raised as issue 4 (open).
+- sdss_dr17_star_galaxy_quasar_1m (Andrej): the imaging pipeline's type and the extinction as inputs (log loss 0.255
+  to 0.247); three test windows, one per targeting era (2019-2020, 2016, 2013), the count an IID split of 4.2M objects
+  would get.
+- ready_biodegradability_huang_zhang (Andrej): 19 structures repaired from ECHA's dossiers, 4 rows dropped, the
+  licence warning accepted (5,714 chemicals). aquatic_toxicity_lunghini_consensus: the prediction point settled; the
+  metric's origin answered (open).
+- craigslist_used_vehicles_f150: the split and the source's use case answered (issue 3, open). phiusil_phishing:
+  reopened and kept retired. website_phishing: PhreshPhish to be added as a dated phishing task (issue 10, B).
+- Review page: a temporal README's per-window table no longer counts as splits.
+
+## 2026-11-25 (late night), better-data replacements: the curator's first marks (no container built)
+
+- american_companies_bankruptcy (Andrej): the horizon signed off (one-year windows, annual refit, no gap); nine
+  windows, 2008 and 2018 kept and the two years with the fewest bankruptcies (2017, 2009) left out. The next-year-row
+  question answered (no leak inside a split) and the company id raised as an input (issue 3). Check 0 errors, 0
+  warnings.
+- gusto_i_mi_mortality (Andrej, issue 1 B, issue 4 A): one round of 8-fold grouped cross-validation over the 16
+  regions, two per test fold, `splits_dimensions_off_protocol` accepted; the ages 108 to 110 stay with a note. The
+  metric question answered (the source scores calibration and discrimination side by side; log loss recommended),
+  open. Check 0 errors, 0 warnings.
+- sdss_dr17_star_galaxy_quasar_1m (Andrej, issue 1 B, horizon A): every spectrum DR17's pipeline flags
+  (`zWarning` not 0) dropped, following the source's own quality flag: 368,771 spectra, 4,249,921 objects left
+  (galaxy 61.60%, star 20.73%, quasar 17.68%); LightGBM log loss 0.255 in the task probe. The one-year, no-gap
+  horizon signed off. Whether `type` and extinction are inputs answered (available at train and predict time;
+  adding both recommended), open. Check 0 errors, 0 warnings. A USE-5 case added.
+- ga_merchandise_store_sessions: the two questions answered, open (the window target is 9, since two thirds of
+  305,819 visits fall under SPLIT-33's 250,000 step; a one-day gap costs nothing measurable and is recommended).
+
+## 2026-11-25 (night), better-data replacements: nine datasets added (no container built)
+
+Each is the candidate replacement for a v0.2 dataset (the old dataset's review decides), built from the record's
+screening, attacked by a full review panel, its review in the record. Open questions stay for the curator.
+
+- american_companies_bankruptcy (for polish_companies_bankruptcy): 78,682 firm-years of US listed companies
+  (Lombardo et al. 2022); the decimal points the 2024 release lost restored and asserted against the July 2022 release;
+  target the failed company's last fiscal year (609 events); eleven one-year windows 2008-2018, no gap; roc_auc; a
+  protocol line for the next-year rows. Check 0 errors, 0 warnings.
+- nhanes_dxa_body_fat (for body_density_prediction): NHANES whole-body DXA percent fat from tape-and-scale measures,
+  39,601 people of 1999-2006 and 2011-2018 (measured scans only); four two-year cycles as windows, no gap; fallback
+  RMSE. Check 0 errors, 1 warning.
+- web_page_phishing_detection (for website_phishing): 11,430 pages of Hannousse and Yahiouche's dataset B, 81 URL,
+  page and look-up features, forced split grouped by registered domain; pages and look-ups dated to late July to early
+  August 2020; roc_auc fallback. Check 0 errors, 3 warnings (proposed, not accepted).
+- ga_merchandise_store_sessions (for online_shoppers_purchasing_intention_dataset): Google's GA360 sample, one row per
+  visit cut at its third pageview before checkout (305,819 visits, 3.7% buy), the visitor's history as inputs, masked
+  traffic sources missing; six monthly windows February-July 2017; roc_auc fallback. Check 0 errors, 3 warnings.
+- gusto_i_mi_mortality (next to or for mic): the GUSTO-I trial, 40,826 patients, death by day 30, grouped by 16
+  regions; `ttr` (after treatment), `tpa` and `height` (imputed fills mark deaths) dropped; roc_auc fallback. Check 0
+  errors, 0 warnings (one accepted).
+- craigslist_used_vehicles_f150 (for fiat_500): Ford F-150 asking prices from nine Craigslist scrapes (2018 to May
+  2021, 105,134 trucks), one row per truck across sites, a seller input; five one-scrape windows March 2020-May 2021,
+  no gap; RMSLE from context. Check 0 errors, 0 warnings (four accepted).
+- sdss_dr17_star_galaxy_quasar_1m (for sdss_17): DR17's primary spectra with their photometry, 4,599,104 objects, the
+  PSF magnitudes added and the spectra from fibres with no light dropped; eight yearly windows 2012 to 2019-2020; log
+  loss. Check 0 errors, 0 warnings.
+- aquatic_toxicity_lunghini_consensus (for qsar_fish_toxicity): the fish 96-hour LC50 of Lunghini et al. 2020, 2,186
+  chemicals, the structure the only feature, scaffold groups; three two-formula substances repaired from the registry;
+  record fact `Time: Dated`; rmse. Check 0 errors, 0 warnings.
+- ready_biodegradability_huang_zhang (for qsar_biodeg): Huang and Zhang 2022's classification set, 5,719 chemicals on
+  the structure copy key, the structure the only feature, scaffold groups; the 10-day window named in the fit;
+  roc_auc fallback. Check 0 errors, 1 warning (left for the curator).
+- The better-data items of the old datasets, the review-page issues that never reached their records (mic,
+  polish_companies_bankruptcy, website_phishing) and the parked issues reopened are in those records' reviews.
 
 ## 2026-11-25, every definition imports `data_foundry.definition` (no container built)
 

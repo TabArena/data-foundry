@@ -41,6 +41,8 @@ CC (2026-11-16, Lennart): PR #102 review: the temporal split is ok (the request 
 
 CC (2026-11-17, Andrej): the declared split (temporal on `request_date`, windows of 4 months, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk).
 
+CC (2026-11-26, Andrej): better data checked 2026-11-25 (review issue 2, A): no open table beats the archive; candidates and verdicts in the review. Verdict ship; nothing open in the review.
+
 CC (2026-11-26, Lennart): accepted `splits_dimensions_off_protocol` (SPLIT-15) after the rebuild of 2026-11-26: three windows against SPLIT-33's nine, as thyroid_discordant's split decision; five would train on 30%.
 
 ## Review
@@ -51,7 +53,7 @@ Garvan Institute's requests of August 1984 to January 1987), label = report code
 four-month windows from February 1986 to January 1987. No review panel (not asked); `dataset check` passes with one
 warning. The AI recommends keeping this version and retiring thyroid_discordant, whose rows it contains (issue 1).
 
-**Main points:** Settled: this version ships (issue 1, B, 2026-11-12; split and metric `ok`). thyroid_discordant
+**Main points:** Settled 2026-11-26, verdict ship. Better-data check (2026-11-25, issue 2, A on 2026-11-26): Keep thyroid_discordant_archive as it is (A): it already is the better data (the source's full archive, 9,162 requests, 197 discordant), and every other open thyroid table is a copy or subset of it, holds no discordant label, or is another collection. Earlier: Settled: this version ships (issue 1, B, 2026-11-12; split and metric `ok`). thyroid_discordant
 is retired as its `Duplicate` (that dataset's issue 4, a, 2026-11-12).
 
 **Record judgment:** valid. The label is the archive's own report code R, "discordant assay results"
@@ -146,6 +148,74 @@ thyroid_discordant).
    `dataset check` 0 errors, 0 warnings, README regenerated; not built. The original is now
    retired (2026-11-12): thyroid_discordant is `No (Retired)` with `Duplicate`, naming this dataset (its issue 4, a);
    its folder leaves in a retirement PR.
+
+2. **Is there better data than the Garvan archive for the discordant-results task, or keep thyroid_discordant_archive as it is?**
+
+   * **Problem:**
+     - No open table holds more discordant results than the archive: the label exists only in it (code R, 197 of 9,162 requests) and in Quinlan's 1985 extract dis (58 of 3,772, the retired thyroid_discordant), and the Kaggle "Thyroid Disease Data" upload of 9,172 rows is the archive file cell for cell, codes included.
+     - The other tables are Quinlan's extracts of the same requests with other comment groups (allbp, allhyper, allhypo, allrep, sick, ann-thyroid), two older Garvan files with no record ids, or a different collection (new_thyroid, 215 patients from Townsville); their targets are mostly near-trivial on the thyroid tests.
+     - Keep the archive version and look no further, or add a second task from the same archive (its diagnosis groups as one multiclass target)?
+   * **Background:**
+     - The question may point at the retired original: thyroid_discordant (dis.data and dis.test, 3,711 rows) was retired on 2026-11-12 as `Duplicate` of this dataset, and its folder left main in #102 (2026-11-16). The "better data" for it was this archive rebuild, so nothing about it is left open.
+     - The archive in v0.2 (main): 9,162 requests (August 1984 to January 1987), 29 features, label code R ("discordant assay results"), three four-month windows from February 1986 (24, 54 and 25 positives), ROC AUC.
+     - Candidates, all downloaded and checked on 2026-11-25:
+
+       | Data | Rows | Label | Relation to the archive | Access, licence | Verdict |
+       |---|---|---|---|---|---|
+       | thyroid0387.data (shipped) | 9,172 (9,162 after 10 repeated entries) | code R, 197 | itself | UCI, CC BY 4.0 | keep |
+       | dis.data + dis.test (retired thyroid_discordant) | 3,772 | discordant, 58 | 3,553 of its 3,711 shipped rows are archive records, same label for all 58 | UCI zip | not better: retired as `Duplicate` |
+       | allbp, allhyper, allhypo, allrep, sick | 3,772 each | one other comment group each | the same 3,772 requests as dis | UCI zip; OpenML 38 (sick), 40707, 40708 | not better: subsets, no discordant label |
+       | ann-train + ann-test | 7,200 | 3 classes (normal, hyper-, subnormal function) | "the datas Quinlans used in the case study" (ann-Readme), 1985 train, 1986 test | UCI zip | not better: another target, near-trivial (table below) |
+       | hypothyroid.data, sick-euthyroid.data | 3,163 each | hypothyroid 151; sick-euthyroid 293 | no record ids; 0 of 3,163 rows match an archive record on age, sex and the five tests | UCI zip | not better: no discordant label, older and smaller |
+       | Kaggle emmanuelfwerr "Thyroid Disease Data" (thyroidDF.csv) | 9,172 | the archive's code string | identical: all 9,172 record ids, codes and cell values equal | Kaggle, CC0 | not better: a copy |
+       | Kaggle yasserhessein "Thyroid Disease Data Set" | 3,771 | binaryClass, 291 positives | one of Quinlan's 3,772-request extracts | Kaggle, CC BY-NC-SA 4.0 | not better: a copy of a subset |
+       | Kaggle jainaru "Thyroid Disease Data" | 383 | thyroid cancer recurrence | another study (already the record differentiated_thyroid_cancer_recurrence) | Kaggle, CC BY 4.0 | not this task |
+       | new_thyroid (UCI new-thyroid) | 215 | 3 classes, 5 lab tests | not Garvan: Coomans, James Cook University, Townsville (new-thyroid.names) | UCI | not better: another collection, `Too Small` |
+       | OpenML 47589 | 9,172 | referral source | the archive with the codes dropped | OpenML | not this task |
+       | The archive's other comment groups | 9,162 | hyperthyroid, hypothyroid, binding protein, general health, replacement therapy, antithyroid treatment | same requests, another target | as the archive | a different task, the only real alternative (option B) |
+
+   * **Effect on the task:** none under A: the shipped task already uses the largest set with the discordant label and the split the dates allow. B would add a second task on the same 9,162 requests; it does not change this one.
+   * **Experiments:** UCI zip (https://archive.ics.uci.edu/static/public/102/thyroid+disease.zip) and the three Kaggle uploads downloaded on 2026-11-25; a batch job and 1411475; untuned LightGBM (300 trees), logistic regression (median imputation, scaled), a depth-2 tree and the best single test chosen on each training side; 5 x 5 stratified folds on the archive's 9,162 requests (random folds, to compare targets, not the shipped windows); ROC AUC.
+
+     | Target on the archive (one comment group against the rest) | Positives | LightGBM | Logistic regression | Tree depth 2 | Best single test |
+     |---|---|---|---|---|---|
+     | discordant (R), the shipped label | 197 (2.2%) | 0.992 | 0.876 | 0.911 | 0.853 |
+     | hypothyroid (E-H) | 659 (7.2%) | 1.000 | 0.973 | 0.994 | 0.988 |
+     | hyperthyroid (A-D) | 228 (2.5%) | 0.995 | 0.962 | 0.940 | 0.926 |
+     | general health (K) | 573 (6.3%) | 0.994 | 0.947 | 0.955 | 0.933 |
+     | replacement therapy (L-N) | 355 (3.9%) | 0.998 | 0.968 | 0.965 | 0.758 |
+     | binding protein (I-J) | 414 (4.5%) | 0.994 | 0.865 | 0.906 | 0.836 |
+     | antithyroid treatment (O-Q) | 34 (0.4%) | 0.992 | 0.992 | 0.839 | 0.871 |
+     | ann-thyroid, 3 classes, its own 1985/1986 split (macro one-vs-rest) | 250 non-normal in test | 0.999 | 0.990 | 0.991 | |
+
+     | The diagnosis groups as one 8-class target (the group of the comment in force, its first letter when two groups) | Log loss | Macro one-vs-rest ROC AUC |
+     |---|---|---|
+     | LightGBM | 0.272 | 0.992 |
+     | Logistic regression | 0.434 | 0.957 |
+     | Tree depth 3 | 0.511 | 0.844 |
+     | Class shares | 1.042 | 0.500 |
+
+     - Code R leaves the widest room between the methods among the source's own groups (logistic regression 0.876, a depth-2 tree 0.911); hypothyroid is a short rule on TSH (best single test 0.988), and binding protein splits into two opposite conditions, of which "increased" alone is mostly T4U (0.932).
+     - The 8-class target separates the methods (log loss 0.272 against 0.434), but 143 requests carry comments of two groups, so the class needs a rule of our own, and the multiclass task is not one the source defines (its letter table names the binary groups: "decision trees were derived for the most frequent classes of comments").
+   * **Consistency:** in this batch the archive is the case where the better data was already found and shipped: like sdss_17's DR17 full set, it is the source's own fuller release of the same task, and the smaller cut (thyroid_discordant) is retired as its `Duplicate`[^prov6]. A better dataset from another source would be its own record[^better]; none exists here. A second target on the same rows would be another task, not a duplicate[^prov7].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the archive version, nothing more (implemented) | thyroid_discordant_archive ships as it is; no record created | the largest table with the discordant label; split by request date; nothing better found | none found |
+     | B | Also add the archive's diagnosis groups as a multiclass task | a new record and definition from thyroid0387: 8 classes (no condition and seven comment groups), the same request-date windows | the methods separate (log loss 0.272 against 0.434); the source's main labels, which the discordant task leaves unused | the same 9,162 requests twice in the benchmark; 143 requests need a rule of our own for their class; most groups are near-trivial on their own (hypothyroid 0.988 on TSH alone); Lennart's screening read the diagnoses as "no real target" |
+
+   * **Recommendation:** A: the archive is the better data, already in v0.2; every other open thyroid table is a copy or a subset of it, lacks the discordant label, or comes from another collection, so nothing replaces it or needs adding. **Decision:** A or B?
+
+   **Notes for the AI:** On A: a CC (<date>, Andrej) line in thyroid_discordant_archive's record ("better data checked 2026-11-25: no open table beats the archive; candidates and verdicts in the review"), `Andrej` stays in checked_by; no definition change. On B: new record `thyroid_garvan_diagnosis_groups` (original_source UCI, source link https://doi.org/10.24432/C5D010, PROV-7 comment naming thyroid_discordant_archive as the same requests with another target) and a definition folder in datasets/_dev/tabarena-v0pt2/ reusing thyroid_discordant_archive's `_load_raw` and `_clean` and its windows; the class from the comment in force (the part after "|"), its first letter's group when two groups, "-" as no condition; metric log loss; dataset check through sbatch. Evidence: the run's evidence folder (scripts/targets.py, scripts/multiclass.py, out/targets.csv, out/multiclass.csv, dl_uci/, dl_kaggle/). Side fact for new_thyroid's record (not changed here): its comment calls it a duplicate of thyroid_discordant, but new-thyroid is Coomans' Townsville data, not Garvan; its `Too Small` verdict stands on its own.
+
+   [^prov6]: **PROV-6** (Must): different versions or cuts of one underlying dataset are duplicates too when neither adds a distinct task: a swapped target, another slice of the same cohort, added or dropped rows or columns.
+   [^prov7]: **PROV-7** (Must; narrows PROV-4 and PROV-6): records that share a source but give different tasks are not duplicates.
+   [^better]: selection.md, "Small or dated, and the task is still done today": a better dataset from another source is its own record, a newer release of the same source is a version (PROV-6), and the old record keeps the verdict its own data earns until the curator decides.
+
+   **Andrej (2026-11-26, ok):** As recommended (A).
+
+   **Resolved (2026-11-26, Andrej):** A, the archive stays as it is: no open thyroid table beats it, and nothing replaces it or needs adding. No definition change.
 
 ## Reference
 

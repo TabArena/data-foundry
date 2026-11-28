@@ -910,3 +910,31 @@ HORIZON_BLOCK = """\
 
 * **Recommendation:** A: the source's own length. **Decision:** A or B?
 """
+
+
+def test_split_table_is_the_first_table_only(rp):
+    """A temporal README follows the table of splits with a table of per-window statistics.
+
+    Only the first table is the splits (eight windows were shown as 18 splits on 2026-11-25).
+    """
+    text = "\n".join(
+        [
+            "8 repeat(s) x 1 fold(s) with seed 4267.",
+            "",
+            "| repeat | fold | n_train |",
+            "|---|---|---|",
+            "| 0 | 0 | 10 |",
+            "| 1 | 0 | 9 |",
+            "",
+            "Per window:",
+            "",
+            "| split | window | drift |",
+            "|---|---|---|",
+            "| 0 | Jul | 0.1 |",
+            "| 1 | Jun | 0.2 |",
+        ]
+    )
+    table = rp._first_table(text)
+    assert table.count("\n") == 3
+    assert "drift" not in table
+    assert "| 1 | 0 | 9 |" in table

@@ -2,21 +2,8 @@
 report_format: data-foundry-report-v2
 unique_name: heart_disease
 container_format: 2
-checksum: v2:6f0ae14d9667a4b3634f2e496db35efc7910f2d6b98f7e3b15baed4514adca38
-build:
-  uuid: 01a21800-f8e2-707f-80e4-68d67fbe16ca
-  checksum: v2:6f0ae14d9667a4b3634f2e496db35efc7910f2d6b98f7e3b15baed4514adca38
-  built_at: '2026-11-26T13:17:27+00:00'
-  path: heart_disease/01a21800-f8e2-707f-80e4-68d67fbe16ca
-  data_foundry_version: 0.0.5
-  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
-  libraries:
-    python: 3.12.3
-    pandas: 2.3.3
-    numpy: 2.1.3
-    pyarrow: 20.0.0
-    scikit-learn: 1.7.2
-    polars: 1.41.1
+checksum: v2:c76aebd865eb884ebd766e024ad5fdeb9e5d7a946592f19d120a16a4a52345cd
+build: null
 build_stale: false
 data:
   n_rows: 796
@@ -28,8 +15,8 @@ data:
 task:
   target: heart_disease_diagnosis
   problem_type: binary_classification
-  metric: roc_auc
-  metric_origin: fallback
+  metric: log_loss
+  metric_origin: context
   scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: heart_disease_diagnosis
@@ -53,14 +40,6 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
-  reason: 'Leave one hospital out: three splits, each training on two hospitals and
-    testing on the third (Cleveland, Hungary, then Long Beach), one repeat, since
-    repeating a split of three groups into three folds gives the same splits. The
-    source built its model in Cleveland and applied it at the other hospitals; leaving
-    each hospital out in turn generalises that design so that every hospital is tested
-    once. With three hospitals the scores are three numbers and differ by hospital
-    (Long Beach is the hardest). Unlike `covertype`''s three areas, the transfer is
-    the source''s design and no class drops out (curation notes).'
   n_train:
     min: 493
     max: 597
@@ -74,14 +53,18 @@ bundle_checks:
   infos:
   - dataset_duplicate_rows
   accepted:
-    groups_test_groups_few: 'Three hospitals by design: the source built its model
-      at one hospital and applied it at the others. The fourth hospital (Switzerland)
+    task_group_count_low: 'Three hospitals by design: the source built its model at
+      one hospital and applied it at the others. The fourth hospital (Switzerland)
       is left out because its published file kept only 8 of its about 27 patients
-      without disease. Testing on one unseen hospital at a time is the task. Each
-      fold still scores 199 to 303 patients one by one (smallest class: 51). The signal
-      carries over to unseen hospitals: the linear model beats the class shares at
-      each of the three (task probes, ROC AUC 0.880, 0.898, 0.732). Most of the variation
-      between folds comes from Long Beach, the hardest hospital.'
+      without disease.'
+    splits_dimensions_off_protocol: Leave one hospital out gives exactly three splits.
+      More repeats would split the same three hospitals the same way, so they would
+      add copies, not information.
+    groups_test_groups_few: 'Testing on one unseen hospital at a time is the task.
+      Each fold still scores 199 to 303 patients one by one (smallest class: 51).
+      The signal carries over to unseen hospitals: the linear model beats the class
+      shares at each of the three (task probes, ROC AUC 0.880, 0.898, 0.732). Most
+      of the variation between folds comes from Long Beach, the hardest hospital.'
     groups_largest_share_high: Cleveland is a real hospital, one of three, not a catch-all
       value. When it is the test hospital, the model trains on the other two (493
       patients), where two of Cleveland's tests were rarely recorded (`ca` for 5,
@@ -94,9 +77,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `heart_disease_diagnosis`, scored with `roc_auc` on grouped splits by `hospital`. 796 rows and 13 features. Source: UCI (1988).
+Binary classification of `heart_disease_diagnosis`, scored with `log_loss` on grouped splits by `hospital`. 796 rows and 13 features. Source: UCI (1988).
 
-Built as `01a21800-f8e2-707f-80e4-68d67fbe16ca` on 2026-11-26. See [Build](#build).
+Not built yet. The current definition gives checksum `v2:c76aebd865eb884ebd766e024ad5fdeb9e5d7a946592f19d120a16a4a52345cd`.
 
 ## In brief
 
@@ -159,7 +142,7 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 796 x 15 |
 | task.target | heart_disease_diagnosis |
 | task.problem_type | binary_classification |
-| task.metric | roc_auc |
+| task.metric | log_loss |
 | task.split_regime | grouped_non_iid |
 | task.stratify_on | heart_disease_diagnosis |
 | task.group_on | hospital |
@@ -169,10 +152,10 @@ Only curators run `build`, when the dataset ships.
 
 | field | value |
 |---|---|
-| name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
-| definition | area under the ROC curve |
-| reason | Detrano et al. 1989 score reliability, the mean predicted probability against the disease rate (calibration in the large) and by quintiles (p. 306), and clinical utility, the percent correctly classified over the thresholds 0.2 to 0.8 they call relevant for angiography decisions (p. 307): no single threshold, so a threshold-free metric (MET-7); UCI's heart-disease.names reports accuracy at 0.5, a default. No costs of errors: UCI's costs/ folder holds the prices of the tests, and Statlog's 5:1 heart cost matrix belongs to a later 270-row cut of the Cleveland file, not to this source. ROC AUC per held-out hospital does not score reliability. roc_auc is the binary fallback. |
+| name | `log_loss` (standard; takes proba; lower is better) |
+| origin | context: obvious from the task: the source defines no metric |
+| definition | mean of -log p(true class) |
+| reason | Detrano et al. 1989 tested a probability model "for reliability and clinical utility" (abstract): reliability, the mean predicted probability against the disease rate (calibration in the large) and by quintiles (p. 306), and clinical utility, the percent correctly classified over the thresholds 0.2 to 0.8 they call relevant for angiography decisions (p. 307): no single threshold, so no threshold metric (MET-7); UCI's heart-disease.names reports accuracy at 0.5, a default. No costs of errors: UCI's costs/ folder holds the prices of the tests, and Statlog's 5:1 heart cost matrix belongs to a later 270-row cut of the Cleveland file, not to this source. The paper has no ROC curve and no c statistic, and its main finding is one of calibration: "Both algorithms overpredicted the probability of disease at the Hungarian and American centers" (abstract). Log loss is declared from context (Andrej, 2026-11-25, decided together with gusto_i_mi_mortality; it replaces the roc_auc fallback of 2026-10-21): the source scores reliability, which ROC AUC per held-out hospital does not see, and the split holds out whole hospitals to pose that question; log loss, a strictly proper rule, scores the reliability and the ranking together (MET-8, MET-11). A model that misjudges a held-out hospital's disease rate loses on it while its ROC AUC holds: a logistic regression (C 0.3) that predicts 0.26 for Cleveland's 0.46 and 0.45 for Long Beach's 0.74 is third of four models by ROC AUC (0.824) but last by log loss (0.711). The untuned task probe scores log loss 0.509 (linear), 0.521 (random forest) and 0.658 (LightGBM) against 0.746 for the training disease rate (2026-11-25). |
 
 <details>
 <summary>Feature types: 7 categorical, 2 ordinal, 0 string, 0 datetime</summary>
@@ -235,8 +218,6 @@ We start with the processed files of three hospitals from UCI's Heart Disease co
 
 ## Splits
 
-Leave one group out: one repeat of 3 folds, fold i testing the i-th group of `hospital` (Cleveland, Hungary, VA Long Beach) and training on all the others.
-
 Leave one hospital out: three splits, each training on two hospitals and testing on the third (Cleveland, Hungary, then Long Beach), one repeat, since repeating a split of three groups into three folds gives the same splits. The source built its model in Cleveland and applied it at the other hospitals; leaving each hospital out in turn generalises that design so that every hospital is tested once. With three hospitals the scores are three numbers and differ by hospital (Long Beach is the hardest). Unlike `covertype`'s three areas, the transfer is the source's design and no class drops out (curation notes).
 
 1 repeat(s) x 3 fold(s) with seed 4267; train 493 to 597 rows, test 199 to 303 rows.
@@ -269,13 +250,13 @@ One group is a hospital: Cleveland Clinic, the Hungarian Institute of Cardiology
 | nearest neighbour in the same group | 74.2% of the rows (chance: 34.3%) |
 | label variance explained by the group | 0.09 (shuffled groups: 0.00) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Decisions
 
 ### 1. Split by hospital: train on two, test on the third
 
-The source built its model at one hospital and applied it at the others (Detrano et al. 1989, p. 305), and the hospitals differ in disease rate and in which tests they recorded, as a new hospital would. Trained on the other two hospitals, logistic regression reaches ROC AUC 0.880 on Cleveland, 0.898 on Hungary and 0.732 on Long Beach. The paper has the Cleveland model overpredicting disease by 10 points in Budapest and 5 in Long Beach (abstract, p. 307); our models overpredict in Hungary too but underpredict in Long Beach, mostly for its patients without an exercise test. ROC AUC within one hospital does not score this.
+The source built its model at one hospital and applied it at the others (Detrano et al. 1989, p. 305), and the hospitals differ in disease rate and in which tests they recorded, as a new hospital would. Trained on the other two hospitals, logistic regression reaches ROC AUC 0.880 on Cleveland, 0.898 on Hungary and 0.732 on Long Beach. The paper has the Cleveland model overpredicting disease by 10 points in Budapest and 5 in Long Beach (abstract, p. 307); our models overpredict in Hungary too but underpredict in Long Beach, mostly for its patients without an exercise test. ROC AUC within one hospital does not score this; log loss, the declared metric, does.
 
 | hospital | patients | disease_pct | ca_missing_pct | thal_missing_pct | slope_missing_pct | chol_missing_pct | no_exercise_test |
 |---|---|---|---|---|---|---|---|
@@ -291,7 +272,9 @@ The source built its model at one hospital and applied it at the others (Detrano
 
 Accepted on purpose:
 
-- `groups_test_groups_few`: Three hospitals by design: the source built its model at one hospital and applied it at the others. The fourth hospital (Switzerland) is left out because its published file kept only 8 of its about 27 patients without disease. Testing on one unseen hospital at a time is the task. Each fold still scores 199 to 303 patients one by one (smallest class: 51). The signal carries over to unseen hospitals: the linear model beats the class shares at each of the three (task probes, ROC AUC 0.880, 0.898, 0.732). Most of the variation between folds comes from Long Beach, the hardest hospital.
+- `task_group_count_low`: Three hospitals by design: the source built its model at one hospital and applied it at the others. The fourth hospital (Switzerland) is left out because its published file kept only 8 of its about 27 patients without disease.
+- `splits_dimensions_off_protocol`: Leave one hospital out gives exactly three splits. More repeats would split the same three hospitals the same way, so they would add copies, not information.
+- `groups_test_groups_few`: Testing on one unseen hospital at a time is the task. Each fold still scores 199 to 303 patients one by one (smallest class: 51). The signal carries over to unseen hospitals: the linear model beats the class shares at each of the three (task probes, ROC AUC 0.880, 0.898, 0.732). Most of the variation between folds comes from Long Beach, the hardest hospital.
 - `groups_largest_share_high`: Cleveland is a real hospital, one of three, not a catch-all value. When it is the test hospital, the model trains on the other two (493 patients), where two of Cleveland's tests were rarely recorded (`ca` for 5, `thal` for 62).
 
 ## Data checks
@@ -380,12 +363,4 @@ Accepted on purpose:
 
 ## Build
 
-| field | value |
-|---|---|
-| uuid | 01a21800-f8e2-707f-80e4-68d67fbe16ca |
-| checksum | v2:6f0ae14d9667a4b3634f2e496db35efc7910f2d6b98f7e3b15baed4514adca38 |
-| built_at | 2026-11-26T13:17:27+00:00 |
-| path | heart_disease/01a21800-f8e2-707f-80e4-68d67fbe16ca |
-| data_foundry_version | 0.0.5 |
-| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
-| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: fiat_500
 container_format: 2
-checksum: v2:8c9e2304d50b9028e790b6fccd8438e414af8394f2803a4e8103626896004556
+checksum: v2:9a47991c3c567f940d10ac760797335548808af2b2e15a3b02eeb640b0e11a18
 build:
-  uuid: 01a21800-fa01-7b37-bf7d-4d9eb166ecdc
-  checksum: v2:8c9e2304d50b9028e790b6fccd8438e414af8394f2803a4e8103626896004556
-  built_at: '2026-11-26T13:17:26+00:00'
-  path: fiat_500/01a21800-fa01-7b37-bf7d-4d9eb166ecdc
+  uuid: 01a13a7d-c2b9-7b23-b0e5-6674aebfe128
+  checksum: v2:fc49148e6879f51937dde279b4bb33c5cd645dbee32afd580bccb977e6b1a6e6
+  built_at: '2026-10-14T12:58:02+00:00'
+  path: fiat_500/01a13a7d-c2b9-7b23-b0e5-6674aebfe128
   data_foundry_version: 0.0.5
-  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  git_sha: f93df193827f5244586b178fd7199efb86d66359-dirty
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -17,12 +17,12 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: false
+build_stale: true
 data:
-  n_rows: 1434
+  n_rows: 1420
   n_features: 7
   dtypes:
-    category: 1
+    category: 2
     float64: 2
     int64: 5
   n_test_dataset_rows: null
@@ -32,13 +32,20 @@ task:
   metric: rmse
   metric_origin: fallback
   scoring_columns: null
-  split_regime: iid
+  split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
-  group_on: null
-  group_labels: null
+  group_on: car_id
+  group_labels: per_sample
   group_time_on: null
-  grouping: null
+  grouping:
+    prediction_unit: row
+    aggregation: null
+    context: none
+    n_groups: 1406
+    test_groups_per_fold:
+      min: 468
+      max: 469
 splits:
   n_repeats: 10
   n_folds: 3
@@ -47,18 +54,18 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
-  reason: null
   n_train:
-    min: 956
-    max: 956
+    min: 942
+    max: 952
   n_test:
-    min: 478
+    min: 468
     max: 478
 bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos: []
+  infos:
+  - groups_not_clustered
   accepted: {}
 decisions: []
 ---
@@ -67,9 +74,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `price`, scored with `rmse` on IID splits. 1,434 rows and 7 features. Source: Kaggle (2020).
+Regression of `price`, scored with `rmse` on grouped splits by `car_id`. 1,420 rows and 7 features. Source: Kaggle (2020).
 
-Built as `01a21800-fa01-7b37-bf7d-4d9eb166ecdc` on 2026-11-26. See [Build](#build).
+Built as `01a13a7d-c2b9-7b23-b0e5-6674aebfe128` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:9a47991c3c567f940d10ac760797335548808af2b2e15a3b02eeb640b0e11a18`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -77,15 +84,15 @@ Built as `01a21800-fa01-7b37-bf7d-4d9eb166ecdc` on 2026-11-26. See [Build](#buil
 
 **Use case.** For example, a seller in Italy sets the asking price of a used Fiat 500, or a buyer checks whether a listing is overpriced, by comparison with current listings.
 
-**One row.** One used Fiat 500 listed on the Italian site automobile.it (1,434 cars from 1,538 listings, uploaded to Kaggle in 2020; the date of the crawl is not stated).
+**One row.** One used Fiat 500 listed on the Italian site automobile.it (1,420 cars from 1,538 listings, uploaded to Kaggle in 2020; the date of the crawl is not stated).
 
 **Predicted.** The listed price, from 2,500 to 11,100; the currency is not stated.
 
 **Known at prediction time.** The trim (lounge, pop or sport), engine power, age in days, mileage, number of previous owners, and the location as latitude and longitude.
 
-**What the test data stands for.** Random cars of the same crawl, standing for new listings in the same market.
+**What the test data stands for.** Random cars of the same crawl, standing for new listings in the same market, grouped by car: a car whose trim two dealers entered differently stays on one side.
 
-**Our changes to the source.** We keep one row per car: 104 listings repeat the trim, engine power, age, mileage and owners of another, the same car scraped twice or listed at several places.
+**Our changes to the source.** We keep one row per car: 118 listings repeat the trim, engine power, age and mileage of another, the same car scraped twice or listed at several places.
 
 > **Use case fit: direct (the rows, features and split mirror the use case).** The features are what a listing shows, and a held-out listing is a car to price. The target is the asking price, not the sale price, and the listings come from one crawl.
 
@@ -125,13 +132,15 @@ Only curators run `build`, when the dataset ships.
 | year | 2020 |
 | domain | business & marketing |
 | license | CC0: Public Domain |
-| data_tags | IID, RetrospectiveFillIn |
+| data_tags | Non-IID, Grouped, RetrospectiveFillIn |
 | reference | paolocons2020fiat |
-| rows x columns | 1,434 x 8 |
+| rows x columns | 1,420 x 9 |
 | task.target | price |
 | task.problem_type | regression |
 | task.metric | rmse |
-| task.split_regime | iid |
+| task.split_regime | grouped_non_iid |
+| task.group_on | car_id |
+| task.group_labels | per_sample |
 
 **Metric**
 
@@ -143,9 +152,9 @@ Only curators run `build`, when the dataset ships.
 | reason | Kaggle dataset without a competition or paper; the data card says only 'to train myself and test regression algorithms', no metric named |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
 
-- categorical (1): `model`
+- categorical (2): `model`, `car_id`
 - string (0): none
 - datetime (0): none
 
@@ -168,15 +177,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 1,434 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
+The first 5 of 1,420 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
-| price | model | engine_power | age_in_days | km | previous_owners | lat | lon |
-|---|---|---|---|---|---|---|---|
-| 7900 | pop | 51 | 1155 | 47000 | 1 | 41.9032 | 12.4957 |
-| 8900 | lounge | 51 | 640 | 39414 | 1 | 41.1079 | 14.2088 |
-| 10900 | lounge | 51 | 701 | 22000 | 1 | 44.7154 | 11.3083 |
-| 7900 | pop | 62 | 3347 | 80000 | 3 | 44.2839 | 11.8881 |
-| 9500 | lounge | 51 | 1644 | 47500 | 1 | 44.9072 | 8.61156 |
+| price | model | engine_power | age_in_days | km | previous_owners | lat | lon | car_id |
+|---|---|---|---|---|---|---|---|---|
+| 9700 | lounge | 51 | 762 | 20457 | 1 | 41.9032 | 12.4957 | car_1310 |
+| 9800 | lounge | 51 | 731 | 17400 | 1 | 45.6425 | 12.1636 | car_0945 |
+| 10470 | lounge | 51 | 670 | 33000 | 1 | 41.9032 | 12.4957 | car_0725 |
+| 6400 | lounge | 51 | 3804 | 130000 | 2 | 44.5419 | 10.7814 | car_1277 |
+| 9980 | lounge | 51 | 790 | 18300 | 1 | 41.5722 | 13.3337 | car_1153 |
 
 ## Curation notes
 
@@ -186,59 +195,87 @@ We start with automobile_dot_it_used_fiat_500_in_Italy_dataset_filtered.csv from
 - Currency: not stated.
 - Crawl date: not stated. The file was uploaded on 2020-04-07, and age_in_days counts "from the time the dataset has been created" (data card).
 - Filter: not stated. The file name ends in "_filtered", but neither the data card nor the author's notebooks say what was removed.
-- We keep one row per car, its first listing (1,434 rows): 104 rows repeat the model, engine power, age, mileage and owners of another. 18 are exact copies, most 12-14 rows after the first (the crawler saw the listing on two result pages), and one car with an odd mileage such as 9,248 km appears at up to 9 places a median 396 km apart, mostly at one price (Lennart, 2026-10-14).
+- We keep one row per car, its first listing (1,420 rows): 118 rows repeat the model, engine power, age and mileage of another (Lennart, 2026-10-14; the owner count left the key on 2026-11-26, Andrej). 18 are exact copies, most 12-14 rows after the first (the crawler saw the listing on two result pages), and one car with an odd mileage such as 9,248 km appears at up to 9 places a median 396 km apart, mostly at one price. The owner count is no part of the key: the uploader's second file of the same crawl (Kaggle, "Small dataset about used Fiat 500 sold in Italy") holds 41 of these listings and gives another owner count for 25 of them, so 8 cars stayed twice under a key with it.
+- The copies are not chance: with mileages shuffled among cars of the same trim, power and half-year of age (one row per key, 1,000 draws), distinct cars share trim, power, month and an odd mileage 1.3 times per draw against 82 repeats in the file, and a round mileage 10.2 times against 36, so about 10 of the round-mileage merges are likely different cars (under 1% of the rows). Price before and after: mean 8,576 over all listings, 8,498 kept; median 9,000 and 8,900.
+- Mileage 56,779 km: kept as recorded (2026-11-26, Andrej: "a valid pattern in real data and not a leak"). Twelve listings at seven places give exactly this mileage for cars of 1.2 to 12.8 years, all kept; it likely stands for a reading the advert did not give.
 - Partial order, left unordered (2026-11-01, CLEAN-14): `model`: pop is the base trim; lounge and sport are both
   above it but not ranked against each other.
+- Split by car (2026-11-26, Andrej): a random split that keeps every car on one side. `car_id` numbers the rows of equal engine power, age and mileage (1,406 cars); it is no model input. After the one-row-per-car key 14 cars still have two rows, because two dealers entered another trim: a car of 701 days and 39,162 km is listed as pop and as sport at the same two places at the same prices. The other 13 pairs are 3 with an odd mileage (one at 56,779 km) and 10 with a round one, which may be different cars and cost nothing on one side. Under random 3-fold splits 1.3% of the test rows had such a twin in training.
 - Time basis: RetrospectiveFillIn: one crawl of listings (published on Kaggle in 2020; the crawl date is not stated), whose prices the use case fills in for the same market. It cannot test a later market.
 
 ## Splits
 
-Repeated 3-fold cross-validation over the rows: 10 repeat(s) x 3 folds, 30 splits, the repeats set by the 1,434 rows (SPLIT-33).
+Random splits grouped by car: every listing of a car stays on one side, so a model prices cars it has not seen. The cars are one crawl, so the split fills in prices of the same market and does not test a later one.
 
-10 repeat(s) x 3 fold(s) with seed 4267; train 956 rows, test 478 rows.
+10 repeat(s) x 3 fold(s) with seed 4267; train 942 to 952 rows, test 468 to 478 rows.
 
 <details>
 <summary>Show all 30 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 956 | 478 |
-| 0 | 1 | 956 | 478 |
-| 0 | 2 | 956 | 478 |
-| 1 | 0 | 956 | 478 |
-| 1 | 1 | 956 | 478 |
-| 1 | 2 | 956 | 478 |
-| 2 | 0 | 956 | 478 |
-| 2 | 1 | 956 | 478 |
-| 2 | 2 | 956 | 478 |
-| 3 | 0 | 956 | 478 |
-| 3 | 1 | 956 | 478 |
-| 3 | 2 | 956 | 478 |
-| 4 | 0 | 956 | 478 |
-| 4 | 1 | 956 | 478 |
-| 4 | 2 | 956 | 478 |
-| 5 | 0 | 956 | 478 |
-| 5 | 1 | 956 | 478 |
-| 5 | 2 | 956 | 478 |
-| 6 | 0 | 956 | 478 |
-| 6 | 1 | 956 | 478 |
-| 6 | 2 | 956 | 478 |
-| 7 | 0 | 956 | 478 |
-| 7 | 1 | 956 | 478 |
-| 7 | 2 | 956 | 478 |
-| 8 | 0 | 956 | 478 |
-| 8 | 1 | 956 | 478 |
-| 8 | 2 | 956 | 478 |
-| 9 | 0 | 956 | 478 |
-| 9 | 1 | 956 | 478 |
-| 9 | 2 | 956 | 478 |
+| 0 | 0 | 944 | 476 |
+| 0 | 1 | 948 | 472 |
+| 0 | 2 | 948 | 472 |
+| 1 | 0 | 947 | 473 |
+| 1 | 1 | 946 | 474 |
+| 1 | 2 | 947 | 473 |
+| 2 | 0 | 946 | 474 |
+| 2 | 1 | 942 | 478 |
+| 2 | 2 | 952 | 468 |
+| 3 | 0 | 947 | 473 |
+| 3 | 1 | 945 | 475 |
+| 3 | 2 | 948 | 472 |
+| 4 | 0 | 947 | 473 |
+| 4 | 1 | 945 | 475 |
+| 4 | 2 | 948 | 472 |
+| 5 | 0 | 949 | 471 |
+| 5 | 1 | 943 | 477 |
+| 5 | 2 | 948 | 472 |
+| 6 | 0 | 946 | 474 |
+| 6 | 1 | 946 | 474 |
+| 6 | 2 | 948 | 472 |
+| 7 | 0 | 943 | 477 |
+| 7 | 1 | 949 | 471 |
+| 7 | 2 | 948 | 472 |
+| 8 | 0 | 946 | 474 |
+| 8 | 1 | 947 | 473 |
+| 8 | 2 | 947 | 473 |
+| 9 | 0 | 945 | 475 |
+| 9 | 1 | 948 | 472 |
+| 9 | 2 | 947 | 473 |
 
 </details>
 
+## Group structure
+
+One group is a car: the listings that agree in engine power, age in days and mileage (1,406 cars from the 1,420 rows; 14 with two rows, whose trim two dealers entered differently). The use case prices a car newly listed, so a test car is new to the model with all its listings and cannot be priced off its own listing at another dealer. Each row is one prediction, made from its listing.
+
+| field | value |
+|---|---|
+| group column | `car_id` |
+| labels | per_sample |
+| order inside a group | none |
+| prediction unit | row |
+| known about a group when predicting | none |
+
+| statistic | value |
+|---|---|
+| groups | 1,406 |
+| rows per group (min / median / max) | 1 / 1.0 / 2 |
+| largest group | 0.1% of the rows |
+| test groups per fold | 468 to 469 |
+| groups of two or more rows with a single label | 7.1% |
+| nearest neighbour in the same group | 0.3% of the rows (chance: 0.0%) |
+| label variance explained by the group | 1.00 (shuffled groups: 0.99) |
+
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
+- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (0.3% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (1.00 vs 0.99). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.)
 
 ## Data checks
 
@@ -247,48 +284,55 @@ Repeated 3-fold cross-validation over the rows: 10 repeat(s) x 3 folds, 30 split
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | model | category | 0 | 0 | 3 | lounge, pop, sport |
+| car_id | category | 0 | 0 | 1406 | car_0306, car_0051, car_0996, car_0293, car_0773, car_0908, car_0945, car_0369,… |
 | lat | float64 | 0 | 0 | 440 | 41.9032, 41.1079, 45.0697, 45.468, 45.4381, 43.7824, 45.5126, 45.5366, 38.1221,… |
-| lon | float64 | 0 | 0 | 441 | 12.4957, 14.2088, 7.7049, 9.1818, 12.3181, 11.255, 10.329, 10.232, 13.3611, 11.… |
-| engine_power | int64 | 0 | 0 | 8 | 51, 62, 73, 74, 77, 58, 66, 63 |
-| age_in_days | int64 | 0 | 0 | 140 | 790, 701, 397, 366, 670, 762, 456, 425, 731, 640 |
-| km | int64 | 0 | 0 | 988 | 56779, 17000, 120000, 15000, 80000, 100000, 90000, 83000, 18000, 16000 |
+| lon | float64 | 0 | 0 | 441 | 12.4957, 14.2088, 7.7049, 9.1818, 12.3181, 11.255, 10.329, 10.232, 11.4691, 13.… |
+| engine_power | int64 | 0 | 0 | 8 | 51, 62, 73, 74, 77, 58, 63, 66 |
+| age_in_days | int64 | 0 | 0 | 140 | 790, 701, 397, 670, 366, 762, 456, 425, 731, 640 |
+| km | int64 | 0 | 0 | 988 | 56779, 17000, 120000, 80000, 90000, 100000, 83000, 15000, 60000, 16000 |
 | previous_owners | int64 | 0 | 0 | 4 | 1, 2, 3, 4 |
-| price | int64 | 0 | 0 | 216 | 10500, 10900, 8900, 9900, 9400, 10800, 7900, 9500, 6900, 8500 |
+| price | int64 | 0 | 0 | 216 | 10500, 10900, 8900, 9900, 9400, 10800, 7900, 9500, 6900, 9800 |
 
 ### Target distribution
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | -0.631 | -1.05 | 3.83488e+06 | 0.069 | log | 29018.9 | 6.34374e+14 | exponential |
+| 0 | 0 | 0 | -0.618 | -1.038 | 3.84419e+06 | 0.069 | log | 28731.3 | 2.87853e+15 | exponential |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| engine_power | 1434 | 51.97 | 4.12249 | 51 | 77 |
-| age_in_days | 1434 | 1699.67 | 1299.19 | 366 | 4658 |
-| km | 1434 | 54734.2 | 40596.1 | 1232 | 235000 |
-| previous_owners | 1434 | 1.12971 | 0.425852 | 1 | 4 |
-| lat | 1434 | 43.5535 | 2.13904 | 36.8558 | 46.7956 |
-| lon | 1434 | 11.5622 | 2.34603 | 7.2454 | 18.3655 |
-| price | 1434 | 8513.38 | 1958.29 | 2500 | 11100 |
+| engine_power | 1420 | 51.9796 | 4.14164 | 51 | 77 |
+| age_in_days | 1420 | 1710.08 | 1301.1 | 366 | 4658 |
+| km | 1420 | 55034.4 | 40651.2 | 1232 | 235000 |
+| previous_owners | 1420 | 1.12042 | 0.406438 | 1 | 4 |
+| lat | 1420 | 43.5447 | 2.14135 | 36.8558 | 46.7956 |
+| lon | 1420 | 11.5724 | 2.34841 | 7.2454 | 18.3655 |
+| price | 1420 | 8497.64 | 1960.66 | 2500 | 11100 |
 
 ### Categorical features
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| model | 1 | lounge | 1013 | 70.64 |
-| model | 2 | pop | 339 | 23.64 |
-| model | 3 | sport | 82 | 5.72 |
+| car_id | 1 | car_0306 | 2 | 0.14 |
+| car_id | 2 | car_0051 | 2 | 0.14 |
+| car_id | 3 | car_0996 | 2 | 0.14 |
+| car_id | 4 | car_0293 | 2 | 0.14 |
+| car_id | 5 | car_0773 | 2 | 0.14 |
+| model | 1 | lounge | 1001 | 70.49 |
+| model | 2 | pop | 337 | 23.73 |
+| model | 3 | sport | 82 | 5.77 |
 
 ## Build
 
 | field | value |
 |---|---|
-| uuid | 01a21800-fa01-7b37-bf7d-4d9eb166ecdc |
-| checksum | v2:8c9e2304d50b9028e790b6fccd8438e414af8394f2803a4e8103626896004556 |
-| built_at | 2026-11-26T13:17:26+00:00 |
-| path | fiat_500/01a21800-fa01-7b37-bf7d-4d9eb166ecdc |
+| uuid | 01a13a7d-c2b9-7b23-b0e5-6674aebfe128 |
+| checksum | v2:fc49148e6879f51937dde279b4bb33c5cd645dbee32afd580bccb977e6b1a6e6 |
+| built_at | 2026-10-14T12:58:02+00:00 |
+| path | fiat_500/01a13a7d-c2b9-7b23-b0e5-6674aebfe128 |
 | data_foundry_version | 0.0.5 |
-| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
+| stale | yes: the definition now gives checksum `v2:9a47991c3c567f940d10ac760797335548808af2b2e15a3b02eeb640b0e11a18` |

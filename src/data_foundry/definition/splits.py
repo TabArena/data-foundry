@@ -282,11 +282,14 @@ class TemporalSplits:
         TemporalSplits(window=7, unit="days", n_windows=3)                    # 3 weekly windows
         TemporalSplits(window=91, unit="days", n_windows=3, gap=15, gap_unit="minutes", sample_by="time")
         TemporalSplits(window=None, unit="years", cutoffs=("2019-01-01", "2018-01-01", "2017-01-01"))
+        TemporalSplits(window=None, unit="years", cutoffs=(("2019-01-01", None), ("2016-01-01", "2017-01-01")))
 
     ``window=None`` with ``cutoffs``: windows of unequal length, each running from its start to the next start, the
     newest to the end of the data (sdss_17's calendar years with 2019 and 2020 merged; bank_marketing's starts on a
-    file order). A window of fixed length is the prediction horizon (:attr:`horizon`): ``window`` ``unit`` for a
-    calendar unit, ``window`` steps for ``unit="rows"``.
+    file order). With a calendar ``unit`` each cutoff may instead be a ``(start, end)`` pair, a window that ends where
+    it says (``None``: the end of the data), so the windows may leave periods between them untested
+    (sdss_dr17_star_galaxy_quasar_1m's targeting eras). A window of fixed length is the prediction horizon
+    (:attr:`horizon`): ``window`` ``unit`` for a calendar unit, ``window`` steps for ``unit="rows"``.
 
     ``gap`` counts in ``unit`` unless ``gap_unit`` names another unit: a calendar window can leave a gap of minutes
     or hours (``gap=15, gap_unit="minutes"``, for a label known 16 minutes after its row). ``gap_unit`` needs a
@@ -324,12 +327,26 @@ class TemporalSplits:
             problems.append(f"min_train_fraction={self.min_train_fraction!r} must lie between 0 and 1")
         if self.cutoffs is not None and (self.n_windows is not None or self.step is not None):
             problems.append("cutoffs fix the windows, so n_windows and step would be ignored")
+        problems += self._cutoff_pair_problems()
         if self.cutoffs is None and self.n_windows is None and self.min_train_fraction is None:
             problems.append(
                 "set n_windows, cutoffs or min_train_fraction: otherwise the windows walk back to the start"
             )
         if problems:
             raise ValueError("TemporalSplits: " + "; ".join(problems) + ".")
+
+    def _cutoff_pair_problems(self) -> list[str]:
+        pairs = [isinstance(c, tuple) for c in self.cutoffs or ()]
+        if not any(pairs):
+            return []
+        if not all(pairs) or any(len(c) != 2 for c in self.cutoffs):
+            return ["cutoffs are all starts or all (start, end) pairs"]
+        problems = []
+        if self.window is not None:
+            problems.append("(start, end) cutoffs set their own lengths, so window must be None")
+        if self.unit not in _CALENDAR_UNITS:
+            problems.append(f"(start, end) cutoffs need a calendar unit {_CALENDAR_UNITS}, not unit={self.unit!r}")
+        return problems
 
     def _gap_unit_and_sampling_problems(self) -> list[str]:
         problems = []
@@ -374,7 +391,10 @@ class TemporalSplits:
             size = f" of {window} {unit[:-1] if window == 1 else unit}"
         else:
             size = ", each from its start to the next start, the newest to the end of the data"
-        if self.cutoffs is not None:
+        if self.cutoffs is not None and isinstance(self.cutoffs[0], tuple):
+            size = ""
+            where = " (" + ", ".join(_pair_text(c) for c in sorted(self.cutoffs, key=_cutoff_start, reverse=True)) + ")"
+        elif self.cutoffs is not None:
             starts = ", ".join(time_text(c) for c in sorted(self.cutoffs, reverse=True))
             where = f", starting at {starts}" if window is not None else f" (starts: {starts})"
         else:
@@ -724,7 +744,8 @@ def temporal_window_splits(
             ``"hours"`` or a calendar unit); None counts the gap in ``unit``.
         cutoffs: Explicit test-window starts (for example ``[2023, 2024, 2025]``) instead of walking back from the
             newest data: the curator's choice of windows (SPLIT-15). They are ordered newest first; ``n_windows``
-            and ``step`` are ignored.
+            and ``step`` are ignored. With a calendar ``unit`` and ``window=None`` each may be a ``(start, end)``
+            pair, a window ending at ``end`` (``None``: the end of the data).
         min_train_fraction: Stop before a window whose train side has less than this share of the data: of the
             distinct time values for ``"unique"``, of the rows otherwise.
 
@@ -754,6 +775,17 @@ def time_text(value: Any) -> str:
     if isinstance(value, (float, np.floating)) and float(value).is_integer():
         return str(int(value))  # a year stored as a float
     return str(value)
+
+
+def _cutoff_start(cutoff: Any) -> pd.Timestamp | Any:
+    """The start of a cutoff, a start or a ``(start, end)`` pair, for ordering."""
+    return pd.Timestamp(str(cutoff[0])) if isinstance(cutoff, tuple) else cutoff
+
+
+def _pair_text(cutoff: tuple) -> str:
+    """A ``(start, end)`` cutoff for a generated description."""
+    start, end = cutoff
+    return f"{time_text(start)} to {'the end of the data' if end is None else time_text(end)}"
 
 
 def window_bounds(  # noqa: C901, PLR0912 - one branch per unit and stop rule
@@ -808,12 +840,18 @@ def window_bounds(  # noqa: C901, PLR0912 - one branch per unit and stop rule
     intervals: list[tuple] = []
     if cutoffs is not None:
         newer = None  # the start of the next newer window: the end of a window of `window=None`
-        for cutoff in sorted(cutoffs, reverse=True):
+        for cutoff in sorted(cutoffs, key=_cutoff_start, reverse=True):
             if unit in _CALENDAR_UNITS:
-                start = pd.Timestamp(str(cutoff))
+                pair = isinstance(cutoff, tuple)
+                start = pd.Timestamp(str(cutoff[0] if pair else cutoff))
                 if times.dt.tz is not None and start.tzinfo is None:  # a plain cutoff means the column's time zone
                     start = start.tz_localize(times.dt.tz)
-                end = newer if window is None else start + _calendar_offset(unit, window)
+                if pair:  # a window that ends where it says, None for the end of the data
+                    end = None if cutoff[1] is None else pd.Timestamp(str(cutoff[1]))
+                    if end is not None and times.dt.tz is not None and end.tzinfo is None:
+                        end = end.tz_localize(times.dt.tz)
+                else:
+                    end = newer if window is None else start + _calendar_offset(unit, window)
                 train_end = start - _calendar_offset(gap_unit, gap) if gap else start
             else:
                 if unit == "unique" and cutoff not in values:

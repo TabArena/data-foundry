@@ -160,8 +160,25 @@ class HeartDisease(AbstractCuratedDataset):
     # Task
     target = "heart_disease_diagnosis"
     problem_type = "binary_classification"
-    metric = Metric.fallback(
-        reason="Detrano et al. 1989 score reliability, the mean predicted probability against the disease rate (calibration in the large) and by quintiles (p. 306), and clinical utility, the percent correctly classified over the thresholds 0.2 to 0.8 they call relevant for angiography decisions (p. 307): no single threshold, so a threshold-free metric (MET-7); UCI's heart-disease.names reports accuracy at 0.5, a default. No costs of errors: UCI's costs/ folder holds the prices of the tests, and Statlog's 5:1 heart cost matrix belongs to a later 270-row cut of the Cleveland file, not to this source. ROC AUC per held-out hospital does not score reliability. roc_auc is the binary fallback."
+    metric = Metric.from_context(
+        "log_loss",
+        reason='Detrano et al. 1989 tested a probability model "for reliability and clinical utility" (abstract): '
+        "reliability, the mean predicted probability against the disease rate (calibration in the large) and by "
+        "quintiles (p. 306), and clinical utility, the percent correctly classified over the thresholds 0.2 to 0.8 "
+        "they call relevant for angiography decisions (p. 307): no single threshold, so no threshold metric (MET-7); "
+        "UCI's heart-disease.names reports accuracy at 0.5, a default. No costs of errors: UCI's costs/ folder holds "
+        "the prices of the tests, and Statlog's 5:1 heart cost matrix belongs to a later 270-row cut of the Cleveland "
+        "file, not to this source. The paper has no ROC curve and no c statistic, and its main finding is one of "
+        'calibration: "Both algorithms overpredicted the probability of disease at the Hungarian and American '
+        'centers" (abstract). Log loss is declared from context (Andrej, 2026-11-25, decided together with '
+        "gusto_i_mi_mortality; it replaces the roc_auc fallback of 2026-10-21): the source scores reliability, which "
+        "ROC AUC per held-out hospital does not see, and the split holds out whole hospitals to pose that question; "
+        "log loss, a strictly proper rule, scores the reliability and the ranking together (MET-8, MET-11). A model "
+        "that misjudges a held-out hospital's disease rate loses on it while its ROC AUC holds: a logistic "
+        "regression (C 0.3) that predicts 0.26 for Cleveland's 0.46 and 0.45 for Long Beach's 0.74 is third of four "
+        "models by ROC AUC (0.824) but last by log loss (0.711). The untuned task probe scores log loss 0.509 "
+        "(linear), 0.521 (random forest) and 0.658 (LightGBM) against 0.746 for the training disease rate "
+        "(2026-11-25).",
     )
     grouping = Grouping(
         on="hospital",
@@ -244,7 +261,7 @@ class HeartDisease(AbstractCuratedDataset):
                     "Cleveland, 0.898 on Hungary and 0.732 on Long Beach. The paper has the Cleveland model "
                     "overpredicting disease by 10 points in Budapest and 5 in Long Beach (abstract, p. 307); our models overpredict in "
                     "Hungary too but underpredict in Long Beach, mostly for its patients without an exercise test. "
-                    "ROC AUC within one hospital does not score this."
+                    "ROC AUC within one hospital does not score this; log loss, the declared metric, does."
                 ),
                 evidence=by.round(0),
             )

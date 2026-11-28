@@ -432,6 +432,7 @@ repeat per time window, always fold `0` (`splits_temporal_layout`); split 0 is t
 | A gap in a smaller unit than the window (g_research_crypto_forecasting_1m: 3 x 91 days, 15-minute gap, whole minutes sampled) | `TemporalSplits(window=91, unit="days", n_windows=3, gap=15, gap_unit="minutes", sample_by="time")` |
 | Overlapping windows (ghana, now retired: 3 days moving by 2) | `TemporalSplits(window=3, unit="days", step=2, min_train_fraction=0.5)` |
 | Windows of unequal length, each to the next start (sdss_17: calendar years with 2019 and 2020 merged; bank_marketing: campaigns and quarters on a file order; 2_month_survival_rate_prediction: half-years after a 60-day gap) | `TemporalSplits(window=None, unit="years", cutoffs=("2019-01-01", "2018-01-01", ...))`; the horizon is declared on `Temporal` |
+| Windows with their own ends, periods between them untested (sdss_dr17_star_galaxy_quasar_1m: one window per targeting era) | `TemporalSplits(window=None, unit="years", cutoffs=(("2019-01-01", None), ("2016-01-01", "2017-01-01"), ...))`: `(start, end)` pairs on a calendar unit, `None` for the end of the data; the horizon is declared on `Temporal` |
 | Train only on labels known before the window (brazilian_ecommerce: delivered orders; sf_permit_time: issued permits) | `Temporal(..., splits=TemporalSplits(...), label_known_on="order_delivered_customer_date")`, or a function of the frame (`label_known_on=_issued`) |
 | No training row of an entity the window tests (lending_club's borrowers, alfa_battle_2_0_task_2's clients) | `Temporal(..., splits=TemporalSplits(...), exclude_test_entities_on="borrower_key")` |
 
@@ -444,6 +445,8 @@ comparison of positions in a review is not needed. Each replaced a custom split 
 * `TemporalSplits(window=None, cutoffs=(...))`: each window runs from its start to the next newer start, the newest to
   the end of the data. Unequal windows fix no horizon, so `Temporal(horizon=..., horizon_unit=...)` states it; a `gap`
   works as for other windows.
+  On a calendar unit each cutoff may be a `(start, end)` pair instead, a window that ends where it says (`None`: the
+  end of the data), so the periods between windows train later windows and are never tested.
 * `Temporal(label_known_on=...)`: each train side keeps only the rows whose label became known before its window
   starts (a calendar window's start, else the time of its first test row); a missing time is never known. A column is a
   split input only: the frame drops it after the split. A function of the frame (sf_permit_time's issue date, rebuilt

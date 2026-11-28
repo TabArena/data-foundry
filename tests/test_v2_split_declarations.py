@@ -56,6 +56,24 @@ def test_windows_without_a_length_run_to_the_next_start(unit: str, cutoffs: tupl
     assert max(splits[0][0][1]) == len(DAILY) - 1  # the newest runs to the end of the data
 
 
+def test_windows_with_their_own_ends_leave_periods_untested() -> None:
+    """``(start, end)`` cutoffs: each window ends where it says, the newest with ``None`` at the end of the data."""
+    cutoffs = (("2024-01-26", None), ("2024-01-16", "2024-01-21"), ("2024-01-06", "2024-01-11"))
+    windows = TemporalSplits(window=None, unit="days", cutoffs=cutoffs)
+    splits = windows.splits(DAILY, "t")
+    sizes = [(len(f[0][0]), len(f[0][1])) for f in splits.values()]
+    assert sizes == [(50, 10), (30, 10), (10, 10)]  # newest first; the days between the windows are never tested
+    assert max(splits[0][0][1]) == len(DAILY) - 1
+    assert "2024-01-16 to 2024-01-21" in windows.describe(3)
+    assert "the end of the data" in windows.describe(3)
+    with pytest.raises(ValueError, match="window must be None"):
+        TemporalSplits(window=5, unit="days", cutoffs=cutoffs)
+    with pytest.raises(ValueError, match="calendar unit"):
+        TemporalSplits(window=None, unit="rows", cutoffs=((50, None), (20, 30)))
+    with pytest.raises(ValueError, match="all starts or all"):
+        TemporalSplits(window=None, unit="days", cutoffs=(("2024-01-26", None), "2024-01-16"))
+
+
 def test_windows_without_a_length_keep_their_gap() -> None:
     windows = TemporalSplits(window=None, unit="days", cutoffs=("2024-01-21", "2024-01-11"), gap=3)
     splits = windows.splits(DAILY, "t")

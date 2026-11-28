@@ -13,12 +13,13 @@ tags:
 - 'Samples: One Moment'
 - 'Entities: Recur'
 - Database Snapshot
+- Non-IID (Grouped)
 original_source: Kaggle
 year: '2020'
 collection_period: Unknown
 domain: business & marketing
 required_split:
-- Random (IID)
+- Grouped (NON-IID)
 problem_type: Regression
 source_links:
 - https://www.openml.org/search?type=data&id=43828
@@ -58,24 +59,37 @@ CC (2026-11-05, Andrej): domain `business & marketing` (Review issue 5, B), in t
 
 CC (2026-11-17, Andrej): the declared split (random, 10x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-26, Andrej): review issue 6, B: the split's time basis is a fill-in of one crawl, declared as `RetrospectiveFillIn` (the prototype the issue called `Snapshot`).
+
+CC (2026-11-26, Andrej): review issue 1, C ("I go with your recommendation"): the one-row-per-car key drops the owner count (trim, engine power, age and mileage), 1,420 rows (14 fewer than with the owner count); dealers disagree on the owner count, so 8 cars stayed twice under the old key.
+
+CC (2026-11-26, Andrej): review issue 2, A ("I keep that since it is a valid pattern in real data and not a leak"): the mileage 56,779 km stays as recorded in its 12 listings; the definition notes it.
+
+CC (2026-11-26, Andrej): review issue 3 ("a random split that still makes sure that no car ends up on the same side of train and test", read as: no car on both sides): random splits grouped by car, `car_id` on equal engine power, age and mileage, which also joins the 14 cars whose trim two dealers entered differently; the time basis stays `RetrospectiveFillIn` (issue 6), the split leaf is the fill-in by unit.
+
+CC (2026-11-26, Andrej): review issue 7, A (ok, as implemented): fiat_500 is kept next to craigslist_used_vehicles_f150, which tests the later market on another model; issue 4 closes with it. Verdict ship; nothing open in the review. The build is stale until rebuilt.
+
+**Assessment (AI, 2026-11-26):** on the Kaggle file in its order, the key without the owner count keeps 1,420 of 1,538 listings (mean price 8,576 before, 8,498 after; median 9,000 and 8,900). On those rows 1,406 cars: 1,392 of one row and 14 of two, all differing only in trim (one certain copy, 39,162 km listed as pop and as sport at the same two places and prices; 3 more with an odd mileage, 10 with a round one). Under random 3-fold splits (10 repeats) 1.3% of the test rows had such a twin in training (0.39% with an odd mileage); grouped by `car_id`, none.
+
 ## Review
 
 **Outcome:** added. Used Fiat 500s listed on the Italian site automobile.it, one crawl uploaded to Kaggle in 2020:
 trim, engine power, age in days, mileage, previous owners and the seller's location; the target is the asking price,
-scored by RMSE, with a random split. The definition keeps one row per car (Lennart, 2026-10-14): 1,434 of 1,538
-listings. The AI recommends shipping it after two small fixes to that clean-up (issues 1 and 2). Reviewed without a
-panel, from the gathered evidence (the record, the definition, model runs on the shipped BeyondArena data and
-the TabArena v0.1 copy, both the 1,538 listings) and two checks of the rows. Validity: the copies a model
-exploited (the same car listed by several dealers) are mostly gone in v0.2, but 8 cars still appear twice because
-two dealers entered different owner counts, while the key merges some different cars with a round mileage (issue 1);
-a placeholder mileage, 56,779 km at seven sellers, stands for an unknown reading (issue 2). Value: the benchmark methods
-separate (RMSE on the shipped data: LimiX-2 686, TabPFN-3.5 695, CatBoost 730, linear regression 764 to 791), and a
-leak-free depreciation model with dealer effects ranks 9th of 41. Quality: no other open point. Weighed: real listings
-with a use case anyone can name +; one crawl of unstated date and filter, a small table, and better data for the same
-task under screening (autoscout24_car_listings_2025, priority 1) -.
+scored by RMSE, with random splits grouped by car. The definition keeps one row per car on trim, engine power, age and
+mileage (Lennart, 2026-10-14; the owner count left the key on 2026-11-26): 1,420 of 1,538 listings, and groups the 14
+cars whose trim two dealers entered differently, so no car is on both sides (2026-11-26). The placeholder mileage
+56,779 km stays as recorded (2026-11-26). Reviewed without a panel, from the gathered evidence (the record, the
+definition, model runs on the shipped BeyondArena data and the TabArena v0.1 copy, both the 1,538 listings) and checks
+of the rows. Value: the benchmark methods separate (RMSE on the shipped data: LimiX-2 686, TabPFN-3.5 695, CatBoost
+730, linear regression 764 to 791), and a leak-free depreciation model with dealer effects ranks 9th of 41. Weighed:
+real listings with a use case anyone can name +; one crawl of unstated date and filter, a small table, and better data
+for the same task under screening -.
 
-**Main points:** Parked (2026-11-11) on Andrej's note until it is decided whether better suited datasets replace this task: the one-row-per-car key (issue 1), the 56,779 km placeholder (issue 2), the split (issues 3 and 6) and the Craigslist replacement (issue 4) wait. The domain is settled (issue 5, 2026-11-05). The definition's split
-is random with the time basis `Retrospective` (CC 2026-11-17).
+**Main points:** Verdict ship (2026-11-26); nothing open. Kept next to `craigslist_used_vehicles_f150` (issue 7, A; issue 4 closes with it). Issues 1 to 3 are decided (2026-11-26): the one-row-per-car key without the owner count (1, C), the
+56,779 km mileage kept as recorded (2, A), and a random split grouped by car on engine power, age and mileage (3; the
+time basis stays `RetrospectiveFillIn`, issue 6, B). The domain is settled (issue 5, 2026-11-05). Open: the
+replacement by a dated used-car listing table (issue 4) and the better-data check of 2026-11-25 (issue 7): keep
+fiat_500 until a Craigslist one-model record (Ford F-150, windows by scrape) replaces it.
 
 **Record judgment:** valid, small, superseded soon. The crawl is real (the copies of one car at several dealers show a
 live market) and the use case is direct. The definition's domain, technology & internet, follows the site; the other
@@ -249,7 +263,13 @@ dated listing table (autoscout24_car_listings_2025), screened in its own record.
      features predict, and an order. **SPLIT-24** (Must; draft PR #62): a key built exactly from the columns that
      define the entity.
 
-   **Deferred (2026-11-11):** parked on Andrej's note ("Park it until we decide on checking in with better suited datasets for this task.").
+   **Andrej (2026-11-11, discuss):** Park it until we decide on checking in with better suited datasets for this task.
+
+   **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 7 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
+
+   **Andrej (2026-11-26, change):** I go with your recommendation
+
+   **Resolved (2026-11-26, Andrej):** C, the key without the owner count. `_clean` drops duplicates on trim, engine power, age and mileage (`keep="first"`): 1,420 of 1,538 listings, the 14 listings the 2026-11-05 answer named go beyond the old key's 1,434, and no car with an odd mileage is left twice under the key. The curation note gives the 118 repeats, the owner counts that differ between the uploader's two files (25 of 41), the chance rates (82 odd-mileage repeats against 1.3 per draw, 36 round ones against 10.2) and the price before and after (mean 8,576 and 8,498, median 9,000 and 8,900); the task summary's `row` and `changes` say 1,420 cars and 118 repeats.
 
 2. **Treat the mileage 56,779 km as missing?**
 
@@ -328,7 +348,13 @@ dated listing table (autoscout24_car_listings_2025), screened in its own record.
      task row or a copy. **CLEAN-10** (Should): convert proxy missing values to real missing values when the encoding
      can be inferred from the description and the context.
 
-   **Deferred (2026-11-11):** parked on Andrej's note ("Park it until we decide on checking in with better suited datasets for this task.").
+   **Andrej (2026-11-11, discuss):** Park it until we decide on checking in with better suited datasets for this task.
+
+   **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 7 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
+
+   **Andrej (2026-11-26, change):** I keep that since it is a valid pattern in real data and not a leak
+
+   **Resolved (2026-11-26, Andrej):** A, kept as recorded (the implemented option): all 12 listings with 56,779 km stay with that mileage under issue 1's key. `dataset.py` changes only by a curation note that keeps the value and says what it likely stands for.
 
 3. **Which split instead of IID? Mark the random split as forced from temporal?**
 
@@ -446,7 +472,13 @@ dated listing table (autoscout24_car_listings_2025), screened in its own record.
      exam round) is not forced; SPLIT-32 gives it `Snapshot` or `DelayedTarget`. **SPLIT-32** (Should): a `Snapshot`
      fills in a time the data covers, such as one scrape.
 
-   **Deferred (2026-11-11):** parked on Andrej's note ("Park it until we decide on checking in with better suited datasets for this task.").
+   **Andrej (2026-11-11, discuss):** Park it until we decide on checking in with better suited datasets for this task.
+
+   **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 7 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
+
+   **Andrej (2026-11-26, change):** I would say that what we need here would be a random split that still makes sure that no car ends up on the same side of train and test.
+
+   **Resolved (2026-11-26, Andrej):** a random split grouped by car, so no car is on both sides; the time basis stays `RetrospectiveFillIn` (issue 6). After issue 1's key, 14 cars still have two rows, all differing only in the trim a dealer entered: a car of 701 days and 39,162 km is listed as pop and as sport at the same two places and prices, and 13 more pairs share engine power, age and mileage (3 odd mileages, one of them 56,779 km, and 10 round ones). So the plain random split did not satisfy the note: 1.3% of its test rows had such a twin in training (0.39% with an odd mileage). `_clean` adds `car_id`, the group number of engine power, age and mileage (1,406 cars: 1,392 of one row, 14 of two), declared as `grouping` (per-row labels and predictions, no model input) with a `splits_comment`; `split_leaf` moves from the random fill-in to the fill-in by unit; the record's `required_split` is `Grouped (NON-IID)` with the tag `Non-IID (Grouped)`. `dataset check`: 0 errors, 0 warnings, 1 info (the grouping is not clustered: the car pairs are too few to show, which is expected when 14 of 1,406 cars have two rows); 1,420 rows, 1,406 groups, 3 folds x 10 repeats, 468 to 478 test rows (468 or 469 cars) per fold.
 
 4. **Better data for the same task: keep fiat_500 until a used-car listing table replaces it?**
 
@@ -625,6 +657,10 @@ dated listing table (autoscout24_car_listings_2025), screened in its own record.
 
    **Deferred (2026-11-11):** parked on Andrej's note ("Park it until we decide on checking in with better suited datasets for this task.").
 
+   **Note (AI, 2026-11-25):** the question moved to issue 7 of this review, which restates it with the candidates checked on their files on 2026-11-25; this issue stays parked and that one carries the decision.
+
+   **Resolved (2026-11-26, Andrej):** closed by issue 7, A: fiat_500 is kept and ships next to the Craigslist F-150 record.
+
 5. **Domain: `technology & internet`, or `business & marketing` as the other listing prices?**
 
    * **Problem:**
@@ -693,7 +729,82 @@ dated listing table (autoscout24_car_listings_2025), screened in its own record.
    [^6t2]: **SPLIT-8** (Must; reworded 2026-11-05): a release that is one moment (one extract, one stock month, one
      exam round) is not forced; SPLIT-32 gives it `Snapshot` or `DelayedTarget`.
 
-   **Deferred (2026-11-11):** parked on Andrej's note ("Park it until we decide on checking in with better suited datasets for this task.").
+   **Andrej (2026-11-11, discuss):** Park it until we decide on checking in with better suited datasets for this task.
+
+   **Answer (AI, 2026-11-25):** the park ends: the better-data check of 2026-11-25 asks in issue 7 of this review whether another dataset replaces this one, so this issue is open again and waits for a decision. It is written as it stood when it was parked; nothing in it was re-measured today.
+
+   **Andrej (2026-11-26, change):** Option B: Named Snapshot.
+
+   **Resolved (2026-11-26, Andrej):** B, the split is named as a fill-in of one crawl. The rules renamed the `Snapshot` prototype `RetrospectiveFillIn` after this issue was written, and the definition already declares it (`time_basis = TimeBasis("RetrospectiveFillIn", ...)`, one crawl of listings published on Kaggle in 2020, crawl date not stated, a later market not tested), so nothing changed in the definition.
+
+7. **Keep fiat_500 until a Craigslist Ford F-150 record (split by scrape) replaces it, or keep it as it is?**
+
+   * **Problem:**
+     - With the placeholder prices and the relisted trucks taken out, untuned LightGBM trained on earlier Craigslist scrapes and tested on the next F-150 scrape still errs 15% to 25% more than a random split within that scrape, so the time component the curator asked for survives both concerns.
+     - fiat_500 is one crawl of 1 April 2020 (1,420 cars with the refined one-row-per-car key, 1,434 as defined), so it can only test pricing against the same day's market.
+     - Keep fiat_500 until a Craigslist F-150 record replaces it, keep it as it is, keep both, or retire it now?
+   * **Background:**
+     - The curator asked on 2026-11-05 for one car model, a time component (a later scrape tested on a model trained on earlier ones) and one or several sites. The answer of 2026-11-05 (fiat_500 issue 4) compared eight used-car tables, downloaded and counted, and recommended keeping fiat_500 until a Craigslist one-model record replaces it; its table and numbers stand and are not repeated here beyond the summary below.
+     - Left open then: whether a European dated multi-scrape table of one model exists, and whether the Craigslist pick survives its placeholder prices (5% to 10% of raw F-150 rows) and its relisted VINs (1% to 38% of a scrape's VINs seen before).
+     - Candidates, with the verdicts of 2026-11-05 kept and the new ones added:
+
+       | Candidate | One model: rows | Time component | Sites | Licence | Verdict |
+       |---|---|---|---|---|---|
+       | Craigslist used vehicles (Kaggle austinreese/craigslist-carstrucks-data, 11 versions) | Ford F-150: 6,600 to 13,400 trucks per scrape, 78,955 over 2019-2021 | one scrape about every three months, October 2019 to May 2021, plus October 2026 | Craigslist, all US regions | CC0 | better: the only table with the asked-for time component on one model; checked again below |
+       | European Used Cars: 670k Sold Listings (Kaggle automarketapicom, new in this check) | Fiat 500 family 7,507 (plain 500: 4,453; Italy 1,204) | first seen 20 September to 11 October 2026 (three weeks); 44% of rows delisted the moment they were first seen | 97% AutoScout24, 3% mobile.de | CC BY-NC-SA 4.0 | not better: one three-week crawl of the vendor already rejected on 2026-11-05, no later market to test |
+       | Egyptian Automotive Market (Kaggle shamsfathalla, new in this check, from its data card) | not counted: 13.7 GB with images | a monthly price history of model averages, not of listings | five Egyptian sites | CC BY-NC 4.0 | not better: the history is aggregated, and the used-car file carries model price averages as features |
+       | Illinois dealer listings (2026-11-05) | Ford F-150 17,798; Fiat 500 350 | first and last day seen, June 2018 to May 2020 | about 1,200 dealer sites | CC BY-NC-SA 4.0 | not better: mileage 0 in 49% of used-car rows |
+       | DVM-CAR UK adverts (2026-11-05) | Fiat 500 2,770 | advert month; the later adverts are 2019 registrations only | UK platforms, not named | CC BY 4.0 / CC BY-NC | not better: a split by advert month tests a new registration year |
+       | otomoto.pl 2021 and 2023, eBay-Kleinanzeigen 2016, European 2M listings, Malaysian daily snapshots, AutoScout24 2025, CarGurus 2020 (2026-11-05) | see issue 4 | two scrapes from two scrapers, five weeks, one crawl, all makes, no date, or not downloaded (10 GB) | | | not better (reasons in issue 4) |
+
+     - A short search of Kaggle on 2026-11-25 (used-car snapshots, daily or weekly scrapes, AutoScout24, mobile.de, Fiat 500, Craigslist) found no other dated multi-scrape table of one model from European sites.
+   * **Effect on the task:** none on this definition. The replacement keeps the use case (an asking price from the advert) and adds the later-market test; it moves the task to the US market, one site, and typed-in fields.
+   * **Experiments:** on the F-150 table built on 2026-11-05 (versions 2 and 4 to 10, the two scrapes two weeks apart merged into one window; one row per VIN and per year, mileage, price and region within a scrape), run on 2026-11-25. Untuned LightGBM (400 trees, learning rate 0.05, 63 leaves) and a ridge regression on the log price; RMSE in dollars.
+
+     - What the cleaning leaves: the price filter of 1,000 to 150,000 already removes the zero and one-dollar placeholders. Left in the table: 341 of 78,955 rows (0.4%) with a sequence or repeated-digit price (12345, 99999, 11111) or under 5,000 for a 2015 or newer truck (a down payment posted as the price). Relisted: 5,236 rows (6.6%) carry a VIN seen in an earlier scrape; only 47.5% of rows carry a VIN at all.
+
+     | Variant | Test scrape | Test trucks | GBM, earlier scrapes → this one | GBM, random within this scrape | Gap | Linear, earlier → this one |
+     |---|---|---|---|---|---|---|
+     | as on 2026-11-05 | Sep 2020 | 6,616 | 6,207 | 5,092 | +22% | 7,215 |
+     | as on 2026-11-05 | Dec 2020 | 8,967 | 5,509 | 4,900 | +12% | 7,013 |
+     | as on 2026-11-05 | Apr-May 2021 | 13,390 | 6,510 | 5,183 | +26% | 7,208 |
+     | placeholders dropped | Sep 2020 | 6,577 | 5,942 | 4,781 | +24% | 7,057 |
+     | placeholders dropped | Dec 2020 | 8,927 | 5,185 | 4,479 | +16% | 6,787 |
+     | placeholders dropped | Apr-May 2021 | 13,335 | 6,323 | 5,003 | +26% | 7,072 |
+     | placeholders and relisted VINs dropped | Sep 2020 | 6,449 | 5,944 | 4,794 | +24% | 7,143 |
+     | placeholders and relisted VINs dropped | Dec 2020 | 8,472 | 5,110 | 4,428 | +15% | 6,823 |
+     | placeholders and relisted VINs dropped | Apr-May 2021 | 12,952 | 6,308 | 5,043 | +25% | 7,109 |
+
+     - Relisted trucks are priced better than fresh ones in two of three windows, so an earlier listing works as a near-copy:
+
+     | Test scrape | Relisted test trucks | GBM RMSE, relisted | GBM RMSE, fresh |
+     |---|---|---|---|
+     | Sep 2020 | 128 | 4,190 | 6,241 |
+     | Dec 2020 | 455 | 5,614 | 5,504 |
+     | Apr-May 2021 | 383 | 4,934 | 6,551 |
+
+     - The tree model beats the linear one by 10% to 25% in every window, so the task separates methods. Scripts and log: the run's evidence folder, out/f150_1411437.log (and the 2026-11-05 evidence in the run's evidence folder).
+   * **Consistency:** body_density_prediction takes the same decision in this batch (keep until nhanes_dxa_body_fat is added, then retire as replaced); both follow the pattern that a better dataset is its own record and the old one keeps the verdict its own data earn[^better].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep as is (implemented) | fiat_500 ships; no replacement planned | keeps the verdict its own data earn; nothing to wait for | no used-car task tests a later market |
+     | B | Keep until a Craigslist F-150 record replaces it | a new record for the Craigslist scrapes filtered to the F-150, windows by scrape; fiat_500 retired as replaced once it is accepted | the later-market test asked for, on one model over 2019 to 2021; one used-car task in the benchmark | the US market and one site; typed-in fields to clean; waits for the new record |
+     | C | Keep both | as B, and fiat_500 stays | a small one-day case next to a large dated one | one use case twice, the older one without the time test |
+     | D | Retire now | No (Retired), folder removed | no small one-crawl table | no used-car price task until the Craigslist record is added |
+
+   * **Recommendation:** B: it restates the answer of 2026-11-05. No newer table meets the ask better, and the Craigslist pick survives its two concerns: the placeholders left after the price filter are 0.4% of rows, and with them and the relisted trucks dropped the later-market gap stays at 15% to 25%. fiat_500 stays valid until the replacement is checked and accepted[^valid]. **Decision:** A, B, C or D?
+
+   **Notes for the AI:** On B: a dated CC line in fiat_500's record naming `craigslist_used_vehicles_f150` (or the name the record gets) as the replacement; when it is accepted, fiat_500 becomes No (Retired), folder removed, CHANGELOG entry. Create and screen the new record (none exists): Kaggle austinreese/craigslist-carstrucks-data, versions via `kaggle datasets download austinreese/craigslist-carstrucks-data/<N>`; versions 2 and 4 to 10 (uploaded 2019-10-14 to 2021-05-06) and 11 (2026-11-05, a five-year gap that would be a further window); posting_date only in 8, 10 and 11; version 2 has the model in `make` and the place in `city`. Filter as in the run's evidence folder (manufacturer ford, model `^f-?150`, price 1,000 to 150,000, one row per VIN within a scrape, repeats of year, odometer, price and region dropped); merge versions 9 and 10 into one window. Two questions for that record's own review: drop the 341 sequence or down-payment prices (minimal preprocessing: they separate for non-target reasons), and whether a truck relisted across the cutoff stays (a dealer knows its earlier price[^entity]) or is dropped. Drop the posting text (phone numbers), url, id, VIN and image fields. The cleaning flags are in f150_sens.py (`placeholder`, `relisted`). The European sold-listings file read here: Kaggle automarketapicom/european-used-cars-sold-days-on-market, european_used_cars_sold_days_on_market.parquet, 679,148 rows, read on 2026-11-25.
+
+   [^better]: Pattern "Small or dated, and the task is still done today": a larger or newer public dataset with the same target and use case is its own record; the old record is not rejected automatically and keeps the verdict its own data earn until the curator decides.
+   [^valid]: Keep two questions apart (TP-6): is the task valid, and is it the best version? A valid task stays.
+   [^entity]: SPLIT-13: an entity that recurs across the cutoff is part of the task when the model predicts for known entities, and a question when the use case is a new entity.
+
+   **Andrej (2026-11-26, ok):** As implemented (A).
+
+   **Resolved (2026-11-26, Andrej):** A: fiat_500 ships as it is, next to `craigslist_used_vehicles_f150`, judged on its own data: after issues 1 to 3 it holds one row per car and is split grouped by car, and its 1,420 Italian listings of one model test another size, market and split than the 97,291 US F-150 listings split by scrape. Issue 4 (the same question, 2026-11-05) closes with it. No definition change.
 
 ## Reference
 

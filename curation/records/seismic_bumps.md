@@ -566,7 +566,7 @@ Sources: [UCI seismic-bumps](https://archive.ics.uci.edu/dataset/266/seismic+bum
 | Issue 4 B No Signal | would depart now | two methods beat shuffles |
 | Issue 4 C Trivial / genergy tie | would depart from TP-4; tie overstated | genergy picked as best of >=6 features on test windows (TP-2 last sentence); train-chosen feature 0.470; ratings 0.48-0.51 -> like thyroid_discordant, aps_failure; unlike ljubljana (NPI), sepsis |
 | Issue 4 D superseded by aaia16 | would depart | selection.md "Small or dated" (body_density, hepatitis_c_egypt); aaia16 screening calls it another release (PROV-4) |
-| Issue 5 roc_auc fallback | consistent | MET-5/6 (gallstone, ljubljana, heart_disease) |
+| Issue 5 roc_auc fallback | consistent | MET-5/6 (gallstone, ljubljana; heart_disease until 2026-11-26, now log loss from context) |
 | 6 copies dropped | consistent | LEAK-18/19 (wine, audiology); _clean drops all duplicates, correct here (exactly 6) |
 | SEL-10/TP-10 not addressed | gap, low | features hold target's last observation; TP-10 leg 1: beat persistence / recent bump rate; no persistence ROC AUC computed (rain_in_australia; stock, appliances retired) |
 
