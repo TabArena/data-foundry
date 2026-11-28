@@ -62,11 +62,24 @@ CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTe
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. The main feature is a reading that technology and BI-RADS coding changed; changed coding is a fact against.
 
+CC (2026-11-27, Andrej): the task as defined is not a forecast but the radiologist's own read, and the source is a teaching set (Review issue 2 open).
+- Source: the BCSC Digital Mammography Dataset is "recommended for use as a teaching tool only; they should not be used to conduct primary research" (BCSC page), for "teaching data analysis, epidemiological study design, or statistical methods for binary outcomes or correlated data". It is a random sample of 20,000 film and 20,000 digital screening mammograms (2005-2008), with cancers found by linking to cancer registries, which "are used in assessing mammography accuracy".
+- No prediction task from the source: overview and codebook pose none. The "source's own question" in `dataset.py` is question 4 of a linked example exam ("Construct a model to predict occurrence of any cancer using patient characteristics and mammography assessment"); the exam's main questions compare the sensitivity, specificity and PPV (share of positive reads that are cancer) of digital and film reads. The task came in through TabSTAR (OpenML 43687), which also keeps the cancer type, a copy of the label.
+- The read is the follow-up decision, not a prediction of it: BI-RADS (the radiologist's 0-5 category for the mammogram) 0 means more imaging, 4-5 a biopsy, 1-2 routine screening. Cancers are found through that work-up: women read 0, 4 or 5 (8% of women) hold 87% of the cancers; women read 1-2 can only show up later as interval cancers (found between screens).
+- So the score measures the read's accuracy, which the dataset was made to teach: ROC AUC 0.914 for the read alone, 0.93 for the models. Without the radiologist's readings logistic regression reaches 0.58; the BCSC's published risk model at the screening visit, before the read, reaches a c statistic (ROC AUC) of 0.62-0.63 (Barlow WE, White E, Ballard-Barbash R, Vacek PM, Titus-Ernstoff L, Carney PA, Tice JA, Buist DSM, Geller BM, Rosenberg R, Yankaskas BC, Kerlikowske K. Prospective breast cancer risk prediction model for women undergoing screening mammography. J Natl Cancer Inst. 2006;98(17):1204-1214. doi:10.1093/jnci/djj331).
+- Lennart's 2026-10-15 argument for the readings cites the BCSC Risk Calculator, which takes the density reading, not the assessment.
+
+CC (2026-11-27, Andrej): review issue 2, B: the radiologist's BI-RADS assessment is dropped; the task is the risk at the screening visit, before the read (fit approximate: the one-year label and this exam's density stand in for the longer horizon and prior density of the decisions). It is the same question as `bcsc_risk_estimation` on other data (2005-2008, 36,714 women, other inputs), kept as a second dataset of that task.
+
+CC (2026-11-27, Andrej): the declared metric (ROC AUC of the predicted probability of a cancer within a year, the binary fallback; the BCSC page names none) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27), as the risk task before the read (issue 2, B).
+
 ## Review
 
-**Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below (issue 1, A, 2026-11-18).
+**Outcome:** added, changed: the radiologist's assessment is dropped, so the task is the breast cancer risk at the screening visit, before the read (issue 2, B, 2026-11-27). Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below (issue 1, A, 2026-11-18).
 
-**Main points:** `ForcedIIDFromTemporal` stays (issue 1, A, 2026-11-18). Nothing is left open.
+**Main points:** Nothing is left open: the forced tag stays (issue 1, A, 2026-11-18) and the task is the risk before the read (issue 2, B, 2026-11-27). Without the assessment the signal is modest (logistic regression ROC AUC 0.606 on one exam per woman), the same question as `bcsc_risk_estimation` on later exams and other inputs.
 
 **Issues for Andrej:**
 
@@ -107,6 +120,64 @@ CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity r
    **Andrej (2026-11-18, ok):** as implemented.
 
    **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (The main feature is a reading that technology and BI-RADS coding changed; changed coding is a fact against.)
+
+2. **Retire the dataset, or keep one of the tasks this file can carry?**
+
+   * **Problem:**
+     - The main feature, the BI-RADS assessment (the radiologist's 0-5 category for the mammogram), is the follow-up decision itself: 0 sends a woman to more imaging, 4-5 to a biopsy, 1-2 back to routine screening.
+     - The label is found through that decision: women read 0, 4 or 5 (8%) hold 87% of the cancers, so the score (ROC AUC 0.93) measures how accurate the read is.
+     - The source is a teaching set ("recommended for use as a teaching tool only; they should not be used to conduct primary research") with no prediction task of its own.
+   * **Background:** the BCSC's published risk model at the screening visit, before the read, reaches a c statistic (ROC AUC) of 0.62-0.63 on 2.4M exams[^barlow]; its data are the BCSC Risk Estimation Dataset, `bcsc_risk_estimation`, now being added (no teaching-only clause; citing Barlow 2006 is required).
+   * **Experiments:** one exam per woman (first in file order, 246 cancers), 3x3 stratified folds, regularised logistic regression (LR) and LightGBM, ROC AUC:
+
+     | Task | Rows | Cancers | LR | LightGBM |
+     |---|---|---|---|---|
+     | as implemented (all features) | 36,714 | 246 | 0.915 | 0.927 |
+     | the assessment alone | 36,714 | 246 | 0.903 | 0.908 |
+     | before the read: no assessment, density kept | 36,714 | 246 | 0.606 | 0.563 |
+     | recalled women only (read 0), before the work-up | 2,858 | 188 | 0.569 | 0.542 |
+     | negative or benign reads only (1-2): interval cancers | 33,670 | 31 | 0.650 (sd 0.068) | 0.697 (sd 0.067) |
+
+   * **Effect on the task:** every variant without the assessment is a weak task; the interval-cancer one has about 10 cancers per test fold.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Retire, `No Good Target / Scientific Discovery` | `No (Retired)`; the risk task before the read is taken by `bcsc_risk_estimation` | No task built on the decision it would support; no use against the source's teaching-only terms; the risk task on the source made for it (2.4M exams, the published model) | Loses a v0.2 dataset; the marker is a judgment (no precedent of a label found through a feature's decision) |
+     | B | Risk before the read | Drop `birads_assessment`; keep density, as the BCSC risk model does; use case: tailor screening at the visit | A real decision (who gets extra screening); keeps the slot | ROC AUC 0.56-0.61; the same question as `bcsc_risk_estimation` on a later, much smaller teaching sample |
+     | C | Recalled women only | Keep rows read 0; predict which work-ups find cancer | The read's decision is fixed, so it is not a feature | Every recalled woman is worked up anyway, so no decision changes; ROC AUC 0.54-0.57; 2,858 rows |
+     | D | Interval cancers | Keep rows read 1-2; predict a cancer missed by the read | A real question (supplemental screening after a negative read) | 31 cancers, about 10 per test fold: too few to rank methods |
+     | E | Keep (implemented) | The read stays a feature; the use case is restated as the read's accuracy | No change | The task is the radiologist's decision and its consequence; the score is the read's accuracy, which the dataset was made to teach |
+
+   * **Recommendation:** A, the task needs the decision as a feature, and the risk task before it is better served by `bcsc_risk_estimation`. Confidence: high for not keeping E, medium for the marker. **Decision:** A, B, C, D or E? For A, the marker?
+
+   **Notes for the AI:** A: record `suggestion: No (Retired)`, the marker in the record tags as on other retired records, folder removed as for audiology_diagnosis, CHANGELOG entry. B: drop `birads_assessment` in `_clean`, rewrite `task_summary` and `curation_comments`, rerun `dataset check` and the task probes (TP-2, shuffled labels).
+
+   [^barlow]: Barlow WE, White E, Ballard-Barbash R, Vacek PM, Titus-Ernstoff L, Carney PA, Tice JA, Buist DSM, Geller BM, Rosenberg R, Yankaskas BC, Kerlikowske K. Prospective breast cancer risk prediction model for women undergoing screening mammography. J Natl Cancer Inst. 2006;98(17):1204-1214. doi:10.1093/jnci/djj331.
+
+   **Andrej (2026-11-27, discuss):** Is B really an exact copy of the same task as bcsc_risk_estimation?
+
+   **Answer (AI, 2026-11-27):**
+   * You asked whether option B (this file without the radiologist's assessment) is an exact copy of `bcsc_risk_estimation`.
+   * No. It is the same question on other data: the same prediction point (the screening visit, with density read from this mammogram and its assessment left out) and the same label (in situ or invasive cancer within a year), but other exams, other years and other inputs. Option B's con, "a smaller copy", overstates it.
+
+     | | Option B (this file) | `bcsc_risk_estimation` |
+     |---|---|---|
+     | Exams | 2005-2008, film and digital (20,000 each) | 1996-2002, film |
+     | Women | 36,714, aged 60-89 | 1,007,660, aged 35-84 |
+     | Cancers | 239 (0.65%) | 7,319 (0.73%) |
+     | Inputs besides density | age in years, BMI, family history (yes/no), earlier biopsy, earlier mammogram, hormone therapy, comparison film at hand, film or digital | age band, menopause and its kind, race, Hispanic, BMI band, age at first birth, number of relatives with breast cancer, earlier procedure, last mammogram result, hormone therapy |
+     | ROC AUC on its folds | logistic regression 0.606, LightGBM 0.563 | logistic regression 0.648, LightGBM 0.658 |
+     | Source terms | teaching only, "not ... primary research" | citation required, no teaching clause |
+
+   * Both are BCSC registry samples, so some women may be in both, but no exam can be: the years do not overlap, and neither file has an id to link them.
+   * What the difference changes: option B is the later, digital-era sample, which speaks against the age concern that `bcsc_risk_estimation` carries (`Outdated` as a note). Against it: its signal is weak and unstable (about 80 cancers per test fold, LightGBM below logistic regression), and its source asks not to be used for research.
+   * **Options:** unchanged (A retire, B risk before the read, C recalled women, D interval cancers, E keep as implemented); option B's con now reads "the same question as `bcsc_risk_estimation` on a later, much smaller teaching sample".
+   * **Recommendation:** A still, now with medium confidence: B is a defensible second dataset of the risk task, worth it if a later sample matters more to you than size and the teaching-only terms. **Decision:** A or B (or C, D, E)?
+
+   **Andrej (2026-11-27, change):** Option B: Risk before the read.
+
+   **Resolved (2026-11-27, Andrej):** B: `birads_assessment` dropped in `_clean`; task summary, notes and decision table rewritten for the risk before the read; fit approximate.
 
 ## Reference
 
