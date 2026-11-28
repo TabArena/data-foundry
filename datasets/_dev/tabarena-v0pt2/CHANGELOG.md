@@ -1,5 +1,19 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-28, the working copy is built with pandas 2 (no container built)
+
+- A pandas 3 build of 15 definitions gave three other checksums than the pandas 2 rebuild of 2026-11-26:
+  - coffee_rating_prediction: under pandas 3, `.map` of a column parsed with the `string` dtype is Arrow-backed
+    (`double[pyarrow]`). The definition framework now stores Arrow-backed columns in the dtype pandas 2 gives
+    (`canonical_dtypes`), and the pandas 3 build matches.
+  - fiat_500 and airqo_low_cost_air_quality_monitor_calibration_challenge: pandas 3 parses a CSV's floats exactly
+    where pandas 2 rounds some in the last bit (468 of fiat_500's 1,538 latitudes), so their containers differ under
+    pandas 3 for that reason alone.
+- The working copy is built with pandas 2, as the `.venv` does; the README's Rebuild section, `rebuild.md` and
+  `working_copy.md` say so, and `compare_builds.py` names a pandas version mismatch between two builds.
+- No container changes: with the new code, a pandas 2 build of 16 definitions (chicago_traffic_crashes, which reads
+  its CSV as `string[pyarrow]`, among them) gives the checksums of 2026-11-26.
+
 ## 2026-11-26, every definition rebuilt on the restructured package (174 containers)
 
 - All 174 definitions were rebuilt at the top of the codebase-review stack (#138 to #149). The generated READMEs now

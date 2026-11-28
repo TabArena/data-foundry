@@ -185,7 +185,10 @@ def canonical_dtypes(df: pd.DataFrame) -> pd.DataFrame:
     * datetimes and durations: nanoseconds (pandas 3 parses to ``us`` or ``s``, polars gives ``us``, Excel ``ms``;
       the checksum hashes the integers);
     * text in the pandas 3 ``str`` dtype: ``object``, as pandas 2 reads it (the ``string`` dtype of
-      ``cast_dtypes`` stays as it is).
+      ``cast_dtypes`` stays as it is);
+    * Arrow-backed columns, which pandas 3 gives where a cast starts from text in the ``string`` dtype
+      (``s.astype("string").str.extract(...).astype(float)`` is ``double[pyarrow]`` there, ``float64`` in pandas 2):
+      the dtype pandas 2 gives (:func:`_from_arrow`).
 
     The values do not change.
 
@@ -194,20 +197,51 @@ def canonical_dtypes(df: pd.DataFrame) -> pd.DataFrame:
     """
     out = df
     for col in df.columns:
-        dtype = df[col].dtype
-        if _time_unit(dtype) not in (None, "ns"):
+        column = df[col]
+        fixed = None
+        if isinstance(column.dtype, pd.ArrowDtype) and (converted := _from_arrow(column)) is not None:
+            column = fixed = converted
+        if _time_unit(column.dtype) not in (None, "ns"):
             try:
-                fixed = df[col].dt.as_unit("ns")
+                fixed = column.dt.as_unit("ns")
             except (pd.errors.OutOfBoundsDatetime, pd.errors.OutOfBoundsTimedelta) as error:
                 msg = f"`{col}` holds dates outside 1677-2262; store them as numbers (a year, days since a date)."
                 raise ValueError(msg) from error
-        elif is_str_dtype(dtype):
-            fixed = df[col].astype(object)
-        else:
+        elif is_str_dtype(column.dtype):
+            fixed = column.astype(object)
+        if fixed is None:
             continue
         out = df.copy(deep=False) if out is df else out
         out[col] = fixed
     return out
+
+
+_NULLABLE = {"bool": "boolean", **{f"{s}int{b}": f"{s.upper()}Int{b}" for s in ("", "u") for b in (8, 16, 32, 64)}}
+"""The pandas nullable dtype of a NumPy integer or boolean dtype (``int64`` -> ``Int64``, ``uint8`` -> ``UInt8``)."""
+
+
+def _from_arrow(column: pd.Series) -> pd.Series | None:
+    """An Arrow-backed column in the dtype pandas 2 gives the same values, or None for an Arrow type left as it is.
+
+    Floats become ``float64`` (a missing value NaN); integers and booleans their NumPy dtype, or the nullable dtype
+    (``Int64``, ``boolean``) when a value is missing; text ``object``; timestamps and durations NumPy datetimes and
+    timedeltas, a timestamp's time zone kept.
+    """
+    import pyarrow as pa  # noqa: PLC0415 - only for a column pandas 3 backs with Arrow
+
+    arrow = column.dtype.pyarrow_dtype
+    if pa.types.is_floating(arrow):
+        return column.astype("float64")
+    if pa.types.is_integer(arrow) or pa.types.is_boolean(arrow):
+        numpy = column.dtype.numpy_dtype.name
+        return column.astype(_NULLABLE[numpy] if column.isna().any() else numpy)
+    if pa.types.is_string(arrow) or pa.types.is_large_string(arrow):
+        return column.astype(object)
+    if pa.types.is_timestamp(arrow):
+        return column.astype(pd.DatetimeTZDtype(arrow.unit, arrow.tz) if arrow.tz else f"datetime64[{arrow.unit}]")
+    if pa.types.is_duration(arrow):
+        return column.astype(f"timedelta64[{arrow.unit}]")
+    return None
 
 
 def _time_unit(dtype: object) -> str | None:

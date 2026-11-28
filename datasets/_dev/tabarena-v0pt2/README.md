@@ -30,7 +30,9 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
   [`rebuild.md`](../../../.claude/skills/knowledge-data-foundry/references/rebuild.md).
 - Build with the `build` extra installed (the repository's `.venv` has it). scikit-learn must stay below 1.8, which
   changes the grouped splits. Rows and splits are the same on every machine, but a numpy log or exp can differ in its
-  last bit between CPUs, so compare checksums on one machine.
+  last bit between CPUs, so compare checksums on one machine. Build with pandas 2, as the `.venv` does: pandas 3
+  parses a CSV's floats exactly where pandas 2 rounds some in the last bit, which changes the checksum of a dataset
+  read from a CSV with long floats (fiat_500, airqo).
 - `data-foundry probe task --all --built` sweeps the built containers against
   dummy baselines (answer its flags with
   [`task_probes.md`](../../../.claude/skills/knowledge-curation/references/task_probes.md)), and
