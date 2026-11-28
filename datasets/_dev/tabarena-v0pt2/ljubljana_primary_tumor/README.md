@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: ljubljana_primary_tumor
 container_format: 2
-checksum: v2:2af89b06c70ecfc02cf8024bffb1eab810835d1169194a1b427b9a35ecc1b1a6
+checksum: v2:1c9e022cbe63ad0e2dad969efcc7fd217881d1d67ab3983af477bcfb02499063
 build:
-  uuid: 01a111fc-e43e-74ec-8af2-b710f7045924
-  checksum: v2:ddbe1140621ffda771f1ea9797d30fbd1fe902bc0a4c9f1d8337b9eee4d9fcd2
-  built_at: '2026-10-06T16:12:28+00:00'
-  path: ljubljana_primary_tumor/01a111fc-e43e-74ec-8af2-b710f7045924
+  uuid: 01a21800-ddee-7547-bb87-1081d0ad19d8
+  checksum: v2:1c9e022cbe63ad0e2dad969efcc7fd217881d1d67ab3983af477bcfb02499063
+  built_at: '2026-11-26T13:17:19+00:00'
+  path: ljubljana_primary_tumor/01a21800-ddee-7547-bb87-1081d0ad19d8
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 302
   n_features: 17
@@ -45,6 +45,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 201
     max: 202
@@ -68,7 +69,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 302 rows and 17 features. Source: UCI (1988).
 
-Built as `01a111fc-e43e-74ec-8af2-b710f7045924` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2af89b06c70ecfc02cf8024bffb1eab810835d1169194a1b427b9a35ecc1b1a6`, so the build is stale. See [Build](#build).
+Built as `01a21800-ddee-7547-bb87-1081d0ad19d8` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -197,15 +198,11 @@ We start with the data from UCI.
   Under random 3-fold splits 20% of test patients have an exact copy in training.
 - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are
   ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`).
-- Time basis: ForcedIIDFromTemporal: cancer patients of the Institute of Oncology, Ljubljana, seen before 1986
-  over an unstated period; the UCI file is sorted by site and keeps no date, so whether the site shares or the
-  diagnostic work-up drifted cannot be measured. Years of diagnosis would allow a split by period. Not taken as
-  stationary (Andrej, 2026-11-18): An old one-time study used today with a changed work-up is a long span in a
-  changing domain.
+- Time basis: ForcedIIDFromTemporal: cancer patients of the Institute of Oncology, Ljubljana, seen before 1986 over an unstated period; the UCI file is sorted by site and keeps no date, so whether the site shares or the diagnostic work-up drifted cannot be measured. Years of diagnosis would allow a split by period. Not taken as stationary (Andrej, 2026-11-18): An old one-time study used today with a changed work-up is a long span in a changing domain.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `class`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 302 rows (SPLIT-33).
 
 20 repeat(s) x 3 fold(s) with seed 4267; train 201 to 202 rows, test 100 to 101 rows.
 
@@ -400,11 +397,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-e43e-74ec-8af2-b710f7045924 |
-| checksum | v2:ddbe1140621ffda771f1ea9797d30fbd1fe902bc0a4c9f1d8337b9eee4d9fcd2 |
-| built_at | 2026-10-06T16:12:28+00:00 |
-| path | ljubljana_primary_tumor/01a111fc-e43e-74ec-8af2-b710f7045924 |
+| uuid | 01a21800-ddee-7547-bb87-1081d0ad19d8 |
+| checksum | v2:1c9e022cbe63ad0e2dad969efcc7fd217881d1d67ab3983af477bcfb02499063 |
+| built_at | 2026-11-26T13:17:19+00:00 |
+| path | ljubljana_primary_tumor/01a21800-ddee-7547-bb87-1081d0ad19d8 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:2af89b06c70ecfc02cf8024bffb1eab810835d1169194a1b427b9a35ecc1b1a6` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

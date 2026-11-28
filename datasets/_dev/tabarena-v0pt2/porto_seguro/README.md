@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: porto_seguro
 container_format: 2
-checksum: v2:dbb18744ad4dd587e6902f44984171ef202030ca056dd3367c8764dd35827d60
+checksum: v2:be5d4940cd991589afa7ffa07e59b5a82eb8354b297bf443146222d9de91653b
 build:
-  uuid: 01a111fb-fc94-70f9-9598-6ab89e8b220d
-  checksum: v2:8f647d10da8ad0b5f14091489e40c4d88dfa457607fd1f474e1f49d68b23d72e
-  built_at: '2026-10-06T16:11:43+00:00'
-  path: porto_seguro/01a111fb-fc94-70f9-9598-6ab89e8b220d
+  uuid: 01a217ff-7413-7474-8c83-eda37ce02b31
+  checksum: v2:be5d4940cd991589afa7ffa07e59b5a82eb8354b297bf443146222d9de91653b
+  built_at: '2026-11-26T13:16:00+00:00'
+  path: porto_seguro/01a217ff-7413-7474-8c83-eda37ce02b31
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 595206
   n_features: 37
@@ -47,6 +47,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 396804
     max: 396804
@@ -68,7 +69,7 @@ decisions: []
 
 Binary classification of `target`, scored with `roc_auc` on IID splits. 595,206 rows and 37 features. Source: Kaggle (2017).
 
-Built as `01a111fb-fc94-70f9-9598-6ab89e8b220d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:dbb18744ad4dd587e6902f44984171ef202030ca056dd3367c8764dd35827d60`, so the build is stale. See [Build](#build).
+Built as `01a217ff-7413-7474-8c83-eda37ce02b31` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -194,18 +195,11 @@ We start with the train.csv from Kaggle.
 - There exist only 6 duplicates in the training data. We drop them as the portion is too small to be meaningful.
 - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
   event, the class that sorts second, so it is the metrics' positive class.
-- Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16; `DelayedTarget` before, retired): policy holders priced
-  at one moment, the target a claim within the following year (the host's framing; record: Samples: One Moment,
-  Target: Fixed Delay). One pricing moment is one period, too few for three windows (SPLIT-8). The id is a random
-  shuffle and no date survives, so neither the moment nor a later pricing round can be checked. Leak test across
-  the split: no repeated policy holder, no order along the id, the region code in ps_reg_03 held out scores the
-  same (ROC AUC 0.639). Not tested: a later pricing round. Not taken as stationary (Andrej, 2026-11-18): A
-  consumer pricing task with market and selection drift, an unstated period and anonymised features; the
-  measured insurance neighbours are mostly inconclusive, so the evidence is mixed at best.
+- Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16): policy holders priced at one moment, the target a claim within the following year (the host's framing; record: Samples: One Moment, Target: Fixed Delay). One pricing moment is one period, too few for three windows (SPLIT-8). The id is a random shuffle and no date survives, so neither the moment nor a later pricing round can be checked. Leak test across the split: no repeated policy holder, no order along the id, the region code in ps_reg_03 held out scores the same (ROC AUC 0.639). Not tested: a later pricing round. Not taken as stationary (Andrej, 2026-11-18): A consumer pricing task with market and selection drift, an unstated period and anonymised features; the measured insurance neighbours are mostly inconclusive, so the evidence is mixed at best.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `target`: 1 repeat(s) x 3 folds, 3 splits, the repeats set by the 595,206 rows (SPLIT-33).
 
 1 repeat(s) x 3 fold(s) with seed 4267; train 396,804 rows, test 198,402 rows.
 
@@ -375,11 +369,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fb-fc94-70f9-9598-6ab89e8b220d |
-| checksum | v2:8f647d10da8ad0b5f14091489e40c4d88dfa457607fd1f474e1f49d68b23d72e |
-| built_at | 2026-10-06T16:11:43+00:00 |
-| path | porto_seguro/01a111fb-fc94-70f9-9598-6ab89e8b220d |
+| uuid | 01a217ff-7413-7474-8c83-eda37ce02b31 |
+| checksum | v2:be5d4940cd991589afa7ffa07e59b5a82eb8354b297bf443146222d9de91653b |
+| built_at | 2026-11-26T13:16:00+00:00 |
+| path | porto_seguro/01a217ff-7413-7474-8c83-eda37ce02b31 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:dbb18744ad4dd587e6902f44984171ef202030ca056dd3367c8764dd35827d60` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

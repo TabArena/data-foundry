@@ -7,7 +7,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import scipy.io
-from data_foundry.v2 import (
+from scipy.spatial import cKDTree
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -19,7 +21,6 @@ from data_foundry.v2 import (
     TimeBasis,
     drop_columns,
 )
-from scipy.spatial import cKDTree
 
 MACOMA_SIBES_ID = 59  # Macoma balthica in species.csv (sibes_id 59, aphia_id 880017)
 TELLINOIDEA_SIBES_ID = 339  # tellinoids below 3 mm, Macoma balthica included (species.csv remark)
@@ -255,7 +256,6 @@ class WaddenSeaSibesMacomaAbundance(AbstractCuratedDataset):
             "on the density over the spread of its true densities, averaged, keeps RMSE within a year (a fixed divisor "
             "ranks models as RMSE does) and gives each survey's map one vote (Andrej, 2026-11-10)."
         ),
-        inputs={"group": "survey_year"},
         target_transform="log1p",
     )
     scoring_columns = (

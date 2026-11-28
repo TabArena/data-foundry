@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -221,13 +222,10 @@ class SendyLogisticsChallenge(AbstractCuratedDataset):
         chronological windows.
     """
     accepted_check_warnings = {
-        "task_group_count_low": (
-            "Decided (Andrej, 2026-11-23): the seven month classes are the finest period the release gives (no month "
-            "or year), so no more groups exist."
-        ),
         "groups_test_groups_few": (
-            "Decided (Andrej, 2026-11-23): each test fold holds two or three whole month classes, all seven classes "
-            "split three ways; each fold still scores 3,775 to 8,394 orders."
+            "Decided (Andrej, 2026-11-23): the seven month classes are the finest period the release gives (no "
+            "month or year), so no more groups exist; each test fold holds two or three whole month classes, all "
+            "seven classes split three ways, and each fold still scores 3,775 to 8,394 orders."
         ),
         "groups_largest_share_high": (
             "Decided (Andrej, 2026-11-23): the largest class, 4,632 of the 20,461 orders (22.6%), is a real class of "

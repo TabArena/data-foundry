@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: boreal_postfire_lichen_biomass
 container_format: 2
-checksum: v2:c3e3db35cd06540e0b67153d7c1b0b26530c9c9a161bbc8107cb20a704540c33
-build: null
+checksum: v2:931e7a129ef70bfa6b0765523275a33f9b97455b338475ba80817af3b53d3100
+build:
+  uuid: 01a21800-9030-7cab-880c-13e8641965f8
+  checksum: v2:931e7a129ef70bfa6b0765523275a33f9b97455b338475ba80817af3b53d3100
+  built_at: '2026-11-26T13:17:00+00:00'
+  path: boreal_postfire_lichen_biomass/01a21800-9030-7cab-880c-13e8641965f8
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 2010
@@ -45,6 +58,19 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Grouped splits on the burn area: every plot of a burn scar or unburned
+    area of the Northwest Territories (merged where two areas share a coordinate,
+    only CG2 and F2) stays on one side with all its quadrats, and each Saskatchewan
+    plot on its own, since SK plot names carry no burn key. 216 groups, 72 per test
+    fold; test folds hold 299 to 1,028 rows, since the largest group holds 200. A
+    test quadrat lies a median 22 km from the nearest training plot in NT and 3.4
+    km in SK, against 95 km for a random point in the NT study hull, so stands far
+    from any survey may still be harder than the folds show, SK most: SK plots of
+    one burn can fall on both sides (94 of 190 lie inside a mapped burn of their fire
+    year; burn-mates in training flatter the SK RMSE by about 5 kg/ha). Ridge falls
+    below the training mean on 7 of 30 splits (untuned, the container''s inputs),
+    because ecoprovince effects learned from a handful of burns do not reach a new
+    burn; the random forest keeps its skill.'
   n_train:
     min: 982
     max: 1711
@@ -78,7 +104,7 @@ decisions:
 
 Regression of `forage_lichen_biomass_kg_ha`, scored with `rmse` on grouped splits by `burn_area`. 2,010 rows and 7 features. Source: Other (2021).
 
-Not built yet. The current definition gives checksum `v2:c3e3db35cd06540e0b67153d7c1b0b26530c9c9a161bbc8107cb20a704540c33`.
+Built as `01a21800-9030-7cab-880c-13e8641965f8` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -165,7 +191,7 @@ Only curators run `build`, when the dataset ships.
 
 **Scoring columns**
 
-Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.metrics.scorer(container)(y_test, y_pred, test_idx)`).
 
 | column | role | how the metric uses it | model input |
 |---|---|---|---|
@@ -245,10 +271,11 @@ We start with `Lichen_data_NT.xlsx` (1,630 quadrats) and `Lichen_data_SK.xlsx` (
 - CC (2026-11-09, Andrej): B, "Site-sheet coordinates as features": every NT plot ships its transect start from `All_site_info_NT.xlsx`; the 0.01 degree grid only links CG2 and F2 and is not shipped.
 - CC (2026-11-09, Andrej): B, "Burn id from the national fire polygons. Before finally adding this, ablate it and analyze the impact of this decision": the SK plots are grouped by the NFDB or NBAC burn of their fire year, implemented after the ablation; superseded on 2026-11-10 (next bullet).
 - CC (2026-11-10, Andrej): (a), "Back to A, with the note": one group per SK plot again; the grouping by the fire maps of 2026-11-09 is removed, and its measured effect is in the notes ("SK burns are not recovered").
-- Time basis: RetrospectiveFillIn: the plots were surveyed once, and the use case fills in lichen biomass in burns
-  nobody surveyed; the split holds out whole burn areas. It cannot test a later survey.
+- Time basis: RetrospectiveFillIn: the plots were surveyed once, and the use case fills in lichen biomass in burns nobody surveyed; the split holds out whole burn areas. It cannot test a later survey.
 
 ## Splits
+
+Repeated 3-fold cross-validation keeping each group of `burn_area` whole (shuffled group k-fold, a new draw per repeat): 10 repeat(s) x 3 folds, 30 splits, the repeats set by the 2,010 rows (SPLIT-33).
 
 Grouped splits on the burn area: every plot of a burn scar or unburned area of the Northwest Territories (merged where two areas share a coordinate, only CG2 and F2) stays on one side with all its quadrats, and each Saskatchewan plot on its own, since SK plot names carry no burn key. 216 groups, 72 per test fold; test folds hold 299 to 1,028 rows, since the largest group holds 200. A test quadrat lies a median 22 km from the nearest training plot in NT and 3.4 km in SK, against 95 km for a random point in the NT study hull, so stands far from any survey may still be harder than the folds show, SK most: SK plots of one burn can fall on both sides (94 of 190 lie inside a mapped burn of their fire year; burn-mates in training flatter the SK RMSE by about 5 kg/ha). Ridge falls below the training mean on 7 of 30 splits (untuned, the container's inputs), because ecoprovince effects learned from a handful of burns do not reach a new burn; the random forest keeps its skill.
 
@@ -314,7 +341,7 @@ One group is a burn scar or unburned area of the Northwest Territories (the plot
 | nearest neighbour in the same group | 100.0% of the rows (chance: 4.1%) |
 | label variance explained by the group | 0.35 (shuffled groups: 0.10) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Decisions
 
@@ -422,4 +449,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a21800-9030-7cab-880c-13e8641965f8 |
+| checksum | v2:931e7a129ef70bfa6b0765523275a33f9b97455b338475ba80817af3b53d3100 |
+| built_at | 2026-11-26T13:17:00+00:00 |
+| path | boreal_postfire_lichen_biomass/01a21800-9030-7cab-880c-13e8641965f8 |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

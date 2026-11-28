@@ -2,18 +2,11 @@
 
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 import pytest
 
-pytest.importorskip("lightgbm")
-
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / ".claude/skills/knowledge-curation/scripts"))
-
-from curation_probes import stationarity  # noqa: E402
+from data_foundry.probes import models, stationarity
 
 
 def _data(n_periods=6, rows=1200, drift=False, seed=0, share_jump=False):
@@ -56,7 +49,8 @@ def test_a_drifting_relation_is_not_flat():
 def test_a_jumping_class_share_counts_as_recording():
     df, period = _data(share_jump=True)
     rc = stationarity.recording_change(df["y"], period, [str(k) for k in range(6)], "binary")
-    assert rc["counts"] and rc["factor"] >= 2
+    assert rc["counts"]
+    assert rc["factor"] >= 2
     assert _run(df, period)["verdict"] == "not flat"
 
 
@@ -93,7 +87,8 @@ def test_the_contemporaneous_side_holds_the_whole_other_half():
     rng = np.random.default_rng(0)
     before, rest = np.arange(100), np.arange(100, 130)
     side = stationarity._contemporaneous(before, rest, 100, rng)
-    assert len(side) == 100 and set(rest) <= set(side)
+    assert len(side) == 100
+    assert set(rest) <= set(side)
 
 
 def test_test_units_leave_every_training_side():
@@ -172,4 +167,4 @@ def test_a_not_flat_window_stands_in_a_partial_run():
 def test_tabpfn_v35_refuses_a_cpu():
     """TabPFN v3.5 runs on a GPU only."""
     with pytest.raises(ValueError, match="on a GPU"):
-        stationarity.tabpfn_v35("binary", [0, 1], device="cpu")
+        models.tabpfn_v35("binary", [0, 1], device="cpu")

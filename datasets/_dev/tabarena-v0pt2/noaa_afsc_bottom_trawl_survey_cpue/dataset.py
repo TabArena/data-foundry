@@ -9,7 +9,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -149,7 +150,7 @@ def _goa_stratum_1984(latitude: pd.Series, longitude: pd.Series, strata: pd.Data
 
     points = _alaska_albers(latitude.to_numpy(dtype=float), longitude.to_numpy(dtype=float))
     stratum = np.full(len(points), -1)
-    for number, blob in zip(strata["stratum"].astype(int), strata["geom"]):
+    for number, blob in zip(strata["stratum"].astype(int), strata["geom"], strict=False):
         inside = np.zeros(len(points), dtype=bool)
         for shell, *holes in _multipolygon_rings(blob):
             in_polygon = PolygonPath(shell).contains_points(points)
@@ -352,7 +353,6 @@ class NoaaAfscBottomTrawlSurveyCpue(AbstractCuratedDataset):
             "11 taxa, lower is better (equal to the mean over taxa of sqrt(1 - R^2) on counts). A taxon whose catches "
             "do not vary in a window is left out; none is in the nine windows."
         ),
-        inputs={"group": "taxon_group"},
         target_transform="log1p",
     )
     scoring_columns = (

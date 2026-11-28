@@ -2,21 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: 2_month_survival_rate_prediction
 container_format: 2
-checksum: v2:86f44716efc52a4bb248cb9857976324e449e5800496e9adf6fe75c8da806129
+checksum: v2:18a194021fd95d57ced68c0645ef469e54aa7b3f926eee75ab2f726fa5993b00
 build:
-  uuid: 01a207f8-cef8-7844-bd03-78434d377a51
-  checksum: v2:86f44716efc52a4bb248cb9857976324e449e5800496e9adf6fe75c8da806129
-  built_at: '2026-11-23T10:34:39+00:00'
-  path: 2_month_survival_rate_prediction/01a207f8-cef8-7844-bd03-78434d377a51
+  uuid: 01a21800-a9c4-7d44-b598-691b6d7fc366
+  checksum: v2:18a194021fd95d57ced68c0645ef469e54aa7b3f926eee75ab2f726fa5993b00
+  built_at: '2026-11-26T13:17:07+00:00'
+  path: 2_month_survival_rate_prediction/01a21800-a9c4-7d44-b598-691b6d7fc366
   data_foundry_version: 0.0.5
-  git_sha: ab3a9fa4b776951236de5736e45a661755b10d58-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.16
+    python: 3.12.3
     pandas: 2.3.3
-    numpy: 2.4.6
-    pyarrow: 24.0.0
+    numpy: 2.1.3
+    pyarrow: 20.0.0
     scikit-learn: 1.7.2
-    polars: 1.44.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 8967
@@ -49,6 +49,41 @@ splits:
   time_horizon_unit: months
   time_gap: 60
   time_gap_unit: days
+  reason: 'Each trains on every patient who entered
+
+    60 days or more before the window starts: 82%, 69% and 56% of the 8,967 patients
+    (Andrej, 2026-11-19,
+
+    decision B).
+
+    The file has no entry date. Within each of its ten blocks the rows are in entry
+    order: the survivors'' entry
+
+    dates (31 Dec 1994 minus d.time) rise with the file position, Spearman 1.000 in
+    every block, and each death is
+
+    dated between its neighbouring survivors (the two survivors either side a median
+    4 days apart). The eight half-years hold 934 to 1,284
+
+    patients each.
+
+    Gap: the label, death within 60 days of entry, is known 60 days after entry, so
+    the patients who entered in
+
+    the 60 days before a window are in neither side of it (325 to 382 per window):
+    training holds only outcomes
+
+    known when the window starts.
+
+    Three windows against the nine splits that 8,967 patients would get at random
+    (SPLIT-33): a fourth, the first
+
+    half of 1992, would train only on phase I (4,232 patients, 47%), below the floor
+    of half the data, and the
+
+    study enrolled no one from mid-1991 to January 1992.
+
+    Until 2026-11-19 the split was random patients (`ForcedIIDFromTemporal`).'
   n_train:
     min: 5029
     max: 7369
@@ -68,11 +103,11 @@ bundle_checks:
       field of the release, so no actor holds it at the prediction point and it must
       stay out of the inputs; it dates the entry, not the moment the label became
       known, and the gap is not redundant with it (Andrej, 2026-11-19).'
-    splits_below_target: Three windows against the nine an IID split of 8,967 patients
-      would get (SPLIT-33). A fourth window, the first half of 1992, would train only
-      on phase I (4,232 patients, 47%), below the floor of half the data, and the
-      study enrolled no one from mid-1991 to January 1992. The splits comment names
-      the target, the count reached and what stops more (SPLIT-15).
+    splits_dimensions_off_protocol: Three windows against the nine an IID split of
+      8,967 patients would get (SPLIT-33). A fourth window, the first half of 1992,
+      would train only on phase I (4,232 patients, 47%), below the floor of half the
+      data, and the study enrolled no one from mid-1991 to January 1992. The splits
+      comment names the target, the count reached and what stops more (SPLIT-15).
 decisions:
 - 'Phase II physiology restored: published in other patients'' rows'
 - Where each block of the file took its physiology from
@@ -90,7 +125,7 @@ decisions:
 
 Binary classification of `death_within_2_months`, scored with `roc_auc` on temporal splits by `entry_date`. 8,967 rows and 22 features. Source: Other (2003).
 
-Built as `01a207f8-cef8-7844-bd03-78434d377a51` on 2026-11-23. See [Build](#build).
+Built as `01a21800-a9c4-7d44-b598-691b6d7fc366` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -269,8 +304,9 @@ We start with support2.csv from the Vanderbilt Biostatistics data repository (hb
 
 ## Splits
 
-Three test windows of study entry, newest first: the second half of 1993 with January 1994 (1,216 patients),
-the first half of 1993 (1,247) and the second half of 1992 (1,099). Each trains on every patient who entered
+Expanding-window temporal splits: 3 test window(s), each from its start to the next start, the newest to the end of the data (starts: 1993-07-01, 1993-01-01, 1992-07-01), newest first; train is all earlier data up to a gap of 60 days. The test windows by `entry_date`, as listed: 1993-07-01 to 1994-01-21 (1,216 test, 7,369 train rows); 1993-01-01 to 1993-06-30 (1,247 test, 6,179 train rows); 1992-07-01 to 1992-12-30 (1,099 test, 5,029 train rows).
+
+Each trains on every patient who entered
 60 days or more before the window starts: 82%, 69% and 56% of the 8,967 patients (Andrej, 2026-11-19,
 decision B).
 The file has no entry date. Within each of its ten blocks the rows are in entry order: the survivors' entry
@@ -440,7 +476,7 @@ The file has no entry date. Within each of its ten blocks the rows are in entry 
 Accepted on purpose:
 
 - `task_label_time_gap`: The 60-day gap is the label's own delay: death within 60 days of entry is known 60 days later, so each window trains only on patients whose outcome was known when it starts (SPLIT-10). `entry_date` is declared `time_of="label"` because it is our reconstruction of the entry order and no field of the release, so no actor holds it at the prediction point and it must stay out of the inputs; it dates the entry, not the moment the label became known, and the gap is not redundant with it (Andrej, 2026-11-19).
-- `splits_below_target`: Three windows against the nine an IID split of 8,967 patients would get (SPLIT-33). A fourth window, the first half of 1992, would train only on phase I (4,232 patients, 47%), below the floor of half the data, and the study enrolled no one from mid-1991 to January 1992. The splits comment names the target, the count reached and what stops more (SPLIT-15).
+- `splits_dimensions_off_protocol`: Three windows against the nine an IID split of 8,967 patients would get (SPLIT-33). A fourth window, the first half of 1992, would train only on phase I (4,232 patients, 47%), below the floor of half the data, and the study enrolled no one from mid-1991 to January 1992. The splits comment names the target, the count reached and what stops more (SPLIT-15).
 
 ## Data checks
 
@@ -554,10 +590,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a207f8-cef8-7844-bd03-78434d377a51 |
-| checksum | v2:86f44716efc52a4bb248cb9857976324e449e5800496e9adf6fe75c8da806129 |
-| built_at | 2026-11-23T10:34:39+00:00 |
-| path | 2_month_survival_rate_prediction/01a207f8-cef8-7844-bd03-78434d377a51 |
+| uuid | 01a21800-a9c4-7d44-b598-691b6d7fc366 |
+| checksum | v2:18a194021fd95d57ced68c0645ef469e54aa7b3f926eee75ab2f726fa5993b00 |
+| built_at | 2026-11-26T13:17:07+00:00 |
+| path | 2_month_survival_rate_prediction/01a21800-a9c4-7d44-b598-691b6d7fc366 |
 | data_foundry_version | 0.0.5 |
-| git_sha | ab3a9fa4b776951236de5736e45a661755b10d58-dirty |
-| libraries | {'python': '3.11.16', 'pandas': '2.3.3', 'numpy': '2.4.6', 'pyarrow': '24.0.0', 'scikit-learn': '1.7.2', 'polars': '1.44.2'} |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: 5g_energy_consumption
 container_format: 2
-checksum: v2:c6fa2630f7070043ab4c36b575c7291216a19b16c413bb350cad06149c776d52
+checksum: v2:917f237c280b1dfe1a2c84364369c7fd81c0a9550ff8b374581a6ca11bf23d0a
 build:
-  uuid: 01a111fc-7d10-76f4-b97c-284becb386ec
-  checksum: v2:f656e1e34bd973009beb9f9a0f191920552ec4d008bfda996ba0dd0cd957ff85
-  built_at: '2026-10-06T16:12:03+00:00'
-  path: 5g_energy_consumption/01a111fc-7d10-76f4-b97c-284becb386ec
+  uuid: 01a21800-6858-78b2-ae83-ea8ab1d9ba0b
+  checksum: v2:917f237c280b1dfe1a2c84364369c7fd81c0a9550ff8b374581a6ca11bf23d0a
+  built_at: '2026-11-26T13:16:50+00:00'
+  path: 5g_energy_consumption/01a21800-6858-78b2-ae83-ea8ab1d9ba0b
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 92629
   n_features: 20
@@ -55,6 +55,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 61207
     max: 62529
@@ -78,7 +79,7 @@ decisions: []
 
 Regression of `Energy`, scored with `mape` on grouped splits by `BS`. 92,629 rows and 20 features. Source: Zindi (2023).
 
-Built as `01a111fc-7d10-76f4-b97c-284becb386ec` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c6fa2630f7070043ab4c36b575c7291216a19b16c413bb350cad06149c776d52`, so the build is stale. See [Build](#build).
+Built as `01a21800-6858-78b2-ae83-ea8ab1d9ba0b` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -219,15 +220,11 @@ The first 5 of 92,629 rows of the final frame (random rows: the frame is shuffle
   a number again (a category on 2026-10-31). A weekday or a month is a position in a continuous cycle (weekday
   1.5 is Monday noon), and the source ships it as a number; named weekdays and months are ordered categories
   instead.
-- Time basis: RetrospectiveFillIn: one logged week of 923 stations, 2023-01-01 01:00 to 2023-01-08 00:00, hourly; the
-  energy is metered in the same hour as the load and energy-saving settings, and the use case fills in the
-  hours of stations without meters in that week while the other stations of the same hours are measured (day
-  and hour are features). Not tested: a later week, or a new station product before it runs, the challenge's
-  aim.
+- Time basis: RetrospectiveFillIn: one logged week of 923 stations, 2023-01-01 01:00 to 2023-01-08 00:00, hourly; the energy is metered in the same hour as the load and energy-saving settings, and the use case fills in the hours of stations without meters in that week while the other stations of the same hours are measured (day and hour are features). Not tested: a later week, or a new station product before it runs, the challenge's aim.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation keeping each group of `BS` whole (shuffled group k-fold, a new draw per repeat): 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 92,629 rows (SPLIT-33).
 
 3 repeat(s) x 3 fold(s) with seed 4267; train 61,207 to 62,529 rows, test 30,100 to 31,422 rows.
 
@@ -265,7 +262,7 @@ One group is a base station; its rows are its hourly measurements. The ITU AI/ML
 | nearest neighbour in the same group | 5.1% of the rows (chance: 0.1%) |
 | label variance explained by the group | 0.86 (shuffled groups: 0.01) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
@@ -371,11 +368,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-7d10-76f4-b97c-284becb386ec |
-| checksum | v2:f656e1e34bd973009beb9f9a0f191920552ec4d008bfda996ba0dd0cd957ff85 |
-| built_at | 2026-10-06T16:12:03+00:00 |
-| path | 5g_energy_consumption/01a111fc-7d10-76f4-b97c-284becb386ec |
+| uuid | 01a21800-6858-78b2-ae83-ea8ab1d9ba0b |
+| checksum | v2:917f237c280b1dfe1a2c84364369c7fd81c0a9550ff8b374581a6ca11bf23d0a |
+| built_at | 2026-11-26T13:16:50+00:00 |
+| path | 5g_energy_consumption/01a21800-6858-78b2-ae83-ea8ab1d9ba0b |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c6fa2630f7070043ab4c36b575c7291216a19b16c413bb350cad06149c776d52` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

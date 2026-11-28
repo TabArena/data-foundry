@@ -3,9 +3,6 @@ unique_name: wadden_sea_sibes_macoma_abundance
 name: Wadden Sea Macoma abundance (Lyashevska et al. 2016) / SIBES synoptic intertidal benthic survey (NIOZ, 2008-2022)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:

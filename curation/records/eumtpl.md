@@ -3,9 +3,6 @@ unique_name: eumtpl
 name: euMTPL, European motor TPL portfolio (CASdatasets)
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Lennart
 suggestion: TBD -> Yes
 priority: 3
 tags:

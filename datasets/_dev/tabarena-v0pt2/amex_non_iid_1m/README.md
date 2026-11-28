@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: amex_non_iid_1m
 container_format: 2
-checksum: v2:386a41b6e025c3f77fe75e17a843b40cc6d65ffbde9de937e7fbf30c35050080
+checksum: v2:68c4b5c57e5d19afaee26a56776fd6eb1f7438c69a4332ac9655f617ad8abe8d
 build:
-  uuid: 01a111fb-d73e-711b-a490-c684c5c4635d
-  checksum: v2:0c020fafb06a0223bf62e6fa7cb60da404d9b841396e4624184ca2db713395c3
-  built_at: '2026-10-06T16:11:44+00:00'
-  path: amex_non_iid/versions/01a111fb-d73e-711b-a490-c684c5c4635d
+  uuid: 01a217f5-68ce-73c3-9062-1a3e5433330a
+  checksum: v2:68c4b5c57e5d19afaee26a56776fd6eb1f7438c69a4332ac9655f617ad8abe8d
+  built_at: '2026-11-26T13:07:05+00:00'
+  path: amex_non_iid_1m/01a217f5-68ce-73c3-9062-1a3e5433330a
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 5531451
   n_features: 189
@@ -56,6 +56,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 5031451
     max: 5031451
@@ -90,7 +91,7 @@ decisions: []
 
 Binary classification of `target`, scored with `gini_top_capture` on grouped splits by `customer_ID`, one prediction per group (last). 5,531,451 rows and 189 features. Source: Kaggle (2022).
 
-Built as `01a111fb-d73e-711b-a490-c684c5c4635d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:386a41b6e025c3f77fe75e17a843b40cc6d65ffbde9de937e7fbf30c35050080`, so the build is stale. See [Build](#build).
+Built as `01a217f5-68ce-73c3-9062-1a3e5433330a` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -150,7 +151,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2022 |
 | domain | finance |
 | license | Kaggle Competition License |
-| data_tags | Non-IID, Grouped, Anonymized, UnseenGroup |
+| data_tags | Non-IID, GroupedTemporal, Anonymized, UnseenGroup |
 | reference | howard2022amex |
 | rows x columns | 5,531,451 x 191 |
 | task.target | target |
@@ -221,15 +222,11 @@ We start with the raw data from Kaggle and do not apply any further preprocessin
 - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
   event, the class that sorts second, so it is the metrics' positive class.
 - The row budget (1M train, 500k test rows): We keep the whole frame (5,531,451 statements of 458,913 customers) and use grouped 3-fold cross-validation over it (v2 split protocol). Each fold tests on at most 500k rows, whole customers drawn from its third and stratified on the target, and trains on every other row (about 5.03M). The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M rows with `subsample_train`, whose default draws whole customers at random, stratified on the target.
-- Time basis: UnseenGroup (Andrej, 2026-11-18; `ForcedGroupedFromTemporal` from 2026-11-16, `DelayedTarget`
-  before): the use case scores customers the data does not hold, so whole customers are held out, each with
-  its statements. Every customer is scored at its latest statement, and all 458,913 latest statements fall in
-  March 2018; the label covers a fixed 18 months after it. Not tested: a later scoring month, which later
-  scoring months in a release would allow.
+- Time basis: UnseenGroup (Andrej, 2026-11-18; `ForcedGroupedFromTemporal` from 2026-11-16): the use case scores customers the data does not hold, so whole customers are held out, each with its statements. Every customer is scored at its latest statement, and all 458,913 latest statements fall in March 2018; the label covers a fixed 18 months after it. Not tested: a later scoring month, which later scoring months in a release would allow.
 
 ## Splits
 
-Default splits. Each fold tests on at most 500k rows of its third (whole groups) and trains on every other row; a benchmark sub-samples the train side to 1M rows (by default whole groups drawn at random, `subsample_train`).
+Repeated 3-fold cross-validation over the groups of `customer_ID` (one label each), stratified on `target`: 1 repeat(s) x 3 folds, 3 splits, the repeats set by the 458,913 groups (SPLIT-33). Each fold tests on at most 500k rows of its third (whole groups) and trains on every other row; a benchmark sub-samples the train side to 1M rows (by default whole groups drawn at random, `subsample_train`).
 
 1 repeat(s) x 3 fold(s) with seed 4267; train 5,031,451 rows, test 500,000 rows. Row budget: at most 500k test rows per split; a benchmark trains on at most 1M. The train sides keep every row available to them; `subsample_train` draws the 1M rows a benchmark fits on from at random, as whole groups.
 
@@ -261,13 +258,13 @@ One group is a customer; its rows are its monthly statements (1 to 13). The task
 | nearest neighbour in the same group | 1.8% of the rows (chance: 0.0%) |
 | label variance explained by the group | 1.00 (shuffled groups: 0.08) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
 0 error(s), 0 warning(s), 3 info (28 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 1,056,507,141 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 1,056,507,141 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to run them; nothing else checks duplicate rows and columns.)
 - **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 1,056,507,141 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
 - **info** `meta_time_present_unused`: Date columns ['S_2'] are in the data, and the split is not temporal. (hint: Information for the split (SPLIT-32): the data carries dates.)
 
@@ -299,12 +296,12 @@ Accepted on purpose:
 | target | category | 0 | 0 | 2 | No, Yes |
 | S_2 | datetime64\[ns\] | 0 | 0 | 396 | 2018-02-17 00:00:00, 2018-02-03 00:00:00, 2018-01-20 00:00:00, 2018-03-17 00:00… |
 | D_87 | float32 | 5.52759e+06 | 99.93 | 1 | 1.0 |
-| D_88 | float32 | 5.52545e+06 | 99.89 | 6004 | 0.4527, 0.5432, 0.2037, 0.5577, 0.0175, 0.1384, 0.0263, 0.1306, 0.0698, 0.0712 |
+| D_88 | float32 | 5.52545e+06 | 99.89 | 6004 | 0.0083, 0.4527, 0.5432, 0.2037, 0.5577, 0.0175, 0.1384, 0.0263, 0.1306, 0.0698 |
 | D_108 | float32 | 5.50251e+06 | 99.48 | 10 | 0.0, 1.0, 2.0, 4.0, 3.0, 5.0 |
 | D_110 | float32 | 5.50012e+06 | 99.43 | 30406 | 1.0095, 1.0001, 1.0011, 1.0022, 1.0057, 1.0045, 1.0097, 1.0076, 1.0036, 0.2065 |
 | D_111 | float32 | 5.50012e+06 | 99.43 | 3 | 2.0, 1.0, 0.0 |
-| B_39 | float32 | 5.49782e+06 | 99.39 | 33557 | 0.0248, 0.1221, 1.0031, 0.172, 0.0206, 0.0283, 0.9977, 0.3748, 0.0479, 0.106 |
-| D_73 | float32 | 5.4756e+06 | 98.99 | 55802 | 0.0568, 0.1178, 0.0526, 0.0356, 0.1126, 0.1231, 0.1171, 0.1344, 0.0921, 0.0542 |
+| B_39 | float32 | 5.49782e+06 | 99.39 | 33557 | 0.4446, 0.0248, 0.1221, 1.0031, 0.172, 0.0206, 0.0283, 0.9977, 0.3748, 0.0479 |
+| D_73 | float32 | 5.4756e+06 | 98.99 | 55802 | 0.048, 0.0568, 0.1178, 0.0526, 0.0356, 0.1126, 0.1231, 0.1171, 0.1344, 0.0921 |
 | B_42 | float32 | 5.45997e+06 | 98.71 | 71434 | 0.305, 0.0082, 0.0041, 0.0058, 0.0042, 0.0507, 0.0061, 0.0092, 0.0018, 0.001 |
 | D_134 | float32 | 5.33675e+06 | 96.48 | 192523 | 1.0028, 1.0059, 1.0045, 0.3332, 1.003, 0.8404, 1.0081, 1.0033, 1.0043, 0.3334 |
 | D_135 | float32 | 5.33675e+06 | 96.48 | 2 | 0.0, 1.0 |
@@ -365,9 +362,9 @@ Accepted on purpose:
 |---|---|---|---|---|---|
 | P_2 | 548600 | 0.655941 | 0.24474 | -0.393442 | 1.01 |
 | D_39 | 553145 | 5.04063 | 9.1889 | 0 | 182 |
-| B_1 | 553145 | 0.124152 | 0.212236 | -1.3503 | 1.32406 |
+| B_1 | 553145 | 0.124151 | 0.212236 | -1.3503 | 1.32406 |
 | B_2 | 552945 | 0.621008 | 0.401782 | 1.17923e-06 | 1.01 |
-| R_1 | 553145 | 0.0791148 | 0.226824 | 5.13333e-08 | 2.75912 |
+| R_1 | 553145 | 0.0791149 | 0.226824 | 5.13333e-08 | 2.75912 |
 | S_3 | 450914 | 0.226033 | 0.192881 | -0.441279 | 4.43796 |
 | D_41 | 552945 | 0.0562102 | 0.206791 | 0 | 7.44259 |
 | B_3 | 552945 | 0.132907 | 0.235237 | 8.08737e-08 | 1.62526 |
@@ -417,7 +414,7 @@ Accepted on purpose:
 | D_65 | 553145 | 1.32854 | 16.7493 | 0 | 7762 |
 | B_16 | 552945 | 4.13601 | 4.83226 | 0 | 12 |
 | B_17 | 239482 | 0.716544 | 0.385771 | 4.02099e-07 | 1.01 |
-| B_18 | 553145 | 0.593552 | 0.36336 | 9.64286e-07 | 1 |
+| B_18 | 553145 | 0.593553 | 0.36336 | 9.64286e-07 | 1 |
 | B_19 | 552945 | 14.5673 | 28.9938 | 0 | 100 |
 | B_20 | 552945 | 3.94774 | 6.36367 | 0 | 17 |
 | S_12 | 553145 | 0.240369 | 0.25209 | -0.403263 | 84.7302 |
@@ -499,11 +496,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fb-d73e-711b-a490-c684c5c4635d |
-| checksum | v2:0c020fafb06a0223bf62e6fa7cb60da404d9b841396e4624184ca2db713395c3 |
-| built_at | 2026-10-06T16:11:44+00:00 |
-| path | amex_non_iid/versions/01a111fb-d73e-711b-a490-c684c5c4635d |
+| uuid | 01a217f5-68ce-73c3-9062-1a3e5433330a |
+| checksum | v2:68c4b5c57e5d19afaee26a56776fd6eb1f7438c69a4332ac9655f617ad8abe8d |
+| built_at | 2026-11-26T13:07:05+00:00 |
+| path | amex_non_iid_1m/01a217f5-68ce-73c3-9062-1a3e5433330a |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:386a41b6e025c3f77fe75e17a843b40cc6d65ffbde9de937e7fbf30c35050080` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

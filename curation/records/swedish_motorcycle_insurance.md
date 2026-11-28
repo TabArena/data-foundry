@@ -3,9 +3,6 @@ unique_name: swedish_motorcycle_insurance
 name: 'Swedish motorcycle insurance (Wasa, 1994-1998): partial-casco claim frequency'
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Lennart
 suggestion: TBD -> Yes
 priority: 4
 tags:

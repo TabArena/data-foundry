@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: spanish_homeowners_motor_insurance_2010_2014
 container_format: 2
-checksum: v2:33fdfde64ef26121b09dd42effd0b27923d2ff40d648d197d4652cac6753076a
-build: null
+checksum: v2:d5f07dbf9cb62256cde8c8e3b8673a0325c61d50d5a607e063763204bb21ae37
+build:
+  uuid: 01a217ff-921d-75ed-b122-876da00f5099
+  checksum: v2:d5f07dbf9cb62256cde8c8e3b8673a0325c61d50d5a607e063763204bb21ae37
+  built_at: '2026-11-26T13:16:04+00:00'
+  path: spanish_homeowners_motor_insurance_2010_2014/01a217ff-921d-75ed-b122-876da00f5099
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 122935
@@ -35,6 +48,57 @@ splits:
   time_horizon_unit: years
   time_gap: null
   time_gap_unit: null
+  reason: 'An insurer refits its renewal price on the years it has seen and applies
+    it to the next year''s renewals: 3
+
+    test windows of one year, 2014, 2013 and 2012, newest first, each trained on every
+    earlier year (89%, 75% and
+
+    57% of the rows). The test years hold 13,284, 17,044 and 22,505 customer-years,
+    of which 240, 310 and 448 have
+
+    a home claim cost. One window is noisy: a random prediction scores within a null
+    SD of 0.066 to 0.101 of the
+
+    Gini, so compare models on the mean of the 3 windows (TP-9). The test customers
+    are all known: the same
+
+    customers'' earlier years are in training (91% of the test rows), and their claims
+    enter as inputs.
+
+
+    No gap (an exception to SPLIT-10, serving SPLIT-14). At a renewal the previous
+    year''s claims are not final.
+
+    The sources do not say how `year` runs. Read as a calendar year, only the claims
+    of the last weeks are
+
+    missing: hiding the newest training year''s claims of the last 30 or 90 days gives
+    untuned LightGBM a mean
+
+    Gini of 0.226 and 0.203, against 0.219 as shipped. Read as a policy year from
+    each customer''s renewal, the
+
+    newest training year can overlap the test year by up to a year; the upper bound
+    is a run without the newest
+
+    training year, which moves the mean from 0.219 to 0.200 (2014 0.161 to 0.148,
+    2013 0.315 to 0.244, about one
+
+    null SD, 2012 0.182 to 0.207). Both effects are within the noise. A one-year gap,
+    the smallest the yearly
+
+    column allows, leaves 2012 a training side of 33%, so only two windows would meet
+    SPLIT-14; the curator
+
+    declined a SPLIT-10 amendment (CC on avito_demand_prediction, 2026-11-02).
+
+
+    Three windows, against the 9 an IID split of 122,935 customer-years would get:
+    the release has five policy
+
+    years, and a 2011 window would train on 2010 alone, 32.8% of the rows (Andrej,
+    2026-11-19).'
   n_train:
     min: 70102
     max: 109651
@@ -45,8 +109,7 @@ bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos:
-  - meta_time_horizon_unit
+  infos: []
   accepted:
     task_time_on_few_unique: Yearly renewals over five policy years (2010-2014), so
       the three test windows train on two to four earlier years; the panel has no
@@ -54,9 +117,9 @@ bundle_checks:
     task_target_value_dominant: 'Zero-inflated by nature: 98.2% of customer-years
       have no home claim cost, a real no-claim year and not a placeholder (Andrej,
       2026-11-02).'
-    splits_below_target: 'Three windows, against the 9 an IID split of 122,935 customer-years
-      would get: the release has five policy years, and a 2011 window would train
-      on 2010 alone, 32.8% of the rows (Andrej, 2026-11-19).'
+    splits_dimensions_off_protocol: 'Three windows, against the 9 an IID split of
+      122,935 customer-years would get: the release has five policy years, and a 2011
+      window would train on 2010 alone, 32.8% of the rows (Andrej, 2026-11-19).'
 decisions:
 - The rating fields are one reading per customer, and kept
 - 'Three yearly test windows: rows and home claims per year'
@@ -69,7 +132,7 @@ decisions:
 
 Regression of `log1p_home_claim_cost`, scored with `normalized_gini` on temporal splits by `policy_year` (one step is a year). 122,935 rows and 19 features. Source: Other (2021).
 
-Not built yet. The current definition gives checksum `v2:33fdfde64ef26121b09dd42effd0b27923d2ff40d648d197d4652cac6753076a`.
+Built as `01a217ff-921d-75ed-b122-876da00f5099` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -222,6 +285,8 @@ We start with data_ex.csv of Mendeley Data vfchtm5y7j, version 1 (Guillen, Bolan
 
 ## Splits
 
+Expanding-window temporal splits: 3 test window(s) of 1 time value, walking back from the newest data, newest first; train is all earlier data. The test windows by `policy_year`, as listed: 2014 (13,284 test, 109,651 train rows); 2013 (17,044 test, 92,607 train rows); 2012 (22,505 test, 70,102 train rows).
+
 An insurer refits its renewal price on the years it has seen and applies it to the next year's renewals: 3
 test windows of one year, 2014, 2013 and 2012, newest first, each trained on every earlier year (89%, 75% and
 57% of the rows). The test years hold 13,284, 17,044 and 22,505 customer-years, of which 240, 310 and 448 have
@@ -305,15 +370,14 @@ A home claim in the previous year raises the year's home claim share about three
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
-- **info** `meta_time_horizon_unit`: `time_horizon_unit='years'` implies calendar time, but `time_on='policy_year'` has dtype int64, so the horizon cannot be cross-checked. (hint: Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use `time_horizon_unit='steps'` for a plain numeric time index.)
 
 Accepted on purpose:
 
 - `task_time_on_few_unique`: Yearly renewals over five policy years (2010-2014), so the three test windows train on two to four earlier years; the panel has no finer time (Andrej, 2026-11-02).
 - `task_target_value_dominant`: Zero-inflated by nature: 98.2% of customer-years have no home claim cost, a real no-claim year and not a placeholder (Andrej, 2026-11-02).
-- `splits_below_target`: Three windows, against the 9 an IID split of 122,935 customer-years would get: the release has five policy years, and a 2011 window would train on 2010 alone, 32.8% of the rows (Andrej, 2026-11-19).
+- `splits_dimensions_off_protocol`: Three windows, against the 9 an IID split of 122,935 customer-years would get: the release has five policy years, and a 2011 window would train on 2010 alone, 32.8% of the rows (Andrej, 2026-11-19).
 
 ## Data checks
 
@@ -395,4 +459,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a217ff-921d-75ed-b122-876da00f5099 |
+| checksum | v2:d5f07dbf9cb62256cde8c8e3b8673a0325c61d50d5a607e063763204bb21ae37 |
+| built_at | 2026-11-26T13:16:04+00:00 |
+| path | spanish_homeowners_motor_insurance_2010_2014/01a217ff-921d-75ed-b122-876da00f5099 |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

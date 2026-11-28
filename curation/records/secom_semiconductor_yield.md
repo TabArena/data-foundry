@@ -3,9 +3,6 @@ unique_name: secom_semiconductor_yield
 name: SECOM (semiconductor manufacturing process data, UCI 179)
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Lennart
 suggestion: TBD -> Yes
 priority: 2
 decision_markers:

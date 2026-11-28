@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: kick
 container_format: 2
-checksum: v2:4a9fbedaaed43d990b4f0fb71d6c883508ab7d4940affed6cb50f7f4a3942562
+checksum: v2:ea8c0299151f91d95aa2b85580dad1294d6fe71445f8372527b5144ea651eccf
 build:
-  uuid: 01a111fc-8ab4-7b2f-9955-2cc583c9e979
-  checksum: v2:56fbaf6a01bb708925bcfc79ee4891d3ee2b707defd7ce843852e2521bbc17ae
-  built_at: '2026-10-06T16:12:08+00:00'
-  path: kick/01a111fc-8ab4-7b2f-9955-2cc583c9e979
+  uuid: 01a21800-3851-7c64-8e4c-53182b3e9f39
+  checksum: v2:ea8c0299151f91d95aa2b85580dad1294d6fe71445f8372527b5144ea651eccf
+  built_at: '2026-11-26T13:16:40+00:00'
+  path: kick/01a21800-3851-7c64-8e4c-53182b3e9f39
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36-dirty
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 72983
   n_features: 24
@@ -48,6 +48,28 @@ splits:
   time_horizon_unit: days
   time_gap: 14
   time_gap_unit: days
+  reason: 'Nine test windows of 35 days (five weeks) of purchase dates, walking back
+    from the newest purchase (the 3x3 an
+
+    IID dataset of this size would get), each trained on every purchase made more
+    than 14 days before the window
+
+    starts (Andrej, 2026-11-10). The gap is the time until a kick is known: a kick
+    is a car returned to the
+
+    auction (the data dictionary''s `KickDate`, not released), through the auction''s
+    arbitration, which runs 10
+
+    calendar days after the sale (Manheim''s buyer arbitration guide), plus a margin
+    for the return to be recorded.
+
+    The newest purchases show no shortfall of kicks (last 2 weeks 18.7% bad buys,
+    last 4 weeks 15.8%, overall
+
+    12.3%), so the release holds the outcomes. The earlier
+
+    windows of 28 purchase dates without a gap trained the oldest window on 48.7%
+    of the cars.'
   n_train:
     min: 38371
     max: 68012
@@ -73,7 +95,7 @@ decisions:
 
 Binary classification of `IsBadBuy`, scored with `roc_auc` on temporal splits by `PurchDate`. 72,983 rows and 24 features. Source: Kaggle (2011).
 
-Built as `01a111fc-8ab4-7b2f-9955-2cc583c9e979` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:4a9fbedaaed43d990b4f0fb71d6c883508ab7d4940affed6cb50f7f4a3942562`, so the build is stale. See [Build](#build).
+Built as `01a21800-3851-7c64-8e4c-53182b3e9f39` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -213,14 +235,15 @@ The first 5 of 72,983 rows of the final frame (the oldest rows: the frame is sor
 
 ## Splits
 
+Expanding-window temporal splits: 9 test window(s) of 35 days, walking back from the newest data, newest first; train is all earlier data up to a gap of 14 days. The test windows by `PurchDate`, as listed: 2010-11-26 to 2010-12-30 (3,088 test, 68,012 train rows); 2010-10-22 to 2010-11-24 (4,515 test, 63,345 train rows); 2010-09-17 to 2010-10-21 (4,453 test, 59,716 train rows); 2010-08-13 to 2010-09-16 (3,028 test, 56,567 train rows); 2010-07-09 to 2010-08-12 (3,745 test, 52,974 train rows); 2010-06-04 to 2010-07-08 (3,344 test, 49,413 train rows); 2010-04-30 to 2010-06-03 (3,713 test, 45,674 train rows); 2010-03-26 to 2010-04-29 (3,388 test, 42,208 train rows); 2010-02-19 to 2010-03-25 (3,780 test, 38,371 train rows).
+
 Nine test windows of 35 days (five weeks) of purchase dates, walking back from the newest purchase (the 3x3 an
 IID dataset of this size would get), each trained on every purchase made more than 14 days before the window
 starts (Andrej, 2026-11-10). The gap is the time until a kick is known: a kick is a car returned to the
 auction (the data dictionary's `KickDate`, not released), through the auction's arbitration, which runs 10
 calendar days after the sale (Manheim's buyer arbitration guide), plus a margin for the return to be recorded.
 The newest purchases show no shortfall of kicks (last 2 weeks 18.7% bad buys, last 4 weeks 15.8%, overall
-12.3%), so the release holds the outcomes. Every training side holds at least half of the cars (52.6% for
-the oldest window, starting 2010-02-19); the test windows hold 3,028 to 4,515 cars (33,054 in all). The earlier
+12.3%), so the release holds the outcomes. The earlier
 windows of 28 purchase dates without a gap trained the oldest window on 48.7% of the cars.
 
 9 repeat(s) x 1 fold(s) with seed 4267; train 38,371 to 68,012 rows, test 3,028 to 4,515 rows. Prediction horizon: 35 days. Gap between train and test: 14 days.
@@ -423,11 +446,10 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-8ab4-7b2f-9955-2cc583c9e979 |
-| checksum | v2:56fbaf6a01bb708925bcfc79ee4891d3ee2b707defd7ce843852e2521bbc17ae |
-| built_at | 2026-10-06T16:12:08+00:00 |
-| path | kick/01a111fc-8ab4-7b2f-9955-2cc583c9e979 |
+| uuid | 01a21800-3851-7c64-8e4c-53182b3e9f39 |
+| checksum | v2:ea8c0299151f91d95aa2b85580dad1294d6fe71445f8372527b5144ea651eccf |
+| built_at | 2026-11-26T13:16:40+00:00 |
+| path | kick/01a21800-3851-7c64-8e4c-53182b3e9f39 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:4a9fbedaaed43d990b4f0fb71d6c883508ab7d4940affed6cb50f7f4a3942562` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36-dirty |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

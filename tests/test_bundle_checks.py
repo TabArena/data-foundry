@@ -5,13 +5,14 @@ import dataclasses
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry import bundle_checks
-from data_foundry.bundle_checks import (
-    BundleCheckError,
+
+from data_foundry.checks import bundle as bundle_checks
+from data_foundry.checks.bundle import (
     canonical_metric_name,
     run_bundle_checks,
     verify_saved_container,
 )
+from data_foundry.checks.results import BundleCheckError
 from data_foundry.curation_container import (
     CuratedContainer,
     feature_columns as model_inputs,
@@ -19,93 +20,33 @@ from data_foundry.curation_container import (
     unit_weight,
     validation_weight,
 )
+from data_foundry.definition.report import _metric_block
 from data_foundry.schema import (
-    DatasetMetadata,
-    MetricSpec,
+    DatasetMetadataV2,
+    GroupBasis,
     PredictiveMLSplitsMetadata,
-    PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2,
     RowBudget,
     ScoringColumn,
+    Source,
+    TimeBasis,
     UnitWeight,
 )
 from data_foundry.utils.checksum import encode_pydantic_metadata
-from data_foundry.v2.report import _metric_block
-
-BIBTEX = """@misc{toy2025dataset,
-  author = {Toy Author},
-  title  = {A Toy Dataset},
-  year   = {2025},
-  howpublished = {\\url{https://example.com/toy}}
-}
-"""
-
-
-def make_spec(problem_type: str = "binary_classification", metric=None) -> MetricSpec:
-    """A format-2 metric spec: ``metric`` (a `Metric`), or a fallback with a reason, for ``problem_type``."""
-    from data_foundry.v2.dataset import metric_spec
-    from data_foundry.v2.metrics import Metric
-
-    return metric_spec(metric or Metric.fallback(reason="test data"), problem_type)
-
-
-def make_dataset_metadata(**overrides) -> DatasetMetadata:
-    kwargs = {
-        "unique_name": "toy_ds",
-        "dataset_year": "2025",
-        "domain_str": "finance",
-        "dataset_source": "Kaggle",
-        "original_dataset_source_download_link": "https://example.com/toy",
-        "download_description": "kaggle datasets download toy",
-        "academic_reference_bibtex": BIBTEX,
-        "academic_reference_bibtex_key": "toy2025dataset",
-        "license": "CC BY 4.0",
-        "data_tags": ["IID"],
-        "curation_comments": "Read the CSV.",
-    }
-    kwargs.update(overrides)
-    return DatasetMetadata(**kwargs)
-
-
-def make_iid_frame(n: int = 60) -> pd.DataFrame:
-    rng = np.random.default_rng(0)
-    return pd.DataFrame(
-        {
-            "feat_num": rng.normal(size=n),
-            "feat_cat": pd.Categorical(rng.choice(["a", "b", "c"], size=n)),
-            "target": pd.Categorical(rng.choice(["yes", "no"], size=n)),
-        },
-    )
-
-
-def make_iid_splits(n: int = 60, n_folds: int = 3) -> dict:
-    folds = {}
-    positions = np.arange(n)
-    for fold in range(n_folds):
-        test = positions[fold::n_folds]
-        train = np.setdiff1d(positions, test)
-        folds[fold] = (train.tolist(), test.tolist())
-    return {0: folds}
-
-
-def make_container(df: pd.DataFrame | None = None, **overrides) -> CuratedContainer:
-    df = make_iid_frame() if df is None else df
-    kwargs = {
-        "dataset": df,
-        "dataset_metadata": make_dataset_metadata(),
-        "task_metadata": PredictiveMLTaskMetadata(
-            target_column_name="target",
-            problem_type="binary_classification",
-            objective_metric_name="roc_auc",
-            stratify_on="target",
-        ),
-        "experiment_metadata": PredictiveMLSplitsMetadata(
-            splits_comment="Default splits.",
-            splits=make_iid_splits(len(df)),
-        ),
-    }
-    kwargs.update(overrides)
-    return CuratedContainer(**kwargs)
+from data_foundry.v1 import DatasetMetadata, PredictiveMLTaskMetadata
+from tests.helpers import (
+    BIBTEX,
+    make_container,
+    make_dataset_metadata,
+    make_iid_frame,
+    make_iid_splits,
+    make_spec,
+    make_v2_container,
+    metric_findings,
+    source_spec,
+    unit_container,
+    unit_frame,
+)
 
 
 def slugs_of(container: CuratedContainer, **kwargs) -> list[str]:
@@ -164,8 +105,14 @@ def test_constant_and_identifier_columns_are_warnings():
 
 def test_feature_identical_to_target_is_leakage():
     df = make_iid_frame()
-    df["copy_of_target"] = df["target"]
-    assert "dataset_feature_equals_target" in slugs_of(make_container(df))
+    df.insert(0, "copy_of_target", df["target"])  # before the target: its pair with a second copy is the same cause
+    df["second_copy"] = df["target"]
+    found = [
+        r for r in run_bundle_checks(make_container(df), verbose=False).results if r.slug.startswith("dataset_dup")
+    ]
+    assert [(r.slug, r.severity) for r in found] == [("dataset_duplicate_columns", "error")]
+    assert "['copy_of_target', 'second_copy']" in found[0].message
+    assert "pair" not in found[0].message
 
 
 def make_pure_value_frame(n: int = 1_000, positive_share: float = 0.5, n_pure: int = 150) -> pd.DataFrame:
@@ -363,7 +310,14 @@ def test_test_class_unseen_in_train_is_an_error():
         splits_comment="s",
         splits={0: {0: (list(range(8)), [8, 9])}},
     )
-    assert "splits_test_class_unseen_in_train" in slugs_of(make_container(df, experiment_metadata=splits))
+    # the test fold holds only `b`, which its train side lacks: one error, not one per symptom
+    report = run_bundle_checks(make_container(df, experiment_metadata=splits), verbose=False)
+    found = {r.slug: r for r in report.results}
+    assert found["splits_test_single_class"].severity == "error"
+    assert "lacks that class" in found["splits_test_single_class"].message
+    # `b` is also too rare for the folds (2 rows), a warning that does not repeat the fold
+    assert found["splits_class_missing"].severity == "warning"
+    assert "never occurs in train" not in found["splits_class_missing"].message
 
 
 # --- Temporal tasks ------------------------------------------------------------------
@@ -495,6 +449,64 @@ def test_non_datetime_time_on_needs_no_calendar_horizon():
     )
 
 
+def _numeric_time_v2_container(*, time_unit, horizon: int) -> CuratedContainer:
+    df = pd.DataFrame({"year": np.arange(2000, 2040), "feat_num": np.arange(40.0), "target": np.arange(40.0)})
+    task = PredictiveMLTaskMetadataV2(
+        target_column_name="target",
+        problem_type="regression",
+        objective_metric=make_spec("regression"),
+        time_on="year",
+        time_unit=time_unit,
+    )
+    splits = PredictiveMLSplitsMetadata(
+        splits_comment="s",
+        splits={0: {0: (list(range(30)), list(range(30, 40)))}},
+        time_horizon=horizon,
+        time_horizon_unit="years",
+    )
+    return make_temporal_container(dataset=df, task_metadata=task, experiment_metadata=splits, uuid="u")
+
+
+def test_format_2_time_unit_lets_the_horizon_be_cross_checked():
+    """A numeric time column whose `time_unit` is declared has a calendar: the horizon is checked against it."""
+    assert not {"meta_time_horizon_unit", "meta_time_horizon_mismatch"} & set(
+        slugs_of(_numeric_time_v2_container(time_unit="years", horizon=10))
+    )
+    assert "meta_time_horizon_mismatch" in slugs_of(_numeric_time_v2_container(time_unit="years", horizon=100))
+    assert "meta_time_horizon_mismatch" in slugs_of(_numeric_time_v2_container(time_unit="months", horizon=10))
+    undeclared = run_bundle_checks(_numeric_time_v2_container(time_unit=None, horizon=10), verbose=False)
+    (finding,) = [r for r in undeclared.results if r.slug == "meta_time_horizon_unit"]
+    assert "time_unit=" in finding.hint
+
+
+def _with_missing_dates(df: pd.DataFrame, column: str, rows: list[int], *, period: bool = False) -> pd.DataFrame:
+    df = df.copy()
+    if period:
+        df[column] = df[column].dt.to_period("D")
+    df.loc[rows, column] = pd.NaT
+    return df
+
+
+@pytest.mark.parametrize("period", [False, True])
+def test_a_missing_date_in_time_on_is_an_error_and_no_leak(period):
+    """A NaT in the time column is a missing value, never a date far in the past that sorts first."""
+    df = _with_missing_dates(make_temporal_container().dataset, "ts", [5, 35], period=period)
+    found = slugs_of(make_temporal_container(dataset=df))
+    assert "task_time_on_missing_values" in found
+    assert "splits_temporal_leakage" not in found
+    assert "task_time_on_not_sorted" not in found
+
+
+def test_a_label_time_copy_with_missing_dates_is_found():
+    """An exact copy of the label time is found when a third of its dates are missing."""
+    df = make_temporal_container().dataset
+    df["copy_date"] = df["ts"] + pd.Timedelta(days=1)
+    df.loc[::3, "copy_date"] = pd.NaT
+    ctx = bundle_checks._Ctx(container=make_temporal_container(dataset=df), heavy_cell_budget=10**9)
+    copies = bundle_checks._label_time_copies(ctx, "ts", set(), np.arange(len(df)))
+    assert any(c.startswith("copy_date ") for c in copies)
+
+
 # --- Grouped tasks -------------------------------------------------------------------
 def make_grouped_container(**overrides) -> CuratedContainer:
     df = pd.DataFrame(
@@ -528,6 +540,16 @@ def test_clean_grouped_bundle_has_no_errors():
     assert report.ok, report.summary()
 
 
+def test_a_missing_group_key_says_the_split_builder_refuses_it():
+    """The hint tells the curator to fill or drop the rows, since the grouped split builder refuses them."""
+    df = make_grouped_container().dataset
+    df.loc[3, "group"] = np.nan
+    report = run_bundle_checks(make_grouped_container(dataset=df), verbose=False)
+    (finding,) = [r for r in report.results if r.slug == "task_group_on_missing_values"]
+    assert "refuses" in finding.hint
+    assert "artificial group" not in finding.hint
+
+
 def test_group_leakage_is_an_error():
     splits = PredictiveMLSplitsMetadata(
         splits_comment="s",
@@ -540,14 +562,28 @@ def test_per_group_labels_must_be_constant_within_a_group():
     container = make_grouped_container()
     df = container.dataset.copy()
     df.loc[0, "target"] = "yes" if df.loc[0, "target"] == "no" else "no"
-    assert "task_group_labels_per_group_violated" in slugs_of(make_grouped_container(dataset=df))
+    assert "task_group_labels_mismatch" in slugs_of(make_grouped_container(dataset=df))
 
 
 def test_group_per_row_is_an_error():
     container = make_grouped_container()
     df = container.dataset.copy()
     df["group"] = pd.Categorical([f"g{i}" for i in range(len(df))])
-    assert "task_group_on_unique_per_row" in slugs_of(make_grouped_container(dataset=df))
+    found = [r for r in run_bundle_checks(make_grouped_container(dataset=df), verbose=False).results]
+    identifiers = [r for r in found if r.slug == "dataset_identifier_column"]
+    assert [r.severity for r in identifiers] == ["error"]  # the group key is the id column: one finding
+    assert "one group per row" in identifiers[0].message
+    assert "groups_test_groups_few" not in {r.slug for r in found}
+
+
+def test_few_groups_in_all_are_one_finding():
+    container = make_grouped_container()
+    df = container.dataset.copy()
+    df["group"] = pd.Categorical([f"g{i % 6}" for i in range(len(df))])
+    found = [r for r in run_bundle_checks(make_grouped_container(dataset=df), verbose=False).results]
+    few = [r for r in found if r.slug == "groups_test_groups_few"]
+    assert len(few) == 1
+    assert "yields only 6 groups" in few[0].message
 
 
 # --- Dataset metadata coherence ------------------------------------------------------
@@ -574,7 +610,11 @@ def test_forced_iid_tag_on_an_iid_task_is_not_flagged():
 
 
 def make_basis_container(metadata: DatasetMetadata, *, df: pd.DataFrame | None = None, temporal: bool = False):
-    """A format-2 container with ``metadata``'s tags and comments: the time basis check reads format 2 only."""
+    """A format-2 container with ``metadata``'s tags and comments: the time basis check reads format 2 only, so format-1
+    metadata becomes format-2 metadata with its tags.
+    """
+    if not isinstance(metadata, DatasetMetadataV2):
+        metadata = basis_metadata(list(metadata.data_tags))
     df = make_iid_frame() if df is None else df
     task = {}
     if temporal:
@@ -599,45 +639,65 @@ def test_a_forced_tag_answers_why_the_split_is_not_temporal():
 
 
 def test_a_time_basis_on_a_temporal_split_is_flagged():
-    metadata = make_dataset_metadata(data_tags=["Non-IID", "Temporal", "Retrospective"])
+    metadata = make_dataset_metadata(data_tags=["Non-IID", "Temporal", "RetrospectiveFillIn"])
     assert "meta_time_basis_on_temporal" in slugs_of(make_basis_container(metadata, temporal=True))
 
 
-def test_a_time_basis_line_without_a_tag_answers_why():
-    """A `Time basis:` line alone says why the split is not temporal."""
-    metadata = make_dataset_metadata(data_tags=["IID"], curation_comments="- Time basis: dates kept, not split on.")
-    assert "meta_time_basis_missing" not in slugs_of(make_basis_container(metadata))
-
-
-def test_a_forced_tag_without_its_line_gets_a_note():
-    """A forced tag without its `Time basis:` line gets a note; with the line, none."""
-    metadata = make_dataset_metadata(data_tags=["ForcedIIDFromTemporal"])
-    assert "meta_time_basis_line_missing" in slugs_of(make_basis_container(metadata))
-    metadata = make_dataset_metadata(
-        data_tags=["ForcedIIDFromTemporal"], curation_comments="- Time basis: time lost; a dated release would test."
+def basis_metadata(
+    tags: list[str], time_basis: TimeBasis | None = None, group_basis: GroupBasis | None = None
+) -> DatasetMetadataV2:
+    """Format-2 dataset metadata with ``tags`` and the stored time basis and group basis."""
+    publication = Source(
+        role="publication",
+        platform="Kaggle",
+        url="https://example.com/toy",
+        license="CC BY 4.0",
+        year="2025",
+        bibtex=BIBTEX,
     )
-    assert "meta_time_basis_line_missing" not in slugs_of(make_basis_container(metadata))
+    return DatasetMetadataV2(
+        unique_name="toy_ds",
+        domain="finance",
+        sources=[publication],
+        download_description="kaggle datasets download toy",
+        data_tags=tags,
+        curation_comments="Read the CSV.",
+        time_basis=time_basis,
+        group_basis=group_basis,
+    )
 
 
-ASSUMED_LINE = (
-    "- Time basis: AssumedStationaryRelation (Lennart, 2026-11-20): one clinic's ultrasound diagnosis over a year, a"
-    " relation of body composition to gallstones that practice does not move; the visit dates are lost."
+def test_a_forced_tag_without_its_time_basis_gets_a_note():
+    """A forced tag without the stored time basis gets a note; with it, none."""
+    metadata = basis_metadata(["IID", "ForcedIIDFromTemporal"])
+    assert "meta_time_basis_field_missing" in slugs_of(make_basis_container(metadata))
+    basis = TimeBasis("ForcedIIDFromTemporal", "time lost; a dated release would test.")
+    metadata = basis_metadata(["IID", "ForcedIIDFromTemporal"], basis)
+    assert "meta_time_basis_field_missing" not in slugs_of(make_basis_container(metadata))
+
+
+ASSUMED = TimeBasis(
+    "AssumedStationaryRelation",
+    "one clinic's ultrasound diagnosis over a year, a relation of body composition to gallstones that practice does "
+    "not move; the visit dates are lost.",
+    set_by="Lennart",
+    on="2026-11-20",
 )
 
 
 @pytest.mark.parametrize(
-    ("comments", "expected"),
+    ("basis", "expected"),
     [
-        (ASSUMED_LINE, 0),
-        ("- Time basis: AssumedStationaryRelation: the relation does not move.", 1),
-        (ASSUMED_LINE.replace("Lennart", "AI"), 1),
-        (ASSUMED_LINE.replace("Lennart", "Claude"), 1),
-        ("- Time basis: AssumedStationaryRelation (Lennart, 2026-11-20): flat.", 1),
+        (ASSUMED, 0),
+        (TimeBasis("AssumedStationaryRelation", "the relation does not move."), 1),
+        (dataclasses.replace(ASSUMED, set_by="AI"), 1),
+        (dataclasses.replace(ASSUMED, set_by="Claude"), 1),
+        (dataclasses.replace(ASSUMED, reason="flat."), 1),
     ],
 )
-def test_an_assumed_stationary_relation_names_a_person_and_a_reason(comments: str, expected: int) -> None:
+def test_an_assumed_stationary_relation_names_a_person_and_a_reason(basis: TimeBasis, expected: int) -> None:
     """Only a person sets `AssumedStationaryRelation`, with a reason; dataset check refuses it otherwise (SPLIT-32)."""
-    metadata = make_dataset_metadata(data_tags=["IID", "AssumedStationaryRelation"], curation_comments=comments)
+    metadata = basis_metadata(["IID", "AssumedStationaryRelation"], basis)
     assert slugs_of(make_basis_container(metadata)).count("meta_time_basis_unattributed") == expected
 
 
@@ -650,13 +710,15 @@ def test_the_missing_basis_hint_does_not_offer_a_human_set_tag() -> None:
 
 
 def test_a_stationary_relation_names_a_person_and_the_measurement() -> None:
-    """`StationaryRelation` is human-set too: dataset check refuses a line without a person (SPLIT-32)."""
-    line = (
-        "- Time basis: StationaryRelation (Andrej, 2026-11-19): two periods of case numbers, LightGBM +0.016 +- 0.016"
-        " ROC AUC against a floor of 0.004."
+    """`StationaryRelation` is human-set too: dataset check refuses a time basis without a person (SPLIT-32)."""
+    named = TimeBasis(
+        "StationaryRelation",
+        "two periods of case numbers, LightGBM +0.016 +- 0.016 ROC AUC against a floor of 0.004.",
+        set_by="Andrej",
+        on="2026-11-19",
     )
-    for comments, expected in ((line, 0), ("- Time basis: StationaryRelation: flat over the two periods.", 1)):
-        metadata = make_dataset_metadata(data_tags=["IID", "StationaryRelation"], curation_comments=comments)
+    for basis, expected in ((named, 0), (dataclasses.replace(named, set_by=None, on=None), 1)):
+        metadata = basis_metadata(["IID", "StationaryRelation"], basis)
         assert slugs_of(make_basis_container(metadata)).count("meta_time_basis_unattributed") == expected
 
 
@@ -667,49 +729,55 @@ def _dated_frame() -> pd.DataFrame:
 
 
 @pytest.mark.parametrize(
-    ("tags", "comments", "noted"),
+    ("tags", "basis", "noted"),
     [
-        (["IID", "Timeless"], "- Time basis: Timeless: a fixed property.", True),
-        (["IID", "Retrospective"], "- Time basis: Retrospective: one scrape, prices of that day.", False),
-        (["IID", "ForcedIIDFromTemporal"], "- Time basis: one mailing, too few periods; gifts dated before it.", False),
-        (["IID"], "- Time basis: dated, kept random by choice; a temporal split costs 0.01.", False),
-        (["IID"], "Read the CSV.", True),
+        (["IID", "Timeless"], TimeBasis("Timeless", "a fixed property."), True),
+        (["IID", "RetrospectiveFillIn"], TimeBasis("RetrospectiveFillIn", "one scrape, prices of that day."), False),
+        (
+            ["IID", "ForcedIIDFromTemporal"],
+            TimeBasis("ForcedIIDFromTemporal", "one mailing, too few periods; gifts dated before it."),
+            False,
+        ),
+        (["IID"], None, True),
     ],
 )
-def test_date_columns_are_noted_unless_the_definition_says_why(tags, comments, noted):
-    """Date columns are noted unless the basis or a `Time basis:` line without a prototype explains them."""
-    metadata = make_dataset_metadata(data_tags=tags, curation_comments=comments)
-    found = slugs_of(make_basis_container(metadata, df=_dated_frame()))
+def test_date_columns_are_noted_unless_the_definition_says_why(tags, basis, noted):
+    """Date columns are noted unless the basis explains them: `RetrospectiveFillIn` or a forced tag's reason."""
+    found = slugs_of(make_basis_container(basis_metadata(tags, basis), df=_dated_frame()))
     assert ("meta_time_present_unused" in found) is noted
 
 
 @pytest.mark.parametrize(
-    ("tags", "comments", "slug", "severity"),
+    ("tags", "basis", "slug", "severity"),
     [
-        (["IID"], "- Time basis: Retrospective: one scrape.", "meta_time_basis_mismatch", "error"),
-        (["IID", "Timeless"], "- Time basis: Retrospective: one scrape.", "meta_time_basis_mismatch", "error"),
+        (["IID"], TimeBasis("RetrospectiveFillIn", "one scrape."), "meta_time_basis_mismatch", "error"),
         (
             ["IID", "Timeless"],
-            "- Time basis: Timeless: a.\n- Time basis: Timeless: b.",
-            "meta_time_basis_lines",
+            TimeBasis("RetrospectiveFillIn", "one scrape."),
+            "meta_time_basis_mismatch",
             "error",
         ),
-        (["IID", "Timeless", "Retrospective"], "- Time basis: Timeless: a.", "meta_time_basis_several", "error"),
-        (["IID"], "- Time basis: DelayedTarget: one extract.", "meta_time_basis_unstructured", "info"),
         (
-            ["IID", "ForcedIIDFromTemporal"],
-            "- Time basis: time lost; a dated release would test.",
-            "meta_time_basis_unstructured",
-            "info",
+            ["IID", "Timeless", "RetrospectiveFillIn"],
+            TimeBasis("Timeless", "a."),
+            "meta_time_basis_several",
+            "error",
         ),
-        (["IID", "UnseenGroup"], "- Time basis: UnseenGroup: a new hospital.", "meta_time_basis_regime", "error"),
-        (["IID", "ForcedIIDFromGrouped"], "- Time basis: Timeless: a property.", "meta_group_basis_missing", "error"),
+        (["IID", "UnseenGroup"], TimeBasis("UnseenGroup", "a new hospital."), "meta_time_basis_regime", "error"),
+        (["IID", "Timeless", "ForcedIIDFromGrouped"], TimeBasis("Timeless", "a."), "meta_group_basis_missing", "error"),
     ],
 )
-def test_the_time_basis_line_agrees_with_its_tag(tags, comments, slug, severity):
-    """One time basis, one line that names it, the regime it asks for (``data_foundry.time_basis.problems``)."""
-    report = run_bundle_checks(make_basis_container(make_dataset_metadata(data_tags=tags, curation_comments=comments)))
+def test_the_stored_time_basis_agrees_with_its_tag(tags, basis, slug, severity):
+    """One time basis, the tag it names, the regime it asks for (``data_foundry.time_basis.problems``)."""
+    report = run_bundle_checks(make_basis_container(basis_metadata(tags, basis)))
     assert (slug, severity) in {(r.slug, r.severity) for r in report.results}
+
+
+def test_a_group_basis_satisfies_its_tag():
+    """`ForcedIIDFromGrouped` with its stored group basis: no `meta_group_basis_missing`."""
+    tags = ["IID", "Timeless", "ForcedIIDFromGrouped"]
+    metadata = basis_metadata(tags, TimeBasis("Timeless", "a."), GroupBasis("no structure."))
+    assert "meta_group_basis_missing" not in slugs_of(make_basis_container(metadata))
 
 
 def test_a_format_1_container_gets_no_time_basis_findings():
@@ -898,7 +966,7 @@ def test_a_budget_explains_the_rows_its_test_samples_leave_out():
 
 
 def test_round_trip_comparison_sees_category_order_but_not_string_storage():
-    from data_foundry.bundle_checks import _compare_frames
+    from data_foundry.checks.bundle import _compare_frames
 
     df = pd.DataFrame(
         {
@@ -915,56 +983,13 @@ def test_round_trip_comparison_sees_category_order_but_not_string_storage():
 
 
 # --- Format 2: the metric spec and the scoring columns ------------------------------------------------------------
-def make_v2_container(
-    df: pd.DataFrame | None = None, *, spec=None, scoring_columns=(), dataset_metadata=None, **task
-) -> CuratedContainer:
-    df = make_iid_frame() if df is None else df
-    problem_type = task.pop("problem_type", "binary_classification")
-    splits = task.pop("splits", None)
-    return CuratedContainer(
-        dataset=df,
-        dataset_metadata=dataset_metadata or make_dataset_metadata(),
-        task_metadata=PredictiveMLTaskMetadataV2(
-            target_column_name="target",
-            problem_type=problem_type,
-            objective_metric=spec or make_spec(problem_type),
-            scoring_columns=list(scoring_columns),
-            **task,
-        ),
-        experiment_metadata=PredictiveMLSplitsMetadata(
-            splits_comment="Toy split.", splits=make_iid_splits() if splits is None else splits
-        ),
-        uuid="u",
-    )
-
-
-def metric_findings(container: CuratedContainer) -> dict[str, str]:
-    report = run_bundle_checks(container, verbose=False)
-    return {r.slug: r.severity for r in report.results if r.slug.startswith(("task_metric", "task_scoring"))}
-
-
-def _spec(name: str = "roc_auc", **fields) -> MetricSpec:
-    from data_foundry.v2.metrics import METRICS
-
-    definition = METRICS.get(name)
-    base = {
-        "name": name,
-        "kind": definition.kind if definition else "custom",
-        "prediction": definition.prediction if definition else "proba",
-        "greater_is_better": definition.greater_is_better if definition else True,
-        "origin": "source",
-        "reference": "https://example.org/evaluation",
-    }
-    return MetricSpec(**(base | fields))
-
-
 def test_declared_fallback_and_source_metrics_pass():
     assert metric_findings(make_v2_container()) == {}
-    assert metric_findings(make_v2_container(spec=_spec("roc_auc"))) == {}
+    assert metric_findings(make_v2_container(spec=source_spec("roc_auc"))) == {}
 
 
 def test_undeclared_metric_is_an_error():
-    spec = _spec("roc_auc", origin="fallback", reference=None, reason=None)
+    spec = source_spec("roc_auc", origin="fallback", reference=None, reason=None)
     assert metric_findings(make_v2_container(spec=spec)) == {"task_metric_undeclared": "error"}
 
 
@@ -981,15 +1006,7 @@ def test_undeclared_metric_is_an_error():
     ],
 )
 def test_metric_spec_errors(spec, slug):
-    assert metric_findings(make_v2_container(spec=_spec(**({"name": "roc_auc"} | spec)))).get(slug) == "error"
-
-
-def test_local_metric_is_a_warning():
-    spec = _spec("max_error", kind="local", prediction="value", greater_is_better=False)
-    df = make_iid_frame()
-    df["target"] = df["feat_num"] * 2
-    found = metric_findings(make_v2_container(df, spec=spec, problem_type="regression"))
-    assert found == {"task_metric_local": "warning"}
+    assert metric_findings(make_v2_container(spec=source_spec(**({"name": "roc_auc"} | spec)))).get(slug) == "error"
 
 
 def test_metric_that_does_not_compute_on_a_split_is_an_error():
@@ -1001,7 +1018,7 @@ def test_metric_that_does_not_compute_on_a_split_is_an_error():
 
 @pytest.fixture
 def group_metric(monkeypatch: pytest.MonkeyPatch) -> str:
-    from data_foundry.v2.metrics import METRICS, MetricDef
+    from data_foundry.metrics import METRICS, MetricDef
 
     def mean_group_accuracy(y_true, y_pred, *, group, **_):
         frame = pd.DataFrame({"hit": np.asarray(y_true) == np.asarray(y_pred), "g": group})
@@ -1033,7 +1050,7 @@ def _era(name: str, **fields) -> ScoringColumn:
 
 
 def test_metric_with_a_documented_scoring_column_passes(group_metric):
-    spec = _spec(group_metric, inputs={"group": "era"})
+    spec = source_spec(group_metric, inputs={"group": "era"})
     assert metric_findings(make_v2_container(_with_era(), spec=spec, scoring_columns=[_era(group_metric)])) == {}
 
 
@@ -1041,14 +1058,14 @@ def test_metric_reading_the_task_group_column_is_an_info_and_a_plain_feature_a_w
     """The metric reads the task's own group or time column where it is; a plain feature needs a scoring copy."""
     df = _with_era()
     df["week"] = np.arange(len(df)) // 6  # the task's time column, as blogfeedback's test day
-    on_time = make_v2_container(df, spec=_spec(group_metric, inputs={"group": "week"}), time_on="week")
+    on_time = make_v2_container(df, spec=source_spec(group_metric, inputs={"group": "week"}), time_on="week")
     assert metric_findings(on_time) == {"task_metric_input_is_model_input": "info"}
-    spec = _spec(group_metric, inputs={"group": "era"})
+    spec = source_spec(group_metric, inputs={"group": "era"})
     assert metric_findings(make_v2_container(_with_era(), spec=spec)) == {"task_metric_input_is_feature": "warning"}
 
 
 def test_metric_without_its_input_is_an_error(group_metric):
-    found = metric_findings(make_v2_container(_with_era(), spec=_spec(group_metric)))
+    found = metric_findings(make_v2_container(_with_era(), spec=source_spec(group_metric)))
     assert found["task_metric_input_missing"] == "error"
 
 
@@ -1061,26 +1078,26 @@ def test_metric_without_its_input_is_an_error(group_metric):
     ],
 )
 def test_scoring_column_errors(group_metric, column, slug):
-    spec = _spec(group_metric, inputs={"group": "era"})
+    spec = source_spec(group_metric, inputs={"group": "era"})
     found = metric_findings(make_v2_container(_with_era(), spec=spec, scoring_columns=[_era(group_metric, **column)]))
     assert found.get(slug) == "error"
 
 
 def test_scoring_column_that_models_use_is_an_error(group_metric):
-    spec = _spec(group_metric, inputs={"group": "era"})
+    spec = source_spec(group_metric, inputs={"group": "era"})
     container = make_v2_container(_with_era(), spec=spec, scoring_columns=[_era(group_metric)], stratify_on="era")
     assert metric_findings(container).get("task_scoring_column_is_feature") == "error"
 
 
 def test_placeholder_in_the_metric_reason_is_flagged():
-    spec = _spec("roc_auc", origin="fallback", reference=None, reason="TODO(verify): where we looked")
+    spec = source_spec("roc_auc", origin="fallback", reference=None, reason="TODO(verify): where we looked")
     assert "meta_placeholder_left" in slugs_of(make_v2_container(spec=spec))
 
 
 def test_feature_columns_drop_target_group_and_scoring_columns(group_metric):
     from data_foundry.curation_container import feature_columns
 
-    spec = _spec(group_metric, inputs={"group": "era"})
+    spec = source_spec(group_metric, inputs={"group": "era"})
     container = make_v2_container(_with_era(), spec=spec, scoring_columns=[_era(group_metric)])
     assert feature_columns(container) == ["feat_num", "feat_cat"]
     assert feature_columns(make_grouped_container()) == ["feat_num"]
@@ -1091,20 +1108,20 @@ def test_weight_that_is_also_a_feature_ships_a_scoring_copy_that_weighs_the_scor
     and a copy ships as the scoring column the metric reads (MET-2); the copy is no duplicate column to drop.
     """
     from data_foundry.curation_container import feature_columns
-    from data_foundry.v2.metrics import score, scorer
+    from data_foundry.metrics import score, scorer
 
     df = make_iid_frame()
     rng = np.random.default_rng(1)
     df["size"] = rng.uniform(1.0, 5.0, size=len(df))
     df["target"] = np.where(rng.random(len(df)) < 0.3, rng.exponential(size=len(df)), 0.0)
     plain = make_v2_container(
-        df, spec=_spec("normalized_weighted_gini", inputs={"weight": "size"}), problem_type="regression"
+        df, spec=source_spec("normalized_weighted_gini", inputs={"weight": "size"}), problem_type="regression"
     )
     # a weight that is a function of the features needs no training weight: the MET-15 prompt is accepted then
     no_training_weight = {"task_metric_weight_without_sample_weight": "warning"}
     assert metric_findings(plain) == {"task_metric_input_is_feature": "warning"} | no_training_weight
     df["size_weight"] = df["size"]
-    spec = _spec("normalized_weighted_gini", inputs={"weight": "size_weight"})
+    spec = source_spec("normalized_weighted_gini", inputs={"weight": "size_weight"})
     copy = ScoringColumn(
         column="size_weight", role="weight", used_by="normalized_weighted_gini", description="a copy of size"
     )
@@ -1123,12 +1140,12 @@ def test_target_transform_that_overflows_is_an_error():
     """A log transform on a target whose exp overflows is not the scale the target ships on."""
     df = make_iid_frame()
     df["target"] = 800.0 + np.arange(len(df)) / len(df)  # exp(800) overflows: not a log target
-    spec = _spec("rmse", target_transform="log")
+    spec = source_spec("rmse", target_transform="log")
     found = metric_findings(make_v2_container(df, spec=spec, problem_type="regression"))
     assert found.get("task_metric_transform_overflow") == "error"
     df["target"] = np.log1p(df["feat_num"].abs())
     found = metric_findings(
-        make_v2_container(df, spec=_spec("rmse", target_transform="log1p"), problem_type="regression")
+        make_v2_container(df, spec=source_spec("rmse", target_transform="log1p"), problem_type="regression")
     )
     assert "task_metric_transform_overflow" not in found
 
@@ -1140,7 +1157,7 @@ def test_poisson_computability_uses_valid_means_without_changing_labels(all_zero
     df = make_iid_frame()
     y = np.zeros(len(df)) if all_zero else (np.arange(len(df)) % 10 == 0).astype(float)
     df["target"] = np.log1p(y) if transform == "log1p" else y
-    spec = _spec("mean_poisson_deviance", params={"min_prediction": 1e-6}, target_transform=transform)
+    spec = source_spec("mean_poisson_deviance", params={"min_prediction": 1e-6}, target_transform=transform)
     container = make_v2_container(df, spec=spec, problem_type="regression")
     before = container.dataset.copy(deep=True)
     expected = {"task_metric_deviance_on_transformed_target": "error"} if transform == "log1p" else {}
@@ -1152,7 +1169,7 @@ def test_a_poisson_spec_without_its_floor_is_an_error():
     """``min_prediction`` is required (MET-13): a spec without it is refused before the metric is computed."""
     df = make_iid_frame()
     df["target"] = (np.arange(len(df)) % 10 == 0).astype(float)
-    found = metric_findings(make_v2_container(df, spec=_spec("mean_poisson_deviance"), problem_type="regression"))
+    found = metric_findings(make_v2_container(df, spec=source_spec("mean_poisson_deviance"), problem_type="regression"))
     assert found.get("task_metric_param_invalid") == "error"
 
 
@@ -1169,13 +1186,17 @@ def test_a_mean_deviance_on_a_transformed_target_is_an_error(name, params):
     y = (np.arange(len(df)) % 4) * 100.0
     df["target"] = np.log1p(y)
     found = metric_findings(
-        make_v2_container(df, spec=_spec(name, params=params, target_transform="log1p"), problem_type="regression")
+        make_v2_container(
+            df, spec=source_spec(name, params=params, target_transform="log1p"), problem_type="regression"
+        )
     )
     assert found == {"task_metric_deviance_on_transformed_target": "error"}
     df["target"] = y
-    assert metric_findings(make_v2_container(df, spec=_spec(name, params=params), problem_type="regression")) == {}
+    assert (
+        metric_findings(make_v2_container(df, spec=source_spec(name, params=params), problem_type="regression")) == {}
+    )
     df["target"] = np.log1p(y)  # another metric on the same transform does not warn
-    rmse = _spec("rmse", target_transform="log1p")
+    rmse = source_spec("rmse", target_transform="log1p")
     assert "task_metric_deviance_on_transformed_target" not in metric_findings(
         make_v2_container(df, spec=rmse, problem_type="regression")
     )
@@ -1219,7 +1240,7 @@ def _exposure_column() -> ScoringColumn:
 
 
 def _rate_container(df=None, *, sample_weight="exposure", inputs=None, scoring=None) -> CuratedContainer:
-    spec = _spec(
+    spec = source_spec(
         "mean_poisson_deviance",
         params={"min_prediction": 1e-4},
         inputs={"weight": "exposure"} if inputs is None else inputs,
@@ -1263,7 +1284,7 @@ def _replicate_container(*, used_by="training", inputs=None, sample_weight="repl
         scoring.append(ScoringColumn(column="plot_weight", role="weight", used_by="rmse", description="1 / quadrats"))
     return make_v2_container(
         df,
-        spec=_spec("rmse", inputs=inputs or {}),
+        spec=source_spec("rmse", inputs=inputs or {}),
         scoring_columns=scoring,
         problem_type="regression",
         sample_weight=sample_weight,
@@ -1336,7 +1357,7 @@ def test_a_weighted_rmse_reads_a_row_weight():
     weight = ScoringColumn(column="plot_weight", role="weight", used_by="rmse", description="1 / quadrats of the plot")
 
     def container(sample_weight=None):
-        spec = _spec("rmse", inputs={"weight": "plot_weight"})
+        spec = source_spec("rmse", inputs={"weight": "plot_weight"})
         return make_v2_container(
             df, spec=spec, scoring_columns=[weight], problem_type="regression", sample_weight=sample_weight
         )
@@ -1380,10 +1401,10 @@ def test_a_weighted_poisson_rate_rebuilds_whole_counts():
 def test_a_feature_named_like_an_exposure_warns_without_a_weight():
     """A numeric feature that looks like an amount at risk is explained when no weight is declared (LEAK-41)."""
     df = make_iid_frame().assign(Exposure=np.linspace(0.1, 1.0, 60), target=np.linspace(0, 3, 60))
-    found = weight_findings(make_v2_container(df, spec=_spec("rmse"), problem_type="regression"))
+    found = weight_findings(make_v2_container(df, spec=source_spec("rmse"), problem_type="regression"))
     assert found == {"task_feature_looks_like_exposure": "warning"}
     df = df.rename(columns={"Exposure": "exponent"})  # a name that only starts the same way
-    assert weight_findings(make_v2_container(df, spec=_spec("rmse"), problem_type="regression")) == {}
+    assert weight_findings(make_v2_container(df, spec=source_spec("rmse"), problem_type="regression")) == {}
 
 
 def test_an_unset_sample_weight_stays_out_of_the_saved_metadata(tmp_path):
@@ -1398,36 +1419,6 @@ def test_an_unset_sample_weight_stays_out_of_the_saved_metadata(tmp_path):
 
 
 # --- Format 2: a unit weight, each unit counted once in the score (MET-17) --------------------------------------------
-
-
-def _unit_frame() -> pd.DataFrame:
-    """60 rows in 30 plots of 1, 2 or 3 quadrats; ``plot_weight`` is 1 over the plot's quadrats."""
-    sizes = np.tile([1, 2, 3], 10)
-    df = make_iid_frame(60).assign(target=np.linspace(0.0, 3.0, 60), plot=np.repeat(np.arange(30), sizes))
-    return df.assign(plot_weight=1.0 / df.groupby("plot")["plot"].transform("size"))
-
-
-def _plot_splits(df: pd.DataFrame) -> dict:
-    """Three folds by plot, so every plot's rows lie on one side."""
-    fold = df["plot"].to_numpy() % 3
-    rows = np.arange(len(df))
-    return {0: {f: (rows[fold != f].tolist(), rows[fold == f].tolist()) for f in range(3)}}
-
-
-def _unit_container(df=None, *, splits="plots", **task) -> CuratedContainer:
-    df = _unit_frame() if df is None else df
-    weight = ScoringColumn(column="plot_weight", role="weight", used_by="rmse", description="1 / quadrats of the plot")
-    task.setdefault("unit_weight", UnitWeight(column="plot_weight", unit="plot"))
-    return make_v2_container(
-        df,
-        spec=_spec("rmse", inputs={"weight": "plot_weight"}),
-        scoring_columns=[weight],
-        problem_type="regression",
-        splits=_plot_splits(df) if splits == "plots" else None,
-        **task,
-    )
-
-
 def unit_findings(container: CuratedContainer) -> dict[str, str]:
     """The findings of the unit-weight checks and of the missing-training-weight prompt, slug to severity."""
     report = run_bundle_checks(container, verbose=False)
@@ -1438,7 +1429,7 @@ def test_a_unit_weight_counts_each_unit_once_and_tells_downstream_tools():
     """A declared unit weight needs no training weight, keeps its unit out of the inputs, and names the column a
     validation loss is weighted by (MET-17).
     """
-    container = _unit_container()
+    container = unit_container()
     assert unit_findings(container) == {}
     assert unit_weight(container) == UnitWeight(column="plot_weight", unit="plot")
     assert validation_weight(container) == "plot_weight"
@@ -1450,7 +1441,7 @@ def test_a_unit_weight_counts_each_unit_once_and_tells_downstream_tools():
     block = "\n".join(_metric_block(container.task_metadata))
     assert "**Unit weight**" in block
     assert "unit weight: weight a validation loss by it; never a feature" in block
-    without = _unit_container(unit_weight=None)  # the same weight undeclared: MET-15's prompt again
+    without = unit_container(unit_weight=None)  # the same weight undeclared: MET-15's prompt again
     assert unit_findings(without) == {"task_metric_weight_without_sample_weight": "warning"}
     assert validation_weight(without) == "plot_weight"
 
@@ -1463,30 +1454,30 @@ def test_the_validation_weight_is_the_metrics_row_weight():
 
 def test_a_unit_weight_that_does_not_sum_to_one_per_unit_is_an_error():
     """Each unit counts once: its weights sum to 1, or the check stops the build."""
-    df = _unit_frame()
+    df = unit_frame()
     df.loc[df["plot"] == 2, "plot_weight"] = 0.5  # a plot of three quadrats counted 1.5 times
-    assert unit_findings(_unit_container(df)) == {"task_unit_weight_not_one_per_unit": "error"}
+    assert unit_findings(unit_container(df)) == {"task_unit_weight_not_one_per_unit": "error"}
 
 
 def test_a_unit_on_both_sides_of_a_split_warns():
     """Random splits put a plot's quadrats on both sides: its vote is shared between training and test."""
-    assert unit_findings(_unit_container(splits="iid")) == {"task_unit_weight_unit_split": "warning"}
+    assert unit_findings(unit_container(splits="iid")) == {"task_unit_weight_unit_split": "warning"}
 
 
 def test_a_unit_weight_is_the_metrics_weight_and_never_a_training_weight():
     """The unit weight is the metric's weight scoring column, never the sample weight, and its unit no target."""
     with pytest.raises(ValueError, match="names no scoring column"):
-        _unit_container(unit_weight=UnitWeight(column="feat_num", unit="plot"))
+        unit_container(unit_weight=UnitWeight(column="feat_num", unit="plot"))
     with pytest.raises(ValueError, match="never a training weight"):
-        _unit_container(sample_weight="plot_weight")
+        unit_container(sample_weight="plot_weight")
     with pytest.raises(ValueError, match="the target or a scoring column"):
-        _unit_container(unit_weight=UnitWeight(column="plot_weight", unit="target"))
+        unit_container(unit_weight=UnitWeight(column="plot_weight", unit="target"))
 
 
 def test_an_unset_unit_weight_stays_out_of_the_saved_metadata(tmp_path):
     """Containers built before the field keep their checksum and JSON; a set field round-trips."""
     assert b"unit_weight" not in encode_pydantic_metadata(_rate_container().task_metadata)
-    container = _unit_container()
+    container = unit_container()
     assert b'"unit_weight":{"column":"plot_weight","unit":"plot"}' in encode_pydantic_metadata(container.task_metadata)
     loaded = CuratedContainer.load(container.save(tmp_path))
     assert loaded.task_metadata.unit_weight == UnitWeight(column="plot_weight", unit="plot")

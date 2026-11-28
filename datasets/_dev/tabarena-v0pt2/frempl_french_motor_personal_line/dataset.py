@@ -6,7 +6,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+from scipy.sparse import coo_matrix
+from scipy.sparse.csgraph import connected_components
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -18,8 +21,6 @@ from data_foundry.v2 import (
     TimeBasis,
     drop_columns,
 )
-from scipy.sparse import coo_matrix
-from scipy.sparse.csgraph import connected_components
 
 # The five samples of the portfolio that share one schema (CASdatasets freMPL5 to freMPL9).
 FILES = (5, 6, 7, 8, 9)
@@ -267,13 +268,13 @@ class FremplFrenchMotorPersonalLine(AbstractCuratedDataset):
             "0.189) with squared error on it, 0.031 lower, led by the tail of the rate over records as short as a "
             "day (3 seeds, 2026-11-09)."
         ),
-        inputs={"weight": "Exposure"},
     )
     scoring_columns = (
         ScoringColumn(
             column="Exposure",
             role="weight",
             used_by="normalized_weighted_gini",
+            fit=True,
             description=(
                 "the record's realized length in years as published, (end - start) / 365 within 0.006 (0.001 to 1): "
                 "shorter when the contract changed or ended during 2004, often after a claim. The claim amount per "
@@ -281,7 +282,6 @@ class FremplFrenchMotorPersonalLine(AbstractCuratedDataset):
             ),
         ),
     )
-    sample_weight = "Exposure"
     grouping = Grouping(
         on="policy_component",
         labels="per_sample",

@@ -8,7 +8,6 @@ list every file they hold; and the register runs on the repository. Links are ch
 
 from __future__ import annotations
 
-import importlib.util
 import re
 import subprocess
 import sys
@@ -17,6 +16,10 @@ from pathlib import Path
 
 import pytest
 import yaml
+
+from data_foundry.curation import comments
+from data_foundry.probes import inputs
+from data_foundry.probes.cli import PROBES, _shared_options
 
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ROOT / ".claude" / "skills"
@@ -36,19 +39,14 @@ ANY_HEAD = re.compile(r"^(?:\s*(?:[-*]|\d+\.)\s+)?\*\*([A-Z]+)-(\d+)\b")
 
 @pytest.fixture(scope="module")
 def register():
-    """The decision register script as a module (it lives in a skill, not in the package)."""
-    path = KDF / "scripts" / "decision_register.py"
-    spec = importlib.util.spec_from_file_location("decision_register", path)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module  # dataclasses look their module up there
-    spec.loader.exec_module(module)
-    return module
+    """The rule-ID grammar the decision register reads with (``data_foundry.curation.comments``)."""
+    return comments
 
 
 @pytest.fixture(scope="module")
-def defined(register):
-    """The rule IDs the knowledge files define, as the register reads them."""
-    return register.rule_ids_defined(KNOWLEDGE)
+def defined():
+    """The rule IDs the knowledge files define, as the decision register reads them."""
+    return comments.rule_ids_defined(KNOWLEDGE)
 
 
 def _rel(path: Path) -> str:
@@ -231,37 +229,41 @@ def test_data_foundry_index_names_every_script():
     assert not named - present, f"the index names scripts that do not exist: {sorted(named - present)}"
 
 
-def test_probe_library_docstring_names_every_module():
-    """The curation_probes package docstring lists each module, and no module that does not exist."""
-    package = KNOWLEDGE / "scripts" / "curation_probes"
+def test_probe_package_docstring_names_every_module():
+    """The ``data_foundry.probes`` package docstring lists each module, and no module that does not exist."""
+    package = ROOT / "src" / "data_foundry" / "probes"
     doc = re.match(r'"""(.*?)"""', (package / "__init__.py").read_text(encoding="utf-8"), re.DOTALL).group(1)
     named = set(re.findall(r"^\* ``([a-z_]+)``:", doc, re.MULTILINE))
     present = {p.stem for p in package.glob("*.py") if p.stem != "__init__"}
+    present |= {p.parent.name for p in package.glob("*/__init__.py")}
     assert named == present, (
         f"modules not listed: {sorted(present - named)}; listed, missing: {sorted(named - present)}"
     )
 
 
-PROBE_SCRIPTS = (
-    "leak_probes.py",
-    "task_probes.py",
-    "group_probes.py",
-    "hidden_groups.py",
-    "generated_probes.py",
-    "dtype_probes.py",
-    "time_probes.py",
-)
-"""The probe entry points: each one loads a frame and must take the column budget, so a very wide table can be
-probed at all."""
+def _probe_module_files() -> dict[str, Path]:
+    """Each ``data-foundry probe`` subcommand's module file (a package's ``__init__`` aside, its module's own file)."""
+    src = ROOT / "src"
+    return {name: src / (module.replace(".", "/") + ".py") for name, (module, _) in PROBES.items()}
 
 
-@pytest.mark.parametrize("script", PROBE_SCRIPTS)
-def test_every_probe_script_takes_the_feature_cap(script):
-    """Every probe takes ``--max-features`` and draws the sample through ``dataset_io``, never its own way."""
-    text = (KDF / "scripts" / script).read_text(encoding="utf-8")
-    assert "dataset_io.add_feature_cap_argument(parser)" in text, f"{script} does not take --max-features"
-    assert "sample_features(" in text or "sampled_columns(" in text, f"{script} does not sample its columns"
-    assert "--max-features" in text.split('"""')[1], f"{script}'s docstring does not document --max-features"
+@pytest.mark.parametrize("probe", sorted(_probe_module_files()))
+def test_every_probe_takes_the_feature_cap(probe):
+    """Every probe reads the shared ``--max-features`` and draws the sample through ``inputs``, never its own way,
+    so a very wide table can be probed at all.
+    """
+    text = _probe_module_files()[probe].read_text(encoding="utf-8")
+    assert "inputs.feature_cap(args)" in text, f"probe {probe} does not read --max-features"
+    assert "sample_features(" in text or "sampled_columns(" in text, f"probe {probe} does not sample its columns"
+    assert "feature_sample" in text, f"probe {probe} does not report the sample it drew"
+
+
+def test_every_probe_command_takes_max_features():
+    """``--max-features`` is a shared option of ``data-foundry probe``, and its help states the package's default."""
+    parser = _shared_options()
+    assert parser.parse_args([]).max_features is None  # read as inputs.MAX_FEATURES by inputs.feature_cap
+    assert parser.parse_args(["--max-features", "0"]).max_features == 0
+    assert f"default {inputs.MAX_FEATURES:,}" in " ".join(parser.format_help().split())
 
 
 def test_the_probe_reference_documents_the_feature_cap():

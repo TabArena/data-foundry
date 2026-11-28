@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: heloc
 container_format: 2
-checksum: v2:12e774346abb9b207ea1f5fefeb5474fadfdc2bb79622da1610aab79ea3a0797
+checksum: v2:ccf05e0d63e0c5c89f3c1833ec1830c2a3826b8fbe11e01321b5ec3cf652a905
 build:
-  uuid: 01a111fc-afbf-7df2-bc38-76e6a79a64eb
-  checksum: v2:f1b2524f366bfcbe0131c9d2c31b7e9aa23c751f6f5c361a361b5066e114b1ba
-  built_at: '2026-10-06T16:12:15+00:00'
-  path: heloc/01a111fc-afbf-7df2-bc38-76e6a79a64eb
+  uuid: 01a21800-fd07-7328-a4fc-71a224cfa9b8
+  checksum: v2:ccf05e0d63e0c5c89f3c1833ec1830c2a3826b8fbe11e01321b5ec3cf652a905
+  built_at: '2026-11-26T13:17:27+00:00'
+  path: heloc/01a21800-fd07-7328-a4fc-71a224cfa9b8
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 9871
   n_features: 22
@@ -46,6 +46,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 6580
     max: 6581
@@ -70,7 +71,7 @@ decisions: []
 
 Binary classification of `RiskPerformance`, scored with `roc_auc` on IID splits. 9,871 rows and 22 features. Source: Other (2018).
 
-Built as `01a111fc-afbf-7df2-bc38-76e6a79a64eb` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:12e774346abb9b207ea1f5fefeb5474fadfdc2bb79622da1610aab79ea3a0797`, so the build is stale. See [Build](#build).
+Built as `01a21800-fd07-7328-a4fc-71a224cfa9b8` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -212,7 +213,7 @@ The first 5 of 9,871 rows of the final frame (random rows: the frame is shuffled
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows, stratified on `RiskPerformance`: 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 9,871 rows (SPLIT-33).
 
 3 repeat(s) x 3 fold(s) with seed 4267; train 6,580 to 6,581 rows, test 3,290 to 3,291 rows.
 
@@ -336,11 +337,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-afbf-7df2-bc38-76e6a79a64eb |
-| checksum | v2:f1b2524f366bfcbe0131c9d2c31b7e9aa23c751f6f5c361a361b5066e114b1ba |
-| built_at | 2026-10-06T16:12:15+00:00 |
-| path | heloc/01a111fc-afbf-7df2-bc38-76e6a79a64eb |
+| uuid | 01a21800-fd07-7328-a4fc-71a224cfa9b8 |
+| checksum | v2:ccf05e0d63e0c5c89f3c1833ec1830c2a3826b8fbe11e01321b5ec3cf652a905 |
+| built_at | 2026-11-26T13:17:27+00:00 |
+| path | heloc/01a21800-fd07-7328-a4fc-71a224cfa9b8 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:12e774346abb9b207ea1f5fefeb5474fadfdc2bb79622da1610aab79ea3a0797` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

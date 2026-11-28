@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: drug_induced_autoimmunity_prediction
 container_format: 2
-checksum: v2:33decbe987083218ada44630df411b5cd9aabba928ed8875ce6640eecfa4e410
+checksum: v2:aea265253377d4fc7e6ceda536453fc53fc91f6f3cc51c3bccb56ae3562a938d
 build:
-  uuid: 01a13aff-7235-73c3-932c-785cd540127b
-  checksum: v2:8b265d2d3eddb7add77dc45cb583a5b314652160191f2bb7923a2256ac744c09
-  built_at: '2026-10-14T15:19:42+00:00'
-  path: drug_induced_autoimmunity_prediction/01a13aff-7235-73c3-932c-785cd540127b
+  uuid: 01a21800-93a9-7702-8b4e-2dd5f6089bcb
+  checksum: v2:aea265253377d4fc7e6ceda536453fc53fc91f6f3cc51c3bccb56ae3562a938d
+  built_at: '2026-11-26T13:17:01+00:00'
+  path: drug_induced_autoimmunity_prediction/01a21800-93a9-7702-8b4e-2dd5f6089bcb
   data_foundry_version: 0.0.5
-  git_sha: de9e6adde48a58047e4e9a41f249e28507e48ed3-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 587
   n_features: 1
@@ -55,6 +55,13 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Grouped splits on the Bemis-Murcko scaffold: all drugs with one ring skeleton
+    stay on one side, so a model predicts drugs of a series it has not seen. Drugs
+    with similar but not identical scaffolds can be on both sides. A split by first
+    approval year was weighed and the scaffold split kept (2026-11-11, Andrej): the
+    label''s reporting window is still open for the newest drugs, 49 of the 52 approved
+    from 2010 on being negative, so a forward split would test how long a reaction
+    takes to be reported rather than the chemistry (curation comments).'
   n_train:
     min: 350
     max: 432
@@ -77,7 +84,7 @@ decisions:
 
 Binary classification of `Label`, scored with `roc_auc` on grouped splits by `scaffold`. 587 rows and 1 features. Source: UCI (2025).
 
-Built as `01a13aff-7235-73c3-932c-785cd540127b` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:33decbe987083218ada44630df411b5cd9aabba928ed8875ce6640eecfa4e410`, so the build is stale. See [Build](#build).
+Built as `01a21800-93a9-7702-8b4e-2dd5f6089bcb` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -197,23 +204,12 @@ The first 5 of 587 rows of the final frame (random rows: the frame is shuffled).
 We start with the dataset from UCI.
 
 - We pool the source's training file (477 drugs, 118 positive) and test file (120 drugs, 30 positive) into 597 drugs and use our own splits; the files share no SMILES, and UCI's count of 477 instances is the training file alone.
-- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01; Andrej's call of 2026-10-26 to keep it), in RDKit's canonical form (`canonical_smiles`; 503 of the source's strings were not canonical, none is a salt), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). Scaffold-grouped ROC AUC over our 60 splits (LightGBM / random forest, 2026-11-01): the source's 176 descriptors 0.771 / 0.776, our full RDKit set in their place 0.772 / 0.777, the MACCS keys added 0.796 / 0.799 (better on 51 and 59 of 60 splits), the SMILES read as text (character n-grams) 0.763 / 0.766. Andrej measured the same gain for TabPFN 3.5 (0.803 to 0.826 with MACCS keys, 27 of 30 splits).
+- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01; Andrej's call of 2026-10-26 to keep it), in RDKit's canonical form (`canonical_smiles`; 503 of the source's strings were not canonical, none is a salt), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.special.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). Scaffold-grouped ROC AUC over our 60 splits (LightGBM / random forest, 2026-11-01): the source's 176 descriptors 0.771 / 0.776, our full RDKit set in their place 0.772 / 0.777, the MACCS keys added 0.796 / 0.799 (better on 51 and 59 of 60 splits), the SMILES read as text (character n-grams) 0.763 / 0.766. Andrej measured the same gain for TabPFN 3.5 (0.803 to 0.826 with MACCS keys, 27 of 30 splits).
 - The source's 176 RDKit descriptors leave (2026-11-01): RDKit computed them from the same SMILES, and the recommended encoding reproduces them (the full RDKit set scores as they do, above), so shipping both would give a model the structure twice.
 - Scaffold-grouped splits (2026-10-19), not random ones: under random splits about a third of the test drugs have a close relative in training with the same label, and a nearest-neighbour fingerprint lookup without a model reaches ROC AUC 0.822 against TabPFN's 0.854; with whole scaffolds held out, TabPFN 0.768, HGB 0.737, RF 0.724, LR 0.687 (generic scaffolds). The use case screens new candidates, which come from series not yet seen, and scaffold splits are the standard for this: the Therapeutics Data Commons ADMET group splits all its endpoints by scaffold, among them drug-induced liver injury, a drug-level label like this one (Huang et al. 2021, NeurIPS Datasets and Benchmarks, arXiv:2102.09548). The source validated on random splits (its test file is as similar to its training file as a random split is), so our scores are lower than the paper's AUC 0.88-0.89 by design. The groups are the Bemis-Murcko scaffolds (Bemis and Murcko 1996, J Med Chem 39(15):2887-2893): 443 groups, the largest 41 drugs (benzene), 10 with both labels. The 53 drugs without a ring each form their own group (390 ring scaffolds plus these 53): they share no skeleton, only 2 have a close relative among them (Tanimoto >= 0.7), and their nearest neighbour's label agrees at the base rate (0.925). The groups come from `scaffold_groups` since 2026-11-01, as in qsar_bioconcentration and qsar_oral_toxicity: the same 443 groups as the definition's own code before, under other group names, so the drugs fall into other folds.
 - Duplicates dropped: 9 pairs of rows are one structure once the stereo marks are set aside (the same 18 rows that share every one of the source's descriptors), stereoisomers a 2D encoding does not tell apart (PubChem): quinine and quinidine, and 8 drugs entered twice with other stereo marks (lovastatin, fluticasone propionate, enalapril, fluvastatin, lisinopril, pravastatin, carbidopa, streptomycin), 3 pairs across the source's two files. We keep one row of the 8 pairs with one label and drop both streptomycin rows (one positive, one negative), as for qsar_oral_toxicity: 587 drugs, 140 positive (decision table).
 - The target (2026-11-01, CLEAN-25): `Label` ships its classes as words (1 is the event). Binary: "Yes" is the
   event, the class that sorts second, so it is the metrics' positive class.
-- Time basis: UnseenGroup (Andrej, 2026-11-13; no prototype before): the scaffold split holds out chemistry the
-  training drugs do not hold, as decided on 2026-11-11, and the label still moves with time. Whether a drug can
-  cause an autoimmune reaction is a property of its structure, but the label is what had been reported by the
-  compilation (InterDIA, 2025), so it accrues with time on the market: ChEMBL dates 496 of the 587 drugs by
-  first approval (1940-2020; the API's `molecule_structures__canonical_smiles__flexmatch` and `first_approval`,
-  2026-11-06) and the positive share falls with the approval era (the table in the next bullet). The split holds
-  out scaffolds, which separates eras only in part (mean approval-year gap within a scaffold group 14.5 years
-  against 19.1 for all pairs). Not tested: a newly approved drug, whose reporting window is still open. Trained
-  on the drugs approved before a cut and tested on the later ones, ROC AUC falls against random folds of the
-  same training size (untuned logistic regression, random forest and histogram gradient boosting on the source's
-  RDKit descriptors, the 496 dated drugs; 2026-11-06):
 
   | Test from | Training drugs | Test drugs | Forward: LR / RF / boosting | Random folds: LR / RF / boosting |
   |---|---|---|---|---|
@@ -250,8 +246,11 @@ We start with the dataset from UCI.
   them would take a tenth of a small dataset out on an inferred approval year. The 91 drugs without a ChEMBL
   year are no second recent block; their positive share is that of the older drugs. The record carries the
   collection facts `Samples: Over Time`, `Time: Dated` and `Target: Revised Later` (2026-11-11, Andrej).
+- Time basis: UnseenGroup (Andrej, 2026-11-13; no prototype before): the scaffold split holds out chemistry the training drugs do not hold, as decided on 2026-11-11, and the label still moves with time. Whether a drug can cause an autoimmune reaction is a property of its structure, but the label is what had been reported by the compilation (InterDIA, 2025), so it accrues with time on the market: ChEMBL dates 496 of the 587 drugs by first approval (1940-2020; the API's `molecule_structures__canonical_smiles__flexmatch` and `first_approval`, 2026-11-06) and the positive share falls with the approval era (the table in the next bullet). The split holds out scaffolds, which separates eras only in part (mean approval-year gap within a scaffold group 14.5 years against 19.1 for all pairs). Not tested: a newly approved drug, whose reporting window is still open. Trained on the drugs approved before a cut and tested on the later ones, ROC AUC falls against random folds of the same training size (untuned logistic regression, random forest and histogram gradient boosting on the source's RDKit descriptors, the 496 dated drugs; 2026-11-06):
 
 ## Splits
+
+Repeated 3-fold cross-validation keeping each group of `scaffold` whole (shuffled group k-fold, a new draw per repeat), stratified on `Label`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 587 rows (SPLIT-33).
 
 Grouped splits on the Bemis-Murcko scaffold: all drugs with one ring skeleton stay on one side, so a model predicts drugs of a series it has not seen. Drugs with similar but not identical scaffolds can be on both sides. A split by first approval year was weighed and the scaffold split kept (2026-11-11, Andrej): the label's reporting window is still open for the newest drugs, 49 of the 52 approved from 2010 on being negative, so a forward split would test how long a reaction takes to be reported rather than the chemistry (curation comments).
 
@@ -346,7 +345,7 @@ One group is a chemical scaffold: the drugs that share one Bemis-Murcko scaffold
 | groups of two or more rows with a single label | 82.7% |
 | label variance explained by the group | 0.87 (shuffled groups: 0.75) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Decisions
 
@@ -387,7 +386,7 @@ A 2D encoding carries no stereochemistry, so each pair differs only in the stere
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | Label | category | 0 | 0 | 2 | No, Yes |
-| SMILES | string | 0 | 0 | 587 | C=CC\[N+\]1(\[C@H\]2C\[C@@H\]3\[C@@H\]4CC\[C@@H\]5C\[C@H\](O)\[C@@H\](N6CCOCC6)C\[C@\]5(C)\[C@@H… |
+| SMILES | string | 0 | 0 | 587 | O=C(NCCO\[N+\](=O)\[O-\])c1cccnc1, C=CC\[N+\]1(\[C@H\]2C\[C@@H\]3\[C@@H\]4CC\[C@@H\]5C\[C@H\](O… |
 | scaffold | string | 0 | 0 | 443 | c1ccccc1, O=C1C=CC2C(=C1)CCC1C3CCCC3CCC21, O=C1C=CC2C(=C1)CCC1C2CCC2C1CC1OCOC12… |
 
 ### Target distribution
@@ -410,11 +409,11 @@ No numeric features to summarize.
 |---|---|---|---|---|
 | Label | 1 | No | 447 | 76.15 |
 | Label | 2 | Yes | 140 | 23.85 |
-| SMILES | 1 | C=CC\[N+\]1(\[C@H\]2C\[C@@H\]3\[C@@H\]4CC\[C@@H\]5C\[C@H\](O)\[C@@H\](N6CCOCC6... | 1 | 0.17 |
-| SMILES | 2 | Cc1ccccc1N1C(=O)c2cc(S(N)(=O)=O)c(Cl)cc2N\[C@H\]1C | 1 | 0.17 |
-| SMILES | 3 | CC1(C)N=C(N)N=C(N)N1OCCCOc1cc(Cl)c(Cl)cc1Cl | 1 | 0.17 |
-| SMILES | 4 | C=C1CCN(\[C@@H\](C)\[C@\](O)(Cn2cncn2)c2ccc(F)cc2F)CC1 | 1 | 0.17 |
-| SMILES | 5 | CC#C\[C@\]1(O)CC\[C@@H\]2\[C@@H\]3CCC4=CC(=O)CCC4=C3\[C@@H\](c3ccc(N(C)C... | 1 | 0.17 |
+| SMILES | 1 | O=C(NCCO\[N+\](=O)\[O-\])c1cccnc1 | 1 | 0.17 |
+| SMILES | 2 | C=CC\[N+\]1(\[C@H\]2C\[C@@H\]3\[C@@H\]4CC\[C@@H\]5C\[C@H\](O)\[C@@H\](N6CCOCC6... | 1 | 0.17 |
+| SMILES | 3 | Cc1ccccc1N1C(=O)c2cc(S(N)(=O)=O)c(Cl)cc2N\[C@H\]1C | 1 | 0.17 |
+| SMILES | 4 | CC1(C)N=C(N)N=C(N)N1OCCCOc1cc(Cl)c(Cl)cc1Cl | 1 | 0.17 |
+| SMILES | 5 | C=C1CCN(\[C@@H\](C)\[C@\](O)(Cn2cncn2)c2ccc(F)cc2F)CC1 | 1 | 0.17 |
 | scaffold | 1 | c1ccccc1 | 41 | 6.98 |
 | scaffold | 2 | O=C1C=CC2C(=C1)CCC1C3CCCC3CCC21 | 12 | 2.04 |
 | scaffold | 3 | O=C1C=CC2C(=C1)CCC1C2CCC2C1CC1OCOC12 | 6 | 1.02 |
@@ -427,11 +426,10 @@ No numeric features to summarize.
 
 | field | value |
 |---|---|
-| uuid | 01a13aff-7235-73c3-932c-785cd540127b |
-| checksum | v2:8b265d2d3eddb7add77dc45cb583a5b314652160191f2bb7923a2256ac744c09 |
-| built_at | 2026-10-14T15:19:42+00:00 |
-| path | drug_induced_autoimmunity_prediction/01a13aff-7235-73c3-932c-785cd540127b |
+| uuid | 01a21800-93a9-7702-8b4e-2dd5f6089bcb |
+| checksum | v2:aea265253377d4fc7e6ceda536453fc53fc91f6f3cc51c3bccb56ae3562a938d |
+| built_at | 2026-11-26T13:17:01+00:00 |
+| path | drug_induced_autoimmunity_prediction/01a21800-93a9-7702-8b4e-2dd5f6089bcb |
 | data_foundry_version | 0.0.5 |
-| git_sha | de9e6adde48a58047e4e9a41f249e28507e48ed3-dirty |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:33decbe987083218ada44630df411b5cd9aabba928ed8875ce6640eecfa4e410` |

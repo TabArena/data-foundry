@@ -6,7 +6,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+from scipy.sparse import coo_matrix
+from scipy.sparse.csgraph import connected_components
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -18,8 +21,6 @@ from data_foundry.v2 import (
     TimeBasis,
     drop_columns,
 )
-from scipy.sparse import coo_matrix
-from scipy.sparse.csgraph import connected_components
 
 # The organisers' French column names, renamed after their descriptions in the game's rules (pricing-game-2016-FR.pdf,
 # Sec. 1); CASdatasets' names for the same columns are in its pricingame.Rd.
@@ -275,13 +276,13 @@ class PricingGame2016FrenchFleet(AbstractCuratedDataset):
         ),
         reference=RULES_URL,
         params={"power": 1.5, "min_prediction": FLOOR},
-        inputs={"weight": WEIGHT},
     )
     scoring_columns = (
         ScoringColumn(
             column=WEIGHT,
             role="weight",
             used_by="rescaled_mean_tweedie_deviance",
+            fit=True,
             description=(
                 "the period's vehicle-years (the source's Exposition_au_risque, 0.08 to 1), realized: 57.4% of the "
                 "periods end before 31 December at a cut not known at the start (a quarter of them on a month's end), "
@@ -290,7 +291,6 @@ class PricingGame2016FrenchFleet(AbstractCuratedDataset):
             ),
         ),
     )
-    sample_weight = WEIGHT
     accepted_check_warnings = {
         "dataset_duplicate_rows": (
             "Vehicles of one fleet in the same period share every contract class and the start, so the length to the "

@@ -42,14 +42,16 @@ All commands run from the repository root in the repository's environment (`.ven
    `temporal = Temporal(...)` for a temporal one, neither for IID), and the hooks: `_load_raw` only reads,
    `_clean` drops and fixes, `_feature_types` names the categorical, string and datetime columns. Resolve every
    `TODO(verify)`.
-4. **Look at the data** in a notebook of your own next to `dataset.py` (`ds = workbench()` from `data_foundry.v2`
+4. **Look at the data** in a notebook of your own next to `dataset.py` (`ds = workbench()` from `data_foundry.definition`
    picks up every edit to the definition; not committed).
 5. **Check.** `.venv/bin/python -m data_foundry.curation.cli dataset check <folder>` runs the whole pipeline and the
    bundle checks without saving, and writes `README.md`. Repeat until there are no errors. A warning that is correct
-   for the dataset goes into `accepted_check_warnings = {"<slug>": "<why>"}`; the reason is the audit trail.
-6. **Probe.** `.claude/skills/knowledge-data-foundry/scripts/leak_probes.py <unique_name>` (leaks), `task_probes.py`
-   (signal against dummy baselines) and, for a grouped task, `group_probes.py`. A task-probe flag is a question:
-   check it against the benchmark's tuned methods (`tuned_results.py`) and answer it as
+   for the dataset goes into `accepted_check_warnings = {"<slug>": "<why>"}`; the reason is the audit trail. An error
+   cannot be accepted, except the few the rules allow an exception for: every slug, its severity and whether it can be
+   accepted is in [`check_slugs.md`](.claude/skills/knowledge-data-foundry/references/check_slugs.md).
+6. **Probe.** `data-foundry probe leak <unique_name>` (leaks), `data-foundry probe task` (signal against dummy
+   baselines) and, for a grouped task, `data-foundry probe group`. A task-probe flag is a question: check it against the
+   benchmark's tuned methods (`tuned_results.py`) and answer it as
    [`task_probes.md`](.claude/skills/knowledge-curation/references/task_probes.md) says.
 7. **Second opinion.** `/add-dataset <unique_name>` in Claude Code, run on the existing folder, re-checks it: the
    verification checklist ([`verification.md`](.claude/skills/knowledge-curation/references/verification.md)), the
@@ -57,18 +59,16 @@ All commands run from the repository root in the repository's environment (`.ven
    questions go into the record's `## Review`, ranked; its `cannot-verify` items are what a reviewer reads first.
 8. **Open a PR** with `dataset.py`, the generated `README.md` and the record. After review a curator runs
    `dataset build`, which saves the container with a new UUID and records it in the README; the working copy's
-   `CHANGELOG.md` and dataset table are updated in the same change.
+   `CHANGELOG.md` gets its entry in the same change.
 
 ## 3. What the base class does
 
-[`AbstractCuratedDataset`](src/data_foundry/v2/dataset.py) holds the conventions, so a definition does not repeat
+[`AbstractCuratedDataset`](src/data_foundry/definition/dataset.py) holds the conventions, so a definition does not repeat
 them: the dtype casts from `_feature_types`, the row order (the rows in the order of their content, then a
 shuffle with seed 42 or a stable sort by the time column), the split protocol (3 folds, or at least 3 temporal
-windows; no row budget unless the definition declares one: TabArena v0.2 ships larger data as a `<name>_1m`
-version with `row_budget = RowBudget(train=1_000_000, test=500_000)`, whose test sides keep at most 500k rows and
-whose train sides keep every row, sub-sampled to 1M by the benchmark), standard NaNs, the metadata validation, the
-bundle checks and the
-verification of the saved container. Recipes for the recurring cases (every split regime, sub-sampling, leaks,
+windows; no row budget unless the collection sets one, as TabArena v0.2 does for its `<name>_1m` versions:
+[`split_protocol.md`](.claude/skills/knowledge-data-foundry/references/split_protocol.md)), standard NaNs, the
+metadata validation, the bundle checks and the verification of the saved container. Recipes for the recurring cases (every split regime, sub-sampling, leaks,
 dtypes, accepted warnings) are in [`definitions.md`](.claude/skills/knowledge-data-foundry/references/definitions.md).
 
 ## 4. Practices
@@ -78,12 +78,11 @@ dtypes, accepted warnings) are in [`definitions.md`](.claude/skills/knowledge-da
 * **Honest comments.** `curation_comments` records what was dropped and why, anomalies left in on purpose
   (`Anomaly:`, `Note:`), and sampling choices. Someone re-curating the data in two years reads it first.
 * **One task per container.** Two reasonable targets or two split regimes are two datasets with their own
-  `unique_name`. They share their metadata and cleaning through a parent definition (no `target`) that each task
-  subclasses (`import_definition("<parent>")`, a `derivation` saying how it differs), instead of copying it.
+  `unique_name` and definition.
 * **Sources.** `sources` lists the publication first (its year and BibTeX are the dataset's), then the copy you
   download when it is not the publication, and the parts of an assembled dataset, each with its own license.
-* **Versions.** A version with a row budget is named `<name>_1m` (after `RowBudget.suffix`), declares
-  `row_budget`, reads the raw files of `<name>` and says why in `curation_comments`.
+* **Versions.** A version with the collection's row budget is named `<name>_1m` (after `RowBudget.suffix`), reads the
+  raw files of `<name>` and says why in `curation_comments`.
 * **Same result everywhere.** Sort with `kind="stable"`, sort file listings, seed every random step; the
   definition check refuses the common nondeterministic calls.
 * **Raw data stays out of git.** Only the definition folder lands in the PR.
@@ -93,7 +92,7 @@ dtypes, accepted warnings) are in [`definitions.md`](.claude/skills/knowledge-da
 What the curator decides at each stage, and how Claude checks it: [the curation skills](.claude/skills/README.md).
 
 * Template: [`datasets/_template/`](datasets/_template/)
-* The v2 package: [`src/data_foundry/v2/`](src/data_foundry/v2/)
+* The v2 package: [`src/data_foundry/definition/`](src/data_foundry/definition/)
 * Scaffolding: [`.claude/skills/add-dataset/`](.claude/skills/add-dataset/SKILL.md)
 * Selection criteria, splits, leaks, cleaning, verification: the curation knowledge
   ([`knowledge-curation`](.claude/skills/knowledge-curation/SKILL.md), also the dashboard's Guidelines page)

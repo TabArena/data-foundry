@@ -32,10 +32,11 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.collections import BEYOND_ARENA
 from scipy.stats import rankdata
 from sklearn.isotonic import IsotonicRegression
 from sklearn.metrics import roc_auc_score
+
+from data_foundry.collections import BEYOND_ARENA
 
 SUITES = "beyond_iid_benchmark_2026,beyondarena-2026-09-22,beyondarena-2026-09-24"
 CONFIGS = ("default", "tuned_ensemble")

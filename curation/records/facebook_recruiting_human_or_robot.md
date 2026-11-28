@@ -3,9 +3,6 @@ unique_name: facebook_recruiting_human_or_robot
 name: 'Facebook Recruiting IV: Human or Robot? (Kaggle recruiting competition, online-auction bidders labelled robot or human)'
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Lennart
 suggestion: TBD -> Yes
 priority: 3
 decision_markers:

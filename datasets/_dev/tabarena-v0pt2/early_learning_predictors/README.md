@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: early_learning_predictors
 container_format: 2
-checksum: v2:6840f0c8bb4404c5311116799feb24e8d7586aedf6cb75613609322ed56c4dc7
+checksum: v2:5d6480237f6aa928eeb658d5a679d7980243db088a7d3718b63adb56f6aaf0b9
 build:
-  uuid: 01a1d456-e3ed-7619-a175-71edb149573f
-  checksum: v2:9f19f13587e587573f9567fad966ee60b791686873463504277d2ee738abeb82
-  built_at: '2026-11-13T09:57:11+00:00'
-  path: early_learning_predictors/01a1d456-e3ed-7619-a175-71edb149573f
+  uuid: 01a21800-0874-76d2-89e6-12f37f7cbb38
+  checksum: v2:5d6480237f6aa928eeb658d5a679d7980243db088a7d3718b63adb56f6aaf0b9
+  built_at: '2026-11-26T13:16:29+00:00'
+  path: early_learning_predictors/01a21800-0874-76d2-89e6-12f37f7cbb38
   data_foundry_version: 0.0.5
-  git_sha: 33221e166276781bf815b26fc972657cb578dfc2-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.16
+    python: 3.12.3
     pandas: 2.3.3
-    numpy: 2.4.6
-    pyarrow: 24.0.0
+    numpy: 2.1.3
+    pyarrow: 20.0.0
     scikit-learn: 1.7.2
-    polars: 1.44.2
-build_stale: true
+    polars: 1.41.1
+build_stale: false
 data:
   n_rows: 18874
   n_features: 735
@@ -55,6 +55,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 12438
     max: 12839
@@ -80,7 +81,7 @@ decisions: []
 
 Regression of `child_total_elom`, scored with `rmse` on grouped splits by `id_facility`. 18,874 rows and 735 features. Source: Other (2024).
 
-Built as `01a1d456-e3ed-7619-a175-71edb149573f` on 2026-11-13, but `dataset.py` has changed since: it now gives checksum `v2:6840f0c8bb4404c5311116799feb24e8d7586aedf6cb75613609322ed56c4dc7`, so the build is stale. See [Build](#build).
+Built as `01a21800-0874-76d2-89e6-12f37f7cbb38` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -316,12 +317,11 @@ The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffle
   `pri_mobile`, `pra_gender`; 7 scores with no words per level are numbers (`SCORES`): `quintile`,
   `pra_class_space_2`, `pra_satisfaction_support`, `ses_cat`, `ses_proxy`, `teacher_familiarity_with_child`,
   `teacher_selfcare_total`.
-- Time basis: UnseenGroup: the use case predicts for a facility not yet assessed, so the split holds out
-  facilities and does not weigh the assessment round (dropped as `data_year`). It cannot test a later round.
+- Time basis: UnseenGroup: the use case predicts for a facility not yet assessed, so the split holds out facilities and does not weigh the assessment round (dropped as `data_year`). It cannot test a later round.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation keeping each group of `id_facility` whole (shuffled group k-fold, a new draw per repeat): 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 18,874 rows (SPLIT-33).
 
 3 repeat(s) x 3 fold(s) with seed 4267; train 12,438 to 12,839 rows, test 6,035 to 6,436 rows.
 
@@ -356,16 +356,16 @@ One group is an early learning facility; its rows are the children assessed ther
 | largest group | 0.3% of the rows |
 | test groups per fold | 847 |
 | groups of two or more rows with a single label | 0.0% |
-| nearest neighbour in the same group | 58.8% of the rows (chance: 0.1%) |
+| nearest neighbour in the same group | 58.9% of the rows (chance: 0.1%) |
 | label variance explained by the group | 0.40 (shuffled groups: 0.13) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
 0 error(s), 1 warning(s), 3 info (28 checks run, plus the dataset's own checks).
 
-- **warning** `task_feature_looks_like_exposure`: Feature(s) ['programme_exposure'] look like an amount at risk (time insured, area swept). A realized one is cut by the outcome and never a feature; it is the rate's denominator and the weight (LEAK-41, MET-15). (hint: Say in the notes what the column is (planned or realized) and accept the warning, or ship the rate with the column as `sample_weight`.)
+- **warning** `task_feature_looks_like_exposure`: Feature(s) ['programme_exposure'] look like an amount at risk (time insured, area swept). A realized one is cut by the outcome and never a feature; it is the rate's denominator and the weight (LEAK-41, MET-15). (hint: Say in the notes what the column is (planned or realized) and accept the warning, or ship the rate with the column as its weight scoring column, `fit=True`.)
 - **info** `dataset_duplicate_rows`: 3 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 30 row(s) (0.2%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 - **info** `meta_time_present_unused`: Date columns ['child_dob', 'pra_dob'] are in the data, and the split is not temporal. (hint: Information for the split (SPLIT-32): the data carries dates.)
@@ -598,11 +598,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a1d456-e3ed-7619-a175-71edb149573f |
-| checksum | v2:9f19f13587e587573f9567fad966ee60b791686873463504277d2ee738abeb82 |
-| built_at | 2026-11-13T09:57:11+00:00 |
-| path | early_learning_predictors/01a1d456-e3ed-7619-a175-71edb149573f |
+| uuid | 01a21800-0874-76d2-89e6-12f37f7cbb38 |
+| checksum | v2:5d6480237f6aa928eeb658d5a679d7980243db088a7d3718b63adb56f6aaf0b9 |
+| built_at | 2026-11-26T13:16:29+00:00 |
+| path | early_learning_predictors/01a21800-0874-76d2-89e6-12f37f7cbb38 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 33221e166276781bf815b26fc972657cb578dfc2-dirty |
-| libraries | {'python': '3.11.16', 'pandas': '2.3.3', 'numpy': '2.4.6', 'pyarrow': '24.0.0', 'scikit-learn': '1.7.2', 'polars': '1.44.2'} |
-| stale | yes: the definition now gives checksum `v2:6840f0c8bb4404c5311116799feb24e8d7586aedf6cb75613609322ed56c4dc7` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

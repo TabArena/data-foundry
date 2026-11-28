@@ -1,0 +1,21 @@
+{
+ "vehicle_size": {
+  "categories": [
+   "small",
+   "medium",
+   "large"
+  ],
+  "categories_dtype": "object",
+  "ordered": true
+ },
+ "region": {
+  "categories": [
+   "east",
+   "north",
+   "south",
+   "west"
+  ],
+  "categories_dtype": "object",
+  "ordered": false
+ }
+}

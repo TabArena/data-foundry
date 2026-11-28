@@ -12,7 +12,9 @@ from collections import Counter
 from pathlib import Path
 
 import pytest
+
 from data_foundry.curation._paths import records_dir, resolve_curation_root
+from data_foundry.curation.comments import parse_exception_lines, rule_ids_defined
 from data_foundry.curation.notebooks import V2_TREE, required_tree, shipped_uuids, sync_notebook_paths, sync_v2_paths
 from data_foundry.curation.record import (
     ACCEPTED_SUGGESTIONS,
@@ -20,7 +22,6 @@ from data_foundry.curation.record import (
     AI_REVIEWER,
     COLLECTION_TAGS,
     RETIRED_SUGGESTION,
-    WIP_STATUSES,
     load_vocabularies,
 )
 from data_foundry.curation.store import load_all, markdown_to_record
@@ -71,16 +72,13 @@ _needs_datasets = pytest.mark.skipif(not _HAS_DATASETS, reason="shipped datasets
 
 
 # --------------------------------------------------------------------- structure
-def test_no_review_file_in_a_dataset_folder():
-    """A dataset's review lives in its record's ``## Review`` (Lennart, 2026-11-11): no folder under ``datasets/`` holds
-    a ``REVIEW.md``. The working copy's cross-dataset file is the one review file outside the records.
+def test_no_review_file_under_datasets():
+    """A dataset's review lives in its record's ``## Review`` (Lennart, 2026-11-11): nothing under ``datasets/``, the
+    TabArena v0.2 working copy included, holds a ``REVIEW.md``. A cross-dataset item becomes a draft rule in the
+    knowledge skills or a GitHub issue (Lennart, 2026-11-25).
     """
-    allowed = {DATASETS / "_dev" / "tabarena-v0pt2" / "REVIEW.md"}
-    found = sorted(str(p.relative_to(DATASETS)) for p in DATASETS.rglob("REVIEW.md") if p not in allowed)
-    assert not found, (
-        f"review files in dataset folders: {found}; move them into the records with "
-        ".claude/skills/review-added-datasets/scripts/move_reviews_to_records.py"
-    )
+    found = sorted(str(p.relative_to(DATASETS)) for p in DATASETS.rglob("REVIEW.md"))
+    assert not found, f"review files under datasets/: {found}; a dataset's review goes into its record's ## Review"
 
 
 def test_records_dir_is_populated():
@@ -205,23 +203,6 @@ def test_ai_reviewed_records_follow_convention(records):
         if "AI-FILLED" not in (r.comments or ""):
             bad.append((r.unique_name, "comments missing the UNVERIFIED disclaimer"))
     assert not bad, f"AI-review convention violations: {bad}"
-
-
-def test_claims_belong_to_wip_records(records):
-    """A ``claimed_by`` names a curator, never the AI, and only on a record in a WIP state.
-
-    A WIP record without a claim is allowed but sits in the Review queue (``wip_unclaimed``) until its holder adds
-    their name.
-    """
-    bad = []
-    for r in records:
-        if not r.claimed_by:
-            continue
-        if r.claimed_by == AI_REVIEWER:
-            bad.append((r.unique_name, "claimed by the AI"))
-        if not any(s in WIP_STATUSES for s in (r.data_foundry_status or [])):
-            bad.append((r.unique_name, f"claimed by {r.claimed_by} without a WIP state"))
-    assert not bad, f"claim convention violations: {bad}"
 
 
 def test_rejected_records_have_no_priority(records):
@@ -382,19 +363,10 @@ def test_exception_lines_name_a_defined_rule_and_serve_a_principle(records):
     """Every ``**Exception to <ID> (...)**`` line names a rule the knowledge files define and gives a reason with a
     "Serves" part (the ID check waits until the knowledge files define rule IDs at all).
     """
-    import importlib.util  # noqa: PLC0415 - the parser lives in a skill script, not in the package
-    import sys  # noqa: PLC0415
-
-    skills = Path(__file__).resolve().parents[1] / ".claude" / "skills"
-    path = skills / "knowledge-data-foundry" / "scripts" / "decision_register.py"
-    spec = importlib.util.spec_from_file_location("decision_register", path)
-    register = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = register  # dataclasses look their module up there
-    spec.loader.exec_module(register)
-    defined = register.rule_ids_defined(skills / "knowledge-curation")
+    defined = rule_ids_defined(Path(__file__).resolve().parents[1] / ".claude" / "skills" / "knowledge-curation")
     problems = []
     for r in records:
-        for line in register.parse_exception_lines(r.comments or ""):
+        for line in parse_exception_lines(r.comments or ""):
             if not line.rule_ids or (defined and set(line.rule_ids) - defined):
                 problems.append((r.unique_name, "rule IDs not defined", line.rule_ids))
             if line.serves is None or not line.words_before_serves:

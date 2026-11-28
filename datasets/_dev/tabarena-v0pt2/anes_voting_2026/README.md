@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: anes_voting_2026
 container_format: 2
-checksum: v2:6bd2fb279d422cad29d91bedc06b243c6587a5c708b85a75c0271d6c25d5e098
+checksum: v2:b5754d75e115aa96408cb1a617246c87179956df2f8ae9d2a3a21d2dd29fd01e
 build:
-  uuid: 01a111fb-cb34-797a-ba46-5305a0c33af4
-  checksum: v2:68b50d2a440c41001df168da2140a54131d4bde60c6aed028178881555c35d42
-  built_at: '2026-10-06T16:11:23+00:00'
-  path: anes_voting_2026/01a111fb-cb34-797a-ba46-5305a0c33af4
+  uuid: 01a217fe-fbb5-733d-a918-c81016d24d26
+  checksum: v2:b5754d75e115aa96408cb1a617246c87179956df2f8ae9d2a3a21d2dd29fd01e
+  built_at: '2026-11-26T13:15:23+00:00'
+  path: anes_voting_2026/01a217fe-fbb5-733d-a918-c81016d24d26
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 48587
   n_features: 261
@@ -47,6 +47,34 @@ splits:
   time_horizon_unit: years
   time_gap: null
   time_gap_unit: null
+  reason: 'Each test window is one study, that is one election: a pollster builds
+    a likely-voter screen from the elections already studied and applies it at the
+    next one, the test Pew''s likely-voter study names for such a model ("Applying
+    these models to other elections will reveal how well they can be generalized").
+    ANES sets no prediction task and TableShift splits its voting task by region,
+    so no source sets the length. The studies are four years apart from 2004 on (two
+    years between 2000, 2002 and 2004), so a window''s model is up to four years old,
+    as a pollster''s would be. The test windows are the nine newest studies (CC 2026-11-11),
+    newest first: 2024, 2020, 2016, 2012, 2008, 2004, 2002 (the data''s only midterm
+    study with both interviews), 2000 and 1996; nine is also the count a random split
+    of this many respondents gets (3 x 3 folds). Four windows train on less than half
+    the respondents: 2004 (49.2%), 2002 (46.4%), 2000 (43.2%) and 1996 (40.0%), as
+    the studies from 2012 on hold 3,648 to 7,442 respondents against 1,066 to 2,102
+    before; the five newest train on half or more, so no more windows are under half
+    than above it, and the four add the only midterm and three more presidential elections
+    (5,498 test respondents). No gap is needed: a study''s labels come from its post-election
+    interview, held after the election and years before the next study''s pre-election
+    interview. How the data arrive (Andrej, 2026-11-11): a study''s respondents answer
+    in the weeks before one election day and report their vote in the post-election
+    interview within about two months, while the next study comes two to four years
+    later, so every training label is in before a window starts. The cross-year id
+    (dropped from the features) links 2,917 respondents across studies, all in the
+    panels of 1956-1960, 1972-1976, 1992-1996 and 2000-2002; of the nine test windows,
+    two hold re-interviewed respondents whose earlier row is on the training side,
+    1996 (545 of 1,534, all from 1992) and 2002 (991 of 1,344, all from 2000), and
+    the other seven hold none. Turnout travels with the respondent: of the 1996 repeats,
+    87.8% of those who said they voted in 1992 say so again, against 35.3% of those
+    who did not (2002: 84.7% against 19.9%).'
   n_train:
     min: 19455
     max: 43633
@@ -60,7 +88,6 @@ bundle_checks:
   infos:
   - dataset_duplicate_rows
   - dataset_conflicting_duplicate_rows
-  - meta_time_horizon_unit
   accepted:
     splits_train_under_half: 'Signed off (Lennart, 2026-11-11): the four oldest elections
       train on 49.2%, 46.4%, 43.2% and 40.0% of the respondents, beside five on 51.4%
@@ -78,7 +105,7 @@ decisions: []
 
 Binary classification of `VCF0702`, scored with `roc_auc` on temporal splits by `VCF0004` (one step is a year). 48,587 rows and 261 features. Source: Other (2026).
 
-Built as `01a111fb-cb34-797a-ba46-5305a0c33af4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6bd2fb279d422cad29d91bedc06b243c6587a5c708b85a75c0271d6c25d5e098`, so the build is stale. See [Build](#build).
+Built as `01a217fe-fbb5-733d-a918-c81016d24d26` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -253,7 +280,9 @@ The first 5 of 48,587 rows of the final frame (the oldest rows: the frame is sor
 
 ## Splits
 
-Each test window is one study, that is one election: a pollster builds a likely-voter screen from the elections already studied and applies it at the next one, the test Pew's likely-voter study names for such a model ("Applying these models to other elections will reveal how well they can be generalized"). ANES sets no prediction task and TableShift splits its voting task by region, so no source sets the length. The studies are four years apart from 2004 on (two years between 2000, 2002 and 2004), so a window's model is up to four years old, as a pollster's would be. The test windows are the nine newest studies (CC 2026-11-11), newest first: 2024, 2020, 2016, 2012, 2008, 2004, 2002 (the data's only midterm study with both interviews), 2000 and 1996; nine is also the count a random split of this many respondents gets (3 x 3 folds). They hold 4,954, 7,442, 3,648, 5,488, 2,102, 1,066, 1,344, 1,554 and 1,534 respondents (29,132). Train is every earlier study: 43,633, 36,191, 32,543, 27,055, 24,953, 23,887, 22,543, 20,989 and 19,455 respondents (89.8%, 74.5%, 67.0%, 55.7%, 51.4%, 49.2%, 46.4%, 43.2% and 40.0%). Four windows train on less than half the respondents: 2004 (49.2%), 2002 (46.4%), 2000 (43.2%) and 1996 (40.0%), as the studies from 2012 on hold 3,648 to 7,442 respondents against 1,066 to 2,102 before; the five newest train on half or more, so no more windows are under half than above it, and the four add the only midterm and three more presidential elections (5,498 test respondents). No gap is needed: a study's labels come from its post-election interview, held after the election and years before the next study's pre-election interview. How the data arrive (Andrej, 2026-11-11): a study's respondents answer in the weeks before one election day and report their vote in the post-election interview within about two months, while the next study comes two to four years later, so every training label is in before a window starts. The cross-year id (dropped from the features) links 2,917 respondents across studies, all in the panels of 1956-1960, 1972-1976, 1992-1996 and 2000-2002; of the nine test windows, two hold re-interviewed respondents whose earlier row is on the training side, 1996 (545 of 1,534, all from 1992) and 2002 (991 of 1,344, all from 2000), and the other seven hold none. Turnout travels with the respondent: of the 1996 repeats, 87.8% of those who said they voted in 1992 say so again, against 35.3% of those who did not (2002: 84.7% against 19.9%).
+Expanding-window temporal splits: 9 test window(s) of 1 time value, walking back from the newest data, newest first; train is all earlier data. The test windows by `VCF0004`, as listed: 2024 (4,954 test, 43,633 train rows); 2020 (7,442 test, 36,191 train rows); 2016 (3,648 test, 32,543 train rows); 2012 (5,488 test, 27,055 train rows); 2008 (2,102 test, 24,953 train rows); 2004 (1,066 test, 23,887 train rows); 2002 (1,344 test, 22,543 train rows); 2000 (1,554 test, 20,989 train rows); 1996 (1,534 test, 19,455 train rows).
+
+Each test window is one study, that is one election: a pollster builds a likely-voter screen from the elections already studied and applies it at the next one, the test Pew's likely-voter study names for such a model ("Applying these models to other elections will reveal how well they can be generalized"). ANES sets no prediction task and TableShift splits its voting task by region, so no source sets the length. The studies are four years apart from 2004 on (two years between 2000, 2002 and 2004), so a window's model is up to four years old, as a pollster's would be. The test windows are the nine newest studies (CC 2026-11-11), newest first: 2024, 2020, 2016, 2012, 2008, 2004, 2002 (the data's only midterm study with both interviews), 2000 and 1996; nine is also the count a random split of this many respondents gets (3 x 3 folds). Four windows train on less than half the respondents: 2004 (49.2%), 2002 (46.4%), 2000 (43.2%) and 1996 (40.0%), as the studies from 2012 on hold 3,648 to 7,442 respondents against 1,066 to 2,102 before; the five newest train on half or more, so no more windows are under half than above it, and the four add the only midterm and three more presidential elections (5,498 test respondents). No gap is needed: a study's labels come from its post-election interview, held after the election and years before the next study's pre-election interview. How the data arrive (Andrej, 2026-11-11): a study's respondents answer in the weeks before one election day and report their vote in the post-election interview within about two months, while the next study comes two to four years later, so every training label is in before a window starts. The cross-year id (dropped from the features) links 2,917 respondents across studies, all in the panels of 1956-1960, 1972-1976, 1992-1996 and 2000-2002; of the nine test windows, two hold re-interviewed respondents whose earlier row is on the training side, 1996 (545 of 1,534, all from 1992) and 2002 (991 of 1,344, all from 2000), and the other seven hold none. Turnout travels with the respondent: of the 1996 repeats, 87.8% of those who said they voted in 1992 say so again, against 35.3% of those who did not (2002: 84.7% against 19.9%).
 
 9 repeat(s) x 1 fold(s) with seed 4267; train 19,455 to 43,633 rows, test 1,066 to 7,442 rows. Prediction horizon: 1 years.
 
@@ -288,11 +317,10 @@ Each test window against its train side, by statistics of the data, never of a m
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 3 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 156 exact duplicate row(s) (0.3% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 30 row(s) (0.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
-- **info** `meta_time_horizon_unit`: `time_horizon_unit='years'` implies calendar time, but `time_on='VCF0004'` has dtype float64, so the horizon cannot be cross-checked. (hint: Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use `time_horizon_unit='steps'` for a plain numeric time index.)
 
 Accepted on purpose:
 
@@ -513,11 +541,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fb-cb34-797a-ba46-5305a0c33af4 |
-| checksum | v2:68b50d2a440c41001df168da2140a54131d4bde60c6aed028178881555c35d42 |
-| built_at | 2026-10-06T16:11:23+00:00 |
-| path | anes_voting_2026/01a111fb-cb34-797a-ba46-5305a0c33af4 |
+| uuid | 01a217fe-fbb5-733d-a918-c81016d24d26 |
+| checksum | v2:b5754d75e115aa96408cb1a617246c87179956df2f8ae9d2a3a21d2dd29fd01e |
+| built_at | 2026-11-26T13:15:23+00:00 |
+| path | anes_voting_2026/01a217fe-fbb5-733d-a918-c81016d24d26 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6bd2fb279d422cad29d91bedc06b243c6587a5c708b85a75c0271d6c25d5e098` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary, TimeBasis
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+)
 
 # each shipped protein's family: UniProt protein family, else its Pfam domains, else the protein alone (lookup of
 # 2026-11-23 from the SWISS-PROT entry names)
@@ -124,7 +133,7 @@ class EcoliProteins(AbstractCuratedDataset):
     )
 
     accepted_check_warnings = {
-        "splits_test_class_missing": (
+        "splits_class_missing": (
             "One of the 60 family-grouped test folds (r1f2) lacks one of the five locations: the outer-membrane "
             "proteins (20) sit in few families, 6 in the TonB-dependent receptors and 4 in the porins, so a fold can "
             "draw none. The metric is log loss, which a missing class in a test fold does not break (Andrej, "

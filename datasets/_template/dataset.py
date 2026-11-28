@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (  # noqa: F401
+
+from data_foundry.definition import (  # noqa: F401
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -52,7 +53,7 @@ class ClassName(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ()  # context tags only (Spatial, Anonymized, ...); the regime tags are added from the task
+    data_tags = ()  # context tags only (Spatial, Anonymized, ...); the regime tags are derived from the task
     # split_leaf = "L-FILL.random"  # the leaf of the split decision tree the split comes from (SPLIT-36)
     # time_basis = TimeBasis("RetrospectiveFillIn", "...")  # why a split that is not temporal is not (SPLIT-32)
     download_description = """
@@ -73,12 +74,13 @@ class ClassName(AbstractCuratedDataset):
     problem_type = "TODO"
     # The metric (required). Look for the source's metric first: the competition's evaluation page, the paper's
     # evaluation section, the task description. Then declare one of
-    #   metric = Metric.source("rmse", original="RMSE", reference="https://...")  # the name in data_foundry.v2.metrics
+    #   metric = Metric.source("rmse", original="RMSE", reference="https://...")  # the name in data_foundry.metrics
     #   metric = Metric.stand_in("pearsonr", original="...", reason="why it cannot be computed", reference="https://...")
     # and only when the source defines none, the fallback (roc_auc / log_loss / rmse by problem type) with where you
-    # looked. A metric that needs a column (a group, a weight) maps it in `inputs={"group": "era"}` and declares it in
-    # `scoring_columns = (ScoringColumn(column="era", role="group", used_by="...", description="..."),)`.
-    # sample_weight = None  # a rate's realized denominator (MET-15): the metric's row-weight column and fit weight
+    # looked. A column the metric needs (a group, a weight) is declared once, as a scoring column of that role, which
+    # maps it into the metric's inputs: `scoring_columns = (ScoringColumn(column="era", role="group", used_by="...",
+    # description="..."),)`. A weight adds `fit=True` when every model trains with it (a rate's realized denominator,
+    # MET-15), or `unit="<unit column>"` when it counts each unit once (MET-17).
     metric = Metric.fallback(reason="TODO(verify): where we looked for the source's metric, and found none.")
     # The regime: neither declaration is an IID task with the recommended split. A grouped task (import `Grouping`):
     # grouping = Grouping(
@@ -91,10 +93,18 @@ class ClassName(AbstractCuratedDataset):
     #         What one group is, why groups are held out, and the use case with its source.
     #     """,
     # )
-    # A temporal task (import `Temporal`, `TemporalSplits`) declares its windows and says why in `splits_comment`
-    # (which replaces the generated text, so restate the windows there). A window of fixed length (a calendar unit, or
-    # unit="rows") is the horizon; windows of unit="unique" or window=None need `horizon=..., horizon_unit=...`:
+    # A temporal task (import `Temporal`, `TemporalSplits`) declares its windows. A window of fixed length (a calendar
+    # unit, or unit="rows") is the horizon; windows of unit="unique" or window=None need `horizon=..., horizon_unit=...`.
+    # Windows each running to the next start: `TemporalSplits(window=None, cutoffs=(...))`; train only on labels known
+    # before a window: `Temporal(label_known_on=...)`; no training row of an entity a window tests:
+    # `Temporal(exclude_test_entities_on=...)`. A grouped task of few deployments (import `GroupedSplits`):
+    # `grouped_splits = GroupedSplits(kind="leave_one_group_out")`.
     # temporal = Temporal(on="...", splits=TemporalSplits(window=7, unit="days", n_windows=3))
+    # The code describes the splits (windows, sizes, folds, repeats, budget); `splits_comment` adds only the reason:
+    # the use case, why this length and these windows, the decisions and who made them.
+    # splits_comment = """
+    #     TODO(verify): why the split is as it is.
+    # """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         # Only read here (cached across edits of `_clean`).

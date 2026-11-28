@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_tid_11
 container_format: 2
-checksum: v2:21b225245b24ccba33e573c4aacc136eeac6f8cb08ea97af462e627127d42be2
+checksum: v2:d8f4bdc85d092edb8e945cd344153b637d017bde8fe191c01af1c4100e15c935
 build:
-  uuid: 01a111fc-77d3-7128-8497-210288cab270
-  checksum: v2:6aced922d7a0d199fe8637391bf863bc500c5c50733d7ca006d3a0643874bde3
-  built_at: '2026-10-06T16:12:04+00:00'
-  path: qsar_tid_11/01a111fc-77d3-7128-8497-210288cab270
+  uuid: 01a21800-40de-72d6-845e-135b7f3af693
+  checksum: v2:d8f4bdc85d092edb8e945cd344153b637d017bde8fe191c01af1c4100e15c935
+  built_at: '2026-11-26T13:16:41+00:00'
+  path: qsar_tid_11/01a21800-40de-72d6-845e-135b7f3af693
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 5704
   n_features: 1
@@ -50,6 +50,20 @@ splits:
   time_horizon_unit: years
   time_gap: null
   time_gap_unit: null
+  reason: 'Expanding-window temporal splits on the year a compound first appears in
+    ChEMBL 17''s human thrombin records: 9 test windows of one year (2013 back to
+    2005), newest first; train is every compound first published before the window
+    (Andrej, 2026-11-19). A model trained on the compounds known up to a year predicts
+    the potency of the compounds that appear in the next. The use case sets no refit
+    cadence, and the date gives whole years only: one year is the finest step, and
+    nine whole-year windows reach the count an IID split of 5,704 compounds would
+    get, all training on more than half the data; 2004 (57.5%) would be a tenth. The
+    windows of 2013 (49), 2010 (106) and 2009 (105) are small and noisier. Until 2026-11-19
+    five two-year windows (2004-05 to 2012-13) shipped, a length cut from the newest
+    half of the 22 years. The 518 compounds of the undated PubChem BioAssay deposit
+    take 2011, the year ChEMBL 9 loaded it, which puts them in the 2010-11 window.
+    The scaffold-grouped split this replaces trained on same-year siblings of the
+    test compounds (curation notes).'
   n_train:
     min: 3660
     max: 5655
@@ -72,7 +86,7 @@ decisions: []
 
 Regression of `MEDIAN_PXC50`, scored with `rmse` on temporal splits by `first_year`. 5,704 rows and 1 features. Source: OpenML (2015).
 
-Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:21b225245b24ccba33e573c4aacc136eeac6f8cb08ea97af462e627127d42be2`, so the build is stale. See [Build](#build).
+Built as `01a21800-40de-72d6-845e-135b7f3af693` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -303,7 +317,7 @@ The first 5 of 5,704 rows of the final frame (the oldest rows: the frame is sort
 - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01): ChEMBL 17's SMILES in RDKit's
   canonical form (`canonical_smiles`; the 549 salts as ChEMBL records them), declared in `special_features`, so a
   benchmark encodes it as a structure and never as text; the recommended encoding is
-  `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). The source's
+  `data_foundry.special.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). The source's
   1,024 FCFP6 bits leave (Lennart, 2026-11-01: "the real task here is going from smiles to a prediction, the
   bits are just one possible modelling choice by the authors"). RDKit computes the same kind of fingerprint, but
   not these columns: with its closest settings (radius 3, feature invariants, 1,024 bits) no source bit is
@@ -335,7 +349,9 @@ The first 5 of 5,704 rows of the final frame (the oldest rows: the frame is sort
 
 ## Splits
 
-Expanding-window temporal splits on the year a compound first appears in ChEMBL 17's human thrombin records: 9 test windows of one year (2013 back to 2005), newest first; train is every compound first published before the window (Andrej, 2026-11-19). The windows hold 49, 110, 638, 106, 105, 185, 308, 290 and 253 compounds (2013, 2012, 2011, 2010, 2009, 2008, 2007, 2006, 2005), and their train sides 5,655, 5,545, 4,907, 4,801, 4,696, 4,511, 4,203, 3,913 and 3,660 compounds (99.1%, 97.2%, 86.0%, 84.2%, 82.3%, 79.1%, 73.7%, 68.6% and 64.2% of all 5,704). A model trained on the compounds known up to a year predicts the potency of the compounds that appear in the next. The use case sets no refit cadence, and the date gives whole years only: one year is the finest step, and nine whole-year windows reach the count an IID split of 5,704 compounds would get, all training on more than half the data; 2004 (57.5%) would be a tenth. The windows of 2013 (49), 2010 (106) and 2009 (105) are small and noisier. Until 2026-11-19 five two-year windows (2004-05 to 2012-13) shipped, a length cut from the newest half of the 22 years. The 518 compounds of the undated PubChem BioAssay deposit take 2011, the year ChEMBL 9 loaded it, which puts them in the 2010-11 window. The scaffold-grouped split this replaces trained on same-year siblings of the test compounds (curation notes).
+Expanding-window temporal splits: 9 test window(s) of 1 time value, walking back from the newest data, newest first; train is all earlier data. The test windows by `first_year`, as listed: 2013 (49 test, 5,655 train rows); 2012 (110 test, 5,545 train rows); 2011 (638 test, 4,907 train rows); 2010 (106 test, 4,801 train rows); 2009 (105 test, 4,696 train rows); 2008 (185 test, 4,511 train rows); 2007 (308 test, 4,203 train rows); 2006 (290 test, 3,913 train rows); 2005 (253 test, 3,660 train rows).
+
+Expanding-window temporal splits on the year a compound first appears in ChEMBL 17's human thrombin records: 9 test windows of one year (2013 back to 2005), newest first; train is every compound first published before the window (Andrej, 2026-11-19). A model trained on the compounds known up to a year predicts the potency of the compounds that appear in the next. The use case sets no refit cadence, and the date gives whole years only: one year is the finest step, and nine whole-year windows reach the count an IID split of 5,704 compounds would get, all training on more than half the data; 2004 (57.5%) would be a tenth. The windows of 2013 (49), 2010 (106) and 2009 (105) are small and noisier. Until 2026-11-19 five two-year windows (2004-05 to 2012-13) shipped, a length cut from the newest half of the 22 years. The 518 compounds of the undated PubChem BioAssay deposit take 2011, the year ChEMBL 9 loaded it, which puts them in the 2010-11 window. The scaffold-grouped split this replaces trained on same-year siblings of the test compounds (curation notes).
 
 9 repeat(s) x 1 fold(s) with seed 4267; train 3,660 to 5,655 rows, test 49 to 638 rows. Prediction horizon: 1 years. The time column `first_year` dates the label, which arrives after the prediction point: it orders and splits the rows, so every training label was known at its window's start, and is no model input (`feature_columns(container)` leaves it out).
 
@@ -372,7 +388,7 @@ Each test window against its train side, by statistics of the data, never of a m
 
 0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
-- **info** `meta_time_horizon_unit`: `time_horizon_unit='years'` implies calendar time, but `time_on='first_year'` has dtype int64, so the horizon cannot be cross-checked. (hint: Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use `time_horizon_unit='steps'` for a plain numeric time index.)
+- **info** `meta_time_horizon_unit`: `time_horizon_unit='years'` implies calendar time, but `time_on='first_year'` has dtype int64, so the horizon cannot be cross-checked. (hint: Declare what one step of the time column counts, `Temporal(..., time_unit=...)`, so the horizon can be cross-checked.)
 
 ## Data checks
 
@@ -382,7 +398,7 @@ Each test window against its train side, by statistics of the data, never of a m
 |---|---|---|---|---|---|
 | MEDIAN_PXC50 | float64 | 0 | 0 | 1379 | 4.301, 5.0, 5.301, 5.398, 4.0, 4.959, 4.678, 5.602, 4.523, 6.0 |
 | first_year | int64 | 0 | 0 | 22 | 2003, 2011, 1999, 1998, 2000, 2002, 2004, 2007, 2006, 2005 |
-| SMILES | string | 0 | 0 | 5704 | CC\[C@H\](C)\[C@H\](NC(=O)\[C@@H\]1CCCN1C(=O)\[C@H\](CCC(=O)O)NC(=O)\[C@H\](Cc1ccccc1)NC(… |
+| SMILES | string | 0 | 0 | 5704 | C\[C@@\]1(CO)C\[C@@H\](C(=O)NCc2ccc(C(=N)N)cc2)n2c1c(Cl)nc(NC1CCC1)c2=O, CC\[C@H\](C)… |
 
 ### Target distribution
 
@@ -401,21 +417,20 @@ Each test window against its train side, by statistics of the data, never of a m
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| SMILES | 1 | CC\[C@H\](C)\[C@H\](NC(=O)\[C@@H\]1CCCN1C(=O)\[C@H\](CCC(=O)O)NC(=O)\[C@H... | 1 | 0.02 |
-| SMILES | 2 | NC(N)=NCCCC(NC(=O)\[C@@H\]1CCCN1C(=O)C(N)Cc1cccc2ccccc12)C(=O)CCC(... | 1 | 0.02 |
-| SMILES | 3 | COC(=O)C(O)\[C@H\](CCCCN=C(N)N)NC(=O)\[C@@H\]1CCCN1C(=O)\[C@H\](N)Cc1c... | 1 | 0.02 |
-| SMILES | 4 | CC\[C@H\](C)\[C@H\](NC(=O)\[C@H\](CCC(=O)O)NC(=O)\[C@H\](CCC(=O)O)NC(=O)... | 1 | 0.02 |
-| SMILES | 5 | NC(N)=NCCCC(NC(=O)\[C@@H\]1CCCN1C(=O)\[C@@H\](N)C(c1ccccc1)c1ccccc1)... | 1 | 0.02 |
+| SMILES | 1 | C\[C@@\]1(CO)C\[C@@H\](C(=O)NCc2ccc(C(=N)N)cc2)n2c1c(Cl)nc(NC1CCC1)c2=O | 1 | 0.02 |
+| SMILES | 2 | CC\[C@H\](C)\[C@H\](NC(=O)\[C@@H\]1CCCN1C(=O)\[C@H\](CCC(=O)O)NC(=O)\[C@H... | 1 | 0.02 |
+| SMILES | 3 | NC(N)=NCCCC(NC(=O)\[C@@H\]1CCCN1C(=O)C(N)Cc1cccc2ccccc12)C(=O)CCC(... | 1 | 0.02 |
+| SMILES | 4 | COC(=O)C(O)\[C@H\](CCCCN=C(N)N)NC(=O)\[C@@H\]1CCCN1C(=O)\[C@H\](N)Cc1c... | 1 | 0.02 |
+| SMILES | 5 | CC\[C@H\](C)\[C@H\](NC(=O)\[C@H\](CCC(=O)O)NC(=O)\[C@H\](CCC(=O)O)NC(=O)... | 1 | 0.02 |
 
 ## Build
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-77d3-7128-8497-210288cab270 |
-| checksum | v2:6aced922d7a0d199fe8637391bf863bc500c5c50733d7ca006d3a0643874bde3 |
-| built_at | 2026-10-06T16:12:04+00:00 |
-| path | qsar_tid_11/01a111fc-77d3-7128-8497-210288cab270 |
+| uuid | 01a21800-40de-72d6-845e-135b7f3af693 |
+| checksum | v2:d8f4bdc85d092edb8e945cd344153b637d017bde8fe191c01af1c4100e15c935 |
+| built_at | 2026-11-26T13:16:41+00:00 |
+| path | qsar_tid_11/01a21800-40de-72d6-845e-135b7f3af693 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:21b225245b24ccba33e573c4aacc136eeac6f8cb08ea97af462e627127d42be2` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
