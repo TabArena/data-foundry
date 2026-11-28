@@ -3,6 +3,7 @@ unique_name: mutual_funds_india
 name: Mutual Funds India - Detailed
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena

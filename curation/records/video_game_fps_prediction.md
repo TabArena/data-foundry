@@ -3,6 +3,7 @@ unique_name: video_game_fps_prediction
 name: fps_benchmark
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena

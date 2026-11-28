@@ -237,6 +237,7 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
         - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
+        - Repeat applicants (Andrej, 2026-11-26): the release has no client id, but a key of birth date, sex, registered-address zip code, employed-from date and income matches 29,764 of the 566,701 applications that carry all five fields. The match carries the label (a second application defaults in 24.2% of pairs when the first did, against 3.9% when it did not; every control, with one key field shuffled or with the coarse profile alone, lies between 1.5x and 2.7x), so these are the same clients. 3.2% to 4.5% of each window's keyed applications have an earlier application of the same client on their train side. Kept as it is: a lender scoring a returning client has that history, and the features already summarise it, so the temporal split is the treatment the entity rules ask for.
         - The row budget: each test window keeps at most 500k of its rows (all of them here), and each train side holds every earlier row, so the frame keeps all 1,526,659 applications. The 1M train budget is recorded, not applied: a benchmark sub-samples each train side to 1M rows before a fit with `subsample_train`. Its default is the newest year before the window, extended back in time until it holds 1M rows, and a random 1M of those (splits comment), in place of TabReD's random sub-sampling of all earlier rows: a study of the sub-sampling found the newest year best for dated data.
         - Columns recorded on one side of a window only (Lennart, 2026-11-11): 12 columns stop being recorded in September and October 2019 (`responsedate_1012D`, `birthdate_574D`, `pmtscount_423L`, `pmtssum_45A`, the four `*_pmtamount_36A`, `n_unique_employername_160M` and the three `*_processingdate_168D`), so the November 2019 window tests without them; 15 start between April and June 2020 (`contractssum_5085716L`, the four `*_contractsum_5085717L`, the four `*_amount_4917619A`, the three `*_deductiondate_4917603D`, `n_unique_name_4917606M`, `first_housetype_905L` and `responsedate_4917613D`), so the March and July 2020 windows train almost without them. Kept: the data as the bank recorded it, which a model refit then met too.
     """
@@ -270,8 +271,15 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
         5 October 2020 150,240 (3,175, 2.1%), 1,376,419 (90.2%); March to June 2020 143,724 (4,714, 3.3%), 1,232,695
         (80.7%); November 2019 to February 2020 403,789 (15,541, 3.8%), 828,906 (54.3%). No window trains on less than
         half.
-        No gap: the weekly default rate stays at 1.8% to 2.8% to the end of the release, so the labels look final, as
-        for lt_vehicle_loan_default_prediction.
+        No gap: the span over which a default counts is not stated by the release, and the only horizon named in it
+        is the year of the bureau score `riskassesment_302T` ("Estimated probability that the client will default on
+        their credit obligation within the next year"), which 21 months of applications cannot hold as a gap. Every
+        label is final at release (the weekly default rate stays at 1.8% to 2.8% to the last week, which ends
+        5 October 2020), so no window selects the applications whose outcome came fast, as for
+        lt_vehicle_loan_default_prediction. The newest labels were still unknown at a refit: at equal training size
+        (300,000 applications, base and static tables only) a train side ending at the window scores 0.8251, 0.7947
+        and 0.7814 against 0.8214, 0.7856 and 0.7433 for one ending three months earlier, so the task keeps a gain of
+        0.004 to 0.038 AUC that a refit could not have earned (Andrej, 2026-11-26).
         The year before July 2020
         holds 937,675 rows, so that window trains on the newest 1M (from 11 June 2019); the year before March 2020
         holds 1,094,102, of which a random 1M; the November 2019 window trains on all 828,906 (January to October

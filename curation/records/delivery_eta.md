@@ -3,6 +3,7 @@ unique_name: delivery_eta
 name: Delivery ETA
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -63,14 +64,19 @@ CC (2026-11-10, Lennart): the declared horizon (7 days, no gap, windows starting
 
 CC (2026-11-17, Andrej): the declared split (temporal on `timestamp`, windows of 7 days, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-26, Andrej): Review issue 3, B ("Rewrite the note with the measured fit period."): TabReD's quantile transform was fit on its own training period, the orders before 11 December 2023. For 10 of 13 informative numeric columns the distribution is closest to an exact standard normal there (mean largest gap 0.0014, against 0.0049 to 0.0152 at cutoffs two to four weeks away and 0.0082 over all rows). The 1-7 January and 18-24 December windows lie after the fit period; the 4-10 December window lies inside it, so its rows reach the mapping through their marginal distribution and no target. The note in the definition says this instead of leaving the fit set open for the TabReD authors to answer.
+
 ## Review
 
 **Outcome:** added as `delivery_eta_1m`. On 2026-11-10 you chose every other week as the test windows (issue 1, B:
 1-7 January, 18-24 December and 4-10 December) and kept the 45 features that stop on 23 November 2023, with a note
-(issue 2, A); the 7-day length stays for its reason, TabReD's own validation and test length. Nothing is left open.
+(issue 2, A); the 7-day length stays for its reason, TabReD's own validation and test length. A second reading of the
+this definition against the source file on 2026-11-26 reproduced every number it declares and measured which rows
+TabReD's quantile transform was fit on; you chose to record it (issue 3, B), which is applied.
 
 **Main points:** Settled on 2026-11-10: the test weeks are 1-7 January, 18-24 December and 4-10 December (issue 1, B),
-the block `num_76` to `num_121` stays with a note (issue 2, A), and the declared horizon is checked.
+the block `num_76` to `num_121` stays with a note (issue 2, A), and the declared horizon is checked. Settled on
+2026-11-26: the note names the measured fit period of the quantile transform (issue 3, B). Nothing is left open.
 
 **Horizon:**
 
@@ -102,7 +108,7 @@ the block `num_76` to `num_121` stays with a note (issue 2, A), and the declared
 sense and is justifiable keep it and resolve them"); the record's CC line says the declared horizon is checked, and
 the splits comment gives the reason.
 
-**Issues for Lennart:**
+**Issues for Andrej:**
 
 1. **Which weeks should the test windows be?**
 
@@ -257,6 +263,72 @@ the splits comment gives the reason.
    December, 0.31%; 5,126 of 18-24 December, 0.35%; 7,823 of 1-7 January, 0.66%), unlike the 327 columns
    anes_voting_2026 dropped, which have no variation in any test year. The record has the CC line. Writing to the
    TabReD authors stays your call; nothing was sent.
+
+3. **Record which rows TabReD's quantile transform was fit on?**
+
+   * **Problem:**
+     - The definition keeps the transformed features with a note that the rows the transform was fit on are not
+       documented, to be revisited if the TabReD authors say it used all rows.
+     - The data answer it without them: for 10 of 13 informative numeric columns the distribution is closest to an
+       exact standard normal on the orders before 11 December 2023, TabReD's own training cutoff.
+     - Two of the three test windows lie after that date, so no row of theirs took part in the fit, while the oldest
+       window (4-10 December) lies inside it.
+   * **Background:**
+     - A quantile transform maps the rows it was fit on to a standard normal almost exactly, so the fit set is the
+       one whose distribution deviates least.
+     - TabReD states its own split as training to 11 December 2023, validation 11-18 December, test 18-25 December,
+       and releases only the transformed features (all within the clip of a standard quantile transformer).
+     - The statistic is the largest gap between the empirical distribution and a standard normal over 199 quantile
+       points, taken over all 17,044,043 rows before each cutoff; `num_50`, which is 99.3% one value, matches no
+       normal at any cutoff and is left out.
+   * **Statistics:** 13 numeric columns from across the block numbering.
+
+     | Rows before | Mean largest gap | Worst column | Columns closest here |
+     |---|---|---|---|
+     | 13 Nov 2023 | 0.0152 | 0.078 | 0 |
+     | 27 Nov 2023 | 0.0095 | 0.047 | 1 |
+     | 4 Dec 2023 | 0.0049 | 0.021 | 1 |
+     | 11 Dec 2023 | 0.0014 | 0.005 | 10 |
+     | 18 Dec 2023 | 0.0050 | 0.014 | 1 |
+     | 25 Dec 2023 | 0.0061 | 0.014 | 0 |
+     | 1 Jan 2024 | 0.0066 | 0.014 | 0 |
+     | all rows | 0.0082 | 0.022 | 0 |
+
+     At the 11 December cutoff the 13 columns lie between 0.00049 and 0.0052; on all rows they lie between 0.0026 and
+     0.0218.
+   * **Effect on the task:** For 1-7 January and 18-24 December the features were transformed by a mapping estimated
+     only on earlier orders, as a deployed service would; for 4-10 December the window's own orders are part of the
+     fit set, which carries their marginal distribution into the mapping, but no target.
+   * **Consistency:** A scaling fit on all rows was kept here before as no strong leak; the measurement now shows the
+     weaker case, a fit on the source's own training period, which is what a deployed pipeline does.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the note as it is (implemented) | the note keeps "which rows it was fit on is not documented" and waits for the TabReD authors | nothing changes | the open question is already answered by the data; a reader is left with the worst case |
+     | B | Rewrite the note with the measured fit period | the note states the fit period, the evidence and what it means per window | the record says what is known; the "revisit" condition can be closed | the evidence is ours, not the authors' |
+     | C | Rewrite the note and move the oldest window after 11 December | the 4-10 December window is replaced by 11-17 December | no test row took part in the fit | reopens the settled choice of issue 1 and drops the week outside the holidays that it was chosen for |
+
+   * **Recommendation:** B: the measurement answers the question the note was left open for, and the two newer windows
+     are clean; the oldest window's rows reach the mapping only through their marginal distribution. **Decision:** A,
+     B or C?
+
+   **Notes for the AI:** on B, the first `curation_comments` bullet keeps its first sentence and continues: "The fit
+   set is TabReD's own training period, the orders before 11 December 2023: for 10 of 13 informative numeric columns
+   the distribution is closest to an exact standard normal there (mean largest gap to a standard normal 0.0014,
+   against 0.0049 to 0.0152 at cutoffs two to four weeks away and 0.0082 over all rows). The 1-7 January and 18-24
+   December windows lie after the fit period; the 4-10 December window lies inside it, so its rows reach the mapping
+   through their marginal distribution and no target. Kept (Lennart, 2026-10-19)" and then its existing reason. Then
+   a CC line in the record, a dated CHANGELOG entry and `dataset check`.
+
+   **Andrej (2026-11-26, change):** Option B: Rewrite the note with the measured fit period.
+
+   **Resolved (2026-11-26, Andrej):** B. The `Potential leak, kept on purpose` bullet now names the fit set, TabReD's
+   own training period (the orders before 11 December 2023), with the evidence and what it means per window: the
+   1-7 January and 18-24 December windows lie after it, the 4-10 December window inside it, so that window's rows
+   reach the mapping through their marginal distribution and no target. The sentence that waited for the TabReD
+   authors is gone; Lennart's reason for keeping the transform stays. No data, column or split changes; the record
+   has the CC line and the working copy a dated entry.
 
 ## Reference
 

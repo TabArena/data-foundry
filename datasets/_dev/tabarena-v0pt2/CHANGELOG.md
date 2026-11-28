@@ -1,5 +1,36 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-26, notes on three definitions of the BeyondArena set after a second reading (no container built)
+
+The curator's decisions on a second reading of `climate_model_weather_forecasting_1m`, `delivery_eta_1m` and
+`home_credit_default_stability_1m` against their source files. No row, column, split or metric changes, so the
+containers are untouched; each definition gains what the data showed.
+
+- `climate_model_weather_forecasting_1m`: `task_summary.row` says a row is one forecast, not one measurement, and
+  names the 1,948 stations the data hold in place of 1,864, a count left over from the superseded build. A
+  `Repeated measurements:` bullet gives the structure: 95.7% of rows share a station and a measurement time,
+  5,141,583 measurements behind 16,951,828 rows, one target value in all but 63 of the 4,412,203 repeated groups,
+  98,285 / 94,935 / 90,882 measurements in the scored windows, no measurement spanning a train side and a window,
+  and the inner folds cut by the time column.
+- `delivery_eta_1m`: the quantile-transform bullet names the fit set, TabReD's own training period (the orders
+  before 11 December 2023), measured from the marginals, with what it means per window; the sentence that waited for
+  the TabReD authors is gone.
+- `home_credit_default_stability_1m`: the no-gap reason no longer argues from the labels looking final. It gives the
+  undocumented observation span, the one-year horizon of the bureau score `riskassesment_302T` that 21 months of
+  applications cannot hold as a gap, the labels being final at release, and what the newest labels add at equal
+  training size (0.8251, 0.7947, 0.7814 against 0.8214, 0.7856, 0.7433). A `Repeat applicants:` bullet gives the
+  recovered client key, the 29,764 of 566,701 keyed applications it matches, the 3.2% to 4.5% per window, the label
+  evidence and the verdict that the temporal split already treats it.
+- `dataset check` passed for `climate_model_weather_forecasting_1m` (0 errors, 0 warnings, duplicate checks skipped
+  over the cell budget) and `delivery_eta_1m` (0 errors, 0 warnings, the accepted
+  `splits_feature_missing_in_test`), and regenerated both READMEs, which until now described the builds of
+  2026-10-06: the pages now carry the current windows, the gap and the frame (16,807,722 rows for the weather set,
+  whose station column reads 1,948). Both builds stay stale, as no container was built.
+- `home_credit_default_stability_1m` could not be checked: its `read_tables` helper calls
+  `pl.scan_parquet(..., rechunk=True)`, an argument polars removed in 2.0, and every environment here runs polars
+  2.x. The failure is in code this entry does not touch (its edits are comment text), and it reproduces on the
+  unmodified definition, so the loader needs a polars 2 migration of its own before the dataset can be rebuilt.
+
 ## 2026-11-26, every definition rebuilt on the restructured package (174 containers)
 
 - All 174 definitions were rebuilt at the top of the codebase-review stack (#138 to #149). The generated READMEs now
