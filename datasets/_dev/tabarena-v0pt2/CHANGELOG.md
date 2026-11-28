@@ -1,5 +1,25 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-27, review of the 33 unreviewed datasets: Andrej's marks applied (containers not rebuilt)
+
+- The split rule on a row's own entity now asks for a measured link rather than an asserted absence, and its case row
+  for `lt_vehicle_loan_default_prediction` is corrected (the dataset's window change is in its own pull request).
+- `g_research_crypto_forecasting_1m` declares the ordinary windows leaf; the crash window stays as a window choice.
+- Text only, no data or split change: `ames_housing` prices a recorded sale given its type and condition (its
+  13-window warning accepted); `bias_correction_r_bias_correction_r_2` names the next-day-row channel with a protocol
+  line and keeps its newest-summer windows as an exception; `churn_telco_south_asia` corrects its Decision on the
+  September columns; `college_scorecard` gets the `Selection Bias` marker and a narrower actor; `house_sales` softens
+  "declared by the parties" and fixes two stale counts; `pkdd_15_taxi_trip_time_prediction_ii_1m` restates its
+  one-day gap as the refit's latency; `rain_in_australia` adds a protocol line against reading other test rows and
+  names the three stations that stop reporting; `chicago_traffic_crashes` states the collision type's share in the fit
+  reason and the corridor ranking in the metric's reason; `perth_house_prices` says what a missing garage count means
+  before and after October 2019.
+- Shipped as defined with their metric and split checks: brazilian_ecommerce, diabetes_3,
+  differentiated_thyroid_cancer_recurrence, distribution_transformers_at_cauca_department, expresso_churn_prediction,
+  fraud_detection_in_electricity_and_gas_consumption, huntprohibited, melbourne_housing_market, mobile_churn,
+  onlinenewspopularity, tunisian_fraud_detection_challenge, bemtpl97, caracas_cervical_cancer, college_scorecard,
+  numerai28_6; zillow_prize kept as it is.
+
 ## 2026-11-26, every definition rebuilt on the restructured package (174 containers)
 
 - All 174 definitions were rebuilt at the top of the codebase-review stack (#138 to #149). The generated READMEs now

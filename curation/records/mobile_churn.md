@@ -77,11 +77,15 @@ CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTe
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 2, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. The only forward comparison the data allow shows a gap whose CI excludes zero; with a competitive market behind churn there is no reason to take later months as interchangeable.
 
+CC (2026-11-27, Andrej): the declared metric (ROC AUC on the churn label, the binary fallback) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added. The record gained `Target: Later` on 2026-11-13.
 
-**Main points:** Nothing open: issue 1 resolved on 2026-11-13 (`Target: Later` recorded). Issue 2 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
+**Main points:** Re-audited 2026-11-27 against the Kaggle xlsx (sha256 matches): nothing needs a decision. Counts, the 0.661 forward against 0.696 IID comparison and ROC AUC on every fold reproduce; no usage window reaches past the scoring date and no column encodes an account status; dropping `user_no_outgoing_activity_in_days` leaves ROC AUC at 0.845. Text fixes for the next edit: "0 of 2,498 joiners" holds for joiners only (on all rows the 100-day sum is below the month's in 2,431 rows, churn 7.2%, windows that do not nest exactly), and "61% at 60-75 days in June" recomputes to 59.4% (n=320). The README needs a regeneration (generator-only drift). Earlier: Nothing open: issue 1 resolved on 2026-11-13 (`Target: Later` recorded). Issue 2 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
 
 **Issues for Andrej:**
 

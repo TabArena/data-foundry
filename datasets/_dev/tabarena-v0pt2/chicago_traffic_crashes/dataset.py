@@ -67,11 +67,10 @@ class ChicagoTrafficCrashes(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "The police injury level stands in for the serious injuries the analyst counts: trauma-registry linkage finds "
-            "police reports catch about half of them (Traffic Injury Prevention 2024), and the share of 'reported, not "
-            "evident' injuries steps up in late 2023. Lane count, alignment, road defects, weather, lighting, surface and "
-            "traffic control are dropped because injury reports record them more completely, though an analyst could "
-            "take them from road inventories."
+            "Police reports catch about half of the serious injuries the analyst counts (Traffic Injury Prevention "
+            "2024), and the share of 'reported, not evident' injuries steps up in late 2023. One coded field carries "
+            "most of the skill: the first collision type alone earns 85% of the log-loss gain over the prior, the "
+            "other inputs without it 21%. Road facts that injury reports record more completely are dropped."
         ),
         changes=(
             "We exclude reporting activity, injury/damage outcomes, investigation judgments, identifiers, the road and "
@@ -110,7 +109,7 @@ class ChicagoTrafficCrashes(AbstractCuratedDataset):
     target = "most_severe_injury"
     problem_type = "multiclass_classification"
     metric = Metric.fallback(
-        reason="The original City portal, field dictionary and linked SR1050 manual define a crash-report release, not a scored prediction competition or a single defining model-selection metric. Use multiclass log loss for the accepted five-class probability task. On July-September 2026 about 35% of the loss is in the 'reported, not evident' class and about 10% in incapacitating plus fatal; skill over the class prior is 18.0% on all rows against 11.8% on on-scene reports alone (one quick LightGBM on most of the shipped inputs, 2026-11-05)."
+        reason="The original City portal, field dictionary and linked SR1050 manual define a crash-report release, not a scored prediction competition or a single defining model-selection metric. Use multiclass log loss for the accepted five-class probability task. On July-September 2026 about 35% of the loss is in the 'reported, not evident' class and about 10% in incapacitating plus fatal; skill over the class prior is 18.0% on all rows against 11.8% on on-scene reports alone (one quick LightGBM on most of the shipped inputs, 2026-11-05). For the use case's site ranking the score is a thin proxy: on 86 street corridors with at least 100 test crashes, pooled over four test windows, a model ranking corridors by expected killed or seriously injured crashes agrees with the observed ranking at 0.691 against 0.663 for the crash count alone, with the same top-twenty overlap with the observed ranking (11 each), so most of what site ranking needs is already in the crash count."
     )
     split_leaf = "L-ORDER.windows"
     temporal = Temporal(on="crash_date", horizon=1, horizon_unit="months", gap=1, gap_unit="months")
@@ -182,6 +181,8 @@ class ChicagoTrafficCrashes(AbstractCuratedDataset):
         - Training starts on 2017-09-01, when citywide coverage starts (SPLIT-20; Lennart, 2026-11-04): before it, 7.3% of crashes have any injury against 15.3% after, with 4,000-7,000 crashes a month against 9,000-10,000. It leaves the score unchanged (0.49609 against 0.49600 from 2013, on the 16 inputs of 2026-11-04; 0.49620 against 0.49610 on the shipped 15 inputs, 2026-11-05) and costs about 99,100 rows per training side. No training side then exceeds one million rows, so the task ships unsampled, not as a `_1m` version.
         - Remove exact source copies using every original field except CRASH_RECORD_ID, IDOT_CONTROL_NO and REPORT_TYPE; keep the first source-order representative. The full export has 63 extra copies on that key (both exports); on the 2026-10-29 export 36 already matched even with the control number included, and the broader key removed 26 additional rows from the labeled pre-October cohort; raw rows remain preserved. Distinct administrative IDs alone do not establish independent events. Do not deduplicate on the reduced or hour-rounded predictor vector: some source-distinct crashes coincide after context is removed, and conflicting reduced profiles can be genuine label ambiguity. The remaining reused control number with different time/location is not collapsed. Missing labels and the unfinished October cohort are excluded; classes are not merged. Partial early coverage does not establish citywide incident rates.
         - CRASH_HOUR, CRASH_DAY_OF_WEEK and CRASH_MONTH are redundant components of CRASH_DATE. LOCATION repeats latitude/longitude; report identifiers are not predictors. Coordinate zeros are made missing because they cannot identify a Chicago crash location. Unknown/unreported categorical codes become missing; no outcome-based imputation is used.
+        - One coded field carries most of the skill (Andrej, 2026-11-27): LightGBM on four of the nine windows, the newest 500,000 training rows, one seed: the prior only 0.6087 log loss, the first collision type alone 0.5204 (85% of the gain over the prior), all 15 inputs 0.5053 and all but the collision type 0.5868 (21%). The data has no per-field timestamp, so whether the type is written before or after the injuries cannot be shown or refuted; the field reads physically (87.9% of pedestrian crashes injure someone, against 3.9% of crashes into a parked car) and the analyst works from finalised reports, so it stays.
+        - Site ranking (Andrej, 2026-11-27): on 86 street corridors with at least 100 test crashes, pooled over four test windows, ranked by predicted killed or seriously injured crashes, rank agreement with the observed is 0.663 for the crash count alone, 0.691 for all 15 inputs and 0.698 for the collision type only, with a top-twenty overlap of 11 for each; the predicted totals (observed 604) are 677, 645 and 700, 7 to 16% high because the killed-or-seriously-injured share falls from 2.0% in 2022-23 to 1.4% in 2026. The metric's reason says so.
         - CC (2026-11-05, Lennart): the declared metric (the fallback multiclass log loss over the five police injury classes) is checked and stays as declared.
         - Retrospective officer judgments, outcome-dependent reporting completeness and historical label amendments remain limitations. The source permits more complete forms for injury/towing and amendment after later deaths (SR1050 manual, printed pages 2-3 and 9). The approximate fit does not waive feature-specific leakage checks or establish deployment validity.
     """

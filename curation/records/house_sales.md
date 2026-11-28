@@ -3,6 +3,7 @@ unique_name: house_sales
 name: house_sales
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -85,6 +86,60 @@ CC (2026-10-31, Lennart): decided in the dtype review of PR #37 (ordinal scales 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 2 coded columns carry their words; 1 scores are numbers (view).
 
 CC (2026-11-17, Andrej): the declared split (temporal on `date`, windows of 3 weeks, up to 9 windows while training keeps 50% of the rows (9 in the build), gap 1 week) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
+
+CC (2026-11-27, Andrej): Review issue 1: Option B, keep the column, soften the wording ("Keep the column, soften the wording"). The use case, the known-features text, the changes text and the notes now say `sale_condition` comes from the county's sale warnings, which name facts the parties know, and that the extract carries no timestamp or setter for any code, so when each was set is not claimed; the column and the data are unchanged.
+
+CC (2026-11-27, Andrej): the declared metric (RMSLE on the sale price, computed through the log_price target over the 9 test windows) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
+
+**Assessment (AI, 2026-11-27):** applied; `dataset check` 0 errors, 20,499 rows and the 9 windows unchanged, no data change. Two counts of the 2026-10-26 drop that the re-audit listed are corrected in the text a participant reads: 20,499 sales in the row text and 643 to 1,518 sales per window. The 9,498 test sales in the measured-with-this-definition note and the other text fixes of the re-audit (the checksum test, the metric reason) are not part of these marks and are not applied.
+
+## Review
+
+**Outcome:** added. Re-audited on 2026-11-26 against a King County extract six weeks newer than the one the definition was written against: nothing changes in the data, the split or the verdict, and `dataset check` regenerated its README byte-identical from the newer extract (20,499 rows, same container checksum). The one issue was decided on 2026-11-27: the column stays and the wording on when its codes are set is softened (B). Left from the re-audit as text fixes outside these marks: the test count of the measured-with-this-definition note, the definition's checksum test and the metric's reason.
+
+**Main points:** Task gamer (blind, 2026-11-27): nothing gamed. Untuned LightGBM RMSLE 0.1666 (0.157 to 0.178 over 9 windows; a random column moves it by up to 0.004 per split); the last training sale of the same house (1.6% of test rows) does worse (0.1741), `sale_condition` adds 0.002 and the kept July-2015 neighbour sizes add 0.0007, inside noise (the known kept leak). Training on the last 120 days only scores worse (0.1733). This dataset is the precedent `ames_housing` cites, and it holds on measurement. Nothing open.
+
+**Issues for Andrej:**
+
+1. **Soften the claim that the sale-condition codes are declared by the parties?**
+
+   * **Problem:**
+     - The use case says the sale's condition is "declared by the parties", while the same note says the county sets its sale warnings after the deed is recorded.
+     - The extract carries no timestamp or setter for any code, so when each one is set cannot be shown from the files.
+     - The claim matters beyond this dataset, because `ames_housing` cites this one as the precedent for keeping a sale's condition as a feature.
+   * **Effect on the task:** None on the data. The column is worth keeping on measurement; what is overstated is the reason given for its timing.
+   * **Experiments:** shipped splits, untuned LightGBM, mean residual on the log price with and without the column.
+
+     | Level | Scored rows | Without the column | With it |
+     |---|---|---|---|
+     | short sale | 57 | -0.218 | -0.028 |
+     | no market exposure | 278 | -0.073 | +0.016 |
+     | estate | 21 | -0.011 | +0.102 |
+     | other pre-price code | 20 | -0.082 | +0.107 |
+
+     Pooled RMSE on the log price is 0.1697 without the column and 0.1673 with it, better in 9 of 9 windows. Coded rows are 4% of the scored rows, and the two smallest levels hold about 20 rows each, so their signs are noise. The share coded does not fall toward the newest months, so there is no sign of codes arriving late.
+   * **Consistency:** The precedent holds, but for a different reason than `ames_housing`'s review gives. Here the codes are county warnings set after recording with no timestamp; there the condition sits in the source's own file for the same sale. So a citation of this dataset should rest on the measured gain and on the one-sided test that justified dropping the appraiser's codes (none of that group above +0.3, 29% below -0.3), not on the two having the same mechanism.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the wording (implemented) | "declared by the parties" stays | the column's gain is measured | the note claims more than the files show |
+     | B | Keep the column, soften the wording | the note says the codes are county sale warnings naming facts the parties know, and that when each was set is not in the extract | honest; no data change | one sentence |
+     | C | Keep only the short-sale, bankruptcy and estate levels | drops the no-market-exposure level and the minor codes | the fewest doubtful codes | loses 471 rows' level and reopens a settled call |
+
+   * **Recommendation:** B. The column earns its place on measurement, so only the account of its timing needs to change. **Decision:** A, B or C?
+
+   **Andrej (2026-11-27, change):** Option B: Keep the column, soften the wording.
+
+   **Resolved (2026-11-27, Andrej):** B. The use case, `known`, `changes` and the curation notes name the county's sale warnings as the source of `sale_condition` and say when each code was set is not in the extract; column, rows and split unchanged. `dataset check` 0 errors.
+
+**Review panel:** ship (audit against the source, the newer extract and the recording dates; no separate mediator).
+Claims: every count but three reproduces, and the three are left over from a drop applied on 2026-10-26. Columns:
+every rebuilt column is as of the sale, and the one flagged code is already typed correctly. Split: the tree reaches
+the leaf that ships, with nine windows on the target and every training side different. Agreed: nothing changes in
+the data. Disputed: nothing.
 
 ## Reference
 

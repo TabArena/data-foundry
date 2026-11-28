@@ -89,13 +89,18 @@ CC (2026-11-13, Andrej): collection facts `Samples: Over Time`, `Time: Dated` an
 
 CC (2026-11-17, Andrej): the declared split (temporal on `DATE_SOLD`, windows of 1 month, 9 windows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-27, Andrej): Review issue 16: A, a note naming the two meanings of a missing garage count and the date (October 2019); the column stays. Ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added. On 2026-11-11 you kept the nine one-month windows every third month from December 2018 to
 December 2020, without a gap (issue 15 and the horizon, A); the stale bullet that named April to December 2020 is
 fixed.
 
-**Main points:** Settled on 2026-11-11: the windows every third month from December 2018 stay (issue 15, A), and
+**Main points:** Re-reviewed on 2026-11-26 (audit against the source and a second published listing): settled on 2026-11-27:
+the notes now say that a missing garage count means no car space before October 2019 and an unread field after (16,
+A); ship as defined. Nothing else needs a decision: no validity problem was found, and the window choice holds on re-measurement.
+Earlier, settled on 2026-11-11: the windows every third month from December 2018 stay (issue 15, A), and
 the declared horizon of one month without a gap is checked.
 
 **Horizon:**
@@ -136,7 +141,7 @@ the gap clause no longer calls the no-gap call an exception: it is the curator's
 the rule on late labels since its amendment of 2026-11-04. `temporal` is unchanged. The record has the horizon CC line.
 `dataset check`: 0 errors, 0 warnings (README not regenerated).
 
-**Issues for Lennart:**
+**Issues for Andrej and Lennart:**
 
 15. **Keep the windows every third month, or spread them every fourth month back to April 2018?**
 
@@ -228,3 +233,60 @@ the rule on late labels since its amendment of 2026-11-04. `temporal` is unchang
    "Each suburb holds its newest sales only", which also named April to December 2020 (310 of the 321 suburbs have
    sales by December 2018). `temporal` is unchanged. The record has the decision and the horizon CC lines. `dataset
    check`: 0 errors, 0 warnings (README not regenerated).
+
+16. **Say that a missing garage count means two different things before and after October 2019?**
+
+   * **Problem:**
+     - Before October 2019 a missing garage count means the house has no car space; from October 2019 it means the field was not read.
+     - The share missing on the test side jumps from about 2% in the 2018 and early 2019 windows to 12-17% in the six newest, while the training side stays near 5-7% throughout.
+     - The record says only that a missing value "may also mean no car space", which covers the earlier reading and not the later one.
+   * **Effect on the task:** Six of the nine test windows are scored on rows whose missing value means something the training side never taught. Those rows are underpredicted by 0.010 to 0.056 in log price, with a residual spread above the other rows'.
+   * **Experiments:** joined to a second published listing of the same market on address and month.
+
+     | Period | Missing rows with no parking space | Missing rows with two spaces |
+     |---|---|---|
+     | before October 2019 | 27 of 40 | — |
+     | from October 2019 | 1 of 75 | 47 of 75 |
+
+     | Window | Dec 20 | Sep 20 | Jun 20 | Mar 20 | Dec 19 | Sep 19 | Jun 19 | Mar 19 | Dec 18 |
+     |---|---|---|---|---|---|---|---|---|---|
+     | missing on the test side | 12.4% | 12.5% | 17.1% | 14.0% | 16.9% | 6.5% | 2.7% | 2.8% | 1.9% |
+     | missing on the train side | 6.8% | 6.4% | 6.0% | 5.7% | 5.4% | 5.2% | 5.3% | 5.3% | 5.5% |
+
+     | Frame | RMSE on log price |
+     |---|---|
+     | as shipped | 0.1605 |
+     | without the garage column | 0.1603 |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | A note naming the two meanings and the date | one bullet; the column stays | costs nothing; the reader learns what a blank means in each period | the model still meets a column whose blanks change meaning mid-evaluation |
+     | B | Drop the garage column | 1 feature fewer | removes a column not comparable across the evaluation period; measured free | loses a real property attribute for the rows where it was recorded |
+     | C | Leave the record as it is (implemented) | nothing changes | no work | the record's "may also mean no car space" is wrong for six of the nine windows |
+
+   * **Recommendation:** A. The column carries nothing the model needs, so the choice between A and B is about honesty rather than score; a note is the milder of the two and keeps the attribute where it was recorded. **Decision:** A, B or C?
+
+   **Andrej (2026-11-27, discuss):** Before October 2019 a missing garage count means the house has no car space - should this be recoded to zero then?
+
+   **Answer (AI, 2026-11-27):**
+   * You asked whether the blanks before October 2019 should become zero.
+   * Only mostly: in the join to the second listing, 27 of the 40 blanks before October 2019 had no parking space and 13 had one or more. A recode makes about a third of them wrong, on our inference from 40 matched rows.
+   * After the recode a blank means "not read" in both periods. The later blanks stay blank: 47 of 75 had two spaces and 1 of 75 none.
+   * The column carries no score either way (RMSE 0.1605 as shipped, 0.1603 without it), so the choice is about what the column says, not about the score.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | A note naming the two meanings and the date | one bullet | costs nothing | blanks change meaning mid-evaluation |
+     | B | Drop the garage column | 1 feature fewer | removes the inconsistency; measured free | loses the attribute where recorded |
+     | C | Leave the record as it is (implemented) | nothing changes | no work | the record's sentence is wrong for six windows |
+     | D | Recode the blanks before October 2019 to zero, with a note | a blank then means "not read" in both periods | one meaning per value | wrong for about a third of the recoded rows; an imputation on 40 matched rows |
+
+   * **Recommendation:** A, or D if you prefer one meaning per value: the third that D gets wrong is the price of making blanks consistent, and the score does not decide between them. **Decision:** A, B, C or D?
+
+   **Andrej (2026-11-27, change):** Option A: A note naming the two meanings and the date.
+
+   **Resolved (2026-11-27, Andrej):** A. The definition's notes now say that a missing garage count means no car space before October 2019 (27 of 40 matched rows) and an unread field from October 2019 (47 of 75 matched rows had two spaces); the column stays.
+

@@ -70,11 +70,17 @@ CC (2026-11-16, Andrej): time basis `StationaryRelation` instead of `DelayedTarg
 
 CC (2026-11-18, Andrej): time basis `AssumedStationaryRelation` in place of `StationaryRelation` (Review issue 3, C; stationarity reasoning): the operator ranks its transformers for the year right after the inventory, and burns follow lightning density and network exposure, which one year does not change. The stationary-relation test of 2026-11-18 is inconclusive on the source's one forward period, so the tag rests on this reason; the random folds stay.
 
+CC (2026-11-27, Andrej): the declared metric (ROC AUC on the burned label, the binary fallback) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): the declared split (random on the transformer rows, 3 repeats of 3 folds, `AssumedStationaryRelation`) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added. The time basis went from `ForcedIIDFromTemporal` to `DelayedTarget` (2026-11-13), to `StationaryRelation` when `DelayedTarget` was retired (2026-11-16), and to `AssumedStationaryRelation` (2026-11-18).
 
-**Main points:** The time basis is `AssumedStationaryRelation` (Andrej, 2026-11-18); issue 1 was resolved on 2026-11-13
+**Main points:** Task gamer (blind, 2026-11-27): nothing gamed. Untuned LightGBM ROC AUC 0.628 (0.606 to 0.660 over 9 splits; a random column moves it by about 0.015); exact-twin labels (48 to 67 test rows per split) add nothing, the nearest neighbour's label scores 0.519, row order carries no signal. It asks over which years `outage_hours` and the lightning columns are measured; the definition treats them as history before 2020 (the 15 h floor marks the 2015-2018 failures), and the release states no window, so this stays as recorded. Re-audited 2026-11-27 against both Mendeley v4 files (sha256 match): nothing needs a decision. Only the 2020 file ships, one row per transformer, so no unit is on both sides of a split; among the kept columns the 2019 and 2020 first-burn groups look alike, so no kept attribute shows a post-failure recording (self_protected, power_kva and installation_type are already dropped). The burn counts, the burn_rate identity, the forward against random comparison (0.644 against 0.640) and the accepted urban warning reproduce. Text fixes: the time-basis bullet of `curation_comments` skips `DelayedTarget` (2026-11-13 to 11-16), and the README is stale (still shows `ForcedIIDFromTemporal`). Earlier: The time basis is `AssumedStationaryRelation` (Andrej, 2026-11-18); issue 1 was resolved on 2026-11-13
 as `DelayedTarget`, changed on 2026-11-16 and 2026-11-18 (CC lines).
 
 **Issues for Andrej:**

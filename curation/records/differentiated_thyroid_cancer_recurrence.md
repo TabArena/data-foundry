@@ -70,11 +70,15 @@ CC (2026-11-17, Andrej): the declared split (random, 20x3 folds, `ForcedIIDFromT
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. Changed rules and staging inside and after the collection span are named facts against.
 
+CC (2026-11-27, Andrej): the declared metric (ROC AUC on the recurrence label, the binary fallback) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below (issue 1, A, 2026-11-18).
 
-**Main points:** `ForcedIIDFromTemporal` stays (issue 1, A, 2026-11-18). Nothing is left open.
+**Main points:** Task gamer (blind, 2026-11-27): nothing gamed. Honest HGB ROC AUC 0.929 (logistic 0.930, noise 0.003); row position and exact-copy lookups score lower. `Risk` alone scores 0.892, 0.037 below the full model: the known kept leak, its size as recorded. Re-audited on 2026-11-27: nothing to decide. `Response`, assessed during follow-up and in its structural category the outcome itself (89 of 91 such patients recurred), is already dropped and among none of the 15 features. Every kept clinical column is a finding at surgery, and the kept-on-purpose note on `Risk` reproduces (without it the score falls by only 0.011 ROC AUC, so the model does not rest on it). The raw file is sorted by outcome rather than time (nearly all recurrences sit in its last hundred rows), which is harmless under stratified random folds and would matter only to someone who took its first rows as a test set. Earlier: `ForcedIIDFromTemporal` stays (issue 1, A, 2026-11-18). Nothing is left open.
 
 **Issues for Andrej:**
 

@@ -60,11 +60,15 @@ CC (2026-11-17, Andrej): the declared split (random, 20x3 folds, `ForcedIIDFromT
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 1, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. With the target undocumented there is no domain mechanism to rest ASR on.
 
+CC (2026-11-27, Andrej): the declared metric (RMSE on the disease-progression response, the fallback for a source with no held-out score) is checked and stays as declared.
+
+CC (2026-11-27, Andrej): ship as defined (review of 2026-11-27).
+
 ## Review
 
 **Outcome:** added. Stationarity reasoning of 2026-11-18: the definition reaches the forced step with no time to measure; decided below (issue 1, A, 2026-11-18).
 
-**Main points:** `ForcedIIDFromTemporal` stays (issue 1, A, 2026-11-18). Nothing is left open.
+**Main points:** Task gamer (blind, 2026-11-27): nothing gamed. Ridge RMSE 55.11 (50.0 to 61.0 over 60 splits; a random column adds 0.20) beats untuned boosting (59.03); row position, ranks over all rows, neighbouring rows' labels and number formats change it by at most 0.36, against a split spread of about 4; no duplicate rows, 1-NN no better than the mean (77.9 against 77.2); a format-only model is worse than the mean. The features ship in raw units, so the scaling leak of the scikit-learn copy does not apply. Re-audited on 2026-11-27: nothing to decide. The values are raw, not standardised (age 19-79, glucose 58-124), so read as mg/dL no glucose reaches the diabetes threshold of 126, as the definition says. The derived columns hold (the Friedewald LDL matches on 438 of 442 rows), the number formats carry no target signal, and the best method beats the best single feature on all 60 splits. The sex codes have no sourced mapping; HDL and blood pressure fit 1 = female and 2 = male, but that is an inference, so keeping them unlabelled is right. Earlier: `ForcedIIDFromTemporal` stays (issue 1, A, 2026-11-18). Nothing is left open.
 
 **Issues for Andrej:**
 

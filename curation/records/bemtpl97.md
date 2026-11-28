@@ -115,6 +115,8 @@ CC (2026-11-17, Andrej): the declared split (random, 3x3 folds, `ForcedIIDFromTe
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 4, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. A one-year 1997 study used today, with a rating rule (the legal bonus-malus scale) that the source country abolished in 2004; the span and the rule change both stand against ASR.
 
+CC (2026-11-27, Andrej): Review issue 5: A, as implemented: all rows stay weighted by exposure; no sentence on where the skill is earned is added (the answer of 2026-11-27 explains why part-year policies claim more per year insured: a claim often ends the policy).
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it. The re-review of 2026-11-06 under the exposure rules (LEAK-41,
@@ -139,7 +141,10 @@ issue here; the panel's two open questions concern weighted tables in general an
 (working copy REVIEW.md, 'From PR #47'). Like every container with a `sample_weight`, it enters no run before the
 collection's training-weight gate (`BENCHMARK_CHANGES_TODO.md`, "Training weights", "The gate").
 
-**Main points:** No open issue, so it ships by default: issues 1-3 are resolved, and the re-review of 2026-11-06 adds
+**Main points:** Re-audited on 2026-11-26: nothing invalidates the dataset. The metric's reference does define the
+Poisson deviance scored against exposure, the exposure is the scoring weight and not a feature, and the split tree's
+leaf matches what ships. Issue 5 settled on 2026-11-27 (A): no sentence added. Earlier: no open issue, so it
+shipped by default: issues 1-3 are resolved, and the re-review of 2026-11-06 adds
 none on this dataset (its two questions are the cross-dataset items X1 and X2). Issue 4 resolved on 2026-11-18: `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation`.
 
 **Record judgment:** valid; a documented Belgian motor-insurance portfolio and the source's own frequency task, now the
@@ -151,7 +156,7 @@ are on the count target shipped until then. The CC's +0.0043 is the exposure stu
 (+0.00425, fitted with early stopping), not on the rate scale as the mediator and the claim auditor read it. On the
 weighted rate deviance the same comparison gives +0.0048. A dated AI line next to the CC in the notes says so.
 
-**Issues for Lennart:**
+**Issues for Andrej and Lennart:**
 
 1. **Make `expo` a scoring column instead of a feature?**
 
@@ -384,6 +389,54 @@ weighted rate deviance the same comparison gives +0.0048. A dated AI line next t
 
    **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (A one-year 1997 study used today, with a rating rule (the legal bonus-malus scale) that the source country abolished in 2004; the span and the rule change both stand against ASR.)
 
+
+5. **Say that about half the measured skill is earned on the part-year policies?**
+
+   * **Problem:**
+     - 77.3% of the rows insure a full year; the rest are part-year, and their claim rate per year insured is about twice the full-year rate.
+     - The record already says a policy is often surrendered after a claim, so for part-year rows the outcome shortens the exposure, and the portfolio carries no dates to tell a surrender from a policy that started late.
+     - The record names that mechanism and its 1.4 times figure, but not how much of the benchmark's skill sits on those rows.
+   * **Effect on the task:** About 55% of the gain over a constant is earned on part-year rows that hold 13% of the exposure, so a reader comparing methods is comparing them largely on rows whose length the outcome helped decide. The level of the target is also about 10% higher than on full-year rows alone.
+   * **Experiments:** untuned LightGBM, two repeats of three folds, weighted by exposure.
+
+     | Trained on | Scored on | Gain over a constant |
+     |---|---|---|
+     | all rows | all rows | 0.0154 |
+     | all rows | full-year rows | 0.0081 |
+     | full-year rows | full-year rows | 0.0089 |
+     | full-year rows | all rows | 0.0135 |
+
+     | Rows | Claims per year insured |
+     |---|---|
+     | full-year | 0.126 |
+     | part-year | 0.20 to 0.39 |
+     | all, weighted | 0.1393 |
+
+   * **Consistency:** The weight-proxy probe stays consistent with this, since it asks whether a feature's gain runs through the exposure, which it does not; this asks where the gain is earned.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep all rows weighted by exposure (implemented) | matches the source's offset model | equals the source's metric; your decision of 2026-11-06 | half the skill is earned on rows the outcome shortened, unstated |
+     | B | Keep A and add one line giving the split | names where the skill sits | honest; no change to data, split or metric | text only |
+     | C | Train and score on full-year rows only | drops 23% of the rows | removes the shortened exposures | survivorship then runs the other way; changes the task; departs from the source |
+     | D | Weight every row by one | equal weight per row | less weight on short rows | breaks the offset equivalence, and short rows count far beyond their exposure |
+
+   * **Recommendation:** B. The data, split and metric are right as decided on 2026-11-06; what is missing is a sentence telling a reader where the score comes from. **Decision:** A, B, C or D?
+
+   **Andrej (2026-11-27, discuss):** This sounds weird: "their claim rate per year insured is about twice the full-year rate" - Why do they claim more?
+
+   **Answer (AI, 2026-11-27):**
+   * You asked why part-year policies claim more per year insured.
+   * They do not mainly have more accidents. A claim often ends the policy: a car written off or sold after an accident ends the cover, and a policyholder who claimed often leaves for another insurer before the bonus-malus penalty applies. Then the year holds the claim and its exposure is cut short, so claims divided by exposure is high. This is the record's surrender mechanism, and it shows in the measured actual/expected: 1.42 on part-year rows against 0.93 on full years.
+   * The portfolio carries no start or end dates, so a policy that ended after a claim cannot be told from one that started late, and the share of each is not known.
+   * The arithmetic adds noise, not bias: one claim over a quarter-year is a rate of 4. The exposure weight handles that, and it is why the unweighted mean rate is 1.13 times the portfolio rate.
+   * Consequence for the issue: the part-year rows carry about 55% of the measured skill, and their exposure is partly set by the outcome. That is the sentence option B adds.
+   * **Recommendation:** B, with the mechanism in its sentence. **Decision:** A, B, C or D?
+
+   **Andrej (2026-11-27, ok):** As implemented (A).
+
+   **Resolved (2026-11-27, Andrej):** A, as implemented: all rows stay, weighted by exposure, and no sentence on where the skill is earned is added; the data, split and metric stay as decided on 2026-11-06.
 
 **Review panel:** ship after changes (mediator). Tier full, re-review of 2026-11-06 under LEAK-41, MET-14 to MET-16,
 after issue 1 was resolved as the rate weighted by `expo`. Claim audit: 31 claims, 20 hold (2 with a caveat), 2 refuted

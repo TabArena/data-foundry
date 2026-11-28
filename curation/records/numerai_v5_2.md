@@ -80,7 +80,7 @@ CC (2026-11-26, Lennart): accepted `splits_dimensions_off_protocol` (SPLIT-15) a
 1184-1235, 1132-1183 and 1080-1131 (issue 12), one year of 52 weekly eras each, as Numerai ranks a model by its
 one-year average score; `splits_comment` now gives that reason and why the windows walk back from the newest.
 
-**Main points:** Open: none. Resolved on 2026-11-10: the three newest years stay the test windows, one year each
+**Main points:** Open since the re-audit of 2026-11-27: issue 13, the source no longer serves this version and no exact copy is on hand. Earlier, open: none. Resolved on 2026-11-10: the three newest years stay the test windows, one year each
 (issue 12).
 
 **Horizon:**
@@ -111,7 +111,7 @@ sense and is justifiable keep it and resolve them"); issue 12's answer gives why
 says the declared horizon is checked, and `splits_comment` gives Numerai's ranking by the one-year score and its
 advice to retrain at major releases as the reason.
 
-**Issues for Lennart:**
+**Issues for Andrej and Lennart:**
 
 12. **Keep the three newest years of eras, or spread the windows over the ten eligible years?**
 
@@ -224,6 +224,26 @@ advice to retrain at major releases as the reason.
    `task_summary.split` names the ranking. The record has the decision and the horizon sign-off as CC lines. `dataset
    check`: 0 errors; its 2 warnings come from checks of the data that are not about the windows (a feature name read
    as an exposure, the target's middle bin at 50% of the rows) and are not settled here.
+
+13. **The source no longer serves this version. Archive the one exact copy, or rebuild on a version Numerai still serves?**
+
+   * **Problem:**
+     - Numerai retired dataset versions 5.0 to 5.3 on 2026-10-16, ten days after this definition's files were downloaded, and its download API now answers that the files do not exist.
+     - The one exact copy is the download of 2026-10-06, which is not in the shared data warehouse, so the definition cannot be rebuilt or its checksums verified from here.
+     - A public mirror exists, but it holds validation eras only to 1206, so it cannot rebuild eras 1207 to 1235, which hold the newest test window.
+   * **Effect on the task:** Nothing about the shipped definition is known to be wrong, but nobody can currently reproduce it, re-run its checks or confirm its numbers. A re-audit on 2026-11-27 could only read the definition and record, not the data, and found the record's 2,025,745 rows and the notes' 6,881,281 cannot both describe the same frame.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Locate the 2026-10-06 download and archive it with its checksums | whoever built the definition restores the files to the warehouse and a durable store | the definition becomes reproducible again exactly as shipped | depends on that copy still existing somewhere |
+     | B | Rebuild from the public mirror | uses the copy that is reachable | no lost download needed | cannot rebuild the newest test window, so the split would change |
+     | C | Rebuild on a version Numerai still serves | a new definition on current data | reproducible from the source | a new dataset with its own review, not a repair of this one |
+     | D | Leave it as it is (implemented) | nothing changes | no work | the dataset cannot be rebuilt or checked by anyone without the lost copy |
+
+   * **Recommendation:** A first, since it costs nothing if the copy exists; C if it does not. **Decision:** A, B, C or D?
+
+   **Notes for the AI:** once the data is back, re-run the round's audit: `dataset check`, the probes, the row-count question above, and the Horizon table's missing test-windows column.
 
 ## Reference
 

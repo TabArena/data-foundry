@@ -4,6 +4,7 @@ name: Chicago Traffic Crashes - Crashes (CPD E-Crash)
 checked_by:
 - Myunghwan
 - Lennart
+- Andrej
 suggestion: 'Yes'
 priority: 3
 decision_markers:
@@ -113,6 +114,14 @@ CC (2026-11-11, Lennart): the declared horizon (1 month, a one-month gap, window
 
 CC (2026-11-17, Andrej): the declared split (temporal on `crash_date`, horizon 1 month, gap 1 month) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
+CC (2026-11-27, Andrej): issue 13, "Option A: Keep it and state the measured share.": the first collision type alone earns 85% of the gain over the prior and the other inputs without it 21%; the field stays and the share is stated in the fit reason and the notes.
+
+CC (2026-11-27, Andrej): issue 14, "Option A: Add the site-ranking result to the metric's reason.": the metric's reason states that on street corridors the model's ranking barely beats the crash count alone.
+
+CC (2026-11-27, Andrej): issue 15, "Option A: Rewrite the block to the one-month choice and restate the figure's base.": the review's horizon block describes the one-month windows, and the 99.4% update figure is restated on its base.
+
+**Assessment (AI, 2026-11-27):** applied issues 13 to 15 as text only. Issue 13 (LightGBM, four of the nine windows, newest 500,000 training rows, one seed): log loss 0.6087 for the prior, 0.5204 with the collision type alone (85% of the gain), 0.5053 with all 15 inputs, 0.5868 without the collision type (21%). Issue 14 (86 corridors with at least 100 test crashes, four windows pooled; observed 604 killed or seriously injured): rank agreement 0.663 for the crash count, 0.691 for all inputs, 0.698 for the collision type; top-twenty overlap 11 for each. Issue 15: 24,243 of 29,222 rows re-touched at day 15 or 16; amended reports (1,373) updated after 30 days 9.0%, after 90 days 1.3%. No data change.
+
 ## Review
 
 **Outcome:** added. The second review panel (2026-11-04) recommended shipping after changes, and issues 7-11 were
@@ -120,38 +129,51 @@ settled on 2026-11-05. On 2026-11-11 you chose one-month windows with the one-mo
 over four years (issue 12, B), September 2026 back to January 2023, each in another calendar month; both are applied.
 Left: the rebuild from the 2026-11-04 export before its URL stops working on 2026-12-22, which needs your ask.
 
-**Main points:** Settled on 2026-11-11: nine one-month test windows from January 2023 to September 2026, on both sides
+**Main points:** Re-audited on 2026-11-26. Time-critical: the portal's export URL carries a `Sunset: Tue, 22 Dec 2026`
+header, so a rebuild after that date has no source, and the pinned snapshot already does not reproduce (the portal
+amends historical records; today's export moves the frame by 7 rows). The 21.7% of test rows with an exact feature
+twin in training do not inflate the score: model skill is lower on them, and they are repeat addresses of common crash
+types. The newest month is complete and shows no censoring. The three issues of that re-audit are settled on 2026-11-27: the coded field carrying 85% of the
+skill is stated in the fit reason (13), the thin value for ranking corridors in the metric's reason (14), and the horizon block
+now describes the one-month windows (15).
+Earlier, settled on 2026-11-11: nine one-month test windows from January 2023 to September 2026, on both sides
 of the 2023Q4 step, each trained on the crashes up to a month before it, as the city reviews its fatal crashes monthly.
 
 **Horizon:**
 
-* **Verdict:** keep the three-month windows with a one-month gap (low to medium confidence): the quarter is a convention
-  of the build, and the analyst's documented cycles are a month for fatal crashes and a year for the report.
-* **Length:** three months, a model refit at the start of each quarter that scores the next quarter's crashes. The
-  City's crash table states no use or cadence, and the quarter was set at the build as "an evaluation/refit cadence,
-  not a medical outcome window" (splits comment). The analyst's documented cycles: CDOT's fatality list is "compiled
-  ... after monthly reviews of fatal traffic crash information" and "updated monthly"
+* **Verdict:** keep the one-month windows with a one-month gap (medium confidence): a month is the cycle of the city's
+  review of fatal crashes, the one documented cycle of the analyst's work, where the quarter used until 2026-11-11 was a
+  convention of the build that no source names.
+* **Length:** one month, a model refit at the start of each month that scores that month's crashes. The City's crash
+  table states no use or cadence. The analyst's documented cycles: CDOT's fatality list is "compiled ... after monthly
+  reviews of fatal traffic crash information" and "updated monthly"
   ([Vision Zero Chicago Traffic Fatalities](https://catalog.data.gov/dataset/traffic-crashes-vision-zero-chicago-traffic-fatalities)),
   and its annual Chicago Traffic Crashes report "looks at data from the past several years" and lists its improvement
   projects ([Streetsblog Chicago, 2025-11-25](https://chi.streetsblog.org/2025/11/25/key-findings-from-cdots-annual-chicago-traffic-crashes-report)).
-  A quarter lies between the two; no source names it.
-* **Gap:** one month (your call of 2026-11-05, issue 11): a report can be amended after a later death, a traffic death
-  counts within 30 days, and 99.4% of the crashes of June-August 2026 were last updated within 30 days (5 of 32 fatal
-  ones later, 33-102 days). Training also keeps only the crashes notified to the police before the quarter starts.
+  A month holds 6 to 15 fatal crashes against 20 to 30 in a quarter, so a window's score leans less on them, which the
+  log loss over all five classes allows.
+* **Gap:** one month (your call of 2026-11-05, issue 11): a report can be amended after a later death and a traffic
+  death counts within 30 days. The portal's `:updated_at` field cannot show this directly, because it moves with any
+  field: for crashes of June to August 2026, 24,243 of 29,222 rows are re-touched 15 or 16 days after the crash,
+  whatever their type, so the earlier figure that 99.4% of rows were last updated within 30 days mostly counts that
+  refresh. The better measure is the amended reports (1,373 of them): 9.0% were updated after 30 days and 1.3% after
+  90 days, and they hold 26.2% of the fatal rows against 3.7% of all rows; 5 of 32 fatal crashes were updated later
+  (33-102 days). Training also keeps only the crashes notified to the police before the month starts.
 * **Time frame:** crashes from 1 September 2017 (citywide coverage) to 30 September 2026 (October 2026 cut as
-  incomplete). Quarters with the gap that keep half the crashes for training: 17, from July-September 2022 to
-  July-September 2026. Today's nine cover July 2024 to September 2026, all after the 2023Q4 step in "reported, not
-  evident" (4.1-4.7% of the crashes before, 5.6-6.7% from 2023Q4), which you accepted as drift (issue 8).
+  incomplete). Of the monthly windows with the gap, 53 keep half the crashes for training (May 2022 to September 2026);
+  the nine in use run from January 2023 (training on 57.5% of the crashes) to September 2026 (98.1%), spread so that
+  each falls in another calendar month and both sides of the 2023Q4 step in "reported, not evident" (4.1-4.7% of the
+  crashes before, 5.6-6.7% from 2023Q4, accepted as drift in issue 8) are tested.
 * **Options:**
 
   | | Option | What it does | Test windows | Pro | Con |
   |---|---|---|---|---|---|
-  | A | Three months, one-month gap (implemented) | quarters, each trained on the crashes up to a month before it: 17 candidates above the floor, from July-September 2022 | 9 windows of 24,682 to 30,068 crashes (issue 12's B; today's nine: 24,682 to 29,258), before the split's own filter (it drops training crashes only) | between the analyst's monthly and yearly cycles; nine windows | a convention of the build; no source names it |
-  | B | One year, October to September | the cycle of the annual report: four candidates keep half the crashes for training, from October 2022 (88.1%, 77.0%, 65.8% and 54.7%), about 110,000 crashes each | 4 candidates of 109,796 to 112,160 crashes, before the split's own filter | the annual report's cycle; every season in a window | three windows instead of nine; a model up to 13 months old by a window's end |
-  | C | One month | the cycle of the fatality review: 53 candidates of 7,752 to 10,719 crashes | 53 candidates of 7,752 to 10,719 crashes, before the split's own filter | the fatality list's monthly cycle | only about 6 to 11 fatal crashes per window |
+  | A | One month, one-month gap (implemented) | months, each trained on the crashes up to a month before it: 53 candidates above the floor, from May 2022 | 9 windows of 8,091 to 10,120 crashes (issue 12's B), before the split's own filter (it drops training crashes only) | the city's monthly review cycle; a refit as often as its list is updated; nine seasons spread over four years | a third of a quarter's test crashes; 6 to 15 fatal crashes per window |
+  | B | Three months, one-month gap | quarters: 17 candidates above the floor, from July-September 2022 | 9 windows of 24,682 to 30,068 crashes | between the analyst's monthly and yearly cycles | a convention of the build; no source names it |
+  | C | One year, October to September | the cycle of the annual report: four candidates keep half the crashes for training, from October 2022 | 4 candidates of 109,796 to 112,160 crashes | the annual report's cycle; every season in a window | three windows instead of nine; a model up to 13 months old by a window's end |
 
-* **Recommendation:** A: a quarter lies between the analyst's monthly and yearly cycles, and keeps nine windows where a
-  year gives three. **Decision:** A, B or C?
+* **Recommendation:** A: the monthly review is the analyst's documented cycle, and nine months still test about 83,000
+  crashes. **Decision:** A, B or C?
 
 **Lennart (2026-11-11, discuss):** Three months seems a lot, what would make sense from a use case pov? If we refit
 monthly, this could be more reasonable here?
@@ -189,7 +211,7 @@ no split, 9,529 of them in August 2026, the newest window's gap month) are rewri
 98.1% of the crashes. The record has the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not
 regenerated).
 
-**Issues for Lennart:**
+**Issues for Andrej and Lennart:**
 
 7. **Reword the use case to a road-safety analyst?**
 
@@ -525,6 +547,118 @@ regenerated).
    step ("reported, not evident" 4.0% and 4.8%), December 2023 in its quarter (5.2%) and the six newer windows after it
    (6.0-6.8%), as the drift paragraph now says. The eligibility table of `_decisions` follows the months. The record
    has the CC line. `dataset check`: 0 errors, 0 warnings.
+
+13. **State that one officer-coded field carries 85% of the skill?**
+
+   * **Problem:**
+     - The type of the first collision alone earns 85% of the gain over the prior, and without it the model keeps only 21%.
+     - It is entered in the same finalised report as the injury fields, and the data carries no per-field timestamp, so whether it is written before or after the injuries can be neither shown nor refuted.
+     - The notes already call the fit approximate and say the field is not a raw caller observation, but nothing says how much of the task rests on it.
+   * **Effect on the task:** The benchmark largely measures how well a model reads one coded field. That is legitimate for an actor who works from finalised reports, for whom the order of entry does not matter, but a reader should know it.
+   * **Experiments:** LightGBM, four of the nine windows, the newest 500,000 training rows, one seed.
+
+     | Inputs | Log loss | Share of the gain over the prior | Ranking of killed or seriously injured |
+     |---|---|---|---|
+     | the prior only | 0.6087 | 0% | 0.500 |
+     | collision type only | 0.5204 | 85% | 0.775 |
+     | all 15 | 0.5053 | 100% | 0.806 |
+     | all but collision type | 0.5868 | 21% | 0.650 |
+
+     The field reads physically: 87.9% of pedestrian crashes injure someone, against 3.9% of crashes into a parked car. An amended-report check for recoding is inconclusive (pedestrian share among fatal rows 29.1% against 25.7%, p 0.0015, direction not systematic).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep it and state the measured share |  one sentence in the fit reason and the notes | honest; no data change | the task still rests on one coded field |
+     | B | Drop the field | removes the timing question | no open question about entry order | the skill falls to 21% and the task is close to empty |
+     | C | Keep it with your line that it is kept on purpose | a record line plus a note | an explicit sign-off | says what A says, with one more step |
+     | D | Leave it as it is (implemented) | the field stays and its share stays unstated | no work | a reader cannot tell how much of the task rests on one coded field |
+
+   * **Recommendation:** A. The field is physical, the actor works from finalised reports, and dropping it empties the task. **Decision:** A, B, C or D?
+
+   **Andrej (2026-11-27, discuss):** This sounds like a leak to me? Think a bit more about it.
+
+   **Answer (AI, 2026-11-27):**
+   * You asked whether the collision type leaks the injury outcome. A leak would need one of three things: the code computed from the injuries, written after them and changed by them, or recorded only when someone is hurt. Each was checked on the 998,184 labelled crashes from September 2017.
+   * **Not computed from the injuries:** the code describes the first harmful event (pedestrian, parked car, rear end). A pedestrian contact keeps the code without an injury: 12.1% of pedestrian crashes injure no one, and 71% of those report damage of $500 or less, so a minor contact is still filed as a pedestrian crash.
+   * **The rates are physics:** an unprotected person is struck. Pedestrian crashes injure in 87.9% (killed or seriously injured 16.8%), cyclists 71.8% (9.1%), head-on 34.6% (6.1%), angle 24.4%, rear end 14.4%, parked car 3.9% (0.5%).
+
+     | Collision type | Crashes | Injured | Killed or seriously injured | Desk reports |
+     |---|---|---|---|---|
+     | parked motor vehicle | 229,961 | 3.9% | 0.5% | 52.5% |
+     | rear end | 210,507 | 14.4% | 0.9% | 63.4% |
+     | angle | 108,793 | 24.4% | 2.5% | 42.5% |
+     | head on | 8,295 | 34.6% | 6.1% | 33.2% |
+     | pedalcyclist | 17,925 | 71.8% | 9.1% | 28.0% |
+     | pedestrian | 25,327 | 87.9% | 16.8% | 19.2% |
+
+   * **Written later and changed by the outcome:** this cannot be ruled out from the data, since there is no per-field timestamp. The amended-report check found no systematic recoding (pedestrian share among fatal rows 29.1% against 25.7%, direction not consistent).
+   * **The actor holds it:** the road-safety analyst ranks sites from finalised reports and holds the type for every crash. Severity given collision type is the standard input of that work, since crash-severity distributions are tabulated by collision type, so the task's skill sitting on it is the task, not a shortcut. The caller at the scene also knows "a car hit a pedestrian".
+   * Where it does bite: the task measures little beyond the type (21% of the gain without it). That is the content of A's sentence, and reason enough to say it, but not a leak.
+   * **Recommendation:** A, as before. **Decision:** A, B, C or D?
+
+   **Andrej (2026-11-27, change):** Option A: Keep it and state the measured share.
+
+   **Resolved (2026-11-27, Andrej):** A. The first collision type alone earns 85% of the log-loss gain over the prior and the other inputs without it 21% (four of the nine windows, one seed, the newest 500,000 training rows); the sentence is in `fit_reason` and in the notes. The field stays; the data does not change.
+
+14. **Say that for ranking dangerous corridors the model adds little over counting crashes?**
+
+   * **Problem:**
+     - The use case is to rank sites for safety work by their expected killed-or-seriously-injured crashes.
+     - Ranked that way, by street corridor, the model's ranking barely beats one built from the crash count alone, and the corridors it puts in the top twenty are the same ones.
+     - The metric is a fair proxy for the decision; it is the task that is thin for site ranking, which nothing in the notes says.
+   * **Effect on the task:** A benchmark score here says little about the decision the use case names, because most of what that decision needs is already in the crash count.
+   * **Experiments:** the four test windows pooled, 86 street corridors with at least 100 test crashes, ranked by predicted killed-or-seriously-injured total.
+
+     | Model | Rank agreement with observed | Top-twenty overlap | Predicted total (observed 604) |
+     |---|---|---|---|
+     | the crash count alone | 0.663 | 11 | 677 |
+     | all 15 inputs | 0.691 | 11 | 645 |
+     | collision type only | 0.698 | 11 | 700 |
+
+     Every model's expected total runs 7 to 16% high, because the share of crashes that kill or seriously injure falls from 2.0% in 2022-23 to 1.4% in 2026.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Add the site-ranking result to the metric's reason | text only | honest about what the score is worth for the decision | no score change |
+     | B | Declare a binary killed-or-seriously-injured log loss | changes the target to match the decision | fits the decision directly | reopens the five-class target already settled |
+     | C | Leave it unwritten (implemented) | nothing changes | no work | the gap between the score and the decision stays hidden |
+
+   * **Recommendation:** A. **Decision:** A, B or C?
+
+   **Andrej (2026-11-27, change):** Option A: Add the site-ranking result to the metric's reason.
+
+   **Resolved (2026-11-27, Andrej):** A. The metric's reason now gives the corridor result: on 86 street corridors with at least 100 test crashes over four pooled windows, rank agreement with the observed is 0.691 for all 15 inputs against 0.663 for the crash count alone, with the same top-twenty overlap (11 each). Text only; the target and the score are unchanged.
+
+15. **Rewrite the review's horizon block, which still describes the retired quarters?**
+
+   * **Problem:**
+     - The horizon block of this review still says to keep three-month windows and marks three months as implemented, while the definition has shipped nine one-month windows since 2026-11-11.
+     - Its supporting figure, that 99.4% of reports are updated within 30 days, mostly counts a refresh: every row is re-touched 15 or 16 days after the crash, whatever its type.
+     - The gap decision stands; only the block's description and the base of its figure are wrong.
+   * **Effect on the task:** None on the data. A reader opening the review sees a quarter where a month ships, and a reporting-lag figure that measures something else.
+   * **Experiments:** the reporting lag measured on the portal, June to August 2026.
+
+     | Measure | Value |
+     |---|---|
+     | rows re-touched at day 15 or 16 | 24,243 of 29,222 |
+     | amended reports updated after 30 days | 9.0% (n 1,373) |
+     | amended reports updated after 90 days | 1.3% |
+     | share of all fatal rows held by amended reports | 26.2%, against 3.7% of all rows |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Rewrite the block to the one-month choice and restate the figure's base | text only | the review matches what ships | none |
+     | B | Leave it (implemented) | nothing changes | no work | the next reader sees a quarter |
+
+   * **Recommendation:** A. **Decision:** A or B?
+
+   **Andrej (2026-11-27, change):** Option A: Rewrite the block to the one-month choice and restate the figure's base.
+
+   **Resolved (2026-11-27, Andrej):** A. The horizon block (verdict, length, gap, time frame, options) is rewritten to the one-month windows that ship, and the 99.4% figure is restated on its true base: 24,243 of 29,222 rows are re-touched at day 15 or 16, so it mostly counts a refresh, and the measure of late amendments is 9.0% of 1,373 amended reports updated after 30 days (1.3% after 90). The gap decision stands.
 
 **Review panel:** ship after changes (mediator). The tier was full, as a second pass after Lennart's review of PR #33
 on 2026-11-04: seven evidence agents, the advocate and the critic with one rebuttal each, and the mediator. Claims: 27

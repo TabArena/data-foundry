@@ -349,7 +349,8 @@ class RainInAustralia(AbstractCuratedDataset):
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); 3 are calendar or compass cycles, in
           their usual order (the wrap is not shown); codes that mean unknown are missing (CLEAN-10).
-        - Columns recorded on one side of a window only (Lennart, 2026-11-11): 12 station readings are missing in a test fortnight and recorded on its train side, as a station's instrument goes offline: Newcastle's rainfall and 9 am humidity (recorded on half the days or more only up to 2020), Sale's 9 am pressure (up to 2017), Launceston's 9 am pressure (up to 2013), and gaps of weeks at Coffs Harbour, Badgerys Creek, Mount Ginini, Nhil and Wagga Wagga. Kept: a deployed model meets the same outages.
+        - Columns recorded on one side of a window only (Lennart, 2026-11-11): 12 station readings are missing in a test fortnight and recorded on its train side, as a station's instrument goes offline: Newcastle's rainfall and 9 am humidity (recorded on half the days or more only up to 2020), Sale's 9 am pressure (up to 2017), Launceston's 9 am pressure (up to 2013), and gaps of weeks at Coffs Harbour, Badgerys Creek, Mount Ginini, Nhil and Wagga Wagga. Kept: a deployed model meets the same outages. Three whole stations also stop reporting inside the evaluation period: Katherine on 2019-03-22, Adelaide on 2020-07-30 and Newcastle on 2021-04-15, so the stations reporting each year fall from 49 to 46, and their neighbour columns go empty in the later windows.
+        - Potential leak, kept on purpose (an evaluation channel, Andrej, 2026-11-27): the label is whether the station's next-day row records more than 1 mm of rainfall (all 261,914 rows), and for 92.1% of the 16,484 test rows that next-day row is in the same test window. A model that reads each row on its own gains nothing, so the score is honest; a method that looks a station up on the next date, or a nearest-neighbour method over the test rows, reads about 92% of the labels. Protocol: each test row is predicted from the training rows and its own features only; no feature or model step may use other test rows, and a method that reads another test row of the same station is called out and not benchmarked.
     """
 
     # Task
@@ -402,7 +403,8 @@ class RainInAustralia(AbstractCuratedDataset):
     accepted_check_warnings = {
         "splits_feature_missing_in_test": (
             "Decided (Lennart, 2026-11-11): 12 station readings missing in a test fortnight while a "
-            "station's instrument is offline (curation_comments)."
+            "station's instrument is offline (curation_comments). Three whole stations also stop reporting "
+            "(Andrej, 2026-11-27): Katherine on 2019-03-22, Adelaide on 2020-07-30 and Newcastle on 2021-04-15."
         ),
     }
     splits_comment = """
@@ -427,6 +429,9 @@ class RainInAustralia(AbstractCuratedDataset):
         has a break (no rows from 2016-01-27 to 2017-02-28), before every window, and Sunshine and Evaporation are
         missing far more often after it; training from 2017-03 gives ROC AUC 0.842 against 0.847 with the full history
         (on the 9 windows shipped until 2026-10-26), so the old years do no harm.
+        Protocol: a station's next-day row, which carries the label, is in the same test window for 92.1% of the test
+        rows; each test row is predicted from the training rows and its own features only, and no feature or model
+        step may use other test rows (CC 2026-11-27).
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

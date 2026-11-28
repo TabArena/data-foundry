@@ -28,7 +28,7 @@ FIRST_INCOMPLETE_MONTH = 201007
 # De Cock (2011, p. 4): the houses over 4,000 sq ft of living area are the five unusual sales of the file.
 OUTLIER_LIVING_AREA = 4000
 
-# `Sale Condition` codes whose price is not this house's market value (DataDocumentation.txt): a sale between family
+# `Sale Condition` codes of a sale that is not an ordinary sale of this house (DataDocumentation.txt): a sale between family
 # members, an allocation of two linked properties with separate deeds (a condo and its garage unit) and a purchase of
 # adjoining land.
 NON_MARKET_SALES = ("Family", "Alloca", "AdjLand")
@@ -573,16 +573,21 @@ RATING_LABELS = {
 
 class AmesHousing(AbstractCuratedDataset):
     task_summary = TaskSummary(
-        question="What price will a house in Ames, Iowa sell for?",
+        question="What price will a house in Ames, Iowa sell for, given the type and condition of its sale?",
         use_case=(
-            "For example, the city assessor of Ames values residential properties from recent sales: a model "
-            "refit every two months, as new sales arrive, estimates what each house would sell for from its record."
+            "For example, a valuation model refit every two months, as new sales arrive, estimates the price a "
+            "house sells for, given the type and condition of the sale (a foreclosure, a short sale or a house not "
+            "yet finished among them), from the assessor's record of the property."
         ),
         row=(
             "One sale of residential property in Ames, Iowa, January 2006 to June 2010, from the city assessor's "
-            "office, at market value (2,837 sales)."
+            "office, without sales between family members, allocations of linked properties and purchases of adjoining "
+            "land (2,837 sales)."
         ),
-        predicted="The sale price in US dollars, on a log scale.",
+        predicted=(
+            "The price of the sale in US dollars, on a log scale, as recorded: foreclosures, short sales and sales "
+            "of unfinished new houses are included at the price they reached."
+        ),
         known=(
             "The assessor's record of the property (neighbourhood, lot, building type, areas, rooms, quality and "
             "condition grades, year built and remodelled, basement, garage) and the sale's month, type and condition."
@@ -593,7 +598,7 @@ class AmesHousing(AbstractCuratedDataset):
         ),
         changes=(
             "We use De Cock's full file instead of the Kaggle competition's random half, split by sale month instead "
-            "of at random, drop the sales whose price is not this house's market value (sales between family "
+            "of at random, drop the sales that are not an ordinary sale of this house (sales between family "
             "members, allocations, adjoining land, and his three partial sales of very large new houses), and write "
             "out the text codes."
         ),
@@ -645,7 +650,7 @@ class AmesHousing(AbstractCuratedDataset):
     curation_comments = """
         We start with AmesHousing.txt, the data file of De Cock (2011): 2,930 sales of residential property in Ames, Iowa, January 2006 to July 2010, from the Ames City Assessor's Office.
 
-        - Prediction point: a house sells, and a valuation model refit every two months on all earlier sales predicts its price from the assessor's record of the property and the sale's type and condition.
+        - Prediction point: a house sells, and a valuation model refit every two months on all earlier sales predicts the price of that recorded transaction from the assessor's record of the property and the sale's type and condition (Andrej, 2026-11-27). The sale's condition is also the row filter for the three non-ordinary codes below, so the field both screens rows and feeds the model, as on house_sales; foreclosures and short sales stay with their condition as a feature.
         - Source: we use this file rather than the Kaggle competition (OpenML 42165; its record house_prices_nominal is now a `Duplicate` of this one, CC 2026-10-26), whose 1,460 labelled rows it holds: twice the labelled rows, values as published.
         - Anomaly: De Cock kept only the latest sale of a home sold more than once (p. 4), so the older months miss about 100 sales.
         - We drop the 8 sales of July 2010: the extract cut the month (decision table).
@@ -657,7 +662,7 @@ class AmesHousing(AbstractCuratedDataset):
         - The 23 nominal and 21 text-coded ordinal variables are categorical; the rest is numeric. The text codes of the 43 other than `MS SubClass` become the documentation's labels too (`TA` "Typical/Average", `GLQ` "Good Living Quarters", `Gtl` "Gentle slope"; CLEAN-12, CC 2026-10-26), with five codes the file spells unlike the documentation matched by hand and the documentation's typos corrected (`CODE_LABELS`). The 21 graded columns stay unordered categories (CLEAN-14). Total and part areas are kept as published.
         - The target is the natural log of `SalePrice`, renamed to `log_SalePrice`, the scale the competition scored on.
         - CLEAN-11 as amended (Lennart, 2026-10-21: a row whose target the source names as not the task's quantity may leave, with the source's words): we drop De Cock's three "true outliers" (p. 4), partial sales of new houses over 4,000 sq ft that "likely don't represent actual market values" ($28-$40 per sq ft against a median of $150 for partial sales), and keep his two other houses over 4,000 sq ft (decision table). The three would only train, yet without them the task probe's linear model goes from RMSE 0.125 to 0.119 (13 windows). It was the third drop of target-outlier rows, after mercedes_benz_greener_manufacturing and qsar_tid_11, and prompted that amendment. With the non-market sales below, the drop rests on USE-5 as well.
-        - USE-5 (CC 2026-10-26): we drop the 82 sales whose price is not this house's market value by the file's `Sale Condition`: 46 between family members (`Family`), 24 allocations of two linked properties with separate deeds, such as a condo and its garage unit (`Alloca`), and 12 purchases of adjoining land (`AdjLand`) (DataDocumentation.txt). The assessor values a house at its market value, and assessors' sales-ratio studies leave such sales out (IAAO standards). house_sales drops its related-party sales and its sales of several parcels on the same reasons (CC 2026-10-22 and 2026-10-26). 34 of them were test rows, where they carried large errors (RMSE 0.291 for Family and 0.228 for Alloca against 0.095 for normal sales, 500-tree LightGBM, 3 seeds, 13 windows). Foreclosures and short sales (`Abnorml`, 190) are sales on the market and stay (decision table).
+        - USE-5 (CC 2026-10-26): we drop the 82 sales that are not an ordinary sale of this house by the file's `Sale Condition`: 46 between family members (`Family`), 24 allocations of two linked properties with separate deeds, such as a condo and its garage unit (`Alloca`), and 12 purchases of adjoining land (`AdjLand`) (DataDocumentation.txt). The target is the price of the recorded transaction, as on house_sales, which drops its related-party sales and its sales of several parcels the same way (CC 2026-10-22 and 2026-10-26). The standard the first version cited for this (assessors' sales-ratio studies) does not support the line: it forbids forced sales for model calibration, which stay, and forbids excluding adjoining-owner sales for that reason alone; the 12 adjoining-land sales sell above the model, not below (mean residual +0.057, none below -0.3), so the drop of those 12 rests on the curator's call, kept on 2026-11-27, and not on the standard. The family and allocation sales are the ones that carried the large errors. 34 of them were test rows, where they carried large errors (RMSE 0.291 for Family and 0.228 for Alloca against 0.095 for normal sales, 500-tree LightGBM, 3 seeds, 13 windows). Foreclosures and short sales (`Abnorml`, 190) are sales on the market and stay (decision table).
         - The records describe the house at the sale: no house built two or more years before its sale has a remodel year after it. One new house (built 2007, sold in June 2007) shows a remodel in 2008, a value from after the sale, and one house shows a remodel in 2001 before it was built in 2002, impossible by the documentation; both remodel years become missing. Whether the grades were revised after a sale cannot be checked from the file.
         - Anomaly: `Year Remod/Add` starts at 1950: 337 of the 629 houses built before 1950 show 1950, where the documentation gives the construction year for no remodel. Kept as recorded.
         - No duplicate rows. Two pairs of neighbouring parcels share every feature and sold in one month at different prices; kept.
@@ -693,7 +698,9 @@ class AmesHousing(AbstractCuratedDataset):
             "Thirteen windows against the 30 an IID split of 2,837 sales would get (SPLIT-33): a fourteenth two-month "
             "window (March-April 2008) would train on 47% of the sales, below the floor of half the data, and monthly "
             "windows would hold only 19 to 109 sales. The splits comment names the target, the count reached and what "
-            "stops more (SPLIT-15; Lennart, 2026-11-26)."
+            "stops more (SPLIT-15; Lennart, 2026-11-26). Five further two-month windows, from January-February 2008 "
+            "back, would train on 33.6% to 46.8% of the sales, under the half floor, and every window kept clears both "
+            "floors; the curator keeps the 13 and the exception stays untaken (Andrej, 2026-11-27)."
         ),
     }
 
@@ -718,7 +725,7 @@ class AmesHousing(AbstractCuratedDataset):
         outliers = (df["Gr Liv Area"] > OUTLIER_LIVING_AREA) & (df["Sale Condition"] == "Partial")
         assert outliers.sum() == 3, "expected De Cock's three partial-sale outliers"
         df = df[~outliers]
-        # Sales whose price is not this house's market value: family, allocations and adjoining land (82 sales).
+        # Sales that are not an ordinary sale of this house: family, allocations and adjoining land (82 sales).
         non_market = df["Sale Condition"].isin(NON_MARKET_SALES)
         assert non_market.sum() == 82, "expected 82 family, allocation and adjoining-land sales"
         df = df[~non_market]
@@ -846,11 +853,11 @@ class AmesHousing(AbstractCuratedDataset):
                 large.reset_index(drop=True),
             ),
             Decision(
-                "Sales whose price is not a market value dropped",
-                "The assessor values a house at its market value. Sales between family members, allocations of two "
-                "linked properties with separate deeds and purchases of adjoining land are not market sales of this "
-                "house (DataDocumentation.txt) and are dropped; foreclosures and short sales (Abnorml) are sold on "
-                "the market and stay. All sales before the July 2010 cut, by Sale Condition.",
+                "Sales that are not an ordinary sale of the house dropped",
+                "Sales between family members, allocations of two linked properties with separate deeds and purchases "
+                "of adjoining land (DataDocumentation.txt) are not ordinary sales of this house and are dropped, by the "
+                "curator's call; foreclosures and short sales (Abnorml) are recorded transactions and stay, their "
+                "condition a feature. All sales before the July 2010 cut, by Sale Condition.",
                 by_condition,
             ),
         ]
