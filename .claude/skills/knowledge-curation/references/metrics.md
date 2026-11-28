@@ -126,6 +126,51 @@ precision, recall, F-measure: fallback), forest_fires (MAD and RMSE, ranked by M
 open_soil_spectral_library (tunes and cross-validates by RMSE on log1p on the same cut, grades by CCC with RPIQ: the
 tuning criterion kept).
 
+**MET-18 (Should; narrows MET-4 and MET-5).** Score inside the group when the rows come in groups the actor works
+within rather than chooses between, and the group alone carries most of the score.
+
+The case it is for: the actor is handed one group and ranks what is in it. A protein and its candidate structures, a
+gene and its guides, a cross and its progeny. They never pick between groups, because they already know which group
+they are in.
+
+Two conditions, both required:
+
+1. the rows fall into groups, and the group is a column of the table;
+2. the actor acts inside one group at a time, so the ranking of the groups is not a decision they make.
+
+These are facts about the data and the use case, and they settle the metric where the source names none: it is then
+the source's metric computed within the group, or `mean_group_pearsonr` on the group column where the source names
+no metric at all, with the pooled score named as the original from context (MET-11).
+
+A third condition, and only for overruling a metric the source deliberately chose:
+
+3. a predictor that knows nothing but each group's mean beats the models under the source's own pooled score,
+   where at least one of those models has its capacity or penalty chosen on the training side. An untuned baseline
+   does not meet this: a model worse than it should be makes any group mean look strong, so the test would then
+   measure our modelling effort rather than the task.
+
+Condition 3 is the bar for narrowing MET-4 and MET-5, which exist so that a field's stated criterion is not
+second-guessed on taste. Where the source states no metric, 1 and 2 are enough and the group-mean measurement is
+reported as evidence of size rather than as a gate.
+
+Why: a pooled score pays a model for ranking the groups, which the actor already holds at the prediction point,
+while the decision is the ranking inside one group (MET-1, the real task; MET-2, the unit the actor acts on).
+
+What the declaration reports either way: the share of the target's variance that lies between groups, and what the
+group-mean predictor scores against the models under the pooled metric, naming the models and how their capacity
+or penalty was set.
+
+When it does not apply: the actor chooses between the groups, or the rows are one pool to them. Then the pooled
+score stays.
+
+Cases: protein_model_quality_rf_pcp, huesken_sirna_efficacy and wadden_sea_sibes_macoma_abundance enter on 1
+and 2, their sources naming no metric the task would use; genomic_prediction_soy_yield is so far the only
+one to need 3, since its source ranks by pooled Pearson's r deliberately. Each one's measurements are in
+the table below. Considered and not applicable: asp_potassco_classification and sat11_hand_algo_runtime
+have the shape, since the actor is handed one problem instance and ranks the solvers for it, but their
+source metric already scores inside that group (PAR-k on the selected algorithm, with the instance as a
+scoring column), so there is nothing to narrow.
+
 **MET-6 (Should).** A threshold metric (accuracy or error rate, balanced accuracy, NER or BER, F1, precision, recall,
 precision at k, a misclassification cost) is declared from a paper only when the source fixes the decision (the
 threshold, the k, or the cost matrix) and the task acts on hard decisions at that point. Without them a hard-label
@@ -313,6 +358,7 @@ Kendall tau 0.66 to 0.98 per split against the per-row score.
 | A competition's leaderboard metric, computable on our data | it (`Metric.source`) | MET-4 |
 | A competition's metric that needs inputs we cannot ship | the closest computable (`stand_in`) | MET-2, MET-11 |
 | A paper's one deliberate metric that suits the decision | it | MET-5 |
+| A pooled score over groups the actor does not choose between, beaten by the group means | the metric per group, the pooled one named as the original | MET-18 |
 | A paper reporting accuracy, precision, recall, F1, AUC | the fallback | MET-5 |
 | A paper's accuracy, no threshold, no costs | the fallback, unless the use case acts on hard labels at equal costs | MET-6, MET-8 |
 | A cost matrix or one treatment threshold fixed by the source | `cost_matrix` (mean cost per row) | MET-7 |
@@ -343,8 +389,10 @@ decided.
 | MET-3, MET-5 | forest_fires | `mae` on the burned area in hectares, the target shipped as log1p (`target_transform="log1p"`, 2026-10-21) | Cortez & Morais 2007 fit on log1p(area), report MAD and RMSE on the area and rank by MAD (SVM with 4 weather inputs, MAD 12.71; the mean predictor has the best RMSE); MAE on the shipped log1p values would be another metric | applied |
 | MET-5 | gallstone_disease | fallback `roc_auc` | Esen et al. 2024 report accuracy, precision, recall, F-measure and AUC; accuracy is the headline, none is named as the criterion | proposed |
 | MET-3, MET-5 | open_soil_spectral_library | `rmsle` on organic carbon in weight percent, the RMSE of the shipped log1p values, origin `source`, not the fallback `rmse` in percent of the screening (2026-11-04, Lennart; the fact filed 2026-11-05, issue 8) | Safanelli et al. 2025 tune Cubist by RMSE on log1p (inner 5-fold CV) and report the 10-fold CV on log1p for exactly this cut (KSSL MIR organic carbon, n = 75,929, RMSE 0.114, CCC 0.995, the ossl-models performance table), with the laboratory and instrument the split keeps; their percent RMSE comes from independent sets, an instrument transfer the task does not test. Unlike forest_fires, whose paper ranks by one criterion (MAD), the ranking here is a compound grade (Lin's CCC with an RPIQ cut-off of 2), so the one criterion the source tunes and selects by is taken. Unlike gallstone_disease and heart_disease, which report several criteria side by side and name none as deciding (accuracy, precision, recall, F-measure and AUC; calibration and the percent correct over the thresholds 0.2 to 0.8), the source names its tuning criterion, so it has a unique original | applied |
-| MET-5 | protein_model_quality_rf_pcp | context `mean_group_pearsonr` on `protein_id`, not the fallback | the paper reports four metrics side by side, but the use case ranks one protein's candidates and pooled RMSE rewards a protein's typical quality (each protein's true mean beats LightGBM, 0.134 against 0.188); CASP scores per target (2026-11-04, Lennart) | exception |
-| MET-5 | huesken_sirna_efficacy | context `mean_group_pearsonr` on `target_gene`, not the fallback | the later papers report pooled correlation, MAE or AUC with no unique criterion, but the use case ranks guides within a gene and pooled RMSE rewards a gene's mean (knowing it cuts RMSE from 0.1582 to 0.1378); the second exception of this kind, after protein_model_quality_rf_pcp (2026-11-04, Lennart) | exception |
+| MET-18, MET-5 | protein_model_quality_rf_pcp | context `mean_group_pearsonr` on `protein_id`, not the fallback; written as an exception to MET-5 before MET-18 was the rule | the paper reports four metrics side by side, but the use case ranks one protein's candidates and pooled RMSE rewards a protein's typical quality (each protein's true mean beats LightGBM, 0.134 against 0.188); CASP scores per target | applied |
+| MET-18, MET-5 | huesken_sirna_efficacy | context `mean_group_pearsonr` on `target_gene`, not the fallback; written as the second exception to MET-5 before MET-18 was the rule | the later papers report pooled correlation, MAE or AUC with no unique criterion, but the use case ranks guides within a gene and pooled RMSE rewards a gene's mean (knowing it cuts RMSE from 0.1582 to 0.1378; between-gene differences are 17.1% of the target's variance) | applied |
+| MET-18 | wadden_sea_sibes_macoma_abundance | context `mean_group_normalized_rmse` on `survey_year`, not the pooled RMSE fallback; declared 2026-11-10, before MET-18 was the rule, and recorded as an application of it when the register was walked on 2026-11-27 | the use case is the map of one past survey, so the ecologist works inside one year and never ranks the years; the source names no metric (Lyashevska et al. 2016 check a map within one year by several measures side by side, and the SIBES pages define none), so conditions 1 and 2 settle it with no need for 3; pooled, 2014 alone holds 75.5% of the squared deviation and decides the ranking | applied |
+| MET-18, MET-5, MET-11 | genomic_prediction_soy_yield | context `mean_group_pearsonr` on the biparental family, the source's pooled Pearson's r named as the original | Azodi et al. 2019 rank by pooled r "as it is the standard metric for GP performance", a deliberate choice; on the values that ship 55.7% of the target's variance lies between families, a family-mean oracle scores pooled r 0.69 against ridge's 0.23 and exactly 0 within a family, and the breeder already holds the family ranking (the non-recurrent parent's own trial yield predicts the family mean at r 0.94); the first case where the clause overrules a unique original rather than filling a gap | applied |
 | MET-6 | ljubljana_breast_cancer | fallback `roc_auc` | every 1986-1988 paper reports accuracy only, without costs or a threshold; 30% recurrence on 286 rows | proposed |
 | MET-6, MET-7, MET-8 | heart_disease (the merged heart_disease_cleveland, _hungary, _va_long_beach) | fallback `roc_auc` (2026-10-21, Lennart; checked 2026-10-27) | Detrano 1989 scores reliability (calibration in the large and by quintiles, p. 306) and the percent correctly classified over the thresholds 0.2 to 0.8 (p. 307): two criteria and no single threshold; Statlog's 5:1 matrix belongs to a later cut of the Cleveland file (PROV-8) | applied |
 | MET-7 | credit_g | `cost_matrix` (bad as good costs 5, good as bad costs 1), scored from probabilities by the least expected cost (2026-10-21, Lennart) | Statlog's cost matrix in german.doc and the Statlog book's average cost; from probabilities, the Bayes decision is p(bad) > 1/6 | applied |

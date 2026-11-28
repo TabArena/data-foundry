@@ -115,7 +115,12 @@ framingham_heart_study_fhs (repairs); corporate_credit_rating, rebuilt as corpor
 in the record of the dataset it concerns, as a problem of that copy, so it can be reported to the maintainers later.
 Raise it as an issue only when it changes one of our decisions. Another collection's version of the data, pretraining
 overlap and other benchmarks' scores never do: they are no evidence ([evidence.md](evidence.md), EV-4). Name another
-collection's version only for provenance or a duplicate. Cases: OpenML 43838, SUPPORT2, OpenML 46372.
+collection's version only for provenance or a duplicate. A published model, rule or set of coefficients that another
+party fitted on this dataset's own rows and labels is not such a case and does change a decision: its gain is measured
+on our shipped splits against a control fitted elsewhere and declared in a `Potential leak, kept on purpose:` note,
+and it never excludes the dataset. Only the other direction does: a model or rule fitted on other data, which never
+saw this dataset, that scores better on it than the models we fit, because then the task adds nothing (EV-4).
+Cases: OpenML 43838, SUPPORT2, OpenML 46372, gse40279_methylation_age.
 
 ### Citing papers
 
@@ -279,6 +284,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | PROV-15 | OpenML 46372 | a generated table made from the book's 197 rows, posing as real: a problem of that copy | applied |
 | PROV-15, EV-4 | TabSTAR's version of a dataset | another collection's columns or labels are no reference for ours; named only for provenance or a duplicate (2026-10-15, Lennart) | applied |
 | PROV-15, EV-4 | any dataset | whether a dataset is in some model's pretraining data does not change any decision (2026-10-12, Lennart) | applied |
+| PROV-15, EV-4 | gse40279_methylation_age | a third party's published clocks, fitted on these rows' own ages, beat the honest models by 0.633 years RMSE over the 60 shipped splits while three clocks fitted elsewhere gain 0.115 together: declared as a kept leak, no reason to exclude; exclusion needs the external route to win | applied |
 | PROV-15, EV-4 | scores from TALENT and leaderboards | scores other benchmarks published are no evidence: their random splits are wrong for most of our tasks (2026-10-15, Lennart) | applied |
 | PROV-16 | kddcup99 | the simulation-artifact critique (Mahoney & Chan, RAID 2003) looks like it condemns KDD, but Tavallaee et al. (CISDA 2009, Sec. III) state that the artifacts "do not affect the KDD data set since the 41 features used in KDD are not related to any of the weaknesses mentioned": the paper refuted the claim about to be made | applied |
 | PROV-16 | intrusion_detection | the BCCC/NTLFlowLyzer paper (Shafi et al., Computers & Security 148:104160, 2025) says in Sec. 6.1 "our focus is on developing a profiling system, not a detection system", so its headline ">99.8%" is profile coverage, and the release ships no target, split or baseline: `No Good Target / Scientific Discovery` | applied |

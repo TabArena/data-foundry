@@ -3,12 +3,16 @@ unique_name: rsctc2010_burkitt_lymphoma
 name: OpenML-1083 mouseType
 checked_by:
 - AI (UNVERIFIED)
-suggestion: TBD -> 2nd Tier
-priority: 1
+- Andrej
+suggestion: 'No'
+decision_markers:
+- No Good Target / Scientific Discovery
 tags:
 - AI-Filled (Verify)
 - Tiny Data
 - Many features
+- 'Samples: No Time Dimension'
+- Experimental Results
 collections:
 - TabBench-Bio
 original_source: Other
@@ -31,18 +35,21 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
-**Screening (AI, 2026-10-31):** `TBD -> 2nd Tier`, priority 1: three DNA-microarray class sets of the RSCTC 2010 Discovery Challenge on OpenML in one record; the Burkitt set's classes match the expression signature of Hummel et al. 2006 (a label computed from the arrays), mouseType's classes are undocumented, and the three sets come from three different studies.
-- Source: the RSCTC 2010 Discovery Challenge on TunedIT (Wojnarski et al. 2010, "RSCTC'2010 Discovery Challenge: Mining DNA Microarray Data for Medical Diagnosis and Treatment", LNCS 6086, pp. 4-19; paywalled and not read; the tunedit.org page is dead). OpenML (uploaded 2014-10-07, "Source: Unknown - Date unknown"): "Data from the RSCTC 2010 Discovery Challenge. All datasets contain between 100 and 400 samples ... All attributes are numeric and represent measurements from DNA microarrays. Attributes are normalized in some way". As published, target `Decision`: 1083 mouseType 214 x 45,101 (the probe count of the Mouse 430 2.0 array), 7 classes (69 to 13 rows); 1084 BurkittLymphoma 220 x 22,283 (HG-U133A), 3 classes (128, 48, 44); 1088 variousCancers_final 383 x 54,675 (HG-U133 Plus 2.0), 9 classes (155 to 16).
-- Burkitt: GEO GSE4475 (Hummel et al. 2006, NEJM 354:2419-2430, PMID 16760442): "Gene expression profiling employing Affymetrix GeneChips (U133A) was performed in 220 mature aggressive B-cell lymphomas ... The molecular Burkitt lymphoma signature identified 44 cases." The OpenML shape and its smallest class (44) match, so the three classes are likely molecular Burkitt, intermediate and non-molecular Burkitt from that signature: a match by counts, stated neither by OpenML nor by the challenge.
-- Use case: the type of a lymphoma or tumour from an expression array, as the challenge's title has it; for Burkitt, telling Burkitt lymphoma from DLBCL, which decides the chemotherapy. Fit approximate at best; regime IID (one array per patient presumed, not checked).
-- Siblings and duplicates: `gcm_multiclass_cancer` (Global Cancer Map, 2001 arrays), `ova_breast` (GEMLeR, from expO on U133 Plus 2.0; variousCancers_final is on the same array and may share samples, a PROV-4 check), `brca_breast_cancer` (`No`, SEL-4). The three OpenML sets are three source studies, so three datasets (PROV-7), not versions; the record's name (mouseType) and its unique name (Burkitt) disagree. External collections: TabBench-Bio (OpenML 1083, 1084 and 1088 all enabled).
-- Better data: a candidate of the benchmark TabBench-Bio (the run searched no further).
-- Papers and pages: Wojnarski et al. 2010 (not read); Hummel et al. 2006 (abstract and GSE4475 summary read); https://www.openml.org/d/1083, https://www.openml.org/d/1084, https://www.openml.org/d/1088.
-- Metric: the challenge's measure is not confirmed (paper paywalled, TunedIT gone; recalled as balanced accuracy, unverified); TabBench-Bio ranks by macro-F1 (Sec. 3.5). Unless the challenge's measure is confirmed, the fallback `log_loss` (MET-8).
-- Risks for /add-dataset: the Burkitt labels may be computed from the same arrays (SEL-5 and `Trivial`, or SEL-4): confirm from GSE4475's sample characteristics; mouseType's classes and series are unknown (PROV-2, PROV-1 after a search); values "normalized in some way" across the challenge's files (LEAK-30); 2006-era arrays (`Outdated`); split the record into one per OpenML set before adding.
-- Priority: gap + (multiclass is thin), use case 0, source 0 (the challenge paper not read, OpenML names no source), shape 0 (214 to 383 rows), risk - (a likely computed label).
+**Screening (AI, 2026-11-25):** `No` (`No Good Target / Scientific Discovery`, USE-2, SEL-5) for the Burkitt set this record is named after (OpenML 1084): its three classes are GEO GSE4475's `Molecular.Diagnosis` (mBL 44, intermediate 48, non-mBL 129), the output of a signature Hummel et al. built on the same arrays; the two other RSCTC sets this record bundles (OpenML 1083 mouseType, 1088 variousCancers_final) are not decided by this reject and stay open in it.
+- Source: the RSCTC 2010 Discovery Challenge (Wojnarski et al. 2010, LNCS 6086, pp. 4-19; paywalled, not read; tunedit.org dead). OpenML (uploaded 2014-10-07, "Source: Unknown - Date unknown"): 1083 mouseType 214 x 45,101, 7 classes; 1084 BurkittLymphoma 220 x 22,283, 3 classes (128, 48, 44); 1088 variousCancers_final 383 x 54,675, 9 classes; values "normalized in some way".
+- Burkitt, the label: GSE4475 (Hummel et al., NEJM 2006, PubMed 16760442): "A molecular signature for Burkitt's lymphoma was generated" from the U133A profiles of 220 lymphomas, and "We used the molecular signature for Burkitt's lymphoma to identify 44 cases"; the series matrix (read 2026-11-25) carries `Molecular.Diagnosis` mBL 44, intermediate 48, non-mBL 129 beside `BL.probability`, which the OpenML counts match up to one sample. The pathologist's diagnosis is a separate field (`Morphologic.diagnosis`), not this target.
+- Use case: none for this label (USE-2: it stands in for what the features measure). A real task in the same series, for a record of its own: the morphological diagnosis or the outcome (`Survival.Status`, `FollowupTime`, `Relapse`, treatment response) of GSE4475, a distinct task (PROV-7). Collection: banked lymphoma specimens measured once (`Samples: No Time Dimension`); type Experimental Results.
+- Split: none (no task); had it one, leaf L-EXP.random (one array per tumour).
+- The other two sets: mouseType's classes and source series are unknown (PROV-1 after a search, then `Missing source information`); variousCancers_final is on HG-U133 Plus 2.0, the platform of expO (GSE2109), so it may be a cut of `expo_tumor_tissue_of_origin`'s data (PROV-4 check). Neither is decided by this reject.
+- Siblings and duplicates: `gcm_multiclass_cancer`, `ova_breast`, `expo_tumor_tissue_of_origin` (tumour type); `brca_breast_cancer`, `glioblastoma` (`No`, SEL-4). External collections: TabBench-Bio (OpenML 1083, 1084, 1088).
+- Better data: not searched (no task).
+- Metric: the challenge's measure not confirmed (paper paywalled); no task.
+- Reject check (AI, 2026-11-25): stands. Two further fields of the series matrix show the signature was fitted and applied on these same 221 arrays: `Training.Test` (Training 113, Test 108) and `core.BL` (yes 8, the WHO-typical seed cases), so the target is the output of a classifier trained on the shipped probes (SEL-5 with USE-2). The clinical steelman (Burkitt against diffuse large B-cell lymphoma decides the regimen) is decided by morphology, immunohistochemistry and MYC FISH, whose ground truth is `Morphologic.diagnosis` or the outcome, a task for its own record (PROV-7). SEL-4 does not apply: the signature was seeded on 8 core cases, so it is supervised, not clustering.
 
 **Assessment (AI, 2026-10-31):** a candidate from the data-scouting run of 2026-10-30/31, not screened yet. Found through the benchmark TabBench-Bio (https://arxiv.org/abs/2609.07441).
 - as published: 214 x 45,101; target: Decision (7 classes).
 - Why: Class from DNA microarray profiles (RSCTC 2010 Discovery Challenge set; class meaning not documented on OpenML) | Lymphoma class from DNA microarray profiles (RSCTC 2010 Discovery Challenge set) | Cancer type from DNA microarray profiles (RSCTC 2010 Discovery Challenge set)
 - Notes: Source on OpenML: 'Data from the RSCTC 2010 Discovery Challenge' (Wojnarski et al., RSCTC 2010, LNCS 6086); the tunedit link is dead and the underlying GEO series is not named. | Same RSCTC 2010 provenance gap as mouseType; the underlying GEO series is not named on OpenML. | Same RSCTC 2010 provenance gap as mouseType.
+
+**CC (2026-11-25, Andrej):** the record stays as it is: no split into separate records.
+- OpenML 1083 (mouseType) and 1088 (variousCancers_final) stay in this record; the `No` decides the Burkitt set it is named after, and the block says the other two are not decided by it.

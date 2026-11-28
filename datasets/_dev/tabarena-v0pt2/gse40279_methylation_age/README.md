@@ -1,0 +1,553 @@
+---
+report_format: data-foundry-report-v2
+unique_name: gse40279_methylation_age
+container_format: 2
+checksum: v2:0de54fa9162052f63e0dac1c5bfcba427311d61ce1c0882bc9d8fe66db34db71
+build: null
+build_stale: false
+data:
+  n_rows: 656
+  n_features: 473035
+  dtypes:
+    category: 1
+    float64: 473034
+    int64: 2
+  n_test_dataset_rows: null
+task:
+  target: age
+  problem_type: regression
+  metric: mae
+  metric_origin: context
+  scoring_columns: null
+  split_regime: grouped_non_iid
+  stratify_on: null
+  time_on: null
+  group_on: plate
+  group_labels: per_sample
+  group_time_on: null
+  grouping:
+    prediction_unit: row
+    aggregation: null
+    context: none
+    n_groups: 9
+    test_groups_per_fold:
+      min: 3
+      max: 3
+splits:
+  n_repeats: 20
+  n_folds: 3
+  random_state: 4267
+  time_horizon: null
+  time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
+  n_train:
+    min: 389
+    max: 510
+  n_test:
+    min: 146
+    max: 267
+bundle_checks:
+  ok: true
+  errors: []
+  warnings: []
+  infos: []
+  accepted:
+    dataset_duplicates_skipped: '310,312,272 cells against the checks'' budget of
+      50,000,000, so the duplicate-column and duplicate-row checks do not run. That
+      follows from the width, which is the dataset: 656 people against 473,035 probes.
+      What the checks would have looked for is answered elsewhere and does not need
+      them. Duplicate rows: every row is one person''s array and the series lists
+      656 distinct samples, with no replicate among them. Duplicate columns: a probe
+      is a fixed position on the 450K chip and appears once, and the frame is built
+      by reading the manifest''s probes in order, so two identical columns would be
+      two readings of one position, which the platform does not produce. Raising the
+      budget to cover this frame would make every check of this width cost a pairwise
+      pass over 310 million cells for a question the platform already answers.'
+    task_group_count_low: 'Nine plates are every assay batch the series has, and the
+      batch is the level a clock must generalize over: a test sample is always measured
+      in a batch of its own. The signal survives the key, so the few groups do not
+      hollow the task out: four model families beat the dummy on all 60 splits, and
+      shuffled ages on none of them over three seeds.'
+    groups_test_groups_few: A group is one assay plate of 17 to 92 samples, a batch
+      over which we want to generalize, and from the context a few such batches suffice,
+      as when generalizing over a few hospitals (heart_disease stayed grouped with
+      3). Each fold holds three plates and 146 to 267 rows. The 60 splits are 41 distinct
+      training sides, so the spread over repeats is descriptive rather than 60 independent
+      experiments; a 100-probe clock's per-split RMSE runs 4.62 to 6.66 with a fold-to-fold
+      sd of 1.24, and pooled over the folds the same model scores the declared MAE
+      of 4.57 against an RMSE of 6.14, which is the spread a score on this dataset
+      has to be read against.
+decisions:
+- The values the authors imputed are set back to missing
+- Grouped by assay plate
+---
+
+# gse40279_methylation_age
+
+> Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
+
+Regression of `age`, scored with `mae` on grouped splits by `plate`. 656 rows and 473,035 features. Source: Other (2012).
+
+Not built yet. The current definition gives checksum `v2:0de54fa9162052f63e0dac1c5bfcba427311d61ce1c0882bc9d8fe66db34db71`.
+
+## In brief
+
+**Question.** How old is a person, in years, judged from the DNA methylation of their whole blood?
+
+**Use case.** A laboratory that builds an epigenetic clock decides which model to ship: candidate clocks are fitted on profiled cohorts, and the one with the lowest held-out error in years on arrays run in a batch it never saw goes out. The clock then serves a forensic estimate of an unknown donor's age, and the reading of a predicted age against a real one as an aging rate.
+
+**One row.** One person's whole-blood sample on the Illumina 450K methylation array (656 adults aged 19 to 101, recruited at four US sites and assayed on nine plates; one sample per person).
+
+**Predicted.** The person's chronological age in whole years at the blood draw.
+
+**Known at prediction time.** The methylation level, between 0 and 1, at each of 473,034 sites of the genome in that blood sample, and the person's sex.
+
+**What the test data stands for.** Whole assay plates are held out, so every test sample was measured in a batch the model never saw, as a laboratory's new samples are.
+
+**Our changes to the source.** We hold out whole plates instead of random people, leave the recruitment site and the recorded ethnicity out of the inputs, and set the 0.14% of values the authors had imputed back to missing.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The fit rests on the clock builder: the inputs are what a clock reads from a blood array, the target is the age a clock is chosen by, and a held-out plate is a batch the model has not seen. Two qualifications are in the notes: a test fold shifts cohort as well as batch, and two published clocks were fitted on these rows.
+
+## Files in this folder
+
+| file | what it is |
+|---|---|
+| [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
+| [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
+
+- The curation record, with the triage decision, its sources and the review: [`curation/records/gse40279_methylation_age.md`](../../../../curation/records/gse40279_methylation_age.md)
+- The original source: <https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE40279>
+- The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
+
+## Rebuild
+
+`dataset.py` reads its raw files from `local-data-warehouse/gse40279_methylation_age/`. To get them:
+
+```text
+The GEO series GSE40279 from NCBI's FTP server: the series matrix (1.2 GB), BeadStudio's signal file (5.0 GB)
+and the sample key (4.5 KB).
+
+mkdir -p local-data-warehouse/gse40279_methylation_age && cd local-data-warehouse/gse40279_methylation_age
+wget https://ftp.ncbi.nlm.nih.gov/geo/series/GSE40nnn/GSE40279/matrix/GSE40279_series_matrix.txt.gz
+wget https://ftp.ncbi.nlm.nih.gov/geo/series/GSE40nnn/GSE40279/suppl/GSE40279_signal_intensities.txt.gz
+wget https://ftp.ncbi.nlm.nih.gov/geo/series/GSE40nnn/GSE40279/suppl/GSE40279_sample_key.txt.gz
+
+`_prepare_raw_files` writes `imputed_cells.parquet` (the deposited cells that are not BeadStudio's beta) from
+the three files, once. Left out: `GSE40279_average_beta.txt.gz` and its four per-sample parts, which hold the
+series matrix's own values (downloaded and compared: the same 473,034 probes and 656 samples in another row
+order, equal on all 310,310,304 cells, no blank), and `GSE40279_RAW.tar` (183 MB, by its own listing the four
+GPL13534 array manifests and nothing else; no IDAT ships, and every sample's `!Sample_supplementary_file` is
+`NONE`).
+```
+
+On first use, `_prepare_raw_files` writes `imputed_cells.parquet` into the same folder.
+
+Then, from the repository root:
+
+```bash
+.venv/bin/python -m data_foundry.curation.cli dataset check datasets/_dev/tabarena-v0pt2/gse40279_methylation_age   # pipeline and checks, no UUID; rewrites this page
+.venv/bin/python -m data_foundry.curation.cli dataset build datasets/_dev/tabarena-v0pt2/gse40279_methylation_age   # also saves the container and records its UUID
+```
+
+Only curators run `build`, when the dataset ships.
+
+## Dataset and task
+
+| field | value |
+|---|---|
+| source | Other: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE40279 |
+| year | 2012 |
+| domain | biology & life sciences |
+| license | None stated by the series or its series matrix; GEO's own disclaimer governs the data (https://www.ncbi.nlm.nih.gov/geo/info/disclaimer.html) |
+| data_tags | Non-IID, Grouped, UnseenGroup |
+| reference | hannum2013genome |
+| rows x columns | 656 x 473,037 |
+| task.target | age |
+| task.problem_type | regression |
+| task.metric | mae |
+| task.split_regime | grouped_non_iid |
+| task.group_on | plate |
+| task.group_labels | per_sample |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `mae` (standard; takes value; lower is better) |
+| origin | context: obvious from the task: the source defines no metric |
+| definition | mean(\|y - p\|) |
+| reason | Mean absolute error in years: the source fixes no metric, and the task makes this one obvious (MET-11), so the regression fallback is overruled. Where we looked: the paper, the GEO series page and its sample records, and the literature the paper belongs to. Hannum et al. report two criteria side by side for the methylation age model, "a correlation between age and predicted age of 96% and an error of 3.9 years" on the primary cohort and 91% and 4.9 years on the validation cohort (Results, "A predictive model for the aging methylome"), and never say what that error is; the Experimental Procedures give no formula, and the one RMSE the paper names (Fig. 7A, 7.22 years) belongs to its transcriptome model, not to this one. The GEO series defines no task metric and there is no competition page, so there is no single deliberate choice to take (MET-5). The original is that unnamed error of 3.9 years, and what fixes it is the context: every actor in this field states and acts on absolute error in years (forensic age tools report a mean absolute error of about 3.2 years, inter-laboratory work a mean absolute deviation of 3.62, the standard clock a median absolute deviation). The measurement agrees, pooled over the 60 folds for a 100-probe clock: MAE 4.57 and median absolute error 3.58 against RMSE 6.14, so the paper's own 3.9 years sits between the first two and nowhere near the third. Rejected: the rmse fallback, which this declaration overrules and which is driven by the band where a clock is most biased (+2.59 years at ages 19 to 39, -4.40 at 80 to 101); median absolute error, which is closer still to how clocks are reported but which no source fixes and which is not one of our fallbacks. Little moves either way: over nine model variants the MAE and RMSE rankings agree at Kendall tau 0.889. The metric reads only the target and the prediction, so no scoring column is needed. For provenance only: the benchmark this candidate comes from states RMSE is its primary regression metric, which is another collection's choice and no evidence for ours. |
+
+<details>
+<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+
+- categorical (1): `sex`
+- string (0): none
+- datetime (0): none
+
+</details>
+
+<details>
+<summary>BibTeX</summary>
+
+```bibtex
+@article{hannum2013genome,
+  title={Genome-wide Methylation Profiles Reveal Quantitative Views of Human Aging Rates},
+  author={Hannum, Gregory and Guinney, Justin and Zhao, Ling and Zhang, Li and Hughes, Guy and
+          Sadda, SriniVas and Klotzle, Brandy and Bibikova, Marina and Fan, Jian-Bing and Gao, Yuan
+          and Deconde, Rob and Chen, Menzies and Rajapakse, Indika and Friend, Stephen and
+          Ideker, Trey and Zhang, Kang},
+  journal={Molecular Cell},
+  volume={49},
+  number={2},
+  pages={359--367},
+  year={2013},
+  doi={10.1016/j.molcel.2012.10.016}
+}
+```
+
+</details>
+
+## Sample rows
+
+The first 5 of 656 rows of the final frame (random rows: the frame is shuffled); 12 of 473,037 columns, the target first. Cells are cut at 40 characters.
+
+| age | plate | sex | cg00000029 | cg00000108 | cg00000109 | cg00000165 | cg00000236 | cg00000289 | cg00000292 | cg00000321 | cg00000363 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 70 | 8 | female | 0.369958 | 0.938543 | 0.868584 | 0.334042 | 0.709669 | 0.514856 | 0.8465 | 0.48563 | 0.490183 |
+| 48 | 8 | female | 0.516555 | 0.939458 | 0.87875 | 0.178786 | 0.756562 | 0.548657 | 0.834817 | 0.293987 | 0.393415 |
+| 89 | 1 | male | 0.397545 | 0.937792 | 0.872874 | 0.212789 | 0.68392 | 0.671639 | 0.800368 | 0.291537 | 0.435963 |
+| 43 | 9 | female | 0.595335 | 0.933382 | 0.866868 | 0.13116 | 0.715204 | 0.511323 | 0.814869 | 0.276188 | 0.358451 |
+| 89 | 8 | female | 0.57363 | 0.923459 | 0.856725 | 0.17953 | 0.822717 | 0.571336 | 0.835534 | 0.362372 | 0.375527 |
+
+## Curation notes
+
+We start with the GEO series matrix of GSE40279 (656 whole-blood samples, one per person, 473,034 average betas each, and the characteristics age, source, plate, gender, ethnicity and tissue), and BeadStudio's signal file with its sample key, which tell us which deposited values the authors imputed.
+
+- Prediction point: a person's blood has been drawn and run on the 450K array in a batch of its own; the model estimates the age from its methylation and the person's sex. The actor is a laboratory choosing which clock to ship, which it decides by the held-out error in years on arrays from a batch it did not fit on; the clock then serves the uses the paper names, "from health assessment and prevention of disease to forensic analysis" (Conclusions). The forensic estimate of an unknown donor's age is the decision the clock serves; reading the residual against the real age as an aging rate is a purpose and not an actor, since that reader already holds the chronological age. The plates differ in age by the cohort design (means 38.5 to 76.2 years) and each holds one recorded ethnicity, so a test fold is a shift in cohort as well as in batch.
+- Target: the characteristic `age (y)` as `age`, whole years, 19 to 101 (mean 64.0); every sample's `!Sample_title` repeats it ("age 67y 1001"), and the two agree on all 656 rows.
+- Features: the 473,034 probes as deposited (470,043 `cg`, 2,991 non-CpG `ch`, no `rs` control), betas from 0 to 0.99958; none is constant and no two are copies, and no two samples are copies (the highest correlation between two samples is 0.9946, against a median 0.9888 over all pairs). It is the paper's QC subset of the array: counted in the GPL13534 v1.1 manifest, the 485,577 assay probes less the 11,648 on X and Y and the 65 `rs` controls leave 473,864, and the "830 markers ... removed as they had greater than 5% missing values" (Experimental Procedures) make up the rest exactly (827 `cg` and 3 `ch`). Width is no reason to drop a probe (CLEAN-22).
+- Features: `sex` (the characteristic `gender`, F and M decoded to female and male), a covariate of the paper's own model ("The covariates gender, BMI, diabetes status, ethnicity, and batch were included in the model", Experimental Procedures); BMI and diabetes status are not deposited. It is an attribute of the person and not a mark of the batch: both sexes sit on every plate (female share 0.312 to 0.728, overall 0.515), and alone it scores exactly the constant (RMSE 15.566 over the plate folds).
+- Dropped: `ethnicity` (Caucasian - European 426, Hispanic - Mexican 230), because each of the nine plates holds exactly one ethnicity (plates 5, 6 and 9 Hispanic, the six others Caucasian), so the column is a two-level coarsening of the group key and hands a model back part of what the split withholds (LEAK-33). What it carries is the study's recruitment design, not biology (every error in years in this bullet is an RMSE over the plate folds, the comparison as it was measured): alone it scores 13.645 against the constant's 15.566, and predicting each test row by its ethnicity's training-side mean age cuts RMSE 16.07 to 14.18 and beats the dummy on 52 of the 60 folds, while a real model is hurt by it (the honest model 5.279 to 5.553, a 100-probe clock 6.046 to 6.060). The paper could not separate it from the batch either ("Analysis of ethnicity and diabetes status was not possible due to correlations with batch variables", Results).
+- Dropped: `site` (the characteristic `source`: UCSD 304, Utah 178, USC 139, Boston 35), the recruitment cohort, which differs in age by design (UCSD mean 70.0, Boston 52.0) and names a cohort a new sample is not from; `tissue`, whole blood on every row.
+- Imputed values set back to missing (LEAK-30, PROV-13): the paper set betas with a detection p-value above 0.01 to missing and "imputed [them] with the KNN approach (10 nearest markers)", whose neighbours are found over all samples, the test samples included; the deposit has no missing cell at all. BeadStudio's signal file holds each sample's own beta, max(B, 0) / (A + B + 100) of its two signals (checked on the 42,640 cells of the 65 `rs` probes: the two agree to 3e-7), so the cells where the deposit differs from it, or where it is blank, are the imputed ones: 430,448 of 310,310,304 (0.139%), 405,768 blank and 24,680 changed. They ship as missing, 185 to 8,315 per sample (at most 1.8% of a sample) and at most 34 of the 656 samples per probe. 304 of the 430,448 are measured rather than imputed: BeadStudio left the cell blank where the sample's signal B is at or below 0 (284 of them deposited as exactly 0.0, over 188 samples and 186 probes). They ship as missing with the rest.
+- Note: the 830-marker filter ran over all samples too; without the detection p-values, which are not deposited, it cannot be undone, and it chose markers by their failures, not by age. Kept.
+- Note: 4,616,287 cells of the deposit (1.49%), spread over 67,248 probes, are exactly 0: the formula's floor where a sample's signal B is 0 after background subtraction, not a missing value. Kept as measured.
+- Note: the betas are each sample's own ratio, so nothing was scaled across samples (probe 16's benign reading); the KNN imputation above is the one step that read all samples.
+- Potential leak, kept on purpose: two published epigenetic clocks were fitted on the ages of these very rows. Hannum et al. 2013 (71 CpGs; this series is its own fitting set, 482 of the 656 samples its primary cohort) and Lin et al. 2016 (99 CpGs, fitted on the same series) publish their coefficients, in a public Bioconductor data package among other places, and every site either clock uses is a column of this table. Every one of the 60 test folds holds rows those clocks were fitted on, on average 75% of the fold and at least 40%. What that buys, as mean RMSE in years over the 60 shipped splits: the best honest model (a ridge on a fold-honest top-5000, z-scored) errs 5.279; Hannum alone, recalibrated per split, with no model of our features at all, errs 4.949; the honest model stacked with Hannum and Lin errs 4.645, and with all five published clocks 4.487, a gain of 0.791 years. The control that stacks only the three clocks fitted elsewhere gains 0.115 years (5.163), which is what identifies most of that gain as label information rather than better modelling. No change to this definition removes it: the leak sits in the published weights and not in the site list, and refitting honestly on Hannum's own 71 sites errs 5.299, so dropping those sites does not work either. No check can detect its use: the exploit is a dot product of public numbers, and a stacked clock is invisible in a prediction vector. The second reader is warned as well: anyone using this series to validate a new clock will reach for Hannum's published predictions as the comparison, and on these rows they are not honest. Protocol: an entry on this task must not use a model, or coefficients, fitted on the ages of these 656 samples; that bound is declared rather than enforced, because nothing in the data and nothing in a submitted prediction shows it was crossed. Revisit: if this collection ever scores predictions it did not fit itself, this note is not enough and the dataset is re-examined.
+- Rows: one per person, all 656 deposited samples (the paper had already removed one sample with over 5% missing values and 24 PCA outliers). No two rows are the same person: of the 65 `rs` genotype probes in the signal file, the closest pair of samples shares 62 (X5056 and X5057, a likely first-degree relative pair), while over all pairs the median agreement is 40% of the probes and the 99.99th percentile 64%; both sit on plate 5, so no split separates them.
+- Width: 656 rows x 473,037 columns (473,035 features, the target and the group).
+- Time basis: UnseenGroup: the use case applies the clock to blood measured in a batch the model has not seen, not to a later period: age is a fixed fact at the draw, and the series records no date per sample. It cannot test a drift of the assay over the years.
+
+## Splits
+
+Every error in years quoted below is an RMSE over the splits it names, which is how these comparisons were measured; the task's declared metric is the mean absolute error (metric reason).
+
+Grouped by assay plate (the characteristic `plate`: 9 plates of 17 to 92 samples), the leaf L-PLACE.groups of the split tree. The place the leaf means here is the assay batch: the use case applies the clock to blood measured in a batch the model never saw ([EXP.meets] another laboratory, site or instrument), and the series holds nine such batches ([PLACE.several]). A test fold holds every sample of three plates (146 to 267 rows over the 20 repeats x 3 folds; the 60 splits are 41 distinct test sets and 41 distinct training sides, 18 of the 20 repeats a distinct partition), so no test row keeps its own plate in training (0.0%) and no test sample shares a BeadChip with a training sample (each of the 67 chips sits on one plate).
+
+What the split withholds is plate membership itself, and that is measured. Plate labels permuted inside cells of ethnicity x age quintile, so that each pseudo-plate keeps its real plate's size, its single ethnicity and its age histogram while only about 29% of samples keep their real plate, cost a ridge over all probes 7.17 to 7.20 years (RMSE, three seeds) against 6.92 on folds of random people, while the real plates cost 8.71: of the +1.79 years the plate split adds over random people, +1.5 is plate membership and +0.25 the cohort composition the plates carry. The batch is recoverable from the features (the plate at 0.891 accuracy from 50 principal components against 14.0% by chance, and predicting the inferred plate's mean age alone scores 11.96 against the constant's 14.73), so folds of random people would hand a model a pure batch shortcut. A sample's nearest neighbour by Euclidean distance over the probes is on its own plate for 68.6% of the samples against 12.1% by chance (60.4% by sample correlation). The plate explains 0.446 of the variance of age against 0.011 for shuffled plates (the group statistics below), which is the cohort's age design that the plates carry, not the batch signal itself. The plate is the level the batch acts on: holding out whole BeadChips instead costs almost nothing (7.09 years), because a test chip's plate is still in training, and nothing binds above the plate either, as the 8 Sentrix lots are crossed by a plate in only 4 of the 8 cases and a lot-held-out split is easier than the plate split (a 100-probe clock 5.93 against 6.12 in the same comparison).
+
+The plates are not nested in the recruitment sites and the sites are not nested in the plates (plate 2 holds Utah, Boston and USC samples; the USC samples sit on plates 2, 5 and 6), so the key is a choice between the assay batch and the recruitment cohort, and it follows the application: every actor meets a new assay batch, and only sometimes a new cohort. The plate key also holds out what it claims, where the site key does not: measured on the shipped splitter the plate key leaves 0.0% of test rows with their own plate in training over 41 distinct training sides, the site key 32.3% over 10, and the site key tests measurably less (a 100-probe clock errs 5.55 years under it against 5.81 under the plate key, with a fold-to-fold sd of 2.67 against 1.24). The 12-group plate x site pair key is the weakest of the three rather than the stricter option: it breaks the plate blocks and leaves 25.2% of test rows with their own plate in training. The paper's own validation, the second cohort ("two different cohorts (N1 = 482, N2 = 174)", which the sites UCSD + Utah and USC + Boston match exactly), shares plates 2 and 5 with its training side and is one fold, so it is weaker than either and is not the shipped split (SPLIT-5). This key departs from the datasets that grouped on the population unit their source's own validation held out; what sets this case apart is the measured batch above.
+
+Two transfers the use case meets stay untested. The step to another recruitment cohort: 94.5% of test rows keep their own site in training under the shipped folds, 96.9% over all 84 possible three-plate folds, and 100% for UCSD's 46% of the rows, because UCSD has four plates and a fold holds three, so for nearly half the data it is structurally untestable. The step to another laboratory or array generation cannot be tested at all: one laboratory, one platform. Holding out batch and cohort at once is unavailable at any finer key, because the plate-site incidence graph has exactly two components ({UCSD; plates 1, 8, 9, 11} = 304 rows and {Boston, USC, Utah; plates 2, 3, 5, 6, 10} = 352 rows). That two-group split is the bound on what the shipped split cannot test, and its price is known (a ridge 10.15 years with a fold-to-fold sd of 2.20 and the clock 6.30, against 8.71 and 5.81 here); it is not a split protocol, since two groups give one leave-one-out pair and a 304-row test side.
+
+20 repeat(s) x 3 fold(s) with seed 4267; train 389 to 510 rows, test 146 to 267 rows.
+
+<details>
+<summary>Show all 60 splits</summary>
+
+| repeat | fold | n_train | n_test |
+|---|---|---|---|
+| 0 | 0 | 506 | 150 |
+| 0 | 1 | 413 | 243 |
+| 0 | 2 | 393 | 263 |
+| 1 | 0 | 389 | 267 |
+| 1 | 1 | 501 | 155 |
+| 1 | 2 | 422 | 234 |
+| 2 | 0 | 468 | 188 |
+| 2 | 1 | 439 | 217 |
+| 2 | 2 | 405 | 251 |
+| 3 | 0 | 468 | 188 |
+| 3 | 1 | 455 | 201 |
+| 3 | 2 | 389 | 267 |
+| 4 | 0 | 399 | 257 |
+| 4 | 1 | 412 | 244 |
+| 4 | 2 | 501 | 155 |
+| 5 | 0 | 400 | 256 |
+| 5 | 1 | 447 | 209 |
+| 5 | 2 | 465 | 191 |
+| 6 | 0 | 485 | 171 |
+| 6 | 1 | 428 | 228 |
+| 6 | 2 | 399 | 257 |
+| 7 | 0 | 447 | 209 |
+| 7 | 1 | 400 | 256 |
+| 7 | 2 | 465 | 191 |
+| 8 | 0 | 454 | 202 |
+| 8 | 1 | 390 | 266 |
+| 8 | 2 | 468 | 188 |
+| 9 | 0 | 390 | 266 |
+| 9 | 1 | 416 | 240 |
+| 9 | 2 | 506 | 150 |
+| 10 | 0 | 432 | 224 |
+| 10 | 1 | 485 | 171 |
+| 10 | 2 | 395 | 261 |
+| 11 | 0 | 390 | 266 |
+| 11 | 1 | 506 | 150 |
+| 11 | 2 | 416 | 240 |
+| 12 | 0 | 473 | 183 |
+| 12 | 1 | 413 | 243 |
+| 12 | 2 | 426 | 230 |
+| 13 | 0 | 454 | 202 |
+| 13 | 1 | 468 | 188 |
+| 13 | 2 | 390 | 266 |
+| 14 | 0 | 455 | 201 |
+| 14 | 1 | 468 | 188 |
+| 14 | 2 | 389 | 267 |
+| 15 | 0 | 416 | 240 |
+| 15 | 1 | 507 | 149 |
+| 15 | 2 | 389 | 267 |
+| 16 | 0 | 485 | 171 |
+| 16 | 1 | 401 | 255 |
+| 16 | 2 | 426 | 230 |
+| 17 | 0 | 412 | 244 |
+| 17 | 1 | 390 | 266 |
+| 17 | 2 | 510 | 146 |
+| 18 | 0 | 393 | 263 |
+| 18 | 1 | 433 | 223 |
+| 18 | 2 | 486 | 170 |
+| 19 | 0 | 412 | 244 |
+| 19 | 1 | 426 | 230 |
+| 19 | 2 | 474 | 182 |
+
+</details>
+
+## Group structure
+
+One group is a plate of the 450K assay (the GEO characteristic `plate`: 9 plates of 17 to 92 samples, each of the 67 BeadChips on exactly one plate). The paper treats the batch as a factor of the data ("The covariates gender, BMI, diabetes status, ethnicity, and batch were included in the model", Experimental Procedures) and validates the model on a second cohort ("two different cohorts (N1 = 482, N2 = 174)", Results). The use case is a clock applied to other people's blood, "from health assessment and prevention of disease to forensic analysis" (Conclusions); their samples are measured in batches of their own, so whole plates are held out. Each person is one row and one prediction.
+
+| field | value |
+|---|---|
+| group column | `plate` |
+| labels | per_sample |
+| order inside a group | none |
+| prediction unit | row |
+| known about a group when predicting | none |
+
+| statistic | value |
+|---|---|
+| groups | 9 |
+| rows per group (min / median / max) | 17 / 84.0 / 92 |
+| largest group | 14.0% of the rows |
+| test groups per fold | 3 |
+| groups of two or more rows with a single label | 0.0% |
+| nearest neighbour in the same group | 68.6% of the rows (chance: 12.1%) |
+| label variance explained by the group | 0.45 (shuffled groups: 0.01) |
+
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+
+## Decisions
+
+### 1. The values the authors imputed are set back to missing
+
+The paper imputed failed betas by KNN over the markers, with the neighbours found over all samples, the test samples included (LEAK-30). BeadStudio's per-sample betas in the signal file say which deposited cells were imputed: the ones it left blank and the ones the deposit changed.
+
+| cells | count |
+|---|---|
+| deposited cells (656 samples x 473,034 probes) | 310310304 |
+| blank in BeadStudio's export, filled in the deposit | 405768 |
+| BeadStudio's value changed in the deposit | 24680 |
+| set back to missing (both) | 430448 |
+| per sample, fewest | 185 |
+| per sample, median | 505 |
+| per sample, most | 8315 |
+
+### 2. Grouped by assay plate
+
+A laboratory's new samples come in a batch of their own; the plates carry a strong batch signal and differ in age and ethnicity, so random people would put a test sample's batch in training.
+
+| plate | samples | mean_age | min_age | max_age | hispanic | sites |
+|---|---|---|---|---|---|---|
+| 1 | 90 | 73.9 | 47 | 101 | 0 | UCSD |
+| 2 | 84 | 59.5 | 28 | 86 | 0 | Boston, USC, Utah |
+| 3 | 69 | 74 | 56 | 92 | 0 | Utah |
+| 5 | 90 | 53.7 | 33 | 73 | 90 | USC, Utah |
+| 6 | 92 | 55.7 | 26 | 76 | 92 | USC |
+| 8 | 81 | 68.6 | 41 | 92 | 0 | UCSD |
+| 9 | 48 | 54 | 23 | 84 | 48 | UCSD |
+| 10 | 17 | 38.5 | 19 | 62 | 0 | Boston |
+| 11 | 85 | 76.2 | 50 | 93 | 0 | UCSD |
+
+## Bundle checks
+
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
+
+
+Accepted on purpose:
+
+- `dataset_duplicates_skipped`: 310,312,272 cells against the checks' budget of 50,000,000, so the duplicate-column and duplicate-row checks do not run. That follows from the width, which is the dataset: 656 people against 473,035 probes. What the checks would have looked for is answered elsewhere and does not need them. Duplicate rows: every row is one person's array and the series lists 656 distinct samples, with no replicate among them. Duplicate columns: a probe is a fixed position on the 450K chip and appears once, and the frame is built by reading the manifest's probes in order, so two identical columns would be two readings of one position, which the platform does not produce. Raising the budget to cover this frame would make every check of this width cost a pairwise pass over 310 million cells for a question the platform already answers.
+- `task_group_count_low`: Nine plates are every assay batch the series has, and the batch is the level a clock must generalize over: a test sample is always measured in a batch of its own. The signal survives the key, so the few groups do not hollow the task out: four model families beat the dummy on all 60 splits, and shuffled ages on none of them over three seeds.
+- `groups_test_groups_few`: A group is one assay plate of 17 to 92 samples, a batch over which we want to generalize, and from the context a few such batches suffice, as when generalizing over a few hospitals (heart_disease stayed grouped with 3). Each fold holds three plates and 146 to 267 rows. The 60 splits are 41 distinct training sides, so the spread over repeats is descriptive rather than 60 independent experiments; a 100-probe clock's per-split RMSE runs 4.62 to 6.66 with a fold-to-fold sd of 1.24, and pooled over the folds the same model scores the declared MAE of 4.57 against an RMSE of 6.14, which is the spread a score on this dataset has to be read against.
+
+## Data checks
+
+### Feature summary
+
+<details>
+<summary>Show the table (473,037 rows)</summary>
+
+| index | dtype | n_missing | pct_missing | n_unique | examples |
+|---|---|---|---|---|---|
+| sex | category | 0 | 0 | 2 | female, male |
+| cg00374056 | float64 | 34 | 5.18 | 621 | 0.7826, 0.8535, 0.9047, 0.8422, 0.8566, 0.7606, 0.8173, 0.8483, 0.8367, 0.862 |
+| cg00973864 | float64 | 34 | 5.18 | 622 | 0.5387, 0.5504, 0.6452, 0.6298, 0.7772, 0.6095, 0.644, 0.6442, 0.5976, 0.6222 |
+| cg02746108 | float64 | 34 | 5.18 | 614 | 0.0, 0.7337, 0.7619, 0.774, 0.0809, 0.7046, 0.6657, 0.68, 0.1233, 0.6031 |
+| cg03959986 | float64 | 34 | 5.18 | 575 | 0.0, 0.021, 0.0202, 0.0135, 0.3967, 0.1378, 0.012, 0.0063, 0.1671, 0.0214 |
+| cg06647026 | float64 | 34 | 5.18 | 618 | 0.9958, 0.9964, 0.9971, 0.9968, 0.9964, 0.997, 0.9978, 0.9967, 0.9964, 0.9958 |
+| cg13043177 | float64 | 34 | 5.18 | 586 | 0.0, 0.0126, 0.0053, 0.0048, 0.0055, 0.0026, 0.011, 0.0183, 0.009, 0.0038 |
+| cg13165109 | float64 | 34 | 5.18 | 616 | 0.0, 0.0182, 0.0301, 0.0183, 0.0326, 0.0171, 0.0314, 0.0145, 0.0277, 0.01 |
+| cg14063566 | float64 | 34 | 5.18 | 620 | 0.8303, 0.8511, 0.8668, 0.8602, 0.8815, 0.8523, 0.8528, 0.915, 0.8671, 0.8286 |
+| cg16515500 | float64 | 34 | 5.18 | 621 | 0.9966, 0.9687, 0.9904, 0.9961, 0.9883, 0.9923, 0.9906, 0.9866, 0.9956, 0.9922 |
+| cg20517099 | float64 | 34 | 5.18 | 622 | 0.8787, 0.8827, 0.8671, 0.8577, 0.8469, 0.8814, 0.8032, 0.8799, 0.8765, 0.8455 |
+| cg25749565 | float64 | 34 | 5.18 | 622 | 0.8645, 0.8512, 0.8529, 0.9108, 0.9447, 0.8594, 0.7103, 0.8579, 0.9521, 0.9053 |
+| cg26657539 | float64 | 34 | 5.18 | 622 | 0.9234, 0.9371, 0.9617, 0.855, 0.9549, 0.9534, 0.9828, 0.9632, 0.8788, 0.9673 |
+| cg04169483 | float64 | 33 | 5.03 | 623 | 0.4169, 0.4022, 0.3809, 0.4273, 0.4174, 0.3787, 0.3659, 0.3627, 0.4885, 0.4382 |
+| cg06924902 | float64 | 33 | 5.03 | 623 | 0.6488, 0.6466, 0.5499, 0.7413, 0.798, 0.5739, 0.6643, 0.5896, 0.6883, 0.6407 |
+| cg07649619 | float64 | 33 | 5.03 | 623 | 0.059, 0.0545, 0.0587, 0.0722, 0.0589, 0.0496, 0.0728, 0.0528, 0.0626, 0.0696 |
+| cg07951602 | float64 | 33 | 5.03 | 609 | 0.0, 0.8576, 0.8216, 0.7964, 0.156, 0.8407, 0.8725, 0.1172, 0.8219, 0.8492 |
+| cg09268718 | float64 | 33 | 5.03 | 623 | 0.9848, 0.9819, 0.9488, 0.9662, 0.9912, 0.9358, 0.9635, 0.8963, 0.9813, 0.9558 |
+| cg12006118 | float64 | 33 | 5.03 | 623 | 0.597, 0.6139, 0.7659, 0.7921, 0.7727, 0.6588, 0.7527, 0.6809, 0.6274, 0.6239 |
+| cg13116946 | float64 | 33 | 5.03 | 621 | 0.8539, 0.0, 0.8454, 0.8461, 0.8371, 0.8308, 0.8658, 0.8597, 0.8714, 0.8229 |
+| cg16970323 | float64 | 33 | 5.03 | 622 | 0.2139, 0.2364, 0.2698, 0.2387, 0.2352, 0.2339, 0.3251, 0.3155, 0.2366, 0.2574 |
+| cg17789193 | float64 | 33 | 5.03 | 621 | 0.0, 0.2663, 0.2914, 0.5189, 0.3693, 0.4075, 0.3708, 0.2728, 0.2541, 0.3509 |
+| cg22696546 | float64 | 33 | 5.03 | 621 | 0.0, 0.9402, 0.9453, 0.9107, 0.9323, 0.8957, 0.9172, 0.9535, 0.9553, 0.9239 |
+| cg01286959 | float64 | 32 | 4.88 | 376 | 0.0, 0.0012, 0.0058, 0.0132, 0.0024, 0.0097, 0.0044, 0.0088, 0.0047, 0.0124 |
+| cg01585717 | float64 | 32 | 4.88 | 624 | 0.8566, 0.8377, 0.7882, 0.8595, 0.8224, 0.8244, 0.8553, 0.8535, 0.8803, 0.8779 |
+| cg02122981 | float64 | 32 | 4.88 | 623 | 0.924, 0.9327, 0.8515, 0.8865, 0.89, 0.9686, 0.9081, 0.8824, 0.9249, 0.9068 |
+| cg02793828 | float64 | 32 | 4.88 | 624 | 0.8076, 0.858, 0.8649, 0.8694, 0.8865, 0.8519, 0.7962, 0.8772, 0.8376, 0.8295 |
+| cg03079712 | float64 | 32 | 4.88 | 624 | 0.0756, 0.0969, 0.0603, 0.0775, 0.0719, 0.0773, 0.0947, 0.062, 0.0712, 0.0953 |
+| cg03930097 | float64 | 32 | 4.88 | 624 | 0.4049, 0.3939, 0.4334, 0.458, 0.513, 0.3316, 0.4255, 0.4218, 0.4534, 0.4662 |
+| cg04974804 | float64 | 32 | 4.88 | 624 | 0.9331, 0.9202, 0.8874, 0.8625, 0.8652, 0.8431, 0.9566, 0.8973, 0.8636, 0.9512 |
+| cg05608612 | float64 | 32 | 4.88 | 624 | 0.9076, 0.9173, 0.908, 0.8844, 0.9556, 0.9124, 0.9285, 0.934, 0.9357, 0.9025 |
+| cg05751189 | float64 | 32 | 4.88 | 620 | 0.0, 0.1397, 0.1249, 0.1914, 0.179, 0.1007, 0.204, 0.1809, 0.1628, 0.2059 |
+| cg06398883 | float64 | 32 | 4.88 | 624 | 0.9716, 0.9566, 0.9734, 0.9629, 0.968, 0.9245, 0.9583, 0.9681, 0.968, 0.9477 |
+| cg07119389 | float64 | 32 | 4.88 | 356 | 0.0, 0.0018, 0.0046, 0.0294, 0.0424, 0.0451, 0.0214, 0.0061, 0.0256, 0.044 |
+| cg08533162 | float64 | 32 | 4.88 | 623 | 0.3312, 0.3056, 0.3039, 0.2308, 0.2787, 0.2682, 0.2966, 0.2604, 0.2641, 0.1833 |
+| cg08662043 | float64 | 32 | 4.88 | 623 | 0.9774, 0.9426, 0.9262, 0.9474, 0.955, 0.9309, 0.9114, 0.982, 0.9543, 0.9344 |
+| cg10144558 | float64 | 32 | 4.88 | 624 | 0.8967, 0.8989, 0.8666, 0.8832, 0.8721, 0.8642, 0.8935, 0.8993, 0.8894, 0.8277 |
+| cg10265690 | float64 | 32 | 4.88 | 623 | 0.2692, 0.2827, 0.3372, 0.202, 0.2199, 0.2091, 0.2104, 0.2264, 0.3014, 0.3288 |
+| cg10329418 | float64 | 32 | 4.88 | 624 | 0.1696, 0.2405, 0.2629, 0.2725, 0.2001, 0.2837, 0.3079, 0.1955, 0.2784, 0.2613 |
+| cg11057824 | float64 | 32 | 4.88 | 624 | 0.7256, 0.8214, 0.7706, 0.5987, 0.9327, 0.8705, 0.8182, 0.9686, 0.8685, 0.9236 |
+| cg12261117 | float64 | 32 | 4.88 | 454 | 0.0, 0.0333, 0.0032, 0.0283, 0.025, 0.0475, 0.0424, 0.0293, 0.0015, 0.025 |
+| cg13408597 | float64 | 32 | 4.88 | 624 | 0.9324, 0.8979, 0.92, 0.8964, 0.9309, 0.9182, 0.9278, 0.9201, 0.9305, 0.9219 |
+| cg13685779 | float64 | 32 | 4.88 | 624 | 0.882, 0.9624, 0.9595, 0.9253, 0.9316, 0.9578, 0.9178, 0.9213, 0.9611, 0.8328 |
+| cg14248717 | float64 | 32 | 4.88 | 624 | 0.8583, 0.7237, 0.8434, 0.7439, 0.8851, 0.7628, 0.8087, 0.7969, 0.8798, 0.8499 |
+| cg14397171 | float64 | 32 | 4.88 | 624 | 0.8903, 0.9085, 0.9009, 0.7725, 0.8442, 0.8465, 0.8752, 0.8576, 0.7772, 0.8755 |
+| cg14740251 | float64 | 32 | 4.88 | 624 | 0.4397, 0.506, 0.479, 0.5565, 0.6073, 0.5171, 0.4788, 0.4292, 0.6102, 0.5162 |
+| cg15415945 | float64 | 32 | 4.88 | 624 | 0.5105, 0.6319, 0.5878, 0.6292, 0.5376, 0.6036, 0.5464, 0.534, 0.5116, 0.6358 |
+| cg17617720 | float64 | 32 | 4.88 | 624 | 0.895, 0.9388, 0.8876, 0.6403, 0.9559, 0.7889, 0.6211, 0.8237, 0.7806, 0.8565 |
+| cg18085990 | float64 | 32 | 4.88 | 623 | 0.9933, 0.9787, 0.9934, 0.977, 0.9939, 0.9935, 0.9616, 0.987, 0.9869, 0.9898 |
+| cg18111114 | float64 | 32 | 4.88 | 545 | 0.0, 0.0572, 0.182, 0.01, 0.0486, 0.0243, 0.0252, 0.0492, 0.1713, 0.3531 |
+| cg19746536 | float64 | 32 | 4.88 | 405 | 0.0, 0.0018, 0.0072, 0.0002, 0.0139, 0.0089, 0.0098, 0.0033, 0.0207, 0.0055 |
+| cg19850149 | float64 | 32 | 4.88 | 624 | 0.991, 0.9893, 0.9678, 0.9855, 0.9845, 0.98, 0.297, 0.9783, 0.9888, 0.9735 |
+| cg20697683 | float64 | 32 | 4.88 | 624 | 0.7775, 0.7565, 0.7809, 0.6615, 0.8264, 0.739, 0.7253, 0.6462, 0.7827, 0.6707 |
+| cg22393360 | float64 | 32 | 4.88 | 623 | 0.062, 0.0654, 0.0789, 0.0444, 0.0852, 0.0479, 0.061, 0.1126, 0.0351, 0.0356 |
+| cg25711289 | float64 | 32 | 4.88 | 624 | 0.928, 0.9384, 0.8978, 0.8472, 0.9169, 0.917, 0.8993, 0.9179, 0.9191, 0.9754 |
+| cg26531700 | float64 | 32 | 4.88 | 624 | 0.1518, 0.1548, 0.2267, 0.2335, 0.2027, 0.2375, 0.2087, 0.2021, 0.2331, 0.2335 |
+| cg00022024 | float64 | 31 | 4.73 | 625 | 0.5793, 0.6269, 0.6675, 0.5903, 0.5954, 0.6208, 0.5786, 0.6952, 0.5343, 0.7315 |
+| cg00234616 | float64 | 31 | 4.73 | 625 | 0.2386, 0.2398, 0.1756, 0.3011, 0.3221, 0.2463, 0.2176, 0.2428, 0.3175, 0.2625 |
+| cg00443488 | float64 | 31 | 4.73 | 618 | 0.0, 0.0363, 0.0214, 0.0281, 0.0415, 0.0231, 0.0604, 0.0181, 0.063, 0.0707 |
+| cg00886571 | float64 | 31 | 4.73 | 625 | 0.1098, 0.1584, 0.1756, 0.1735, 0.2703, 0.2331, 0.1969, 0.1802, 0.3214, 0.1651 |
+
+(472,977 more rows not shown)
+
+</details>
+
+### Target distribution
+
+| index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 0 | 0 | -0.317 | -1.143 | 217.17 | 0.067 | log | 6862.9 | 1.44761e+15 | exponential |
+
+### Numeric features
+
+<details>
+<summary>Show the table (473,036 rows)</summary>
+
+| index | count | mean | std | min | max |
+|---|---|---|---|---|---|
+| age | 656 | 64.0351 | 14.7367 | 19 | 101 |
+| plate | 656 | 5.56707 | 3.34642 | 1 | 11 |
+| cg00000029 | 655 | 0.476097 | 0.0685013 | 0.147178 | 0.885464 |
+| cg00000108 | 655 | 0.944297 | 0.0209888 | 0.606525 | 0.992751 |
+| cg00000109 | 653 | 0.892937 | 0.033848 | 0.596455 | 0.982352 |
+| cg00000165 | 656 | 0.182689 | 0.0462334 | 0.0859942 | 0.518602 |
+| cg00000236 | 656 | 0.746412 | 0.0411699 | 0.580281 | 0.914504 |
+| cg00000289 | 656 | 0.609753 | 0.0657796 | 0.401051 | 0.769438 |
+| cg00000292 | 656 | 0.826354 | 0.0240525 | 0.705005 | 0.986738 |
+| cg00000321 | 642 | 0.312844 | 0.0682242 | 0.141298 | 0.748419 |
+| cg00000363 | 656 | 0.371539 | 0.0524546 | 0.223408 | 0.739773 |
+| cg00000622 | 655 | 0.0078341 | 0.00510938 | 0 | 0.0260027 |
+| cg00000658 | 656 | 0.817863 | 0.0233146 | 0.732555 | 0.887383 |
+| cg00000714 | 646 | 0.189147 | 0.0253125 | 0.127515 | 0.270038 |
+| cg00000721 | 656 | 0.929174 | 0.0197101 | 0.868319 | 0.984533 |
+| cg00000734 | 656 | 0.0858851 | 0.0123613 | 0.0384424 | 0.149087 |
+| cg00000769 | 656 | 0.0489899 | 0.012388 | 0.0164326 | 0.0913895 |
+| cg00000807 | 656 | 0.786147 | 0.0308268 | 0.676232 | 0.888918 |
+| cg00000884 | 656 | 0.895345 | 0.0290357 | 0.786873 | 0.986196 |
+| cg00000905 | 656 | 0.07372 | 0.0143391 | 0.0257242 | 0.123306 |
+| cg00000924 | 656 | 0.519311 | 0.0524271 | 0.27099 | 0.686358 |
+| cg00000948 | 656 | 0.861116 | 0.0201577 | 0.757545 | 0.947474 |
+| cg00000957 | 656 | 0.896923 | 0.0158946 | 0.817674 | 0.953095 |
+| cg00001099 | 654 | 0.729421 | 0.06668 | 0.478766 | 0.879378 |
+| cg00001245 | 655 | 0.00503337 | 0.00494863 | 0 | 0.0324046 |
+| cg00001249 | 656 | 0.831794 | 0.0409827 | 0.620913 | 0.972234 |
+| cg00001261 | 656 | 0.471336 | 0.0648581 | 0.267724 | 0.774656 |
+| cg00001269 | 656 | 0.845298 | 0.0231796 | 0.729379 | 0.915105 |
+| cg00001349 | 645 | 0.797131 | 0.0587452 | 0.207919 | 0.940616 |
+| cg00001364 | 656 | 0.875089 | 0.0303502 | 0.764735 | 0.986229 |
+| cg00001446 | 656 | 0.868042 | 0.021075 | 0.741588 | 0.944109 |
+| cg00001510 | 656 | 0.50006 | 0.0316817 | 0.385723 | 0.587475 |
+| cg00001534 | 656 | 0.943005 | 0.0177078 | 0.879462 | 0.990352 |
+| cg00001582 | 656 | 0.0727492 | 0.0108328 | 0.00109574 | 0.118453 |
+| cg00001583 | 656 | 0.0812129 | 0.0288484 | 0.0241461 | 0.263973 |
+| cg00001593 | 656 | 0.907394 | 0.0374192 | 0.49157 | 0.990166 |
+| cg00001594 | 655 | 0.00641406 | 0.0076725 | 0 | 0.0520438 |
+| cg00001687 | 653 | 0.991197 | 0.00511802 | 0.964683 | 0.998606 |
+| cg00001747 | 656 | 0.0903539 | 0.0467198 | 0.0134504 | 0.377406 |
+| cg00001791 | 656 | 0.888142 | 0.0229648 | 0.773193 | 0.986278 |
+| cg00001793 | 654 | 0.710814 | 0.0818151 | 0.347172 | 0.94051 |
+| cg00001809 | 656 | 0.741286 | 0.0387709 | 0.616716 | 0.842247 |
+| cg00001854 | 655 | 0.893814 | 0.0284301 | 0.777277 | 0.988545 |
+| cg00001874 | 655 | 0.554065 | 0.062223 | 0.328764 | 0.874728 |
+| cg00001930 | 653 | 0.880426 | 0.0298219 | 0.77362 | 0.971317 |
+| cg00002028 | 655 | 0.0297578 | 0.0181178 | 0 | 0.125208 |
+| cg00002033 | 653 | 0.808077 | 0.102063 | 0.507602 | 0.980988 |
+| cg00002080 | 656 | 0.758395 | 0.048046 | 0.502182 | 0.88764 |
+| cg00002116 | 653 | 0.00668929 | 0.00524968 | 0 | 0.0600184 |
+| cg00002145 | 655 | 0.807133 | 0.0233003 | 0.702825 | 0.933855 |
+| cg00002190 | 656 | 0.731773 | 0.0536692 | 0.502081 | 0.90319 |
+| cg00002224 | 656 | 0.489246 | 0.0852969 | 0.156183 | 0.712208 |
+| cg00002236 | 656 | 0.0511358 | 0.0104996 | 0.0186982 | 0.0809162 |
+| cg00002406 | 656 | 0.0346055 | 0.00694088 | 0.0131655 | 0.0677967 |
+| cg00002426 | 656 | 0.872621 | 0.0228445 | 0.745745 | 0.970346 |
+| cg00002449 | 656 | 0.842268 | 0.0211585 | 0.755154 | 0.914978 |
+| cg00002464 | 656 | 0.0865267 | 0.0210638 | 0.0527937 | 0.242235 |
+| cg00002473 | 656 | 0.922431 | 0.0395026 | 0.710186 | 0.976516 |
+| cg00002490 | 656 | 0.0528134 | 0.00938867 | 0.0234507 | 0.0967441 |
+| cg00002531 | 656 | 0.894062 | 0.0157135 | 0.850866 | 0.974875 |
+
+(472,976 more rows not shown)
+
+</details>
+
+### Categorical features
+
+| column | rank | value | count | pct |
+|---|---|---|---|---|
+| sex | 1 | female | 338 | 51.52 |
+| sex | 2 | male | 318 | 48.48 |
+
+## Build
+
+Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.

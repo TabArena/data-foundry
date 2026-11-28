@@ -184,11 +184,15 @@ Values filled from the label, such as an outcome group's mean, are LEAK-10 and g
 Cases: gallstone_disease (kept), heart_failure_followup_survival (outcome-group means, set back to missing).
 
 Marker, for a dataset where LEAK-13 to LEAK-15, LEAK-39 or LEAK-40 applies, whether the artefact was fixed, is kept with
-a note or is still open, and whether the dataset is kept or retired: `Class-dependent Recording`. It says the classes
-were measured, formatted or filled differently, so the recording can give the label away. `Selection Bias` is about
-which rows were sampled, with the measurements alike. The definition's notes say, once per dataset, what was recorded
-differently by class, how much it gives away (the recording alone, before and after a fix) and what was done, or why
-nothing was ([definitions.md](../../knowledge-data-foundry/references/definitions.md), "Classes recorded differently").
+a note or is still open, and whether the dataset is kept or retired: `Class-dependent Recording`. It says a class, or a
+grouping that carries the target, was measured, formatted or filled differently, so the recording can give the target
+away: a class is one such grouping, and a group that holds much of a continuous target is the other shape. Two
+questions decide it: does the recording vary within the group, and is the group scored across or within. A recording
+that varies within the group is no mark of the group, and a score taken within the group reads nothing from a mark that
+only separates groups. `Selection Bias` is about which rows were sampled, with the measurements alike. The definition's
+notes say, once per dataset, what was recorded differently by class or group, how much it gives away (the recording
+alone, before and after a fix, pooled and within the group) and what was done, or why nothing was
+([definitions.md](../../knowledge-data-foundry/references/definitions.md), "Classes recorded differently").
 
 Generated or manipulated data is retired (`AHDS`, `Data Quality Issue`; SEL-16, PROV-3); how to tell (probe 15):
 PROV-3 in [provenance.md](provenance.md), "Is the data generated?".
@@ -350,7 +354,11 @@ data, covered by its tag and the `Anonymized` marker: no action. Cases: ieee_fra
 
 These rules protect against removing real signal.
 
-**LEAK-33 (Must).** A group id column is split metadata, never a feature.
+**LEAK-33 (Must).** A group id column is split metadata, never a feature. Cases: gse40279_methylation_age, where a
+column that is a deterministic function of the group key is treated as the key and left out as well. The test is
+whether the feature varies within a group: each of the nine assay plates holds exactly one `ethnicity`, which is
+therefore an exact coarsening of the key and is dropped, while both sexes occur on every plate (female share 0.312 to
+0.728), so `sex` passes the test the dropped column fails.
 
 **LEAK-34 (Must; narrows LEAK-10).** An entity's own history under a temporal split is legitimate, also when it
 carries labels forward (a known entity: USE-10). Cases: ghana's reporter history; ieee_fraud_detection's `uid` (test
@@ -619,6 +627,7 @@ The cases of the rules outside this table are named in the rules.
 | LEAK-13 (applied, Lennart, 2026-11-05) | A time column coarsened in the split step, after the framework has sorted the rows by its finer values, so the order inside each period still carries them | coarsen it in `_clean`, before the sort; a check that needs the finer value reads a flag computed from it there | chicago_traffic_crashes: the hour floor moved from `_make_splits` to `_clean`; a row's rank in its hour had lowered log loss by 0.00098 (positive on all 9 splits), and the injury share by tenth of the hour went from 9.9-18.6% to a flat 15.1-15.5%; `dataset check` no longer warns `definition_time_changed_in_split` (813,133 rows) |
 | LEAK-39 | Part of one class recorded through a second route, found by a format fingerprint | drop the route's rows | gallstone_disease: 77 rows (72 with gallstones, 5 without); before the drop TabPFN 3.5 separates them from those without gallstones at 0.993, the other cases at 0.842, and scores the route's 5 without gallstones 0.77 (0.22 for the others) |
 | LEAK-40 | Gaps filled by interpolation down a class-sorted file | keep the fills when a label-free re-imputation inside each fold scores the same or higher | gallstone_disease: 134 fills kept (re-imputed, TabPFN 3.5 0.864; with the fills 0.838) |
+| LEAK-40 | Blanks that follow a grouping which carries a continuous target, rather than a class | answer the marker's two questions with measurements: what the missingness mask alone scores pooled and within the group, and what filling the blanks moves on the declared metric | genomic_prediction_soy_yield: the unscored marker calls are blank by biparental family, and the mask alone reaches R^2 +0.163 pooled against the genotype values' +0.002 and predicts a held-out family's mean at r = 0.665, while within a family it scores -0.028 against the calls' +0.213 and filling the blanks moves the declared metric by +0.0009, so the per-group score leaves it harmless |
 | LEAK-13 | A unit that changed over time while the classes changed over the same time | change the target so that the classes no longer follow the period, then harmonise the unit (CLEAN-21) | horse_colic_survival: `total_protein` in g/L for 95 horses (1 died, 27 euthanized) and in g/dL for 209 (64 died, 16 euthanized), the switch following the hospital number; the unit alone told died from euthanized at ROC AUC 0.79. Died and euthanized merged into did not survive, which the unit does not follow (Fisher p = 0.16); `total_protein` then put in g/dL and the 1/2 codes set to missing, the split random by case |
 | LEAK-39, LEAK-15 | Part of one class averaged from replicate arrays, and control probes that separate the classes, neither carrying the score | rebuild from the origin's per-array files when it has them; else keep both, with a note | lung_cancer: 47 of 139 adenocarcinomas are means of 2 to 4 arrays (none of the 58 other rows), told from single arrays at ROC AUC 0.59-0.62; the spike-in control probes alone separate the classes at 0.85; logistic regression log loss 0.141 as shipped, 0.140 with every value rounded to the shared grid, 0.146 without the averaged rows, 0.139 without the 67 control probes. The study's deposit (GEO GSE83227) has every array: one MAS5 array per specimen gives the same 197 specimens, spike-ins 0.57, scan date 0.58, log loss 0.123; rebuilt from it (2026-11-10, Andrej) |
 | PROV-3 ([provenance.md](provenance.md)) | Generated or manipulated data | retire (`AHDS`, `Data Quality Issue`) | ecommerce_shipping, customer_satisfaction_in_airline, homeq_default_prediction |

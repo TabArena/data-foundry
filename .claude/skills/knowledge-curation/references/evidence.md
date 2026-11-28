@@ -88,7 +88,15 @@ issue for the curator ([writing.md](writing.md)):
   on the shipped splits are ours (TP-1). The source's own competition is no other benchmark: the model families at the
   top of its leaderboard are a modality signal, and its top solutions' preprocessing is adopted (CLEAN-1, CLEAN-20,
   [cleaning_features.md](cleaning_features.md)).
-* Whether a dataset is in some model's pretraining data (Lennart, 2026-10-12).
+* Whether a dataset is in some model's pretraining data (Lennart, 2026-10-12): an overlap nobody can verify, and no
+  issue for the curator. A published model, rule or set of coefficients that another party fitted on this dataset's
+  own rows and labels is a different thing and is evidence, because its gain is measured on our own shipped splits
+  against a control, the same kind of model fitted elsewhere. It never excludes the dataset: the gain is declared in
+  a `Potential leak, kept on purpose:` note that gives both numbers, and the benchmark keeps a task whose honest
+  models still have to be fitted. The dataset is excluded the other way round only: when a model or rule fitted on
+  other data, which never saw this dataset, scores better on it than the models we fit, because then the task is
+  already solved from outside and adds nothing (P6). The control decides, not the size of the gain, and both sides
+  are measured on our own splits.
 * Another collection's version of the data (TabSTAR's columns or labels): no reference for ours; name it only for
   provenance or a duplicate (Lennart, 2026-10-15).
 * A model's input limit, feature cap or runtime, in a curation decision or in a probe (Lennart, 2026-10-15:
@@ -281,6 +289,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | EV-4 | numerai_v5_2, aeolus, corporate_credit_rating_cat, african_credit_scoring_challenge | earlier reviews raised the licence as an issue; it is a one-line note, and the Zindi "private property of the client" and the Credit Risk Analytics terms are release-checklist items (2026-10-21, Lennart) | applied |
 | EV-4 | (general) | scores other benchmarks published (TALENT, leaderboards) are no evidence: their random splits are wrong for most of our tasks (2026-10-15, Lennart) | applied |
 | EV-4 | (general) | whether a dataset is in some model's pretraining data changes no decision (2026-10-12, Lennart) | applied |
+| EV-4, PROV-15 | gse40279_methylation_age | two published epigenetic clocks were fitted on these rows' own ages; the measured gain is declared as a kept leak and the dataset stays, because the external route is worse: mean RMSE in years over the 60 shipped splits is 5.279 for the best honest baseline, 4.645 with the two clocks fitted on these rows (+0.633) and 5.163 with three clocks fitted elsewhere (+0.115 together), while the best external clock alone, recalibrated per split, loses to the baseline (5.976) | applied |
 | EV-4 | TabSTAR's version of a dataset | another collection's columns or labels are no reference for ours (2026-10-15, Lennart) | applied |
 | EV-4 | coad_colon_adenocarcinoma | ships 36,355 features; its report had weighed one model's 50,000-feature cap (2026-10-15, Lennart) | applied |
 | EV-5 | us_accidents | its published "78% accuracy" settled nothing; learnability is judged with ROC AUC or log loss against the class prior (2026-09-23, Lennart) | applied |
