@@ -1,4 +1,4 @@
-"""Tests for the v2 split protocol (``data_foundry.v2.splits``).
+"""Tests for the v2 split protocol (``data_foundry.definition.splits``).
 
 The cross-validation builders are pinned by a checksum of their splits: a change to them would change the splits,
 and so the checksum, of every container built since.
@@ -12,7 +12,17 @@ import json
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry import bundle_checks
+
+from data_foundry import sampling
+from data_foundry.checks import (
+    bundle as bundle_checks,
+    protocol as protocol_rules,
+)
+from data_foundry.checks.protocol import protocol_checks, recommended_dimensions
+from data_foundry.definition import splits as protocol
+from data_foundry.definition.splits import fit_splits_to_budget, grouped_splits, iid_splits, sample_temporal_splits
+from data_foundry.metrics import Metric
+from data_foundry.sampling import sample_train_positions, subsample_train
 from data_foundry.schema import (
     Grouping,
     PredictiveMLSplitsMetadata,
@@ -20,20 +30,7 @@ from data_foundry.schema import (
     RowBudget,
     TrainSampling,
 )
-from data_foundry.v2 import splits as protocol
-from data_foundry.v2.metrics import Metric
-from data_foundry.v2.splits import (
-    fit_splits_to_budget,
-    grouped_splits,
-    iid_splits,
-    protocol_checks,
-    recommended_dimensions,
-    sample_temporal_splits,
-    sample_train_positions,
-    subsample_train,
-)
-
-from tests.test_bundle_checks import make_container, make_iid_frame, make_spec
+from tests.helpers import make_container, make_iid_frame, make_spec
 
 
 class Sized:
@@ -160,9 +157,9 @@ def test_scored_units_that_cut_across_groups_count_rows() -> None:
     df["year"] = df["instance"] % 15  # 15 years, each across many instances and all 10 classes
     assert recommended_dimensions(df, group_on="instance", group_labels="per_sample", scored_unit_on="year") == (3, 3)
     assert recommended_dimensions(df, scored_unit_on="instance") == (3, 3)  # IID: every instance cut across folds
-    assert protocol.scored_units_within_groups(df, "cls", "instance")
-    assert not protocol.scored_units_within_groups(df, "cls", "year")
-    assert not protocol.scored_units_within_groups(df, None, "instance")
+    assert protocol_rules.scored_units_within_groups(df, "cls", "instance")
+    assert not protocol_rules.scored_units_within_groups(df, "cls", "year")
+    assert not protocol_rules.scored_units_within_groups(df, None, "instance")
 
 
 def test_one_label_per_group_counts_the_groups_before_the_scored_units() -> None:
@@ -178,8 +175,8 @@ def test_scored_unit_column_is_the_metrics_group_input() -> None:
     task = PredictiveMLTaskMetadataV2(
         target_column_name="target", problem_type="regression", objective_metric=make_spec("regression", par10)
     )
-    assert protocol.scored_unit_column(task) == "instance"
-    assert protocol.scored_unit_column(V2_TASK) is None  # a metric that scores rows
+    assert protocol_rules.scored_unit_column(task) == "instance"
+    assert protocol_rules.scored_unit_column(V2_TASK) is None  # a metric that scores rows
 
 
 # --- fitting the cross-validation to a row budget ---------------------------------------------------------------
@@ -507,8 +504,9 @@ def test_protocol_checks_hold_the_container_to_its_row_budget(
     assert findings.get("splits_train_sampling_missing", "error") == "error"
 
 
-@pytest.mark.parametrize(("n_windows", "flagged"), [(1, True), (3, False)])
-def test_protocol_checks_want_three_temporal_windows(*, n_windows: int, flagged: bool) -> None:
+@pytest.mark.parametrize(("n_windows", "under_three"), [(1, True), (3, False)])
+def test_protocol_checks_want_three_temporal_windows(*, n_windows: int, under_three: bool) -> None:
+    """Fewer than three windows, and fewer than SPLIT-33's count (60 for 60 rows), are one finding."""
     df = make_iid_frame(60).assign(t=pd.date_range("2024-01-01", periods=60, freq="D"))
     windows = protocol.temporal_window_splits(df, time_on="t", window=5, unit="days", n_windows=n_windows)
     task = PredictiveMLTaskMetadataV2(
@@ -521,7 +519,8 @@ def test_protocol_checks_want_three_temporal_windows(*, n_windows: int, flagged:
             splits_comment="x", splits=windows, time_horizon=5, time_horizon_unit="days"
         ),
     )
-    assert ("splits_too_few" in slugs(container)) is flagged
+    (found,) = [r for r in protocol_checks(container) if r.slug == "splits_dimensions_off_protocol"]
+    assert ("at least 3" in found.message) is under_three
 
 
 def test_temporal_test_parts_that_share_a_training_side_count_once() -> None:
@@ -539,11 +538,12 @@ def test_temporal_test_parts_that_share_a_training_side_count_once() -> None:
             splits_comment="x", splits=shared, time_horizon=5, time_horizon_unit="days"
         ),
     )
-    assert "splits_too_few" in slugs(container)
+    (found,) = [r for r in protocol_checks(container) if r.slug == "splits_dimensions_off_protocol"]
+    assert found.message.startswith("1 test window(s) with their own training side (3 test parts)")
 
 
 def test_a_missing_build_dependency_names_the_extra() -> None:
-    from data_foundry.v2._optional import BUILD_INSTALL, import_build_dependency
+    from data_foundry.utils.optional import BUILD_INSTALL, import_build_dependency
 
     assert import_build_dependency("sklearn.model_selection").__name__ == "sklearn.model_selection"
     with pytest.raises(ImportError, match=r"needs `no_such_package`.*data-foundry\[build\]") as error:
@@ -554,7 +554,7 @@ def test_a_missing_build_dependency_names_the_extra() -> None:
 def test_several_group_columns_make_one_group_per_combination() -> None:
     rng = np.random.default_rng(0)
     df = pd.DataFrame(
-        {"a": rng.integers(0, 6, 300), "b": rng.choice(["x", "y", None], 300), "y": rng.integers(0, 2, 300)}
+        {"a": rng.integers(0, 6, 300), "b": rng.choice(["x", "y", "z"], 300), "y": rng.integers(0, 2, 300)}
     )
     splits = protocol.grouped_splits(df, n_repeats=2, group_on=["a", "b"], group_labels="per_sample", stratify_on="y")
     key = df[["a", "b"]].astype("string").fillna("nan").agg("|".join, axis=1)
@@ -566,7 +566,7 @@ def test_several_group_columns_make_one_group_per_combination() -> None:
     for folds in fitted.values():
         for train, test in folds.values():
             assert not set(key.iloc[train]) & set(key.iloc[test])  # the sampled test sides keep combinations whole
-    single, _ = protocol.one_group_column(df, "a")
+    single, _ = sampling.one_group_column(df, "a")
     assert single is df  # one column: the frame and its splits are as before
 
 
@@ -589,3 +589,44 @@ def test_cutoffs_must_test_the_newest_data(unit: str, window: int, cutoffs: list
         protocol.temporal_window_splits(df, time_on="t", window=window, unit=unit, cutoffs=cutoffs)
     whole = protocol.temporal_window_splits(df, time_on="t", window=None, unit=unit, cutoffs=cutoffs)
     assert whole[0][0][1][-1] == len(df) - 1  # a window to the end of the data holds the newest row
+
+
+def test_a_stratified_test_side_samples_up_to_one_row_under_its_size() -> None:
+    """A cap one row under the side's size left one row out of three classes, which `train_test_split` refused."""
+    df = pd.DataFrame({"y": np.random.default_rng(0).choice(list("abc"), 1_000)})
+    kept = sampling._sample_positions(df, np.arange(1_000), 999, group_on=None, stratify_on="y", random_state=1)
+    assert len(kept) == 999
+    assert len(np.unique(kept)) == 999
+    shares = df["y"].iloc[kept].value_counts()
+    assert (df["y"].value_counts() - shares).sum() == 1  # every class keeps its rows but one row of one class
+
+
+@pytest.mark.parametrize("group_labels", ["per_group", "per_sample"])
+@pytest.mark.parametrize("group_on", ["g", ["g", "h"]])
+def test_grouped_splits_refuse_a_missing_group_key(group_labels: str, group_on: str | list[str]) -> None:
+    """A missing key was dropped (per_group), broke GroupKFold (per_sample) or made one group (several columns)."""
+    df = pd.DataFrame(
+        {
+            "g": [1, 1, 2, 2, np.nan, np.nan, 3, 3, 4, 4, 5, 5],
+            "h": ["x"] * 12,
+            "y": [0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1],
+        }
+    )
+    with pytest.raises(ValueError, match=r"group key on every row.*`g` on 2 row"):
+        grouped_splits(df, n_repeats=1, group_on=group_on, group_labels=group_labels)
+
+
+def test_whole_groups_that_all_exceed_the_cap_raise() -> None:
+    """No group fits under the cap: the side would be empty, so sampling raises."""
+    df = pd.DataFrame({"g": np.repeat(np.arange(5), 20)})
+    with pytest.raises(ValueError, match="No whole group of `g` fits under the cap of 10 rows"):
+        sampling._sample_positions(df, np.arange(100), 10, group_on="g", stratify_on=None, random_state=0)
+    with pytest.raises(ValueError, match="fits under the cap"):
+        sampling.sample_train_positions(df, np.arange(100), 10, group_on="g")
+
+
+def test_a_unique_cutoff_must_be_a_value_of_the_time_column() -> None:
+    """A cutoff missing from the data raised a bare KeyError under unit="unique"."""
+    df = pd.DataFrame({"y": [2019, 2019, 2020, 2020, 2022, 2022, 2023, 2023]})
+    with pytest.raises(ValueError, match="cutoff 2021 is not a value of `y`"):
+        protocol.temporal_window_splits(df, time_on="y", window=1, unit="unique", cutoffs=[2021, 2022, 2023])

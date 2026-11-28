@@ -2,28 +2,28 @@
 report_format: data-foundry-report-v2
 unique_name: wine_quality
 container_format: 2
-checksum: v2:cc63bdcc7e08ab26f28e54782183b473214fe8028afd16445459f922ef11078c
+checksum: v2:920491eb2ca6de6a15d750f492019de94a8e45d662944a77bd1b4e42b2547837
 build:
-  uuid: 01a111fc-f00a-7053-95dc-e278996515ca
-  checksum: v2:948a3444c77ba54869a7f144400c14ce2cd5552822ac7963f53a932b62babd79
-  built_at: '2026-10-06T16:12:31+00:00'
-  path: wine_quality/01a111fc-f00a-7053-95dc-e278996515ca
+  uuid: 01a21800-a710-7e27-bc91-39a7e00b63c8
+  checksum: v2:920491eb2ca6de6a15d750f492019de94a8e45d662944a77bd1b4e42b2547837
+  built_at: '2026-11-26T13:17:06+00:00'
+  path: wine_quality/01a21800-a710-7e27-bc91-39a7e00b63c8
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
-  n_rows: 5320
+  n_rows: 5271
   n_features: 12
   dtypes:
     category: 1
-    float64: 11
+    float64: 12
     int64: 1
   n_test_dataset_rows: null
 task:
@@ -32,27 +32,47 @@ task:
   metric: mae
   metric_origin: source
   scoring_columns: null
-  split_regime: iid
+  split_regime: temporal_non_iid
   stratify_on: null
-  time_on: null
+  time_on: file_position
+  time_of: label
   group_on: null
   group_labels: null
   group_time_on: null
   grouping: null
 splits:
-  n_repeats: 3
-  n_folds: 3
+  n_repeats: 9
+  n_folds: 1
   random_state: 4267
-  time_horizon: null
-  time_horizon_unit: null
+  time_horizon: 292
+  time_horizon_unit: steps
   time_gap: null
   time_gap_unit: null
+  reason: 'Nine test windows of 292 wines over the newest half by file position, each
+    trained on every earlier wine (2,643
+
+    to 4,979 wines, 50.1% to 94.5% of the rows; 292 rather than 295 keeps the oldest
+    window above half, Andrej,
+
+    2026-11-18); a window stands for the next wines the certification body grades.
+    The release has no
+
+    date: the file order is taken as the order of entry, inferred from the data and
+    not documented, so the split
+
+    is a judgement call (the curation notes give the readings weighed and the evidence).
+    `file_position` is a
+
+    row''s share of its colour file, no date, and assumes both files were entered
+    at a steady pace. No gap: the
+
+    grade is given at the tasting that dates the row.'
   n_train:
-    min: 3546
-    max: 3547
+    min: 2643
+    max: 4979
   n_test:
-    min: 1773
-    max: 1774
+    min: 292
+    max: 292
 bundle_checks:
   ok: true
   errors: []
@@ -69,9 +89,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `median_wine_quality`, scored with `mae` on IID splits. 5,320 rows and 12 features. Source: UCI (2009).
+Regression of `median_wine_quality`, scored with `mae` on temporal splits by `file_position`. 5,271 rows and 12 features. Source: UCI (2009).
 
-Built as `01a111fc-f00a-7053-95dc-e278996515ca` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:cc63bdcc7e08ab26f28e54782183b473214fe8028afd16445459f922ef11078c`, so the build is stale. See [Build](#build).
+Built as `01a21800-a710-7e27-bc91-39a7e00b63c8` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -79,17 +99,17 @@ Built as `01a111fc-f00a-7053-95dc-e278996515ca` on 2026-10-06, but `dataset.py` 
 
 **Use case.** A wine certification body or producer estimates the tasting panel's score from routine lab tests, to support the tasters' evaluation (Cortez et al. 2009).
 
-**One row.** One red or white Vinho Verde wine sample from the Portuguese certification body, May 2004 to February 2007 (5,320 samples).
+**One row.** One red or white Vinho Verde wine sample from the Portuguese certification body, May 2004 to February 2007 (5,271 samples).
 
 **Predicted.** The median of at least three expert scores, on a scale of 0 to 10.
 
 **Known at prediction time.** Eleven lab measurements (fixed and volatile acidity, citric acid, residual sugar, chlorides, free and total sulphur dioxide, density, pH, sulphates, alcohol) and the wine's colour.
 
-**What the test data stands for.** Random wine samples, so the test data stands for new samples of the same region and years.
+**What the test data stands for.** Nine windows of 292 wines over the newest half of the file order, each trained on all earlier wines, so the test data stands for wines graded later. The release has no dates: the file order is taken as the order of entry, a judgement call from the data, not documented by the source.
 
-**Our changes to the source.** We drop 1,177 exact repeated rows (18%), most likely repeated records from the export, which put a row's twin in training.
+**Our changes to the source.** We drop 1,177 exact repeated rows (18%), most likely repeated records from the export, and 49 rows that repeat another wine with one or two lab values re-entered, so each wine counts once. We add each row's position in its colour file as the time order of the split, not as a model input.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The lab values are measured as part of certification alongside the tasting, and random samples of the same years match scoring new wines of the same process.
+> **Use case fit: direct (the rows, features and split mirror the use case).** The lab values are measured as part of certification alongside the tasting, and windows of later wines match scoring new wines of the same process; the time order is inferred from the file, not dated.
 
 ## Files in this folder
 
@@ -98,7 +118,7 @@ Built as `01a111fc-f00a-7053-95dc-e278996515ca` on 2026-10-06, but `dataset.py` 
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/wine_quality.md`](../../../../curation/records/wine_quality.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/wine_quality.md`](../../../../curation/records/wine_quality.md)
 - The original source: <https://doi.org/10.24432/C56S3T>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -128,13 +148,15 @@ Only curators run `build`, when the dataset ships.
 | year | 2009 |
 | domain | chemistry & material science |
 | license | CC BY 4.0 |
-| data_tags | IID |
+| data_tags | Non-IID, Temporal |
 | reference | cortez2009modeling |
-| rows x columns | 5,320 x 13 |
+| rows x columns | 5,271 x 14 |
 | task.target | median_wine_quality |
 | task.problem_type | regression |
 | task.metric | mae |
-| task.split_regime | iid |
+| task.split_regime | temporal_non_iid |
+| task.time_on | file_position |
+| task.time_of | label |
 
 **Metric**
 
@@ -175,43 +197,100 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 5,320 rows of the final frame (random rows: the frame is shuffled); 12 of 13 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 5,271 rows of the final frame (the oldest rows: the frame is sorted by `file_position`); 12 of 14 columns, the target first. Cells are cut at 40 characters.
 
 | median_wine_quality | fixed_acidity | volatile_acidity | citric_acid | residual_sugar | chlorides | free_sulfur_dioxide | total_sulfur_dioxide | density | pH | sulphates | alcohol |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 5 | 7 | 0.29 | 0.54 | 10.7 | 0.046 | 59 | 234 | 0.9966 | 3.05 | 0.61 | 9.5 |
-| 6 | 6.1 | 0.255 | 0.44 | 12.3 | 0.045 | 53 | 197 | 0.9967 | 3.24 | 0.54 | 9.5 |
-| 6 | 6.7 | 0.32 | 0.32 | 1.7 | 0.031 | 31 | 114 | 0.98946 | 3.12 | 0.35 | 12.5 |
-| 5 | 6.5 | 0.25 | 0.35 | 12 | 0.055 | 47 | 179 | 0.998 | 3.58 | 0.47 | 10 |
-| 7 | 6.5 | 0.28 | 0.29 | 2.7 | 0.038 | 26 | 107 | 0.9912 | 3.32 | 0.41 | 11.6 |
+| 6 | 7 | 0.27 | 0.36 | 20.7 | 0.045 | 45 | 170 | 1.001 | 3 | 0.45 | 8.8 |
+| 5 | 7.4 | 0.7 | 0 | 1.9 | 0.076 | 11 | 34 | 0.9978 | 3.51 | 0.56 | 9.4 |
+| 6 | 6.3 | 0.3 | 0.34 | 1.6 | 0.049 | 14 | 132 | 0.994 | 3.3 | 0.49 | 9.5 |
+| 6 | 8.1 | 0.28 | 0.4 | 6.9 | 0.05 | 30 | 97 | 0.9951 | 3.26 | 0.44 | 10.1 |
+| 6 | 7.2 | 0.23 | 0.32 | 8.5 | 0.058 | 47 | 186 | 0.9956 | 3.19 | 0.4 | 9.9 |
 
 ## Curation notes
 
 - We combine the original datasets for red and white wine into a single dataset with an additional column indicating the type of wine (red or white).
 - We treat the task as a regression problem, following the original work and because the target is the median wine quality (of at least 3 evaluations by experts).
-- We drop exact duplicate rows (1,177 of 6,497, 18%): identical in all 11 physicochemical values, the colour and the median score; no identical feature vector carries two different scores. The paper builds "a distinct wine sample (with all tests) per row" (Cortez et al. 2009, Sec. 2.1), so the copies are most likely repeated records from exporting the certification system's per-test entries, and under a random split they put a row's twin in train. We keep the IID split: grouping identical rows would only reproduce this deduplication.
+- We drop exact duplicate rows (1,177 of 6,497, 18%): identical in all 11 physicochemical values, the colour and the median score; no identical feature vector carries two different scores. The paper builds "a distinct wine sample (with all tests) per row" (Cortez et al. 2009, Sec. 2.1), so the copies are most likely repeated records from exporting the certification system's per-test entries, and under a random split they put a row's twin in train. Grouping identical rows would only reproduce this deduplication.
+- We also drop 49 near-copies (2026-11-13, Andrej): pairs of one colour that agree on 10 of
+  the 11 lab values (47 pairs) or 9 (2 pairs), keeping the first in file order (41 white, 8 red rows leave;
+  5,271 wines). They are double entries, not retests: 1 value differs (fixed acidity, alcohol, residual sugar
+  or total sulphur dioxide only), against 3 to 6 in the 115 pairs analysed twice that we keep; the grade agrees
+  in 49 of 49 pairs, against 76% in the retests; alcohol differs by exactly 1/60 or 1/30 (9.2333 against 9.25),
+  arithmetic rather than measurement; and the rows sit 1 to 17 rows apart like the exact copies. The grade
+  shares move by at most 0.04 points (mean 5.796 to 5.794). `file_position` is computed before the drop, so
+  positions are those of the raw file.
+- Density is recorded with 5 decimals in 2,443 rows and 4 or fewer in 2,877; the 5-decimal rows grade about
+  0.1 higher in both colours (red 5.68 against 5.57, white 5.90 against 5.81), a recording batch (an
+  instrument or a period; the source does not say), kept as published (2026-11-13,
+  Andrej). A model reads it only through an engineered count of decimals; the fifth decimal (0.00001) is far below
+  the spread between wines (about 0.003).
+- Split by file position, a judgement call (2026-11-13, Andrej). The release dates the wines
+  only as May 2004 to February 2007 and keeps no sample number, so `file_position` (a row's share of its
+  own colour file, 0 first, 1 last) stands in for time; it is no date, and putting both colours on one axis
+  assumes both were entered at a steady pace over the same period. Readings of the file order weighed:
+  order of entry in the certification body's iLab system; a producer's request entered together within it;
+  sorted by producer; sorted by a file column; sorted by a dropped attribute (grape, brand); shuffled. The
+  data leave only the first two. No column is sorted, and neighbouring rows are alike (grade runs, position
+  explains up to 31% of a column's variance), which rules out a shuffle and a sort by column. Both colour
+  files write density with 5 decimals in the same stretches (a burst at 12-20% of each file, almost none at
+  33-46%, about 82% from 46% on), a change in the lab's recording that a sort by producer would scatter.
+  Both drift alike (mean grade per tenth of each file r = 0.78 between the colours, at most 0.48 for any
+  shifted pairing), with a wave of 36-46% of each file, about a year if the 33 months are spread evenly.
+  Repeated rows sit within 17 rows of their copy (240 of 240 red, 925 of 937 white). On the same test wines
+  at equal training size (untuned LightGBM, MAE), training on random wines scores 0.528, on wines before and
+  after the window 0.535, on earlier wines only 0.546: earlier wines predict worse than wines from both sides,
+  as drift in time does, while under a sort by producer both sides would be equally new. CVRVV sample numbers
+  or dates that show another order (a sort by producer, say) would overturn the split.
+- `file_position` is no model input (`Temporal(..., time_of="label")`): it is a row's place in an exported
+  file, which the certification body does not hold when it grades a wine.
 
 ## Splits
 
-Default splits.
+Expanding-window temporal splits: 9 test window(s) of 292 rows, walking back from the newest data, newest first; train is all earlier data. The test windows by `file_position`, as listed: 0.9452837893017558 to 0.999795835034708 (292 test, 4,979 train rows); 0.8895467537770518 to 0.9450796243364639 (292 test, 4,687 train rows); 0.8327888934258881 to 0.8893425888117599 (292 test, 4,395 train rows); 0.7719477337688853 to 0.8325847284605962 (292 test, 4,103 train rows); 0.71294405879951 to 0.7717323327079425 (292 test, 3,811 train rows); 0.6565945283789302 to 0.7127398938342181 (292 test, 3,519 train rows); 0.5998366680277665 to 0.6563903634136382 (292 test, 3,227 train rows); 0.5430788076766027 to 0.5997498436522827 (292 test, 2,935 train rows); 0.48655409631019386 to 0.5428746427113107 (292 test, 2,643 train rows).
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 3,546 to 3,547 rows, test 1,773 to 1,774 rows.
+Nine test windows of 292 wines over the newest half by file position, each trained on every earlier wine (2,643
+to 4,979 wines, 50.1% to 94.5% of the rows; 292 rather than 295 keeps the oldest window above half, Andrej,
+2026-11-18); a window stands for the next wines the certification body grades. The release has no
+date: the file order is taken as the order of entry, inferred from the data and not documented, so the split
+is a judgement call (the curation notes give the readings weighed and the evidence). `file_position` is a
+row's share of its colour file, no date, and assumes both files were entered at a steady pace. No gap: the
+grade is given at the tasting that dates the row.
 
-| repeat | fold | n_train | n_test |
-|---|---|---|---|
-| 0 | 0 | 3546 | 1774 |
-| 0 | 1 | 3547 | 1773 |
-| 0 | 2 | 3547 | 1773 |
-| 1 | 0 | 3546 | 1774 |
-| 1 | 1 | 3547 | 1773 |
-| 1 | 2 | 3547 | 1773 |
-| 2 | 0 | 3546 | 1774 |
-| 2 | 1 | 3547 | 1773 |
-| 2 | 2 | 3547 | 1773 |
+9 repeat(s) x 1 fold(s) with seed 4267; train 2,643 to 4,979 rows, test 292 rows. Prediction horizon: 292 steps. The time column `file_position` dates the label, which arrives after the prediction point: it orders and splits the rows, so every training label was known at its window's start, and is no model input (`feature_columns(container)` leaves it out).
+
+| repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
+|---|---|---|---|---|---|---|---|
+| 0 | 0 | 4979 | 292 | 0 | 0.94508 | 0.945284 | 0.999796 |
+| 1 | 0 | 4687 | 292 | 0 | 0.889343 | 0.889547 | 0.94508 |
+| 2 | 0 | 4395 | 292 | 0 | 0.832585 | 0.832789 | 0.889343 |
+| 3 | 0 | 4103 | 292 | 0 | 0.771732 | 0.771948 | 0.832585 |
+| 4 | 0 | 3811 | 292 | 0 | 0.71274 | 0.712944 | 0.771732 |
+| 5 | 0 | 3519 | 292 | 0 | 0.65639 | 0.656595 | 0.71274 |
+| 6 | 0 | 3227 | 292 | 0 | 0.59975 | 0.599837 | 0.65639 |
+| 7 | 0 | 2935 | 292 | 0 | 0.542875 | 0.543079 | 0.59975 |
+| 8 | 0 | 2643 | 292 | 0 | 0.486525 | 0.486554 | 0.542875 |
+
+
+### The test windows
+
+Each test window against its train side, by statistics of the data, never of a model: the target, and the population stability index (PSI) of each feature, its largest value and the features that drift most (below 0.1 little shift, above 0.25 a large one), and the share of test rows with a category the train side never shows. Up to 20,000 rows per side. The candidates the windows were chosen from: `.venv/bin/python -m data_foundry.curation.cli dataset windows wine_quality`.
+
+| window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
+|---|---|---|---|---|---|---|---|---|
+| 0 | 0.9452837893017558 - 0.999795835034708 | 292 | 0.945 | mean 5.901, median 6, p10 5, p90 7 | mean 5.788, median 6, p10 5, p90 7 | 1.149 | fixed_acidity (1.15), density (0.39), alcohol (0.14) | 0 |
+| 1 | 0.8895467537770518 - 0.9450796243364639 | 292 | 0.889 | mean 5.678, median 6, p10 5, p90 6.9 | mean 5.795, median 6, p10 5, p90 7 | 0.456 | fixed_acidity (0.46), citric_acid (0.25), alcohol (0.24) | 0 |
+| 2 | 0.8327888934258881 - 0.8893425888117599 | 292 | 0.834 | mean 5.777, median 6, p10 5, p90 7 | mean 5.796, median 6, p10 5, p90 7 | 0.3 | fixed_acidity (0.30), citric_acid (0.27), density (0.21) | 0 |
+| 3 | 0.7719477337688853 - 0.8325847284605962 | 292 | 0.778 | mean 5.654, median 6, p10 5, p90 7 | mean 5.806, median 6, p10 5, p90 7 | 0.192 | density (0.19), citric_acid (0.18), fixed_acidity (0.18) | 0 |
+| 4 | 0.71294405879951 - 0.7717323327079425 | 292 | 0.723 | mean 5.997, median 6, p10 5, p90 7 | mean 5.792, median 6, p10 5, p90 7 | 0.265 | alcohol (0.26), citric_acid (0.22), density (0.21) | 0 |
+| 5 | 0.6565945283789302 - 0.7127398938342181 | 292 | 0.668 | mean 6.14, median 6, p10 5, p90 7 | mean 5.763, median 6, p10 5, p90 7 | 0.601 | alcohol (0.60), density (0.40), fixed_acidity (0.19) | 0 |
+| 6 | 0.5998366680277665 - 0.6563903634136382 | 292 | 0.612 | mean 6.007, median 6, p10 5, p90 7 | mean 5.741, median 6, p10 5, p90 7 | 0.545 | alcohol (0.54), density (0.45), total_sulfur_dioxide (0.21) | 0 |
+| 7 | 0.5430788076766027 - 0.5997498436522827 | 292 | 0.557 | mean 5.959, median 6, p10 5, p90 7 | mean 5.719, median 6, p10 5, p90 7 | 0.37 | density (0.37), alcohol (0.36), citric_acid (0.21) | 0 |
+| 8 | 0.48655409631019386 - 0.5428746427113107 | 292 | 0.501 | mean 5.62, median 6, p10 5, p90 7 | mean 5.73, median 6, p10 5, p90 7 | 0.253 | citric_acid (0.25), sulphates (0.21), density (0.08) | 0 |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 Accepted on purpose:
@@ -223,22 +302,23 @@ Accepted on purpose:
 ### Feature summary
 
 <details>
-<summary>Show the table (13 rows)</summary>
+<summary>Show the table (14 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | wine_color | category | 0 | 0 | 2 | white, red |
 | fixed_acidity | float64 | 0 | 0 | 106 | 6.8, 6.6, 6.4, 6.9, 7.0, 6.7, 7.2, 7.1, 6.5, 6.2 |
-| volatile_acidity | float64 | 0 | 0 | 187 | 0.28, 0.26, 0.24, 0.27, 0.25, 0.22, 0.23, 0.2, 0.3, 0.32 |
+| volatile_acidity | float64 | 0 | 0 | 187 | 0.28, 0.26, 0.24, 0.27, 0.25, 0.22, 0.23, 0.2, 0.3, 0.21 |
 | citric_acid | float64 | 0 | 0 | 89 | 0.3, 0.32, 0.28, 0.49, 0.34, 0.26, 0.29, 0.31, 0.24, 0.27 |
-| residual_sugar | float64 | 0 | 0 | 316 | 2.0, 1.6, 1.4, 1.8, 1.2, 2.2, 1.5, 1.7, 1.9, 2.1 |
-| chlorides | float64 | 0 | 0 | 214 | 0.036, 0.044, 0.042, 0.046, 0.04, 0.047, 0.048, 0.038, 0.05, 0.034 |
-| free_sulfur_dioxide | float64 | 0 | 0 | 135 | 6.0, 29.0, 26.0, 15.0, 24.0, 31.0, 34.0, 17.0, 23.0, 28.0 |
-| total_sulfur_dioxide | float64 | 0 | 0 | 276 | 111.0, 113.0, 114.0, 98.0, 122.0, 128.0, 117.0, 101.0, 124.0, 150.0 |
-| density | float64 | 0 | 0 | 998 | 0.992, 0.9972, 0.9928, 0.998, 0.9976, 0.9968, 0.9932, 0.9934, 0.9962, 0.9966 |
-| pH | float64 | 0 | 0 | 108 | 3.16, 3.22, 3.14, 3.15, 3.2, 3.24, 3.18, 3.19, 3.12, 3.17 |
-| sulphates | float64 | 0 | 0 | 111 | 0.5, 0.46, 0.54, 0.44, 0.48, 0.38, 0.52, 0.47, 0.49, 0.45 |
-| alcohol | float64 | 0 | 0 | 111 | 9.5, 9.4, 9.2, 10.0, 10.5, 11.0, 9.8, 9.3, 10.4, 10.2 |
+| residual_sugar | float64 | 0 | 0 | 315 | 1.6, 2.0, 1.4, 1.8, 1.2, 2.2, 1.5, 2.1, 1.9, 1.7 |
+| chlorides | float64 | 0 | 0 | 214 | 0.036, 0.044, 0.042, 0.046, 0.04, 0.047, 0.038, 0.05, 0.048, 0.034 |
+| free_sulfur_dioxide | float64 | 0 | 0 | 135 | 6.0, 29.0, 26.0, 15.0, 24.0, 17.0, 34.0, 31.0, 23.0, 28.0 |
+| total_sulfur_dioxide | float64 | 0 | 0 | 275 | 111.0, 113.0, 114.0, 122.0, 98.0, 128.0, 117.0, 104.0, 150.0, 101.0 |
+| density | float64 | 0 | 0 | 998 | 0.9972, 0.992, 0.9928, 0.998, 0.9976, 0.9968, 0.9934, 0.9932, 0.9962, 0.9966 |
+| pH | float64 | 0 | 0 | 108 | 3.16, 3.22, 3.14, 3.2, 3.15, 3.18, 3.24, 3.19, 3.12, 3.17 |
+| sulphates | float64 | 0 | 0 | 111 | 0.5, 0.46, 0.54, 0.44, 0.48, 0.38, 0.47, 0.52, 0.49, 0.45 |
+| alcohol | float64 | 0 | 0 | 107 | 9.5, 9.4, 10.0, 9.2, 10.5, 11.0, 9.8, 9.3, 10.4, 10.2 |
+| file_position | float64 | 0 | 0 | 5270 | 0.0, 0.6566, 0.6564, 0.6562, 0.656, 0.656, 0.6558, 0.6556, 0.6554, 0.646 |
 | median_wine_quality | int64 | 0 | 0 | 7 | 6, 5, 7, 4, 8, 3, 9 |
 
 </details>
@@ -247,27 +327,28 @@ Accepted on purpose:
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | 0.147 | -0.447 | 0.774 | 0.024 | log | 32998.3 | 5.46571e+06 | exponential |
+| 0 | 0 | 0 | 0.149 | -0.446 | 0.776 | 0.024 | log | 32694.8 | 5.22679e+06 | exponential |
 
 ### Numeric features
 
 <details>
-<summary>Show the table (12 rows)</summary>
+<summary>Show the table (13 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| fixed_acidity | 5320 | 7.21518 | 1.31967 | 3.8 | 15.9 |
-| volatile_acidity | 5320 | 0.34413 | 0.168248 | 0.08 | 1.58 |
-| citric_acid | 5320 | 0.318494 | 0.147157 | 0 | 1.66 |
-| residual_sugar | 5320 | 5.04848 | 4.50018 | 0.6 | 65.8 |
-| chlorides | 5320 | 0.0566898 | 0.0368633 | 0.009 | 0.611 |
-| free_sulfur_dioxide | 5320 | 30.0367 | 17.805 | 1 | 289 |
-| total_sulfur_dioxide | 5320 | 114.109 | 56.7742 | 6 | 440 |
-| density | 5320 | 0.994535 | 0.00296551 | 0.98711 | 1.03898 |
-| pH | 5320 | 3.22466 | 0.160379 | 2.72 | 4.01 |
-| sulphates | 5320 | 0.533357 | 0.149743 | 0.22 | 2 |
-| alcohol | 5320 | 10.5492 | 1.18593 | 8 | 14.9 |
-| median_wine_quality | 5320 | 5.79568 | 0.879772 | 3 | 9 |
+| fixed_acidity | 5271 | 7.22285 | 1.31494 | 3.8 | 15.9 |
+| volatile_acidity | 5271 | 0.344063 | 0.168015 | 0.08 | 1.58 |
+| citric_acid | 5271 | 0.318763 | 0.147143 | 0 | 1.66 |
+| residual_sugar | 5271 | 5.03355 | 4.49186 | 0.6 | 65.8 |
+| chlorides | 5271 | 0.0567562 | 0.0369674 | 0.009 | 0.611 |
+| free_sulfur_dioxide | 5271 | 29.9669 | 17.7871 | 1 | 289 |
+| total_sulfur_dioxide | 5271 | 113.881 | 56.6785 | 6 | 440 |
+| density | 5271 | 0.994536 | 0.00296218 | 0.98711 | 1.03898 |
+| pH | 5271 | 3.22435 | 0.160056 | 2.72 | 4.01 |
+| sulphates | 5271 | 0.533377 | 0.150022 | 0.22 | 2 |
+| alcohol | 5271 | 10.5496 | 1.18496 | 8 | 14.9 |
+| median_wine_quality | 5271 | 5.79435 | 0.881076 | 3 | 9 |
+| file_position | 5271 | 0.491536 | 0.290384 | 0 | 0.999796 |
 
 </details>
 
@@ -275,18 +356,17 @@ Accepted on purpose:
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| wine_color | 1 | white | 3961 | 74.45 |
-| wine_color | 2 | red | 1359 | 25.55 |
+| wine_color | 1 | white | 3920 | 74.37 |
+| wine_color | 2 | red | 1351 | 25.63 |
 
 ## Build
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-f00a-7053-95dc-e278996515ca |
-| checksum | v2:948a3444c77ba54869a7f144400c14ce2cd5552822ac7963f53a932b62babd79 |
-| built_at | 2026-10-06T16:12:31+00:00 |
-| path | wine_quality/01a111fc-f00a-7053-95dc-e278996515ca |
+| uuid | 01a21800-a710-7e27-bc91-39a7e00b63c8 |
+| checksum | v2:920491eb2ca6de6a15d750f492019de94a8e45d662944a77bd1b4e42b2547837 |
+| built_at | 2026-11-26T13:17:06+00:00 |
+| path | wine_quality/01a21800-a710-7e27-bc91-39a7e00b63c8 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:cc63bdcc7e08ab26f28e54782183b473214fe8028afd16445459f922ef11078c` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

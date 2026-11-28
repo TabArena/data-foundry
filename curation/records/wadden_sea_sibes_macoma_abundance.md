@@ -3,16 +3,18 @@ unique_name: wadden_sea_sibes_macoma_abundance
 name: Wadden Sea Macoma abundance (Lyashevska et al. 2016) / SIBES synoptic intertidal benthic survey (NIOZ, 2008-2022)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:
 - Two-Regime Zeros
 - Non-IID (Grouped)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Entities: Recur'
+- Panel Data
 original_source: Website
 year: '2024'
+collection_period: 2008-2022
 domain: biology & life sciences
 required_split:
 - Grouped (NON-IID)
@@ -85,7 +87,7 @@ collected for something else, then this is fine"), as SEL-2 already reads the sc
 own use case. The verdict and priority stay.
 
 CC (2026-10-30, Andrej): `Yes`, priority 3 (the AI screening had `TBD -> Yes`, priority 3; zero-inflated screening
-review page).
+review).
 
 The workbook row is Lyashevska et al. (2016), a spatial zero-inflated Poisson model of the bivalve Macoma balthica in
 the Dutch Wadden Sea. That paper released no table (its only supplement is a key-terms table), and its "3,451" is the
@@ -139,7 +141,9 @@ CC (2026-11-10, Andrej): issue 8 of the record's Review, "Reply (b): Per-year no
 
 **Assessment (AI, 2026-11-10):** issue 8 (C) applied: declared from context with `inputs={"group": "survey_year"}` and `target_transform="log1p"`. `dataset check`: 0 errors, 0 warnings. Task probe (untuned, fit on log1p, 5 of 9 splits): random forest 0.962, LightGBM 0.967, linear 1.005, the back-transformed training mean 1.046; the random forest beats it on 5 of 5 splits by 0.084 (SE 0.005); no flag. Verdict mark of 2026-11-10 (Andrej): changes, now made.
 
-CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
+CC (2026-11-10, Andrej): ship.
+
+CC (2026-11-17, Andrej): the declared split (grouped on `station`, 3x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 
@@ -221,7 +225,7 @@ call, no issue in this file) on 2026-11-02; the 39 single boat cores kept with a
 below one tellin per core kept with the note only (7) on 2026-11-08. Across datasets: X3, whether the check that the
 density times the core area rebuilds the count applies only when the source releases the count.
 
-**Verdict (2026-11-10, Andrej):** ship (review page of 2026-11-10).
+**Verdict (2026-11-10, Andrej):** ship.
 
 **Issues for Andrej and Lennart:**
 

@@ -1,501 +1,456 @@
-# Benchmark changes to do (TabArena side)
+# Benchmark hand-off: what TabArena changes for the v0.2 datasets
 
-Changes the benchmark harness (`tabarena/`) needs so that the v0.2 datasets are used as they are curated. They came
-out of the review of grouped data on 2026-10-01 (counts and file references are from that day). The data-foundry
-side (metadata, checks, the dataset review) is tracked in the curation records and [`CHANGELOG.md`](CHANGELOG.md).
+What the benchmark harness (`tabarena/`) has to change to use the TabArena v0.2 containers as they are curated. The
+Data Foundry side of every item is done unless the item says otherwise. The facts and dataset lists are from the 174
+task definitions of this folder on 2026-11-25 ([how to regenerate them](#regenerating-the-lists)); the history of each
+decision is in the curation records, the knowledge skills and [`CHANGELOG.md`](CHANGELOG.md).
 
-## Temporal tasks
+The API names are those of the task view, `task = container.task()` (`data_foundry.task.BenchmarkTask`, added
+2026-11-26), which gathers the helpers of `data_foundry.curation_container`, `data_foundry.sampling` and
+`data_foundry.metrics` behind one object for both container formats; the helpers stay available. The integration page
+for a harness is [`docs/benchmark_integration.md`](../../../docs/benchmark_integration.md).
 
-- [ ] **Cut the inner validation on the time column, then drop it when it dates the label.** A v2 definition declares
-  `Temporal(..., time_of="label")` when its time column is the moment the label became known, after the prediction
-  point (a house's sale when the price is predicted at the listing, the year a compound entered a catalogue). A
-  format-2 container then records `task_metadata.time_of="label"` (unset on every other container). The column stays
-  in the frame: the adapter reads it, with the group column(s), from `split_columns(container)` to build the forward
-  inner hold-out (`time_on_to_groups_data` reads `X[time_on]` today), and only then fits every pipeline on
-  `feature_columns(container)`, which leaves it out. Dropping it first breaks the temporal validation; never dropping it
-  feeds the model a time it does not have when it predicts. The pinned data-foundry version has to know the field
-  before such a container ships (the task metadata refuses unknown fields). `task_metadata.prediction_time`, when
-  set, names the column of the prediction point: a model input like any other. The order inside a group takes the
-  same role (`grouping.time_of="label"`, with `grouping.prediction_time`): it orders the rows for `aggregation="last"`
-  and is dropped from the features; with `context="past_rows"` a row reads the rows of its group predicted before it
-  (by `grouping.prediction_time`) and their labels only where the label time is before its own prediction time.
+## Summary
 
-## Grouped tasks
+Before the first v0.2 run:
 
-- [ ] **Never use the group column as a model feature.** Only the `tabarena_default` preprocessing pipeline drops it
-  (its `GroupAggregationFeatureGenerator`); under the `default` pipeline (`AutoMLPipelineFeatureGenerator`) the group
-  id stays a feature, and so it does in data-foundry's `examples/benchmark_on_beyond_arena.py`. Separate `group_on`
-  from the features in the adapter, for every pipeline.
-- [ ] **Group-aware inner validation for every grouped task.** The BeyondArena validation protocol uses groups for
-  the inner folds (`task_specific_validation=True`); the TabArena v0.1 protocol does not, so its inner folds mix rows
-  of one group across train and validation.
-- [ ] **Score at the task's prediction unit.** `experiment_runner.evaluate` scores every row on its own, unweighted.
-  A task whose prediction unit is the group needs its row predictions aggregated per group with the declared rule
-  and one score per group, so each group counts once. The rules the sources need: `mean` (replicate measurements of
-  one label, as in the retired parkinsons dataset), `any` / max (multiple-instance: musk, a molecule is a musk if any conformation is),
-  `last` (the latest row decides: amex, scored per customer at the latest statement) and `select_min` (algorithm
-  selection: sat11 picks the algorithm with the lowest predicted runtime per instance and is scored by that
-  algorithm's true runtime, e.g. PAR10 or the share of the single-best to virtual-best gap closed). The metadata is
-  `task_metadata.grouping` (`data_foundry.schema.Grouping`: `prediction_unit`, `aggregation`, `context`,
-  `definition`) of a format-2 container (`container.format_version == 2`), read with `CuratedContainer.grouping`. A
-  format-1 container (the shipped BeyondArena ones) has no grouping and is scored per row.
-  The v0.2 group-unit datasets: musk (`any`), amex_non_iid_1m (`last`, by `S_2`), sat11_hand_algo_runtime
-  (`select_min`). How it becomes a scoring spec is TabArena's choice; our
-  recommendation (resolution table, named metrics, methods that return their own group predictions, tuning on the
-  same metric) is [below](#recommended-scoring-of-grouped-tasks).
-- [ ] **Use the information about a group that the use case allows.** The group aggregation features are built for
-  every `per_group` task, from all rows of a test group. That fits a task where all rows of a new group are known at
-  prediction time; a task that may only use earlier rows of a group (`group_time_on`) needs causal aggregates, and a
-  task whose rows stand alone (sepsis: each hour from its own measurements) none. The field is `grouping.context`
-  (`none`, `all_rows`, `past_rows`); `all_rows` in v0.2: musk, amex_non_iid_1m,
-  sat11_hand_algo_runtime, protein_model_quality_rf_pcp (2026-11-05; huesken_sirna_efficacy reopened to follow). On
-  protein a model that compares a candidate with its protein's others scores 0.483 against 0.322 per-protein
-  correlation for a row-only one, so ignoring `context` costs a third of the skill. data-foundry's
-  `examples/benchmark_container.py` does not use it yet: `feature_columns` drops the group column, so no model there
-  sees which test rows share a group.
-- [ ] **Dataset-specific metrics.** Every v0.2 definition now declares the metric its source scored, or an explicit
-  fallback (the rules: `.claude/skills/knowledge-curation/references/metrics.md`, MET-1 to MET-16), and a format-2
-  container stores it as data: `task_metadata.objective_metric` (`data_foundry.schema.MetricSpec`: `name`, `kind`
-  `standard` or `custom`, `prediction` `proba` / `label` / `value`, `greater_is_better`, `params`, `inputs`,
-  `origin` `source` / `stand_in` / `context` / `fallback`, `original`, `reference`, `definition`, `reason`,
-  `target_transform`). A regression target may ship on a modelling scale (`target_transform` `log`, `log1p` or
-  `log10`; `identity` by default): models fit and predict on the shipped scale, and the metric is computed after the
-  inverse of both the true values and the predictions (`score` does it), so the scorer must not be the bare
-  metric on the shipped values. The field
-  `objective_metric_name` is gone from format 2; format 1 (BeyondArena) keeps it. The reference implementation of
-  every name is `data_foundry.v2.metrics` (numpy, pandas, scikit-learn and scipy only; the custom metrics are tested
-  against their official code). The adapter (`adapter.py`) has to:
-  - **Read the spec.** Take `objective_metric.name` in format 2 (`container.format_version == 2`) and
-    `objective_metric_name` in format 1.
-  - **Register the custom scorers.** Wrap `data_foundry.v2.metrics.score(spec, y_true, y_pred, labels=..., **inputs)` in
-    an AutoGluon scorer (`autogluon.core.metrics.make_scorer`, with `greater_is_better` from the spec and an `optimum`
-    per metric name, which the spec does not carry (see the item on `net_revenue_at_cost` below), `needs_proba` for
-    `prediction == "proba"`, `needs_class` for `"label"`; the module docstring has the sketch). A
-    metric with `inputs` (a group, an order, a weight) needs the scored rows' values of those columns: pass them by row
-    index, as `data_foundry.v2.metrics.scorer(container)(y_true, y_pred, row_index)` does. A task predicted per group
-    (`grouping.prediction_unit == "group"`) is aggregated first by `grouping.aggregation` (`scorer` does it; the section
-    below). Inner validation and tuning use the same scorer. A correlation metric (`pearsonr`, `weighted_pearsonr`,
-    `mean_group_pearsonr`) is undefined for a constant prediction (`data_foundry.v2.metrics` returns NaN): the scorer
-    needs a guard so a constant prediction (a dummy, a collapsed model) scores 0, no signal, instead of breaking the
-    fold.
-  - **Drop the scoring columns from the features.** `task_metadata.scoring_columns` (column, role, used_by,
-    description) are the metric's inputs and never model inputs, like the group column:
-    `data_foundry.curation_container.feature_columns(container)` returns the frame's features without them.
-  - **Stop replacing unknown metrics silently.** Today any metric other than `roc_auc`, `log_loss` and `rmse` becomes
-    the problem type's default without a warning, so `5g_energy_consumption`'s `mape` and the custom metrics below
-    are never used. An unsupported name should fail or warn loudly, naming the dataset and the fallback used.
-  - **Tune the decision threshold by default for threshold metrics.** "We could also just add threshold tuning by
-    default, which we should in tabarena for metrics that can benefit from it" (Lennart, 2026-10-21). A metric
-    scored on hard labels (`prediction == "label"`: `f1`, `f1_weighted`, `balanced_accuracy`, `cost_matrix` with
-    label predictions, `hierarchical_balanced_accuracy`, `normalized_early_detection_utility`) measures the threshold
-    a method picks as much as the model; choose it on the inner validation predictions by the same metric (for two
-    classes the threshold on P(positive); for a cost matrix scored from probabilities the least-cost decision is
-    already in the metric). The sources fixed hard-label decisions (MET-4, MET-6), so the metric stays and the
-    threshold becomes part of the method.
+- [ ] [1. Pin the Data Foundry release that reads format 2](#1-pin-the-release-that-reads-format-2) (all).
+- [ ] [2. Build the model inputs from `task.X`](#2-model-inputs-taskx) (all; matters for the 48
+  grouped tasks, the 18 with scoring columns and the 12 with a label-dated time column).
+- [ ] [3. Score by the container's metric spec](#3-the-metric-score-by-the-spec) (all; 26 metric names, 23 beyond
+  `roc_auc`, `log_loss` and `rmse`).
+- [ ] [4. Inner validation that follows the outer split](#4-inner-validation-follows-the-outer-split) (68 temporal,
+  48 grouped, 5 with unit weights).
+- [ ] [5. Fit on at most the row budget](#5-the-row-budget-of-the-_1m-versions) (18 `_1m` versions).
+- [ ] [6. Encode special features, never pass a SMILES as text](#6-special-features) (9 SMILES, 3 spectra).
+- [ ] [7. Keep the order of ordered categories](#7-ordered-categories) (57 definitions declare ordinal scales).
+- [ ] [8. Training weights, behind a gate](#8-training-weights) (6 tasks).
 
-  The metrics per dataset, from the metric decisions of 2026-10-21 (15 of them wait for the curator, marked `*`):
+Next:
 
-  | Metric | Kind, prediction | Datasets |
-  |---|---|---|
-  | `roc_auc` | standard, proba | 76: 49 fallbacks, 25 from the source (porto_seguro's normalized Gini among them), 2 stand-ins; `*` anes_voting_2026, heart_disease (the three Detrano hospitals, merged on 2026-10-21), hepatitis_survival_prediction, home_credit_default_stability_1m, lending_club, sepsis_survival_minimal_clinical_records |
-  | `rmse` | standard, value | 45: 27 fallbacks, 18 from the source (RMSLE as `rmse` on a log1p target included); `*` video_transcoding_time_prediction |
-  | `log_loss` | standard, proba | 26: 22 fallbacks, 2 from the source, 2 stand-ins; `*` covertype, hepatitis_c_prediction |
-  | `mae` | standard, value | allstate_claims_severity, forest_fires, wine_quality, zillow_prize; stand-in for `*` corporate_credit_rating_cat_data_set_ratings_raitings |
-  | `mse` | standard, value | electric_motor_temperature_prediction |
-  | `r2` | standard, value | mercedes_benz_greener_manufacturing |
-  | `mape` | standard, value | 5g_energy_consumption (stand-in for the Zindi WMAPE, whose weights are not published) |
-  | `f1` | standard, label | african_credit_scoring_challenge |
-  | `f1_weighted` | standard, label | none since dataorg_financial_health_prediction_challenge was retired (2026-10-22) |
-  | `balanced_accuracy` | standard, label | hiva_agnostic |
-  | `cost_matrix` | custom, label or proba (`params.prediction`) | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition (label, the 11 x 11 penalty matrix); `*` aps_failure (proba, false alarm 10, miss 500), `*` credit_g (proba, Statlog's 5:1) |
-  | `precision_at_k` | custom, proba | coil_2000 (`k_fraction` 0.2); `*` labour_inspection_compliance (`k_fraction` 0.5) |
-  | `average_precision_at_k` | custom, proba | huntprohibited_1m (`k` 12,500) |
-  | `gini_top_capture` | custom, proba | amex_non_iid_1m (top 4%, negatives weighted 20), per customer (`grouping.aggregation` `last`) |
-  | `rmspe` | custom, value | rossmann_store_sales |
-  | `net_revenue_at_cost` | custom, value | pva_revenue_prediction_kddcup98 (`cost` 0.68, the cup's price of a mailed piece; no fixed best value, see below) |
-  | `weighted_pearsonr` | custom, value; input `weight` | g_research_crypto_forecasting_1m (scoring column `Weight`) |
-  | `mean_group_pearsonr` | custom, value; input `group` | numerai_v5_2_1m (`method` `numerai_corr`, scoring column `era`) |
-  | `hierarchical_balanced_accuracy` | custom, label; input `group` | micro_mass (scoring column `Strain`) |
-  | `par_k` | custom, value; input `group` | sat11_hand_algo_runtime (PAR10, cutoff 5,000 s, group `instance_id`, `select_min`) |
-  | `normalized_early_detection_utility` | custom, label; inputs `group`, `order` | sepsis_prediction_1m (scoring columns `Patient_ID`, `Hour`; each test patient's hours whole) |
-  | `mean_poisson_deviance` | standard, value; optional input `weight` (a row weight), `min_prediction` required | fremtpl2 (scoring column `Exposure`), bemtpl97 (`expo`): claims per year insured, the weight column also the task's `sample_weight`, `min_prediction` 1e-4 (2026-11-06) |
-- [ ] **Errors of a metric without a fixed best value (`net_revenue_at_cost`).** When the scorer wrapper is built,
-  check whether it and the leaderboard need a refactor for such a metric (Lennart, 2026-11-16, review of PR #100).
-  TabArena turns each score into an error, `optimum - score` (AutoGluon's `Scorer.convert_score_to_error`), and
-  bencheval reads that error as at least 0, with 0 perfect: `verify_error` raises on a negative error (`clean_data`
-  clips only tiny ones), and improvability (`1 - best / error`), `relative_error` (`error / baseline_error`) and
-  `baseline_advantage` are ratios of errors, so they change with where the zero of the error sits. Elo, win rate,
-  rank, the rescaled loss and the normalized error (`(error - best) / (baseline - best)`) do not. Every other metric
-  of the registry has a fixed bound that no score passes (1 for the AUCs, the correlations, the normalized Ginis and
-  the normalized utility; 0 for the losses), so its error is at least 0. `net_revenue_at_cost`
-  (pva_revenue_prediction_kddcup98) has none:
-  - It is the net revenue per scored donor, in dollars, of mailing every donor whose predicted gift is above the
-    $0.68 cost. Higher is better. Its best value is the oracle's (mail exactly the donors), which changes from fold
-    to fold (0.757 over all 191,779 donors), and it falls below 0 when a model mails donors who give nothing (down to
-    -0.646).
-  - Only `p > cost` counts: any prediction at or below the cost, a negative one included, means "not mailed".
-    Mailing nobody scores 0, mailing everyone 0.111 (the cup's $10,560 on its validation file), the cup's winner
-    0.153 ($14,712). So predictions need no floor, and the score must not be clipped at 0, which would tie a model
-    that loses money with mailing nobody.
-  - The wrapper keeps `greater_is_better=True`: flipped, the model that mails only the non-donors ranks first. A
-    contract test: the oracle's error is below mailing everyone's, which is below mailing nobody's.
+- [ ] [9. Score grouped tasks at their prediction unit](#9-scoring-at-the-prediction-unit) (3 tasks).
+- [ ] [10. Use only the group information the use case allows](#10-group-context) (8 tasks with `all_rows`).
+- [ ] [11. Weight validation losses like the test score](#11-validation-weights-and-unit-weights) (tasks with a
+  row or unit weight).
+- [ ] [12. One cache contract for encodings, with their time counted](#12-encoding-caches-and-their-time).
+- [ ] [13. Report the effective sample size of group-level scores](#13-effective-sample-size).
+- [ ] [14. Check that no method reads the other test rows](#14-test-rows-predicted-without-the-other-test-rows).
 
-  The options, to decide then:
-  - Normalize the metric in Data Foundry: the net revenue as a share of the oracle's on the same rows, `R / R_oracle`
-    (at most 1; mailing nobody 0, mailing everyone 0.147), as `normalized_early_detection_utility` scales the
-    PhysioNet utility between no alarm and the best and `normalized_gini` divides by the perfect model's Gini. The
-    ranking within a fold does not change, the error `1 - R / R_oracle` is at least 0 and reads as the share of the
-    attainable revenue missed, and TabArena needs no refactor. A change to the metric in Data Foundry.
-  - Keep the metric in dollars and refactor TabArena: a scorer returns its own error per scored set (the oracle's
-    score as the zero), or a task scored by such a metric enters only the aggregates that a shift of the zero leaves
-    unchanged.
-  - A fixed optimum (the largest gift less the cost) makes every error positive, but the ratio aggregates then
-    measure the distance to a value no model can reach; a clip at 0 hides the losses. Neither is a fix.
-- [ ] **Training weights.** A TODO for later: nothing changes in TabArena or AutoGluon yet. A format-2 task may declare
-  a training weight, `task_metadata.sample_weight` (read it with `data_foundry.curation_container.sample_weight`): a
-  scoring column that the objective metric reads as its row weight (MET-15), such as the years insured of a claims
-  rate (fremtpl2 `Exposure`, bemtpl97 `expo`). Every model is fitted with it as the row weight and never gets it as a
-  feature: a time on risk that a claim can cut short leaks the outcome as a feature (LEAK-41), and a fit without the
-  weight targets another quantity (on fremtpl2 an unweighted fit scores worse than the constant rate).
-  - **The gate.** No container with a `sample_weight` enters a run until the adapter builds X from
-    `feature_columns()`, passes the weight to every fit, and scores with Data Foundry's scorer. A contract test on a
-    toy container guards it: its realized weight, used as a feature or ignored, moves the score past a stated
-    tolerance.
-  - **Scoring columns never reach `predict`.** The adapter passes the scoring columns to the scorer, and the
-    `sample_weight` column to the fit as the training rows' weight; it passes none of them to `predict`. A test row's
-    weight is the realized amount at risk, which a model at the quote does not have (LEAK-41): read as a feature it
-    gains 0.0052 deviance on bemtpl97, 0.0072 to 0.0088 on fremtpl2 and 0.09 to 0.12 weighted Gini on
-    australian_vehicle_insurance_2004_2005 (X1, 2026-11-08).
-  - **Weighted validation.** Early stopping, tuning and ensembling use the weighted metric, with the same
-    `min_prediction` floor in validation and test (in AutoGluon, `TabularPredictor(sample_weight=col,
-    weight_evaluation=True)`).
-  - **The models to update.** AutoGluon's NN_TORCH, FastAI and KNN drop the weight with a log line at level 15;
-    RealMLP, TabM, the TabPFN wrappers, TabICL, Mitra and TabDPT never read it; XGBoost's early stopping ignores the
-    evaluation weights; CatBoost stops on RMSE for a metric it does not know; AutoGluon has no Poisson scorer and no
-    offset.
-  - **A model-fit contract test** for the benchmark pipeline, per model: does it use the training weights, and the
-    validation weights? Fit with half the rows at weight 0: the prediction must change. Other fit properties are worth
-    testing the same way, such as transductive use of the test rows (LEAK-9) and determinism.
-  - **Resampling, one default for a weight-blind model.** Draw each bag fold's training rows with probability in
-    proportion to the weight (the validation rows untouched), seeded, recorded as `weight_mode=resampled` and flagged
-    on the leaderboard. Measured against a weighted fit, it costs 0.0007 to 0.0018 deviance on fremtpl2 (three draws
-    or one); on australian_vehicle_insurance_2004_2005 it closes 90% of the deviance gap but only 45% of the Gini gap.
-- [ ] **Validation weights and unit weights.** A TODO for later (Lennart, 2026-11-08). The adapter weights every
-  validation loss (early stopping, model selection, tuning, ensembling) by `validation_weight(container)`
-  (`data_foundry.curation_container`), the metric's row weight, so the model optimises what the test score counts. A
-  task with a `unit_weight` (MET-17: boreal_postfire_lichen_biomass, superconductivity,
-  pancreatic_cancer_mouse_detection, dementia_prediction) counts each unit once in the score: weight the validation loss
-  by its column, keep a unit's rows on one side of an inner validation split (group the inner folds by
-  `unit_weight(container).unit`), and never fit with it as a training weight. A contract test: a toy container whose
-  units have 1 and 5 rows; the adapter's validation score equals the scorer's on the same rows.
-- [ ] **Report the effective sample size.** For a task scored per group, the number of test groups per fold is the
-  sample size of the score (34 molecules per fold in `musk`); show it next to the results.
+Open decisions for the benchmark, with the evidence so far: [losses for deviance-scored tasks](#a-losses-for-deviance-scored-tasks),
+[errors of metrics without a fixed best value](#b-errors-of-metrics-without-a-fixed-best-value),
+[threshold tuning for label metrics](#c-threshold-tuning-for-label-metrics),
+[the default encoding of a raw mass spectrum](#d-the-default-encoding-of-a-raw-mass-spectrum),
+[vibrational spectra](#e-vibrational-spectra), [text and date encodings](#f-text-and-date-encodings),
+[raw SMILES on the main leaderboard](#g-raw-smiles-on-the-main-leaderboard),
+[the LightGBM default on force_2020](#h-the-lightgbm-default-on-force_2020).
 
-## Losses for deviance-scored tasks
+## Before the first v0.2 run
 
-A TODO for TabArena to decide (Andrej, 2026-11-09, cross-dataset review: "Yes, we should definitely stick to what
-practitioners do wherever possible, but we also need more research on that."). Nothing changes in Data Foundry. A
-practitioner on a count or claim-cost task fits a Poisson or Tweedie loss with a log link; most benchmark methods fit
-squared error, so on a zero-heavy target they predict values near zero or below, which the metric's floor then scores.
-On pricing_game_2017_french_mtpl (repeat 0, folds 0 to 2, untuned) LightGBM fitted by squared error scores 74.94 at a
-1 EUR floor and 102.83 at 0.1 EUR, LightGBM fitted with the Tweedie loss 75.51 and 78.11, the constant 63.31 at both.
+### 1. Pin the release that reads format 2
 
-- [ ] **The metric's loss where a method has one.** The adapter reads `task_metadata.objective_metric` and sets the
-  matching objective with a log link on LightGBM, XGBoost and CatBoost; a method without such a loss (RealMLP, TabM,
-  the TabPFN wrappers, TabICL: an AI reading of their interfaces, not checked per version) keeps its own loss.
+v0.2 containers are format 2 (`container.format_version == 2`): the task metadata carries the metric spec, the
+grouping, the scoring columns and the weights, and the splits are a row table (`rows.parquet`, one
+`split_r<repeat>_f<fold>` column per split holding `train`, `test` or nothing). Releases up to v0.0.5 cannot read
+them; TabArena requires `data-foundry>=0.0.3` today.
 
-  | Metric | Objective | Parameter |
-  |---|---|---|
-  | `mean_poisson_deviance` | Poisson (LightGBM `poisson`, XGBoost `count:poisson`, CatBoost `Poisson`) | none |
-  | `mean_tweedie_deviance` | Tweedie (LightGBM `tweedie`, XGBoost `reg:tweedie`, CatBoost `Tweedie`) | the variance power = the metric's `power` (LightGBM and XGBoost `tweedie_variance_power`; CatBoost `Tweedie:variance_power=<power>`) |
-  | `rescaled_mean_tweedie_deviance` | Tweedie, as above (the rescaling only multiplies each scored set's predictions by one factor) | the metric's `power` |
+- Release Data Foundry before the rebuilt containers are uploaded, and raise TabArena's floor to that release.
+- `experiment_metadata.splits` returns `{repeat: {fold: (train, test)}}` for both formats, so the split loop needs no
+  change.
+- An older Data Foundry must never read a newer container: dropping a field such as `time_of` would put a leak column
+  back among the features. From the bug-fix PR of 2026-11-25 on, the loader refuses unknown task and split fields
+  (it dropped them with a warning before).
 
-  The training weight (`sample_weight(container)`, above) is passed with the objective as it is with any other loss.
-- [ ] **The floor on every method's output.** Every method's predictions are floored at the metric's `min_prediction`
-  before scoring, in validation as in test (the scorer does it on the test rows already; early stopping and tuning do
-  the same), whatever loss the method fitted.
-- [ ] **The tasks.** fremtpl2 and bemtpl97 (`mean_poisson_deviance`, weighted by the exposure),
-  pricing_game_2016_french_fleet (`rescaled_mean_tweedie_deviance`, power 1.5), pricing_game_2017_french_mtpl and
-  noaa_storm_events_damage (`mean_tweedie_deviance`, power 1.5), and any later task scored by one of the three
-  deviances.
-- [ ] **Open research** (Andrej's note above), before the protocol fixes the rule:
-  - which methods have a Poisson or Tweedie loss, or can be given one (a custom loss for the neural methods, a log
-    link on the output), and how each behaves with it: convergence, tuning and early stopping on the deviance;
-  - whether matched losses change the rankings on these tasks against squared error with the floor, over several
-    seeds, with the fold-level spread;
-  - what practitioners fit per task (the source papers and the competitions' winning solutions: a Poisson GLM or GBM
-    for frequency, Tweedie or frequency times severity for the claim cost, and what loss is used for storm damage),
-    and whether the benchmark should follow the task's practice or one rule per metric.
+### 2. Model inputs: `task.X`
 
-## Recommended scoring of grouped tasks
+Build X from `task.X(rows)` (the columns `task.features`, from `feature_columns(container)`), for every pipeline. It
+leaves out:
 
-The metadata is meant to determine the official score, so every method is scored the same way. The resolution we
-recommend:
+- the target;
+- the group column(s): today only the `tabarena_default` pipeline drops them (its `GroupAggregationFeatureGenerator`),
+  and under `default` (`AutoMLPipelineFeatureGenerator`) the group id is a feature;
+- the scoring columns (`task_metadata.scoring_columns`): a metric's inputs such as an era, a group or a weight, never
+  model inputs. A weight column's test values in particular are the realized amount at risk, which a model at the
+  quote does not have (LEAK-41): read as a feature it gains 0.0052 deviance on bemtpl97, 0.0072 to 0.0088 on fremtpl2
+  and 0.09 to 0.12 weighted Gini on australian_vehicle_insurance_2004_2005 (2026-11-08);
+- a time column that dates the label (`task_metadata.time_of == "label"`, also `grouping.time_of`): the moment the
+  label became known, after the prediction point. 12 tasks: 2_month_survival_rate_prediction, apistox,
+  bank_marketing, california_house_prices_2020, coffee_rating_prediction, fremtpl2,
+  infrared_thermography_temperature, labour_inspection_compliance, qsar_tid_11, sdss_17, seismic_bumps,
+  wine_quality;
+- by default a column whose raw values are no model input (`task.needs_encoding`, a SMILES string): `X(rows,
+  special="drop")` is the default, `"encode"` gives the recommended encodings and `"raw"` the stored values for a
+  method with its own encoder (item 6).
+
+These columns stay in the frame for the split and the scorer (items 3 and 4). `task_metadata.prediction_time`, when
+set (no task yet), names the column of the prediction point, a model input like any other.
+
+### 3. The metric: score by the spec
+
+A format-2 container stores its metric as data: `task_metadata.objective_metric` (`data_foundry.schema.MetricSpec`:
+`name`, `kind`, `prediction` `proba` / `label` / `value`, `greater_is_better`, `params`, `inputs`, `origin`,
+`target_transform`, and the source's text). Format 1 (BeyondArena) keeps `objective_metric_name`. Every definition
+declares the metric its source scored, or an explicit fallback (rules MET-1 to MET-17 in
+`.claude/skills/knowledge-curation/references/metrics.md`).
+
+- Stop replacing unknown metrics silently. Today any name other than `roc_auc`, `log_loss` and `rmse` becomes the
+  problem type's default without a warning, so `mape`, `rmsle` and every custom metric below are never used. An
+  unsupported name must fail.
+- Score with `task.score(y_true, y_pred, rows)` (`data_foundry.metrics.scorer(container)` underneath), `rows` being
+  the scored rows' positions in `container.dataset`. It does what the bare metric does not:
+  - inverts a modelling scale (`target_transform` `log`, `log1p`, `log10`: 29 tasks) on both the true values and the
+    predictions; models fit and predict on the shipped scale;
+  - floors predictions at the metric's `min_prediction` (the deviances);
+  - takes the metric's input columns (a group, an order, a weight: 19 tasks) from the scored rows;
+  - aggregates per group for a group-unit task (item 9);
+  - reads probability columns in the sorted order of the classes (scikit-learn's `classes_`, also for an ordered
+    target), or a DataFrame whose columns are the class names, matched by name;
+  - scores a constant prediction 0 for the correlation metrics.
+- Wrap it as an AutoGluon scorer (`autogluon.core.metrics.make_scorer`: `task.greater_is_better`, `task.optimum`,
+  `needs_proba` for `prediction == "proba"`, `needs_class` for `"label"`). Inner validation, early stopping and tuning
+  use the same scorer. The Data Foundry side is done: `task.optimum` is the metric's best value from the registry
+  (`MetricDef.optimum`, `None` for the two metrics of [B](#b-errors-of-metrics-without-a-fixed-best-value)),
+  `task.error(score)` the distance to it, and the scorer takes the row positions from the index of a pandas `y_true`
+  (`task.y(rows)` keeps it), since AutoGluon calls a scorer without them.
+- A metric is NaN where it is undefined (one class in a fold for the AUC-type metrics, a zero true value for `mape`).
+  Treat NaN as an undefined fold, not as a failed model. The build checks refuse folds where the declared metric is
+  undefined, so a NaN on a shipped split means the harness scored other rows than the split's.
+
+The metrics in use:
+
+| Metric | Kind, prediction | Tasks |
+|---|---|---|
+| `roc_auc` | standard, proba | 67 (42 fallbacks) |
+| `rmse` | standard, value | 27 (11 fallbacks) |
+| `log_loss` | standard, proba | 21 (18 fallbacks) |
+| `rmsle` | standard, value | 19 |
+| `mae` | standard, value | allstate_claims_severity, medical_facility_operational_data, wine_quality, zillow_prize |
+| `mse`, `r2`, `mape` | standard, value | electric_motor_temperature_prediction; mercedes_benz_greener_manufacturing; 5g_energy_consumption (stand-in for the Zindi WMAPE, whose weights are not published) |
+| `mean_poisson_deviance` | standard, value; input `weight`, `min_prediction` | bemtpl97 (`expo`), fremtpl2 (`Exposure`) |
+| `mean_tweedie_deviance` | standard, value; `power`, `min_prediction` | noaa_storm_events_damage (input `weight`), pricing_game_2017_french_mtpl |
+| `rescaled_mean_tweedie_deviance` | custom, value; input `weight` | pricing_game_2016_french_fleet |
+| `normalized_gini` | custom, value | allstate_claim_prediction_challenge_1m, loan_default_prediction_imperial_college, spanish_homeowners_motor_insurance_2010_2014, spanish_motor_insurance_2015_2018 |
+| `normalized_weighted_gini` | custom, value; input `weight` | australian_vehicle_insurance_2004_2005, frempl_french_motor_personal_line, liberty_mutual_fire_peril_loss_cost, spanish_motor_insurance_coverage_level_2022_2024 |
+| `ordered_lorenz_gini` | custom, value; input `weight` | wisconsin_local_government_property_insurance_fund |
+| `mean_group_pearsonr` | custom, value; input `group` | huesken_sirna_efficacy, numerai_v5_2_1m (`numerai_corr`), protein_model_quality_rf_pcp |
+| `weighted_pearsonr` | custom, value; input `weight` | g_research_crypto_forecasting_1m |
+| `mean_group_normalized_rmse` | custom, value; input `group` | noaa_afsc_bottom_trawl_survey_cpue, wadden_sea_sibes_macoma_abundance |
+| `par_k` | custom, value; input `group` | asp_potassco_classification, sat11_hand_algo_runtime (PAR10) |
+| `rmspe` | custom, value | rossmann_store_sales |
+| `net_revenue_at_cost` | custom, value | pva_revenue_prediction_kddcup98 |
+| `cost_matrix` | custom, proba or label | aps_failure, credit_g (proba); force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition (label) |
+| `precision_at_k`, `average_precision_at_k` | custom, proba | coil_2000, labour_inspection_compliance; huntprohibited_1m |
+| `gini_top_capture` | custom, proba | amex_non_iid_1m (per customer, item 9) |
+| `hierarchical_balanced_accuracy` | custom, label; input `group` | micro_mass |
+| `normalized_early_detection_utility` | custom, label; inputs `group`, `order` | sepsis_prediction_1m |
+
+### 4. Inner validation follows the outer split
+
+- The roles: `task.regime` (`iid`, `grouped`, `temporal`) and `task.split_roles` (`group`, `time`, `gap`,
+  `gap_unit`, `unit`) say what each split column is for (`task.split_columns` stays the flat list).
+  `task.validation_split(fold.train)` is the default cut a harness may use (whole groups and units on one side; for a
+  temporal task the newest rows held out after the gap). A format-1 group column is in `split_roles.group`; its
+  `task.grouping` is `None`, as `container.grouping` is.
+- Temporal tasks (68): cut the inner hold-out forward on the time column. Read it from `task.split_roles.time`
+  (`time_on_to_groups_data` reads `X[time_on]` today), and only then fit on `task.X(rows)`,
+  which may leave the time column out (item 2). Dropping it first breaks the temporal
+  validation; never dropping it feeds the model a time it does not have.
+- Grouped tasks (48): group-aware inner folds for every grouped task. The BeyondArena protocol does it
+  (`task_specific_validation=True`); the TabArena v0.1 protocol mixes a group's rows across inner train and validation.
+- Unit weights (5, item 11): keep a unit's rows on one side of the inner split.
+- The inner validation of a `_1m` version is drawn from the sampled rows, never added to them (item 5).
+
+### 5. The row budget of the `_1m` versions
+
+A `_1m` version caps only its test sides in the container (at most 500k rows per split); its train sides keep every
+row they may use. The container records the budget, `experiment_metadata.row_budget` (`{train: 1000000, test:
+500000}`), and the default sampler, `experiment_metadata.train_sampling`. 18 versions: aeolus_rebuilt,
+allstate_claim_prediction_challenge, amex_non_iid, ashrae_great_energy_predictor_iii,
+climate_model_weather_forecasting, consumer_complaints, cooking_time, delivery_eta, expresso_churn_prediction,
+fraud_detection_in_electricity_and_gas_consumption, g_research_crypto_forecasting, home_credit_default_stability,
+huntprohibited, maps_router_eta, numerai_v5_2, nyc_taxi_trip_duration, pkdd_15_taxi_trip_time_prediction_ii,
+sepsis_prediction (each `_1m`).
+
+- Fit on `fold.train` of `task.folds()` (`data_foundry.sampling.subsample_train` underneath; `fold.train_side` is
+  the whole side): for a temporal train side the newest year,
+  extended back in time until it holds 1M rows, then a random 1M of those (a year in `task_metadata.time_unit`:
+  numerai's eras are weeks); whole groups of a grouped side; stratified rows of an IID side. Deterministic; the whole
+  train side for a container without a budget. Without it a model trains on the whole history.
+- N is a hard cap, inner validation included (Lennart, 2026-11-10).
+- A method may choose its N rows itself, from the split's train side only and keeping `train_sampling.unit` (whole
+  groups, whole time values). Such results are a separate leaderboard track.
+- Load only a split's rows: the largest versions ship tens of millions of rows (maps_router_eta_1m has 989 float
+  columns). Read the split's rows from `rows.parquet` and the sampled rows from `dataset.parquet`.
+- Read N from the container, never assume 1M: a `_10m` version would carry its own budget.
+
+### 6. Special features
+
+A container lists every model input that needs handling beyond its dtype in `task.special_features`
+(`data_foundry.schema.SpecialFeature`: `name`, `kind` `smiles` / `spectrum`, `layout` `column` / `group`, `columns`,
+`encoding_required`, `recommended_encoding`, `details`). One contract for every kind (Lennart, 2026-11-02).
+
+- The guard first: a feature with `encoding_required` is encoded or left out, never passed on as its dtype
+  (`task.X()` leaves its columns, `task.needs_encoding`, out by default since the panel review of 2026-11-26). The
+  model-agnostic pipeline marks every pandas `string` column as text and embeds it (Qwen3-Embedding-8B, 32
+  dimensions); on apistox that embedding of the SMILES scored no better than no structure at all (ROC AUC 0.78-0.81
+  against 0.70-0.82; ECFP4 bits or character n-grams 0.83-0.85).
+- Map each feature to an AutoGluon special type named by its `kind`, with one generator per kind that calls
+  `data_foundry.special.encode_special_feature(df, feature)` (`encodings_for(feature)` lists the candidates, the
+  recommended one first). The text generators exclude them.
+- SMILES (9: apistox, drug_induced_autoimmunity_prediction, nci_aids_antiviral_screen, qsar_aquatic_toxicity,
+  qsar_bioconcentration, qsar_biodeg, qsar_fish_toxicity, qsar_oral_toxicity, qsar_tid_11): the recommended
+  encoding is RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts (about 1,400 columns, cached by value;
+  the counts lifted qsar_tid_11's LightGBM R^2 from 0.601 to 0.658). "Just one pipeline choice that we can later
+  investigate for the benchmark"; a feature selection step may follow (Lennart, 2026-11-01).
+- Spectra (3: micro_mass, a VITEK MS peak list; open_soil_spectral_library, mid-infrared; pancreatic_cancer_mouse_detection,
+  raw SELDI-TOF): `encoding_required` is false, the bins stay numeric features, so a pipeline that ignores them still
+  runs. The generator encodes row by row with `recommended_encoding` (no fitting, the same values in every split).
+  The defaults are open ([D](#d-the-default-encoding-of-a-raw-mass-spectrum), [E](#e-vibrational-spectra)).
+- Caching follows `Encoding.scope`: `value` (one row per distinct value: SMILES, e5, dates), `row` (spectra; no cache
+  needed) or `split` (fitted on each split's training rows: TF-IDF). See item 12.
+- Every default preprocessing step can be switched off per method (Lennart, 2026-11-01): a method that brings its own
+  encoding gets the raw column.
+
+### 7. Ordered categories
+
+v0.2 containers store ordinal scales as ordered categories (`CategoricalDtype(levels, ordered=True)`), including the
+scales the sources ship as numbers (ratings, grades, bands): the curated state, whatever the benchmark does with it
+(Lennart, 2026-10-31). AutoGluon's `CategoryFeatureGenerator` rebuilds every category unordered.
+
+- Keep the order in the preprocessing, and give it to the models (for example the codes in order as a number for the
+  tree models, the categories kept for a model that wants them).
+- Without it the scales shipped as numbers reach the models as unordered categories, which raised LightGBM's error by
+  6.0% on student_portuguese_performance, 4.8% on breast_cancer_prediction and 3.9% on gallstone_disease. With the
+  order LightGBM's error fell by 1.56% on average over 55 datasets (12 better, 3 worse), TabPFN v3.5's by 0.25%
+  (run of 2026-10-30, the shipped splits).
+- Targets: binary targets are "No"/"Yes" with "Yes" the event, so the sorted classes give the positive class. An
+  ordered multiclass target (cardiotocography, dementia_prediction, hepatitis_c_prediction, chicago_traffic_crashes,
+  ai4d_lab_tanzania_tourism_classification_challenge) is scored in the sorted order of its classes, like any other
+  (item 3); the declared order stays in the container as type information.
+
+### 8. Training weights
+
+A format-2 task may declare a training weight, `task.sample_weight` (its values `task.train_weight(rows)`): a
+scoring column that the metric reads as its row weight
+(MET-15), such as the years insured of a claims rate. 6 tasks: australian_vehicle_insurance_2004_2005 (`exposure`),
+bemtpl97 (`expo`), frempl_french_motor_personal_line (`Exposure`), fremtpl2 (`Exposure`),
+pricing_game_2016_french_fleet (`exposure`), spanish_motor_insurance_coverage_level_2022_2024 (`actual_exposure`).
+Every model is fitted with it as the row weight and never gets it as a feature; a fit without it targets another
+quantity (on fremtpl2 an unweighted fit scores worse than the constant rate).
+
+- The gate: no container with a `sample_weight` enters a run until the adapter builds X from `task.X`,
+  passes the weight to every fit and scores with Data Foundry's scorer. A contract test on a toy container guards
+  it: its weight, used as a feature or ignored, moves the score past a stated tolerance.
+- Scoring columns never reach `predict` (item 2): the adapter passes them to the scorer, and the `sample_weight`
+  column to the fit as the training rows' weight.
+- Weighted validation: early stopping, tuning and ensembling use the weighted metric, with the same `min_prediction`
+  floor as the test score (in AutoGluon, `TabularPredictor(sample_weight=col, weight_evaluation=True)`).
+- The models to update: AutoGluon's NN_TORCH, FastAI and KNN drop the weight with a log line at level 15; RealMLP,
+  TabM, the TabPFN wrappers, TabICL, Mitra and TabDPT never read it; XGBoost's early stopping ignores the evaluation
+  weights; CatBoost stops on RMSE for a metric it does not know; AutoGluon has no Poisson scorer and no offset.
+- A model-fit contract test per model: fit with half the rows at weight 0, the prediction must change. Other fit
+  properties are worth the same kind of test (transductive use of the test rows, item 14; determinism).
+- One default for a weight-blind model: draw each bag fold's training rows with probability in proportion to the
+  weight (the validation rows untouched), seeded, recorded as `weight_mode=resampled` and flagged on the leaderboard.
+  Against a weighted fit it costs 0.0007 to 0.0018 deviance on fremtpl2; on australian_vehicle_insurance_2004_2005 it
+  closes 90% of the deviance gap but only 45% of the Gini gap.
+
+## Next
+
+### 9. Scoring at the prediction unit
+
+A task whose prediction unit is the group (`grouping.prediction_unit == "group"`) is scored with one value per group,
+so each group counts once; `experiment_runner.evaluate` scores every row on its own today. The metadata is
+`task_metadata.grouping` (`data_foundry.schema.Grouping`: `prediction_unit`, `aggregation`, `context`,
+`definition`), read with `task.grouping` (format 1: its group column with one prediction per row). 3 tasks: musk
+(`any`: a molecule is a musk if any conformation is), amex_non_iid_1m (`last`: the latest statement decides, per
+customer), fraud_detection_in_electricity_and_gas_consumption_1m (`mean`).
 
 | Prediction unit | Label of a group | Default group prediction | Metric computed on |
 |---|---|---|---|
-| `row` | | | the rows, unweighted (as today) |
+| `row` | | | the rows (as today) |
 | `group` + `mean` | the shared label | mean of the rows' predicted probabilities (regression: of the predictions) | one value per group |
 | `group` + `any` | positive if any row is | max of the rows' P(positive) | one value per group |
-| `group` + `last` | the latest row's label (`time_on`) | the latest row's prediction | one value per group |
-| `group` + `select_min` / `select_max` | | the row with the lowest / highest prediction | the true value of the selected row (for example PAR10 for sat11) |
+| `group` + `last` | the latest row's label (by the group's time) | the latest row's prediction | one value per group |
 
-* The metric is the task's `objective_metric` (format 1: `objective_metric_name`) applied at that unit: ROC AUC over molecules for musk on the max
-  of each molecule's row probabilities, over rows for in_vehicle.
-* Named metrics that need the group structure get the group ids and the order from the metadata: the PhysioNet 2019
-  utility for sepsis (each patient's ordered hours), `gini_top_capture` per customer for amex, the 5G challenge's
-  weighted MAPE (not computable: a `mape` stand-in), micro_mass's accuracy averaged per strain and then per species,
-  PAR10 for sat11 (a timeout is a runtime of the 5,000 s cutoff, counted 10 times).
-* Methods: the task fixes the unit and the metric. The harness applies the default aggregation when a method returns
-  row predictions; a method may return one prediction per group itself (a multiple-instance model, a learned pooling,
-  another rule) and is scored with the same metric on the same unit. What a method may look at follows `context`; a
-  group-level override needs `all_rows`. At the row unit every row is predicted.
-* Inner validation and tuning should use the same resolved metric, so a model is not tuned on rows and scored on
-  groups.
-* Report the number of test groups per fold next to a group-level score; it is the score's sample size.
-* Until TabArena scores at the group unit, the three group-unit datasets are scored per row; the metadata says what
-  the right unit is, and nothing is held back.
+- `task.score` (`scorer(container)`) applies the default aggregation when a method returns row predictions. A method
+  may return one prediction per group itself (a multiple-instance model, a learned pooling) and is scored by the same metric on the
+  same unit; such an override needs `context="all_rows"` (item 10).
+- Inner validation and tuning use the same resolved metric, so a model is not tuned on rows and scored on groups.
+- Until TabArena scores at the group unit, the three are scored per row; nothing is held back.
 
-## Special features: one contract for every kind
+### 10. Group context
 
-Added 2026-11-02 (Lennart: one general form "like the target column", not a field per kind, so that later kinds such
-as a shipped embedding fit without new fields). Data Foundry side done.
+`grouping.context` says what a model may know about a group when it predicts one of its rows: `none` (each row
+stands alone; 40 grouped tasks), `all_rows` (all rows of a new group are known at prediction time; 8 tasks:
+amex_non_iid_1m, force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition,
+fraud_detection_in_electricity_and_gas_consumption_1m, huesken_sirna_efficacy, musk, pricing_game_2017_french_mtpl,
+protein_model_quality_rf_pcp, sat11_hand_algo_runtime) or `past_rows` (only the group's earlier rows; none yet).
 
-- [ ] **Read `task_metadata.special_features` in the adapter, whatever the kind.** A v0.2 container lists every model
-  input that needs handling beyond its dtype as a `data_foundry.schema.SpecialFeature`:
-  - `name`; `kind` (`smiles`, `spectrum`; more later);
-  - `layout`: `column`, one column (a SMILES), or `group`, several columns in a fixed order encoded together (a
-    spectrum);
-  - `columns`; `encoding_required`, true when the raw values are no model input (a SMILES string), false when they
-    are numbers a model can read (a spectrum's intensities);
-  - `recommended_encoding`, a spec id; `details`, what the kind adds (a spectrum's axis, unit, technique, state).
+- Build group aggregation features only where the context allows them: from all rows of a test group for
+  `all_rows`, causally for `past_rows`, none for `none`. Today they are built for every `per_group` task.
+- It matters: on protein_model_quality_rf_pcp a model that compares a candidate with its protein's others scores
+  0.483 against 0.322 per-protein correlation for a row-only one.
 
-  `data_foundry.curation_container.special_features(container, kind=None)` lists them, and
-  `data_foundry.v2.special.encode_special_feature(df, feature, encoding=None)` replaces a feature's columns by their
-  encoding, where they stand. `encodings_for(feature)` gives the candidates, the recommended one first. Map each
-  feature to an AutoGluon special type named by its `kind` (`FeatureMetadata` takes any name), with one generator per
-  kind that calls the entry point.
-- [ ] **The guard is generic:** a feature with `encoding_required` is encoded or left out, never passed on as its
-  dtype (a SMILES as text). A feature without it may go to a model as it is when the method switches the encoding off.
-- [ ] **Caching follows `Encoding.scope`:** `value` (one row per distinct value: SMILES, e5, dates), `row` (one per row,
-  no fitting: spectra; cheap, no cache needed) or `split` (fitted on each split's training rows: TF-IDF). The cache
-  contract below keys every cached encoding by its spec id.
+### 11. Validation weights and unit weights
 
-## Encodings and their caches
+- Weight every validation loss (early stopping, model selection, tuning, ensembling) by
+  `task.validation_weights(rows)` (the column `task.validation_weight`), the metric's row weight, so a model optimises what
+  the test score counts (Lennart, 2026-11-08).
+- A task with a `unit_weight` counts each unit once in the score (MET-17; 5 tasks: boreal_postfire_lichen_biomass,
+  dementia_prediction, noaa_storm_events_damage, pancreatic_cancer_mouse_detection, superconductivity): weight the
+  validation loss by its column, keep a unit's rows on one side of an inner split (`task.unit_column`, also in
+  `task.split_columns`), and never fit with it as a training weight. A contract test: a toy container whose units
+  have 1 and 5 rows; the adapter's validation score equals the scorer's on the same rows.
 
-Added 2026-11-01 (Lennart: "introduce caching for all encodings in a nice way, which we should anyhow revisit for
-tabarena-v0.2 with good time keeping and adding it on top of the benchmark record").
+### 12. Encoding caches and their time
 
-- [ ] **One cache contract for every precomputed encoding.** Today only the semantic-text embedding is cached
-  (`tabarena.benchmark.preprocessing.text_cache`: a value -> vector parquet per task, keyed by the encoder spec id
-  `<model>-d<dim>-r<revision>`, shipped inside the container as `tabarena_text_cache_<id>.parquet`, loader modes
-  `require` / `auto` / `off`). Generalise it so any expensive or version-sensitive encoding (text embeddings, a
-  SMILES encoding if we adopt one, later others) uses the same keying, versioning, shipping and loader modes, rather
-  than one module per encoding.
-- [ ] **Time keeping for cached encodings: count it in the fit time.** Under the bundle default
-  `text_cache_mode="require"` the embeddings are computed once by `generate_text_cache`, outside every timed fit, and
-  their cost is recorded nowhere: a method on a text task gets the embedding for free. Measure each cache's compute
-  time when it is made (total and per value, with the encoder spec and the hardware), store it with the cache, and add
-  it to each method's fit time (the test rows' share to its inference time) in the benchmark record, as if the method
-  had computed the encoding itself (Lennart, 2026-11-01). Note it in the record's description of the timing, so a
-  reader knows cached preprocessing is included.
-- [ ] **SMILES columns: encode them as structures (Data Foundry side done, 2026-11-01; since 2026-11-02 a special
-  feature of kind `smiles`, layout `column`, `encoding_required`).** A v0.2 container ships a molecule's structure as
-  a `string` column listed in `task_metadata.special_features` (recommended encoding e.g.
-  `rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1`); `special_features(container, "smiles")` lists them. Datasets: apistox,
-  drug_induced_autoimmunity_prediction, nci_aids_antiviral_screen, the five qsar_* sets (and the molecule candidates
-  to come). TabArena needs, in this order:
-  - **A guard first.** The model-agnostic pipeline marks every pandas `string` column as text
-    (`StringFixAsTypeFeatureGenerator`) and embeds it with Qwen3-Embedding-8B at 32 dimensions. On `apistox` that
-    embedding of the SMILES scored no better than no structure at all (ROC AUC 0.78-0.81 against 0.70-0.82; ECFP4
-    bits or character n-grams 0.83-0.85; record, 2026-10-07). Until the generator below exists, the adapter must drop a
-    special feature with `encoding_required` (or encode it as below), never pass it on as text.
-  - **The adapter** passes `special_features` into the task, and the pipeline maps them to AutoGluon special types by
-    kind (`smiles` here); the text generators exclude them.
-  - **A SMILES feature generator** with the recommended encoding (`data_foundry.v2.chemistry.encode_smiles`: RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts, one row per molecule; Data Foundry is already a dependency) or TabArena's own,
-    cached by value under the encoding's id on the cache contract above, so a fit needs no RDKit.
-    The recommended encoding is wide (about 1,400 columns, the ECFP4 counts added by default because they helped once:
-    qsar_tid_11's LightGBM R^2 from 0.601 to 0.658): "just one pipeline choice that we can later investigate for the
-    benchmark", and a feature selection step may follow it (Lennart, 2026-11-01).
-  - Whether a method may read the raw SMILES with its own encoder on the main leaderboard is open (Lennart,
-    2026-11-01: "we keep this discussion for later").
-- [ ] **Recommended encodings of dates and text (`data_foundry.v2.encodings`, `recommended_encodings()`).** Dates: skrub's
-  `DatetimeEncoder(add_weekday=True, periodic_encoding="circular")`, as BeyondArena and `tabarena_default` do today
-  (`encode_datetime`). Text: TF-IDF fitted on the training rows (words, or character 2- to 5-grams for one-token
-  values), reduced by SVD (`encode_text_tfidf`), and `intfloat/e5-small-v2` sentence embeddings (`encode_text_e5`):
-  neither wins everywhere, so check both (Lennart, 2026-11-01). TabArena v0.2 embeds text with Qwen3-Embedding-8B at
-  32 dimensions; compare it with both on the text datasets before fixing the default.
-- [ ] **Every default preprocessing step can be switched off** per method (Lennart, 2026-11-01: "in general, all
-  preprocessing may be disable-able"): a method that brings its own encoding of SMILES, text or dates gets the raw
-  column.
+- One cache contract for every precomputed encoding. Only the text embedding is cached today
+  (`tabarena.benchmark.preprocessing.text_cache`: a value-to-vector parquet per task, keyed by the encoder spec id,
+  shipped inside the container as `tabarena_text_cache_<id>.parquet`, loader modes `require` / `auto` / `off`).
+  Generalise it so any expensive or version-sensitive encoding (text embeddings, SMILES, later others) uses the same
+  keying by spec id, versioning, shipping and loader modes (Lennart, 2026-11-01).
+- Count the encoding's time in the fit time. Under `text_cache_mode="require"` the embeddings are computed once,
+  outside every timed fit, and their cost is recorded nowhere. Measure each cache's compute time when it is made
+  (total and per value, with the encoder spec and the hardware), store it with the cache, and add it to each method's
+  fit time (the test rows' share to its inference time), noted in the record's description of the timing.
 
-## Spectra
+### 13. Effective sample size
 
-Added 2026-11-02 (PR #21, Andrej's proposal, with Lennart's decisions: spectra as special features in a group of
-columns, full resolution, the field's published defaults). Data Foundry side done; nothing changes for a pipeline that
-ignores them, since the bins stay numeric features.
+For a task scored per group, or by a metric over groups, the number of test groups per fold is the sample size of the
+score (34 molecules per fold in musk). Show it next to the results.
 
-- [ ] **Spectra are special features of kind `spectrum`** (layout `group`, `encoding_required` false), read through the
-  contract above: `special_features(container, "spectrum")`; `details` holds the axis, its unit, the technique and
-  the state (`raw` / `processed` / `peaks`). Datasets: pancreatic_cancer_mouse_detection (raw SELDI-TOF, 6,771 bins)
-  and micro_mass (a VITEK MS peak list, 1,082 bins); about 40 Raman, infrared and near-infrared candidates are queued.
-- [ ] **A spectrum feature generator** that encodes each spectrum row by row with its `recommended_encoding`
-  (`encode_special_feature(df, feature)`, `data_foundry.v2.special`): for a raw mass spectrum
-  MALDIquant's steps (`ms-sqrt-sg21-snip100-tic-r1`), for anything else the columns as they are
-  (`spectrum-as-is-r1`). No fitting, no labels, so the same values in every split; it costs milliseconds per spectrum,
-  so it needs no cache, but its time counts in each method's fit time like the cached encodings. Switchable per
-  method: a method that processes spectra itself gets the raw bins.
-- [ ] **Decide the default encoding of a raw mass spectrum: a benchmark choice** (Lennart, 2026-11-02). The literature
-  names no single best pipeline:
-  - Cruz-Marcelo et al. 2008 (Bioinformatics 24:2129): "none of the methods show uniformly better performances".
-  - Wegdam et al. 2009 (Proteome Science 7:19): "No pre-processing method significantly outperforms the other", "the
-    settings for pre-processing parameters lead to large differences in classification accuracy", and "We advocate
-    the evaluation over a range of parameter settings"; the classifier mattered more than the preprocessing.
-  - Meuleman et al. 2008 (BMC Bioinformatics 9:88): normalising helps, and scaling by a spread beats scaling by a mean.
+### 14. Test rows predicted without the other test rows
 
-  There are two published traditions, the square root and the log, and three candidates are registered in
-  `data_foundry.v2.spectra` (`recommended_encodings()["mass_spectrum"]`, the placeholder default first):
-  - `ms-sqrt-sg21-snip100-tic-r1`: the MALDIquant vignette (Gibb and Strimmer 2012); the placeholder default.
-  - `ms-driams-sqrt-sg21-snip20-snip100-tic-r1`: DRIAMS's settings (Weis et al. 2022, Nature Medicine; their script
-    `DRIAMS-A_2015_preprocessed.r` in BorgwardtLab/maldi_amr), the largest machine-learning study on MALDI-TOF
-    spectra. Their trim to 2,000-20,000 Da and 3 Da bins change the columns, so they belong to the width step below.
-  - `ms-cromwell-udwt-mm-tic-log2-r1`: the log tradition of SELDI-TOF analysis. Cromwell's wavelet denoising and
-    monotone-minimum baseline (Coombes et al. 2005, Proteomics 5:4107; MD Anderson's MATLAB code), then the total ion
-    current and log2 as in Cromwell's and Ciphergen's pipelines (Wegdam et al. 2009). PR #21's own chain is close to
-    it.
+medical_facility_operational_data, sepsis_prediction_1m and 5g_energy_consumption carry fields that are history at
+each row's own arrival; a method that looks at the other test rows of a block (a test-time fit, transductive
+inference, the block's own statistics) would see the future. Data Foundry ships a protocol line in each definition
+and no per-row scorer, so the guarantee sits in the benchmark: predict each test row from the training rows and its
+own row, or check that a method's predictions do not change when the other test rows change. A method that learns
+from the test block is called out and not benchmarked (LEAK-9, Lennart, 2026-11-05).
 
-  The procedure, fixed before any result is seen:
-  - Candidates are published workflows only, with the raw bins as the reference. No setting is tuned on the
-    benchmark's folds.
-  - Datasets: every raw mass-spectrum dataset of the benchmark, at least two or three. Today only
-    pancreatic_cancer_mouse_detection; next the DRIAMS candidate and the NCI-FDA prostate SELDI set.
-  - Models: three families, a foundation model (TabPFN), gradient boosting, and a linear model or PLS-DA.
-  - Criterion: the mean normalised score over datasets and families; the candidate that hurts no family against the
-    raw bins wins ties. Then the most cited, then the simplest.
-  - Every method can switch the encoding off.
-
-  What one dataset shows so far, pancreatic (60 shipped splits, ROC AUC, 2026-11-02), and why it is not enough:
-
-  | Model | Raw | MALDIquant | DRIAMS | Cromwell log2 | PR #21's chain (reconstructed) |
-  |---|---|---|---|---|---|
-  | TabPFN v3.5 | 0.659 | 0.690 | not run | not run | 0.716 |
-  | HistGradientBoosting | 0.585 | 0.685 | 0.628 | 0.604 | 0.642 |
-  | LightGBM | 0.577 | 0.676 | 0.624 | 0.604 | 0.649 |
-  | Random forest | 0.536 | 0.681 | 0.663 | 0.591 | 0.657 |
-  | PLS-DA, 5 components | 0.635 | 0.691 | 0.646 | 0.639 | 0.713 |
-  | Logistic regression | 0.663 | 0.646 | 0.603 | 0.628 | 0.708 |
-
-  The DRIAMS and Cromwell settings were made for spectra at the instrument's full resolution; pancreatic's are binned
-  at 400 ppm, which may be why they trail here.
-- [ ] **Width goes to the feature-limit step**, not to the encoding: the encodings keep every bin (Lennart,
-  2026-11-02). Averaging adjacent bins costs little (PR #21: TabPFN 3.5 0.733 against 0.725 with 8-bin averages on
-  pancreatic) if a model needs fewer columns.
-- [ ] **PLS-DA as a reference method for spectra.** It is the field's usual linear method, and on raw mass spectra it
-  ranks differently from the tabular models (PR #21: third on the raw bins, first on the processed ones).
-- [ ] **Vibrational spectra: check the encodings on the first datasets.** RamanBench (arXiv:2605.02003) ran its
-  leading methods (AutoGluon 1.5, TabPFN v2.5, TabICL v2) on the raw spectra and preprocessed only for its chemometric
-  baselines, so the default is the spectrum as it is. Three alternatives are registered (2026-11-04, Lennart: "one can
-  add all and select as needed"): `vib-als-snv-r1` (an ALS baseline and SNV, RamanBench's linear-model default),
-  `vib-snv-r1` and `vib-sg11-d1-r1` (a Savitzky-Golay first derivative, 11 points, order 2). On OSSL's infrared
-  spectra LightGBM went from 1.74 (as it is) to 1.33, 1.39 and 1.24 RMSE in percent; measure them on each spectrum
-  dataset before choosing a default.
-
-## Ordinal features
-
-- [ ] **Keep the order of an ordered category in the pipeline, and give it to the models.** v0.2 containers store
-  ordinal scales as ordered categories (`CategoricalDtype(levels, ordered=True)`): the curated state, whatever the
-  benchmark does with it (Lennart, 2026-10-31: "In data foundry, we want to keep the right state independent of what the
-  downstream benchmark does"). Since 2026-10-31 that includes the 167 scales the sources ship as numbers (ratings,
-  grades, bands), so this change is due before the next benchmark run. Two steps. The preprocessing (TabArena's, used as
-  in BeyondArena going forward) must keep the order: AutoGluon's `CategoryFeatureGenerator` rebuilds every category
-  unordered (`pd.Categorical(X[col], categories=...)`). And the models must be told: for example the codes in order as a
-  number for the tree models, with the categories kept for a model that wants them. Without it, the scales shipped as
-  numbers reach the models as unordered categories, which raised LightGBM's error by 6.0% on
-  student_portuguese_performance, 4.8% on breast_cancer_prediction and 3.9% on gallstone_disease (TabPFN v3.5 barely
-  changes). With the order, LightGBM's error fell by 1.56% on average over 55 datasets (12 better, 3 worse), up to 31%
-  on eryhemato_squamous_disease; TabPFN v3.5's by 0.25% (10 better, 6 worse); a linear model on the bare codes loses
-  where a scale is not monotone in the target (run of 2026-10-30, the shipped splits).
-
-## Library version
-
-- [ ] **Require the data-foundry release that carries the v0.2 metadata.** v0.2 containers store
-  `split_random_state` (and `grouping` for grouped tasks); releases up to v0.0.5 forbid unknown fields and cannot load
-  them. Release data-foundry before uploading the rebuilt containers and raise TabArena's `data-foundry>=0.0.3` floor.
-  From this version on, `CuratedContainer.load` ignores fields it does not know, with a warning.
-- [ ] **The rebuilt containers keep their splits in a row table** (`rows.parquet`, one `split_r<repeat>_f<fold>`
-  column per split holding `train`, `test` or nothing; the split metadata file is then
-  `experiment_metadata.predictive-ml-splits-table-v1.json`). A data-foundry release before the row table refuses
-  these containers as written by a newer version, so the floor above must be a release that has it. The adapter reads
-  the splits through `experiment_metadata.splits` and needs no change.
-
-## The train budget of the `_1m` versions (issue #70, 2026-11-10)
-
-Since issue #70 a `_1m` version caps only its test sides in the container (at most 500k rows per split). Its train
-sides keep every row they may use: all earlier rows of a temporal window (minus the gap), every row of an IID or
-grouped fold outside its test side. The container records the budget, `experiment_metadata.row_budget`
-(`{train: 1000000, test: 500000}`), and the default sampler, `experiment_metadata.train_sampling` (`default`:
-`newest_year` or `random`; `unit`: `rows`, `groups` or `time_values`; `stratify_on`). Every other v0.2 container has
-neither. The 18 versions carry them once rebuilt.
-
-- [ ] **Fit on at most `row_budget.train` rows.** Before each fit the adapter takes the train positions from
-  `data_foundry.v2.subsample_train(container, repeat, fold)`: for a temporal train side the newest year, extended back
-  in time until it holds 1M rows, and a random 1M of those (numerai's year is 52 eras, from
-  `task_metadata.time_unit`); whole groups of a grouped one, stratified rows of an IID one. It is deterministic and returns the train side whole for a container
-  without a budget. Without this step a model trains on the whole history.
-- [ ] **N is a hard cap, validation included.** The rows a fit uses for training and inner validation together are
-  at most `row_budget.train`: the inner validation is drawn from the sampled rows, never added to them (Lennart,
-  2026-11-10).
-- [ ] **A model's own sampler is a hook, reported as its own track.** A method may choose its N rows itself (more of
-  the recent past, another window of the history, by recency weights), only from the split's train side and only when
-  it keeps `train_sampling.unit` (whole groups, whole time values). Results with a custom sampler are a separate track
-  of the leaderboard, never mixed with the default one.
-- [ ] **Load only a split's rows.** A rebuilt version ships its whole history, tens of millions of rows for the
-  largest (the sizes come with the next check of the working copy). A worker reads the rows of its split from
-  `rows.parquet` and the sampled train rows from `dataset.parquet`, instead of the whole frame per fit; check storage
-  and loading for the largest (maps_router_eta_1m has 989 float columns).
-- [ ] **Larger budgets.** A `_10m` version for large-data experiments carries its own `row_budget`; the adapter reads
-  N from the container, never assumes 1M.
-
-## Model defaults
-
-- [ ] **Check the LightGBM default on force_2020 once it is built.** Untuned LightGBM with the default
-  `min_child_weight` of 0.001 diverged on force_2020 (grouped fold 0, 100k rows: test log loss 14-15; with
-  `min_child_weight=1`, 0.81), as on mice_protein_trisomy_discriminant. After the definition masked the impossible
-  readings (DCAL 10,006.8, DRHO -7,429.3 and others) the task probe's LightGBM gives 0.872 and no longer diverges, so
-  extreme values were the likely trigger. Left for later (Lennart, 2026-10-21: "we dont need to check the benchmark
-  case, we can do that later, it is fine as is for now").
-
-## Ordered targets and the positive class (2026-11-01, PR #37)
-
-Classification targets ship their classes as words now (CLEAN-25). Binary targets are "No"/"Yes" with "Yes" the
-event, so sorting the classes gives the right positive class. Five multiclass targets are ordered categories whose
-category order is not the sorted order (cardiotocography: normal < suspect < pathologic; dementia_prediction;
-hepatitis_c_prediction; chicago_traffic_crashes; ai4d_lab_tanzania_tourism_classification_challenge).
-
-Since 2026-11-05 (Lennart, issue 5 of ai4d_lab_tanzania_tourism_classification_challenge) the scorer follows
-scikit-learn's convention for every target: `scorer(container)` reads probability columns in the sorted order of the
-classes (`classes_`, the column order of `predict_proba`), and the declared order stays in the container as type
-information. A harness passes `predict_proba` as it comes, or a DataFrame whose columns are the class names, which the
-scorer matches by name (a missing or unknown class name is an error). Before that change the scorer read a plain
-array in the category order: a harness that reorders its columns to the categories, as the example did, now passes
-them as named columns or in sorted order. A score computed with the columns aligned either way is the same number.
-
-## Test rows predicted without the other test rows (2026-11-04, PR #33 second review)
-
-- [ ] **Check that a method never reads the other test rows of a split.** medical_facility_operational_data,
-  sepsis_prediction and 5g_energy_consumption carry fields that are history at each row's own arrival; a method that
-  looks at the other test rows of a block (a test-time fit, transductive inference, the test block's own statistics)
-  would see the future. Data Foundry ships a protocol line in each definition and no per-row scorer (Lennart: "we can
-  check if the model cheats"), so the guarantee sits in the benchmark: predict each test row from the training rows and
-  its own row, or check that a method's predictions do not change when the other test rows change. A method that
-  learns from the test block is called out and not benchmarked (LEAK-9, amended 2026-11-05, Lennart: "we investigate
-  models, and would find out if they do transductive learning which we can call out and not benchmark").
-
-- [ ] Apply the same train-only, current-row prediction check to `duolingo_spaced_repetition_recall`. Its later test-session history counters reconstruct earlier test labels on 3.32-5.18% of rows at 99.97-100% precision; adding the recovered labels to frozen honest predictions gains 0.0210-0.0349 AUROC on the three shipped test windows. Fit all learned transforms on the training side; freeze them and the model. A prediction may read its current row and training data only, never other test rows, test-block statistics, future histories or another split's held-out labels. Verify invariance when unrelated test rows are added, removed, permuted or changed; batched row-independent computation is permitted. This is required benchmark-side method checking, not enforcement supplied by Data Foundry or certified by its build.
-- [ ] **Chromophore: encode both structures and enforce independent queries.** For
+- Apply the same train-only, current-row prediction check to `duolingo_spaced_repetition_recall`. Its later test-session history counters reconstruct earlier test labels on 3.32-5.18% of rows at 99.97-100% precision; adding the recovered labels to frozen honest predictions gains 0.0210-0.0349 AUROC on the three shipped test windows. Fit all learned transforms on the training side; freeze them and the model. A prediction may read its current row and training data only, never other test rows, test-block statistics, future histories or another split's held-out labels. Verify invariance when unrelated test rows are added, removed, permuted or changed; batched row-independent computation is permitted. This is required benchmark-side method checking, not enforcement supplied by Data Foundry or certified by its build.
+- **Chromophore: encode both structures and enforce independent queries.** For
   `chromophore_optical_properties_db`, encode dye and solvent/host SMILES as typed structures;
   preserve gas's absent solvent with medium state. Fit learned transforms on training rows only,
   exclude scaffold metadata from predictors, and predict each query without held-out-batch counts
   or group labels (`grouping.context="none"`). The bounded participant attack found no robust gain
   from forbidden batch counts; that does not verify downstream adapters. Actual benchmark
   enforcement and inner-tuning paths remain to be checked before using their scores.
+
+## Open decisions
+
+### A. Losses for deviance-scored tasks
+
+"We should definitely stick to what practitioners do wherever possible, but we also need more research on that"
+(Andrej, 2026-11-09). A practitioner on a count or claim-cost task fits a Poisson or Tweedie loss with a log link;
+most benchmark methods fit squared error and predict values near or below zero on a zero-heavy target, which the
+metric's floor then scores. On pricing_game_2017_french_mtpl (repeat 0, untuned) LightGBM fitted by squared error
+scores 74.94 at a 1 EUR floor and 102.83 at 0.1 EUR, fitted with the Tweedie loss 75.51 and 78.11; the constant
+scores 63.31. Tasks: fremtpl2, bemtpl97 (`mean_poisson_deviance`), pricing_game_2016_french_fleet
+(`rescaled_mean_tweedie_deviance`, power 1.5), pricing_game_2017_french_mtpl, noaa_storm_events_damage
+(`mean_tweedie_deviance`, power 1.5).
+
+- The proposal: the adapter sets the metric's loss with a log link where a method has one, and floors every method's
+  output at `min_prediction` in validation as in test (the scorer does it on the test rows already).
+
+  | Metric | Objective | Parameter |
+  |---|---|---|
+  | `mean_poisson_deviance` | LightGBM `poisson`, XGBoost `count:poisson`, CatBoost `Poisson` | none |
+  | `mean_tweedie_deviance`, `rescaled_mean_tweedie_deviance` | LightGBM `tweedie`, XGBoost `reg:tweedie`, CatBoost `Tweedie` | the metric's `power` as the variance power |
+
+- To research first: which methods have such a loss or can be given one (a custom loss for the neural methods), how
+  each behaves with it; whether matched losses change the rankings against squared error with the floor, over seeds;
+  what practitioners fit per task (the source papers and winning solutions), and whether the benchmark follows each
+  task's practice or one rule per metric.
+
+### B. Errors of metrics without a fixed best value
+
+TabArena turns a score into an error, `optimum - score`, and bencheval reads the error as at least 0 with 0 perfect:
+`verify_error` raises on a negative error, and improvability, `relative_error` and `baseline_advantage` are ratios of
+errors, so they change with where the zero sits (Elo, win rate, rank and the normalized error do not). Every metric
+in use has a bound no score passes, except two (Lennart, 2026-11-16, review of PR #100):
+
+- `net_revenue_at_cost` (pva_revenue_prediction_kddcup98): the net revenue per scored donor of mailing every donor
+  whose predicted gift is above the $0.68 cost. Its best value is the oracle's and changes by fold (0.757 over all
+  donors); mailing nobody scores 0, everyone 0.111, the cup's winner 0.153, and a model that mails non-donors falls
+  below 0. Keep `greater_is_better=True` and no clip at 0. Options: normalize it in Data Foundry to `R / R_oracle`
+  on the same rows (at most 1; the ranking within a fold unchanged, no TabArena refactor), or keep dollars and let a
+  scorer return its own error per scored set. A fixed optimum or a clip at 0 is not a fix.
+- `ordered_lorenz_gini` (wisconsin_local_government_property_insurance_fund) is not normalized: its best value is
+  below 1 and varies by fold, so `1 - score` measures the distance to a value no model reaches. The same two options
+  apply.
+
+Until it is decided, the registry gives both metrics no optimum (`task.optimum is None`) and `task.error(score)`
+raises for them.
+
+### C. Threshold tuning for label metrics
+
+"We could also just add threshold tuning by default, which we should in tabarena for metrics that can benefit from
+it" (Lennart, 2026-10-21). A metric scored on hard labels measures the threshold a method picks as much as the model:
+choose it on the inner validation predictions by the same metric. Today: force_2020 (`cost_matrix` on labels),
+micro_mass (`hierarchical_balanced_accuracy`), sepsis_prediction_1m (`normalized_early_detection_utility`). The
+sources fixed hard-label decisions (MET-4, MET-6), so the metric stays and the threshold becomes part of the method.
+
+### D. The default encoding of a raw mass spectrum
+
+A benchmark choice (Lennart, 2026-11-02): the literature names no single best pipeline (Cruz-Marcelo et al. 2008;
+Wegdam et al. 2009: "We advocate the evaluation over a range of parameter settings"). Three candidates are
+registered in `data_foundry.special.spectra`, the placeholder default first: `ms-sqrt-sg21-snip100-tic-r1` (the MALDIquant
+vignette), `ms-driams-sqrt-sg21-snip20-snip100-tic-r1` (DRIAMS, Weis et al. 2022; its trim and 3 Da bins belong to
+the width step) and `ms-cromwell-udwt-mm-tic-log2-r1` (Cromwell, the log tradition of SELDI-TOF).
+
+- The procedure, fixed before any result is seen: published workflows only, the raw bins as the reference, nothing
+  tuned on the folds; every raw mass-spectrum dataset of the benchmark (only pancreatic_cancer_mouse_detection today,
+  next the DRIAMS and NCI-FDA prostate candidates); three model families (TabPFN, gradient boosting, a linear model
+  or PLS-DA); the mean normalised score over datasets and families, ties to the candidate that hurts no family, then
+  the most cited, then the simplest.
+- So far, on pancreatic (60 splits, ROC AUC, 2026-11-02): MALDIquant beats the raw bins for every tree model
+  (LightGBM 0.577 to 0.676, random forest 0.536 to 0.681) and TabPFN v3.5 (0.659 to 0.690); DRIAMS and Cromwell
+  trail, possibly because pancreatic's spectra are binned at 400 ppm. One dataset is not enough.
+- The width goes to the feature-limit step, not to the encoding: the encodings keep every bin (Lennart, 2026-11-02).
+  Averaging adjacent bins costs little if a model needs fewer columns: TabPFN 3.5 scored 0.725 on 8-bin averages
+  against 0.733 on every bin of pancreatic (PR #21).
+- PLS-DA as a reference method for spectra: the field's usual linear method, ranked differently from the tabular
+  models (third on pancreatic's raw bins, first on the processed ones).
+
+### E. Vibrational spectra
+
+RamanBench (arXiv:2605.02003) ran its leading methods on the raw spectra and preprocessed only for its chemometric
+baselines, so the default is the spectrum as it is (`spectrum-as-is-r1`). Three alternatives are registered
+("one can add all and select as needed", Lennart, 2026-11-04): `vib-als-snv-r1`, `vib-snv-r1`, `vib-sg11-d1-r1`. On
+open_soil_spectral_library LightGBM went from 1.74 (as it is) to 1.33, 1.39 and 1.24 RMSE in percent; measure them on
+each spectrum dataset before choosing a default.
+
+### F. Text and date encodings
+
+`data_foundry.encodings.recommended_encodings()`: dates by skrub's
+`DatetimeEncoder(add_weekday=True, periodic_encoding="circular")`, as BeyondArena and `tabarena_default` do; text by
+TF-IDF fitted on the training rows and reduced by SVD (`encode_text_tfidf`) and by `intfloat/e5-small-v2` sentence
+embeddings (`encode_text_e5`). Neither text encoding wins everywhere (Lennart, 2026-11-01). TabArena v0.2 embeds text
+with Qwen3-Embedding-8B at 32 dimensions: compare it with both on the text datasets before fixing the default.
+
+### G. Raw SMILES on the main leaderboard
+
+Whether a method may read the raw SMILES with its own encoder on the main leaderboard is open (Lennart, 2026-11-01:
+"we keep this discussion for later").
+
+### H. The LightGBM default on force_2020
+
+Untuned LightGBM with the default `min_child_weight` of 0.001 diverged on force_2020 (grouped fold 0, test log loss
+14-15; with `min_child_weight=1`, 0.81), as on mice_protein_trisomy_discriminant. Since the definition masks the
+impossible readings, the task probe's LightGBM gives 0.872 and no longer diverges. Check it once the dataset is built
+(Lennart, 2026-10-21: "we can do that later").
+
+## Regenerating the lists
+
+The dataset lists come from the definitions, without building anything:
+
+```python
+from data_foundry.definition.registry import discover_datasets
+from data_foundry.definition.dataset import _build_metadata, effective_row_budget
+
+for name, cls in sorted(discover_datasets("datasets/_dev/tabarena-v0pt2").items()):
+    _, task = _build_metadata(cls)
+    print(name, task.objective_metric.name, task.time_of, task.grouping, task.sample_weight,
+          task.unit_weight, [type(s).__name__ for s in cls.special_features], effective_row_budget(cls))
+```

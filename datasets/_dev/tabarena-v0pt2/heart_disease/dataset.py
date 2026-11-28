@@ -6,15 +6,17 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    GroupedSplits,
     Grouping,
     Metric,
     Source,
-    SplitPlan,
     TaskSummary,
+    TimeBasis,
 )
 
 COLUMNS = [
@@ -142,9 +144,18 @@ class HeartDisease(AbstractCuratedDataset):
         - Codes get their labels from UCI's `heart-disease.names`: `sex`; `cp` typical angina, atypical angina, non-anginal pain, asymptomatic; `restecg` normal, ST-T wave abnormality, left ventricular hypertrophy; `slope` of the peak-exercise ST segment upsloping, flat, downsloping; `thal` normal, fixed defect, reversible defect. `fbs` (fasting blood sugar over 120 mg/dl) and `exang` (angina on exercise) stay 0/1 flags. `oldpeak` is the ST depression on exercise relative to rest; one Long Beach value is negative.
         - Anomaly: the Hungarian file keeps 294 of the paper's 425 patients (36% diseased against 38%); the paper took all catheterizations of 1983 to 1987 without prior infarction or valve disease (p. 306), and how the 294 were chosen is not stated.
         - Duplicates: the Long Beach pair of equal rows is one patient entered twice (the raw file gives both the same exercise and angiogram dates and the same ten vessel readings, which no other Long Beach pair shares), so one is dropped. The Hungarian pair is two patients (exams in March and May 1986) and stays.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
+        - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
     """
+    split_leaf = "L-PLACE.groups"
+    time_basis = TimeBasis(
+        "UnseenGroup",
+        """
+        the source's question is whether a model carries over to another hospital (Detrano et al.
+        built it on the Cleveland patients and applied it to Budapest and Long Beach), so the split holds out each
+        hospital and does not weigh the patients' dates. It cannot test a later period at a hospital the model knows.
+        """,
+    )
 
     # Task
     target = "heart_disease_diagnosis"
@@ -161,19 +172,19 @@ class HeartDisease(AbstractCuratedDataset):
             One group is a hospital: Cleveland Clinic, the Hungarian Institute of Cardiology (Budapest) or the VA Medical Center (Long Beach). The source's question is whether a probability model carries over to other hospitals: "This model, derived from the clinical and noninvasive test results of 303 patients undergoing angiography at the Cleveland Clinic in Cleveland, Ohio, was applied to a group of 425 patients undergoing angiography at the Hungarian Institute of Cardiology in Budapest, Hungary (disease prevalence 38%); 200 patients undergoing angiography at the Veterans Administration Medical Center in Long Beach, California (disease prevalence 75%); ..." (Detrano et al. 1989, abstract). So whole hospitals are held out and the model is not told the hospital. Each row is one patient and one prediction.
         """,
     )
+    grouped_splits = GroupedSplits(kind="leave_one_group_out")
     splits_comment = """
         Leave one hospital out: three splits, each training on two hospitals and testing on the third (Cleveland, Hungary, then Long Beach), one repeat, since repeating a split of three groups into three folds gives the same splits. The source built its model in Cleveland and applied it at the other hospitals; leaving each hospital out in turn generalises that design so that every hospital is tested once. With three hospitals the scores are three numbers and differ by hospital (Long Beach is the hardest). Unlike `covertype`'s three areas, the transfer is the source's design and no class drops out (curation notes).
     """
     accepted_check_warnings = {
-        "task_group_count_low": "Three hospitals by design: the source built its model at one hospital and applied it "
-        "at the others. The fourth hospital (Switzerland) is left out because its published file kept only 8 of its about "
-        "27 patients without disease.",
-        "splits_dimensions_off_protocol": "Leave one hospital out gives exactly three splits. More repeats would split "
-        "the same three hospitals the same way, so they would add copies, not information.",
-        "groups_test_groups_few": "Testing on one unseen hospital at a time is the task. Each fold still scores 199 to "
-        "303 patients one by one (smallest class: 51). The signal carries over to unseen hospitals: the linear model "
-        "beats the class shares at each of the three (task probes, ROC AUC 0.880, 0.898, 0.732). Most of the "
-        "variation between folds comes from Long Beach, the hardest hospital.",
+        "groups_test_groups_few": (
+            "Three hospitals by design: the source built its model at one hospital and applied it at the others. "
+            "The fourth hospital (Switzerland) is left out because its published file kept only 8 of its about 27 "
+            "patients without disease. Testing on one unseen hospital at a time is the task. Each fold still "
+            "scores 199 to 303 patients one by one (smallest class: 51). The signal carries over to unseen "
+            "hospitals: the linear model beats the class shares at each of the three (task probes, ROC AUC 0.880, "
+            "0.898, 0.732). Most of the variation between folds comes from Long Beach, the hardest hospital."
+        ),
         "groups_largest_share_high": "Cleveland is a real hospital, one of three, not a catch-all value. When it is the "
         "test hospital, the model trains on the other two (493 patients), where two of Cleveland's tests were rarely "
         "recorded (`ca` for 5, `thal` for 62).",
@@ -207,17 +218,6 @@ class HeartDisease(AbstractCuratedDataset):
         return FeatureTypes(
             ordinal=ORDINAL_LEVELS, categorical=["hospital", "sex", "cp", "fbs", "restecg", "exang", "slope", "thal"]
         )
-
-    def _make_splits(self, df: pd.DataFrame) -> SplitPlan:
-        # Leave one hospital out, one repeat: fold i tests on the i-th hospital and trains on the other two
-        hospital = df["hospital"].astype(str).to_numpy()
-        splits = {
-            0: {
-                i: (np.flatnonzero(hospital != h).tolist(), np.flatnonzero(hospital == h).tolist())
-                for i, h in enumerate(HOSPITALS)
-            }
-        }
-        return SplitPlan(splits=splits)
 
     def _decisions(self, raw: dict[str, pd.DataFrame], df: pd.DataFrame) -> list[Decision]:
         no_exercise_test = df[["thalach", "exang", "oldpeak"]].isna().all(axis=1)

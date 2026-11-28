@@ -5,9 +5,7 @@ checked_by:
 - Myunghwan
 - Andrej
 data_foundry_status:
-- WIP (Triage)
 - 'DF: Yes'
-claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 2
 tags:
@@ -378,7 +376,7 @@ CC (2026-11-25, Andrej): the value in the Outcome is corrected. The task probe's
 
    **Andrej (2026-11-24, discuss):** Is mae really off just because median of 1? Ultimately this is just a heavy tailed regression distribution and models should still improve?
 
-   **Answer (AI, 2026-11-24, evening):** under MAE, no: measured, no model improves on predicting 1; under squared error, yes, a little. Untuned LightGBM on the fraction, the shipped inputs (with and without the exercise count), trained on 1M rows of each shipped training side (one Slurm job):
+   **Answer (AI, 2026-11-24, evening):** under MAE, no: measured, no model improves on predicting 1; under squared error, yes, a little. Untuned LightGBM on the fraction, the shipped inputs (with and without the exercise count), trained on 1M rows of each shipped training side (one run):
 
      | Test day | MAE, always 1 | MAE, LightGBM trained on MAE | RMSE, training mean | RMSE, LightGBM trained on squared error | Same, without the exercise count |
      |---|---|---|---|---|---|
@@ -391,7 +389,7 @@ CC (2026-11-25, Andrej): the value in the Outcome is corrected. The task probe's
    - For comparison, the binary 75% label as shipped: LightGBM ROC AUC 0.634 against 0.5 for the dummy, ahead on every split (the `_1m` task probe of today).
    - So option d (the fraction with RMSE) is a valid target with a weak signal, and the source's MAE is ruled out by measurement. The recommendation of earlier today (d) was made before this run; given the stronger signal of the binary labels, the choice is between a, b and d on how much signal the benchmark needs, and between a and b on the cross-dataset item on a curator's own cutoff. Recommendation: a or b over d; the issue stays open.
 
-   **Answer (AI, 2026-11-24, later):** the two binary labels side by side, as Andrej asked in chat (one Slurm job on the 12,854,145 deduplicated sessions; untuned LightGBM on 1M rows of each training side, shipped inputs; means over the three test days, which agree to 0.003):
+   **Answer (AI, 2026-11-24, later):** the two binary labels side by side, as Andrej asked in chat (one run on the 12,854,145 deduplicated sessions; untuned LightGBM on 1M rows of each training side, shipped inputs; means over the three test days, which agree to 0.003):
 
      | | 75% label (shipped) | round(p), more than half right (the source's AUC label) |
      |---|---|---|
@@ -418,7 +416,7 @@ CC (2026-11-25, Andrej): the value in the Outcome is corrected. The task probe's
 
    **Andrej (2026-11-24, change):** Option B: Re-target to round(p).
 
-   **Resolved (2026-11-24, Andrej):** B, applied: the label is Yes when 2K > N (more than half of the session's exercises right; exactly half is No, as the source's R rounding gives), target `session_more_than_half_correct`; the metric is the source's own pooled ROC AUC on round(p) (`Metric.source`, its `evaluation.r`), no longer a fallback; the question, use case, prediction, changes, the estimand, label-construction and label-choice bullets and the decision table follow. `dataset check` (Slurm): 0 errors, 0 warnings. Task probe: ROC AUC 0.555 (linear) / 0.552 (LightGBM) against 0.500, ahead on 3 of 3 days, flags `no_spread` and `drift_baseline` (questions for the tuned benchmark). The cross-dataset item on a curator's own cutoff lapses with it.
+   **Resolved (2026-11-24, Andrej):** B, applied: the label is Yes when 2K > N (more than half of the session's exercises right; exactly half is No, as the source's R rounding gives), target `session_more_than_half_correct`; the metric is the source's own pooled ROC AUC on round(p) (`Metric.source`, its `evaluation.r`), no longer a fallback; the question, use case, prediction, changes, the estimand, label-construction and label-choice bullets and the decision table follow. `dataset check`: 0 errors, 0 warnings. Task probe: ROC AUC 0.555 (linear) / 0.552 (LightGBM) against 0.500, ahead on 3 of 3 days, flags `no_spread` and `drift_baseline` (questions for the tuned benchmark). The cross-dataset item on a curator's own cutoff lapses with it.
 
 10. **Keep the realized exercise count now that failed lessons are seen to end early?**
 
@@ -481,7 +479,7 @@ CC (2026-11-25, Andrej): the value in the Outcome is corrected. The task probe's
 
    **Andrej (2026-11-24, chat):** Under this formulation session_seen is clearly a leak and needs to be dropped.
 
-   **Resolved (2026-11-24, Andrej):** B, applied. `_clean` drops `session_seen` with the outcome ingredients; the question, use case, `known`, `changes`, `fit_reason`, the prediction-contract, estimand and label-construction bullets and the decision table now describe a task decided before the session from seven inputs (clock, lag, two languages, the word, two history counts); measurements taken with the count are dated as such. The 75% label is unchanged (issue 11 open). `dataset check` (Slurm): 0 errors, 0 warnings. Task probe: LightGBM ROC AUC 0.571, ahead of the dummy on 3 of 3 days, flag `drift_baseline` (a question for the tuned benchmark).
+   **Resolved (2026-11-24, Andrej):** B, applied. `_clean` drops `session_seen` with the outcome ingredients; the question, use case, `known`, `changes`, `fit_reason`, the prediction-contract, estimand and label-construction bullets and the decision table now describe a task decided before the session from seven inputs (clock, lag, two languages, the word, two history counts); measurements taken with the count are dated as such. The 75% label is unchanged (issue 11 open). `dataset check`: 0 errors, 0 warnings. Task probe: LightGBM ROC AUC 0.571, ahead of the dummy on 3 of 3 days, flag `drift_baseline` (a question for the tuned benchmark).
 
 9. **Keep `delta` as recorded, now that it runs to the end of the current lesson?**
 
@@ -519,7 +517,7 @@ CC (2026-11-25, Andrej): the value in the Outcome is corrected. The task probe's
 
    **Andrej (2026-11-24, discuss):** Can we somehow reconstruct the true time since the word was last practiced by looking at the user id and the last sessions that are not in the same period?
 
-   **Answer (AI, 2026-11-24, night):** partly, and the part we can rebuild is free of the leak; added as option D. The lesson's start is not recorded, but the end of the learner's previous lesson is, and it is known when this lesson starts: the time from the word's last practice to that previous end is a lag the outcome cannot touch. It leaves out the break between the two lessons, which cannot be separated from this lesson's own length. Measured on the full release (one Slurm job; LightGBM with the learner, round(p) label, no exercise count; ROC AUC):
+   **Answer (AI, 2026-11-24, night):** partly, and the part we can rebuild is free of the leak; added as option D. The lesson's start is not recorded, but the end of the learner's previous lesson is, and it is known when this lesson starts: the time from the word's last practice to that previous end is a lag the outcome cannot touch. It leaves out the break between the two lessons, which cannot be separated from this lesson's own length. Measured on the full release (one run; LightGBM with the learner, round(p) label, no exercise count; ROC AUC):
 
      | | Value |
      |---|---|
@@ -540,7 +538,7 @@ CC (2026-11-25, Andrej): the value in the Outcome is corrected. The task probe's
 
    **Andrej (2026-11-25):** In this case I go with your recommendation D.
 
-   **Resolved (2026-11-25, Andrej):** D, applied: `_clean` replaces `delta` by `delta_to_previous_lesson`, the time from the word's last practice to the end of the learner's previous lesson (0 where the word was practised in that lesson, missing where that lesson is not in the release or precedes the last practice); `known` and a curation bullet say so. `dataset check` (Slurm): 0 errors, 0 warnings. Task probe: ROC AUC 0.552 (linear) / 0.547 (LightGBM) against 0.500, ahead on 3 of 3 days, flags `no_spread` and `drift_baseline` as before.
+   **Resolved (2026-11-25, Andrej):** D, applied: `_clean` replaces `delta` by `delta_to_previous_lesson`, the time from the word's last practice to the end of the learner's previous lesson (0 where the word was practised in that lesson, missing where that lesson is not in the release or precedes the last practice); `known` and a curation bullet say so. `dataset check`: 0 errors, 0 warnings. Task probe: ROC AUC 0.552 (linear) / 0.547 (LightGBM) against 0.500, ahead on 3 of 3 days, flags `no_spread` and `drift_baseline` as before.
 
 8. **Keep the three newest days as test windows, or spread them over the history?**
 
@@ -613,7 +611,7 @@ CC (2026-11-25, Andrej): the value in the Outcome is corrected. The task probe's
    - **Background:**
      - The source does not use it: `experiment.py` of duolingo/halflife-regression reads `user_id` but builds features only from the history counts (`right`, `wrong`), the lag (`t`, logistic regression only), a bias and one indicator per word; `user_id` goes only into the prediction files written for evaluation. Its models are per word and history, not per learner.
      - The domain practitioner of 2026-11-21: "learner identity or a learner's past accuracy: I always have it"; the task gamer found no gain from rebuilding each learner's previous outcomes from the released rows.
-   - **Experiments:** untuned LightGBM without the exercise count (issue 10 B), 1M rows of each training side, one Slurm job; ROC AUC:
+   - **Experiments:** untuned LightGBM without the exercise count (issue 10 B), 1M rows of each training side, one run; ROC AUC:
 
      | Test day | Test rows of learners in training | 75% label: no learner / `user_id` | round(p): no learner / `user_id` |
      |---|---|---|---|
@@ -632,7 +630,7 @@ CC (2026-11-25, Andrej): the value in the Outcome is corrected. The task probe's
 
    - **Recommendation:** B: the learner is an input the deployed app always has, the reason it was dropped no longer applies, and it adds measurable signal; C only after a correct measurement. **Decision:** keep A, or change to B or C?
 
-   **Notes for the AI:** On B, keep `user_id` in `_clean` (drop it from the drop list) and add it to the categorical features; update `known`, the identity bullet of `curation_comments` and the splits comment; rerun the check, the task and leak probes (Slurm). On C, build the feature from strictly earlier sessions of the learner (cumulative correct over seen, all words), from training rows only for test rows; measure it before shipping.
+   **Notes for the AI:** On B, keep `user_id` in `_clean` (drop it from the drop list) and add it to the categorical features; update `known`, the identity bullet of `curation_comments` and the splits comment; rerun the check, the task and leak probes. On C, build the feature from strictly earlier sessions of the learner (cumulative correct over seen, all words), from training rows only for test rows; measure it before shipping.
 
    [^x24d1]: Record CC of 2026-11-02 (Myunghwan): "This supersedes the earlier joint learner/date partition. ... All learners are eligible for earlier training and later test windows; learner identity stays excluded from predictors."
 
@@ -646,11 +644,11 @@ CC (2026-11-25, Andrej): the value in the Outcome is corrected. The task probe's
 
 **Mediator: duolingo_spaced_repetition_recall (2026-11-21)**
 
-Inputs read: claim audit, domain practitioner (job 1401909), precedent checker, advocate and critic openings and
+Inputs read: claim audit, domain practitioner, precedent checker, advocate and critic openings and
 rebuttals, blind review, task gamer, column audit (`pr59_columns/findings/duolingo.md` + scripts), fugaku's column
 audit and precedent-checker report, check.log (28 checks, 0 errors), the record's `## Review` (Horizon, issues 6-10),
 `dataset.py`, README, principles.md, LEAK-6/9/10/41, SPLIT-10/15, TP-7, definitions.md "Larger than the row budget".
-New: one Slurm job (1401968) and the publisher's evaluation code read from GitHub.
+New: one run and the publisher's evaluation code read from GitHub.
 
 **Judgment record**
 
@@ -670,7 +668,7 @@ For the curator: TP-7 remedy (validity-adjacent Must); session_seen keep-with-no
   gap; windows; _1m with fugaku.
 ```
 
-**Decisive experiment: N's gain on full-length lessons (job 1401968)**
+**Decisive experiment: N's gain on full-length lessons**
 
 LightGBM as in the column audit (400 trees, 1M random training rows before the one-day gap, 111,111 random test rows
 per shipped day). Lesson = learner + timestamp; lesson size = sum of `session_seen`, a diagnostic only, never a
@@ -720,7 +718,7 @@ p > 0.5, i.e. `2K > N`. The critic's condition (verify before re-targeting) is m
    Lexeme count: name `lexeme_id` 19,279 vs `lexeme_string` 18,781. EV-7.
 3. Metric unit note (both sides agree; MET-2 note, not a change of metric): pooled AUROC ranks rows across learners;
    the scheduler ranks one learner's words; shipped model within-lesson 0.644-0.652, without N 0.581-0.590, N alone
-   0.611-0.615 (job 1401909).
+   0.611-0.615.
 4. `timestamp` is a datetime feature stamped at the lesson's end, like `delta` (issue 9): mention it in issue 9's
    note (a lesson's length, minutes, inside a day-level time).
 5. The record's `Outcome` / `Main points` say "No new curator decision remains" and list the one-day gap and caps as
@@ -735,7 +733,7 @@ p > 0.5, i.e. `2K > N`. The critic's condition (verify before re-targeting) is m
 | 7 | keep | Settled. The gamer's exploit #1 is the known successor leak; its gain (+0.022 to +0.035) matches the note (+0.021 to +0.035). Exploit #2 adds nothing beyond #1. No new issue. |
 | 8 | **revise** | Drop "spreading buys little" (a claim about scores, which SPLIT-15 does not accept; unmeasured) and the maps_router_eta precedent (its reason, "no other choice", does not hold: 12/10/8 March fits the floor). Recommend B (every other day; 12/10/8 under no gap: Tue, Sun, Fri, about 62% training for 8 March, estimated), as delivery_eta, aeolus_rebuilt, nyc_taxi_trip_duration (Lennart, 2026-11-10). Both advocate and critic agree. Re-state the shares for the gap chosen in H. |
 | 9 | **revise** (keep A) | Add to the note the worth on the rows the outcome did not draw: floored delta 0.6627 vs no delta 0.6578 (about +0.005), as the span clause asks; drop "the worth is small" as a reason (X4) and state the mechanism contrast with bank_marketing `campaign`: most of `delta` lies before the prediction point. Add `timestamp` (change 4). Both sides agree on A. |
-| 10 | **revise** | Replace the experiments with job 1401968 (table above) and the consistency line ("not a new rule" is wrong: the keep predates LEAK-41, 2026-11-06, and the span clause, 2026-11-08). Problem: the count is a span the outcome cuts on 7.9% of rows. Options A keep with a `Potential leak, kept on purpose:` note giving +0.047 on lessons of 15+ and +0.007 on lessons under 15; B drop (7 predictors, 0.626 AUROC). The LEAK-41 reach goes to its own item (new issue 2), not into this one. Recommendation A (see below). |
+| 10 | **revise** | Replace the experiments with the decisive experiment (table above) and the consistency line ("not a new rule" is wrong: the keep predates LEAK-41, 2026-11-06, and the span clause, 2026-11-08). Problem: the count is a span the outcome cuts on 7.9% of rows. Options A keep with a `Potential leak, kept on purpose:` note giving +0.047 on lessons of 15+ and +0.007 on lessons under 15; B drop (7 predictors, 0.626 AUROC). The LEAK-41 reach goes to its own item (new issue 2), not into this one. Recommendation A (see below). |
 
 **New issues for the curator (each one decision)**
 
@@ -1010,7 +1008,7 @@ exclusion. But its strongest input breaks a Must, the target it then predicts is
 exception a Must needs, and the split and documentation carry reasons that no longer hold. Changes below, mildest first
 within each point.
 
-Evidence read: claim audit, domain practitioner (job 1401909), precedent check, blind review (clean_room), task gamer
+Evidence read: claim audit, domain practitioner, precedent check, blind review (clean_room), task gamer
 (participant_kit), column audit (`pr59_columns/findings/duolingo.md`), record `## Review` (Horizon, issues 6-10),
 check.log (0 errors), leak.log, task.log, dtype.log. All probe logs are present now; three phase A agents ran before
 they arrived.
@@ -1023,7 +1021,7 @@ they arrived.
   this lesson", and the paper says a lesson "continues until the student masters" its words. The curator's own
   prediction point (CC 2026-11-02: "at session start using prior information ... Current-session counts are not
   predictors") puts N after it.
-- **Effect on the task:** the model scores the label's construction, not recall. Practitioner's run (job 1401909):
+- **Effect on the task:** the model scores the label's construction, not recall. Practitioner's run:
 
   | Variant | Pooled AUROC (mean of 3 days) | Within-lesson AUROC | AUROC on N=1 rows |
   |---|---|---|---|
@@ -1148,7 +1146,7 @@ shows no censoring at the release end.
   TP-4 hold.
 - Caveat: the single-feature baseline is `session_seen` on all 3 splits (0.596). Part of the spread is therefore the
   label's dependence on N.
-- Without N there is still a real signal: 0.628 pooled AUROC against 0.5 (practitioner, job 1401909). The value holds
+- Without N there is still a real signal: 0.628 pooled AUROC against 0.5 (practitioner). The value holds
   under my remedy too.
 
 **4. `session_seen` falls under LEAK-10's span clause, not LEAK-41: dispute**
@@ -1222,7 +1220,7 @@ No new fact came up, so I add no new points.
 
 **Result:** no claim refuted on validity. Nearly every number the definition and its record state comes out the same on the full release. Three claims are stale or worded too strongly, and two could not be tested.
 
-**How it was tested:** Slurm job 1401914 (cpuhigh32) ran `claims.py` on the full raw file and on the definition's own `make_splits()` and `to_container()`. Script and log are in the run folder. The Dataverse API, the halflife-regression GitHub history and the 2016 README were read as well.
+**How it was tested:** One run ran `claims.py` on the full raw file and on the definition's own `make_splits()` and `to_container()`. Script and log are in the run folder. The Dataverse API, the halflife-regression GitHub history and the 2016 README were read as well.
 
 **Probe outputs:** the run folder holds only `precedent/`. There is no check.log, README_check.md, leak/, task/, dtype/ or group.log, so I could not read the dataset check or the probes.
 
@@ -1325,7 +1323,7 @@ I am the person who runs the practice scheduler in a language-learning app. When
 
 **Partly.** Pooled AUROC ranks rows across all learners and sessions. My decision ranks words within one learner's session (the unit I act on, MET-2).
 
-First result of my run (job 1401909, LightGBM, 1M train, about 111k test rows sampled as whole lessons, test day 12 March):
+First result of my run (LightGBM, 1M train, about 111k test rows sampled as whole lessons, test day 12 March):
 
 | Variant | Pooled AUROC | Mean within-lesson AUROC | AUROC on N=1 rows |
 |---|---|---|---|
@@ -1352,7 +1350,7 @@ The metric I would choose (NEW, weighed, not a Must breach): AUROC within learne
 - The record's issues 9 and 10, and the run folder.
 - Missing: check.log, README_check.md and the leak/task/dtype/group probe outputs were not present in the run folder (only `precedent/`).
 
-**Addendum: full results of job 1401909 (arrived after hand-back)**
+**Addendum: full results of my run (arrived after hand-back)**
 
 LightGBM with 1M training rows, scored on about 111k test rows per day, sampled as whole lessons. "Within-lesson AUROC" is the mean over the 4.8k test lessons that hold both classes (72% of rows).
 

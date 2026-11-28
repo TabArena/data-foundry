@@ -7,7 +7,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -149,26 +150,32 @@ class ThyroidDiscordantArchive(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Three test windows of four months of request dates, newest first: October 1986 to January 1987 (the end of the
-        archive), June to September 1986 and February to May 1986; each trains on every earlier request (87%, 73% and
-        61% of the rows). The windows hold 1,215, 1,230 and 1,145 requests with 25, 54 and 24 discordant results. They
-        follow option C of thyroid_discordant's issue 4 (train on 1984-1985; test on the first half of 1986, its third
+        The windows hold 1,215, 1,230 and 1,145 requests with 25, 54 and 24 discordant results. They
+        follow option C of thyroid_discordant's split decision (train on 1984-1985; test on the first half of 1986, its third
         quarter, and its fourth quarter with January 1987), as four-month windows, which one declaration can express:
         the archive holds only 2 requests in January 1986 and 1 in June 1986, none discordant, so the windows differ
-        from option C's by those three requests (January trains the oldest window, June is tested with the summer)
-        and keep its positives. An IID task of this size would get more folds; more windows would cut the 103 test
-        positives into a handful each. The source split by time too: the ann-thyroid files of the same UCI zip, which
-        their readme gives as the data of Quinlan's 1987 case study, train on 3,772 requests of 1985 and test on the
-        3,428 of 1986 (every row that matches exactly one archive record by its values falls in those years). Training
-        on earlier requests only scores like random training rows of the same size (untuned LightGBM, within 0.01 ROC
-        AUC in each window), so the windows test later requests, with their changes in the tests ordered and in the
-        share of code R, rather than remove a leak.
+        from option C's by those three requests (January trains the oldest window, June is tested with the summer) and
+        keep its positives. An IID split of this size would get 9 splits (SPLIT-15); the three windows follow that
+        decision, and four-month windows fit five only down to 30% training, the curator's exception (SPLIT-14). The
+        source split by time too: the ann-thyroid files of the same UCI zip, which their readme gives as the data of
+        Quinlan's 1987 case study, train on 3,772 requests of 1985 and test on the 3,428 of 1986 (every row that matches
+        exactly one archive record by its values falls in those years). Training on earlier requests only scores like
+        random training rows of the same size (untuned LightGBM, within 0.01 ROC AUC in each window), so the windows
+        test later requests, with their changes in the tests ordered and in the share of code R, rather than remove a
+        leak.
     """
+    split_leaf = "L-ORDER.exception"
     temporal = Temporal(
         on="request_date",
         splits=TemporalSplits(window=4, unit="months", cutoffs=("1986-02-01", "1986-06-01", "1986-10-01")),
     )
     accepted_check_warnings = {
+        "splits_dimensions_off_protocol": (
+            "Three windows against the nine an IID split of 9,162 requests would get (SPLIT-33): they follow "
+            "thyroid_discordant's split decision, and five four-month windows fit only down to 30% training, the "
+            "curator's exception (SPLIT-14). The splits comment names the target, the count reached and what stops "
+            "more (SPLIT-15; Lennart, 2026-11-26)."
+        ),
         "dataset_pure_feature_value": "on_thyroxine and TSH_measured are on the request, before the report comment: "
         "a patient on thyroxine or without a TSH result is rarely commented as discordant (1 of 1,239 and 1 of 834); "
         "no leak",

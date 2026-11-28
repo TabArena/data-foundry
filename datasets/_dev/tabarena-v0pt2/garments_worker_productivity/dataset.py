@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, Temporal, TemporalSplits
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+)
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -110,8 +119,26 @@ class GarmentsWorkerProductivity(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        We define 30 splits with one day for testing each, resulting in small test sizes of 17-24 samples per split. The split with the smallest train sizes uses exactly half of the available samples.
+        A day's productivity and its other end-of-day values are in the efficiency report written after the shift; the
+        prediction is made at the start of the next day, so every training label is known and no gap is needed. The
+        end-of-day values enter lagged to the team's previous recorded day (no team has two rows on one day), and each
+        window is a whole factory day. The one-day windows hold fewer than the 33 scored units SPLIT-14 asks of a
+        test window: the curator's exception (Andrej, 2026-11-19 and 2026-11-20), as the factory
+        plans and is judged by the day, so a day's 17-24 team records are the natural test unit. Measured against
+        two-day windows (15 windows, the second day scored by a model trained before the first): the second day is no
+        harder (worse than the first in 5 to 8 of 15 windows for LightGBM, ridge and Kumo-Tabular), but a model one day
+        older is worse for Kumo-Tabular in 12 of 15 windows (+0.006 MAE, 6.5%, Wilcoxon p 0.012; LightGBM +0.0007,
+        p 0.89), so two-day windows would penalise methods that learn from the newest day: the daily refit stays.
     """
+    accepted_check_warnings = {
+        "splits_test_too_small": (
+            "The curator's exception (Andrej, 2026-11-19 and 2026-11-20): one-day windows of 17-24 "
+            "team records, under SPLIT-14's 33 scored units, because a factory day is the task's natural test unit; "
+            "two-day windows would score each second day with a day-old model, which costs Kumo-Tabular 6.5% MAE "
+            "(12 of 15 windows, p 0.012)."
+        ),
+    }
+    split_leaf = "L-ORDER.exception"
     temporal = Temporal(
         on="date",
         splits=TemporalSplits(window=1, unit="unique", n_windows=30),

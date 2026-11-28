@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -149,9 +150,9 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
         - This introduces the unrealistic downside of data shift within a quarter that a model refit more often would not meet.
         - A one-month gap (Andrej, 2026-11-19): the train side ends a month before each quarter, as a refit at the start of the quarter would not yet hold most of the last month's closures (at the download of 2026-01-23, 70% of December, 14% of November and 7% of October 2025 were still in progress). Measured (2026-11-18, equal training size, 3 seeds): leaving out the 30 days before each quarter worsens log loss by 0.004 to 0.017, broadly rather than through company waves, so recent closures carry a shortcut a deployed model would not have. A 60-day gap would put July-September 2024 under half the complaints (49.6%).
 
-        We create 3 test windows of one quarter, newest first: October-December 2025 (203,139 complaints; train 91.8% of the 3,439,261 after the gap), January-March 2025 (350,790; train 63.9%) and July-September 2024 (213,655; train 51.5%). The newest quarter is always tested. The other two are spread evenly over the six quarters from July 2024 on, the oldest whose train side holds half the complaints, so they test other seasons and another year (the curator's choice of 2026-11-10) and hold the two changes a deployed model met in that time: July-September 2024 falls before the closure mix moved ("Closed with explanation" was 51% to 57% of each quarter of 2024 and 57% to 67% of 2025), and January-March 2025 holds the wave of January 2025 (165,305 complaints that month; 12.9% of the quarter about money transfers, mostly Block, Inc. (Cash App) and Early Warning Services (Zelle)).
-        We use all data up to a month before each quarter as training data. Each quarter keeps at most 500k of its rows (all of them here); each train side holds every earlier row, and a benchmark sub-samples it to 1M rows, by default the newest year before the quarter, extended back in time until it holds 1M rows, and a random 1M of those (`subsample_train`).
+        The newest quarter is always tested. The other two are spread evenly over the six quarters from July 2024 on, the oldest whose train side holds half the complaints, so they test other seasons and another year (the curator's choice of 2026-11-10) and hold the two changes a deployed model met in that time: July-September 2024 falls before the closure mix moved ("Closed with explanation" was 51% to 57% of each quarter of 2024 and 57% to 67% of 2025), and January-March 2025 holds the wave of January 2025 (165,305 complaints that month; 12.9% of the quarter about money transfers, mostly Block, Inc. (Cash App) and Early Warning Services (Zelle)).
     """
+    split_leaf = "L-ORDER.windows"
     # 3 quarterly windows, newest first: the newest quarter and two in other seasons and another year (SPLIT-15; the
     # curator's choice of 2026-11-10, option B), at the assumed 3-month refit horizon. The labels of all three quarters
     # are settled (the archive was exported on 2026-09-14, eight and a half months after 2025-12-31).

@@ -50,7 +50,7 @@ model sees nine independent units.
   value per site at 9 sites (https://doi.org/10.6084/m9.figshare.29310806.v1), so a held-out site leaves eight to
   learn from.
 
-CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
+CC (2026-10-30, Andrej): `No`, as screened (verified in the zero-inflated screening).
 
 Parasitized and total brood cells of trap-nesting solitary bees at 9 sites along the Monte dryland gradient (dos Reis
 Diniz et al. 2026). Downloaded from Figshare on 2026-10-19: 529 rows x 16 columns (528 nests after one exact

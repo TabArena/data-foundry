@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis
+
+from data_foundry.definition import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis
 
 
 class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
@@ -97,6 +98,7 @@ class TaiwaneseBankruptcyPrediction(AbstractCuratedDataset):
           and 0.881; grouped by 10 contiguous file segments 0.934 (sd 0.031) and 0.877. The chains miss most bankrupt
           runs, so the grouped scores bound the leak loosely. Kept with the random split and this note.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

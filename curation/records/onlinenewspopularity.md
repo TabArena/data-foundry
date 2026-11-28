@@ -3,6 +3,7 @@ unique_name: onlinenewspopularity
 name: OnlineNewsPopularity
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -12,6 +13,10 @@ decision_markers:
 - NLP (Text)
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Fixed Delay'
+- Dated Event Log
 collections:
 - TabArena Reject
 - TabSTAR
@@ -19,6 +24,7 @@ collections:
 - MulTaBench
 original_source: UCI
 year: '2015'
+collection_period: Jan 2013 - Dec 2014
 required_split:
 - Temporal (NON-IID)
 problem_type: Regression
@@ -97,6 +103,10 @@ CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note 
 
 **Assessment (AI, 2026-11-11):** `kw_min_min` is missing for 0% to 2% of the articles in 2013 Q1-Q3, 35% in Q4 and 100% in 2014.
 
+CC (2026-11-17, Andrej): Review issue 12, A, as implemented: Nine expanding two-week windows on `publication_date` (the URL date), one every five weeks from 9 March to 27 December 2014, 699-1,003 test articles each (7,641), train = every article at least one week older (21,234-38,385 articles, 53.6-96.8%), one-week gap.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `publication_date`, windows of 2 weeks, 9 windows at fixed cutoffs, gap 1 week) is checked: confirmed in the blind split walk.
+
 ## Review
 
 **Outcome:** added. On 2026-11-11 you chose nine two-week windows, one every five weeks from 9 March to 27 December
@@ -104,7 +114,8 @@ CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note 
 two-week horizon (Horizon, A).
 
 **Main points:** Settled on 2026-11-11: nine windows spread over March to December 2014 (issue 11) and the two-week
-horizon with its one-week gap. Nothing is left open.
+horizon with its one-week gap. Settled on 2026-11-17: the expanding windows stay instead of the paper's 29 sliding
+windows (issue 12, A). Nothing is left open.
 
 **Horizon:**
 
@@ -262,6 +273,34 @@ than the under four days the paper gives shares to settle. `splits_comment` give
    measured on the windows used until 2026-11-11; the share of test articles with the shifted authors' date is now 51%
    (3,880 of 7,641). The record has the decision and the horizon CC lines. `dataset check`: 0 errors, 0 warnings
    (README not regenerated).
+
+12. **Split: the paper's 29 sliding windows (train on the 10,000 preceding articles, test the next 1,000, no gap) instead of nine expanding two-week windows in 2014?**
+
+   * **Problem:**
+     - A fixed train side of 10,000 articles is 25.2% of the 39,643 rows, under the 30% train floor of the rule[^split-14], and sliding scored below expanding on the windows used until 2026-11-11 (R² 0.146 against 0.158).
+     - Both splits test later articles on earlier ones in publication order; they differ in the train side (the paper's last 10,000 articles, ours every article at least a week older), the gap (none against one week) and the tested span (29,000 articles from mid-July 2013 against 7,641 in 2014).
+     - The release keeps the publication date, so the paper's windows can be rebuilt; `TemporalSplits` declares only expanding train sides, so a sliding train side needs a custom `_make_splits`.
+   * **Source split:** yes, paper (Fernandes, Vinagre, Cortez 2015, EPIA): temporal rolling windows: train on a sliding window of W = 10,000 articles, test the next L = 1,000, 29 iterations, articles in publication order ("Under this setup, each classification model is trained 29 times (iterations), producing 29 prediction sets (each of size L) ... balanced class distribution in the first training set (first 10,000 articles).") https://doi.org/10.1007/978-3-319-23485-4_53. Credible: yes, A chronological rolling evaluation chosen for a system that predicts popularity before publication from earlier articles.. Against the tree's leaf: partly, The paper evaluates on rolling windows in publication order (later articles on earlier ones), the leaf's cut; it slides a fixed train window and sets no gap between train and test, where the leaf expands the train side and adds a settling gap.
+   * **Why it counts as chosen, not conventional:** A chronological rolling evaluation chosen for a system that predicts popularity before publication from earlier articles.
+   * **Background:** An editor scores each Mashable article before it goes out, and two years of daily-dated articles give windows. Shares accrue for weeks after publication (the source drops articles under three weeks old), so a gap of about three weeks. Confidence of the blind walk: medium.
+   * **What changes:** Nothing: the `splits_comment` already names the paper's sliding window of W = 10,000 and why the train side expands (R² 0.158 expanding against 0.146 sliding).
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: a Comment quotes the paper's rolling evaluation ('trained 29 times ... first 10,000 articles'), which is the source's split, not the definition's. Raw data not in the warehouse.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Nine expanding two-week windows on `publication_date` (the URL date), one every five weeks from 9 March to 27 December 2014, 699-1,003 test articles each (7,641), train = every article at least one week older (21,234-38,385 articles, 53.6-96.8%), one-week gap (implemented) | No change. | Every train side keeps more than half the articles; the one-week gap is longer than the under four days the paper gives shares to settle; the windows cover spring to early winter 2014. | Tests only 7,641 articles of 2014, not the paper's 29,000 from July 2013 on, so scores are not the paper's set-up; 489 articles of 7-13 December 2014 sit in the gap and in no window. |
+     | B | The paper's rolling scheme: articles in publication order, 29 test sets of 1,000 articles (articles 10,001-39,000, about mid-July 2013 to mid-December 2014), each trained on the 10,000 articles just before it (25.2% of the rows), no gap | Replaces the `TemporalSplits` cutoffs with a custom `_make_splits` of 29 row windows with a capped train side; `splits_comment` rewritten; container rebuilt. | The paper's own train and test sets (Fernandes et al. 2015, Sec. 3.1), so results line up with its ROC AUC of 0.73; 29,000 test articles over 17 months. | Every train side is 25.2% of the rows, under the 30% floor; no gap, so the last days of training hold shares that had not settled; sliding scored R² 0.146 against 0.158 expanding; 29 windows against 9. |
+
+   * **Recommendation:** A, because the shipped windows keep the paper's design (later articles on earlier ones, test sets of about 1,000 articles) while every train side stays above half the rows, which the paper's 10,000-article window does not.. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: replace the split declaration with the source's construction (name the files or periods it uses) and say in `splits_comment` why the tree's leaf is not followed; on A: name the source's split in `splits_comment` as a departure.
+
+   [^split-14]: **SPLIT-14** (Must): A temporal task has at least 3 windows.
+
+   **Andrej (2026-11-17, ok):** as implemented.
+
+   **Resolved (2026-11-17, Andrej):** A, as implemented: Nine expanding two-week windows on `publication_date` (the URL date), one every five weeks from 9 March to 27 December 2014, 699-1,003 test articles each (7,641), train = every article at least one week older (21,234-38,385 articles, 53.6-96.8%), one-week gap.
 
 ## Reference
 

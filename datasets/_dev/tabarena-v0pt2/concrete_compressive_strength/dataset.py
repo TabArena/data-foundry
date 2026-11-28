@@ -6,7 +6,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary, TimeBasis
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+)
 
 # A re-entry of a test: a row at the same age as an earlier row of another mix, with all seven amounts within 1 kg and
 # the strength within 0.01 MPa (rows 936 to 1029 of the UCI file re-enter rows 721 to 935).
@@ -85,6 +94,7 @@ class ConcreteCompressiveStrength(AbstractCuratedDataset):
         - Note: 34 rows repeat the features of another row, a mix tested again at the same age (25 with the same strength, 9 with another); they stay, and the grouped split keeps them in the fold of their mix.
         - The UCI file is ordered by source study: decimals, units and age schedules mark about 11 blocks (the 17 sources of Yeh 1998 cannot be told apart cleanly). The mix split does not test a new laboratory: grouped by block, TabPFN R^2 0.70 against 0.91 by mix.
     """
+    split_leaf = "L-EXP.item"
     time_basis = TimeBasis(
         "Timeless",
         """

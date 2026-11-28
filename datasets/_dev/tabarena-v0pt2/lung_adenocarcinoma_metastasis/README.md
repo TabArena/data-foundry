@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: lung_adenocarcinoma_metastasis
 container_format: 2
-checksum: v2:68f72e86414e1cda3596d17277025e830cc53324848d29ad63545c69e555aa1e
+checksum: v2:59a534733a457bfa993d02df2870ba758ac7f2c81d25c1bc7920fa4209737090
 build:
-  uuid: 01a111fa-f2d2-7673-a757-142728cdfd4c
-  checksum: v2:6972b53e8d88f2ce4f384612e30af8d5814ee00e2631e91f51f8f322b97a51d0
-  built_at: '2026-10-06T16:10:40+00:00'
-  path: lung_cancer/01a111fa-f2d2-7673-a757-142728cdfd4c
+  uuid: 01a217ff-0adb-746b-9d0e-9efab95cf35d
+  checksum: v2:59a534733a457bfa993d02df2870ba758ac7f2c81d25c1bc7920fa4209737090
+  built_at: '2026-11-26T13:15:31+00:00'
+  path: lung_adenocarcinoma_metastasis/01a217ff-0adb-746b-9d0e-9efab95cf35d
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 123
   n_features: 12561
@@ -46,6 +46,13 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Random patients, stratified on the target: each row is the one tumour of
+    one patient (the normal lung of patient 268 is not a row), so no grouping is needed.
+    5 metastases fall in each test fold of a 3-fold split; 5 folds would leave 3.
+    The 6 IVT batches and 10 scan days hold 0 to 4 metastases each, and folds grouped
+    by either score as the random split does (random forest pooled ROC AUC over 5
+    seeds of grouped 3-fold: by batch 0.856 to 0.897, by scan day 0.868 to 0.903;
+    the shipped 20 random repeats 0.872; review panel, 2026-11-11).'
   n_train:
     min: 82
     max: 82
@@ -64,7 +71,7 @@ bundle_checks:
       2 to 3; only method gaps of about 0.08 ROC AUC rank (bootstrap over the patients:
       random forest minus logistic regression -0.007 to +0.089), and Kendall''s W
       of four default families is 0.187, beside parkinsons 0.204 (retired) and musk
-      0.120 (kept), so the count decided (2026-11-11, Lennart, review issue 2, A).'
+      0.120 (kept), so the count decided (2026-11-11, Lennart).'
 decisions: []
 ---
 
@@ -74,7 +81,7 @@ decisions: []
 
 Binary classification of `Metastasis`, scored with `roc_auc` on IID splits. 123 rows and 12,561 features. Source: Other (2001).
 
-Built as `01a111fa-f2d2-7673-a757-142728cdfd4c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:68f72e86414e1cda3596d17277025e830cc53324848d29ad63545c69e555aa1e`, so the build is stale. See [Build](#build).
+Built as `01a217ff-0adb-746b-9d0e-9efab95cf35d` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -139,7 +146,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2001 |
 | domain | medical & healthcare |
 | license |  |
-| data_tags | IID |
+| data_tags | IID, Timeless |
 | reference | bhattacharjee2001classification |
 | rows x columns | 123 x 12,562 |
 | task.target | Metastasis |
@@ -199,24 +206,26 @@ The first 5 of 123 rows of the final frame (random rows: the frame is shuffled);
 ## Curation notes
 
 - Prediction point: an adenocarcinoma has been resected from the lung and profiled; the pathologist weighs the clinical history (an earlier cancer elsewhere), and the profile is a second opinion. The source names the task: "A key issue in lung tumor diagnosis is the discrimination of a primary lung adenocarcinoma from a distant metastasis to the lung" (Bhattacharjee et al. 2001, Results); "metastases of nonlung origin can be difficult to distinguish from lung adenocarcinomas" (Introduction). In practice the work-up is immunohistochemistry, comparison with the earlier tumour and comparative sequencing; expression tissue-of-origin assays (Pathwork Tissue of Origin, CancerTYPE ID) exist as a second opinion when the stains leave the origin open, mostly for cancers whose origin is unknown and on formalin-fixed tissue, and the NCCN guidelines do not recommend them as standard. The pathologist's tool in this use case is such an assay (USE-1, amended on this case, 2026-11-11, Lennart).
-- CC (2026-11-11, Andrej): a new dataset from the arrays of `lung_cancer`, whose histology target was retired on 2026-11-10 (the slide settles it on resected tumours): the target is metastasis against primary, under its own record since rows, target and values all changed (lung_cancer review issues 7, B, and 4, B). All flags of the sheet count (issue 8, A) except AD218's, dropped with AD224 as undetermined (2026-11-11, Andrej, review issue 2, B).
+- CC (2026-11-11, Andrej): a new dataset from the arrays of `lung_cancer`, whose histology target was retired on 2026-11-10 (the slide settles it on resected tumours): the target is metastasis against primary, under its own record since rows, target and values all changed. All flags of the sheet count except AD218's, dropped with AD224 as undetermined (2026-11-11, Andrej).
 - Label: sheet DATASET B of `SampleData.xls` marks 16 of the study's 139 adenocarcinomas as "possible mets" (`Colon Met` 8, `Breast` 4, `other met` 4) and counts the rest as "Adenocarcinoma w/ no history or path indicating non adeno". 15 of the 16 are written in the resected tumour's own clinical pathology note ("MET COLON", "c/w colon met", "?Br MET", "(met)"); AD218's only note is the study's second reading (`PATH II`, "ad w met?"). The call is read from the specimen's pathology but not settled there: it rests on the earlier cancer outside the specimen. The 8 colon flags are the firmest; 7 of them are the paper's "seven samples [...] previously diagnosed as metastases of colonic origin". The paper speaks of 12 suspected metastases: 12 flags carry a firm note, the other 4 are the three "?Br MET" (AD163, AD172, AD186) and AD218 (dropped, below). 15 flags remain. 4 of them (AD163, AD172, AD178, AD186) were staged as lung primaries (GEO's stage without M1), and the paper's 12 suspected metastases appear to leave out two or three of them; they stay as the sheet codes them (review panel, 2026-11-11).
 - Rows: 123 adenocarcinomas. Of the paper's "125 adenocarcinoma samples [...] associated with clinical data", AD218 and AD224 are dropped as undetermined (below). Dropped as never assessed: the 12 patients whose title starts with `A` (`AD1` to `AD31` in the sheet) and AD355 and AD360, whose clinical fields are all empty.
-- Size (2026-11-11, shipped splits of the 123 rows with age, sex and pack-years, task probe, 30 of the 60 splits): 5 metastases per test fold, about twice parkinsons' 2 to 3; the probe's few-minority flag fires below 5, so its silence decides nothing here. Random forest ROC AUC 0.878 (ahead of the class shares on every split), selected-features linear 0.865, logistic regression 0.849, LightGBM 0.819; the best single probe set chosen on each training side 0.635 (expression alone: 0.876, 0.851, 0.836, 0.811 and 0.652). Only method gaps of about 0.08 ROC AUC rank: under a bootstrap over the patients (500 draws) random forest minus logistic regression is -0.007 to +0.089, while random forest and extra trees each beat LightGBM. Kendall's W of four default families (random forest, extra trees, logistic regression, LightGBM) across the 60 folds is 0.187, beside parkinsons 0.204 (retired) and musk 0.120 (kept): it does not separate the two precedents, so the size was decided on the count (2026-11-11, Lennart, review issue 2, A). On the 125 rows before AD218 and AD224 were dropped: random forest 0.886, logistic regression 0.851 (other splits; on the same folds dropping the two moves no score). On the 127 rows before those changes TabPFN 3.5 reached 0.882 and k-nearest neighbours 0.779. Nine pathology marker genes, unfitted (CDX2, KRT20, CDH17, GATA3, TFF1, ESR1 against NKX2-1, SFTPC, SFTPB; NAPSA has no probe set on HG-U95Av2), reach 0.82. Out of fold the random forest separates the colon metastases at 0.98, the breast ones at 0.75 and the 3 others at 0.76 to 0.83 (unstable): the score rests mostly on colon against lung.
+- Size (2026-11-11, shipped splits of the 123 rows with age, sex and pack-years, task probe, 30 of the 60 splits): 5 metastases per test fold, about twice parkinsons' 2 to 3; the probe's few-minority flag fires below 5, so its silence decides nothing here. Random forest ROC AUC 0.878 (ahead of the class shares on every split), selected-features linear 0.865, logistic regression 0.849, LightGBM 0.819; the best single probe set chosen on each training side 0.635 (expression alone: 0.876, 0.851, 0.836, 0.811 and 0.652). Only method gaps of about 0.08 ROC AUC rank: under a bootstrap over the patients (500 draws) random forest minus logistic regression is -0.007 to +0.089, while random forest and extra trees each beat LightGBM. Kendall's W of four default families (random forest, extra trees, logistic regression, LightGBM) across the 60 folds is 0.187, beside parkinsons 0.204 (retired) and musk 0.120 (kept): it does not separate the two precedents, so the size was decided on the count (2026-11-11, Lennart). On the 125 rows before AD218 and AD224 were dropped: random forest 0.886, logistic regression 0.851 (other splits; on the same folds dropping the two moves no score). On the 127 rows before those changes TabPFN 3.5 reached 0.882 and k-nearest neighbours 0.779. Nine pathology marker genes, unfitted (CDX2, KRT20, CDH17, GATA3, TFF1, ESR1 against NKX2-1, SFTPC, SFTPB; NAPSA has no probe set on HG-U95Av2), reach 0.82. Out of fold the random forest separates the colon metastases at 0.98, the breast ones at 0.75 and the 3 others at 0.76 to 0.83 (unstable): the score rests mostly on colon against lung.
 - Metric: ROC AUC, the fallback for a binary task; the source scores no classifier (its only classifier, k-nearest neighbours on signal-to-noise marker genes, picks the marker genes of its expression clusters and is never scored on the metastasis call). On log loss the random forest beats the class shares (0.286 against 0.371) while logistic regression and LightGBM do not. The declared metric is checked (2026-11-11, Lennart).
 - Class-dependent recording (record marker `Class-dependent Recording`; rewritten by the review panel of 2026-11-11): the metastasis arrays are dimmer, and MAS5's per-array scaling multiplies the same raw noise up. The scaling factor alone separates the classes at ROC AUC 0.62 and the share of probe sets called present at 0.71 (permutation p 0.01); it shows in the noise-floor probe sets of genes lung tissue does not express (`1513_at`, `31760_at`, about 0.71), while the scanner's noise, RawQ and background do not differ (0.48 to 0.52). The difference holds within processing batches (pairs within one IVT batch 0.74), and the batch adds a component of its own; tumour content does not explain it (Spearman -0.18). It does not carry the score: ranking the genes within each array removes it at no cost (logistic regression 0.848 against 0.846), and regressing every gene on the scaling factor and the share present inside the folds leaves at least 0.800, a lower bound since it also removes colon biology. Kept under LEAK-15, which retires only an artefact that cannot be undone. The 67 `AFFX` control probes (ROC AUC 0.62 to 0.74 together, by model) measure the preparation and are dropped, at no cost (random forest 0.894 to 0.893). An earlier note here gave the controls 0.42; that run paired the labels with the wrong arrays.
-- CC (2026-11-11, Andrej): AD218 and AD224 dropped as undetermined (review issue 2, B). AD218 (`other met`) is flagged only by the study's second pathology review (`PATH II`, "ad w met?") and lies in the study's colon-metastasis expression cluster `CM`, so its flag may follow the clustering; AD224 carries the same `PATH II` wording ("ad m met?") and is coded primary. The sheet codes the same evidence both ways; dropping both takes no side. No score moves (random forest 0.895 to 0.893, panel experiment on the shipped folds).
+- CC (2026-11-11, Andrej): AD218 and AD224 dropped as undetermined. AD218 (`other met`) is flagged only by the study's second pathology review (`PATH II`, "ad w met?") and lies in the study's colon-metastasis expression cluster `CM`, so its flag may follow the clustering; AD224 carries the same `PATH II` wording ("ad m met?") and is coded primary. The sheet codes the same evidence both ways; dropping both takes no side. No score moves (random forest 0.895 to 0.893, panel experiment on the shipped folds).
 - Known label doubts, kept as the source codes them (never relabelled from expression): AD320 (unflagged, in `CM`, the random forest's top-ranked row) and AD368 (the paper: high "albumin, transferrin, and other markers associated with the liver", "not identified as a metastasis") are primaries the source itself suspects. AD350, the colon flag outside `CM`, is a mucinous tumour, a known lung mimic of colon.
 - Selection (record marker `Selection Bias`): the sheet counts the negatives as "Adenocarcinoma w/ no history or path indicating non adeno", so they were chosen for having no recorded earlier cancer. The hard cases, a new lung primary in a patient with an earlier cancer elsewhere, are absent, while the question arises only in such patients; the earlier cancer, the input the pathologist always has, is not recorded either.
-- Features beyond the arrays: age, sex and pack-years from GEO, known at surgery (USE-6; review issue 3, B): the random forest moves from 0.879 to 0.884 with them, logistic regression not at all (review panel, 2026-11-11). Sex was already in the arrays (XIST alone separates the sexes at 0.96). Two pack-years are missing in GEO (one metastasis, one primary) and stay missing. Not features: GEO's stage, and the sheet's survival, stage, relapse site, expression cluster and pathology notes (the cluster holds 8 of the 15 positives; GEO's stage reads M1 for 11 of the 15 flags; the notes hold "met" for 14 of the 15).
+- Features beyond the arrays: age, sex and pack-years from GEO, known at surgery (USE-6): the random forest moves from 0.879 to 0.884 with them, logistic regression not at all (review panel, 2026-11-11). Sex was already in the arrays (XIST alone separates the sexes at 0.96). Two pack-years are missing in GEO (one metastasis, one primary) and stay missing. Not features: GEO's stage, and the sheet's survival, stage, relapse site, expression cluster and pathology notes (the cluster holds 8 of the 15 positives; GEO's stage reads M1 for 11 of the 15 flags; the notes hold "met" for 14 of the 15).
 - Values: the MAS5 signal ships on its linear scale, as the study deposited it. Every row is a public GEO array whose flag is published in the same series.
 - Source: GEO GSE83227, the study's deposit of all 254 arrays (Affymetrix HG-U95Av2), each with its raw scan, its MAS5 output and the specimen's histology; the caArray archive in the same series holds the annotation sheet and the paper (13790.pdf). The paper's Dataset A (PNAS supplement; OpenML 45093 is a copy) averages up to four arrays per adenocarcinoma patient and uses MAS4 values.
-- CC (2026-11-10, Andrej): rebuilt from GEO (lung_cancer issue 1, D). One array per tumour, the first piece and first hybridisation (the first title in sorted order: `157T1` before `157T2`, `347T1-1` before `347T1-2`), because a lab profiles a new specimen once; the value is the array's MAS5 `Signal`, scaled on that array alone, so no test array depends on the training arrays.
+- CC (2026-11-10, Andrej): rebuilt from GEO. One array per tumour, the first piece and first hybridisation (the first title in sorted order: `157T1` before `157T2`, `347T1-1` before `347T1-2`), because a lab profiles a new specimen once; the value is the array's MAS5 `Signal`, scaled on that array alone, so no test array depends on the training arrays.
 - Array choice (review panel, 2026-11-11): the first title in GEO's sorted order is not always the first hybridisation. For the 10 tumours titled `-1`/`-2` (AD131, AD183, AD255, AD301, AD338, AD340, AD341, AD346, AD347, AD350; two of them metastases) it is the later preparation, and the study's own Dataset A names the other array `Sample1`; the shipped array is the study's `Sample1` for 113 of the 123 tumours. Taking `Sample1` throughout moves no score (random forest 0.879 to 0.870, logistic regression 0.844 to 0.833, within the noise).
+- CC (2026-11-11, Lennart): the second review panel's decisions: USE-1 amended on this case (the use case names the expression tissue-of-origin test as the pathologist's second opinion), kept at 15 metastases (5 per test fold), and the nine agreed fixes (age, sex and pack-years as features, the target as No / Yes, the notes on the negatives, the four positives staged as primaries, the recording mechanism, and the claim corrections); the declared metric, ROC AUC (fallback), is checked.
 - Time basis: Timeless: whether a resected tumour started in the lung or elsewhere does not change; the profiles were measured on banked specimens for one study (the 123 arrays scanned between 16 March and 17 April 2001, the study's last on 25 April), so when a tumour was resected plays no role. Not tested: tumours from another hospital, or arrays processed in another laboratory.
-- CC (2026-11-11, Lennart): the second review panel's issues: 1, B (USE-1 amended on this case; the use case names the expression tissue-of-origin test as the pathologist's second opinion), 2, A (kept at 15 metastases, 5 per test fold), 3, B (the nine agreed fixes: age, sex and pack-years as features, the target as No / Yes, the notes on the negatives, the four positives staged as primaries, the recording mechanism, and the claim corrections); the declared metric, ROC AUC (fallback), is checked.
 
 ## Splits
+
+Repeated 3-fold cross-validation over the rows, stratified on `Metastasis`: 20 repeat(s) x 3 folds, 60 splits, the repeats set by the 123 rows (SPLIT-33).
 
 Random patients, stratified on the target: each row is the one tumour of one patient (the normal lung of patient 268 is not a row), so no grouping is needed. 5 metastases fall in each test fold of a 3-fold split; 5 folds would leave 3. The 6 IVT batches and 10 scan days hold 0 to 4 metastases each, and folds grouped by either score as the random split does (random forest pooled ROC AUC over 5 seeds of grouped 3-fold: by batch 0.856 to 0.897, by scan day 0.868 to 0.903; the shipped 20 random repeats 0.872; review panel, 2026-11-11).
 
@@ -298,7 +307,7 @@ Random patients, stratified on the target: each row is the one tumour of one pat
 Accepted on purpose:
 
 - `meta_license_unknown`: GEO gives no licence for the GSE83227 deposit; the PNAS supplement states none either.
-- `splits_test_minority_few`: 15 metastases give 5 per test fold, about twice parkinsons' 2 to 3; only method gaps of about 0.08 ROC AUC rank (bootstrap over the patients: random forest minus logistic regression -0.007 to +0.089), and Kendall's W of four default families is 0.187, beside parkinsons 0.204 (retired) and musk 0.120 (kept), so the count decided (2026-11-11, Lennart, review issue 2, A).
+- `splits_test_minority_few`: 15 metastases give 5 per test fold, about twice parkinsons' 2 to 3; only method gaps of about 0.08 ROC AUC rank (bootstrap over the patients: random forest minus logistic regression -0.007 to +0.089), and Kendall's W of four default families is 0.187, beside parkinsons 0.204 (retired) and musk 0.120 (kept), so the count decided (2026-11-11, Lennart).
 
 ## Data checks
 
@@ -466,11 +475,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fa-f2d2-7673-a757-142728cdfd4c |
-| checksum | v2:6972b53e8d88f2ce4f384612e30af8d5814ee00e2631e91f51f8f322b97a51d0 |
-| built_at | 2026-10-06T16:10:40+00:00 |
-| path | lung_cancer/01a111fa-f2d2-7673-a757-142728cdfd4c |
+| uuid | 01a217ff-0adb-746b-9d0e-9efab95cf35d |
+| checksum | v2:59a534733a457bfa993d02df2870ba758ac7f2c81d25c1bc7920fa4209737090 |
+| built_at | 2026-11-26T13:15:31+00:00 |
+| path | lung_adenocarcinoma_metastasis/01a217ff-0adb-746b-9d0e-9efab95cf35d |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:68f72e86414e1cda3596d17277025e830cc53324848d29ad63545c69e555aa1e` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

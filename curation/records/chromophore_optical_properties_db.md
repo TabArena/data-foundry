@@ -4,9 +4,6 @@ name: Experimental database of optical properties of organic compounds (DB for c
 checked_by:
 - Myunghwan
 - Andrej
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -1048,7 +1045,7 @@ conditions before ship, not notes.
 
 Scope: every statement of `task_summary`, each `curation_comments` bullet, `splits_comment`, the accepted warning, the
 grouping definition, the metric, and the record's screening block and assessments. Tests ran on the merged definition
-(raw Figshare v3 CSV, shipped `_clean` frame and the 9 shipped folds) in Slurm, in the panel's run.
+(raw Figshare v3 CSV, shipped `_clean` frame and the 9 shipped folds) in the panel's run.
 
 Probe outputs read: check.log (0 errors, 0 warnings, 2 infos: conflicting duplicates, `meta_time_basis_missing`),
 task.log (LightGBM beats the dummy on 100% of splits; flag `unstable`, TP-1/TP-5), dtype.log (nothing flagged),
@@ -1429,7 +1426,7 @@ Scaffold-grouped 3-fold CV, 3 repeats; mean ± SD over the 9 folds.
 
 **Verdict:** I found no exploit inside the kit. Every format, order, copy, transductive and lookup attack stays within the random-column noise of an untuned LightGBM, or does worse. The task's real weakness is in how it is scored. One dye, Reichardt's betaine 30, has 335 rows (1.9% of the table) whose labels are back-calculated from the ET(30) solvent-polarity table. In the 3 of 9 splits where it is in test, it causes 57–68% of the squared error.
 
-Baseline: LightGBM with default settings (`n_jobs=2`) on Morgan count fingerprints (radius 2, 2048 bits for the chromophore, 256 for the solvent) plus one-hot `medium_state`. Scripts and results (features, attacks, per-group errors) are in the panel's run. Every fit ran on Slurm. Noise check: refitting with a random column added moves RMSE by 0.06–0.97 per split (median about 0.4).
+Baseline: LightGBM with default settings (`n_jobs=2`) on Morgan count fingerprints (radius 2, 2048 bits for the chromophore, 256 for the solvent) plus one-hot `medium_state`. Scripts and results (features, attacks, per-group errors) are in the panel's run. Noise check: refitting with a random column added moves RMSE by 0.06–0.97 per split (median about 0.4).
 
 Per split RMSE (r0f0 … r2f2):
 

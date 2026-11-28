@@ -7,8 +7,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import load_definition
-from data_foundry.v2.dataset import effective_row_budget
+
+from data_foundry.definition import load_definition
+from data_foundry.definition.dataset import effective_row_budget
 
 ROOT = Path(__file__).resolve().parents[1] / "datasets" / "_dev" / "tabarena-v0pt2"
 

@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Grouping,
@@ -15,7 +16,6 @@ from data_foundry.v2 import (
     Spectrum,
     TaskSummary,
     TimeBasis,
-    UnitWeight,
 )
 
 
@@ -102,6 +102,7 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
         - The spectrum ships raw, as the NCI-FDA page publishes it, and is declared as one (`special_features`, CLEAN-26, 2026-11-02): the container records its 6,771 columns in m/z order, and a benchmark encodes it row by row, by default with MALDIquant's steps (square root, Savitzky-Golay smoothing, SNIP baseline, total ion current). Processing the spectra lifts every model tested by 0.07 to 0.13 ROC AUC (Andrej, 2026-10-21); the page itself recommends "appropriate normalization, baseline correction, and alignment prior to any such analysis".
         - Selection bias (Andrej, 2026-11-11; marker `Selection Bias`): the classes were bled at different ages: mutants 5.5 ± 0.25 months, controls 6.5 ± 0.2 months (Hingorani et al. 2003, Table 2, prospective study), though the text calls the controls "aged-matched"; the pilot study, not in this download, was matched (9.4 against 9.0 months, Table 1). The release has no age per bleed, so the share of the signal that is age cannot be measured; the mouse grouping cannot remove it, since the gap runs between the classes. The measurement itself is alike for both classes: the same 6,771-bin grid and number format in every file, and both classes measured mixed on the same chips (record, 2026-10-21).
     """
+    split_leaf = "L-EXP.item"
     time_basis = TimeBasis(
         "Timeless",
         """
@@ -124,20 +125,19 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
             "a sample weighs 1 over its mouse's number of samples (`mouse_weight`; 1 to 6 samples per mouse), where "
             "unweighted a mouse bled six times would count as six patients (Lennart, 2026-11-08)."
         ),
-        inputs={"weight": "mouse_weight"},
     )
     scoring_columns = (
         ScoringColumn(
             column="mouse_weight",
             role="weight",
             used_by="roc_auc",
+            unit="mouse_id",
             description=(
                 "1 over the number of serum samples of the row's mouse (from 1/6 to 1), so that each mouse counts "
                 "once in the ROC AUC; for scoring only, never a feature or a training weight"
             ),
         ),
     )
-    unit_weight = UnitWeight(column="mouse_weight", unit="mouse_id")
     grouping = Grouping(
         on="mouse_id",
         labels="per_group",
@@ -177,7 +177,7 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
                 # Filename format: {id}_{group_id}_{rest}.txt_PQ.csv
                 group_id = filepath.stem.split("_")[1]
 
-                row = dict(zip("M/Z:" + sample["M/Z"].astype(str), sample["Intensity"]))
+                row = dict(zip("M/Z:" + sample["M/Z"].astype(str), sample["Intensity"], strict=False))
                 row["mouse_id"] = group_id
                 row["HasPanIN"] = label
                 rows.append(row)

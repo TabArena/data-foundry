@@ -7,9 +7,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Grouping, Metric, Source, TaskSummary, TimeBasis
 from scipy.sparse import coo_matrix
 from scipy.sparse.csgraph import connected_components
+
+from data_foundry.definition import AbstractCuratedDataset, Grouping, Metric, Source, TaskSummary, TimeBasis
 
 MAX_SHIFT = 39
 """The largest shift, in steps, between two snapshots that the key compares (the groups are 40 columns long)."""
@@ -189,6 +190,7 @@ class SantanderTransactionValue(AbstractCuratedDataset):
           `none` (each row is predicted from its own values), and the splits comment states the protocol line that
           no model step may use other test rows (LEAK-9, as for medical_facility_operational_data and fremtpl2).
     """
+    split_leaf = "L-FORCED.groups"
     time_basis = TimeBasis(
         "ForcedGroupedFromTemporal",
         """
@@ -235,8 +237,7 @@ class SantanderTransactionValue(AbstractCuratedDataset):
         """,
     )
     splits_comment = """
-        Grouped 3-fold cross-validation over the 710 customers with 3 repeats (each snapshot has its own target, so
-        the protocol counts the 4,447 rows). A test fold holds 236 or 237 customers and 1,213 to 1,920 rows (the
+        A test fold holds 236 or 237 customers and 1,213 to 1,920 rows (the
         folds take equal numbers of customers, not of rows); the largest customer is 4% to 8% of a test fold. The
         competition split its files by customer too; the file has no dates for a temporal split. Each test row is
         predicted from the training rows and its own features only; no feature or model step may use other test rows,

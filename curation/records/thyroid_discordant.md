@@ -7,19 +7,21 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
-- WIP (DF)
-claimed_by: Andrej
 suggestion: No (Retired)
 decision_markers:
 - Duplicate
 tags:
 - Tiny Data
 - New IID
+- 'Samples: Over Time'
+- 'Time: Dated'
+- Dated Event Log
 collections:
 - TabArena Reject
 - TabSTAR
 original_source: UCI
 year: '1987'
+collection_period: '1985'
 domain: medical & healthcare
 required_split:
 - Random (IID)
@@ -78,7 +80,7 @@ CC (2026-10-22, Lennart): verdict ship. Issue 1: remove the `Trivial` marker and
 
 **Assessment (AI, 2026-10-27):** The open questions for the curator are in the record's Review (review of the Tiny Data datasets, written from the earlier findings, no review panel); the AI recommends shipping it after changes. Priority 2: gap -, use case - (the label is undefined; our use case), source +, shape +, risk - (the label may be a rule on the five tests, untested).
 
-**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship: shallow trees on the five thyroid tests reach ROC AUC 0.83-0.87 against 0.975 for a random forest on all 30 splits, so the undefined 'discordant' label is no short rule and the methods spread; set the impossible age of 455 to missing first. Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship: shallow trees on the five thyroid tests reach ROC AUC 0.83-0.87 against 0.975 for a random forest on all 30 splits, so the undefined 'discordant' label is no short rule and the methods spread; set the impossible age of 455 to missing first. Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
 
 CC (2026-11-11, Andrej): Review issue 3, option B: set the impossible age of 455 to missing.
 - Applied: `_clean` sets `age` above 120 to missing and keeps the row (one patient); curation note added; `dataset check` passes (0 errors, 0 warnings), new checksum v2:5ab55ec0, not built.
@@ -98,12 +100,12 @@ No tree reaches the forest or LightGBM on any of the 30 splits; the best depth-3
 CC (2026-11-12, Andrej): Review issue 2, option A: ship as is, no `Trivial` marker.
 - The label "discordant" is undefined by the source and reads the five thyroid tests, but shallow trees on them stay far below the methods on every split (0.83 to 0.87 against 0.975), so it is no short rule; fit `approximate` with the undefined label in `fit_reason`, as before. `dataset.py` unchanged.
 
-CC (2026-11-12, Andrej): retired (`No (Retired)`, `Duplicate`; BeyondArena v0.2 review page, issue 4, reply a, after thyroid_discordant_archive's issue 1, B): `thyroid_discordant_archive` is the copy that stays and ships, the same discordant task from the source's fuller version of the archive (`thyroid0387`, 9,162 requests and 197 discordant against 3,711 and 58 here, split by request date). It holds 3,553 of this dataset's 3,711 rows with the same label for all 58 positives (PROV-6). This file, one of Quinlan's 1987 extracts from the same UCI zip, came in by lineage and was never chosen over the archive. The folder stays until the retirement PR removes it and clears `v2_path`; the claim stays.
+CC (2026-11-12, Andrej): retired (`No (Retired)`, `Duplicate`; Review issue 4, reply a, after thyroid_discordant_archive's issue 1, B): `thyroid_discordant_archive` is the copy that stays and ships, the same discordant task from the source's fuller version of the archive (`thyroid0387`, 9,162 requests and 197 discordant against 3,711 and 58 here, split by request date). It holds 3,553 of this dataset's 3,711 rows with the same label for all 58 positives (PROV-6). This file, one of Quinlan's 1987 extracts from the same UCI zip, came in by lineage and was never chosen over the archive. The folder stays until the retirement PR removes it and clears `v2_path`; the claim stays.
 
 ## Review
 
 **Outcome:** added; retired on 2026-11-12 as `Duplicate` of thyroid_discordant_archive, which ships (issue 4, a);
-the folder leaves in a retirement PR. Before that the AI recommended shipping it; the one fix, the impossible age of
+the folder was removed in PR #102. Before that the AI recommended shipping it; the one fix, the impossible age of
 455 set to missing, is applied (issue 3).
 The shallow-tree check that issue 2 asked for was run on 2026-11-04: the label is not a short rule on the five thyroid
 tests, so it stays. Reviewed without a review panel, from the record, the earlier experiments and a model run on
@@ -116,7 +118,7 @@ Quality: the one impossible age (455) is missing since 2026-11-11 (issue 3). Wei
 clinical file whose methods separate +, a label of unknown origin that only automates a reading of the same tests -.
 
 **Main points:** Nothing open. Retired as `Duplicate` of thyroid_discordant_archive (issue 4, a, 2026-11-12); the
-folder leaves in a retirement PR. Settled before: ship as is, since the shallow-tree check finds no short rule on the
+folder was removed in PR #102. Settled before: ship as is, since the shallow-tree check finds no short rule on the
 five tests (issue 2, A, 2026-11-12); the age of 455 is missing (issue 3, B, 2026-11-11).
 
 **Record judgment:** valid, with the label's origin unknown (fit `approximate`). The `Trivial` marker was removed by
@@ -171,8 +173,7 @@ new-thyroid file, another dataset of the same UCI collection, were replaced on 2
    * **Recommendation:** A, ship: the shallow trees stay far below the methods on every split, and the methods
      separate. **Decision:** ship as is (A), or retire (B)?
 
-   **Notes for the AI:** the check script and its log are in the review's checks folder for this dataset (job
-   1344939); on A, add a dated Assessment line to the record with the tree numbers.
+   **Notes for the AI:** the check script and its log are in the review's checks folder for this dataset; on A, add a dated Assessment line to the record with the tree numbers.
 
    [^2a]: **SEL-5** (Must): a label the source computes with a published, deterministic rule from the columns: drop
      the rule's inputs when the rest still makes a real task, `Trivial` when the inputs are the whole task.
@@ -231,7 +232,7 @@ new-thyroid file, another dataset of the same UCI collection, were replaced on 2
      The record number follows the date only roughly (Spearman 0.87). The discordant share is flat over the year: 0.5%
      to 2.2% in each month with more than one request, no trend (chi-square across months, p = 0.82).
    * **Experiments:** the 3,711 shipped rows and 26 features, untuned LightGBM and logistic regression (one-hot
-     categories), ROC AUC (Slurm job 1365900):
+     categories), ROC AUC:
      - Shipped random split (10 x 3): LightGBM 0.974 (0.919 to 0.996), logistic regression 0.811.
      - Five monthly windows, August to December, each trained on all earlier dated months (50% to 92% of the dated
        rows): LightGBM 0.946 to 0.998, logistic regression 0.68 to 0.92; three two-month windows (August-September,
@@ -254,7 +255,7 @@ new-thyroid file, another dataset of the same UCI collection, were replaced on 2
      year, and the measured difference is within the noise, so the stationary relation is shown as far as the data
      can show it and keeps a stable score. **Decision:** A or B?
 
-   **Notes for the AI:** on A, once PR #50 is in: `data_tags = ("StationaryRelation",)`; a curation bullet `- Time
+   **Notes for the AI:** on A: `data_tags = ("StationaryRelation",)`; a curation bullet `- Time
    basis: StationaryRelation: the requests are dated through their record numbers: 3,553 of 3,711 rows match exactly one
    record of thyroid0387 (same UCI folder), whose ids give January to December 1985; not split by date, because the
    newest half of the year holds 30 discordant patients (2 to 8 per monthly window) and the discordant share is flat
@@ -267,7 +268,7 @@ new-thyroid file, another dataset of the same UCI collection, were replaced on 2
    cutoffs=("1985-08-01", "1985-10-01", "1985-12-01")))` (the last window ends with the data); the notes give the
    positives per window; record `required_split` Temporal, tag `Non-IID (Temporal)`; `dataset check`. Under either
    option the record gets the tags `Samples: Over Time` and `Time: Dated`. The date match is in the review's checks
-   for this dataset (job 1365900).
+   for this dataset.
 
    [^4a]: **SPLIT-32** (Should): how the data was collected is information for the split; the record's collection
      facts and, where one fits, the definition's use-case prototype with its `Time basis:` line.
@@ -296,7 +297,7 @@ new-thyroid file, another dataset of the same UCI collection, were replaced on 2
    - Side fact for issue 2: the label is the Garvan's own report comment, which answers "who assigned it". The
      `fit_reason` text is not changed.
 
-   | Test on the archive (9,038 rows without duplicates, 197 R; untuned, ROC AUC; Slurm job 1377365) | Result |
+   | Test on the archive (9,038 rows without duplicates, 197 R; untuned, ROC AUC) | Result |
    |---|---|
    | R share by quarter | 0.6% to 2.8%, but 4.4% in 1986Q3; chi-square p < 0.001, p = 0.60 without 1986Q3 |
    | Tests ordered | T3 measured in 80-87% of requests up to 1985Q3, 32-75% after |

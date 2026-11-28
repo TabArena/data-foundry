@@ -5,14 +5,16 @@ checked_by:
 - Andrej
 data_foundry_status:
 - 'DF: Yes'
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 2
 tags:
+- 'Samples: Over Time'
+- 'Time: Dated'
+- Dated Event Log
 - Non-IID (Temporal)
 original_source: UCI
 year: '1987'
+collection_period: Aug 1984 - Jan 1987
 domain: medical & healthcare
 required_split:
 - Temporal (NON-IID)
@@ -26,7 +28,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC (2026-11-12, Andrej): BeyondArena v0.2 review page, thyroid_discordant issue 4: "Do C and add it as a new dataset, then I decide on this". Option C of the AI answer of 2026-11-11: rebuild the discordant task from the parent archive of the same UCI folder (`thyroid0387.data`, 9,172 Garvan Institute requests, August 1984 to January 1987, dated by their record ids), label = archive code R ("discordant assay results"), split by request date: train on 1984-1985, test on three windows of 1986 and January 1987. Whether it replaces thyroid_discordant, ships next to it or is dropped is decided in its Review.
+CC (2026-11-12, Andrej): thyroid_discordant's Review issue 4: "Do C and add it as a new dataset, then I decide on this". Option C of the AI answer of 2026-11-11: rebuild the discordant task from the parent archive of the same UCI folder (`thyroid0387.data`, 9,172 Garvan Institute requests, August 1984 to January 1987, dated by their record ids), label = archive code R ("discordant assay results"), split by request date: train on 1984-1985, test on three windows of 1986 and January 1987. Whether it replaces thyroid_discordant, ships next to it or is dropped is decided in its Review.
 
 **Assessment (AI, 2026-11-12):** added as `datasets/_dev/tabarena-v0pt2/thyroid_discordant_archive/` without a review panel (the curator's ask: build it, then decide); the open question is in its Review, issue 1: keep this version, thyroid_discordant, or both. Recommend this version, which contains 3,553 of thyroid_discordant's 3,711 rows with the same label (PROV-6); the curator has the call. `thyroid0387.data`: 9,162 requests after dropping 10 repeated entries, 197 with code R (2.2%); referral source dropped, TBG kept, four impossible ages set to missing. Three four-month windows from February 1986 to January 1987 (24, 54 and 25 positives, training on 61% to 87% of the rows); untuned LightGBM 0.977 to 0.996 (mean 0.987), logistic regression 0.849 to 0.903 (0.878), against 0.972 and 0.828 on thyroid_discordant's random splits. `dataset check`: 0 errors, 1 warning (`dataset_pure_feature_value`: on thyroxine and TSH not measured, both on the request), not built. Priority 2: gap 0, use case 0, source +, shape +, risk - (the same task and requests as thyroid_discordant).
 
@@ -36,6 +38,10 @@ CC (2026-11-12, Andrej): Review issue 1, option B: archive version only; verdict
 CC (2026-11-16, Lennart): PR #102 review: the temporal split is ok (the request date from the record id, three four-month windows from February 1986).
 
 **Assessment (AI, 2026-11-16):** checked against main for PR #102 (from the UCI zip, untuned LightGBM, ROC AUC on each window's rows): training on earlier requests only scores 0.964, 0.990 and 0.998, random training rows of the same size from any period outside the window 0.970, 0.989 and 0.998, random 3 x 3 folds over all rows 0.970, 0.993 and 0.988; so the windows test later requests rather than remove a leak. What moves with time: code R is 1.3% to 2.8% per quarter but 4.4% in 1986Q3 (chi-square across quarters p = 1.4e-5, p = 0.57 without it), and T3 is ordered for 79-87% of requests up to 1985Q3 and 32-75% after, while code R needs three of the five tests (0 of 458 requests with two or fewer). The source split by time too: the zip's ann-thyroid files, which their readme gives as the data of Quinlan's 1987 case study, train on 3,772 requests of 1985 and test on 3,428 of 1986 (all 2,317 and 1,560 rows that match exactly one archive record by their six numeric values fall in those years; the archive holds 3,428 requests of 1986). `DF: Yes` added: the dataset reaches `main` with this PR.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `request_date`, windows of 4 months, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk).
+
+CC (2026-11-26, Lennart): accepted `splits_dimensions_off_protocol` (SPLIT-15) after the rebuild of 2026-11-26: three windows against SPLIT-33's nine, as thyroid_discordant's split decision; five would train on 30%.
 
 ## Review
 
@@ -74,7 +80,7 @@ thyroid_discordant).
      | Split | 10 x 3 random | 3 windows of 4 months, each trained on all earlier requests |
      | Positives per test fold | 19 or 20 | 24, 54 and 25 |
 
-   * **Windows** (untuned LightGBM and logistic regression, ROC AUC, Slurm jobs 1379934 and 1379941):
+   * **Windows** (untuned LightGBM and logistic regression, ROC AUC):
 
      | Test window | Training rows | Training positives | Test rows | Test positives | LightGBM | Logistic regression |
      |---|---|---|---|---|---|---|
@@ -118,7 +124,7 @@ thyroid_discordant).
    thyroid_discordant: record `No (Retired)` with `Duplicate` (keep `BeyondArena`), priority removed, a CC line naming
    this dataset; the folder leaves in a retirement PR; close its issues 2 and 4 as superseded. On C, this record gets
    `No` with `Duplicate`, its folder and `v2_path` go, and the claim is released. The scripts are in the review's
-   checks for this dataset (jobs 1379934 and 1379941).
+   checks for this dataset.
 
    [^1a]: **PROV-6** (Must): different versions or cuts of one underlying dataset are duplicates when neither adds a
      distinct task (added or dropped rows or columns). **PROV-4** (Must): a dataset enters once.

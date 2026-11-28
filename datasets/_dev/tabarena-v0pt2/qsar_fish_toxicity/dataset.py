@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Grouping,
@@ -14,6 +15,7 @@ from data_foundry.v2 import (
     Smiles,
     Source,
     TaskSummary,
+    TimeBasis,
     canonical_smiles,
     scaffold_groups,
 )
@@ -96,13 +98,45 @@ class QsarFishToxicity(AbstractCuratedDataset):
         98ae9433bcf8ffd5b32b3954a9571a4ec97d2d93f66119c9e36b8130925be721
     """
     curation_comments = """
-        - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form (`canonical_smiles`; no salts or mixtures here), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts).
+        - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form (`canonical_smiles`; no salts or mixtures here), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.special.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts).
         - The authors' 6 descriptors leave (Lennart, 2026-11-01, as for qsar_tid_11: the task goes from the structure to a prediction, and the descriptors are one modelling choice of the authors). This also removes the mild optimism they carried: a genetic algorithm chose them on the paper's 726 training chemicals, which overlap our test folds (LEAK-31).
         - The structures come from the authors' own workbook, which the UCI copy left out. It is the same 908 rows in the same order: every one of the 6 descriptors is identical on all 908 rows (the CSV's rounding aside, LC50 too), so the link is exact and needs no key. All 908 SMILES parse, and no two are the same chemical, with or without stereochemistry.
         - The target comes from the workbook as well: the UCI file rounds LC50 to 3 decimals (every row differs by at most 0.0005), the workbook gives it at full precision.
         - 24% of the rows share all six of the authors' descriptors with another row, but their structures differ: isomers the descriptors could not tell apart. With the structure shipped the pairs are distinguishable, which is one more reason the descriptors leave.
         - Split (CLEAN-24, SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold of the structure (`scaffold_groups`); chemicals without a ring, and those of a scaffold holding more than a tenth of the set, are groups of their own. An assessor estimates the toxicity of an untested chemical, often of a series not yet measured, so whole series are held out; qsar_bioconcentration, qsar_oral_toxicity and qsar_tid_11 group the same way. The source split at random.
+        - Sibling of qsar_aquatic_toxicity (Andrej, 2026-11-11: keep both, note the overlap): the same Milano group, source databases (ECOTOX, EAT5, OASIS) and pipeline. 237 chemicals are in both, counted on the canonical SMILES of the two authors' workbooks with the stereo set aside (26.1% of this set, 43.4% of the Daphnia set; 225 of them carry the same CAS-RN in both), and their LC50s correlate at r = 0.81 (Spearman 0.82), the Daphnia values 0.37 log units more toxic on average. Another species (the fathead minnow, not Daphnia magna) and exposure time (96 h, not 48 h), so a different task, not a duplicate (PROV-7); a method that suits this study design gains on both.
+        - CC (2026-11-12, Andrej): the fit stays direct (USE-8): whole series are held out and the authors' selected descriptors have left, the setting in which qsar_bioconcentration reads direct, so the open proposal of 2026-10-26 is closed as superseded. On the shipped scaffold splits (10 x 3), 12.4% of the test chemicals have a close training analog (Tanimoto 0.7 or more, Morgan radius 2, 2,048 bits; 9.4% to 16.5% per split), against 13.1% under random 3-fold splits of the same rows: holding out series removes few close analogs here.
+
+          | Scheme | RMSE, LightGBM / RF | Close training analog | Test scaffold in training |
+          |---|---|---|---|
+          | Forward by first test year | 0.970 / 0.974 | 7.2% | 15-18% |
+          | Scaffold-disjoint, any year | 0.970 / 0.978 | 5.9% | 0 |
+          | Random, any year | 0.941 / 0.941 | 6.9% | 15-20% |
+          | Scaffold 3-fold, all rows | 0.872 / 0.848 | 12.0% | 0 |
+
+          The first three rows score the same test chemicals of the dated windows; the last is a scaffold 3-fold over all rows. The spread between windows (RMSE 0.81 to 1.17) is larger than the spread between schemes. The split cannot test a chemistry newer than the 1990s (90% of the dated chemicals were first tested by 1990, none after 2005), nor whether the 58 undated chemicals follow the same pattern; a publication year is an upper bound on the test date.
     """
+    split_leaf = "L-FAMILY.key"
+    time_basis = TimeBasis(
+        "UnseenGroup",
+        """
+        the use case predicts for chemicals not
+        tested yet, which whole scaffolds held out stand for. A chemical's 96-hour LC50 for the fathead minnow is a
+        property of the chemical, and the Milano group compiled historic laboratory tests in 2015 without dates
+        (Andrej, 2026-11-12). Dated through the EPA's ECOTOX bulk release
+        (`ecotox_ascii_09_15_2026`), joined on the CAS-RN of the authors' workbook to the fathead minnow 96-hour LC50
+        records, the year being the publication year of the earliest matching test: 850 of 908 chemicals (93.6%), 1956
+        to 2005, median 1984, 90% by 1990. Where ECOTOX gives mg/L, its median per chemical matches the target at r =
+        0.923 (212 chemicals, median difference 0.02 log units, 95.3% within one log unit). The relation does not move
+        with the year (Spearman of first test year and LC50 -0.06; the authors' own train share is 0.78 to 0.88 in
+        every period), and a forward split by first test year is no stricter than the scaffold folds (untuned models
+        on `encode_smiles`, RMSE, three expanding windows, each training side at least half the dated chemicals;
+        2026-11-11):
+        """,
+        set_by="Andrej",
+        on="2026-11-13",
+        note="`Timeless` before",
+    )
 
     # Task
     target = "LC50"

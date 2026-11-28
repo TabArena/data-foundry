@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -88,7 +89,7 @@ class DuolingoSpacedRepetitionRecall1m(AbstractCuratedDataset):
     )
     temporal = Temporal(on="timestamp", splits=TemporalSplits(window=1, unit="days", n_windows=3, gap=1))
     split_leaf = "L-ORDER.windows"
-    splits_comment = "Three newest calendar-day test windows, March 12/11/10 2013, with expanding earlier history and a one-day training gap. All learners are eligible and may recur; no learner holdout. Actual timestamps are sorted, with all training clocks strictly before each test window minus the gap. Use the standard temporal windows on the full source: each train side holds every earlier session (70.8% to 86.5% of the rows, before the gap), and a benchmark samples 1M of them, by default at random from the newest year before the window (all 12 days of history); each test window keeps at most 500k of its sessions, drawn at random (the collection's row budget). No learner partition. Learner ID and the current correct count are excluded from predictors. The newest day is partial (ends 16:14:57 UTC) but as full per hour as earlier days. The timestamp marks the lesson's end, so the label exists at the recorded time and the one-day gap is longer than the label's delay; the source names no refit cadence, so the daily windows are our assumption. Fit on the training side only and predict each test row from its own covariates with frozen model state; no other test rows, future histories, test-block statistics or held-out labels from another split may enter a prediction."
+    splits_comment = "All learners are eligible and may recur; no learner holdout. Actual timestamps are sorted, with all training clocks strictly before each test window minus the gap. No learner partition. Learner ID and the current correct count are excluded from predictors. The newest day is partial (ends 16:14:57 UTC) but as full per hour as earlier days. The timestamp marks the lesson's end, so the label exists at the recorded time and the one-day gap is longer than the label's delay; the source names no refit cadence, so the daily windows are our assumption. Fit on the training side only and predict each test row from its own covariates with frozen model state; no other test rows, future histories, test-block statistics or held-out labels from another split may enter a prediction."
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         return pd.read_csv(

@@ -8,8 +8,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.time_basis import TimeBasis
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -18,10 +18,11 @@ from data_foundry.v2 import (
     Source,
     SplitPlan,
     TaskSummary,
+    TimeBasis,
     decode,
     drop_columns,
 )
-from data_foundry.v2.splits import SPLIT_RANDOM_STATE, grouped_splits
+from data_foundry.definition.splits import SPLIT_RANDOM_STATE, grouped_splits
 
 CODE_LABELS = {"urban_or_rural": {"R": "Rural", "U": "Urban"}}
 
@@ -179,7 +180,7 @@ def _join(zindi: pd.DataFrame, src: pd.DataFrame) -> pd.DataFrame:
         candidates = (dc <= CAPITAL_TOL_KM).sum(axis=1)
         place = s["LATNUM"].round(6).astype(str) + "," + s["LONGNUM"].round(6).astype(str)
         shared = place.map(place.value_counts()).to_numpy() > 1
-        for r, c in zip(ri, ci):
+        for r, c in zip(ri, ci, strict=True):
             out.append(
                 {
                     "row": g.index[r],
@@ -381,7 +382,7 @@ class EconomicWellBeingPredictionChallenge(AbstractCuratedDataset):
             raise ValueError("the countries of the source table and of Zindi's files differ")
         capitals = _fit_capitals(zindi, src)
         src["capital_km"] = [
-            _ellipsoid_km(la, lo, *capitals[c]) for la, lo, c in zip(src.LATNUM, src.LONGNUM, src.country)
+            _ellipsoid_km(la, lo, *capitals[c]) for la, lo, c in zip(src.LATNUM, src.LONGNUM, src.country, strict=True)
         ]
         src["shoreline_km"] = _shoreline_km(src["LATNUM"].to_numpy(), src["LONGNUM"].to_numpy(), raw_dir / COASTLINE)
         m = zindi.join(_join(zindi, src))

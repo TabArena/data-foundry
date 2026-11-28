@@ -3,10 +3,9 @@ unique_name: g_research_crypto_forecasting
 name: G-Research Crypto Forecasting
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
-- WIP (DF)
-claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
 decision_markers:
@@ -14,10 +13,16 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 - Review Prio 1 (Atlas)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Fixed Delay'
+- 'Entities: Recur'
+- Panel Data
 collections:
 - New (BeyondArena)
 original_source: Kaggle
 year: '2021'
+collection_period: Jan 2018 - Jan 2022
 domain: finance
 required_split:
 - Temporal (NON-IID)
@@ -60,7 +65,7 @@ CC (2026-10-22, Lennart): verdict ship after changes. Issue 1: (a), amend TP-10 
 
 CC (2026-11-08, Lennart): issue 8 of the record's Review, as implemented (ok): the test still holds. TP-10 leg 1 is met on the shipped splits: the model is ahead of the coin's mean in every window by its point estimate (lead +0.038, +0.042 and +0.023), and the interval is read pooled (+0.034, about 4.3 standard errors above 0), as for ashrae_great_energy_predictor_iii and rain_in_australia. This confirms the keep of 2026-10-22 (Lennart), whose figures (every window's interval above 0) came from the earlier splits; the dataset stays as defined.
 
-CC (2026-11-08, Lennart): the declared metric (`weighted_pearsonr`) is checked, as declared on the PR #47 review board.
+CC (2026-11-08, Lennart): the declared metric (`weighted_pearsonr`) is checked, as declared (PR #47).
 
 CC (2026-11-11, Lennart): issue 10 of the record's Review, B (change): add the release's supplemental file ("Please do and raise this again, how did we miss this data in the first pass?"); supplemental_train.csv, 21 September 2021 to 24 January 2022, is read with train.csv, and issue 9's windows are proposed again on the longer history.
 
@@ -71,6 +76,10 @@ CC (2026-11-11, Lennart): the declared horizon (91 days, a 15-minute gap, window
 CC (2026-11-11, Lennart): Review issue 9, reply (a) to the answer of 2026-11-11 ("Reply (a): Your B: newest, the 2021 bull run, the 2020 crash"): the 91-day test windows start on 25 October 2021 (the newest), 22 December 2020 (the 2021 bull run) and 28 February 2020 (the quiet market of 2020 with its crash of 12 March), in place of the three newest; SPLIT-14 as amended on 2026-11-11 admits the crash window, signed off here: it trains on 48.25% of the rows (one window under half, two at or above it).
 
 **Assessment (AI, 2026-11-11):** applied issue 9 (reply a): `temporal` declares `cutoffs=("2021-10-25", "2020-12-22", "2020-02-28")` with the rest unchanged (91 days, a 15-minute gap, `sample_by="time"`). On the 26,001,823 rows of the frame the windows test 1,830,834, 1,834,016 and 1,544,359 rows before the 500,000-row sampling by whole minutes and train on 24,170,779, 17,985,995 and 12,545,715 (93.0%, 69.2% and 48.25%), each train side ending at 23:44 the day before its window; the newest window holds the 99 EOS.IO bars of 26-27 October 2021 the notes record, kept. TP-10 leg 1 (issue 8's reading, the 12-seed ensemble against each coin's mean) was measured on the windows that ended on 20 September 2021 and was not re-run here: it is to be measured again on these windows (`fit_reason` and the Scope bullet say so). `task_summary.split`, `splits_comment` and the History bullet name the three windows and why each. `dataset check`: 0 errors, 0 warnings, with `splits_train_under_half` accepted on the CC line above.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `timestamp`, windows of 91 days, 3 windows at fixed cutoffs, gap 15 minutes) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
+
+CC (2026-11-19, Andrej): the 91-day windows and the crash window at 48.25% stay as the curator's exception (Review issue 11, A).
 
 ## Review
 
@@ -117,8 +126,9 @@ correlation is positive on 75-77 of 91 days (+), against the oldest window's int
 the 2021 bull run from 22 December 2020 and the 2020 crash from 28 February 2020, the last on 48.25% of the rows
 (issue 9, a); the supplemental file is added (issue 10, B) and the 91 days with a 15-minute gap hold (H, A). Settled
 earlier: the model still clearly beats each coin's naive forecast, ahead in every window and with the interval read
-pooled (issue 8, A, 2026-11-08), measured on the earlier windows and to be measured again on these. The training
-weight needs no decision.
+pooled (issue 8, A, 2026-11-08), measured on the earlier windows and to be measured again on these. Settled on
+2026-11-19: the crash window, training on 48.25% of the rows, stays as the curator's exception (issue 11, A). The
+training weight needs no decision.
 
 **Record judgment:** valid. G-Research's own competition data and use case, a first-hand source; the record's fields
 agree with the definition. The earlier review file (issues 1 to 7) was settled on 2026-10-22 and removed, before the
@@ -488,6 +498,68 @@ to 23 January 2022; which other windows to test is issue 9. `dataset check`: 0 e
    stay the newest three of 91 days until issue 9 is decided: from 25 October, 26 July and 26 April 2021, training on
    93.0%, 85.9% and 78.9% of the rows. The record has the CC and Assessment lines. `dataset check`: 0 errors, 0
    warnings.
+
+11. **Train floor: keep the window under half the data as the curator's exception, or drop it?**
+
+   * **Problem:**
+     - The window of the 2020 crash (from 28 February 2020) trains on 48.25% of the rows, beside 93.0% and 69.2%.
+     - Since 2026-11-19, every window trains on at least half the data, and a window under half is the curator's exception for the dataset, down to 30%[^split14]; the sign-off (Lennart, 2026-11-11, review issue 9, reply a) was given under the earlier rule, which admitted such windows beside two at half or more.
+     - The definition has 3 windows; the target an IID split would get[^split33] for 2,499,998 rows is 3; without the window under half it keeps 2.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the window as the curator's exception (implemented) | The accepted warning is reworded to the new rule; split unchanged | Keeps the periods it tests, as signed off; more windows toward the target | It trains on less than half the data |
+     | B | Drop the window under half | The windows under half leave the declaration; a rebuild | Every window trains on half the data or more | 1 fewer window and the period it tests |
+
+   * **Recommendation:** A, the sign-off's reason (periods or test rows the newest windows lack) still holds, and no window is under 30%. **Decision:** A or B?
+
+   **Notes for the AI:** on A, reword the `splits_train_under_half` acceptance (drop "SPLIT-14's two tiers admit it", name the curator's exception and this decision) and add a CC line; on B, remove the windows from the declaration, rebuild, and update the splits comment.
+
+   **Andrej (2026-11-19, discuss):** Why are the test windows so large? What would be reasonable train/test windows from the use case?
+
+   **Answer (AI, 2026-11-19):** The windows are 91 days because the competition scored every model, frozen after training, on three months of live data; the use case (a firm trading every minute) gives no length, as G-Research states no refit cadence, so a month or a week is just as defensible, but no length lifts the crash window above half: the half point of the rows is 24 March 2020, after the crash of 12 March.
+
+   * **How the split is done today:** test windows of 91 calendar days at three fixed starts, a gap of 15 minutes (the target's own horizon: a row's target needs the close 16 minutes later), and a train side of every earlier row. The scored unit is the row (one coin at one minute; 26,001,823 rows, 14 coins); the target count for this size is 3 windows, which the definition has. In the 1M version each test window keeps at most 500,000 rows and each train side is sub-sampled to 1M rows, by default from the newest year before the window, both by whole minutes.
+
+     | Window | Market | Test rows | Scored rows | Train rows (all earlier) | Train share |
+     |---|---|---|---|---|---|
+     | 25 Oct 2021 to 23 Jan 2022 | newest; the fall after the November 2021 peak | 1,830,834 | about 500,000 | 24,170,779 | 93.0% |
+     | 22 Dec 2020 to 22 Mar 2021 | the 2021 bull run | 1,834,016 | about 500,000 | 17,985,995 | 69.2% |
+     | 28 Feb to 28 May 2020 | the quiet 2020 market with the crash of 12 March | 1,544,359 | about 500,000 | 12,545,715 | 48.25% |
+
+   * **Why so large:** in time, 91 days is the competition's live scoring period, which Lennart checked as the horizon on 2026-11-11; in rows, 91 days of 14 coins a minute is 1.5M to 1.8M rows, which the row budget cuts to 500,000, still 15,000 times the least test window.
+   * **What the use case and the source fix, and what is ours:**
+     - Fixed by the source: the 15-minute target and gap, and the competition's frozen three months (a contest's logistics, not a trading desk's).
+     - Not fixed: how often the firm refits. A desk trading every minute plausibly refits weekly or monthly; that would be our assumption, and it is an easier task than a model frozen for three months.
+     - Train side: every earlier row, of which a fit sees 1M rows from the newest year; the use case gives no reason to change this.
+   * **The floor does not depend on the length:** a window's train side is everything before its start, so only the start matters. The crash day (12 March 2020) trains on 49.1% whatever the length; the first start on half the rows is 25 March 2020 (50.01%), and 1 April 2020 gives 50.45%.
+
+     | Length | Newest | Bull run (from 22 Dec 2020) | Crash (from 9 Mar 2020) | After the crash (from 1 Apr 2020) |
+     |---|---|---|---|---|
+     | 91 days | 25 Oct 2021: 1,830,834 rows, 93.0% | 1,834,016 rows, 69.2% | (from 28 Feb) 1,544,359 rows, 48.25% | 1,523,395 rows, 50.45% |
+     | 30 days | 25 Dec 2021: 602,458 rows, 97.7% | 604,540 rows, 69.2% | 517,270 rows, 48.9% | (from 25 Mar) 493,203 rows, 50.0% |
+     | 7 days | 17 Jan 2022: 140,359 rows, 99.5% | 140,996 rows, 69.2% | 125,566 rows, 48.9% | (from 25 Mar) 114,581 rows, 50.0% |
+
+     Rows are before the 500,000-row cap (30-day windows are cut to it, 7-day windows are not); shares are of all 26,001,823 rows.
+
+   * **Options** (new, after A and B of the issue):
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | C | 91 days, the third window from 1 April 2020 | replaces the crash window by the quiet months after it (1 April to 30 June 2020) | every window on half the rows or more (50.45%); keeps the source's length | no crash in any window |
+     | D | 30 days, newest, bull run and crash | 25 Dec 2021, 22 Dec 2020 and 9 Mar 2020 | a monthly refit, closer to a trading desk; the crash stays | no source for 30 days; the crash window still under half (48.9%), the exception remains |
+     | E | 7 days, newest, bull run and crash | 17 Jan 2022, 22 Dec 2020 and 9 Mar 2020 | a weekly refit; the crash week in full; no test sampling | no source for 7 days; the crash window still under half (48.9%) |
+
+   * **Recommendation:** A of the issue: keep the 91 days, the only length a source gives, and the crash window as the curator's exception at 48.25%; a shorter window adds an assumed refit cadence and gains under one point on the floor. C if every window must train on half the rows. **Decision:** A, B, C, D or E?
+
+   **Notes for the AI:** on C, `cutoffs=("2021-10-25", "2020-12-22", "2020-04-01")`, rest unchanged; on D, `window=30, cutoffs=("2021-12-25", "2020-12-22", "2020-03-09")`; on E, `window=7, cutoffs=("2022-01-17", "2020-12-22", "2020-03-09")`. C drops `splits_train_under_half`; D and E keep it, reworded as the curator's exception. Then `task_summary.split`, `splits_comment` (the windows, the length's reason, the numbers above), a CC line, a CHANGELOG entry, a rebuild and `dataset check`; TP-10 leg 1 is still to be measured again on whatever windows ship.
+
+   **Resolved (2026-11-19, Andrej):** A: "I want to keep the task as implemented." The 91-day windows stay (the competition scored frozen models on three months of live data), and the crash window (28 February to 28 May 2020, 48.25%) stays as the curator's exception; no window length lifts it above half, as half the rows lie after 24 March 2020. The accepted warning and the splits comment name this decision.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count.
 
 **Review panel:** ship after changes, text only (mediator). Tier focused, a re-review of 2026-11-06 under LEAK-41 and
 MET-14 to MET-16: the claim auditor, then the mediator. Claims: 21; 15 hold (one with a wording caveat, fixed), 4

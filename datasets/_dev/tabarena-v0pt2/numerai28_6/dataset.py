@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, Metric, Source, TaskSummary, decode
+
+from data_foundry.definition import AbstractCuratedDataset, Decision, Metric, Source, TaskSummary, TimeBasis, decode
 
 N_ORDER_BLOCKS = 10
 """File-order blocks for the decision table on hidden weeks (the raw file's row order)."""
@@ -59,7 +60,7 @@ class Numerai286(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("ForcedIIDFromTemporal", "Anonymized")
+    data_tags = ("Anonymized",)
     download_description = """
         kaggle datasets download numerai/encrypted-stock-market-data-from-numerai --unzip -p numerai_download && mkdir -p local-data-warehouse/numerai28_6 && mv numerai_download/numerai_training_data.csv local-data-warehouse/numerai28_6/ && rm -r numerai_download
     """
@@ -68,7 +69,6 @@ class Numerai286(AbstractCuratedDataset):
 
         - Prediction point: a tournament round, when Numerai asks for a probability per stock. The 2016 rules page states neither the round's cadence nor the target's return window; weekly rounds are Numerai's later design (USE-1, assumed).
         - No change to the file: 21 features, the binary target as 0/1, no missing values, no duplicate rows (96,320 rows; 48,658 of class 1, 47,662 of class 0).
-        - The split is forced (ForcedIIDFromTemporal, SPLIT-8): Numerai trains on past weeks and scores the next one, but this release has no era, date or id column. A dated split would test a model on later weeks' market states; a random split mixes stocks of the same unknown weeks, which share the weekly market state. That cost cannot be measured here, but its main source in numerai_v5_2 is absent: there, IID splits recognised the same stock one week back with an overlapping label (1-NN target agreement 0.618), while here 1-NN agreement is 0.501 and the closest pairs agree below chance (0.433 for the closest 0.1%). What remains is drift in the weekly feature-target relation, which v5.2's dated windows show can take the out-of-time signal to about 0; read the IID ROC AUC of 0.524-0.531 as an upper bound and model rankings as fragile. Recover the eras and split by them if a dated release of the 2016 data turns up.
         - Hidden weeks, checked (2026-10-22): the file order is shuffled (target mean of 20 file-order blocks 0.494-0.521, lag-1 autocorrelation of every feature at most 0.007 in absolute value, a row's file-order block predicted at chance, 0.1005 against 0.10); 1-NN target agreement 0.501 against 0.502 for a random neighbour (numerai_v5_2, with its weeks, 0.618); the hidden-group probe finds no entity-like column, composite key or near-copy cluster; holding out k-means clusters as stand-in weeks moves LightGBM's ROC AUC by at most 0.0055 (0.526 random, 0.520-0.524 grouped). The target rate differs across those clusters more than binomial noise (SD 0.0185 against 0.0051 for 10 clusters), but targets simulated from out-of-fold logistic-regression probabilities reproduce it (0.0216 against 0.0219 observed), and after LightGBM the residual spread is binomial (0.0046 against 0.0053): the features' signal, not a week.
         - The signal is small: ROC AUC 0.531 (logistic regression) and 0.524 (LightGBM) on 5 random folds (fold SD about 0.003), the same on file-order blocks. Expected for stock returns, and the reason models sit close together: under log loss the dummy scores 0.6931 and logistic regression 0.6912-0.6921 per fold, a spread of about 0.0015, and untuned LightGBM and random forest score worse than the dummy.
         - Metric: Numerai's 2016 rules rank models "by accuracy (logloss)" on uploaded probabilities (numer.ai/rules, archived 2016-08-30), so log loss is the source's metric. Numerai later moved to per-era correlation, which needs the eras this release lacks.
@@ -79,6 +79,23 @@ class Numerai286(AbstractCuratedDataset):
         - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
     """
+    split_leaf = "L-FORCED.random"
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        Numerai trains on past weeks and scores the next one, but this
+        release has no era, date or id column. A dated split would test a model on later weeks' market states; a
+        random split mixes stocks of the same unknown weeks, which share the weekly market state. That cost cannot be
+        measured here, but its main source in numerai_v5_2 is absent: there, IID splits recognised the same stock one
+        week back with an overlapping label (1-NN target agreement 0.618), while here 1-NN agreement is 0.501 and the
+        closest pairs agree below chance (0.433 for the closest 0.1%). What remains is drift in the weekly
+        feature-target relation, which v5.2's dated windows show can take the out-of-time signal to about 0; read the
+        IID ROC AUC of 0.524-0.531 as an upper bound and model rankings as fragile. Recover the eras and split by them
+        if a dated release of the 2016 data turns up. Not taken as stationary (Andrej, 2026-11-18): Financial markets
+        with adaptive participants are the clearest case against ASR, and the same source's dated data is measured not
+        flat.
+        """,
+    )
 
     # Task
     target = "target"
@@ -90,7 +107,7 @@ class Numerai286(AbstractCuratedDataset):
         definition="Mean binary log loss of the uploaded probability that a row is of class 1",
     )
     splits_comment = """
-        Default splits (random rows, stratified on the target). Forced IID from temporal (SPLIT-8): the release has no era or date, so the weekly splits of Numerai's tournament cannot be rebuilt; see the curation notes for the hidden-week checks.
+        Forced IID from temporal (SPLIT-8): the release has no era or date, so the weekly splits of Numerai's tournament cannot be rebuilt; see the curation notes for the hidden-week checks.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

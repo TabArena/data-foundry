@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: pva_revenue_prediction_kddcup98
 container_format: 2
-checksum: v2:2d35770161377308c9c8abd7b628dd5dd8ab8a19e9e7c1093467001e2cef1dde
+checksum: v2:79f3cfbe1ad7d3ef806d95db07ea300022221a15203a3480ca15b26f3136c65d
 build:
-  uuid: 01a13a7d-f16c-7ca9-ac9e-41670aefdb4e
-  checksum: v2:7d87e4e7163e59fa1ca7ad8e1a9179de10f350eef500d4ba219b89c69c8f943c
-  built_at: '2026-10-14T12:58:20+00:00'
-  path: pva_revenue_prediction_kddcup98/01a13a7d-f16c-7ca9-ac9e-41670aefdb4e
+  uuid: 01a217ff-1f6c-72ce-9ef7-3b99b92a096d
+  checksum: v2:79f3cfbe1ad7d3ef806d95db07ea300022221a15203a3480ca15b26f3136c65d
+  built_at: '2026-11-26T13:15:30+00:00'
+  path: pva_revenue_prediction_kddcup98/01a217ff-1f6c-72ce-9ef7-3b99b92a096d
   data_foundry_version: 0.0.5
-  git_sha: f93df193827f5244586b178fd7199efb86d66359
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
     python: 3.12.3
     pandas: 2.3.3
@@ -17,7 +17,7 @@ build:
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 191769
   n_features: 477
@@ -49,6 +49,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 127846
     max: 127846
@@ -75,7 +76,7 @@ decisions: []
 
 Regression of `TARGET_D`, scored with `net_revenue_at_cost` on IID splits. 191,769 rows and 477 features. Source: Other (1998).
 
-Built as `01a13a7d-f16c-7ca9-ac9e-41670aefdb4e` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:2d35770161377308c9c8abd7b628dd5dd8ab8a19e9e7c1093467001e2cef1dde`, so the build is stale. See [Build](#build).
+Built as `01a217ff-1f6c-72ce-9ef7-3b99b92a096d` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -133,7 +134,7 @@ Only curators run `build`, when the dataset ships.
 | year | 1998 |
 | domain | business & marketing |
 | license |  |
-| data_tags | IID |
+| data_tags | IID, ForcedIIDFromTemporal |
 | reference | Parsa1998KDDCup1998 |
 | rows x columns | 191,769 x 478 |
 | task.target | TARGET_D |
@@ -230,7 +231,7 @@ We start with the train and validation data from the KDD Cup 1998 website and co
   2 = Above average SES, 3 = Below average SES, 4 = Lowest SES.)" (cup98dic.txt). Each row is read by its own
   scheme, on one line: lowest < below average < average < above average < highest. Before, urban codes 2 and 3
   (6,504 and 5,270 rows) were read as average and lowest, and code 4 had a coined label.
-- `DOMAIN_urbanicity` stays an unordered category (2026-11-05, Lennart, GitHub issue #48, CLEAN-14): the
+- `DOMAIN_urbanicity` stays an unordered category (2026-11-05, Lennart, CLEAN-14): the
   dictionary lists the first byte of `DOMAIN` as U=Urban, C=City, S=Suburban, T=Town, R=Rural and calls the
   field "A nominal or symbolic field" (cup98dic.txt); it does not say whether a city neighbourhood is denser
   than a suburb, so no order is imposed.
@@ -238,26 +239,11 @@ We start with the train and validation data from the KDD Cup 1998 website and co
   24) are set to missing where the receipt is dated June 1997 or later, after the mailing the target is about
   (the cup's documentation: every field reflects the donor before June 1997 "except the gift receipt dates,
   which will follow the promotion dates"); 61 cells of 60 donors in the cup's files, dated up to June 1998.
-- Time basis: DelayedTarget: one renewal mailing (97NK, June 1997) to lapsed donors; every field is the donor
-  before June 1997 (the gift receipts of earlier promotions dated after it are blanked); the target is the
-  response to that mailing, recorded for every donor by the cup's release in 1998. Every donor got the same
-  mailing and its response was recorded over the same window, so no test row is later than a training row and
-  the random split is IID. The date columns are the donors' shared past, not a time to split on (random split
-  kept, 2026-11-12, Andrej): every row is about the one promotion date (191,758 of the cup's 191,779 donors
-  mailed in June 1997, 21 in April 1997; all of them lapsed). The 23 earlier promotions, June 1994 to June
-  1996, are columns, not rows: each reached 60,000 to 188,000 of these donors, in changing mail types, with
-  responses of 0.02% to 36%, and of 0.02% to 0.9% from March 1996 on, because the cup selected donors who had
-  stopped giving; their responses are a selected past, not training mailings. Within the target mailing the
-  response falls from 6.1% (recruited 1986) to 3.3% (recruited 1996) while the gift of those who gave rises
-  from $12.95 to $19.80, and it rises from 3.6% (last gift early 1995) to 9.9% (1997). A split on these donor
-  dates tests new kinds of donors, not a later mailing: on the donors recruited from 1995 on, a model trained
-  on the earlier recruits earns $0.046 per test donor, against $0.083 for the same donors under random folds
-  and $0.041 for mailing everyone (untuned LightGBM). The cup's learning and validation files agree (5.08% and
-  5.06% gave). Not tested: the next mailing.
+- Time basis: ForcedIIDFromTemporal (Andrej, 2026-11-16): one renewal mailing (97NK, June 1997) to lapsed donors; every field is the donor before June 1997 (the gift receipts of earlier promotions dated after it are blanked); the target is the response to that mailing, recorded for every donor by the cup's release in 1998. One mailing is one period, too few for three windows (SPLIT-8). The date columns are the donors' shared past, not a time to split on (random split kept, 2026-11-12, Andrej): every row is about the one promotion date (191,758 of the cup's 191,779 donors mailed in June 1997, 21 in April 1997; all of them lapsed). The 23 earlier promotions, June 1994 to June 1996, are columns, not rows: each reached 60,000 to 188,000 of these donors, in changing mail types, with responses of 0.02% to 36%, and of 0.02% to 0.9% from March 1996 on, because the cup selected donors who had stopped giving; their responses are a selected past, not training mailings. Within the target mailing the response falls from 6.1% (recruited 1986) to 3.3% (recruited 1996) while the gift of those who gave rises from $12.95 to $19.80, and it rises from 3.6% (last gift early 1995) to 9.9% (1997). A split on these donor dates tests new kinds of donors, not a later mailing: on the donors recruited from 1995 on, a model trained on the earlier recruits earns $0.046 per test donor, against $0.083 for the same donors under random folds and $0.041 for mailing everyone (untuned LightGBM). The cup's learning and validation files agree (5.08% and 5.06% gave). Not tested: the next mailing. Not taken as stationary (Andrej, 2026-11-18): The charity's own mailings vary in response by orders of magnitude and the donor-cohort split halves net revenue; the next mailing cannot be taken as interchangeable.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation over the rows: 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 191,769 rows (SPLIT-33).
 
 3 repeat(s) x 3 fold(s) with seed 4267; train 127,846 rows, test 63,923 rows.
 
@@ -275,13 +261,13 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 4 warning(s), 1 info (27 checks run, plus the dataset's own checks).
+0 error(s), 4 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_constant_column`: 22 constant column(s) (1 distinct non-null value): ['PVASTATE', 'COLLECT1', 'VETERANS', 'BIBLE', 'CATLG']. (hint: Drop them unless the constant is meaningful for the task.)
 - **warning** `dataset_missing_value_label`: 1 label column(s) contain missing-value-looking levels: OSOURCE=['NAN']. (hint: Convert proxy missing values to explicit `pd.NA` (curation guidelines).)
 - **warning** `meta_license_unknown`: The license is None (unknown or missing) for ['Other publication']. (hint: Record the license if one exists — downstream users need it to redistribute the data.)
 - **warning** `task_target_value_dominant`: The target value 0 holds 95% of the rows. (hint: A cap (a censored value), a placeholder for missing, or a zero-inflated target: say which in `curation_comments`, drop censored or placeholder rows, or accept it with the reason.)
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 91,665,582 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 91,665,582 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to run them; nothing else checks duplicate rows and columns.)
 
 ## Data checks
 
@@ -511,11 +497,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a13a7d-f16c-7ca9-ac9e-41670aefdb4e |
-| checksum | v2:7d87e4e7163e59fa1ca7ad8e1a9179de10f350eef500d4ba219b89c69c8f943c |
-| built_at | 2026-10-14T12:58:20+00:00 |
-| path | pva_revenue_prediction_kddcup98/01a13a7d-f16c-7ca9-ac9e-41670aefdb4e |
+| uuid | 01a217ff-1f6c-72ce-9ef7-3b99b92a096d |
+| checksum | v2:79f3cfbe1ad7d3ef806d95db07ea300022221a15203a3480ca15b26f3136c65d |
+| built_at | 2026-11-26T13:15:30+00:00 |
+| path | pva_revenue_prediction_kddcup98/01a217ff-1f6c-72ce-9ef7-3b99b92a096d |
 | data_foundry_version | 0.0.5 |
-| git_sha | f93df193827f5244586b178fd7199efb86d66359 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:2d35770161377308c9c8abd7b628dd5dd8ab8a19e9e7c1093467001e2cef1dde` |

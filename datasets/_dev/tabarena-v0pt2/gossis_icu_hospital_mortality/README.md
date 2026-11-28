@@ -2,8 +2,21 @@
 report_format: data-foundry-report-v2
 unique_name: gossis_icu_hospital_mortality
 container_format: 2
-checksum: v2:830afcf7086f49c95aa08e32833e26e4978f993eb25141e3fc18ebdc0b6e0ebf
-build: null
+checksum: v2:38c540e19b17d81f2ddde5b8e624cee829555b483c71329206d371dc5c1e5fe1
+build:
+  uuid: 01a21801-0cbd-7ebb-b05c-66ac81601f93
+  checksum: v2:38c540e19b17d81f2ddde5b8e624cee829555b483c71329206d371dc5c1e5fe1
+  built_at: '2026-11-26T13:17:40+00:00'
+  path: gossis_icu_hospital_mortality/01a21801-0cbd-7ebb-b05c-66ac81601f93
+  data_foundry_version: 0.0.5
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
+  libraries:
+    python: 3.12.3
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
+    scikit-learn: 1.7.2
+    polars: 1.41.1
 build_stale: false
 data:
   n_rows: 91713
@@ -41,6 +54,7 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: null
   n_train:
     min: 52887
     max: 69469
@@ -62,7 +76,7 @@ decisions: []
 
 Binary classification of `hospital_death`, scored with `roc_auc` on grouped splits by `hospital_id`. 91,713 rows and 175 features. Source: Kaggle (2020).
 
-Not built yet. The current definition gives checksum `v2:830afcf7086f49c95aa08e32833e26e4978f993eb25141e3fc18ebdc0b6e0ebf`.
+Built as `01a21801-0cbd-7ebb-b05c-66ac81601f93` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -122,7 +136,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2020 |
 | domain | medical & healthcare |
 | license | Kaggle Competition Rules |
-| data_tags | Non-IID, Grouped, ForcedGroupedFromTemporal |
+| data_tags | Non-IID, Grouped, UnseenGroup |
 | reference | Lee2020WiDSDatathon2020 |
 | rows x columns | 91,713 x 177 |
 | task.target | hospital_death |
@@ -189,7 +203,7 @@ has no labels and stays out.
 
 - Prediction point: the end of the first 24 hours in the ICU; every feature is a first-hour or first-day value,
   an admission fact or a chronic condition, and the label is death before hospital discharge.
-- Built in place of wids_diabetes_mellitus (2026-11-11, the curator's mark on its issue 1, c): the same GOSSIS
+- Built in place of wids_diabetes_mellitus (2026-11-11, the curator's decision on it, option c): the same GOSSIS
   cohort, with a target nobody knows at 24 hours. 130,127 of WiDS 2021's 130,157 rows are rows of the WiDS 2020
   files, 90,998 of them in this labelled file.
 - APACHE IVa's `apache_4a_hospital_death_prob` and `apache_4a_icu_death_prob` are dropped (CLEAN-6): another
@@ -210,9 +224,6 @@ has no labels and stays out.
   bound, so the BMI is not impossible and is not set missing (unlike wids_diabetes_mellitus): those rows die at
   12.9% against 8.6%, and missing values would mark them (kept on Andrej's mark, 2026-11-11). No age 0 occurs
   here.
-- Time basis: ForcedGroupedFromTemporal: ICU stays of one year (eICU, 2014-2015), released without a date or an
-  order (no signal in the file order, encounter_id or patient_id); the split holds out hospitals, and a later
-  period of stays, which a dated release would allow, is not tested.
 - Anomaly: `pre_icu_los_days` is negative in 778 rows (median -0.30 days, 647 above -1 day): a registration lag
   in eICU (hospital admission recorded after the ICU admission); kept, as missing values would mark the same
   rows (2026-11-11, Andrej).
@@ -231,10 +242,11 @@ has no labels and stays out.
   split auditor's check), yet `hospital_id` as a feature adds nothing (ROC AUC 0.902 with it, 0.903 without,
   random splits) and the grouped split scores 0.901 against 0.903 random: case mix, not the site, carries
   the outcome.
+- Time basis: UnseenGroup (Andrej, 2026-11-17; `ForcedGroupedFromTemporal` before): a severity score is used to compare and adjust for risk across hospitals, including ones its developers never saw, so whole hospitals are held out (147 hospitals). The stays cover one year (eICU, 2014-2015) and come without a date or an order (no signal in the file order, encounter_id or patient_id). Not tested: a later period at a known hospital.
 
 ## Splits
 
-Default splits.
+Repeated 3-fold cross-validation keeping each group of `hospital_id` whole (shuffled group k-fold, a new draw per repeat), stratified on `hospital_death`: 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 91,713 rows (SPLIT-33).
 
 3 repeat(s) x 3 fold(s) with seed 4267; train 52,887 to 69,469 rows, test 22,244 to 38,826 rows.
 
@@ -272,11 +284,11 @@ One group is a hospital (147 US hospitals, 2 to 4,333 stays each). A severity sc
 | nearest neighbour in the same group | 6.8% of the rows (chance: 1.7%) |
 | label variance explained by the group | 0.01 (shuffled groups: 0.00) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -506,4 +518,12 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a21801-0cbd-7ebb-b05c-66ac81601f93 |
+| checksum | v2:38c540e19b17d81f2ddde5b8e624cee829555b483c71329206d371dc5c1e5fe1 |
+| built_at | 2026-11-26T13:17:40+00:00 |
+| path | gossis_icu_hospital_mortality/01a21801-0cbd-7ebb-b05c-66ac81601f93 |
+| data_foundry_version | 0.0.5 |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

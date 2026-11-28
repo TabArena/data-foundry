@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -173,6 +174,7 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
         - The target (2026-11-01, CLEAN-25): `TARGET` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

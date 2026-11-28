@@ -6,7 +6,10 @@ import hashlib
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+from rdkit import Chem
+from rdkit.Chem.MolStandardize import rdMolStandardize
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -17,8 +20,6 @@ from data_foundry.v2 import (
     TemporalSplits,
     canonical_smiles,
 )
-from rdkit import Chem
-from rdkit.Chem.MolStandardize import rdMolStandardize
 
 RAW_FILE = "raw/DB_for_chromophore_v3.csv"
 RAW_SHA256 = "f92a55144c46ca0a0ef063c5ea82996161d65ea5c21643796cdeb897e173994c"
@@ -206,7 +207,7 @@ class ChromophoreOpticalPropertiesDb(AbstractCuratedDataset):
         - Split walk (the split decision tree, SPLIT-36, from the record's collection type Expanding Science Catalogue): [CAT.next-items] the source aims at newly designed chromophores before synthesis, the items the catalogue adds next: yes → [CAT.entry-date] each dye is dated by the earliest Crossref year of its papers (98.0% of dyes), and the record has no `Target: Revised Later`: yes → [CAT.arrival] a forward split by that year leaves clearly fewer close training analogues than a random draw (4.8-8.9% against 58.3-63.1% of test dyes at Tanimoto 0.7): yes → [CAT.windows] one-year windows 2015 to 2020 each train on at least half the rows (51.1-98.3%): yes → leaf L-CAT.entry-date, Temporal · entry date, the split the definition ships (`split_leaf`; Andrej, 2026-11-24, issue 3 B and the Horizon B).
     """
     accepted_check_warnings = {
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "Accepted by Andrej on 2026-11-24 with the six one-year windows 2015-2020: 6 windows against the 9 an "
             "IID split of 17,509 rows would get; the 2014 window would train on 44.4% of the rows, under the "
             "half-the-rows floor, and the one-year length is the curator's sign-off (splits comment)."
@@ -239,11 +240,8 @@ class ChromophoreOpticalPropertiesDb(AbstractCuratedDataset):
     )
     split_leaf = "L-CAT.entry-date"
     splits_comment = """
-        Expanding windows on each dye's first publication year (`first_year`, no input), leaf L-CAT.entry-date of
-        the split tree: six one-year test windows, 2020 back to 2015, newest first, no gap (a published label is
-        final when its paper appears); training is every dye first published before the test year. Test windows
-        (year: rows, dyes, train share): 2020: 297, 97, 98.3%; 2019: 2,040, 784, 86.7%; 2018: 1,959, 709, 75.5%;
-        2017: 1,443, 535, 67.2%; 2016: 1,611, 437, 58.0%; 2015: 1,215, 423, 51.1%. The one-year length is the
+        Windows on each dye's first publication year (`first_year`, no input), leaf L-CAT.entry-date of the split
+        tree, with no gap (a published label is final when its paper appears). The one-year length is the
         finest step the year gives, and the curator signed it off (Andrej, 2026-11-24); the use case sets no
         other. SPLIT-33's target is 9 splits for 17,509 rows; 6 are reached, because the 2014 window would train
         on 44.4% of the rows, under the half-the-rows floor. The 131 undated dyes (194 rows) train in every

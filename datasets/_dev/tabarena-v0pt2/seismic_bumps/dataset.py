@@ -5,7 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+from scipy.io import arff
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -16,7 +18,6 @@ from data_foundry.v2 import (
     decode,
     drop_columns,
 )
-from scipy.io import arff
 
 # The hazard assessments' codes in the words of the ARFF header, lowest level first (CLEAN-12, CLEAN-14).
 HAZARD_LEVELS = ["lack of hazard", "low hazard", "high hazard", "danger state"]
@@ -185,13 +186,14 @@ class SeismicBumps(AbstractCuratedDataset):
         orders the split and is no input. Protocol (LEAK-9): each test shift is predicted from the training rows and its
         own features only; a method that reads other test rows (whose next row holds a row's label) is called out.
     """
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="shift_order",
         time_of="label",
         splits=TemporalSplits(window=84, unit="rows", min_train_fraction=0.5),
     )
     accepted_check_warnings = {
-        "splits_below_target": (
+        "splits_dimensions_off_protocol": (
             "15 of the 30 windows an IID split of this size would get: windows of four weeks (84 shifts) fit 15 times "
             "within the newest half, so the window length and the 50% training floor stop more; overlapping windows "
             "are not used, so each test shift is scored once (Andrej, 2026-11-20)."

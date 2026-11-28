@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -13,6 +14,7 @@ from data_foundry.v2 import (
     Metric,
     Source,
     TaskSummary,
+    TimeBasis,
     drop_columns,
 )
 
@@ -205,6 +207,16 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
           which end is bad is unknown.
         - The row budget (1M train, 500k test rows): We keep the whole frame (1,862,650 invoices of 81,531 clients, all before 2013) and use grouped 3-fold cross-validation over it (v2 split protocol). Each fold tests on at most 500k rows, whole clients drawn from its third and stratified on the target, and trains on every other row (about 1.36M). The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M rows with `subsample_train`, whose default draws whole clients at random, stratified on the target.
     """
+    split_leaf = "L-FILL.whole"
+    time_basis = TimeBasis(
+        "RetrospectiveFillIn",
+        """
+        the use case screens the clients STEG did not inspect in 2013-2019 from their
+        invoices before the cut, filling in the period the findings cover rather than forecasting from 2013; the fraud
+        rate by last-invoice year is flat for the kept clients (7.1-9.3%, 2015-2019). It cannot test a forecast made
+        at the cut or a later campaign.
+        """,
+    )
 
     # Task
     target = "fraud"
@@ -243,9 +255,7 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        Default grouped 3-fold cross-validation by client over the full frame (1,862,650 invoices): each fold tests on
-        at most 500k rows, whole clients drawn from its third, and trains on every other row (about 1.36M), which a
-        benchmark sub-samples to 1M rows by whole clients (`subsample_train`). The grouped cross-section stands in for a
+        The grouped cross-section stands in for a
         deployment over time, in which STEG would train on the findings of earlier campaigns and score its clients
         forward: the labels are undated findings of 2013-2019, one per client, so no test window or gap can be set,
         and train and test clients share the same years, as in the challenge.

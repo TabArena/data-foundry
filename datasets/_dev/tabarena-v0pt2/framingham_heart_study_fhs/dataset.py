@@ -5,7 +5,17 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary, drop_columns
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+    drop_columns,
+)
 
 TEN_YEARS = 3652
 """Days in 10 years (10 x 365.25, rounded down). No event, death or censor date of the cohort falls on days
@@ -307,9 +317,28 @@ class FraminghamHeartStudyFhs(AbstractCuratedDataset):
           split grouped by participant, would make a grouped task; for any CHD (10,759 rows, 1,229 Yes) logistic
           regression rose from 0.736 to 0.745 on the same baseline test rows; not measured for hard ASCVD. Not shipped:
           the use case is a patient's first assessment (USE-11), and the later exams are older, selected survivors.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+        - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
     """
+    split_leaf = "L-FORCED.assumed-random"
+    time_basis = TimeBasis(
+        "AssumedStationaryRelation",
+        """
+        one baseline exam ships, so no later period exists to hold out; the shift measured across the parent
+        file's exams is one model family's once age is matched (LightGBM -0.040 ROC AUC on exam 3, Kumo-Tabular flat),
+        and secular drift in risk matters over decades, not within one exam. Before: ForcedIIDFromTemporal (Andrej,
+        2026-11-16, kept as a departure 2026-11-20): the baseline exam (period 1) is the cohort's one prediction point,
+        and ASCVD within 10 years follows it (follow-up runs 24 years); one cohort at one exam is one period, too few
+        for three windows. The stationary-relation test on the parent teaching file's three exams (about 1956, 1962,
+        1968; the cohort rebuilt at each exam, a participant held out across exams) reads not flat: trained on earlier
+        exams only, ROC AUC falls by 0.032 +- 0.008 on exam 3 (LightGBM) and 0.015 +- 0.005 on exam 2 (Kumo-Tabular),
+        floors 0.002; the exams are also the cohort's age. Weighted to the tested exam's age mix (2026-11-19),
+        LightGBM still loses 0.040 +- 0.009 on exam 3, while Kumo-Tabular reads flat (+0.007 +- 0.004 on exam 3,
+        +0.013 +- 0.011 on exam 2). It cannot test a later cohort.
+        """,
+        set_by="Andrej",
+        on="2026-11-23",
+    )
 
     # Task
     target = "ascvd_within_10_years"

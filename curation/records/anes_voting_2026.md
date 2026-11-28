@@ -6,18 +6,22 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
-- WIP (DF)
-claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
 decision_markers:
 - Needs extensive data wrangling
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Fixed Delay'
+- 'Entities: Recur'
+- Survey
 collections:
 - TableShift
 original_source: Website
 year: '2026'
+collection_period: 1948-2024
 domain: social science
 required_split:
 - Temporal (NON-IID)
@@ -76,6 +80,16 @@ CC (2026-11-11, Lennart): accepted `splits_feature_missing_in_test` with a note 
 
 **Assessment (AI, 2026-11-11):** 95 questions flagged, each missing in at least one test election and recorded on its train side (e.g. VCF0401-VCF0411 last asked in 2004).
 
+CC (2026-11-11, Andrej): Review issue 2, B ("Agree."): `splits_comment` states how the data arrive: respondents answer in the weeks before one election day and report their vote in the post-election interview within about two months, the next study comes two to four years later, so every training label is in before a window starts and no gap is needed (SPLIT-10, SPLIT-32). It also names the panel links of the cross-year id (`VCF0006a`, not a feature): 2,917 respondents, all in the panels of 1956-1960, 1972-1976, 1992-1996 and 2000-2002; two of the nine test windows hold re-interviewed respondents with an earlier row in training, 1996 (545 of 1,534) and 2002 (991 of 1,344), and turnout travels with them (87.8% against 35.3%; 84.7% against 19.9%). No `data_tags` change: a temporal split takes no time basis.
+
+CC (2026-11-17, Andrej): Review issue 3, A, as implemented: Nine windows of one study each on `VCF0004` (test 1996, 2000, 2002, 2004, 2008, 2012, 2016, 2020, 2024: 1,066 to 7,442 respondents), each trained on every earlier study (40.0% to 89.8% of 48,587 rows; the four oldest below half, signed off 2026-11-11), no gap, temporal.
+
+CC (2026-11-17, Andrej): verdict ship (blind split walk).
+
+CC (2026-11-17, Andrej): the declared split (temporal on `VCF0004`, windows of 1 value, 9 windows, no gap) is checked in the blind split walk.
+
+CC (2026-11-19, Andrej): train floor (Review issue 4, A as implemented): the four oldest elections (49.2%, 46.4%, 43.2% and 40.0% of the respondents) stays as the curator's exception to the half-data floor (SPLIT-14 as amended 2026-11-19); no window is under 30%.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it: the focused re-review of 2026-11-06 under the new rules on exposure
@@ -115,7 +129,10 @@ over inference).
 
 **Main points:** Only the verdict: the re-review left no issue, so the dataset ships unless you decide otherwise; the
 codebook follow-up in the outcome needs no decision. Settled on 2026-11-11: the nine studies 1996 to 2024 stay the
-test windows (issue 1, A), and the declared horizon of one election without a gap is checked.
+test windows (issue 1, A), and the declared horizon of one election without a gap is checked. Settled on 2026-11-11 too: how the answers and the vote arrive, with
+the panel links of the 1996 and 2002 windows, is in the split comment (issue 2, B). Settled on 2026-11-17:
+nine windows of one study each, in place of TableShift's held-out South (issue 3, A). Settled on 2026-11-19: the four
+oldest elections stay as the curator's exception to the half-data floor (issue 4, A). Nothing is left open.
 
 **Record judgment:** valid. The record fields agree with the definition (the record's `Website` counts as `Other`).
 Before this review the record had no line on the survey weights; its Assessment line of 2026-11-06 adds one. The
@@ -253,6 +270,104 @@ the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regenerat
    and 1,534) and train sides (43,633 down to 19,455), the four under half with their shares, the length's reason and
    the absent gap. The record has the decision and the horizon CC lines. `dataset check`: 0 errors, 0 warnings (README
    not regenerated).
+
+2. **Time basis: keep the study windows with no gap, and write in `splits_comment` how the answers and the vote
+   arrive?**
+
+   * **Problem:**
+     - A study's respondents answer in the weeks before one election day, and they report whether they voted in the
+       post-election interview, within about two months; the next study comes two to four years later.
+     - The record's facts fit (`Samples: Over Time`, `Time: Dated` by the study year, `Target: Later`), and the split
+       is temporal by study, so no use-case prototype applies: a pollster scores the next election, whose turnout
+       climate no earlier study shares[^av2a].
+     - Keep the windows as decided and add these facts to the split comment?
+   * **Background:**
+     - No gap is needed: a study's labels are all in before the next study starts, as the time column's step (two to
+       four years) is far longer than the label's delay[^av2b].
+     - The cumulative file writes every study in today's harmonised codes; that is a recoding of what was asked then,
+       not a later answer.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | As now (implemented) | the study windows, no gap; the split comment names the windows only | no edit | why there is no gap, and what the cross-year id links, stays in the review only |
+     | B | Arrival in the split comment | as A, and the comment states the label's delay, the step between studies and the checked panel links | the reasons are where the split is | none found |
+     | C | A random split as `DelayedTarget` | one prediction moment per study, rows mixed across studies | more test rows | the moment is shared within a study, not across; an election's turnout would sit on both sides |
+
+   * **Recommendation:** B. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, no `data_tags` change (a temporal split takes no time basis); the facts go into
+   `splits_comment`; README regenerated by `dataset check`.
+
+   [^av2a]: **SPLIT-32** (Should): how the data was collected, when each sample, feature and target come into existence,
+     is information for the split; the record carries the source's collection facts, and a split that is not temporal
+     names a prototype or a forced tag; a temporal split needs neither.
+   [^av2b]: **SPLIT-10** (Should; amended 2026-11-04 and 2026-11-05): a gap of about the label's delay; no gap is needed
+     where the collection covers what the gap guards against, such as a time column whose smallest step is longer than
+     the delay.
+
+   **Andrej (2026-11-11, change):** Agree. (Option B: Arrival in the split comment)
+
+   **Resolved (2026-11-11, Andrej):** B: `splits_comment` now states the label's delay (the vote reported in the
+   post-election interview within about two months), the step to the next study (two to four years, so every training
+   label is in before a window starts and no gap is needed) and what the cross-year id links, checked on the February
+   2026 file (`VCF0006a`, 48,587 kept respondents): the id links 2,917 respondents, all in the panels of 1956-1960,
+   1972-1976, 1992-1996 and 2000-2002, and two of the nine test windows hold re-interviewed respondents whose earlier
+   row is on the training side, 1996 (545 of 1,534) and 2002 (991 of 1,344); turnout travels with the respondent
+   (voted in 1992, voted again in 1996: 87.8% against 35.3% of those who had not; 2000 to 2002: 84.7% against 19.9%).
+   The id is not a feature. No `data_tags` change and no `Time basis:` line, as a temporal split takes none. Text only;
+   rows, folds and the metric unchanged. Whether to act on the two windows' repeats is not decided.
+
+3. **Split: TableShift's held-out South (census region) instead of nine windows of one election each?**
+
+   * **Problem:**
+     - TableShift holds out the South to study distribution shift for its benchmark, not for the pollster's use, which meets the next election's sample.
+     - ANES itself sets no task or split, so the source's split here is TableShift's: train on the Northeast, North Central and West, test on the South, all study years pooled.
+     - The split can be rebuilt: the census region `VCF0112` is a column (South: 17,175 of 48,587 rows, 35.35%; 576 rows have no region).
+   * **Source split:** yes, benchmark (TableShift, Gardner et al. 2023); ANES itself sets no task: domain split by geographic region (VCF0112 census region): train on some regions, out-of-domain test on a held-out region ("splits_comment: 'ANES sets no prediction task and TableShift splits its voting task by region'") https://tableshift.org/datasets.html#voting. Credible: partly, TableShift chose the region split to study distribution shift, which is documented and motivated by its benchmark's purpose, not by the pollster's use (the next election).. Against the tree's leaf: no, TableShift holds out a census region at all years for its shift benchmark; the leaf holds out later elections, as a pollster meets them.
+   * **Why it counts as chosen, not conventional:** TableShift chose the region split to study distribution shift, which is documented and motivated by its benchmark's purpose, not by the pollster's use (the next election).
+   * **Background:** A pollster predicts turnout at the next election, and the study year gives 21 rounds with at least five windows training on half the rows or more. The post-election self-report arrives weeks after the interview, inside the 2-4 year step, so no gap. Confidence of the blind walk: high.
+   * **What changes on B:** the definition's split declaration is replaced by the source's own construction (its files, periods or groups), and the `splits_comment` records that the tree's leaf was not followed. The rows, features, target and metric do not change; the folds do, so the container is rebuilt.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: the tree lists this dataset as an example of 'Temporal · round'; and the dossier's curation notes still mention 'the last nine studies' as test years and questions missing 'in at least one test election ... recorded on its train side'. Both leak a temporal split by study year; ignored as evidence, my walk reaches the same leaf from the data.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Nine windows of one study each on `VCF0004` (test 1996, 2000, 2002, 2004, 2008, 2012, 2016, 2020, 2024: 1,066 to 7,442 respondents), each trained on every earlier study (40.0% to 89.8% of 48,587 rows; the four oldest below half, signed off 2026-11-11), no gap, temporal (implemented) | No change; `splits_comment` already names TableShift's region split as not set for this use. | Tests a likely-voter screen built on earlier elections at the next one, the test Pew's likely-voter study names; nine windows. | The step to a region the model has not seen, TableShift's shift, is not tested. |
+     | B | TableShift's region holdout: train on the North Central, West and Northeast (12,499 + 9,574 + 8,763 = 30,836 rows), test on the South (17,175 rows), all years pooled, one fold; 576 rows without a region | `temporal` is replaced by a single holdout on `VCF0112` == South; the 576 rows without a region need a rule (dropped or trained on); `VCF0112` stays a feature. | Comparable to TableShift's out-of-domain voting task; tests a regional shift. | One test fold; training holds later elections than many test rows, so it does not test the next election; the region is not the pollster's shift. |
+
+   * **Recommendation:** A, because the pollster meets the next election, which the study-year windows test, and TableShift's region holdout was chosen for its benchmark, not for that use.. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: replace the split declaration with the source's construction (name the files or periods it uses) and say in `splits_comment` why the tree's leaf is not followed; on A: name the source's split in `splits_comment` as a departure.
+
+   **Andrej (2026-11-17, ok):** as implemented.
+
+   **Resolved (2026-11-17, Andrej):** A, as implemented: Nine windows of one study each on `VCF0004` (test 1996, 2000, 2002, 2004, 2008, 2012, 2016, 2020, 2024: 1,066 to 7,442 respondents), each trained on every earlier study (40.0% to 89.8% of 48,587 rows; the four oldest below half, signed off 2026-11-11), no gap, temporal.
+
+4. **Train floor: keep the windows under half the data as the curator's exception, or drop them?**
+
+   * **Problem:**
+     - The four oldest elections train on 49.2%, 46.4%, 43.2% and 40.0% of the respondents, beside five on 51.4% to 89.8%.
+     - Since 2026-11-19, every window trains on at least half the data, and a window under half is the curator's exception for the dataset, down to 30%[^split14]; the sign-off (Lennart, 2026-11-11, review issue 1, A) was given under the earlier rule, which admitted such windows beside two at half or more.
+     - The definition has 9 windows; the target an IID split would get[^split33] for 48,587 rows is 9; without the windows under half it keeps 5.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the windows as the curator's exception (implemented) | The accepted warning is reworded to the new rule; split unchanged | Keeps the periods they test, as signed off; more windows toward the target | They train on less than half the data |
+     | B | Drop the windows under half | The windows under half leave the declaration; a rebuild | Every window trains on half the data or more | 4 fewer windows and the periods they test |
+
+   * **Recommendation:** A, the sign-off's reason (periods or test rows the newest windows lack) still holds, and no window is under 30%. **Decision:** A or B?
+
+   **Notes for the AI:** on A, reword the `splits_train_under_half` acceptance (drop "SPLIT-14's two tiers admit it", name the curator's exception and this decision) and add a CC line; on B, remove the windows from the declaration, rebuild, and update the splits comment.
+
+   **Andrej (2026-11-19, ok):** As implemented (A).
+
+   **Resolved (2026-11-19, Andrej):** A, as implemented: the four oldest elections (49.2%, 46.4%, 43.2% and 40.0% of the respondents) stays as the curator's exception to the half-data floor; the accepted `splits_train_under_half` warning now names this decision. The split is unchanged.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count.
 
 **Review panel:** ship after changes (mediator). Tier focused, a re-review of 2026-11-06 under LEAK-41 and MET-14 to
 MET-16: the claim auditor, then the mediator. Claims: 9; 6 hold, 1 refuted (the survey-weight note left out the

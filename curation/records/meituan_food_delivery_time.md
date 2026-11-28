@@ -5,9 +5,7 @@ checked_by:
 - Myunghwan
 - Andrej
 data_foundry_status:
-- WIP (Triage)
 - 'DF: Yes'
-claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 4
 tags:
@@ -341,7 +339,7 @@ Otherwise, no gap at all is unrealistic. What would be the most realistic settin
      - Issue 1 dropped the field from every row as a forecast with unverified snapshot timing; it never separated a booked slot from a forecast.
      - That the field holds the booked slot is inferred from the data; the source does not say so.
    - **Effect on the task:** a model on prebooks misses the customer's own requested time; the requested time alone beats the shipped model on prebooks by about 0.75 minutes RMSE, and a model given both was not run.
-   - **Experiments:** on prebooks (domain practitioner, Slurm 1401911; column audit):
+   - **Experiments:** on prebooks (domain practitioner; column audit):
 
      | Measure | Value |
      |---|---|
@@ -407,7 +405,7 @@ column audit, `check.log`, `check_patched.log`, `leak.log`, `task.log`, the reco
 issues 1-3), `dataset.py`, SPLIT-10 in `splits.md` and `split_tree.md`. **`group.log` is missing**; no point depends
 on it (entities recur by design under a forward split, claim 15).
 
-Decisive experiment: Slurm 1401963, script and log in the run folder
+Decisive experiment: one run, script and log in the run folder
 (`sel.py`, `1401963.log`). Issue 2 B applied (62 rows dropped), remaining-time target (issue 3 B), the 15 inputs,
 LightGBM 500 trees / 127 leaves, two seeds, the definition's three windows.
 
@@ -718,7 +716,7 @@ Read: `dataset.py`, README, the record (`## Review`, Horizon block, issues 1-3),
 **4. Prebooked orders lose their booked delivery time (NEW; USE-6 Must, EV-7)**
 
 - **Problem:** issue 1 dropped `estimate_arrived_time` as a platform forecast. On prebooked orders it is very likely the slot the customer booked at checkout, known at placement, not a forecast.
-- **Evidence (domain practitioner, job 1401911):** on prebooks, promise − acceptance correlates 0.854 with the remaining time; as a bare predictor it scores 9.75 min RMSE, the shipped-input model about 10.5. The promise is constant across an order's waybills (column audit: 0 orders vary).
+- **Evidence (domain practitioner):** on prebooks, promise − acceptance correlates 0.854 with the remaining time; as a bare predictor it scores 9.75 min RMSE, the shipped-input model about 10.5. The promise is constant across an order's waybills (column audit: 0 orders vary).
 - **Limit:** that the field is the booked slot is inferred from the data, not documented (EV-7), and it partly reverses Myunghwan's 2026-11-09 choice. So this is a decision, not a fix.
 - **Remedy:** a new decision item for Myunghwan: (a) keep "promise − acceptance" as an input for `is_prebook = 1` rows only, or (b) keep the exclusion and say in `fit_reason` that prebooked rows lack their booked time. Mildest: (b).
 
@@ -730,7 +728,7 @@ Read: `dataset.py`, README, the record (`## Review`, Horizon block, issues 1-3),
 
 **6. Nine non-prebook orders over 3 hours remaining (NEW, minor; CLEAN-11 Should)**
 
-- **Evidence (precedent F4, job 1401917):** 42 orders over 3 h remaining, 33 of them prebooks; 9 non-prebook, 2 over 6 h (max 652 min). lusaka, nyc and pkdd drop trips over 3 h as not closed in the app (Lennart, 2026-10-26 / 11-05).
+- **Evidence (precedent F4):** 42 orders over 3 h remaining, 33 of them prebooks; 9 non-prebook, 2 over 6 h (max 652 min). lusaka, nyc and pkdd drop trips over 3 h as not closed in the app (Lennart, 2026-10-26 / 11-05).
 - **Effect:** under RMSE on option B, one 300-min error weighs about as much as 1,000 typical rows (estimate). The gamer found dropping training rows over 180 min changes nothing, so this is about scoring, not fitting.
 - **Remedy:** a note in `curation_comments` stating the count and why they stay, or a decision item if the curator wants the family's cap. Not a reason to hold the dataset.
 
@@ -773,12 +771,12 @@ The advocate and I agree on the verdict: ship after issue 2 B, issue 3 B and a L
 
 **What I ran**
 
-- The definition's own `_load_raw` and `_clean`, on the raw CSV in the run folder. Slurm jobs 1401923 and 1401929. Scripts and logs are in the run folder. Note: job 1401923 has an index-alignment bug in its baseline columns; job 1401929 replaces it.
+- The definition's own `_load_raw` and `_clean`, on the raw CSV in the run folder. Two runs. Scripts and logs are in the run folder. Note: the first run has an index-alignment bug in its baseline columns; the second replaces it.
 - **How I worked around the split error.** `_make_splits` still raises on this branch: "The newest cutoff's window ends at 2022-10-25 00:00:00, before the newest data (2022-10-25 00:23:29)". I rebuilt the three windows by hand with the definition's own filters:
   - train = accepted before midnight and delivered before midnight;
   - test = accepted on that day;
   - the 62 rows from 25 October are in no window.
-- I extracted the text of the background document, the October 2024 supplement and Wang et al. 2025 with pypdf (installed into the run folder, run in Slurm job 1401924).
+- I extracted the text of the background document, the October 2024 supplement and Wang et al. 2025 with pypdf (installed into the run folder).
 - I read the panel outputs: `check.log` (it fails with the split error) and `check_patched.log` (0 errors, after the 62 rows are dropped). I also read `leak.log` and `task.log`; both ran on the patched frame of 568,483 rows.
 
 **Claims table**
@@ -853,7 +851,7 @@ I am the ETA team at the platform. When a courier accepts an order, I update the
 
 **What I tested**
 
-I ran one Slurm CPU job (1401911) on the raw waybill CSV with the shipped selection: accepted attempts with an arrival.
+I ran one CPU job on the raw waybill CSV with the shipped selection: accepted attempts with an arrival.
 - Remaining time after acceptance, split by the prebook flag.
 - The recorded promise against the actual remaining time.
 - An as-of courier load: the orders the same courier had accepted earlier and not yet delivered, or not yet picked up, at this acceptance time. It uses only events before the acceptance time.
@@ -989,7 +987,7 @@ At acceptance I would have it. The promise is constant across an order's attempt
 **What I did**
 - Ran the decision register (5,933 decisions, 43 flags). Output: the run folder. No flag names this dataset. The relevant flags are general ones: `amendment_due` on SPLIT-10 (exceptions on 11 datasets) and on SPLIT-14, and `opposite_outcomes` on USE-5.
 - Compared every decision of the definition, issues 2 and 3, and the Horizon block with the ETA and delivery siblings (sendy, nyc/pkdd taxi, 2024_lusaka, brazilian_ecommerce, delivery_eta_1m, medical_facility), the cross-dataset item on short newest periods, and the Cases tables of use_case.md, splits.md, cleaning_features.md and evidence.md.
-- Ran one CPU job (Slurm 1401917) on the raw data to count long durations. Script and log are in `.../precedent/`.
+- Ran one CPU job on the raw data to count long durations. Script and log are in `.../precedent/`.
 - **Missing panel outputs:** the run folder contains only my `precedent/` folder. There is no check.log, README_check.md, leak/, task/, dtype/ or group.log, so I could not read them.
 
 **Verdict per decision**
@@ -1048,7 +1046,7 @@ Every shipped ETA definition counts the target from its prediction point, with t
 
 **F4 (NEW, minor; CLEAN-11 and the 3-hour cap of the ETA family)**
 - **Precedent:** lusaka, nyc and pkdd drop trips over 3 hours as "not closed in the app" (CLEAN-11 then CLEAN-15; 2026-11-05 and 2026-10-26, Lennart). Meituan keeps every duration ("Do not clip").
-- **Counts from Slurm job 1401917, 568,545 labeled orders:**
+- **Counts from that run, 568,545 labeled orders:**
 
   | Remaining time after acceptance | Orders | Of which prebooks |
   |---|---|---|

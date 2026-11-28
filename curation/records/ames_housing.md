@@ -9,8 +9,12 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- Dated Event Log
 original_source: Other
 year: '2011'
+collection_period: Jan 2006 - Jul 2010
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)
@@ -46,7 +50,7 @@ the incomplete July 2010 and his three partial-sale outliers), the log price and
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — RMSE between the logarithm of the predicted and the observed sale price (https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques/overview/evaluation).
 
-CC (2026-10-26, Lennart): issue 7: drop the allocation and adjoining-land sales, "as we know from the metadata what data to use to build the real task" (USE-5). The family sales wait for the consistency check on the review page (house_sales keeps its related-party sales, CC 2026-10-22).
+CC (2026-10-26, Lennart): issue 7: drop the allocation and adjoining-land sales, "as we know from the metadata what data to use to build the real task" (USE-5). The family sales wait for a consistency check (house_sales keeps its related-party sales, CC 2026-10-22).
 
 CC (2026-10-26, Lennart): issue 9: map the text codes of the 43 categorical columns to the documentation's labels (CLEAN-12).
 
@@ -54,7 +58,7 @@ CC (2026-10-26, Lennart): issue 3: remove the `Trivial` marker (TP-4: `Overall Q
 
 **Exception to SPLIT-10 (2026-10-26, Lennart):** no gap between training and test windows. The only visible recording shortfall is the extract's last month (June 2010, 82 sales against 97-112 in earlier Junes), and its 73 normal sales show no price selection (mean residual -0.001); sales are dated by month, so the smallest possible gap is a whole month, longer than the delay. Serves P4: the windows train on every recorded sale before them, as a valuation model refit each month on all earlier sales would ("on such small data we could refit easily per month").
 
-**Assessment (AI, 2026-10-26):** the marks of 2026-10-26 applied: the 36 allocation and adjoining-land sales dropped (2,883 sales; 17 had been test rows; the 46 family sales wait for issue 7), the SPLIT-10 exception written, 266 codes of 43 columns written as DataDocumentation.txt labels (five codes the file spells unlike the documentation matched by hand: `A (agr)`, `C (all)`, `I (all)`, `NAmes`, `2fmCon`/`Duplex`/`Twnhs`; the documentation's typos corrected), the `Trivial` marker removed. `dataset check` clean; task probes on the 13 windows: linear R² 0.912 (RMSE 0.118), LightGBM 0.905, `Overall Qual` alone 0.682, no flag. The rename (issue 10) waits for the consistency check.
+**Assessment (AI, 2026-10-26):** the decisions of 2026-10-26 applied: the 36 allocation and adjoining-land sales dropped (2,883 sales; 17 had been test rows; the 46 family sales wait for issue 7), the SPLIT-10 exception written, 266 codes of 43 columns written as DataDocumentation.txt labels (five codes the file spells unlike the documentation matched by hand: `A (agr)`, `C (all)`, `I (all)`, `NAmes`, `2fmCon`/`Duplex`/`Twnhs`; the documentation's typos corrected), the `Trivial` marker removed. `dataset check` clean; task probes on the 13 windows: linear R² 0.912 (RMSE 0.118), LightGBM 0.905, `Overall Qual` alone 0.682, no flag. The rename (issue 10) waits for the consistency check.
 
 CC (2026-10-26, Lennart): issue 7: "do (c)": drop the 46 family sales as well (all 82 non-market sales go), and reopen house_sales issue 8 to drop its related-party sales (code 51) the same way.
 
@@ -66,15 +70,19 @@ CC (2026-10-26, Lennart): the declared metric, RMSE on the log price (the Kaggle
 
 CC (2026-10-26, Lennart): verdict ship.
 
-**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 12 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `Lot Shape`, `Utilities`, `Land Slope`, `Exter Qual`, `Exter Cond`, `Heating QC`, `Kitchen Qual`, `Functional`, `Garage Qual`, `Garage Cond`, `Paved Drive`, `Pool QC` (the README lists their levels); their codes that mean unknown (don't know, refused, not asked) are missing in `Garage Qual`, `Garage Cond`, `Pool QC` (CLEAN-10); left unordered: `Bsmt Qual` (a level outside the scale is a state of its own); `Bsmt Cond` (a level outside the scale is a state of its own); `Bsmt Exposure` (a level outside the scale is a state of its own); `BsmtFin Type 1` (a level outside the scale is a state of its own); `BsmtFin Type 2` (a level outside the scale is a state of its own); `Electrical` (a level outside the scale is a state of its own); `Fireplace Qu` (a level outside the scale is a state of its own); `Garage Finish` (a level outside the scale is a state of its own); `Fence` (a partial order); ordinal scales shipped as numbers, left as numbers for the curator's review: `Overall Qual`, `Overall Cond`.
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels): 12 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `Lot Shape`, `Utilities`, `Land Slope`, `Exter Qual`, `Exter Cond`, `Heating QC`, `Kitchen Qual`, `Functional`, `Garage Qual`, `Garage Cond`, `Paved Drive`, `Pool QC` (the README lists their levels); their codes that mean unknown (don't know, refused, not asked) are missing in `Garage Qual`, `Garage Cond`, `Pool QC` (CLEAN-10); left unordered: `Bsmt Qual` (a level outside the scale is a state of its own); `Bsmt Cond` (a level outside the scale is a state of its own); `Bsmt Exposure` (a level outside the scale is a state of its own); `BsmtFin Type 1` (a level outside the scale is a state of its own); `BsmtFin Type 2` (a level outside the scale is a state of its own); `Electrical` (a level outside the scale is a state of its own); `Fireplace Qu` (a level outside the scale is a state of its own); `Garage Finish` (a level outside the scale is a state of its own); `Fence` (a partial order); ordinal scales shipped as numbers, left as numbers for the curator's review: `Overall Qual`, `Overall Cond`.
 
-CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 2 ordinal scales shipped as numbers are ordered categories (point 3); 8 columns with a state outside the scale ordered, the state placed by the rule.
+CC (2026-10-31, Lennart): decided in the dtype review of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 2 ordinal scales shipped as numbers are ordered categories (point 3); 8 columns with a state outside the scale ordered, the state placed by the rule.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `cook_county_residential_sales` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 2 coded columns carry their words.
 
 CC (2026-11-04, Lennart): SPLIT-10 is amended (on lt_vehicle_loan_default_prediction): no gap is needed where the collection covers the label's delay and the measurements show no shortcut and no selection at the release end. The no-gap call here is now an application of the rule, not an exception; the line above stays as its history.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `Month Sold`, windows of 2 months, windows while training keeps 50% of the rows (13 in the build), no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
+
+CC (2026-11-26, Lennart): accepted `splits_dimensions_off_protocol` (SPLIT-15) after the rebuild of 2026-11-26: thirteen windows against SPLIT-33's 30; a fourteenth would train on 47% of the sales.
 
 ## Reference
 

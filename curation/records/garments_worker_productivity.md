@@ -7,12 +7,19 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+priority: 2
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Fixed Delay'
+- 'Entities: Recur'
+- Panel Data
 collections:
 - TabArena Reject
 original_source: UCI
-year: '2021'
+year: '2020'
+collection_period: Jan 2015 - Mar 2015
 domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)
@@ -50,6 +57,170 @@ CC (2026-10-06, Lennart): Kept after the task-probe review: the `unstable` flag 
 CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 2 calendar or compass cycles ordered.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `thai_apparel_line_productivity` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship as defined: the same-day incentive leak is in the BeyondArena data only (v0.2 lags it), and the team's previous-day productivity adds nothing beyond the lagged columns. Priority 2: gap 0, use case 0, source 1, shape 1, risk -1.
+
+CC (2026-11-05, Andrej): ship as defined. The declared split (30 one-day windows, each trained on every earlier day) and the declared metric (RMSE on the productivity) checked and kept. `year` set to 2020, UCI's donation date of the rows (the paper is 2021), from the definition.
+
+CC (2026-11-06, Andrej): the arrival facts of the temporal split accepted (Review issue 2, B, through the cross-dataset item on arrival notes of temporal splits) and written into `splits_comment`; the split is unchanged. A day's productivity is in the efficiency report after the shift, before the next day's prediction, so no gap is needed.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `date`, windows of 1 value, 30 windows, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
+
+CC (2026-11-19, Andrej): least test window (Review issue 3, A as implemented): the 30 one-day windows of 17-24 team records stay; a factory day is the task's natural test unit, so the 33-unit minimum of SPLIT-14 is waived as the curator's exception. Reopened on 2026-11-20 and settled the same day as A (see the CC line below).
+
+CC (2026-11-20, Andrej): the 30 one-day windows stay as the curator's exception to the 33-unit test-window minimum (Review issue 3, A, after the two-day test): a factory day is the natural test unit, and two-day windows would score each second day with a day-old model, which costs Kumo-Tabular 6.5% MAE (12 of 15 windows, p 0.012).
+
+## Review
+
+**Outcome:** added. The 1,197 team-days of the sewing and finishing departments of a garment factory, January to March
+2015 (UCI; Al Imran, Rahim and Ahmed, International Journal of Business Intelligence and Data Mining 2021;19(3):319-342,
+https://www.inderscience.com/filter.php?aid=118183): a team's productivity that day, predicted at the start of the day
+from its target, team size and style changes and the previous recorded day's values. The AI recommends shipping it as
+defined. Reviewed on 2026-11-04 without a review panel, from the gathered evidence (the record, the leak audit of
+2026-10-01, one model run on the shipped BeyondArena data, and one check of today). Validity: the prediction point
+is ours (the paper studied drivers), set at the start of the day; the end-of-day values, the incentive among them
+(Lennart, 2026-10-01), enter lagged by one working day, and each of the 30 one-day test windows trains on every earlier
+day. The teams recur on both sides by design: a manager predicts for the factory's own teams. The leak found earlier,
+the same-day incentive that is paid for the day's output, is in the shipped BeyondArena data only; the definition lags
+it. Value: untuned LightGBM RMSE 0.137 against 0.178 for the training mean over the 30 windows (today's check, 3 seeds);
+the first train side holds 50% of the rows. Quality: nothing open. Weighed: a factory record with a published paper +, a
+prediction point and leak fix tested on the data +, 17 to 24 test rows per window and one quarter of one factory -; a
+richer sibling (`thai_apparel_line_productivity`) is screened in its own record.
+
+**Main points:** Shipped as defined (issue 1, 2026-11-05), the record's year set from the definition; the arrival facts
+(end-of-day report, lags, no gap) written into the split comment (issue 2, 2026-11-06); the 30 one-day windows kept as the curator's exception to the 33-unit test-window minimum
+(issue 3, 2026-11-20). Nothing open.
+
+**Record judgment:** valid. A known team's own history is a legitimate input under a temporal split, and the definition
+carries it through the lagged columns: today's check added the team's previous-day productivity (and its gap to that
+day's target) and it changed nothing (mean RMSE 0.1373 with and without, paired standard error 0.0018, better on 13 of
+30 windows), because the lagged incentive already follows it (Spearman 0.85 in sewing). The year is UCI's donation date
+of the rows (2020); the paper is 2021.
+
+**Issues for Andrej:**
+
+1. **Ship as defined?**
+
+   * **Problem:**
+     - Nothing open was found: the same-day incentive is lagged, the team's own history is a legitimate input under the
+       temporal split, and the record's year differed from the definition's (2021 against 2020).
+     - Ship as defined?
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Ship as defined (implemented) | 30 one-day windows, RMSE | a factory record with a published paper; the leak fix tested | 17 to 24 test rows per window |
+     | B | Retire | `No (Retired)`; the folder leaves the working copy | none found | no defect found |
+
+   * **Recommendation:** A. **Decision:** ship (A) or retire (B)?
+
+   **Resolved (2026-11-05, Andrej):** ship as defined (A); the declared split and metric checked and kept; the record's
+   `year` set to 2020 from the definition.
+
+2. **Time basis: keep the 30 one-day windows with no gap, as shipped, and write in `splits_comment` how a team-day's
+   values arrive?**
+
+   * **Problem:**
+     - A team-day starts with its plan (target, workers, style changes) and ends with the efficiency report that holds
+       its productivity, the label, and the other end-of-day values, which the definition lags to the team's previous
+       recorded day; the next day's prediction comes after that report.
+     - The record's facts fit (`Samples: Over Time`, `Time: Dated` by the day, `Target: Later` at the end of the shift),
+       and the split is temporal by day, so no use-case prototype applies: a manager predicts today for known teams[^2a].
+     - Keep the split as shipped (issue 1) and write these facts into the split comment?
+   * **Background:**
+     - No gap is needed: a day's labels are in the report before the next day starts, and each window is one day,
+       trained on every earlier day[^2b].
+     - Nothing crosses the cut beyond the team's own history, which is legitimate here: no team has two rows on one day
+       (checked on the 1,197 rows), so a lag never reads a value of the test day; each window holds a whole factory day,
+       so a shock shared by the day's teams is never in training.
+     - The window size stays as decided on 2026-11-05 (17 to 24 test rows per day); this issue changes only the comment.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | As now (implemented) | 30 one-day windows, no gap; the comment gives the window count and sizes | no edit | why no gap is needed and why the lags are safe is in the curation notes only in part |
+     | B | Arrival in the split comment | as A, and the comment states the end-of-day report, the lag and the whole-day windows | the reasons are where the split is | none found |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   **Notes for the AI:** on B, no `data_tags` change (a temporal split takes no time basis); append to `splits_comment`:
+   "A day's productivity and its other end-of-day values are in the efficiency report written after the shift; the
+   prediction is made at the start of the next day, so every training label is known and no gap is needed. The
+   end-of-day values enter lagged to the team's previous recorded day (no team has two rows on one day), and each window
+   is a whole factory day."
+
+   [^2a]: **SPLIT-32** (Should): how the data was collected, when each sample, feature and target come into existence,
+     is information for the split; the record carries the source's collection facts, and a split that is not temporal
+     names a prototype or a forced tag; a temporal split needs neither.
+   [^2b]: **SPLIT-10** (Should; amended 2026-11-04 and 2026-11-05): a gap of about the label's delay; no gap is needed
+     where the collection covers what the gap guards against, such as a time column whose smallest step is longer than
+     the delay. **LEAK-34** (Must): an entity's own history under a temporal split is legitimate.
+
+   **Resolved (2026-11-06, Andrej):** B, accepted through the cross-dataset item "Accept the arrival notes on temporal
+   splits with one mark?" The arrival text (the end-of-day report, the lags to the team's previous recorded day,
+   whole-day windows) is appended to `splits_comment`. The split, its gap and `data_tags` are unchanged; a temporal
+   split takes no time-basis tag.
+
+3. **Least test window: widen garments' one-day windows to two days?**
+
+   * **Problem:**
+     - The 30 one-day windows hold 17 to 24 test rows, under the least test window of 33 scored units since 2026-11-19[^split14] (`splits_test_too_small` is an error).
+     - Two-day windows give 14 windows of 36 to 47 rows (train 53% to 96%); three-day windows 9 of 55 to 69; the target an IID split would get[^split33] for 1,197 rows is 30 splits.
+     - Only overlapping windows reach more: two-day windows moved by one day give about twice as many, each test day in two windows.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 30 one-day windows (implemented) | No change | 30 splits, the target | Breaks the least test window (17-24 rows); `dataset check` fails |
+     | B | 14 two-day windows, not overlapping | `TemporalSplits(window=2, unit="unique", min_train_fraction=0.5)` | Every window 36-47 rows, train 53-96% | 14 of the target's 30 |
+     | C | Two-day windows moved by one day (overlapping) | `step=1` | About 28 splits, near the target | Each test day is scored twice; only if the use case (a daily productivity forecast) admits it |
+
+   * **Recommendation:** B, the smallest windows the minimum admits, not overlapping. **Decision:** A, B or C?
+
+   **Andrej (2026-11-19, ok):** I go with A because this is the natural task. Document it as an exception because the small test sizes are natural to the task at hand.
+
+   **Answer (AI, 2026-11-19):** applied as A (reopened on 2026-11-20): 30 one-day windows of 17-24 rows. The splits comment names the exception, and `splits_test_too_small` is accepted with this reason: the factory plans and is judged by the day.
+
+   **Andrej (2026-11-20, ok):** Unresolve this issue and test whether if we do option B, the second of the two days is consistently predicted worse than the first of the two day window.
+
+   **Answer (AI, 2026-11-20):** reopened and tested: no. Under two-day windows the second day is predicted about as well as the first (better in most windows), and a model one day older loses nothing measurable.
+
+   * **The test:** the two-day windows walking back from the newest (15 at half the data or more, the oldest at 50.0%); in each, a model trained before day 1 predicts both days (option B); day 2 is also predicted by a model trained before day 2 (the one-day windows of A), which separates a harder day from an older model. LightGBM (5 seeds) and ridge regression; the metric's RMSE and MAE.
+
+     | Model | Day 1, RMSE | Day 2, same model (B) | Day 2, refit (A) | Day 2 worse than day 1 | p | Day 2 worse for the older model | p |
+     |---|---|---|---|---|---|---|---|
+     | LightGBM | 0.146 | 0.134 | 0.135 | 6 of 15 windows | 0.21 | 8 of 15 (+0.0007 MAE) | 0.89 |
+     | ridge | 0.292 (0.124 median) | 0.144 | 0.144 | 2 of 15 | 0.02 (day 2 better) | 9 of 15 (+0.001 MAE) | 0.39 |
+
+     p: Wilcoxon signed-rank over the windows. Ridge's day-1 mean carries one extrapolation in the newest window (RMSE 2.05 on 10 March 2015); its median is 0.124.
+   * **What it means:** the second day of a window is no harder for the model and the one-day-older model scores the same as a refit one, so B tests the same task as A, without the exception to the 33-unit minimum: 14 to 15 windows of 36 to 47 team records.
+
+   **Recommendation:** B, since the test shows the second day costs nothing and B meets the minimum test size without an exception. **Decision:** A or B?
+
+   **Andrej (2026-11-20, discuss):** Also test using Kumo-Tabular
+
+   **Answer (AI, 2026-11-20):** tested: for Kumo-Tabular too the second day is no harder, but a model one day older is measurably worse: it gains from the newest day where LightGBM and ridge do not. That changes the recommendation to A.
+
+   | Model | Day 1, MAE | Day 2, same model (B) | Day 2, refit (A) | Day 2 worse than day 1 | p | Day 2 worse for the older model | p |
+   |---|---|---|---|---|---|---|---|
+   | Kumo-Tabular (3 seeds) | 0.102 | 0.098 | 0.092 | 8 of 15 | 0.72 | 12 of 15, +0.006 (6.5%) | 0.012 |
+   | LightGBM (5 seeds) | 0.106 | 0.099 | 0.098 | 5 of 15 | 0.33 | 8 of 15, +0.0007 | 0.89 |
+   | ridge | 0.193 (0.124 median) | 0.107 | 0.106 | 4 of 15 | 0.12 | 8 of 15, +0.001 | 0.42 |
+
+   In RMSE, Kumo-Tabular's older model is worse in 10 of 15 windows (+0.004, p 0.19); the same 15 two-day windows, Wilcoxon over windows.
+
+   * **What it means:** two-day windows score day 2 with a model that has not seen day 1, and a method that learns from the newest day (here Kumo-Tabular, in context) loses about 6% MAE there; the factory plans and is judged by the day, so a daily refit is the use case, and A tests that.
+   * B would meet the 33-unit minimum without an exception, but at the price of scoring every second day with a day-old model, which penalises the methods that use recent days.
+
+   **Recommendation:** A, the one-day windows as your exception (as you chose on 2026-11-19), now with this measurement as the reason: the natural daily refit matters measurably for one model family. **Decision:** A or B?
+
+   **Andrej (2026-11-20, discuss):** Agree. We keep the one day windows, document the exception, and also the experiment that decided this.
+
+   **Resolved (2026-11-20, Andrej):** A: 30 one-day windows of 17-24 team records, the curator's exception to the 33-unit minimum. The splits comment and the accepted `splits_test_too_small` warning name the exception and the experiment: against two-day windows the second day is no harder, but a model one day older costs Kumo-Tabular 6.5% MAE (12 of 15 windows, p 0.012), so the daily refit stays. Not rebuilt.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count.
 
 ## Reference
 

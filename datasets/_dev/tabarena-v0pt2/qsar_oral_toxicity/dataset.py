@@ -7,7 +7,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -16,6 +17,7 @@ from data_foundry.v2 import (
     Smiles,
     Source,
     TaskSummary,
+    TimeBasis,
     canonical_smiles,
     drop_columns,
     scaffold_groups,
@@ -166,7 +168,7 @@ class QsarOralToxicity(AbstractCuratedDataset):
         - Target: `very_toxic` is "Yes" when the rat oral LD50 is 50 mg/kg or less (the package's class 1, the UCI file's "positive"; paper, Sec. 2.1; CATMoS Methods, "LD50<=50mg/kg"). On the evaluation set the label equals the project's EPA category 1 on all 2,894 rows and `LD50 <= 50` on every row that carries a dose; 2,845 of the kept chemicals (26%) carry the category without a point LD50.
         - Reading the raw file: MATLAB stores the text fields as `string` objects, which `scipy.io.loadmat` leaves undecoded, so `_prepare_raw_files` reads them out of the file's subsystem data (the decoder is documented in `_matlab_strings`) and writes bits, class and text per chemical into vt_data_02.csv. Checks of that step: the decoded "very toxic" field agrees with the `class_*` vectors on all 11,886 rows; the InChIKey has the right shape on every row and is reproduced by RDKit from the row's own SMILES for 99.8% of rows (99.99% on the skeleton, the one exception being the repaired silicon carbide below), so the SMILES is the structure the row is about; the evaluation rows match the project's public `validationset.txt` by its RowID on all 2,894 rows, with the same InChIKey, class and QSAR-ready SMILES, and the calibration rows match `trainingset_171130.txt` by CASRN (8,837) or, where a CASRN was mangled into a date by spreadsheet software, by InChIKey (155), with 100% class agreement.
         - The authors' fingerprint leaves (Lennart, 2026-11-01, as for qsar_tid_11: the task goes from the structure to a prediction, and the bits are one modelling choice of the authors): 1,024 binary extended connectivity bits (paper, Sec. 2.2) computed with Dragon 7 (Sec. 2.7), radius 2 with 2 bits per fragment, the package's ECFP_1024_02 block. Until 2026-11-01 they shipped as `ecfp_1` to `ecfp_1024`; the definition still reads them, to check the package against the UCI file.
-        - The structure ships as `SMILES`, the one feature: the QSAR-ready SMILES in RDKit's canonical form (`canonical_smiles`), declared in `special_features` (CLEAN-24 as amended, Lennart, 2026-11-01), so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, `Ipc` as log10(1 + Ipc) since the largest reaches 6e166, the 166 MACCS keys and the ECFP4 counts). Measured before 2026-11-01 on the shipped splits: default LightGBM's ROC AUC was 0.885 on the authors' bits, 0.897 on RDKit's descriptors alone and 0.901 on both; the MACCS keys next to bits and descriptors changed it by +0.009 (LightGBM) and -0.003 (random forest).
+        - The structure ships as `SMILES`, the one feature: the QSAR-ready SMILES in RDKit's canonical form (`canonical_smiles`), declared in `special_features` (CLEAN-24 as amended, Lennart, 2026-11-01), so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.special.chemistry.encode_smiles` (RDKit's 2D descriptors, `Ipc` as log10(1 + Ipc) since the largest reaches 6e166, the 166 MACCS keys and the ECFP4 counts). Measured before 2026-11-01 on the shipped splits: default LightGBM's ROC AUC was 0.885 on the authors' bits, 0.897 on RDKit's descriptors alone and 0.901 on both; the MACCS keys next to bits and descriptors changed it by +0.009 (LightGBM) and -0.003 (random forest).
         - Accepted on 2026-10-21 and now outside the frame: the descriptor `rdkit_fr_Ar_COO` = 1 (one aromatic carboxylic acid group) marks 212 chemicals, 1 of them very toxic, a pure feature value; a fragment count of the QSAR-ready structure, computed before any animal test, so it cannot carry the outcome (Lennart, 2026-10-21). The recommended encoding still holds it.
         - Repaired row, 1: the QSAR-ready SMILES of silicon carbide (CASRN 409-21-2) gives silicon five bonds and no toolkit reads it; we use PubChem's structure for that CASRN.
         - 83 of the kept QSAR-ready structures still carry stereo marks (double-bond geometry); a 2D encoding ignores them.
@@ -178,6 +180,32 @@ class QsarOralToxicity(AbstractCuratedDataset):
         - Scope: the input is the molecular structure, as in qsar_tid_11. Before 2026-11-01, on repeat 0 of the shipped splits, a random forest on the authors' bits (ROC AUC 0.901) and LightGBM (0.885) match a similarity-weighted nearest-neighbour model of the paper's N3 kind (Tanimoto, weight sim^10: 0.893).
         - Licence: the package's readme states it is freeware to be used with a reference to the paper; the UCI copy of the two calibration sets is CC BY 4.0.
     """
+    split_leaf = "L-FAMILY.key"
+    time_basis = TimeBasis(
+        "UnseenGroup",
+        """
+        the screen predicts for
+        chemicals of the inventory not tested yet, which whole scaffolds held out stand for; its untested chemicals
+        have 11.2% close training analogs against 8.6% under the scaffold split, so the split is slightly stricter
+        than the use. Whether a chemical is very toxic when swallowed is a fixed property of the chemical, and the use
+        case fills in an inventory that already exists. Dated by the RTECS citation of each chemical's earliest rat
+        oral LD50 report (ToxValDB v9.6.2, the source of most ICCVAM values): 7,927 of the 11,119 chemicals of the
+        public files (71.3%), 1935 to 2023, median 1976. Four expanding windows by report year (1977-80, 1981-85,
+        1986-90, 1991-2023) leave more close training analogs than scaffold-disjoint training of the same size (12.4%
+        against 8.6%) and a third of the test scaffolds in training (31.5%), and score the same (untuned LightGBM ROC
+        AUC 0.713 against 0.717, random forest 0.770 both), so the scaffold split holds out more than a split by date
+        would. The undated chemicals are half as often very toxic (5.2% against 9.7%), so a split on the dated rows
+        would change the class mix too. Reference population, re-measured 2026-11-11: of the project's 48,135 readable
+        prediction chemicals, 9,537 (19.8%) have their 2D structure in this dataset; of the other 38,598, 11.2% have a
+        close analog (Tanimoto 0.7 or more, Morgan radius 2, 2,048 bits; median nearest 0.487) in the training side of
+        scaffold folds, against 15.1% of those folds' test chemicals (median 0.510) and 14.4% against all chemicals
+        here. The split cannot test the order of the 28.7% undated chemicals, nor a change in which chemicals are
+        screened later.
+        """,
+        set_by="Andrej",
+        on="2026-11-13",
+        note="`Timeless` before, 2026-11-11, Andrej",
+    )
 
     # Task
     target = "very_toxic"

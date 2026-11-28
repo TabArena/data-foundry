@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis, decode
+
+from data_foundry.definition import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis, decode
 
 
 class IndianLiverPatientDataset(AbstractCuratedDataset):
@@ -87,6 +88,7 @@ class IndianLiverPatientDataset(AbstractCuratedDataset):
         - The target (2026-11-01, CLEAN-25): `Selector` ships its classes as words (1 means a liver patient (UCI)).
           Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

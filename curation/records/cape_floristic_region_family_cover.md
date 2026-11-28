@@ -64,8 +64,7 @@ These are per dataset judgement calls and if a dataset is useful for a predictiv
 collected for something else, then this is fine"), as SEL-2 already reads the scope rules: this record is judged on its
 own use case. The verdict and priority stay.
 
-CC (2026-10-30, Andrej): `Yes`, priority 1 (the AI screening had `TBD -> 2nd Tier`, priority 1; zero-inflated screening
-review page).
+CC (2026-10-30, Andrej): `Yes`, priority 1 (the AI screening had `TBD -> 2nd Tier`, priority 1; zero-inflated screening).
 
 Plot cover of two plant families with four climate covariates, the example data of a zero-inflated beta regression
 methods paper (Tang, Frye, Gelfand and Silander). Downloaded and measured on 2026-10-19: 180 plots x 10 columns

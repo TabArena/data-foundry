@@ -7,8 +7,6 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 1
 decision_markers:
@@ -18,7 +16,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Within Entity'
 - 'Time: Lost'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - 'Entities: Recur'
 - Database Snapshot
 collections:

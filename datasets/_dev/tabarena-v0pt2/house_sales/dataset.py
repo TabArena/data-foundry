@@ -7,7 +7,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -62,7 +63,7 @@ PRICE_NOT_THE_HOUSE = {
     "1": "personal property included",
 }
 # Related-party sales: a price between related parties is not a market price, so the sale is dropped, as the family
-# sales of ames_housing (Lennart, 2026-10-26, reopening option (c) of REVIEW issue 8 of 2026-10-22)
+# sales of ames_housing (Lennart, 2026-10-26, reopening the decision of 2026-10-22 that kept them)
 RELATED_PARTY = {"51": "related party"}
 # `sale_condition`: the county's sale warnings that name a fact of the transaction the parties know before the price,
 # in priority order (a sale with several takes the first level that matches). The other pre-price codes are the
@@ -368,8 +369,8 @@ class HouseSales(AbstractCuratedDataset):
         We start with kc_house_data.csv from Kaggle: 21,613 sales of houses in King County, Washington, dated 2014-05-02 to 2015-05-27. Three extracts of the King County Department of Assessments give the house as it stood at each sale and the county's flags on each sale.
 
         - Prediction point: a house sells, and the assessor's mass appraisal or a public-record valuation model estimates its price from the assessor's record on the sale day and its location, trained on the sales recorded earlier. The assessed value and the previous sale price are not in the file; the conditions the parties declare at the sale are (`sale_condition`).
-        - The target is the price of this sale, given its declared conditions (USE-5; Lennart, 2026-10-22, option (c) of Review issue 8). We keep the sales the county flags as not at market value and add `sale_condition`, one categorical from the county's sale warnings (lookup type 7 of EXTR_LookUp) that name a fact of the transaction the parties know before the price: a lender or an agent knows a short sale or an estate sale. Levels, the first match wins: short sale (60), bankruptcy or forced sale (13, 23), estate (12), other pre-price code (11, 14, 16, 17, 18, 19, 20, 21, 22, 24, 25, 33, 34, 36: the transactions WAC 458-53-080(2) excludes from the ratio study, and 54 affordable housing), no market exposure (15, last: 65 of its sales also carry a more specific code), none (decision table).
-        - We drop the related-party sales (warning 51; Lennart, 2026-10-26): a price between related parties is not a market price, and the assessor's ratio study leaves them out (WAC 458-53-080). This reopens option (c) of REVIEW issue 8 (2026-10-22), which kept them with a `sale_condition` level, so that they are treated as the family sales of ames_housing.
+        - The target is the price of this sale, given its declared conditions (USE-5; Lennart, 2026-10-22). We keep the sales the county flags as not at market value and add `sale_condition`, one categorical from the county's sale warnings (lookup type 7 of EXTR_LookUp) that name a fact of the transaction the parties know before the price: a lender or an agent knows a short sale or an estate sale. Levels, the first match wins: short sale (60), bankruptcy or forced sale (13, 23), estate (12), other pre-price code (11, 14, 16, 17, 18, 19, 20, 21, 22, 24, 25, 33, 34, 36: the transactions WAC 458-53-080(2) excludes from the ratio study, and 54 affordable housing), no market exposure (15, last: 65 of its sales also carry a more specific code), none (decision table).
+        - We drop the related-party sales (warning 51; Lennart, 2026-10-26): a price between related parties is not a market price, and the assessor's ratio study leaves them out (WAC 458-53-080). This reopens the decision of 2026-10-22, which kept them with a `sale_condition` level, so that they are treated as the family sales of ames_housing.
         - The county sets every warning after the deed is recorded, while it verifies the sale, and codes only the sales it checks, so `none` is not proof of a market sale. Sales are matched on parcel, deed date and price (20,742 of the 20,967 sales before May 2015); the other 225 are `none`. The Kaggle file holds these sales without a warning column.
         - We drop the 360 sales (1.7%) with warning 46 (non-representative sale, 357) or 8 (questionable per appraisal, 4; 7, questionable per sales identification, has none). These are the appraiser's judgments, made with the price in view (46 has no WAC 458-53-080 category): the residuals of the 46 sales lie only on the low side (untuned LightGBM without an indicator: none above +0.3, 29% below -0.3), so as a feature 46 leaks the label (`_judged`).
         - Neither feature nor filter: 26 (below), 10 teardown and 29 segregation or merger (priced like market sales of the land or the changed lot: mean residual +0.00 and +0.05), 32 ($1,000 or less: defined by the price; its one sale is recorded at $385,000) and the codes outside the WAC list (56 builder sale 31 sales, 40 and 41 relocation 32, 3 contract or cash sale 10, and the rarer 2, 4, 30, 31, 44, 52).
@@ -410,12 +411,13 @@ class HouseSales(AbstractCuratedDataset):
         target_transform="log",
     )
 
+    split_leaf = "L-ORDER.windows"
     # Splits
     temporal = Temporal(
         on="date", splits=TemporalSplits(window=3, unit="weeks", n_windows=9, min_train_fraction=0.5, gap=1)
     )
     splits_comment = """
-        9 test windows of three weeks (21 days), from 10-30 April 2015 back to 24 October-13 November 2014, newest first, each trained on the sales up to one week before the window. The gap is the delay before a sale is recorded and a refit can learn its price: from the deed date to the recording date the delay has a median of 6 days, and 91% of sales are recorded within 14 days. The window length follows the window count, not a refit cadence the source states: nine windows are the 3 x 3 splits an IID task of this size gets; they hold 649 to 1,534 sales each, and the oldest trains on 52% of the rows. Calendar months (a monthly refit) would give 6 windows of 953 to 2,189 sales. With one year of data the windows cover late October to April only, and the training history is under one year.
+        The gap is the delay before a sale is recorded and a refit can learn its price: from the deed date to the recording date the delay has a median of 6 days, and 91% of sales are recorded within 14 days. The window length follows the window count, not a refit cadence the source states: nine windows are the 3 x 3 splits an IID task of this size gets; they hold 649 to 1,534 sales each, and the oldest trains on 52% of the rows. Calendar months (a monthly refit) would give 6 windows of 953 to 2,189 sales. With one year of data the windows cover late October to April only, and the training history is under one year.
     """
 
     prepared_raw_files = (CHANGES_FILE, BATHS_FILE, WARNINGS_FILE)
@@ -571,7 +573,7 @@ class HouseSales(AbstractCuratedDataset):
         building = changes[(changes["record"] == "Bldg 1") & changes["attribute"].isin([a for _, a in CHANGED_COLUMNS])]
         building = building[(building["updated"] >= "2015-06-22") & (building["updated"] < "2015-08-17")]
         column = building["attribute"].map({a: c for (_, a), c in CHANGED_COLUMNS.items()})
-        in_file = [house.at[i, c] if i in house.index else np.nan for i, c in zip(building["id"], column)]
+        in_file = [house.at[i, c] if i in house.index else np.nan for i, c in zip(building["id"], column, strict=False)]
         week = building["updated"].dt.to_period("W-SUN").astype(str)
         snapshot = (
             pd.DataFrame({"week of the change": week, "equal": building["old"].to_numpy() == np.asarray(in_file)})

@@ -8,7 +8,16 @@ import re
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+)
 
 
 def protein_key(name: str) -> str:
@@ -103,9 +112,12 @@ class RfPcp(AbstractCuratedDataset):
           (superseded 2026-11-05: 94,083 rows, the 1,011 relaxed natives leave too, CC below)
           and the three documented ambiguous zero-RMSD cases. Preserve source values and the
           historical approximate fit; no modern-generator or protein-family claim is made.
-        - Models differ on the declared metric (TP-3): on the nine shipped splits, untuned LightGBM scores 0.322 and
+        - Models differ on the declared metric (TP-3): on the 60 shipped splits (20 x 3), untuned ridge scores
+          0.328, a random forest 0.322 and LightGBM 0.320, an order that holds in every block of ten repeats
+          (2026-11-12). On the nine splits of the earlier 3 x 3 build, untuned LightGBM scored 0.322 and
           ridge 0.272, LightGBM higher in all nine (2026-11-05, without the relaxed natives; 0.355 against 0.294 with
-          them, review panel 2026-11-04). The earlier five-fold comparison
+          them, review panel 2026-11-04); why the two runs order ridge and LightGBM differently was not
+          examined. The earlier five-fold comparison
           (ridge RMSE 0.19318568 against LightGBM 0.17894541, 7.37%) was measured for the RMSE fallback and is
           historical.
         - The author archive has 99,987 complete rows. Exclude 4,893 IDs beginning native_ or ending _native.pdb
@@ -115,8 +127,8 @@ class RfPcp(AbstractCuratedDataset):
           IDs, casp5_T0156_1nxj.nNh1.pdb and ROSETTA_1aa2_1aa2h2.pdb, may be reference-like but their identities
           are unverified. Retain CASP10_T0676_HOMER_TS2.pdb: zero matched RMSD and low global scores can reflect
           limited alignment coverage; no label repair is supported by the source evidence.
-        - CC (2026-11-05, Lennart): `grouping.context="all_rows"` (issue 5, B; SPLIT-23, USE-6; as sat11_hand_algo_runtime): the researcher holds all of a target's candidates when ranking them, so a model may compare a candidate with the other candidates of its protein. A model that does so (each descriptor's z-score and rank within its protein, the group size) scored 0.517 against 0.355 on the frame with the relaxed natives and 0.483 against 0.322 without them; that use is legitimate now, not an exploit. huesken_sirna_efficacy is reopened to follow (issue 9, A).
-        - CC (2026-11-05, Lennart): the rosetta62 set's 1,011 relaxed natives leave by identity (issue 4, B; USE-7 via
+        - CC (2026-11-05, Lennart): `grouping.context="all_rows"` (SPLIT-23, USE-6; as sat11_hand_algo_runtime): the researcher holds all of a target's candidates when ranking them, so a model may compare a candidate with the other candidates of its protein. A model that does so (each descriptor's z-score and rank within its protein, the group size) scored 0.517 against 0.355 on the frame with the relaxed natives and 0.483 against 0.322 without them; that use is legitimate now, not an exploit. huesken_sirna_efficacy is reopened to follow.
+        - CC (2026-11-05, Lennart): the rosetta62 set's 1,011 relaxed natives leave by identity (USE-7 via
           CLEAN-11), like the 4,893 named natives. Their IDs (`rosetta62_<pdb>_rn<pdb>.out.N.pdb`, matched on
           `_rn<pdb>.out.`) sit in the folder `relaxed_natives/` of the set's own archive (Zenodo 48780): the
           experimental structure energy-minimised, which exists only once the reference is known. The pattern matches
@@ -171,11 +183,35 @@ class RfPcp(AbstractCuratedDataset):
         - `Energy` stays as supplied (Lennart, 2026-11-04): the extreme positive values (up to 7e11) are ProSEE's
           output for unminimized models whose atoms overlap, continuous with the rest and carrying signal (mean GDT_TS
           0.339 against 0.398), so unusual rather than impossible (CLEAN-11). `SS` has no bound the source gives.
+        - CC (2026-11-12, Andrej): the split stays by protein ("I go back to by split by protein"; SPLIT-37): a split
+          by CASP round was weighed and is not built. Windows by round score
+          within 0.03 of a same-size protein split on CASP8 and CASP9 and 0.03 to 0.07 lower on CASP7; CASP10 scores
+          about 0 under any split that trains on the earlier rounds, a change of descriptor convention rather than
+          time (splits_comment).
+        - CC (2026-11-12, Andrej): twenty repeats of the protein split, 20 x 3 (SPLIT-33): the metric scores one
+          correlation per protein, so the split count counts the 445 proteins, 297 on the train side. On the earlier
+          3 x 3, two of three disjoint blocks of three repeats ranked LightGBM and the random forest in the opposite
+          order to the full 20 x 3 run; twenty repeats rank ridge, forest and LightGBM the same way in every subset
+          (LightGBM - ridge -0.008, t -4.5 across repeats).
         - Outdated (Lennart, 2026-11-04): six global descriptors of 2002-2012 server models; since CASP15 the
           standard is the predictor's own confidence (pLDDT). Kept as a small grouped biology task, with no new features.
         - First release is the August 2014 source archive; the paper appeared online in December 2014 and in 2015.
           The year denotes the first release, not the paper's issue year. No source metadata is overwritten silently.
     """
+    split_leaf = "L-FAMILY.key"
+    time_basis = TimeBasis(
+        "UnseenGroup",
+        """
+        the use case ranks the candidates of a
+        protein whose structure is not known, so the split holds out whole proteins. A candidate's GDT against its
+        reference is fixed once both exist; windows by CASP round score within 0.03 of the protein split on CASP8 and
+        CASP9. It cannot test candidates from later prediction methods (the descriptors come from 2002-2012 server
+        models).
+        """,
+        set_by="Andrej",
+        on="2026-11-13",
+        note="`Timeless` before",
+    )
     target = "GDT"
     problem_type = "regression"
     metric = Metric.from_context(
@@ -206,7 +242,7 @@ class RfPcp(AbstractCuratedDataset):
         ),
     )
     splits_comment = """
-        Default repeated three-fold grouped evaluation with seed 4267. All rows of each recovered target key stay
+        All rows of each recovered target key stay
         together, including verified same-protein accession aliases. The selected GDT task and preserved target alternatives share test groups;
         membership is verified explicitly.
         All 342 CASP identities are verified; three retain source IDs. Sequence-family independence is not claimed.
@@ -215,7 +251,7 @@ class RfPcp(AbstractCuratedDataset):
         and CASP10 0.009; through CASP9 they match the grouped folds within 0.04 (2026-11-05, without the relaxed
         natives; 0.340, 0.483, 0.016 and 0.03 with them), so the rounds show no drift, and
         CASP10's low score comes from its other descriptor convention (the SL note), not from time. The grouped
-        split is kept.
+        split is kept (Andrej, 2026-11-12: "I go back to by split by protein").
     """
     accepted_check_warnings = {}
 

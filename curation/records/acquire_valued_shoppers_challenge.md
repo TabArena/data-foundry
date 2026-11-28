@@ -7,8 +7,6 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 1
 decision_markers:
@@ -17,7 +15,7 @@ tags:
 - Non-IID (Temporal)
 - 'Samples: Over Time'
 - 'Time: Dated'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - Dated Event Log
 collections:
 - TabArena Reject
@@ -71,6 +69,8 @@ CC (2026-11-17, Andrej): verdict ship (blind split walk).
 CC (2026-11-17, Andrej): the declared split (temporal on `offerdate`, windows of 5 days, 4 windows, gap 5 days) is checked: split mark in the blind split walk.
 
 CC (2026-11-19, Andrej): windows below the target count kept (Review issue 6, A as implemented): four five-day windows; the next (6-10 April) would train on 41.4%; the reason is in the splits comment.
+
+CC (2026-11-26, Lennart): task-probe flag `drift_baseline` after the rebuild of 2026-11-26: kept as shipped (TP-1, TP-2). The newest rows' class shares come within 2% of the best log loss, but ROC AUC, the metric, ignores the shares, and all 21 tuned configurations beat 0.5 in 5 of 5 folds.
 
 ## Review
 

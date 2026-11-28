@@ -3,15 +3,16 @@ unique_name: boreal_postfire_lichen_biomass
 name: Terrestrial lichen - Northwest Territories / Terrestrial lichen - Saskatchewan (post-fire forage-lichen biomass, Greuel et al. 2021)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:
+- Non-IID (Grouped)
 - Two-Regime Zeros
+- 'Samples: One Moment'
+- Survey
 original_source: Other
 year: '2021'
+collection_period: 2015-2018
 domain: biology & life sciences
 required_split:
 - Grouped (NON-IID)
@@ -72,8 +73,8 @@ These are per dataset judgement calls and if a dataset is useful for a predictiv
 collected for something else, then this is fine"), as SEL-2 already reads the scope rules: this record is judged on its
 own use case. The verdict and priority stay.
 
-CC (2026-10-30, Andrej): `Yes`, priority 1 (the AI screening had `TBD -> 2nd Tier`, priority 1; zero-inflated screening
-review page).
+CC (2026-10-30, Andrej): `Yes`, priority 1 (the AI screening had `TBD -> 2nd Tier`, priority 1; zero-inflated
+screening).
 
 Workbook rows 37 and 38 are one study (Greuel et al. 2021, one paper, overlapping authors) released as two regional
 Dryad deposits with different field protocols, so they share this record. Northwest Territories: "346 plots were
@@ -123,7 +124,9 @@ CC (2026-11-10, Andrej): issue 8 (a) in boreal_postfire_lichen_biomass, "Reply (
 
 **Assessment (AI, 2026-11-10):** issue 8 (a) applied; the probes give the numbers of before 2026-11-09 again: task probe random forest 1,164.3 kg/ha against the training mean's 1,250.0 (better on 77% of the 30 splits), no flag; group probe LightGBM R^2 0.408 on random folds against -0.035 on the burn-area folds; leak probes no flag; an SK test quadrat lies a median 3.4 km from the nearest training plot (SD 0.6 over the splits), NT 22 km. `dataset check`: 0 errors, 0 warnings. Verdict mark of 2026-11-10 (Andrej): changes, now made.
 
-CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
+CC (2026-11-10, Andrej): ship.
+
+CC (2026-11-17, Andrej): the declared split (grouped on `burn_area`, 10x3 folds, `Retrospective`) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk).
 
 ## Review
 
@@ -191,7 +194,7 @@ each plot counts once in the RMSE, weighted by 1 over its quadrats (7, B). Resol
 forecast (1), the tree-ring stand age (2), the duplicate warnings (3), the paper read (4), kg/ha (5) and RMSE (6);
 verdict: ship.
 
-**Verdict (2026-11-10, Andrej):** ship (review page of 2026-11-10).
+**Verdict (2026-11-10, Andrej):** ship.
 
 **Issues for Andrej and Lennart:**
 
@@ -926,7 +929,7 @@ For the curator: issue 1, a weighing call: per-quadrat scoring counts an NT plot
   (A, implemented, recommended) or weight rmse by 1/quadrats-per-plot (B).
 ```
 
-By the review page's default, with no blocking issue it ships as implemented (option A) once the wording is fixed.
+By default, with no blocking issue it ships as implemented (option A) once the wording is fixed.
 
 **Changes to make now (no decision needed)**
 

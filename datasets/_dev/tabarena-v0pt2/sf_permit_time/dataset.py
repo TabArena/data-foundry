@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -36,7 +37,8 @@ def _issued(df: pd.DataFrame) -> pd.Series:
 
 
 def _label_known_windows(df: pd.DataFrame) -> tuple[Splits, pd.DataFrame]:
-    """The windows of `WINDOWS`, each training only on the permits issued before it starts.
+    """The windows of `WINDOWS`, each training only on the permits issued before it starts, as
+    `Temporal(label_known_on=_issued)` builds them.
 
     Returns the splits and, per window, the training rows kept and left out (the evidence in `_decisions`).
     """
@@ -164,6 +166,15 @@ class SfPermitTime(AbstractCuratedDataset):
         - Permits per filing year in the cleaned data (from the v1 exploration, counted 2026-10-22): 11,958 (2015), 11,840 (2016), 12,006 (2017), 12,786 (2018), 12,194 (2019), 10,636 (2020), 9,915 (2021), 9,449 (2022), 9,063 (2023).
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Fields rewritten after filing (checked 2026-11-06): the table rewrites rows (each carries the time of its
+          last change), but comparing the February 2026 download with a read of November 2026 for the 18,420 permits
+          filed in 2022-2023, the kept fields stayed put after the issue (one description changed; costs, uses, units,
+          stories, types and flags none), while the revised cost differs from the estimated cost for 28.5%: the
+          review's changes go to Revised Cost, which we drop.
+        - Re-read due around 2027-02-06 (Andrej, 2026-11-10): the read of 6 November 2026 of the 4,106 permits filed
+          since 2025 and still open is saved; three months on, read the same permits by permit number from the API
+          and count the changes in the kept fields among those issued since, to see whether the review rewrites them
+          before the issue. Reopen the split question if any field changes for more than a few permits.
     """
 
     # Task
@@ -177,14 +188,19 @@ class SfPermitTime(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        A model refit at the start of each half-year predicts the days to issue of the permits filed in the next six months. It trains on the permits filed at least six months before the refit that were issued by then. The days to issue are known only once a permit is issued and have a long tail (p90 315 days), so many recent permits are still open at a refit and the issued ones are the fast ones. The gap leaves out the newest filings, and older permits still open at the refit are left out of that window's training rows (decision table). The test windows walk back from the second half of 2023, the newest filings kept (see curation_comments), while the training side keeps at least 50% of the rows: 8 windows, 2020-H1 to 2023-H2, newest first, with 52,851 to 89,314 training rows. The convention's 9 windows for a dataset of this size do not fit above the 50% floor with the gap.
+        A model refit at the start of each half-year predicts the days to issue of the permits filed in the next six months. The days to issue are known only once a permit is issued and have a long tail (p90 315 days), so many recent permits are still open at a refit and the issued ones are the fast ones. The gap leaves out the newest filings, and older permits still open at the refit are left out of that window's training rows (decision table). The test windows walk back from the second half of 2023, the newest filings kept (see curation_comments), while the training side keeps at least 50% of the rows: 8 windows, 2020-H1 to 2023-H2, newest first, with 52,851 to 89,314 training rows. The convention's 9 windows for a dataset of this size do not fit above the 50% floor with the gap.
     """
-    temporal = Temporal(on="Filed Date", horizon=6, horizon_unit="months", gap=6, gap_unit="months")
+    split_leaf = "L-ORDER.windows"
+    # Half-year windows after a six-month gap; train keeps only the permits issued before the window starts
+    temporal = Temporal(on="Filed Date", splits=WINDOWS, label_known_on=_issued)
     accepted_check_warnings = {
+        "splits_dimensions_off_protocol": (
+            "Eight windows against the nine an IID split of 99,847 permits would get (SPLIT-33): with half-year "
+            "windows and the six-month gap, a ninth window would train on less than half the permits. The splits "
+            "comment names the target, the count reached and what stops more (SPLIT-15; Lennart, 2026-11-26)."
+        ),
         "dataset_constant_column": "The flagged columns are Y-or-missing flags (e.g. Fire Only Permit: Y in 12,204 rows); "
         "missing means the flag is not set, so they are not constant.",
-        "splits_rows_unused": "193 permits filed before 2020 (1,306 to 3,428 days to issue) are in no split: they were "
-        "filed before the oldest test window and were still open when the newest one started.",
     }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -280,15 +296,10 @@ class SfPermitTime(AbstractCuratedDataset):
             datetime=["Filed Date"],
         )
 
-    def _make_splits(self, df: pd.DataFrame) -> Splits:
-        """Half-year windows after a six-month gap; train keeps only the permits issued before the window starts."""
-        splits, windows = _label_known_windows(df)
-        oldest = pd.Timestamp(windows.index.min())
-        assert oldest >= PHRASE_HISTORY_END, f"the oldest window starts {oldest:%Y-%m}, before the phrase history ends"
-        return splits
-
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         _, windows = _label_known_windows(df)
+        oldest = pd.Timestamp(windows.index.min())
+        assert oldest >= PHRASE_HISTORY_END, f"the oldest window starts {oldest:%Y-%m}, before the phrase history ends"
         return [
             Decision(
                 "Training rows are permits filed six months or more before the window and issued before it starts",

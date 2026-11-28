@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: kickstarter
 container_format: 2
-checksum: v2:732a67d91137e26355b8cf94bfff8836a66be87c21568bea5d56f8a0dc5e6c5d
+checksum: v2:2c426c3b5a69cfbed8a5486320ba43a1ddf629f04e809e67a592b15cc7b26094
 build:
-  uuid: 01a111fc-1005-78e7-8906-36e684a9081e
-  checksum: v2:14ca3c730bd58606c1e3c421c4b49c63f30ea000f16bd69347e8e479c2ff3978
-  built_at: '2026-10-06T16:11:40+00:00'
-  path: kickstarter/01a111fc-1005-78e7-8906-36e684a9081e
+  uuid: 01a217fd-ebcb-7497-bdc0-8cf2804499ac
+  checksum: v2:2c426c3b5a69cfbed8a5486320ba43a1ddf629f04e809e67a592b15cc7b26094
+  built_at: '2026-11-26T13:14:13+00:00'
+  path: kickstarter/01a217fd-ebcb-7497-bdc0-8cf2804499ac
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 185444
   n_features: 12
@@ -48,6 +48,44 @@ splits:
   time_horizon_unit: months
   time_gap: 60
   time_gap_unit: days
+  reason: 'We simulate a model refit every half-year and used at each campaign''s
+    launch. The windows are dated by launch (`launched_at`), the prediction point,
+    not by creation (Lennart, 2026-11-11): a project is created a median of 52 days
+    before its deadline (154 days at the 90th percentile), so dated by creation 1.9%
+    to 3.2% of each train side was still running when its window started.
+
+
+    The length, half a calendar year, is a convention, not a sourced horizon (Andrej,
+    2026-11-20): Web Robots publishes monthly scrapes without a task and the Kaggle
+    copy is a dataset, not a competition, so no source gives a horizon or a refit
+    cadence. The year signed off on 2026-11-11 (Lennart) held every season, but its
+    windows 2017 to 2019 trained on 47.0%, 40.2% and 32.4% of the projects; half the
+    projects were launched by mid-2019, so with the gap any window starting before
+    1 October 2019 trains on under half, at any length. Half-years from 2020 on keep
+    nine windows, every one training on half the projects or more, and across the
+    nine windows both halves of the year are tested. A month would not be too small:
+    1,500 to 2,200 projects were created in every month of 2024 and of January to
+    September 2025.
+
+
+    The gap is 60 days, Kickstarter''s longest campaign: a refit at a window''s start
+    knows the outcome of a campaign only once it has ended, so each train side holds
+    the projects launched more than 60 days before its window. At most one training
+    project per window, a campaign longer than 60 days (up to 121 in the data), had
+    not ended when its window starts. The scrape of 12 January 2026 holds only ended
+    projects, so we drop the launches of its last 60 days (from 13 November 2025 11:00,
+    1,673 projects) and the newest window, 1 July to 13 November 2025, is complete
+    but for such long campaigns.
+
+
+    The nine test windows are half-years of launches, every fourth of the twelve from
+    2020 H1 to 2025 H2 left out (Andrej, 2026-11-20): 2025 H2, 2025 H1, 2024 H1, 2023
+    H2, 2023 H1, 2022 H1, 2021 H2, 2021 H1 and 2020 H1. Nine is the number of splits
+    a random split of 185,444 projects gets (three repeats of three folds). They cover
+    the pandemic year 2020, the spread of pre-launch pages (from about 41% of the
+    projects created in 2020 to 61% in 2025) and success rates from 60.5% (2020 H1)
+    to 72.5% (2025 H2). The launch years 2017 to 2019, tested until 2026-11-20, are
+    not tested: no window over them trains on half the projects.'
   n_train:
     min: 98615
     max: 170517
@@ -72,7 +110,7 @@ decisions: []
 
 Binary classification of `state`, scored with `roc_auc` on temporal splits by `launched_at`. 185,444 rows and 12 features. Source: Other (2026).
 
-Built as `01a111fc-1005-78e7-8906-36e684a9081e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:732a67d91137e26355b8cf94bfff8836a66be87c21568bea5d56f8a0dc5e6c5d`, so the build is stale. See [Build](#build).
+Built as `01a217fd-ebcb-7497-bdc0-8cf2804499ac` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -90,7 +128,7 @@ Built as `01a111fc-1005-78e7-8906-36e684a9081e` on 2026-10-06, but `dataset.py` 
 
 **Our changes to the source.** We drop everything recorded after launch (pledges, backers, staff pick, the creator's project profile, which only funded projects have), convert goals to US dollars at each project's own rate, remove projects repeated across scrapes (20%), and drop the projects launched in the last 60 days before the scrape, whose outcomes it holds only for the campaigns that had already ended.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is known at launch, and later half-years are tested; with the 60-day gap at most one training project per window, a campaign longer than 60 days, had not ended when the window starts. How fully the scrapes cover all projects is not stated.
+> **Use case fit: approximate (a stand-in with a known gap).** Everything the model sees is known at launch, and later half-years are tested, but the scrapes do not cover every project: 62.5% of those here are funded, 87% to 97% of the 2009-2013 launches, against the 44% Kickstarter reported in 2012, so failed projects are under-covered, the more so in the older years.
 
 ## Files in this folder
 
@@ -207,8 +245,21 @@ Similar to the Kaggle task, we aim to predict whether a Kickstarter project will
 - The data contains spatial information (city, state, country). We do not decode this but leave it to the pipelines.
 - We found 150 rows without location information. We drop these rows as it is unclear which issue caused this and how the rows' data might be affected by this.
 - We drop duplicates (20%) which seems to have occurred from multiple scrapes of the same project.
+- Coverage (Andrej, 2026-11-11; record marker `Selection Bias`): failed projects are under-covered in the older
+  years. Kickstarter reported 60,786 launched projects by June 2012, 44% funded (Engadget, 21 June 2012); here
+  the 2009-2013 launches are 87% to 97% funded, and the share breaks at 2014, when Web Robots' scrapes start
+  (older projects are likely those still listed then). Whether failures are also missing from 2014 on, the
+  test windows included, is unknown. Funded share by launch year, counted on the 185,444 rows of this
+  definition: 2009 96.5% (113), 2010 90.4% (795), 2011 89.6% (2,474), 2012 89.5% (4,731), 2013 87.3% (5,423),
+  then 2014 54.5% (15,155), 2015 47.1% (19,186), rising to 71.1% (23,096) in 2025.
+- The 2009-2013 launches stay (Andrej, 2026-11-11), 13,536 projects, 8% to 14% of each training side: on the
+  launch-year windows 2023 to 2025 of that day, with the same test rows, dropping them made logistic
+  regression worse (log loss 0.504 to 0.509, ROC AUC 0.819 to 0.817, mean of the three windows) and moved
+  LightGBM by about 0.001 ROC AUC, so the old rows are kept.
 
 ## Splits
+
+Expanding-window temporal splits: 9 test window(s) of 6 months, starting at 2025-07-01, 2025-01-01, 2024-01-01, 2023-07-01, 2023-01-01, 2022-01-01, 2021-07-01, 2021-01-01, 2020-01-01, newest first; train is all earlier data up to a gap of 60 days. The test windows by `launched_at`, as listed: 2025-07-01 to 2025-11-13 (10,566 test, 170,517 train rows); 2025-01-01 to 2025-06-30 (12,530 test, 159,342 train rows); 2024-01-01 to 2024-06-30 (9,834 test, 140,261 train rows); 2023-07-01 to 2023-12-31 (5,872 test, 133,988 train rows); 2023-01-01 to 2023-06-30 (6,224 test, 128,277 train rows); 2022-01-01 to 2022-06-30 (5,386 test, 117,767 train rows); 2021-07-01 to 2021-12-31 (4,495 test, 112,841 train rows); 2021-01-01 to 2021-06-30 (5,028 test, 108,032 train rows); 2020-01-01 to 2020-06-30 (4,554 test, 98,615 train rows).
 
 We simulate a model refit every half-year and used at each campaign's launch. The windows are dated by launch (`launched_at`), the prediction point, not by creation (Lennart, 2026-11-11): a project is created a median of 52 days before its deadline (154 days at the 90th percentile), so dated by creation 1.9% to 3.2% of each train side was still running when its window started.
 
@@ -216,7 +267,7 @@ The length, half a calendar year, is a convention, not a sourced horizon (Andrej
 
 The gap is 60 days, Kickstarter's longest campaign: a refit at a window's start knows the outcome of a campaign only once it has ended, so each train side holds the projects launched more than 60 days before its window. At most one training project per window, a campaign longer than 60 days (up to 121 in the data), had not ended when its window starts. The scrape of 12 January 2026 holds only ended projects, so we drop the launches of its last 60 days (from 13 November 2025 11:00, 1,673 projects) and the newest window, 1 July to 13 November 2025, is complete but for such long campaigns.
 
-The nine test windows are half-years of launches, every fourth of the twelve from 2020 H1 to 2025 H2 left out (Andrej, 2026-11-20): 2025 H2, 2025 H1, 2024 H1, 2023 H2, 2023 H1, 2022 H1, 2021 H2, 2021 H1 and 2020 H1. Nine is the number of splits a random split of 185,444 projects gets (three repeats of three folds). They cover the pandemic year 2020, the spread of pre-launch pages (from about 41% of the projects created in 2020 to 61% in 2025) and success rates from 60.5% (2020 H1) to 72.5% (2025 H2). Newest first, they test 10,566, 12,530, 9,834, 5,872, 6,224, 5,386, 4,495, 5,028 and 4,554 projects (64,489 in all) and train on 91.9%, 85.9%, 75.6%, 72.3%, 69.2%, 63.5%, 60.9%, 58.3% and 53.2% of the projects. The launch years 2017 to 2019, tested until 2026-11-20, are not tested: no window over them trains on half the projects.
+The nine test windows are half-years of launches, every fourth of the twelve from 2020 H1 to 2025 H2 left out (Andrej, 2026-11-20): 2025 H2, 2025 H1, 2024 H1, 2023 H2, 2023 H1, 2022 H1, 2021 H2, 2021 H1 and 2020 H1. Nine is the number of splits a random split of 185,444 projects gets (three repeats of three folds). They cover the pandemic year 2020, the spread of pre-launch pages (from about 41% of the projects created in 2020 to 61% in 2025) and success rates from 60.5% (2020 H1) to 72.5% (2025 H2). The launch years 2017 to 2019, tested until 2026-11-20, are not tested: no window over them trains on half the projects.
 
 9 repeat(s) x 1 fold(s) with seed 4267; train 98,615 to 170,517 rows, test 4,495 to 12,530 rows. Prediction horizon: 6 months. Gap between train and test: 60 days.
 
@@ -364,11 +415,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-1005-78e7-8906-36e684a9081e |
-| checksum | v2:14ca3c730bd58606c1e3c421c4b49c63f30ea000f16bd69347e8e479c2ff3978 |
-| built_at | 2026-10-06T16:11:40+00:00 |
-| path | kickstarter/01a111fc-1005-78e7-8906-36e684a9081e |
+| uuid | 01a217fd-ebcb-7497-bdc0-8cf2804499ac |
+| checksum | v2:2c426c3b5a69cfbed8a5486320ba43a1ddf629f04e809e67a592b15cc7b26094 |
+| built_at | 2026-11-26T13:14:13+00:00 |
+| path | kickstarter/01a217fd-ebcb-7497-bdc0-8cf2804499ac |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:732a67d91137e26355b8cf94bfff8836a66be87c21568bea5d56f8a0dc5e6c5d` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

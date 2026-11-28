@@ -4,15 +4,20 @@ name: 2024-lusaka-mobility-prediction-hackathon
 checked_by:
 - Myunghwan
 - Lennart
-data_foundry_status:
-- WIP (DF)
-claimed_by: Myunghwan
+- Andrej
 suggestion: 'Yes'
 priority: 2
+tags:
+- Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- Dated Event Log
 collections:
 - New (BeyondArena)
 original_source: Zindi
 year: '2024'
+collection_period: 1 Jan 2023 - 1 Feb 2023
 domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)
@@ -61,7 +66,7 @@ CC (2026-11-04, Lennart): the trips whose start and end lie under 100 m apart in
 
 CC (2026-11-04, Lennart): the trip time stays in minutes, with RMSE ("ok keep minutes"), as the other RMSE-scored ETA datasets.
 
-**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled.
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static PR #33 review and the research behind each mark, and all are settled.
 
 **Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes (LEAK-10 holds for the driven distance, SPLIT-1/SPLIT-9/SPLIT-14 hold, USE-7 applied as nyc and pkdd, USE-8 approximate with no routing-engine route or ETA, MET-4 and MET-2 hold with the RMSE tail written into the notes; the wording fixes are in `dataset.py`. The metric rests on MET-4, the source's own RMSE, not on the other ETA datasets, which score log targets or RMSLE. This supersedes "no panel ran" above and the screening's "no public solution found": the pinned mirror is a participant repository with a starter notebook); disputed: LEAK-10 (weather clock, 3 h lag), CLEAN-11 (20 trips over 3 h; the 19 trips over 120 km/h agreed but change rows); for the curator: issues 3-5. Priority 2: gap 0, use case 0, source 0, shape +, risk 0 (use case: Yango's ETA is named, but the fit is approximate; source: a competition page and dictionary read only through a participant mirror, with a year conflict; risk: the open issues are cleaning and a weak weather-clock question with no measured effect).
 
@@ -75,7 +80,11 @@ CC (2026-11-05, Lennart): the declared metric (RMSE on minutes, the source's) is
 
 **Assessment (AI, 2026-11-05):** after the two cuts the windows from 2023-01-29, 2023-01-25 and 2023-01-21 hold 94,897/11,138, 79,897/16,055 and 65,876/13,630 train/test trips, and the longest trip is 175 minutes. The RMSE tail shrank: trips over 120 minutes hold 12.0%, 6.3% and 7.9% of the windows' squared deviation (15.7%, 28.8% and 16.9% before), the largest 1% of an untuned LightGBM's errors hold 43 to 53% of its squared error (54 to 66% before), and no trip holds over 2% of a window's constant-prediction squared error (the 788-minute trip held 21% before). Leak probes as before (the weather columns alone score -0.025 to -0.001, no copies, the partial 1 February in probe 13); the task probe now raises `no_spread` (LightGBM +0.328 against the random forest's +0.278, paired SE 0.036 over 3 windows), the noise of three windows, kept (TP-3). `dataset check`: 0 errors, 0 warnings.
 
-CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `trip_start`, windows of 4 days, 3 windows at fixed cutoffs, gap 1 day) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
+
+CC (2026-11-26, Lennart): accepted `splits_dimensions_off_protocol` (SPLIT-15) after the rebuild of 2026-11-26: three windows against SPLIT-33's nine; a fourth would train on less than half the trips.
 
 ## Review
 
@@ -89,10 +98,10 @@ distance would select on the outcome. SPLIT-20: the windows hold different weekd
 clock is a weak LEAK-10 question (issue 3). Value: MET-4 holds (Zindi's RMSE, re-read twice), MET-2 holds with the
 tail written into the notes, and an untuned LightGBM's RMSE is about 18% below a constant prediction's (TP: a real,
 non-trivial signal). Quality: CLEAN-11 on long and impossibly fast trips (issues 4 and 5). The wording fixes the panel
-agreed on are in `dataset.py`; the three changes to the rows or the join wait for your decision.
+agreed on are in `dataset.py`; the three changes to the rows or the join were decided on 2026-11-05 (issues 3-5, B).
 
-**Main points:** Lag the weather join by 3 hours instead of 1 (issue 3)? Drop the 20 trips over 3 hours (issue 4)
-and the 19 trips faster than 120 km/h in a straight line (issue 5)?
+**Main points:** Nothing open. Settled 2026-11-05 (B each): the weather join lags 3 hours instead of 1 (issue 3);
+the 20 trips over 3 hours (issue 4) and the 19 trips faster than 120 km/h in a straight line (issue 5) are dropped.
 
 **Issues for Lennart:**
 

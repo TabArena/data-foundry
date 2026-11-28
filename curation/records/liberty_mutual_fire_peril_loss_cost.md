@@ -3,16 +3,19 @@ unique_name: liberty_mutual_fire_peril_loss_cost
 name: 'Liberty Mutual Group: Fire Peril Loss Cost (Kaggle 2014)'
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:
 - Two-Regime Zeros
 - Larger IID Data
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Fixed Delay'
+- 'Entities: Recur'
+- Database Snapshot
 original_source: Kaggle
 year: '2014'
+collection_period: Unknown
 domain: insurance
 required_split:
 - Random (IID)
@@ -73,8 +76,7 @@ has the call.
   case (thread 9880).
 - Drop `id` and `dummy`.
 
-CC (2026-10-30, Andrej): `Yes`, priority 4 (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening
-review page).
+CC (2026-10-30, Andrej): `Yes`, priority 4 (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening).
 
 Liberty Mutual's Kaggle competition on commercial fire losses: 452,061 labelled policies (the test half was
 never labelled publicly) with 300 normalized, anonymised features in four blocks (17 policy, 9 crime, 37
@@ -115,6 +117,8 @@ CC (2026-11-08, Lennart): the declared metric (`normalized_weighted_gini`) is ch
 CC (2026-11-08, Lennart): issue 4, A (as implemented): `var1`, `var3`, `var7` and `var8` ship as unordered categories; the comment that called them ordinal is reworded.
 
 CC (2026-11-09, Andrej): the training labels' maturity is stated in the notes (cross-dataset item of 2026-11-09, option B).
+
+CC (2026-11-18, Andrej): the forced tag stays (Review issue 6, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. A partly physical peril, but a commercial market product with an undisclosed transformed loss ratio, an unknown period and a volatile neighbour; mixed at best.
 
 ## Review
 
@@ -179,7 +183,7 @@ target stays per contract (MET-14). No change to the data, the split, the metric
 
 **Main points:** Open: none. Resolved: `var1`, `var3`, `var7` and `var8` ship as unordered categories (4, 2026-11-08);
 `var11` a feature and the Gini's weight, MET-2 amended (2, 2026-11-02); its copy `var11_weight` the scoring column the
-metric reads (3, 2026-11-06).
+metric reads (3, 2026-11-06); `ForcedIIDFromTemporal` stays, not `AssumedStationaryRelation` (6, 2026-11-18).
 
 **Issues for Andrej and Lennart:**
 
@@ -326,6 +330,46 @@ metric reads (3, 2026-11-06).
    [^4c]: **CLEAN-14** Cases: miami_housing, `structure_quality` ordered by its codes (2026-10-31), then among the
      "scores and ratings with no words per level, or words only at their ends, are numbers again" (2026-11-01,
      Lennart); its `dataset.py` lists it in `SCORES`, shipped as a number.
+
+6. **Keep `ForcedIIDFromTemporal`, or tag `AssumedStationaryRelation`?**
+
+   * **Problem:**
+     - Time: No dates or risk id; consecutive terms of the same risks can be chained (var15 steps by exactly 1 in 36,708 steps), which is an order only within each entity, not a calendar period across the file; no dated parent release.
+     - Use: Liberty Mutual's underwriters price the next term of commercial fire cover (competition of 2014, period not stated).
+     - Mechanism: Anonymised policy, crime, geodemographic and weather (climate) variables to a transformed fire-loss ratio; fire as a physical peril has a stable core, but losses are 0.26% of policies, the ratio depends on sums insured and repair prices, and the commercial book and its underwriting change with the market cycle.
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | wisconsin_local_government_property_insurance_fund | stationary-relation test v3, policy years 2006-2010, ordered Lorenz Gini | inconclusive (claims per premium 1.19, 1.03, 0.71, 0.67, 2.31 by year) | property (incl. fire) losses priced per policy year; rare large losses |
+     | Swiss Re Institute, sigma 4/2024 'Social inflation: litigation costs drive claims inflation' (https://www.swissre.com/institute/research/sigma-research/sigma-2024-04-social-inflation.html) (literature, cited from memory: check) | US liability claim severity beyond economic inflation | not flat: about 5.4% a year 2017-2022, ~7% in 2023, index above zero since 2014 | claim costs of a US insurer depend on the litigation and price environment of the year |
+
+   * **For a stationary use case:**
+     - Fire occurrence for a given building/occupancy is partly a physical process that years do not change.
+     - A risk's own other terms carry nothing of its outcome (AUC 0.500-0.524), so recurrence gives no shortcut either way.
+   * **Against:**
+     - Prices and markets: commercial property is cyclical (hard/soft market), changing who is insured and on what terms.
+     - The loss is a ratio to insured value transformed by the host; values and repair costs inflate.
+     - The closest measured property fund (Wisconsin) swings in claims per premium from 0.67 to 2.31 between years, inconclusive under the test.
+     - Features anonymised, period unstated, so nothing about the span can be checked.
+   * **Earlier views:**
+     - CC (2026-11-02, Andrej): the forced IID split ships after the leak test: 'Whenever there are no leaks we can ship.'.
+     - Time basis line: ForcedIIDFromTemporal (SPLIT-8); no person's line on stationarity.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedIIDFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Prices and markets: commercial property is cyclical (hard/soft market), changing who is insured and on what terms.; The loss is a ratio to insured value transformed by the host; values and repair costs inflate. |
+
+   * **Recommendation:** A, a partly physical peril, but a commercial market product with an undisclosed transformed loss ratio, an unknown period and a volatile neighbour; mixed at best. Confidence: medium. **Decision:** A or B?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: the forced tag stays; the `Time basis:` line gives the reasoning (A partly physical peril, but a commercial market product with an undisclosed transformed loss ratio, an unknown period and a volatile neighbour; mixed at best.)
+
 
 **Review panel:** ship after changes (mediator), two sentences in the notes, now made. Tier focused, a re-review of
 2026-11-08 under LEAK-41, MET-14 to MET-16, after the raw data arrived: the claim auditor, the column auditor and the

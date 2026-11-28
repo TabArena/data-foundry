@@ -4,17 +4,21 @@ name: Medical Facility Operational Data
 checked_by:
 - Myunghwan
 - Lennart
-data_foundry_status:
-- WIP (DF)
-claimed_by: Myunghwan
+- Andrej
 suggestion: 'Yes'
 priority: 3
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Features: Read Later'
+- Dated Event Log
 collections:
 - New (BeyondArena)
 original_source: Other
 year: '2020'
+collection_period: Nov 2017 - Jul 2019
 domain: medical & healthcare
 required_split:
 - Temporal (NON-IID)
@@ -81,7 +85,7 @@ CC (2026-11-04, Lennart): one meaning of `Wait` per dataset: the scheduled delay
 
 CC (2026-11-04, Lennart): the expected-delay table stays ("keep them"), with a `Potential leak, kept on purpose:` note (LEAK-38).
 
-**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled.
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static PR #33 review and the research behind each mark, and all are settled.
 
 **Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes; disputed: LEAK-9 against LEAK-5 for the test-row decode (settled as LEAK-9; the evaluator guarantee is issue 7), USE-6/USE-8/USE-9 on adding the patient's own minutes early or rewording the summary (issue 6); for the curator: issues 6-11. Priority 3: gap 0, use case 0, source +1, shape +1, risk 0 (no thin domain, problem type or regime among the accepted definitions; the source names the actor and the decision, but the fit is approximate; the authors' own workbook with paper and codebook; 82,001 visits, 87 features (88 since `minutes_early`, 2026-11-05), temporal; the test-block decode is an evaluation leak fixed by the protocol line, and the kept fields move MAE by 0.01-0.16).
 
@@ -99,7 +103,9 @@ CC (2026-11-05, Lennart): the expected-delay table stays under LEAK-38 as amende
 
 CC (2026-11-05, Lennart): the nine schedule fields stay (issue 11, A), as an application of LEAK-10's clause on values read at a later pull (answer (a)), with a Cases row under LEAK-10: the late cells cannot be located row by row, so the whole-field worth is an upper bound on the late part, and it sits within about two seed SDs (+0.08 to +0.16 against 0.07 on the earlier windows; dropping all nine on the 14-day windows +0.05, higher in 15 of 18 fits, against a seed-to-seed difference of 0.05; +0.14 with the leak probe's L2 model, inside the earlier range), so the late part shows no gain.
 
-CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+
+CC (2026-11-17, Andrej): Review issue 15, A, as implemented (Day boundary as the gap: nine 14-day windows on `arrival_order`, train on every visit that arrived and began its exam before the window's first day, 41,048-77,557 of 82,001 (50.1-94.6%)), settled by the cross-dataset item on the tree's gap questions (B: the step is the time column's smallest recorded step).
 
 ## Review
 
@@ -114,11 +120,12 @@ summary that claimed this patient's appointment as an input; the summary now nam
 patient's own offset is issue 6. The licence is CC0 1.0 from the Dataverse deposit. Value: LightGBM MAE 15.28 against
 21.54 for the training median; MET-2/3/4/5 hold; the MET-11 wording is fixed. Quality: the empty-set zeros
 (CLEAN-10) are noted (issue 10). Weighed: the source's patient-agnostic framing against the front desk's quote to
-this patient (issue 6). For Lennart: issues 6 to 11.
+this patient (issue 6). For Lennart: issues 6 to 11, all settled on 2026-11-05; issue 15 on 2026-11-17.
 
-**Main points:** Add this patient's own minutes early as an input (issue 6)? Ship with the rule that each test visit
-is predicted on its own (7); keep the schedule fields with a note (11); keep the 42-53-day windows (8); widen LEAK-38
-(9); set the empty-set zeros to missing (10).
+**Main points:** Nothing open. Settled on 2026-11-05 (Lennart): `minutes_early` added (issue 6, A); the protocol line
+that each test visit is predicted on its own stays (7, A); the source's two-week test windows replace the 42-53-day
+ones (8, B); the expected-delay table stays under LEAK-38 as amended (9, D); the empty-set summaries set to missing
+(10, B); the schedule fields stay (11, A). Settled on 2026-11-17 (Andrej): the day boundary is the gap (15, A).
 
 **Record judgment:** valid. The record's 2026-10-28 "ship this" and the assessments around it describe the earlier
 four-facility scope (130,431 visits, 88 predictors), which Lennart's 2026-11-04 decision replaced with F1-F3; the
@@ -461,6 +468,41 @@ history.
    in 9 of 18 fits): no measurable change. A CLEAN-10 Cases row; `dataset check` clean, leak probes without a new flag.
    Not included: `mintime` and `maxtime`, also 0 when no exam is in progress (11,888 rows); say if they should follow.
 
+15. **Gap: train each window only on visits up to the day before its first day, instead of up to its first day?**
+
+   * **Problem:**
+     - The windows already start at a day boundary and train only on visits that arrived and began their exam before it; no exam begins on a later day than its arrival and no visit arrives between 22:00 and 07:00, so every training label is known at the window's start.
+     - So the shipped split is the tree's Temporal · arrival date with its label-delay gap (the delay, arrival to exam start, is minutes to hours within one day).
+     - The blind walk, without the facts that no exam crosses midnight and no visit arrives at night, proposed a one-day gap; the page's 'one minute' was the time step, not a gap.
+   * **Background:** Staff at the same facilities predict each arriving patient's delay, and the arrival order is real time over about 20 months, enough for many windows. The target is known only when the exam starts, hours after the minute-resolution arrival, so a one-day gap. Confidence of the blind walk: medium.
+   * **Walk:** the questions as answered without the current split[^tree]:
+     - Will the model be used at a place or group the data does not hold? (use case): no. Evidence: Use case: imaging operations staff at these facilities estimate the delay at arrival; the curation notes say 'No unseen-facility generalization is claimed'. Three facilities only (F1-F3), too few to hold out anyway.
+     - Fill in the covered period or predict forward? (use case): forward. Evidence: 'At patient arrival ... staff estimate the exam-start delay', for patients arriving after the data.
+     - Do the dates give the windows the rule[^split-14]/15 ask for? (data): yes. Evidence: The sheets list visits in exact reverse arrival order and the anonymisation is one clock shift for all facilities (time of day = StartTime + 60 min; 459 days shared by all three, 0 conflicts), so the arrival order is real time to the minute over about 694 days (Nov 2017-Jul 2019, Crowley et al. 2020). 82,001 visits, ~3,500 a month: monthly or longer windows give far more than three above the…
+     - What sets off a prediction? (use case): a case arrives. Evidence: A patient checks in.
+     - Target known only after a delay longer than the time step? (data): yes, late labels. Evidence: The target is the exam start minus the scheduled time, known when the exam begins: up to hours after arrival (minutes_early up to 522 min, delay p99 53-113 min). The arrival time is recorded to the minute (the time column is the arrival rank), so the delay exceeds the step. Every exam starts the same day.
+   * **The delay the walk measured:** Smallest step: one minute of arrival time (the shipped column is the arrival rank). Delay: arrival to exam start, minutes to several hours, always within the same day. Gap: one day (train on days before the window's day boundary), which also keeps the queue features of test rows from carrying train targets across the cut.
+   * **What the blind dossier lacked, and what it changes:** No answer changes; the gap is refined. The definition cuts windows at day boundaries and trains on visits that arrived and began their exam before the window's first day; no exam begins on a later day than its arrival and no visit arrives 22:00-07:00, so the day boundary already trains only on known outcomes (the rule[^split-10]'s second form) and no extra day is needed. Windows are 14 days, from the source's two-week test.
+   * **What changes:** Nothing on A.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: a Comment mentions 'nine train/test memberships' and 'exact nine source-order memberships', suggesting nine splits on the source order; not used as evidence. Raw data not in the warehouse.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Day boundary as the gap: nine 14-day windows on `arrival_order`, train on every visit that arrived and began its exam before the window's first day, 41,048-77,557 of 82,001 (50.1-94.6%) (implemented) | no change | Trains on exactly the outcomes known at the window's start and on the newest day of queue history. | None found: the day boundary cuts no visit. |
+     | B | An extra one-day gap: the same nine windows, train only on visits that arrived before the day preceding the window | Leaves out the last day before each window from training. | None the facts support: every exam of that day began the same day, before the window. | Drops a day of known outcomes per window (visits not counted) and the queue state closest to the test window. |
+
+   * **Recommendation:** A, because the day boundary already trains only on exams begun before the window, as the rule[^split-10] asks.. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: change `gap=` in `TemporalSplits` and re-check each window's train share against the floors; nothing else in the definition changes.
+
+   [^split-14]: **SPLIT-14** (Must): A temporal task has at least 3 windows.
+
+   [^split-10]: **SPLIT-10** (Should): When a label is known only some time after its row (a delivery time, a permit's processing time, an outcome after a follow-up), a model refit at a window's start knows only the rows whose label had arrived.
+
+   [^tree]: **SPLIT-36** (Should): walk the decision tree from the record's collection type, answering each question as if no split had been decided; a split the source prescribes is evidence, not an answer.
+
+   **Resolved (2026-11-17, Andrej):** A, as implemented, through the cross-dataset item on the tree's gap questions (B: the step is the time column's smallest recorded step): the exam start is known minutes to hours after the minute-resolution arrival, so the leaf is the label-delay gap, met by training only on exams begun before the window's first day.
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after Lennart's review of PR #33 on 2026-11-04. Claims: 44 (40 numbered, 4 implied); 31 hold, 7 refuted in whole or in part (wording, the licence, the metric's reference and the patient's offset; fixed in the notes or put to Lennart as issue 6), 6 untested (the 2026-10-26/28 panel and replay claims, and how the estimates were made). Blind review: would include with small changes; its main concern, `arrival_order` as a feature, is answered by CLEAN-3 (known at arrival, +0.08 MAE without it). Task gamer: reading the later test rows of a window rebuilds earlier targets, MAE 15.57 to 8.70 (-44%, all 9 splits), now a LEAK-9 note and protocol line (issue 7). Agreed: ship after changes; F1-F3 only, the temporal split, MAE, the kept expected-delay table, `arrival_order` stays. Disputed: LEAK-9 against LEAK-5 for the test-row decode (settled as LEAK-9; the evaluator guarantee is issue 7), and whether the patient's offset must be added or the summary reworded (USE-6, USE-8, USE-9; issue 6). The mediator's issues 1-4 are issues 6-9 here; the schedule-field keep is issue 11.
 

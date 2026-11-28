@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Grouping,
@@ -13,7 +14,7 @@ from data_foundry.v2 import (
     ScoringColumn,
     Source,
     TaskSummary,
-    UnitWeight,
+    TimeBasis,
 )
 
 # Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
@@ -25,6 +26,10 @@ SCORES = ["SES"]
 ORDINAL_LEVELS = {
     "CDR": ["no_dementia", "very_mild_AD", "mild_AD"],
 }
+
+# eTIV and ASF were written at two precisions, the finer one mostly in follow-up visits (curation notes): every row at
+# the precision of the measured values.
+MEASURED_PRECISION = {"eTIV": 0, "ASF": 3}
 
 
 class DementiaPrediction(AbstractCuratedDataset):
@@ -57,8 +62,10 @@ class DementiaPrediction(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "The use case is ours, as the source states none. Follow-up visits of test people are scored as if each "
-            "were a first visit, and the MRI enters as three summary numbers of an imaging study."
+            "The use case is ours, as the source states none. The cohort is research volunteers, not clinic "
+            "patients: the people without dementia stayed so over about three years, and only 14 of 150 convert, so "
+            "borderline cases are rarer than in a clinic. Follow-up visits of test people are scored as if each were "
+            "a first visit, and the MRI enters as three summary numbers of an imaging study."
         ),
     )
 
@@ -70,7 +77,9 @@ class DementiaPrediction(AbstractCuratedDataset):
             role="publication",
             platform="Other",
             url="https://sites.wustl.edu/oasisbrains/",  # OASIS-2; the Mendeley deposit is a later copy
-            license="CC BY NC 3.0",
+            # OASIS Data Use Terms (https://sites.wustl.edu/oasisbrains/). The Mendeley re-upload (Battineni et al.) is
+            # marked CC BY NC 3.0, but a re-uploader cannot relicense OASIS data.
+            license="OASIS Data Use Terms: non-commercial, academic research purposes only",
             year="2010",
             bibtex="""
                 @article{marcus2010open,
@@ -97,13 +106,37 @@ class DementiaPrediction(AbstractCuratedDataset):
         - CDR and Group are both the same target variable. CDR is the Clinical Dementia Rating (0 = no dementia, 0.5 = very mild AD, 1 = mild AD, 2 = moderate AD), which determines the group variable. 31 of the 150 subjects change their rating across visits (the 'Converted' group). We make this a task to predict for a patient (at any given time point of a scan) their dementia rating. The rating is ordinal but discrete, so we treat it as a classification problem (not regression). We drop cases with moderate_AD (n=3), as we do not have enough data on this class to include them in our prediction task.
         - We drop the group variable (Nondemented / Demented / Converted, derived from the ratings over the visits) and the time of the scan (visit number, MR delay). We predict each visit's rating from the subject's sex, age, years of education (EDUC), socioeconomic status (SES, 19 missing), the Mini-Mental State Examination score of the same visit (MMSE, 2 missing; a separate cognitive test, not derived from the rating) and three measures from the visit's MRI scan: estimated total intracranial volume (eTIV), normalized whole-brain volume (nWBV) and the atlas scaling factor (ASF, which is 1755 / eTIV, kept as in the source).
         - We also drop the constant hand column.
-        - Each person counts once in the score (Lennart, 2026-11-08, review issue 1; MET-17): the log loss weights a visit by 1 over its person's number of visits (`person_weight`, counted after the moderate visits are dropped), a scoring column for the metric only, no feature and no training weight. The 150 people have 1 to 5 visits (91 two, 43 three, 13 four or five), and the memory clinic acts once per person; unweighted, a person seen five times counted five times. Follow-up visits are still scored, each as if it were a first visit, at one vote per person. On the 60 shipped splits the weighted log loss ranks 8 untuned predictors (two logistic regressions, random forest, extra trees, two LightGBM, kNN, the class shares) like the per-visit one at Kendall tau 0.94 per split on average (lowest 0.71) and 1.0 for the ranking by the mean over the splits, the same best model on 56 of 60. Scoring only the first visits was the alternative (tau 0.87 per split, 48 to 52 scored visits per fold against 112 to 138). The weight is for scoring only (MET-15 as amended 2026-11-08): training a logistic regression with it changes the weighted log loss by -0.004 (SE 0.003, lower on 35 of 60 grouped random splits), within noise.
+        - Sampling (Andrej, 2026-10-19): the participants are volunteers of the Washington University Alzheimer's Disease Research Center, recruited mainly through media appeals, with at least two MRI visits (Marcus et al. 2010). The 'Nondemented' group stayed CDR 0 over all visits and only 14 subjects convert, so few visits sit near the boundary of no and very mild dementia. Demented subjects have fewer visits (mean 2.2 vs 2.6) and shorter follow-up, so the people without dementia hold slightly more of the visits than of the people (51% against 48%); the score counts each person once (below).
+        - Missing values are informative: the 19 visits without SES (8 subjects) and the 2 without MMSE (1 subject) are all rated very mild or mild dementia. SES comes from the clinical interview, which impaired participants may not complete, so a clinic would see the same pattern; we keep the missing values.
+        - The source's group labels are not fully consistent with the per-visit rating (2 'Nondemented' subjects are rated 0.5 at a later visit, 1 'Converted' subject goes from 0.5 to 0); this does not affect the task, since the group label is dropped.
+        - Each person counts once in the score (Lennart, 2026-11-08; MET-17): the log loss weights a visit by 1 over its person's number of visits (`person_weight`, counted after the moderate visits are dropped), a scoring column for the metric only, no feature and no training weight. The 150 people have 1 to 5 visits (91 two, 43 three, 13 four or five), and the memory clinic acts once per person; unweighted, a person seen five times counted five times. Follow-up visits are still scored, each as if it were a first visit, at one vote per person. On the 60 shipped splits the weighted log loss ranks 8 untuned predictors (two logistic regressions, random forest, extra trees, two LightGBM, kNN, the class shares) like the per-visit one at Kendall tau 0.94 per split on average (lowest 0.71) and 1.0 for the ranking by the mean over the splits, the same best model on 56 of 60. Scoring only the first visits was the alternative (tau 0.87 per split, 48 to 52 scored visits per fold against 112 to 138). The weight is for scoring only (MET-15 as amended 2026-11-08): training a logistic regression with it changes the weighted log loss by -0.004 (SE 0.003, lower on 35 of 60 grouped random splits), within noise.
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 1 scores with no words per level are
           numbers (`SCORES`): `SES`.
         - The target (2026-11-01, CLEAN-25): `CDR` ships its classes as words, no_dementia < very_mild_AD < mild_AD (the
           Clinical Dementia Rating's order (CDR 0, 0.5, 1)).
+        - One precision for eTIV and ASF (Andrej, 2026-11-05; LEAK-13): in 112 of the 370 visits eTIV is written with 9
+          to 11 decimals and equals exactly 1755 / ASF, a second numerical route that covers 9 of 150 first visits but
+          103 of 220 follow-ups, so the number format tells a model which visit it is. Both columns are written at the
+          precision of the measured values in every row (`MEASURED_PRECISION`: eTIV in whole cm³, ASF to three
+          decimals). Checked on the 60 grouped splits: the decimal counts alone fall from ROC AUC 0.54-0.56 to
+          0.50-0.53, and logistic regression scores as before (log loss 0.6145, unweighted, before the person weight).
     """
+    split_leaf = "L-PAN.new-units"
+    time_basis = TimeBasis(
+        "UnseenGroup",
+        """
+        the use case is a person's
+        first visit at a memory clinic, a person the data does not hold, so whole people are held out and each
+        person's course stays on one side. The 150 people were scanned on 2 to 5 visits over 365 to 2,639 days during
+        the study's years (Marcus et al. 2010), and the release keeps no calendar date, only the order of each
+        person's visits, which the definition drops. Not tested: people seen later than the training people, and
+        changes of scanner or protocol over the study, which dated visits would allow (a split by visit year).
+        """,
+        set_by="Andrej",
+        on="2026-11-17",
+        note="`ForcedGroupedFromTemporal` before",
+    )
 
     # Task
     target = "CDR"
@@ -115,20 +148,19 @@ class DementiaPrediction(AbstractCuratedDataset):
             "weighs 1 over its person's number of visits (`person_weight`; 1 to 5 visits per person), where "
             "unweighted a person seen five times would count five times (Lennart, 2026-11-08)."
         ),
-        inputs={"weight": "person_weight"},
     )
     scoring_columns = (
         ScoringColumn(
             column="person_weight",
             role="weight",
             used_by="log_loss",
+            unit="Subject ID",
             description=(
                 "1 over the number of visits of the row's person (from 1/5 to 1), so that each person counts once "
                 "in the log loss; for scoring only, never a feature or a training weight"
             ),
         ),
     )
-    unit_weight = UnitWeight(column="person_weight", unit="Subject ID")
     grouping = Grouping(
         on="Subject ID",
         labels="per_sample",
@@ -141,7 +173,7 @@ class DementiaPrediction(AbstractCuratedDataset):
 
     # Splits
     splits_comment = """
-        We create stratified grouped 20-repeated 3-fold split. This puts about 50 subjects (112-138 visits) in each test fold.
+        This puts about 50 subjects (112-138 visits) in each test fold.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -167,7 +199,8 @@ class DementiaPrediction(AbstractCuratedDataset):
         df = df.sample(frac=1, random_state=42).sort_values(by=["Subject ID"], kind="stable").reset_index(drop=True)
         # scores with no words per level are numbers (CLEAN-14)
         df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
-        return df
+        # The precision of the measured values: the number format marked follow-up visits (curation notes).
+        return df.round(MEASURED_PRECISION)
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(ordinal=ORDINAL_LEVELS, categorical=["M/F", "Subject ID"])

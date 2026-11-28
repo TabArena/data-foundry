@@ -5,13 +5,15 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
     Metric,
     Source,
     TaskSummary,
+    TimeBasis,
     drop_columns,
 )
 
@@ -72,7 +74,6 @@ class Huntprohibited1m(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         The training file of the Kaggle competition "The Hunt for Prohibited Content" (Avito, 2014); the rules must be
         accepted on the competition page first. The zip (772,619,211 bytes, sha256
@@ -88,7 +89,6 @@ class Huntprohibited1m(AbstractCuratedDataset):
         - We drop `close_hours`, how long the ad was live: it is known only after the moderation decision (the hosts: "not available at scoring phase").
         - We drop `is_proved`, which is set only for blocked ads: a component of the target, "not to be used as a direct modeling attribute" (data page).
         - We drop `itemid`: the ids "have been randomly assigned" (Kaggle discussion 9554).
-        - IID split, tagged ForcedIIDFromTemporal: the competition split by month, but the file has no date and the random ids cannot stand in for one (decision table). A date would show drift in how sellers word ads to avoid blocks, seasonal items (New Year, 8 March) and shifts in the category mix; the April labels were never published, so the full cost cannot be measured, and the time axis should be recovered if Avito or Kaggle releases the dates. One partial marker bounds it (2026-10-22): the used-car form changed during December-March ("Объем" to "Объём двигателя"; 6.1% of train ads in the old form, 0.18% of April's), and training on the old form and testing on the new costs about 0.002 ROC AUC and 0.02 average precision against a mix of the same size (TF-IDF logistic regression, 4 seeds). The competition's own validation was random too (the winners and the forum describe random holdouts and K-fold, and local scores tracked the leaderboard).
         - We drop exact copies of an ad (reposts with the same features and label) and every ad whose features occur with both labels (decision table).
         - Note: edited reposts stay and sellers are not grouped, because the label is per ad: the data page speaks of ads "blocked for illicit content". This is the source's wording; it cannot be checked against a seller key, as the file has none. By exact description keys, 1.4-4.9% of the test ads have a near copy in train, and 99.5% of those share its label; grouping on such a key (GroupKFold, fold 0, a logistic regression on word n-grams) gives ROC AUC 0.99384 and 0.99386 against 0.99390 for the random split, and AP within 0.002. In the 2026-10-07 run, 0.50% of the April test ads shared a 30+ character description with a training ad (not re-measured: the test file is not in the warehouse). A seller who rewrites every ad is not covered by any of these measurements.
         - `title`, `description` and `attrs` are Russian free text (string columns). `category` and `subcategory` are categorical; `price` and the counts of phone numbers, e-mails and URLs that Avito masked are numeric. The counts are Avito's own and mostly match the masks in the description: `phones_cnt` is higher on 0.92% of ads, which are blocked less often than the rest.
@@ -102,6 +102,23 @@ class Huntprohibited1m(AbstractCuratedDataset):
         - Metric: AP@k as the competition, with k = 12,500 per 500,000-ad test fold, the competition's 2.5% (k = 32,500 of about 1.3M test ads, per the participants). The rules restrict the data to use within the competition, and the ads include illicit or offensive content (rules page).
         - The row budget (1M train, 500k test rows): We keep the whole frame (3,963,488 ads after dropping duplicates) and use 3-fold cross-validation over it (v2 split protocol). Each fold tests on 500k ads of its third, drawn stratified on the target, and trains on the other 3,463,488. The train budget is recorded in the container, not applied: a benchmark sub-samples each train side to 1M ads with `subsample_train`, whose default draws random rows stratified on the target.
     """
+    split_leaf = "L-FORCED.random"
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        the competition split by month, but the file has no date and the random ids
+        cannot stand in for one (decision table). A date would show drift in how sellers word ads to avoid blocks,
+        seasonal items (New Year, 8 March) and shifts in the category mix; the April labels were never published, so
+        the full cost cannot be measured, and the time axis should be recovered if Avito or Kaggle releases the dates.
+        One partial marker bounds it (2026-10-22): the used-car form changed during December-March ("Объем" to "Объём
+        двигателя"; 6.1% of train ads in the old form, 0.18% of April's), and training on the old form and testing on
+        the new costs about 0.002 ROC AUC and 0.02 average precision against a mix of the same size (TF-IDF logistic
+        regression, 4 seeds). The competition's own validation was random too (the winners and the forum describe
+        random holdouts and K-fold, and local scores tracked the leaderboard). Not taken as stationary (Andrej,
+        2026-11-18): Adversarial moderation with drift sources the definition names; a 0.002 AUC marker over four
+        months bounds one change, not later use.
+        """,
+    )
 
     # Task
     target = TARGET

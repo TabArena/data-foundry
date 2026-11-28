@@ -6,8 +6,16 @@ import hashlib
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.time_basis import TimeBasis
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, TaskSummary
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+)
 
 
 class GeoaiGroundLevelNo2EstimationChallenge(AbstractCuratedDataset):

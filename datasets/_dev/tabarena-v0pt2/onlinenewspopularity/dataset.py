@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -176,7 +177,7 @@ class Onlinenewspopularity(AbstractCuratedDataset):
         - We keep the newest articles. The paper discarded articles less than three weeks old, but the shares of the 481 articles from 2014-12-18 on show no deficit (decision table).
         - No duplicate rows; the URLs are unique.
         - Text: the release holds statistics of the text only; a TF-IDF encoding of the URL slug does not help (R^2 0.152 with it).
-        - Columns recorded on one side of a window only (cross-dataset item of 2026-11-11, Lennart): `kw_min_min` is -1 (set to missing above) for every article of 2014 and recorded for most of 2013, so every test window lacks it while the train sides hold it. Kept: the data as published.
+        - Columns recorded on one side of a window only (Lennart, 2026-11-11): `kw_min_min` is -1 (set to missing above) for every article of 2014 and recorded for most of 2013, so every test window lacks it while the train sides hold it. Kept: the data as published.
     """
 
     # Task
@@ -188,6 +189,7 @@ class Onlinenewspopularity(AbstractCuratedDataset):
         target_transform="log",
     )
 
+    split_leaf = "L-ORDER.windows"
     # Splits: nine two-week windows, the size of the paper's rolling test sets, one every five weeks, one-week gap.
     temporal = Temporal(
         on="publication_date",
@@ -209,15 +211,11 @@ class Onlinenewspopularity(AbstractCuratedDataset):
         ),
     )
     splits_comment = """
-        Expanding-window temporal splits: 9 test windows of two calendar weeks (Sunday to Saturday), one every five weeks from 2014-03-09 to 2014-12-27 (CC 2026-11-11), newest first: 14-27 December, 9-22 November, 5-18 October, 31 August-13 September, 27 July-9 August, 22 June-5 July, 18-31 May, 13-26 April and 9-22 March 2014, with 769, 1,003, 988, 902, 877, 855, 763, 785 and 699 articles (7,641). Train is every article published at least one week before the window starts (the last 8 days before it): 38,385, 36,031, 33,583, 31,354, 29,269, 27,020, 24,996, 23,035 and 21,234 articles (96.8%, 90.9%, 84.7%, 79.1%, 73.8%, 68.2%, 63.1%, 58.1% and 53.6% of the 39,643), so every train side keeps more than half the articles. The windows are spread over 2014 instead of the newest nine (2014-08-24 to 2014-12-27, the windows until 2026-11-11): nothing in the editor's use case ties the model to the autumn, the paper evaluates on rolling test sets from about July 2013 to December 2014, and the share level falls through 2014 (mean log shares 7.53 to 7.60 in the windows of March to May, 7.37 to 7.45 in those of June to December), so the windows cover spring, summer, autumn and early winter. Nine windows are the 3 x 3 splits an IID task of this size would get; the floor would admit more two-week windows, down to 30% of the articles, and nine were kept (CC 2026-11-11). A model is refit every two weeks and predicts the articles of the next two weeks before they are published, as in the paper's rolling windows of L = 1,000 predictions (Sec. 3.1, p. 7; 1,000 articles are two to three weeks of Mashable's output). The one-week gap keeps the training labels to shares that had settled at the cutoff (the paper: the shares of some articles younger than 4 days had not, Sec. 2.1, p. 3). The labels are the counts at the 2015-01-08 crawl for train and test alike, so the gap stands in for the settling time only. The paper trains on a sliding window of W = 10,000 articles; we expand the train side, which keeps a full season before the first window and scored no lower on the windows used until 2026-11-11 (R^2 0.158 expanding, 0.146 sliding).
+        Expanding-window temporal splits: 9 test windows of two calendar weeks (Sunday to Saturday), one every five weeks from 2014-03-09 to 2014-12-27 (CC 2026-11-11), newest first: 14-27 December, 9-22 November, 5-18 October, 31 August-13 September, 27 July-9 August, 22 June-5 July, 18-31 May, 13-26 April and 9-22 March 2014, with 769, 1,003, 988, 902, 877, 855, 763, 785 and 699 articles (7,641). The windows are spread over 2014 instead of the newest nine (2014-08-24 to 2014-12-27, the windows until 2026-11-11): nothing in the editor's use case ties the model to the autumn, the paper evaluates on rolling test sets from about July 2013 to December 2014, and the share level falls through 2014 (mean log shares 7.53 to 7.60 in the windows of March to May, 7.37 to 7.45 in those of June to December), so the windows cover spring, summer, autumn and early winter. Nine windows are the 3 x 3 splits an IID task of this size would get; the floor would admit more two-week windows, down to 30% of the articles, and nine were kept (CC 2026-11-11). A model is refit every two weeks and predicts the articles of the next two weeks before they are published, as in the paper's rolling windows of L = 1,000 predictions (Sec. 3.1, p. 7; 1,000 articles are two to three weeks of Mashable's output). The one-week gap keeps the training labels to shares that had settled at the cutoff (the paper: the shares of some articles younger than 4 days had not, Sec. 2.1, p. 3). The labels are the counts at the 2015-01-08 crawl for train and test alike, so the gap stands in for the settling time only. The paper trains on a sliding window of W = 10,000 articles; we expand the train side, which keeps a full season before the first window and scored no lower on the windows used until 2026-11-11 (R^2 0.158 expanding, 0.146 sliding).
     """
     accepted_check_warnings = {
-        "splits_rows_unused": (
-            "By design: the 489 articles of 2014-12-07 to 2014-12-13 fall in the one-week gap before the newest window "
-            "and in no test window, since the windows are one every five weeks (CC 2026-11-11)."
-        ),
         "splits_feature_missing_in_test": (
-            "Decided (Lennart, 2026-11-11, cross-dataset item): `kw_min_min` is -1 (missing) for every 2014 article, so "
+            "Decided (Lennart, 2026-11-11): `kw_min_min` is -1 (missing) for every 2014 article, so "
             "every test window lacks it (curation_comments)."
         ),
     }

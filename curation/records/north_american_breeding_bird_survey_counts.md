@@ -74,7 +74,7 @@ These are per dataset judgement calls and if a dataset is useful for a predictiv
 collected for something else, then this is fine"), as SEL-2 already reads the scope rules: this record is judged on its
 own use case. The verdict and priority stay.
 
-CC (2026-10-30, Andrej): `No` (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening review page).
+CC (2026-10-30, Andrej): `No` (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening).
 "No predictive task"
 
 The North American Breeding Bird Survey, released by USGS: every June a skilled volunteer runs a 39.2 km roadside

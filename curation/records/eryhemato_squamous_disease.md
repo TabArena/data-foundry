@@ -7,8 +7,6 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 decision_markers:
@@ -79,6 +77,8 @@ CC (2026-11-18, Andrej): the split stays as shipped under SPLIT-8 as amended tod
 
 CC (2026-11-18, Andrej): the forced tag stays (Review issue 7, A; stationarity reasoning, SPLIT-32 as amended today): no reason to take later samples as interchangeable. The rule lists structure in the file order as a fact against, and here it is measured as a sizeable cost.
 
+CC (2026-11-23, Andrej): the file's two parts are not read as periods (Review issue 8, C): the source does not say whether they are periods, examiners or a series extended by diagnosis, so no period is held out and the random split stays `ForcedIIDFromTemporal`; the `Time basis:` line names the parts and the seborrheic dermatitis shift (24.3% to 10.2%) as the measured cost. No departure.
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it after one type fix: the ten graded clinical findings ship as
@@ -95,7 +95,7 @@ stage the source describes and a clear model ranking +, a selected, small and ol
 
 **Main points:** Settled: ship the clinical-only task with the ten graded findings as numbers (issues 1, 2 and
 4, resolved 2026-11-05); the random split is tagged forced from temporal with the measured cost of the file's two parts
-(issue 3, resolved 2026-11-10), and the forced tag stays (issue 7, resolved 2026-11-18); issue 5 was withdrawn. Open since 2026-11-23: issue 8 (the file parts' class shares make the relation not flat: `Too Small`, or a departure).
+(issue 3, resolved 2026-11-10), and the forced tag stays (issue 7, resolved 2026-11-18); issue 5 was withdrawn. The file's parts are not read as periods, so the forced split stays without a departure (issue 8, C, 2026-11-23). Nothing is left open.
 
 **Record judgment:** valid. Settled by CC 2026-10-06 (Lennart: clinical features only), CC 2026-10-20 (Andrej: keep,
 selection named in the fit), CC 2026-10-27 (Lennart: fit approximate, the marker stays) and CC 2026-11-01 (Lennart: the
@@ -497,6 +497,8 @@ counts one pair because age breaks the other ties).
 
    [^dep-ery-flat]: **SPLIT-32** (Should): the relation "is not flat when one period or the averaged gap is not flat for one model, or when a class share moves by a factor of two or more between two periods at chi-square p < 0.01 (the change in recording above)".
    [^dep-ery-small]: **SPLIT-32** (Should): "a relation measured not flat is held out only by whole periods, else `Too Small` (SPLIT-16)". **SPLIT-16** (Must): "where enough meaningful groups can be built to approximate the temporal split (whole periods, enough for the task's repeats, SPLIT-8), hold them out; where they cannot, the task is `Too Small`." **SPLIT-8** (Must): whole periods count only with "four periods for 3 repeats, five for 10 or 20". The split tree, ForcedFromTemporal step: "Retire · Too Small ... retired or kept only on the curator's call".
+
+   **Resolved (2026-11-23, Andrej):** C. Since it is unknown whether the parts are periods, the split is not treated as temporal on them. The `Time basis:` line no longer reads the parts as two collection periods: it names the three readings, the seborrheic dermatitis shift between the parts and the measured cost; the tag stays `ForcedIIDFromTemporal`, and eryhemato is not added to the departures table. Not rebuilt.
 
 ## Reference
 

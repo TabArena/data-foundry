@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -141,9 +142,9 @@ class LusakaMobility2024(AbstractCuratedDataset):
         - Rows: drop the 21 missing start timestamps, which cannot be assigned honestly to chronological windows. The source already removed very short trips using an unspecified threshold; that selection cannot be undone.
         - We drop the 2,364 trips (2.1% of the 112,739 with a start; 1.3 to 2.9% on every day) whose straight-line distance from start to end is under 0.1 km (Lennart, 2026-11-04: "drop them, this is not a relevant prediction goal here imo"; USE-7, the 100 m radius of nyc_taxi_trip_duration_1m and pkdd_15_taxi_trip_time_prediction_ii_1m): nobody books a ride to their own pickup point, so these rows lack the destination the ETA acts on. The cut is on the recorded endpoint, which for these rows is not a booked destination, not on the target, and exact although the coordinates are masked, because the source computes `str_distance_km` from the original points. These trips are not short: median 22.1 minutes against 10.8 for the others, 93% over 5 minutes, median travelled distance 4.5 km (round trips), and they held 16% of the target's squared spread. 110,375 trips remained after this cut, with complete positive targets.
         - Features: drop trip_id and the duplicate day-only start column. Keep coordinates and straight-line kilometers numeric; no route-distance or speed feature is calculated. Durations are kept as published; the two cuts below drop rows, they change no value.
-        - CC (2026-11-05, Lennart): drop the 20 trips over 3 hours as not closed in the app (issue 4, B; CLEAN-11, then CLEAN-15; as pkdd_15_taxi_trip_time_prediction_ii_1m's meter left running, `MAX_TRAVEL_TIME_S`, and nyc_taxi_trip_duration_1m's 3 h cap). The longest lasted 788 minutes for 20.2 km driven and 1.1 km in a straight line (1.5 km/h), and two ran at 0.3 km/h for 240 and 304 minutes. The source does not say how a trip is closed, so the impossibility rests on these values. The 20 held 11.8% of the target's squared spread, and 8 were test rows: the 788-minute trip alone held 21% of a constant prediction's squared error in the window from 2023-01-25. The longest kept trip lasts 175 minutes.
-        - CC (2026-11-05, Lennart): drop the 19 trips faster than 120 km/h in a straight line from start to end (issue 5, B; CLEAN-11, then CLEAN-15; as pkdd's GPS jumps, `MAX_STRAIGHT_LINE_KMH`). The source computes the straight line from the unmasked points, so the speed is exact and the duration or the endpoint is wrong: 10 exceed 150 km/h, the fastest 416 km/h (8.9 km in 1.3 minutes). sendy_logistics_challenge treats its fast legs by their late pickup mark, which shows in the inputs (the wait at the pickup): since 2026-11-05 it drops its legs of 60 s or less, which takes 723 of its 803 legs over 120 km/h, and the 80 longer ones stay; here neither these trips nor the unclosed ones leave a mark in the inputs. They held under 0.1% of the squared spread; 4 were test rows. The two cuts share no trip: 110,336 trips remain.
-        - CC (2026-11-05, Lennart): a trip gets the exact hourly weather record stamped floor(trip_start) - 3 hours (issue 3, B; LEAK-10, EV-2: a measurement on the data outranks the dictionary). The dictionary calls both clocks local, but the weather's own daily curve fits UTC stamps (Lusaka is UTC+2): mean temperature is flat at stamps 02 to 04, rises 1.09 °C at 05, about 50 minutes before the 05:50 sunrise, and peaks at 12 to 13, solar noon on a local clock but the usual 14 to 15 on a UTC one; the trip file also spans a calendar month in UTC (02:03 local on 1 January to 02:09 local on 1 February). With the 3-hour lag the row is that of the hour before the start hour on a UTC clock and of 3 hours before on a local one, so it precedes the start either way. The lag costs no measured skill: each weather column alone scores about 0, and hourly trip pace correlates with precipitation between -0.019 and 0.023 at every shift from -4 to +4 hours. It is not a verified publication delay. The 175 trips that start on 1 January before 03:00 have no weather row that early and keep missing weather; no future fill or date/year correction is used. The weather's row counter/date/time are join metadata, not predictors; precipitation type is categorical.
+        - CC (2026-11-05, Lennart): drop the 20 trips over 3 hours as not closed in the app (CLEAN-11, then CLEAN-15; as pkdd_15_taxi_trip_time_prediction_ii_1m's meter left running, `MAX_TRAVEL_TIME_S`, and nyc_taxi_trip_duration_1m's 3 h cap). The longest lasted 788 minutes for 20.2 km driven and 1.1 km in a straight line (1.5 km/h), and two ran at 0.3 km/h for 240 and 304 minutes. The source does not say how a trip is closed, so the impossibility rests on these values. The 20 held 11.8% of the target's squared spread, and 8 were test rows: the 788-minute trip alone held 21% of a constant prediction's squared error in the window from 2023-01-25. The longest kept trip lasts 175 minutes.
+        - CC (2026-11-05, Lennart): drop the 19 trips faster than 120 km/h in a straight line from start to end (CLEAN-11, then CLEAN-15; as pkdd's GPS jumps, `MAX_STRAIGHT_LINE_KMH`). The source computes the straight line from the unmasked points, so the speed is exact and the duration or the endpoint is wrong: 10 exceed 150 km/h, the fastest 416 km/h (8.9 km in 1.3 minutes). sendy_logistics_challenge treats its fast legs by their late pickup mark, which shows in the inputs (the wait at the pickup): since 2026-11-05 it drops its legs of 60 s or less, which takes 723 of its 803 legs over 120 km/h, and the 80 longer ones stay; here neither these trips nor the unclosed ones leave a mark in the inputs. They held under 0.1% of the squared spread; 4 were test rows. The two cuts share no trip: 110,336 trips remain.
+        - CC (2026-11-05, Lennart): a trip gets the exact hourly weather record stamped floor(trip_start) - 3 hours (LEAK-10, EV-2: a measurement on the data outranks the dictionary). The dictionary calls both clocks local, but the weather's own daily curve fits UTC stamps (Lusaka is UTC+2): mean temperature is flat at stamps 02 to 04, rises 1.09 °C at 05, about 50 minutes before the 05:50 sunrise, and peaks at 12 to 13, solar noon on a local clock but the usual 14 to 15 on a UTC one; the trip file also spans a calendar month in UTC (02:03 local on 1 January to 02:09 local on 1 February). With the 3-hour lag the row is that of the hour before the start hour on a UTC clock and of 3 hours before on a local one, so it precedes the start either way. The lag costs no measured skill: each weather column alone scores about 0, and hourly trip pace correlates with precipitation between -0.019 and 0.023 at every shift from -4 to +4 hours. It is not a verified publication delay. The 175 trips that start on 1 January before 03:00 have no weather row that early and keep missing weather; no future fill or date/year correction is used. The weather's row counter/date/time are join metadata, not predictors; precipitation type is categorical.
         - Metric: source RMSE on actual minutes, with identity target transform (MET-4). No logarithm is introduced, and the only rows cut on the target are the impossible ones above. The score still leans on a few rows (MET-2): the largest 1% of an untuned LightGBM's errors hold 43 to 53% of its squared error, and trips over 120 minutes hold 7.9%, 6.3% and 12.0% of the squared deviation of the windows from 2023-01-21, 2023-01-25 and 2023-01-29 (one fit per window, 3 windows); no single trip holds over 2% of a window's constant-prediction squared error.
         - CC (2026-11-05, Lennart): the declared metric (RMSE on minutes, the source's) is checked and stays as declared.
         - Split: chronological four-day windows with a one-day training gap. Every kept trip lasts at most 3 hours (the longest 175 minutes), so the gap puts observed training trip ends before refit; reporting delay beyond trip completion is not known. The participant copy's train/test files interpolate throughout the same month; our evaluation instead tests later trips.
@@ -159,6 +160,7 @@ class LusakaMobility2024(AbstractCuratedDataset):
         reference="https://zindi.world/competitions/2024-lusaka-mobility-prediction-hackathon#evaluation",
         definition="Square root of mean squared error on trip duration in minutes; identity target transform.",
     )
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="trip_start",
         splits=TemporalSplits(
@@ -170,13 +172,13 @@ class LusakaMobility2024(AbstractCuratedDataset):
         ),
     )
     splits_comment = """
-        Three four-day windows start on the recorded calendar at 2023-01-29, 2023-01-25 and 2023-01-21,
-        newest first. Four-day refits are a benchmark design choice within the one-month extract, not an organizer
+        Four-day refits are a benchmark design choice within the one-month extract, not an organizer
         cadence. Each training side uses all earlier trips starting at least one day before its test start; every
         kept trip lasts at most 3 hours (the longest 175 minutes), so training trips finish before each
         test-start/refit time. Subsequent
         label reporting delay and original cohort extraction/follow-up timing are undocumented. A fourth
-        earlier four-day window would violate the half-data training floor after this gap. The latest window ends
+        earlier four-day window would violate the half-data training floor after this gap, so the windows stay
+        at 3 of the 9 splits an IID split of this size would get (SPLIT-33). The latest window ends
         February 2 but only has observations through early February 1. No performance was used to choose windows.
         The windows hold different weekday mixes (the one from January 25 has no Sunday); trips are shorter on all
         five Sundays (11.1 to 12.1 minutes on average, against 13.7 to 14.7 on other days), a weekly pattern, not
@@ -184,7 +186,14 @@ class LusakaMobility2024(AbstractCuratedDataset):
         Missing starts, trips ending within 100 m of their start, trips over 3 hours and trips faster than 120 km/h in
         a straight line are excluded; other rows, target units and dates are preserved.
     """
-    accepted_check_warnings = {}
+    accepted_check_warnings = {
+        "splits_dimensions_off_protocol": (
+            "Three windows against the nine an IID split of 110,336 trips would get (SPLIT-33): with four-day windows "
+            "and the one-day gap, a fourth window would train on less than half the trips of the one-month extract. "
+            "The splits comment names the target, the count reached and what stops more (SPLIT-15; Lennart, "
+            "2026-11-26)."
+        ),
+    }
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         folder = raw_dir / MIRROR_COMMIT

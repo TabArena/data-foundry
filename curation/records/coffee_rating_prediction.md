@@ -4,19 +4,26 @@ name: Coffee_Data_CoffeeReview
 checked_by:
 - Lennart
 - Mustafa
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+priority: 1
 decision_markers:
 - No Good Target (yet)
 tags:
-- Free Text (Sentences)
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
+- Dated Event Log
 collections:
 - CARTE/TARTE
-original_source: Website
+original_source: Kaggle
 year: '2023'
+collection_period: Oct 2018 - Oct 2023
 domain: business & marketing
 required_split:
 - Temporal (NON-IID)
@@ -56,6 +63,331 @@ CC (2026-10-21, Lennart): drop the `2ndTierData` tag ("we have this now with use
 CC (2026-11-11, Lennart): drop the 2 reviews of October 2023, the scrape's partial last month (cross-dataset item "What to do with a newest period that holds far fewer rows than the periods before it?", A).
 
 **Assessment (AI, 2026-11-11):** October 2023 held 2 reviews against 24 to 65 a month in the rest of 2023; the 2-month windows now walk back from September 2023 instead of October.
+
+**Assessment (AI, 2026-11-04):** reviewed for BeyondArena v0.2, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the record's Review. Ship after changes: drop the reviewer's two text passages (a word model on them alone reaches skill 0.71 and beats every benchmark method; the roaster's own information still gives 0.34-0.39) and convert the NT$ prices. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
+
+CC (2026-11-06, Andrej): the arrival facts of the temporal split accepted (Review issue 3, B, through the cross-dataset item on arrival notes of temporal splits) and written into `splits_comment`; the split is unchanged. A score is published with its review month, so every training label is known when a window starts and no gap is needed.
+
+CC (2026-11-10, Andrej): decided. The roaster's task is kept; whether it is still meaningful is open (the Review, issue 5).
+
+**Changes made** (the input data changed: 12 to 9 features, the same 2,369 rows):
+
+1. **Problem:** the two review passages (`desc_1`, the blind assessment, and `desc_3`, the bottom line) are written by the reviewer together with the score. A roaster does not have them before the review, and a word model on them alone explained 71% of the score's variance and beat every benchmark method. **Change:** both dropped; the record loses `Free Text (Sentences)`. **Exception to LEAK-35 (2026-11-10, Andrej):** the kept-text rule had this dataset as its case at R² 0.25 to 0.67. What sets it apart now is the measured 0.71, a text-only model ranking first, and a use case in which the roaster predicts before the review.
+2. **Problem:** 606 prices of Taiwanese roasters were in New Taiwan dollars but read as US dollars (median price per gram 33 times the others'). **Change:** converted at 0.031; the `NT_price` flag dropped.
+3. **Problem:** the record had no target fact, although the score comes weeks or months after the roaster's information. **Change:** `Target: Varying Delay` added; `Andrej` added to `checked_by`.
+
+**Problems found, not changed:**
+
+- The signal left is modest (the spread check of 2026-11-21 settled this: the families separate, TabPFN 1.275 against LightGBM 1.376): untuned LightGBM RMSE 1.259 and ridge 1.266, against 1.598 for the training mean and 1.436 for the roaster's past mean score, on the 13 two-month windows. It beats the roaster's mean in 13 of 13 windows, so the task is real, but LightGBM beats ridge in only 7 of 13. Recommended: keep, and check the benchmark spread after the rebuild.
+
+CC (2026-11-11, Andrej): record field set from the definition: `original_source` Kaggle (was Other).
+
+CC (2026-11-11, Andrej): kept without the reviewer's text (Review issue 5, A): every feature exists before the review, and untuned LightGBM beats the mean and the roaster's past mean score in 13 of 13 windows (skill 0.36). The spread of the benchmark methods is checked after the rebuild; retire only if they tie there too.
+
+CC (2026-11-12, Andrej): the review month `review_date` orders and splits the rows but is no model input (Review issue 6, B; `Temporal(..., feature=False)`): it is the month Coffee Review published the score, while the roaster decides which coffees to submit before any review. 8 features (was 9), the 13 windows unchanged.
+
+CC (2026-11-18, Andrej): a one-month gap before each two-month window (Review issue 7, B; replaces the no-gap decision of 2026-11-06): the roaster predicts at submission, weeks or months before Coffee Review publishes the score in its review month, so training holds only scores published at least a month before the window. The delay is not stated; one month is the smallest gap the monthly dates allow.
+
+CC (2026-11-21, Andrej): the spread check the keep rested on, run on the rebuilt definition (9 features, the one-month gap, 12 windows, RMSE, three seeds, each family tuned on the newest fifth of its training side): the methods separate. TabPFN 1.275, ridge 1.344, random forest 1.364, LightGBM 1.376, against 1.572 for the training mean; best minus worst is 0.101 paired per window (SE 0.019, 5.4 SE, above the 0.01 floor), so TP-3 keeps the dataset. The three tuned families tie among themselves (LightGBM minus ridge 0.032, SE 0.047); the spread comes from TabPFN, which is ahead of random forest (0.089, SE 0.023) and LightGBM, and 1.6 SE ahead of ridge. On shuffled labels TabPFN scores 1.574, the training mean's own error, so the signal is real.
+
+## Review
+
+**Outcome:** added. Kept after the changes of 2026-11-10 (issue 5, 2026-11-11). The data are a 2023 Kaggle
+scrape of coffeereview.com: 2,369 coffees reviewed October 2018 to October 2023. The features are the roaster and its
+location, the coffee's name and origin, the roast level, the Agtron roast-colour readings and the price per gram (NT$
+now converted); the review month orders the split but is no input (2026-11-12); the target is the overall score (82
+to 98, mean 93). The six sub-scores, the review notes and, since 2026-11-10, the reviewer's two passages are dropped.
+Validity: every feature exists before the review, which is the roaster's use case. Value: on the rebuilt definition the methods separate (TabPFN 1.275 against LightGBM 1.376, paired 0.101 with SE
+0.019 over the 12 windows), and every family beats the training mean's 1.572 (issue 5, 2026-11-21). Weighed: a real roaster's question with signal +, features known before
+the review +, a modest signal, with a measured spread between the method families +, a scrape without documentation and one rating service -.
+
+**Main points:** Nothing open (the spread check of issue 5 ran on 2026-11-21: the methods separate). Settled: a one-month gap before
+each two-month window (issue 7, B, 2026-11-18); the review month orders
+and splits the rows but is no model input (issue 6, B, 2026-11-12); kept without the reviewer's text (issue 5, A,
+2026-11-11). Issues 1, 2 and 4 were resolved on 2026-11-10 (text dropped, NT$ converted, `Target: Varying Delay`);
+issue 3 on 2026-11-06.
+
+**Record judgment:** valid, ship after the changes. Lennart resolved the sub-score leak (2026-07-27), set the 13
+two-month windows (2026-10-01) and kept the task after the `unstable` flag (2026-10-06; tree models beat the mean in
+13 of 13 windows); the fit is approximate because one rating service stands for the quality a buyer meets
+(2026-10-14). The record carries `No Good Target (yet)` next to `Yes`, as other records whose target the curation
+defined. The licence is `None`: the review text is coffeereview.com's, scraped by the uploader (a note only).
+
+**Issues for Andrej:**
+
+1. **Drop the reviewer's two text passages, which a roaster does not have before the review?**
+
+   * **Problem:**
+     - `desc_1` (the blind assessment) and `desc_3` (the bottom line) are written by the reviewer together with the score, one clause per sensory sub-score that adds up to it.
+     - The definition's own use case is a roaster predicting the score before the review, who "would have only its own description of the coffee", so these passages do not exist at its prediction point.
+     - A word model on the two passages alone explains 71% of the score's variance and beats all 40 benchmark methods: drop them, keep them, or retire the dataset?
+   * **Background:** the curation rules keep text written together with the label as the task when it does not map one
+     to one onto the score, and this dataset is that rule's case (R² 0.25 to 0.67 then)[^1a]; otherwise a feature
+     holds only what existed at the prediction point[^1b]. The six sub-scores were dropped on the same reasoning: they
+     add up to the score. The passages describe those sub-scores in words.
+   * **Effect on the task:** with the passages, the benchmark mostly measures how well a method reads a reviewer's
+     verdict from his vocabulary, a text task where a bag-of-words model beats the tabular methods[^1c]; without them,
+     it measures the roaster's question, from the roaster, origin, roast, roast colour, price and the coffee's name.
+   * **Experiments:** on the 13 v0.2 windows (shipped container, same rows), RMSE against the
+     training mean's 1.598: ridge on TF-IDF of the two passages 0.861 (skill 0.71, better than the mean in 13 of 13
+     windows); the roaster's information (roaster, location, origin, roast, Agtron readings, price with NT$ converted,
+     review month, words of the name) 1.268 with ridge (skill 0.34, 12 of 13) and 1.239 with LightGBM (skill 0.39,
+     13 of 13). On the shipped splits a ridge regression on the passages ranks 1 of 41 (RMSE 0.805 against 0.985
+     for the best benchmark method). Skill is 1 minus the ratio of mean squared errors, averaged over the windows.
+   * **Consistency:** departs from Lennart's call that made this dataset the case of the kept-text rule. What sets it
+     apart now: the measured share of the score the passages carry alone (0.71 against 0.25 to 0.67), a text-only
+     model beating every benchmark method, and a real signal left without them.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the passages (implemented) | no change | a text-and-table task; the earlier call | the score is mostly read from the reviewer's words; a bag-of-words model beats every tabular method |
+     | B | Drop `desc_1` and `desc_3` | 10 features; the roaster's use case; fit stays approximate (one rating service) | features known before the review; skill 0.34 to 0.39 remains | loses the long text columns; reverses the kept-text case |
+     | C | Retire | record `No (Retired)` | none found | loses a real roaster's task with signal |
+
+   * **Recommendation:** B: it makes the features match the definition's own use case, and a real signal remains.
+     **Decision:** keep the passages (A), drop them (B), or retire (C)?
+
+   **Notes for the AI:** on B, add `desc_1` and `desc_3` to the drop list in `_clean`, remove them from `string`, update
+   `known`, `changes` and `fit_reason` (the fit stays approximate: one rating service), drop the `Free Text
+   (Sentences)` tag from the record if no long text remains, remove coffee as the case of the kept-text rule (or note
+   the reversal there), re-run `dataset check` and the task probes, and add a `CC (2026-11-04, Andrej):` line.
+
+   [^1a]: **LEAK-35** (Must): text written together with the label is the task when it does not map one to one onto
+     the score; coffee_rating_prediction's review text is its case (R² 0.25 to 0.67, kept).
+   [^1b]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the target
+     away.
+   [^1c]: **SEL-12** (Must): data from a non-tabular modality is out where modality-specific models are clearly better,
+     judged per dataset.
+
+   **Resolved (2026-11-10, Andrej):** B: `desc_1` and `desc_3` dropped in `_clean`; `known`, `changes` and `fit_reason`
+   updated (fit stays approximate: one rating service, submission delay not stated). Written as an exception to the
+   kept-text rule in the dataset's notes, the record and the rule's cases. The record loses `Free Text (Sentences)`: no
+   long text is left. 9 features, 2,369 rows; `dataset check` passes. The task after the change is issue 5.
+
+2. **Convert the prices in New Taiwan dollars?**
+
+   * **Problem:**
+     - 606 coffees (25.6%), all from roasters in Taiwan, list prices as "NT $", which the parser reads as US dollars, so `price_per_gram_in_usd` is in NT$ for them.
+     - Their median price per gram is 33 times the others' (1.98 against 0.06), and the separate `NT_price` flag is the only hint.
+   * **Background:** the definition's own exchange table has a rate for NTD (0.031), but the parser splits "NT" off
+     before reading the currency, so the rate is never used. One unit per column[^2a].
+   * **Experiments:** shipped container, same rows: NT rows 606, all located in Taiwan.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | As is (implemented) | NT$ prices in the USD column, the `NT_price` flag kept | a tree can split on the flag | one column in two currencies; the flag also trips the constant-column warning |
+     | B | Convert and drop the flag | NT$ prices times 0.031; `NT_price` dropped | one unit; the warning goes | none found |
+
+   * **Recommendation:** B, the column's name says US dollars. **Decision:** as is (A) or convert (B)?
+
+   **Notes for the AI:** on B, in `_clean` set `currency_raw` to `"NTD $"` where `NT_price` is "NT" before the
+   `fx_to_usd` map, then drop `NT_price`; check that the median price per gram of the Taiwanese roasters falls to the
+   others' range; re-run `dataset check`.
+
+   [^2a]: **CLEAN-21** (Should): one unit and one scale per column.
+
+   **Resolved (2026-11-10, Andrej):** B: the 606 "NT $" prices are converted at 0.031 and `NT_price` is dropped. The
+   median price per gram of the Taiwanese roasters is now 0.062, against 0.059 for the others. The constant-column
+   warning is gone; `dataset check` passes.
+
+3. **Time basis: keep the 13 two-month windows with no gap, and write in `splits_comment` how the reviews arrive?**
+
+   * **Problem:**
+     - A coffee's score is given at its review and published with the review month, the split's time column, so the
+       windows are cut at the time the label arrives, and every training label is published before its window starts.
+     - The record carries `Samples: Over Time` and `Time: Dated` (the review month) and no target fact (issue 4); the
+       split is temporal, so no use-case prototype applies: the roaster asks about a coffee not yet reviewed[^3a].
+     - Keep the windows with no gap and write the arrival facts into the split comment?
+   * **Background:**
+     - No gap is needed for the training labels: a published review is known at once. What the windows cannot show is
+       the time from a roaster's submission to the review, which the source does not state; a coffee submitted before its
+       window began is scored by a model that saw reviews published after the submission.
+     - Reviews of one month share their scoring: the month alone explains 8.3% of the score's variance (the year 1.1%),
+       and some months are themed tastings (December 2021 and August 2023: 28% and 33% of the coffees from Antigua,
+       Guatemala, scored 92.6 against 93.1 overall); whole two-month windows keep each month on one side of the cut.
+     - Roasters recur across windows as a feature, their earlier scores known history; the newest month holds 2 reviews
+       (the scrape stopped in October 2023), inside the newest window of 54.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | As now (implemented) | 13 two-month windows, no gap; the comment gives the refit cadence and the window size | no edit | why there is no gap and why months stay whole is in the review only |
+     | B | Arrival in the split comment | as A, and the comment states the label's arrival, the month effect and the unstated submission delay | the reasons are where the split is | none found |
+     | C | Monthly windows | 26 windows of one month | follows the fold count | already declined (2026-10-01): months of 2 to 10 reviews make each window's score noise |
+
+   * **Recommendation:** B. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, no `data_tags` change (a temporal split takes no time basis); append to `splits_comment`:
+   "A score is published with its review month, so every training label is known when a window starts and no gap is
+   needed; the time from a roaster's submission to the review is not stated. Reviews of one month share their scoring
+   (the month explains 8% of the score's variance; some months are themed tastings), and whole two-month windows keep
+   each month on one side."
+
+   [^3a]: **SPLIT-32** (Should): how the data was collected, when each sample, feature and target come into existence,
+     is information for the split; the record carries the source's collection facts, and a split that is not temporal
+     names a prototype or a forced tag; a temporal split needs neither.
+
+   **Resolved (2026-11-06, Andrej):** B, accepted through the cross-dataset item "Accept the arrival notes on temporal
+   splits with one mark?" The arrival text (labels published with the review month, so no gap; whole months on one side)
+   is appended to `splits_comment`. The split, its gap and `data_tags` are unchanged; a temporal split takes no
+   time-basis tag.
+
+4. **Correct the record's collection facts: add `Target: Varying Delay`?**
+
+   * **Problem:**
+     - A coffee, its roaster, origin, roast and price exist before it is reviewed, and the score comes at the review,
+       weeks or months after a roaster submits it or Coffee Review buys it, a delay that differs from coffee to coffee.
+     - The record has no target fact, which the tags reserve for a target that exists with the features; only the
+       reviewer's two passages are written with the score, and issue 1 proposes to drop them[^4a].
+     - Add `Target: Varying Delay`?
+   * **Background:** the fact describes the source, whatever issue 1 decides: the passages are part of the review, the
+     event that makes the label, not information the coffee had before it. `Target: Later` would need one shared date or
+     a fixed window, and the reviews follow no schedule per coffee.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | As now (implemented) | no target fact | true of the reviewer's passages | reads as a label known with the coffee's information |
+     | B | `Target: Varying Delay` | the tag added to the record's `tags` | states that the score comes after the roaster's information | the delay is not stated by the source, only implied |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   **Notes for the AI:** on B, add `'Target: Varying Delay'` to the record's `tags`, `Andrej` to `checked_by`, a CC line.
+
+   [^4a]: **SPLIT-32** (Should): `Target: Varying Delay` is a target after a delay that differs between samples;
+     `Target: Later` one at a shared date or after a fixed window; no target tag when the target exists with the
+     features.
+
+   **Resolved (2026-11-10, Andrej):** B: `Target: Varying Delay` added to the record's `tags`
+   of the record.
+
+5. **Still a valid and meaningful task without the reviewer's text: keep it or retire it?**
+
+   * **Problem:**
+     - After the changes, the roaster's own information predicts the score: untuned LightGBM reaches skill 0.36 and beats both the mean and the roaster's past mean score in 13 of 13 windows.
+     - The signal is modest (RMSE 1.26 against the mean's 1.60, on scores of 82 to 98), and LightGBM and ridge are within 0.007 RMSE of each other (LightGBM is better in 7 of 13 windows).
+     - Keep it as a small roaster-side task, or retire it?
+   * **Background:** Andrej's verdict note (2026-11-10): "After applying the changes assess whether this is still a valid and meaningful prediction task and raise a new discussion item." Every feature now exists before the review, so the task fits the use case. A test window's roasters were seen in training for 77% of its coffees.
+   * **Experiments:** rows from the edited definition (2,369 rows, 9 features), the 13 two-month windows. Skill is 1 minus MSE over the mean's MSE, averaged over the windows.
+
+     | Model | RMSE | Skill | Windows better than the mean | Windows better than the roaster's mean |
+     |---|---|---|---|---|
+     | Training mean | 1.598 | 0 | | |
+     | Roaster's past mean score (shrunk to the mean) | 1.436 | 0.18 | 12 | |
+     | Ridge (one-hot, words of the name, numbers) | 1.266 | 0.35 | 11 | 11 |
+     | LightGBM, untuned | 1.259 | 0.36 | 13 | 13 |
+     | Ridge without roaster and location | 1.336 | 0.28 | 12 | 10 |
+     | LightGBM without roaster and location | 1.350 | 0.27 | 13 | 10 |
+
+   * **Effect on the task:** beyond the roaster's record, origin, roast, roast colour and price carry signal (skill 0.27 without the roaster). The two model families do not separate, so a spread among the benchmark methods is not yet shown. Before the change the spread came mostly from the text.
+   * **Unknown:** the spread of the benchmark methods (TabPFN, tuned trees) on the new columns; it shows only after a rebuild.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep (implemented) | ship the 9-feature task after a rebuild | a real roaster's question; every feature known before the review; beats the roaster's past mean in 13 of 13 windows | modest signal; two simple models tie |
+     | B | Retire | record `No (Retired)`, folder removed | no small, noisy task in the benchmark | loses a valid task with signal |
+
+   * **Recommendation:** A: the task is valid and has signal beyond the roaster's history. Check the spread after the rebuild, and retire it only if the benchmark methods tie there too. **Decision:** keep (A) or retire (B)?
+
+   **Notes for the AI:** on B, record `No (Retired)` with the reason as a marker and a CC line, `claims release`, remove the folder and clear `v2_path`. Script and per-window table: `task.py` and `windows.csv` of the marks run of 2026-11-10.
+
+   **Resolved (2026-11-11, Andrej):** A (`ok`): kept as the 9-feature roaster-side task, with a CC line in the record.
+   After the rebuild, check the spread of the benchmark methods; retire only if they tie there too.
+
+   **Resolved (2026-11-21, Andrej):** the check ran on the rebuilt definition: the families do not tie. Over the 12
+   windows, mean RMSE TabPFN 1.275, ridge 1.344, random forest 1.364, LightGBM 1.376, training mean 1.572; best minus
+   worst is 0.101 paired per window with SE 0.019, so TP-3 keeps the dataset. The three tuned families tie among
+   themselves (LightGBM minus ridge 0.032, SE 0.047) and the spread rests on TabPFN, untuned against the others'
+   small grids. On shuffled labels TabPFN reaches 1.574, the training mean's error, so the signal is real.
+
+   | Family | Mean RMSE | Paired against the best | Beats the training mean |
+   |---|---|---|---|
+   | TabPFN | 1.275 | - | 11 of 12 |
+   | ridge | 1.344 | +0.069 (SE 0.043) | 11 of 12 |
+   | random forest | 1.364 | +0.089 (SE 0.023) | 12 of 12 |
+   | LightGBM | 1.376 | +0.101 (SE 0.019) | 11 of 12 |
+   | training mean | 1.572 | +0.297 | - |
+
+6. **Should the time column be a model input?**
+
+   * **Problem:**
+     - `review_date` is the month Coffee Review published the score, which arrives with the target: the roaster decides which coffees to submit, before any review[^6a].
+     - A declared time column is a model input unless the definition says otherwise, so the task hands models a column the actor does not hold at the prediction point.
+     - Keep it an input, or keep it only to order and split the rows?
+   * **Background:**
+     - The month explains 8% of the score's variance (some months are themed tastings), as the splits comment says; a two-month test window holds months no training row has.
+     - The task summary lists the review month among what is known.
+     - Since 2026-11-12 `Temporal(..., feature=False)` keeps the time column in the frame for the split and the README's split table and leaves it out of `feature_columns`; sdss_17 (date of the spectrum) is the first user.
+   * **Effect on the task:** under B the windows and every split number stay; only the inputs lose the column. Inside a test window every value lies after every training row's, so a model gains from it mainly the order within the window; the size is not measured.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep it an input (implemented) | `review_date` orders the split and is a feature | nothing to change | a model reads a column the actor does not hold |
+     | B | Time column only | `Temporal(..., feature=False)`: same windows, `review_date` no model input | the model's inputs are the actor's; the split unchanged | one input fewer; a rebuild |
+
+   * **Recommendation:** B, since the actor does not hold `review_date` when predicting[^6b]. **Decision:** A or B?
+
+   **Notes for the AI:** on B, add `feature=False` to the `Temporal(...)` declaration in `dataset.py`; in `task_summary.known` replace "the price per gram in US dollars and the review month." with "the price per gram in US dollars; the review month orders the split but is no model input." (adjust the sentence around it); add a curation bullet: "`review_date` orders and splits the rows and is no model input (`Temporal(..., feature=False)`): it arrives with the target (2026-11-12, Andrej)."; remove any bullet that calls it a feature; re-run `dataset check` (expect one feature fewer and `time_is_feature: false` in the README). Update the record's `features` count if it names one.
+
+   [^6a]: **USE-3** (Must): name the prediction point, when the model is used and what is known then; a value that
+     did not exist at that point is a leak. **LEAK-10** (Must): a feature holds only what existed at the prediction
+     point.
+   [^6b]: **USE-6** (Must): anything known at the prediction point is a legitimate input, so the question is the
+     actor's knowledge, not the score. **SPLIT-7** (Must): a missing or hidden timestamp does not make a task IID, so
+     B keeps the split as it is.
+
+   **Andrej (2026-11-12, change):** Option B: Time column only.
+
+   **Resolved (2026-11-12, Andrej):** B: `feature=False` on the `Temporal(...)` declaration; `task_summary.known` ends
+   "the price per gram in US dollars; the review month orders the split but is no model input."; a curation bullet
+   gives the reason (it arrives with the target: the roaster decides before any review). No bullet called it a
+   feature. Record CC line. `dataset check`: 0 errors, 0 warnings, 0 info; README: 8 features (was 9),
+   `time_is_feature: false`, the 13 windows unchanged (train 1,211 to 2,315 rows, test 54 to 115). Not rebuilt. It
+   needs the `Temporal(..., feature=False)` framework change, uncommitted in the working copy.
+
+7. **Gap: train each two-month window only on reviews published at least one month before it, instead of no gap?**
+
+   * **Problem:**
+     - The roaster predicts when it submits a coffee, but `review_date` is the month Coffee Review published the score, weeks or months later by the dossier; the source states no delay.
+     - With no gap, a window's training side holds the reviews of the month just before it, many published after the window's coffees were submitted.
+     - The curator kept no gap on 2026-11-06 because every training score is published by the window's start; the gap answers the prediction point (submission), not the label's arrival.
+   * **Background:** A roaster predicts the score of coffees it will submit to the same service, and five years of monthly review dates give enough windows. The score is published weeks or months after submission, so a gap of about a month, flagged as undocumented. Confidence of the blind walk: medium.
+   * **Walk:** the questions as answered without the current split[^tree]:
+     - Used at a place or group the data does not hold? (use case): no. Evidence: A roaster or importer predicts Coffee Review's score; one service, roasters recur (493 roasters, 2,440 raw reviews).
+     - Fill in the covered period or predict forward? (use case): forward. Evidence: Coffees not yet submitted.
+     - Do the dates give the windows the rule[^split-14]/15 ask for? (data): yes. Evidence: review_date (month) Oct 2018 - Sep 2023 after dropping the partial Oct 2023; raw per year 89/328/457/583/580/403. Windows of a quarter hold ~100-170 reviews; three windows in 2022-2023 train on >=60%.
+     - What sets off a prediction? (use case): a case arrives. Evidence: A coffee the roaster considers submitting.
+     - Target known only after a delay longer than the time step? (data): yes, late labels (delay size undocumented). Evidence: review_date is the month Coffee Review published the score; the roaster decides at submission, weeks or months earlier (dossier). Step used: one month. The delay is not documented; if it is under a month, the leaf becomes 'Temporal · arrival date' (no gap).
+   * **The delay the walk measured:** step used: one month (review_date). Delay: submission to publication, 'weeks or months' per the dossier, undocumented by the source; gap of one month proposed.
+   * **What the blind dossier lacked, and what it changes:** Possibly the gap. The definition ships 2-month windows (12, Aug-Sep 2023 back to Oct-Nov 2021) with no gap, arguing the review month is when the label arrives (time_of=label), so every training label is known at a window start; the submission-to-review delay is unstated and was not measured. That covers the rule[^split-10]'s 'train on rows whose outcome is known' but not the prediction point at submission; unlike california there is no measurement of the gap's effect, so I keep my leaf and flag the departure.
+   * **What changes:** `TemporalSplits(window=2, unit="months", min_train_fraction=0.5)` gains `gap=1, gap_unit="months"`; the `splits_comment` sentence 'no gap is needed' is replaced by the submission delay and the gap; the container is rebuilt and each window's train share re-checked against the 50% floor.
+   * **Blindness:** what the walker saw of the shipped split before deciding: saw: splits.md the rule[^split-17] (widen small windows) ends with 'Cases: coffee_rating_prediction', which hints at a temporal split with widened windows; ignored as evidence.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Twelve two-month windows on `review_date` (test Aug-Sep 2023 back to Oct-Nov 2021, 62-137 reviews each), train every earlier review (1,256-2,263 rows, 53-96%), no gap, `review_date` no input (implemented) | No change. | Every training score is published by the window's start, so the rule[^split-10]'s label condition holds; a refit uses the newest month too. | A coffee submitted before its window is scored by a model that saw reviews published after the submission. |
+     | B | The same twelve windows with a one-month gap: train only on reviews published at least one month before the window | `gap=1, gap_unit="months"` in `TemporalSplits`; each training side loses the month before its window (29-72 reviews on the raw counts); windows and test rows stay. | Training holds only scores a roaster could have had at submission, if the delay is about a month. | The delay is undocumented, so one month is a guess; on the raw counts (2,438 reviews before cleaning drops) the oldest window's training share falls from 53.4% to 51.5%, near the 50% floor (built count not counted). |
+
+   * **Recommendation:** B, because the use case predicts at submission, before the review month, and a month is the smallest gap the monthly dates allow.. **Decision:** A or B?
+
+   **Notes for the AI:** blind walk of 2026-11-17 (split tree at cd3877cb). On B: change `gap=` in `TemporalSplits` and re-check each window's train share against the floors; nothing else in the definition changes.
+
+   [^split-14]: **SPLIT-14** (Must): A temporal task has at least 3 windows.
+
+   [^split-10]: **SPLIT-10** (Should): When a label is known only some time after its row (a delivery time, a permit's processing time, an outcome after a follow-up), a model refit at a window's start knows only the rows whose label had arrived.
+
+   [^split-17]: **SPLIT-17** (Should): Widen windows that get too small: below about 50 test rows per window, use wider windows and fewer splits.
+
+   [^tree]: **SPLIT-36** (Should): walk the decision tree from the record's collection type, answering each question as if no split had been decided; a split the source prescribes is evidence, not an answer.
+
+   **Andrej (2026-11-18, change):** Option B: The same twelve windows with a one-month gap: train only on reviews published at least one month before the window.
+
+   **Resolved (2026-11-18, Andrej):** B. `TemporalSplits(window=2, unit="months", gap=1, min_train_fraction=0.5)`: each two-month window trains only on reviews published at least one month before it; the `splits_comment` names the submission delay and the gap. Windows and test rows stay; each training side loses the month before its window. Not rebuilt: the window count and train shares are re-checked by `dataset check`.
 
 ## Reference
 

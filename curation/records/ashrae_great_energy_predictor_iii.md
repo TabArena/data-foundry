@@ -3,6 +3,7 @@ unique_name: ashrae_great_energy_predictor_iii
 name: ASHRAE - Great Energy Predictor III
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
@@ -11,10 +12,15 @@ decision_markers:
 - Needs extensive data wrangling
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Entities: Recur'
+- Panel Data
 collections:
 - New (BeyondArena)
 original_source: Kaggle
 year: '2019'
+collection_period: 2016-2017
 domain: environmental science & climate
 required_split:
 - Temporal (NON-IID)
@@ -39,9 +45,9 @@ A lot of notes on this data....see data foundry. Split must be temporal/grouped.
 
 **Assessment (AI, 2026-10-07):** Valid; added as `ashrae_great_energy_predictor_iii_1m` (temporal, log1p reading, RMSE = the competition's RMSLE). The "only 1 year" gap closes with the competition team's own 2017 release: BDG2's `data/meters/kaggle/kaggle.csv`, "the data for the validation data set (2017) that matches seamlessly with the training data" (Miller et al. 2020, Sci Data, p. 8). We train on 2016 and test three 4-month windows of 2017. Scope: "regression-based machine learning to predict the energy savings of a retrofit" (GEPIII overview, Sec. 2.2); no lagged readings. Licence note: Kaggle rule 7B bars redistribution to non-participants; BDG2 is MIT at the pinned commit, CC BY 4.0 on Zenodo, CC BY-SA in its LICENSE since 2023.
 
-CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run): in scope as one regression task over all meter types and sites; a model beats the naive forecasts (issue 2).
+CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run): in scope as one regression task over all meter types and sites; a model beats the naive forecasts.
 
-CC (2026-10-15, Lennart): Temporal, not grouped: retrofit savings are measured on the same buildings after the cutoff (review page, issue 3). Clean the readings to the state an expert would ship, following the competition's top teams and the data owners (issue 4).
+CC (2026-10-15, Lennart): Temporal, not grouped: retrofit savings are measured on the same buildings after the cutoff. Clean the readings to the state an expert would ship, following the competition's top teams and the data owners.
 
 **Assessment (AI, 2026-10-15):** Cleaning: the readings come in kWh from BDG2's raw files (the competition kept each site's own unit: ton-hours, pounds of steam, mmBTU, kBTU; BDG2 paper, Table 4), and 1.70M hours (4.2%) are dropped as not recorded: electricity at 0, site 0's 2016 gap, a cooling or heating plant at 0 for 48 hours or more in its season, readings stuck for a week or more, building 1099's steam unit error. 94.5% of the 2016 hours dropped are on the 1st place team's hand-made list of bad readings (solution repository, `rank-1/input/bad_meter_readings.zip`). Task: the top five teams used no lagged readings (GEPIII overview, Table 2). The best naive forecast, each meter's hour-of-week profile from the same month a year earlier, scores RMSE 1.39 / 1.27 / 1.37 on the three windows; LightGBM with 1,000 trees on 1M training rows 1.26 / 1.18 / 1.22. One LightGBM per site scores about the same (1.24 / 1.18 / 1.22), one per building and meter worse (1.37 / 1.27 / 1.34). For unseen buildings (every fifth held out, January-April 2017) LightGBM without building_id scores 1.71, a site x use x meter profile 2.01, LightGBM with the buildings' 2016 history 1.43.
 
@@ -63,6 +69,10 @@ CC (2026-11-10, Lennart): the declared horizon (4 months, no gap, windows starti
 
 **Assessment (AI, 2026-11-10):** applied: `temporal` unchanged; `splits_comment` and `task_summary.split` now give the use case as the reason for the length and SPLIT-14's amendment of 2026-11-08 as the reason for the oldest window (two windows above the floor, every test meter's building in training, folds by entity would test unseen buildings) in place of "the competition's setting", and 49.47% (19,325,311 of 39,062,170 rows) in place of 49.12%. Horizon audit (model-free): the competition trained on 2016 "to predict the second and third years" and ranked on 2018 (Miller et al. 2020, arXiv 2007.06933, Sec. 2.2); CalTRACK fits the baseline "to baseline data in the 365 days immediately prior" and computes savings with "the coefficients ... from the final model" (Sec. 3.1.3, 3.6.1.1); LBNL's NMEC guidance v2.0 (p. 10) uses one year of baseline and performance periods; 3-month windows give 9 candidates above the floor, 2-month 10, 12-month one. The amendment's score: LightGBM (one seed, default parameters, 1,000 trees, early stopping on the last 10% in time order of the default 1M sample of the newest year, the date in skrub's recommended encoding) scores RMSLE 1.212, 1.342 and 1.213, newest first: 1.277 on the two valid windows, 1.256 on all three; without the absolute date features (year, total seconds) 1.240, 1.176 and 1.247 (1.208 and 1.221). Either way the oldest window scores like the newest and moves the mean by about 0.02; May-August decides the direction.
 
+CC (2026-11-17, Andrej): the declared split (temporal on `timestamp`, windows of 4 months, 3 windows at fixed cutoffs, no gap) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
+
+CC (2026-11-19, Andrej): train floor (Review issue 2, A as implemented): January-April 2017 (49.47% of the readings) stays as the curator's exception to the half-data floor (SPLIT-14 as amended 2026-11-19); no window is under 30%.
+
 ## Review
 
 **Outcome:** added as `ashrae_great_energy_predictor_iii_1m`. Resolved on 2026-11-10: the three four-month windows
@@ -71,7 +81,8 @@ without a refit), and the oldest window, on 49.5% of the rows, on the floor's am
 the score on the two valid windows next to all three.
 
 **Main points:** Open: none. Resolved on 2026-11-10: January-April, May-August and September-December 2017 stay the
-test windows at four months (issue 1).
+test windows at four months (issue 1). Resolved on 2026-11-19: January-April 2017 (49.47% of the readings) stays as
+the curator's exception to the half-data floor (issue 2).
 
 **Horizon:**
 
@@ -222,6 +233,31 @@ reason for the length.
    1.221): the oldest window scores like the newest and moves the mean by about 0.02. The record has the decision and
    the horizon sign-off as CC lines; an ashrae row is under SPLIT-14 in the Cases table of `splits.md`. `dataset
    check`: 0 errors, 0 warnings.
+
+2. **Train floor: keep the window under half the data as the curator's exception, or drop it?**
+
+   * **Problem:**
+     - January-April 2017 trains on 49.47% of the readings, beside 66.0% and 83.0%.
+     - Since 2026-11-19, every window trains on at least half the data, and a window under half is the curator's exception for the dataset, down to 30%[^split14]; the sign-off (Lennart, 2026-11-10, review issue 1, A) was given under the earlier rule, which admitted such windows beside two at half or more.
+     - The definition has 3 windows; the target an IID split would get[^split33] for 2,500,000 rows is 3; without the window under half it keeps 2.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the window as the curator's exception (implemented) | The accepted warning is reworded to the new rule; split unchanged | Keeps the periods it tests, as signed off; more windows toward the target | It trains on less than half the data |
+     | B | Drop the window under half | The windows under half leave the declaration; a rebuild | Every window trains on half the data or more | 1 fewer window and the period it tests |
+
+   * **Recommendation:** A, the sign-off's reason (periods or test rows the newest windows lack) still holds, and no window is under 30%. **Decision:** A or B?
+
+   **Notes for the AI:** on A, reword the `splits_train_under_half` acceptance (drop "SPLIT-14's two tiers admit it", name the curator's exception and this decision) and add a CC line; on B, remove the windows from the declaration, rebuild, and update the splits comment.
+
+   **Andrej (2026-11-19, ok):** As implemented (A).
+
+   **Resolved (2026-11-19, Andrej):** A, as implemented: January-April 2017 (49.47% of the readings) stays as the curator's exception to the half-data floor; the accepted `splits_train_under_half` warning now names this decision. The split is unchanged.
+
+   [^split14]: **SPLIT-14** (Must): every window trains on at least half the data, lower only as the curator's exception down to 30%; every test window holds at least 33 scored units.
+
+   [^split33]: **SPLIT-33** (Should): an IID or grouped split gets 3-fold cross-validation with 20, 10, 3 or 1 repeats by the units on its train side; SPLIT-15 aims a temporal split at the same count.
 
 ## Reference
 

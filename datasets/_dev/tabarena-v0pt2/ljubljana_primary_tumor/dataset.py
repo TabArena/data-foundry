@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis
+
+from data_foundry.definition import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -88,6 +89,7 @@ class LjubljanaPrimaryTumor(AbstractCuratedDataset):
         - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are
           ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`).
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

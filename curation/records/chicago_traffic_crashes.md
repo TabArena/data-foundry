@@ -4,19 +4,22 @@ name: Chicago Traffic Crashes - Crashes (CPD E-Crash)
 checked_by:
 - Myunghwan
 - Lennart
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 3
 decision_markers:
 - Class-dependent Recording
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Revised Later'
+- 'Features: Revised Later'
+- Dated Event Log
 collections:
 - New (BeyondArena)
 original_source: GOV Website
 year: '2026'
+collection_period: 2013-2026
 domain: social science
 required_split:
 - Temporal (NON-IID)
@@ -84,7 +87,7 @@ CC (2026-11-04, Lennart): a one-month gap between train and test for labels amen
 
 CC (2026-11-04, Lennart): the five condition fields (weather, lighting, road surface, traffic control device and device condition) are dropped (LEAK-10), and training starts on 2017-09-01, when citywide coverage starts (SPLIT-20). No training side then exceeds one million rows, so the dataset ships unsampled as `chicago_traffic_crashes` (the folder is renamed from `chicago_traffic_crashes_1m`; 998,117 crashes). The note on `lighting_condition`'s partial order (issue 6) falls away with the field.
 
-**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the measurements behind each mark (log loss on the three newest windows: 0.4960 without the five fields, 0.4921 with them; 0.49201 from 2017-09 against 0.49214 from 2013), and all are settled.
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static PR #33 review and the measurements behind each mark (log loss on the three newest windows: 0.4960 without the five fields, 0.4921 with them; 0.49201 from 2017-09 against 0.49214 from 2013), and all are settled.
 
 **Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes (applied as wording: year 2026 under PROV-9, the 2026-11-04 snapshot and its hash, the measured update delay; the C-class step is in 2023Q4, not 2026Q2-Q3 as the assessment above says); disputed: USE-1, USE-5, LEAK-10/LEAK-38 (`dooring_i`); for the curator: issues 7-11. Priority 3: gap +, use case 0, source +, shape +, risk - (gap: social science and multiclass are thin among the accepted definitions; use case: the source names no actor and the curation's actor fits approximately; source: the City documents the table and the SR1050 form; shape: 998,117 mixed-type temporal rows; risk: the row-order leak of issue 9 and the open framing of issue 7).
 
@@ -100,13 +103,15 @@ CC (2026-11-05, Lennart): the one-month gap stays (issue 11, as implemented; SPL
 
 CC (2026-11-05, Lennart): the declared metric (the fallback multiclass log loss over the five police injury classes) is checked and stays as declared.
 
-CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask (the export URL stops working on 2026-12-22). The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask (the export URL stops working on 2026-12-22). The claim stays until the PR that takes it to `main` sets `DF: Yes`.
 
 CC (2026-11-11, Lennart): Review issue 12, B ("Option B: Nine spread over four years."), at the one-month length of the horizon sign-off: nine one-month test windows, September 2026, April 2026, October 2025, May 2025, November 2024, June 2024, December 2023, July 2023 and January 2023, five and six months apart in turn, so each falls in another calendar month, every season appears at least twice and the windows lie on both sides of the 2023Q4 step in "reported, not evident"; they replace the nine newest quarters. The custom split keeps the notification filter, now at each month start.
 
 CC (2026-11-11, Lennart): the declared horizon (1 month, a one-month gap, windows starting 2026-09-01, 2026-04-01, 2025-10-01, 2025-05-01, 2024-11-01, 2024-06-01, 2023-12-01, 2023-07-01 and 2023-01-01) is checked, as the one documented cycle of the road-safety analyst's work is the city's monthly review of fatal crashes, while the quarter was a convention of the build that no source names (Review horizon, b: "Reply (b): One month").
 
 **Assessment (AI, 2026-11-11):** applied the horizon (b) and issue 12 (B) at one month: `_make_splits` builds `TemporalSplits(window=1, unit="months", gap=1, cutoffs=TEST_MONTHS)` and filters each training side by notification before the window's month start; `temporal` declares a one-month horizon with the one-month gap. Test crashes 9,641, 8,961, 9,031, 10,079, 8,924, 10,120, 9,095, 9,499 and 8,091 (83,441), fatal 6, 10, 7, 6, 9, 10, 12, 8 and 15 (83); train after the notification filter 978,937, 931,711, 879,272, 830,229, 777,987, 727,880, 675,888, 627,408 and 574,344 (98.1%, 93.3%, 88.1%, 83.2%, 77.9%, 72.9%, 67.7%, 62.9% and 57.5% of 998,117), so no window trains on less than half; 53 monthly windows keep half (May 2022 to September 2026). "Reported, not evident" is 4.0% and 4.8% of January and July 2023, 5.2% of December 2023 and 6.0-6.8% of the six newer windows. The gap month is 0.9-1.6% of a training side. 9,539 crashes are in no split (the 9,529 of August 2026, the newest window's gap month; 9 notified after 1 September 2026; 1 notified before its event), the accepted `splits_rows_unused` now says so. `dataset check`: 0 errors, 0 warnings.
+
+CC (2026-11-17, Andrej): the declared split (temporal on `crash_date`, horizon 1 month, gap 1 month) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
 
 ## Review
 

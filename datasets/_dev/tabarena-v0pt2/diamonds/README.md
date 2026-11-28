@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: diamonds
 container_format: 2
-checksum: v2:2c7f18768b1ac4d18aeec3538c39300a3b27a9967d94d15b45144c81d0bc39a0
+checksum: v2:f225e91f54b679f813445658c67218595900118658e58dbb4de96c4034d77e20
 build:
-  uuid: 01a111fc-d45e-7211-98d8-ee98e5da227f
-  checksum: v2:c5776dcaa602180a8810b316b7bf78514aa234837b87df7f6438d0bc4de4231f
-  built_at: '2026-10-06T16:12:24+00:00'
-  path: diamonds/01a111fc-d45e-7211-98d8-ee98e5da227f
+  uuid: 01a217fd-5f55-7da8-9d29-66a08df3f299
+  checksum: v2:f225e91f54b679f813445658c67218595900118658e58dbb4de96c4034d77e20
+  built_at: '2026-11-26T13:13:31+00:00'
+  path: diamonds/01a217fd-5f55-7da8-9d29-66a08df3f299
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 53940
   n_features: 9
@@ -53,6 +53,10 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Grouped splits on the stone: every listing of a stone stays on one side,
+    so a model prices stones it has not seen and cannot read a price off the stone''s
+    other listing. Stones of the same carat, colour and clarity that differ in depth,
+    table or height are different stones and can be on both sides.'
   n_train:
     min: 35911
     max: 35986
@@ -76,7 +80,7 @@ decisions: []
 
 Regression of `price`, scored with `rmsle` on grouped splits by `stone_id`. 53,940 rows and 9 features. Source: Other (2007).
 
-Built as `01a111fc-d45e-7211-98d8-ee98e5da227f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2c7f18768b1ac4d18aeec3538c39300a3b27a9967d94d15b45144c81d0bc39a0`, so the build is stale. See [Build](#build).
+Built as `01a217fd-5f55-7da8-9d29-66a08df3f299` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -134,7 +138,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2007 |
 | domain | business & marketing |
 | license | MIT License |
-| data_tags | Non-IID, Grouped, Retrospective |
+| data_tags | Non-IID, Grouped, RetrospectiveFillIn |
 | reference | wickham2016data |
 | rows x columns | 53,940 x 11 |
 | task.target | price |
@@ -199,9 +203,6 @@ The first 5 of 53,940 rows of the final frame (random rows: the frame is shuffle
   error matters relative to the price.
 - Ordinal scales (2026-10-30, the curator's decisions of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are
   ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`).
-- Time basis: Retrospective: one scrape of the search site diamondse.info in February 2007 (Wickham, R-help,
-  April 2023); each row a listing's grading and its asking price at that moment; the use case prices a stone
-  against the same day's price list. Not tested: prices after 2007.
 - Split by stone (2026-11-12, Andrej): 21,493 rows (40%) share carat, colour, clarity,
   depth, table and z (height) with another row, mostly in pairs whose length and width are swapped: one stone
   in two price lists of the scrape. In 98% of the 9,747 swapped pairs the dearer price is the cheaper one
@@ -211,8 +212,11 @@ The first 5 of 53,940 rows of the final frame (random rows: the frame is shuffle
   since they carry two prices of two lists (fiat_500 keeps one row per car, whose copies share a price). The
   146 exact copies (features and price) fall into one stone each. Untuned LightGBM, 3 x 3 folds, RMSLE:
   random 0.0853, by stone 0.0860.
+- Time basis: RetrospectiveFillIn: one scrape of the search site diamondse.info in February 2007 (Wickham, R-help, April 2023); each row a listing's grading and its asking price at that moment; the use case prices a stone against the same day's price list. Not tested: prices after 2007.
 
 ## Splits
+
+Repeated 3-fold cross-validation keeping each group of `stone_id` whole (shuffled group k-fold, a new draw per repeat): 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 53,940 rows (SPLIT-33).
 
 Grouped splits on the stone: every listing of a stone stays on one side, so a model prices stones it has not seen and cannot read a price off the stone's other listing. Stones of the same carat, colour and clarity that differ in depth, table or height are different stones and can be on both sides.
 
@@ -252,7 +256,7 @@ One group is a stone: the rows that agree in carat, colour, clarity, depth, tabl
 | nearest neighbour in the same group | 7.7% of the rows (chance: 0.0%) |
 | label variance explained by the group | 1.00 (shuffled groups: 0.80) |
 
-The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
@@ -336,11 +340,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-d45e-7211-98d8-ee98e5da227f |
-| checksum | v2:c5776dcaa602180a8810b316b7bf78514aa234837b87df7f6438d0bc4de4231f |
-| built_at | 2026-10-06T16:12:24+00:00 |
-| path | diamonds/01a111fc-d45e-7211-98d8-ee98e5da227f |
+| uuid | 01a217fd-5f55-7da8-9d29-66a08df3f299 |
+| checksum | v2:f225e91f54b679f813445658c67218595900118658e58dbb4de96c4034d77e20 |
+| built_at | 2026-11-26T13:13:31+00:00 |
+| path | diamonds/01a217fd-5f55-7da8-9d29-66a08df3f299 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:2c7f18768b1ac4d18aeec3538c39300a3b27a9967d94d15b45144c81d0bc39a0` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

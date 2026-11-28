@@ -3,15 +3,16 @@ unique_name: pricing_game_2017_french_mtpl
 name: pg17trainpol / pg17trainclaim (CASdatasets, 2017 French pricing game)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:
 - Two-Regime Zeros
 - Non-IID (Grouped)
+- 'Samples: One Moment'
+- 'Target: Fixed Delay'
+- Database Snapshot
 year: '2017'
+collection_period: Unknown
 domain: insurance
 required_split:
 - Grouped (NON-IID)
@@ -81,8 +82,7 @@ has the call.
   its leaderboard `rmse` (MET-4).
 - `pol_department` (the commune's department, 96 values) as the category; `pol_insee_code` (17,794 communes) as text.
 
-CC (2026-10-30, Andrej): `Yes`, priority 3 (the AI screening had `TBD -> Yes`, priority 3; zero-inflated screening
-review page).
+CC (2026-10-30, Andrej): `Yes`, priority 3 (the AI screening had `TBD -> Yes`, priority 3; zero-inflated screening).
 
 Motor policies of an unnamed French insurer ("Datasets from unknown private insurers", CASdatasets
 `pricingame.Rd`) from the French Institute of Actuaries' pricing game of 16 November 2017: 100,000 policies of 91,488
@@ -145,7 +145,17 @@ CC (2026-11-10, Andrej): the metric floor stays at 0.1 EUR (Review issue 7 (b), 
 
 **Assessment (AI, 2026-11-10):** on the AIcrowd copy the mean cost per policy is 119.3, 119.0, 112.3 and 106.2 EUR in years 1 to 4 (0% to 6% a year). No fact favours a floor above 0.1 EUR: no minimum premium is published and the source records claim amounts down to 0.02 EUR (8 of 12,391 positive claims below 1 EUR); between 0.1 and 1 EUR only squared-error fits move (ridge 66.33 against 61.61, squared-error LightGBM 102.83 against 74.94; repeat 0, folds 0 to 2).
 
-CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
+CC (2026-11-10, Andrej): ship.
+
+CC (2026-11-13, Andrej): time basis `DelayedTarget` instead of `ForcedGroupedFromTemporal` (Review issue 8, B):
+- Every Year-0 premium is set at the start of the policy year and the year's claims follow: one shared moment and a closed window, which the sharpened one-moment rule names a `DelayedTarget`.
+- The split by client stays.
+
+CC (2026-11-16, Andrej): time basis `ForcedGroupedFromTemporal` instead of `DelayedTarget`, which was dropped before it shipped:
+- A shared scoring date with a target window closed for every row makes the random split valid within that date only; one date is one period, too few for three windows, so the split is forced (SPLIT-8).
+- The grouped split stays.
+
+CC (2026-11-18, Andrej): Review issue 10, A, as implemented: `ForcedGroupedFromTemporal` stays (folds by client on Year 0); not taken as stationary, and not measured, since the multi-year AIcrowd copy needs an account.
 
 ## Review
 
@@ -192,17 +202,18 @@ metric unchanged): `drv_sex1` and `drv_sex2` are dropped, since sex is no rating
 of this collection; the task probe was re-run without them (random forest 62.30 against the constant's 63.10, 62.22
 with them). The notes' other model scores were measured with the two columns in and say so.
 
-**Main points:** No issue open. Resolved on 2026-11-10 (Andrej): issue 6, the task stays on Year 0 split by client,
-with a sentence on the yearly drift of the claim level (0% to 6% a year on the AIcrowd copy); issue 7, the floor stays
-at 0.1 EUR, its reason restated under MET-13 as amended on 2026-11-09 (no fact favours a higher value; the floor ranks
-only squared-error fits). Resolved on 2026-11-03: the
-deviance is in (2), euros stay (3) and the name stays (4); verdict ship (Andrej). On 2026-11-08 the floor was lowered
-from Andrej's 1 EUR to 0.1 EUR, following the collection's rule for a deviance floor, a convention that can change later
-(5, Lennart); `pol_pay_freq` is ordered by payments a year (from issue 8 of
-spanish_motor_insurance_coverage_level_2022_2024). The drivers' sex left the features on 2026-11-08, on Lennart's stance
-that sex is no rating factor of any insurance pricing task (australian_vehicle_insurance_2004_2005's issue 7).
+**Main points:** No issue open. The time basis is `ForcedGroupedFromTemporal` (Andrej, 2026-11-16); issue 8 was resolved
+on 2026-11-13 as `DelayedTarget`. Before that, on 2026-11-10 (Andrej): issue 6, the task stays on Year 0 split by
+client, with a sentence on the yearly drift of the claim level (0% to 6% a year on the AIcrowd copy); issue 7, the floor
+stays at 0.1 EUR, its reason restated under MET-13 as amended on 2026-11-09 (no fact favours a higher value; the floor
+ranks only squared-error fits). Resolved on 2026-11-03: the deviance is in (2), euros stay (3) and the name stays (4);
+verdict ship (Andrej). On 2026-11-08 the floor was lowered from Andrej's 1 EUR to 0.1 EUR, following the collection's
+rule for a deviance floor, a convention that can change later (5, Lennart); `pol_pay_freq` is ordered by payments a year
+(from issue 8 of spanish_motor_insurance_coverage_level_2022_2024). The drivers' sex left the features on 2026-11-08, on
+Lennart's stance that sex is no rating factor of any insurance pricing task (australian_vehicle_insurance_2004_2005's
+issue 7).
 
-**Verdict (2026-11-10, Andrej):** ship (review page of 2026-11-10).
+**Verdict (2026-11-10, Andrej):** ship.
 
 **Issues for Andrej and Lennart:**
 
@@ -688,6 +699,88 @@ that sex is no rating factor of any insurance pricing task (australian_vehicle_i
      case's actor acts on (a minimum premium, the smallest amount the source records), stated with its fact, and never
      above the smallest plausible mean on the scale the metric scores". 0.1 EUR lies below the cheapest cell's mean
      (16.8 EUR).
+
+8. **Retag `DelayedTarget` instead of `ForcedGroupedFromTemporal`, now that a one-moment release is forced only when its target is of that moment?**
+
+   * **Problem:**
+     - The definition is tagged `ForcedGroupedFromTemporal` (Andrej, 2026-11-02), from when every release with too few periods was forced[^8a-pg].
+     - Every row is predicted at one shared moment, the start of the policy year, when each premium is set, and the target arrives after it, with the year's claims, a window that has closed for every policy, which is a `DelayedTarget`[^32a-pg].
+     - The tag alone changes: the split stays grouped by client.
+   * **Background:** the policies are Year 0 of the pricing game, and every age and duration is counted from the beginning of that year; Years 1 to 4 of the panel carry no claims.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedGroupedFromTemporal` (implemented) | the tag and its line stay | the decision of 2026-11-02 stands | the tag says time was lost, which the one shared moment contradicts |
+     | B | `DelayedTarget` | the tag and its `Time basis:` line name the shared moment and the target's window | follows the record's facts and the sharpened rule; no cost: the shared moment leaves nothing for a later window to test | changes a decided tag |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   **Notes for the AI:** on B, swap the tag in `data_tags` and write the `Time basis:` line as SPLIT-32 asks for a `DelayedTarget` (the moment, the window, closed for every row, what the split cannot test: the next moment); add a CC line; the split code does not change.
+
+   [^8a-pg]: **SPLIT-8** (Must, sharpened 2026-11-13): a release that is one moment, every row predicted at the same point, is forced only when its use case looks forward from a target of that moment or of unknown timing; otherwise SPLIT-32 gives it `Retrospective` or `DelayedTarget`.
+   [^32a-pg]: **SPLIT-32** (Should): `DelayedTarget` is one shared prediction moment with the target arriving after it, in a window closed for every row; a random or grouped split then draws train and test from that one moment and window.
+
+   **Andrej (2026-11-13, change):** Option B: DelayedTarget.
+
+   **Resolved (2026-11-13, Andrej):** B. The tag is `DelayedTarget`, with its `Time basis:` line in the definition; the split does not change.
+
+10. **Measure the relation on the dated periods a parent source holds, before deciding the tag?**
+
+   * **Problem:**
+     - Time: Time exists in a parent source: the AIcrowd release of the same portfolio holds claim years 1-4 (AIcrowd year k = pg17 Year k-1, linked via 6,280 equal amounts), on noised features; CASdatasets holds Year 0 only; that multi-year copy (AIcrowd, claim years 1-4, noised features) is not in the warehouse, so measuring needs a download first.
+     - Use: A motor insurer fits its tariff on Year 0 and prices Year 1, the year right after the collected one.
+     - Mechanism: Rating factors (driver, vehicle, policy) to a year's claim cost; the ranking is fairly stable in motor, but the claim level drifts by year (AIcrowd 119.3 to 106.2 EUR over years 1-4).
+   * **Background:** similar datasets[^asr].
+
+     | Similar dataset or source | What was measured | Verdict | Why similar |
+     |---|---|---|---|
+     | pricing_game_2017_french_mtpl (AIcrowd copy, splits_comment) | Gini of Tweedie LightGBM: same-year held-out clients against next year's policies | forward not worse (0.268 same-year design, 0.277 next year); claim level drifts 0-6% a year (119.3, 119.0, 112.3, 106.2 EUR, possibly organiser-built) | French MTPL pricing, next-year use |
+     | pricing_game_2016_french_fleet | stationary-relation test v3, policy years 2011-2013, rescaled Tweedie deviance | inconclusive (gaps within noise; mean cost per row 171.6, 199.6, 201.8, +16% then +1%) | French motor pricing game, tariff fit on closed years and applied to the next |
+     | frempl_french_motor_personal_line | stationary-relation test v3 over start quarters Q1-Q4 2004, Tweedie LightGBM + Kumo, weighted Gini | inconclusive (forward not worse, e.g. Q4 gap -0.012 +- 0.019, but SD above ten floors; mean cost per quarter 578 to 1,164) | French motor portfolio, one-year claim cost priced from rating factors |
+     | spanish_motor_insurance_coverage_level_2022_2024 | earlier matched protocol (v2), calendar years 2022-2024, weighted Gini | flat by the rule, near the line in 2023 (2024 window gap 0.008 +- 0.016 LightGBM); mean cost 292.8, 285.1, 302.4 | motor pricing of next year's book from rating factors |
+
+   * **For a stationary use case:**
+     - Use right after the collected year (Year 0 -> Year 1).
+     - The one partial measurement on the AIcrowd copy shows next year not harder than the forced design (Gini 0.277 vs 0.268).
+   * **Against:**
+     - Claim level drifts 0-6% a year on the AIcrowd copy, which a random split hands to every model.
+     - The AIcrowd later years may be organiser-built (splits_comment), so the measurement needs care.
+   * **Earlier views:**
+     - CC (2026-11-02, Andrej): 'Forced group splits should be fine.'.
+     - CC (2026-11-10, Andrej): stays on Year 0 split by client, drift sentence in splits_comment, no rebuild on the AIcrowd years (issue 6 (a)).
+     - Time basis: ForcedGroupedFromTemporal (Andrej, 2026-11-16; DelayedTarget from 2026-11-13).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `ForcedGroupedFromTemporal` (implemented) | The folds stay; the Time basis line names the reasoning below | Claims only what is known | The split stands for later samples only as far as the use case is stationary |
+     | B | `AssumedStationaryRelation` | The folds stay; you give the reason (eight words or more) | Documents why random folds stand for later samples | Claim level drifts 0-6% a year on the AIcrowd copy, which a random split hands to every model.; The AIcrowd later years may be organiser-built (splits_comment), so the measurement needs care. |
+     | C | Measure first | Time exists in a parent source: the AIcrowd release of the same portfolio holds claim years 1-4 (AIcrowd year k = pg17 Year k-1, linked via 6,280 equal amounts), on noised features; CASdatasets holds Year 0 only; that multi-year copy (AIcrowd, claim years 1-4, noised features) is not in the warehouse, so measuring needs a download first. | The rule asks for a measurement where time exists | Takes a cluster run |
+
+   * **Recommendation:** C, the rule asks for the stationary-relation test where a parent source holds periods: run v3 on the AIcrowd years 1-4 (periods = claim years, units = policies, Tweedie deviance and Gini), and put its verdict in the Time basis line instead of assuming. Confidence: high. **Decision:** A, B or C?
+
+   [^asr]: **SPLIT-32** (Should; amended 2026-11-18, Andrej): "where it holds none, the review reasons whether the use case can be taken as stationary, from the domain's mechanism and from similar datasets ..., where the AI offers `AssumedStationaryRelation` with a recommendation for a person to decide." `AssumedStationaryRelation` keeps the forced split's folds and replaces only the tag; its line opens `AssumedStationaryRelation (<person>, <date>): <reason>`.
+
+   **Andrej (2026-11-18, change):** Option C: Measure first.
+
+   **Answer (AI, 2026-11-18):** measurement requested; the tag stays until its verdict. The multi-year AIcrowd copy (claim years 1-4) is not in the warehouse: it needs a download first.
+
+   **Andrej (2026-11-18, change):** Option C: Measure first.
+
+   **Answer (AI, 2026-11-18):** cannot be measured from here yet; the tag stays until the data is in.
+
+   - The multi-year copy (AIcrowd's insurance pricing game, `training.csv`, claim years 1-4) is downloaded only through
+     an AIcrowd account after accepting the challenge rules; it is in no local warehouse or job folder.
+   - The public mirror of a French pricing game on freakonometrics (100,021 policies, calendar years 2009 and 2010) is
+     a different portfolio, with other columns (`PolNum`, `CalYear`, `Numtppd`), so it cannot stand in.
+   - Once `training.csv` is in the warehouse, the run is ready: periods = claim years 1-4, units = policies, the
+     definition's Tweedie deviance, the same probe as the other 16 datasets.
+
+   **Andrej (2026-11-18, ok):** as implemented.
+
+   **Resolved (2026-11-18, Andrej):** A, as implemented: `ForcedGroupedFromTemporal` stays, the folds by client on
+   Year 0 unchanged; the multi-year AIcrowd copy is not downloaded, so no measurement.
 
 **Review panel:** ship after changes (mediator). A focused re-review of 2026-11-06 under LEAK-41 and MET-14 to MET-16,
 by a claim auditor and a mediator. Claims: 13; 9 hold (one with an off citation, now fixed), 1 holds only as a

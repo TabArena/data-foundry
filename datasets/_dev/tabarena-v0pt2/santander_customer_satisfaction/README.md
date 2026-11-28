@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: santander_customer_satisfaction
 container_format: 2
-checksum: v2:11643d47d38649cef1633d41d75bd37e1ab999bbd018f38b0ea31aa88f414c1a
+checksum: v2:fa14d01afaac7fb58fabf2ae8da557a27cbe4a8791ee7269a2b710ce0d76ea3f
 build:
-  uuid: 01a111fc-12c0-72fc-95ab-3a7ad03daa2b
-  checksum: v2:d5f915868cfcb2e0753992af307356871db8faaaea391a911fb35064a7c1aa19
-  built_at: '2026-10-06T16:11:43+00:00'
-  path: santander_customer_satisfaction/01a111fc-12c0-72fc-95ab-3a7ad03daa2b
+  uuid: 01a217ff-c7e5-7859-ae5f-8c82dc50635b
+  checksum: v2:fa14d01afaac7fb58fabf2ae8da557a27cbe4a8791ee7269a2b710ce0d76ea3f
+  built_at: '2026-11-26T13:16:16+00:00'
+  path: santander_customer_satisfaction/01a217ff-c7e5-7859-ae5f-8c82dc50635b
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 71080
   n_features: 307
@@ -47,6 +47,16 @@ splits:
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Default splits: random customers, stratified on `TARGET`, as the competition''s
+    winners validated. Members of one
+
+    household (customers who share an exact `var38` value, the bank''s household income)
+    can fall on both sides, as
+
+    for a bank that sees a new customer''s household; 0.3% of test customers have
+    a dissatisfied member in training
+
+    (curation notes).'
   n_train:
     min: 47386
     max: 47387
@@ -73,7 +83,7 @@ decisions:
 
 Binary classification of `TARGET`, scored with `roc_auc` on IID splits. 71,080 rows and 307 features. Source: Kaggle (2016).
 
-Built as `01a111fc-12c0-72fc-95ab-3a7ad03daa2b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:11643d47d38649cef1633d41d75bd37e1ab999bbd018f38b0ea31aa88f414c1a`, so the build is stale. See [Build](#build).
+Built as `01a217ff-c7e5-7859-ae5f-8c82dc50635b` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -132,7 +142,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2016 |
 | domain | business & marketing |
 | license | Kaggle Competition Rules |
-| data_tags | IID, Anonymized, Retrospective |
+| data_tags | IID, Anonymized, RetrospectiveFillIn |
 | reference | Jimenez2016SantanderCustomerSatisfaction |
 | rows x columns | 71,080 x 308 |
 | task.target | TARGET |
@@ -261,14 +271,11 @@ We start with the train.csv from Kaggle (76,020 customers, 369 masked columns an
   - Why it stays: the bank keeps one income for all members of a household, so it sees a new customer's
     members, only not their label of the same period, and the link is small. Revisit if Santander states how
     and when the label was taken.
-- Time basis: Retrospective: one extract of Santander's customers (period not stated; competition 2016), with
-  windows of the last month to three months ending at it; the label is a state the host does not define or
-  date, read as dissatisfaction at the extract, which the use case fills in for customers not yet known to be
-  dissatisfied. No exit trace in the last month: customers whose current account emptied in the last month are
-  dissatisfied at 3.1%, against 1.8% for those who kept a balance (training file). Not tested: customers of a
-  later extract, or a label taken after the extract.
+- Time basis: RetrospectiveFillIn: one extract of Santander's customers (period not stated; competition 2016), with windows of the last month to three months ending at it; the label is a state the host does not define or date, read as dissatisfaction at the extract, which the use case fills in for customers not yet known to be dissatisfied. No exit trace in the last month: customers whose current account emptied in the last month are dissatisfied at 3.1%, against 1.8% for those who kept a balance (training file). Not tested: customers of a later extract, or a label taken after the extract.
 
 ## Splits
+
+Repeated 3-fold cross-validation over the rows, stratified on `TARGET`: 3 repeat(s) x 3 folds, 9 splits, the repeats set by the 71,080 rows (SPLIT-33).
 
 Default splits: random customers, stratified on `TARGET`, as the competition's winners validated. Members of one
 household (customers who share an exact `var38` value, the bank's household income) can fall on both sides, as
@@ -843,11 +850,10 @@ Accepted on purpose:
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-12c0-72fc-95ab-3a7ad03daa2b |
-| checksum | v2:d5f915868cfcb2e0753992af307356871db8faaaea391a911fb35064a7c1aa19 |
-| built_at | 2026-10-06T16:11:43+00:00 |
-| path | santander_customer_satisfaction/01a111fc-12c0-72fc-95ab-3a7ad03daa2b |
+| uuid | 01a217ff-c7e5-7859-ae5f-8c82dc50635b |
+| checksum | v2:fa14d01afaac7fb58fabf2ae8da557a27cbe4a8791ee7269a2b710ce0d76ea3f |
+| built_at | 2026-11-26T13:16:16+00:00 |
+| path | santander_customer_satisfaction/01a217ff-c7e5-7859-ae5f-8c82dc50635b |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:11643d47d38649cef1633d41d75bd37e1ab999bbd018f38b0ea31aa88f414c1a` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

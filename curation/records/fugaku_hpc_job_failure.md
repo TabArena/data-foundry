@@ -5,9 +5,7 @@ checked_by:
 - Myunghwan
 - Andrej
 data_foundry_status:
-- WIP (DF)
 - 'DF: Yes'
-claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 3
 decision_markers:
@@ -339,11 +337,11 @@ CC (2026-11-25, Andrej): the preparation keeps every source row and `_make_split
 
    **Recommendation:** b: it keeps what C was chosen for, the protocol's newest-year draw, within what our tools can build; the size that blocks C is a measured fact of this dataset. a only if the framework work is wanted anyway. **Decision:** a, b or c?
 
-   Notes for the AI: the C implementation is kept outside the repository with the review's run files (definition and framework patch), ready for a. On b: in `_select_temporal` replace the all-history draw by `sample_train_positions`-style selection (newest year before each cutoff, extended back a month at a time until 1M rows remain, class-proportional), rerun the label-maturity audit and the check (Slurm), and rewrite the sampling bullet, the trailing note and the splits comment. On c: add the dated exception bullet of the Notes above, with the measured 24.0M rows and 125.5 GB.
+   Notes for the AI: the C implementation is kept outside the repository with the review's run files (definition and framework patch), ready for a. On b: in `_select_temporal` replace the all-history draw by `sample_train_positions`-style selection (newest year before each cutoff, extended back a month at a time until 1M rows remain, class-proportional), rerun the label-maturity audit and the check, and rewrite the sampling bullet, the trailing note and the splits comment. On c: add the dated exception bullet of the Notes above, with the measured 24.0M rows and 125.5 GB.
 
    **Andrej (2026-11-24, discuss):** Isn't that just an inefficient implementation on our end? Can we fix this?
 
-   **Answer (AI, 2026-11-24, later):** yes; three steps held the whole frame two or three times over, and with them fixed the `_1m` check fits. Measured with a memory trace in Slurm (24,039,864 rows x 394 columns, about 37 GB of embeddings):
+   **Answer (AI, 2026-11-24, later):** yes; three steps held the whole frame two or three times over, and with them fixed the `_1m` check fits. Measured with a memory trace (24,039,864 rows x 394 columns, about 37 GB of embeddings):
 
      | Step | Peak before | Peak after | Fix |
      |---|---|---|---|
@@ -355,7 +353,7 @@ CC (2026-11-25, Andrej): the preparation keeps every source row and `_make_split
    - A fourth change is a rule of the framework, not memory: a `_1m` version may now build its own splits (this one needs them for its label filter); a budget a definition declares itself is still refused with custom splits. The framework changes go in their own draft PR.
    - Still true after the fixes: a benchmark that loads this container holds about 37 GB of embeddings, and the check needs a node with about 70 GB.
 
-   **Resolved (2026-11-24, Andrej):** C, applied after the memory fixes (the answer above): ships as `fugaku_hpc_job_failure_1m`. `dataset.py` keeps every training row each window can use after the label filter and caps each test window at 500,000 rows, a class-proportional draw (the collection's budget; a benchmark draws its 1M training rows, by default from the newest year before the window); the preparation reads the prepared frame with Arrow's `self_destruct` and writes the rows in submission-time order; `split_leaf` unchanged. The record's `v2_path` points to the `_1m` folder. `dataset check` (Slurm, 24,039,864 rows x 394 columns, peak memory 58.9 GB): 0 errors, 1 warning, accepted with this decision: the newest 30 days hold 13% of the usual rows a day in the stored frame because only the test windows are sampled, 59% in the full source because April 2024 begins on 4 April. Framework changes that came with it (their own draft PR): the frame is not copied when already in time order, duplicate rows in the data summary are counted by row hashes, and a `_1m` version may build its own splits.
+   **Resolved (2026-11-24, Andrej):** C, applied after the memory fixes (the answer above): ships as `fugaku_hpc_job_failure_1m`. `dataset.py` keeps every training row each window can use after the label filter and caps each test window at 500,000 rows, a class-proportional draw (the collection's budget; a benchmark draws its 1M training rows, by default from the newest year before the window); the preparation reads the prepared frame with Arrow's `self_destruct` and writes the rows in submission-time order; `split_leaf` unchanged. The record's `v2_path` points to the `_1m` folder. `dataset check` (24,039,864 rows x 394 columns, peak memory 58.9 GB): 0 errors, 1 warning, accepted with this decision: the newest 30 days hold 13% of the usual rows a day in the stored frame because only the test windows are sampled, 59% in the full source because April 2024 begins on 4 April. Framework changes that came with it (their own draft PR): the frame is not copied when already in time order, duplicate rows in the data summary are counted by row hashes, and a `_1m` version may build its own splits.
 
 6. **Encode the memory limit's "unlimited" value as missing plus a flag, or as its own category?**
 
@@ -373,7 +371,7 @@ CC (2026-11-25, Andrej): the preparation keeps every source row and `_make_split
 
    - **Recommendation:** A: the limits that are set are amounts, and the flag keeps the unlimited case explicit. **Decision:** keep A, or change to B?
 
-   **Notes for the AI:** On B, make `mszl` categorical (the byte values as strings plus "unlimited"), drop `mszl_unlimited`, rerun the check in Slurm and the task probes; add a CC line either way.
+   **Notes for the AI:** On B, make `mszl` categorical (the byte values as strings plus "unlimited"), drop `mszl_unlimited`, rerun the check and the task probes; add a CC line either way.
 
    **Resolved (2026-11-24, Andrej):** A, as implemented: `mszl` stays a number in bytes, missing where the source writes "unlimited", with the 0/1 column `mszl_unlimited`. No change to the definition.
 
@@ -430,7 +428,7 @@ CC (2026-11-25, Andrej): the preparation keeps every source row and `_make_split
    - A 7-day gap keeps the rule's default form (a gap of about the label's delay) and leaves each window above the training floor.
    - The score cost was measured on 2026-11-03 at fixed model settings: AUC -0.017 / +0.004 / -0.046 (newest window first) for a seven-day embargo; that is what a model deployed at a refit really lacks.
 
-   **Notes for the AI:** On C, in `_select_temporal` keep training rows with `adt < cutoff - 7 days` and `edt < cutoff`; declare the gap (`Temporal(..., gap=7, gap_unit="days")`); rewrite the splits comment, the split-walk bullet and the exception bullet (removed); in `splits.md` the fugaku row of the gap rule's list becomes `applied`; re-run the check (Slurm, a large-memory node) and report the shares.
+   **Notes for the AI:** On C, in `_select_temporal` keep training rows with `adt < cutoff - 7 days` and `edt < cutoff`; declare the gap (`Temporal(..., gap=7, gap_unit="days")`); rewrite the splits comment, the split-walk bullet and the exception bullet (removed); in `splits.md` the fugaku row of the gap rule's list becomes `applied`; re-run the check (a large-memory node) and report the shares.
 
    **Andrej (2026-11-24, discuss):** We split on job start time and filter out jobs that don't have a result yet. That means the only gap we need is the one between starting developing the model and applying it. Seven days sounds like a bit too much,?
 
@@ -448,7 +446,7 @@ CC (2026-11-25, Andrej): the preparation keeps every source row and `_make_split
 
    **Andrej (2026-11-24, change):** Option D: Add a 1-day gap.
 
-   **Resolved (2026-11-24, Andrej):** D, applied. `_select_temporal` trains on jobs submitted at least one day before each window and ended before it; `Temporal(..., gap=1, gap_unit="days")`; the exception bullet is replaced by a gap bullet with the September limitation, the horizon text and the split walk follow, and the gap rule's list of cases records the dataset as an ordinary use (`applied`). Training shares 65.3% / 80.3% / 90.9% (May / September / January cutoffs; 27,129 / 57,968 / 45,784 jobs left out by the filter and the gap). `dataset check` (Slurm, peak memory 78.6 GB): 0 errors, 0 warnings, the thin newest period accepted as before.
+   **Resolved (2026-11-24, Andrej):** D, applied. `_select_temporal` trains on jobs submitted at least one day before each window and ended before it; `Temporal(..., gap=1, gap_unit="days")`; the exception bullet is replaced by a gap bullet with the September limitation, the horizon text and the split walk follow, and the gap rule's list of cases records the dataset as an ordinary use (`applied`). Training shares 65.3% / 80.3% / 90.9% (May / September / January cutoffs; 27,129 / 57,968 / 45,784 jobs left out by the filter and the gap). `dataset check` (peak memory 78.6 GB): 0 errors, 0 warnings, the thin newest period accepted as before.
 
 **Review panel:** ship after changes (mediator, 2026-11-21, full re-check). Applied without a decision: the fit reason names the live-history gap and the fiscal-year cut; the evaluation-protocol line in the splits comment; the row-identity and evaluation-unit bullets corrected; the cohort-limit bullet (fiscal-year cut, elapsed-limit kills almost absent); the node-hours cost note; the jobenv_req switch in April 2024 and the first-appearance id numbering; the download recipe path and a typo; the row-identity facts under issue 1 and the recheck baselines under issue 3. Disputed and settled: the live outcome history is a note under the evaluation protocol, not an input (the critic's cleaning-rule reading ranks below the input and history rules; the protocol cases decide); the memory limit joins issue 4 (the advocate conceded); the corrected row identity is a note under resolved issue 1, not a new item; the "Exception to SPLIT-10" wording stays, with option E added to H. Claim audit: the row-identity sentences refuted and corrected; the download path stale. Blind review, without our notes: include with changes; main concern the missing submission-time requests (issue 4). Task gamer: no exploit beat the seed spread; the missing requests help an honest model. For the curator: H and issues 4-5; issues 1-3 stay resolved. Precedent check: consistent except the in-container training cap, which no curator decision after the row-budget rule covers (issue 5), and the missing other-year window (option E in H). Domain practitioner: would use it as advisory triage, with the live-history gap named. Earlier panels (2026-11-03, 2026-11-05/06) are kept below as dated evidence.
 
@@ -462,7 +460,7 @@ blind review and task gamer; column audit (the column audit + evidence); the rec
 reports; USE-6, CLEAN-6, CLEAN-19, CLEAN-22, LEAK-9 (cases), LEAK-16 to LEAK-20, LEAK-34, TP-10, SPLIT-10, SPLIT-15,
 MET-17, EV-4, and the row-budget protocol (`definitions.md`).
 
-Three Slurm jobs, scripts and logs in the run folder:
+Three runs, scripts and logs in the run folder:
 `dup44.py`, `fycut.py`, and leak probe 13 run alone, `--period-only`.
 
 **Judgment record**
@@ -1399,7 +1397,7 @@ Register flags that are not findings:
 
 Task: predict at submission (`adt` = "Arrival datetime (submission time)") whether a Fugaku job will end with exit code != 0. Users or the scheduler could act on that before resources are spent, which is a real use. The source paper (Antici et al., Sci Data 2025, F-DATA) proposes exactly this task with a temporal split. All prepared features are known at submission, so I found no leak.
 
-**Experiments (200k sample, LightGBM on Slurm cpuhigh32)**
+**Experiments (200k sample, LightGBM)**
 My own windows (the real ones are unknown to me); each test window is trained on everything before it.
 
 | test window | n test | fail rate | per-user past fail rate (AUC) | LGBM ids+time | LGBM embedding only | LGBM usr+env+time+embedding | logloss prior / best |
@@ -1452,7 +1450,7 @@ Sources: https://pmc.ncbi.nlm.nih.gov/articles/PMC12311113/ , https://zenodo.org
 
 **Verdict:** I could not game this task. None of my attacks beat the honest model by more than the seed-to-seed spread. The weaker spot is the other way round: the kit leaves out the resources a job requests at submission, and those help an honest model.
 
-All fits were LightGBM (300 trees, lr 0.05, 63 leaves, bagging 0.8, colsample 0.5, `n_jobs=2`) on the shipped splits, scored with `score.py`, run as Slurm jobs on cpuhigh32. No rows were subsampled except where noted. Encoding: `usr` and `jobenv_req` as categories, `jnam` as its integer id, `adt` in epoch seconds, plus the 384 embedding columns.
+All fits were LightGBM (300 trees, lr 0.05, 63 leaves, bagging 0.8, colsample 0.5, `n_jobs=2`) on the shipped splits, scored with `score.py`. No rows were subsampled except where noted. Encoding: `usr` and `jobenv_req` as categories, `jnam` as its integer id, `adt` in epoch seconds, plus the 384 embedding columns.
 
 **Honest baseline and noise**
 
@@ -2753,7 +2751,7 @@ Concrete corrections, most important first:
 
    Preserve the dated screening/scouting entries themselves and all exact human words. This is a clarity repair, not a new verification request or permission to change the record's structured workflow fields.
 
-2. Date each old panel role's wrapper as historical. The top panel paragraph and first historical-summary toggle already explain the boundary correctly, but the next ten toggles have undated names such as “Mediator” and “Claim audit”. A reader opening “Mediator” encounters “ship after changes” and three apparently pending choices. The current file-format documentation also says the mediator section is initially open on the review page. Make the history boundary visible on each old toggle, preserving every original report body.
+2. Date each old panel role's wrapper as historical. The top panel paragraph and first historical-summary toggle already explain the boundary correctly, but the next ten toggles have undated names such as “Mediator” and “Claim audit”. A reader opening “Mediator” encounters “ship after changes” and three apparently pending choices. The current file-format documentation also says the mediator section is initially open on the review rendering. Make the history boundary visible on each old toggle, preserving every original report body.
 
    Old: `<details><summary>Mediator</summary>`
 

@@ -3,17 +3,25 @@ unique_name: sepsis_prediction
 name: SepsisPrediction
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
 tags:
 - Non-IID (Grouped)
+- 'Samples: Over Time'
+- 'Time: Within Entity'
+- 'Time: Lost'
+- 'Target: Fixed Delay'
+- 'Entities: Recur'
+- Panel Data
 collections:
 - New (BeyondArena)
 - TabSTAR
 original_source: Kaggle
 year: '2019'
+collection_period: 2010s
 domain: medical & healthcare
 required_split:
 - Grouped (NON-IID)
@@ -38,6 +46,39 @@ CC (2026-10-01, Lennart): Leak audit: the data is fine; the scoring has to chang
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source normalized_early_detection_utility — PhysioNet/CinC Challenge 2019 normalized utility score (Reyna et al. 2020, Early prediction of sepsis from clinical data: the PhysioNet/Computing in Cardiology Challenge 2019, Crit Care Med 48(2):210-217; https://physionet.org/content/challenge-2019/1.0.0/); inputs {"group": "Patient_ID", "order": "Hour"}.
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
+CC (2026-11-18, Andrej): time basis `UnseenGroup` in place of `ForcedGroupedFromTemporal` (Review issue 3, B; full-information split check; as dementia_prediction): the use case scores new ICU patients, the tree's panel leaf for new units. The split is unchanged (whole patients); patients admitted later stay untested.
+
+## Review
+
+**Outcome:** added as `sepsis_prediction_1m`. Full-information split check of 2026-11-18: the time basis tag disagreed with the split tree; decided below.
+
+**Main points:** The patient folds are tagged `UnseenGroup`, as dementia_prediction (issue 3, B, 2026-11-18). Nothing
+open.
+
+**Issues for Andrej:**
+
+3. **Tag the patient folds `UnseenGroup`, as dementia_prediction?**
+
+   * **Problem:**
+     - The use case scores new ICU patients only, which the tree's panel branch gives as `UnseenGroup` (new units)[^s32u], and the tree names sepsis as that leaf's example.
+     - The definition still carries `ForcedGroupedFromTemporal`, which no one chose under the tree; you moved dementia_prediction, the same leaf, to `UnseenGroup` on 2026-11-17[^ug_dem].
+     - The folds are right either way: whole patients.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Grouped by patient, `ForcedGroupedFromTemporal` (implemented) | No change | | Not the tree's leaf |
+     | B | The same folds, `UnseenGroup` | The Time basis line opens with `UnseenGroup` and names the later calendar as untested | The tree's leaf; as dementia | |
+
+   * **Recommendation:** B. **Decision:** A or B?
+
+   [^s32u]: **SPLIT-32** (Should): "does the use case aim at groups the data does not hold, rather than at a later period? ... the split groups by that unit ... That is `UnseenGroup`." The tree's panel leaf: "Only new units, met after the data (new patients, new customers) → Grouped · `UnseenGroup` (new units)".
+   [^ug_dem]: dementia_prediction, the same panel leaf: "Option B: The same 3-fold CV over whole subjects, tagged UnseenGroup" (Andrej, 2026-11-17).
+
+   **Andrej (2026-11-18, change):** Option B: The same folds, UnseenGroup.
+
+   **Resolved (2026-11-18, Andrej):** B. `data_tags` names `UnseenGroup` in place of `ForcedGroupedFromTemporal`, and the `Time basis:` line opens with `UnseenGroup (Andrej, 2026-11-18; ForcedGroupedFromTemporal before)`: new ICU patients, whole patients held out; later admissions stay untested. The folds are unchanged.
 
 ## Reference
 

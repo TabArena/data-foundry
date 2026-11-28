@@ -6,9 +6,10 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Grouping, Metric, Source, TaskSummary, TimeBasis
 from scipy.sparse import coo_matrix
 from scipy.sparse.csgraph import connected_components
+
+from data_foundry.definition import AbstractCuratedDataset, Grouping, Metric, Source, TaskSummary, TimeBasis
 
 TARGET = "AirPressureSystemFailure"
 RARE_MAX = 5  # a value held by 2 to 5 rows in its column is rare
@@ -161,6 +162,7 @@ class ApsFailure(AbstractCuratedDataset):
             row 1.145), 5.1% with one row per copied read-out and random folds (1.530), 0.05% split by truck (1.625;
             1.539 with each truck counted once).
     """
+    split_leaf = "L-FORCED.groups"
     time_basis = TimeBasis(
         "ForcedGroupedFromTemporal",
         """
@@ -208,8 +210,7 @@ class ApsFailure(AbstractCuratedDataset):
         """,
     )
     splits_comment = """
-        Stratified grouped 3-fold cross-validation over the 61,466 trucks with 3 repeats: a truck's rows stay on one
-        side, and the folds are drawn over trucks, stratified by label (no truck carries two labels). Each test fold
+        Each test fold
         holds 20,488 or 20,489 trucks, about 21,300 rows and about 420 failures. 0.05% of the test rows keep a linked
         row in training (a pair sharing 5 rare values but fewer than 60 equal counters, left apart), against 25% under
         random folds on all 76,000 rows. The challenge's own split held out its last 16,000 rows, with 4,458 pairs of

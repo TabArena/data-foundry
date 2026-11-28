@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, Source, TaskSummary
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Metric,
+    Source,
+    TaskSummary,
+    TimeBasis,
+)
 
 RAW_FILE = "South Asian Wireless Telecom Operator (SATO 2015).csv"
 """The one file of the Kaggle dataset mahreen/sato2015; OpenML 44227 holds the same values."""
@@ -65,7 +74,6 @@ class ChurnTelcoSouthAsia(AbstractCuratedDataset):
             """,
         ),
     )
-    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         We download the Kaggle dataset mahreen/sato2015, uploaded on 2017-10-11 by the Kaggle user mahreen (OpenML
         lists the creator as MAHREENAHMED), whose data card cites the paper that introduced the data. It holds one
@@ -94,10 +102,24 @@ class ChurnTelcoSouthAsia(AbstractCuratedDataset):
         - Note: the September favourite network moves towards ufone, among active subscribers more (decision table). The share rises with calls in both classes (lowest to highest fifth: 0.40 to 0.93 active, 0.18 to 0.80 churned), so it follows activity, not a recording that differs by class.
         - Note: churn_telco_south_asia_duplicate (DSN Telecoms Churn 2018) is this file with renamed networks.
         - Year: 2017, the first publication; the data were collected in 2015.
-        - Left unordered (2026-10-31, CLEAN-14, the curator's marks): `aug_user_type` and `sep_user_type` are a 2G or 3G
+        - Left unordered (2026-10-31, CLEAN-14, the curator's call): `aug_user_type` and `sep_user_type` are a 2G or 3G
           subscription (data card); `Other` (374 subscribers, the same in both months, while 103 move between 2G and 3G)
           is undocumented and uses data like the 2G users, so it is not 4G. Two levels on the scale and one off it.
     """
+    split_leaf = "L-FORCED.random"
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        the operator scores each subscriber after the same two
+        months of usage (August and September 2015), and churn follows it (`Target: Fixed Delay`); neither paper says when
+        the churn was observed. One scoring is one period, too few for three windows (SPLIT-8). Later scorings would
+        allow a temporal split. It cannot test a later scoring. Not taken as stationary (Andrej, 2026-11-18): Telecom
+        churn is driven by a competitive market and the data already show a network-mix shift; the closest measured
+        churn set is not flat.
+        """,
+        set_by="Andrej",
+        on="2026-11-16",
+    )
 
     # Task
     target = "churn_status"

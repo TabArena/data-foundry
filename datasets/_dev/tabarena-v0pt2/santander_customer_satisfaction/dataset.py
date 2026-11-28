@@ -7,7 +7,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -341,8 +342,9 @@ class SantanderCustomerSatisfaction(AbstractCuratedDataset):
             members, only not their label of the same period, and the link is small. Revisit if Santander states how
             and when the label was taken.
     """
+    split_leaf = "L-FILL.random"
     time_basis = TimeBasis(
-        "Retrospective",
+        "RetrospectiveFillIn",
         """
         one extract of Santander's customers (period not stated; competition 2016), with
         windows of the last month to three months ending at it; the label is a state the host does not define or

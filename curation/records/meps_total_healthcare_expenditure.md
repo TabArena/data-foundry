@@ -3,7 +3,7 @@ unique_name: meps_total_healthcare_expenditure
 name: MEPS healthcare expenditure / Medical Expenditure Panel Survey longitudinal files, Panels 27 and 28 (HC-252, HC-257), next-year TOTEXP
 checked_by:
 - Andrej
-suggestion: 'Yes'
+suggestion: TBD -> 2nd Tier
 decision_markers:
 - Needs extensive data wrangling
 tags:
@@ -59,6 +59,9 @@ CC (2026-10-20, Andrej): Yes, as a prospective task.
 * Split: grouped by household (`DUID`); one respondent reports for the whole household (HC-252 Sec. B 1.0).
 * For `/add-dataset`: keep the reserved codes (-1, -7, -8, -15) as values and the persons who die in year 2. Older
   panels would add rows but have changed questionnaires and COVID years.
+
+CC (2026-11-27, Andrej): `TBD -> 2nd Tier`, in chat: "Put both to 2nd Tier" (this record and the other zero-inflated
+`Yes` left without a v2 folder).
 
 ## Reference
 

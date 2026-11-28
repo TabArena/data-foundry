@@ -78,11 +78,15 @@ one moment and tests other rows of it, not the next moment. Where the use case l
 Whole periods held out (`ForcedGroupedFromTemporal`, grouped by period where the data has an order: scan periods,
 study phases, visit months, course presentations) train also on later periods but still test a change between periods
 rather than random rows, closer to the shift a temporal split tests (lung_cancer_epithelial_genexp's six scan
-periods). They count only with enough periods that different groupings of whole periods into three folds give the
-repeats SPLIT-33 sets for the task's size: four periods for 3 repeats, five for 10 or 20 (three periods allow one
-grouping, four six, five 25); with fewer, a period fold would give the task two or three splits where its size calls
-for more. Where entities recur across the periods and the use case meets new entities, an entity's rows stay in one
-period or the entity is held out with its period (USE-10, LEAK-17); periods count only where no entity sits on both
+periods). The definition's `Time basis:` line says so: the test periods are unseen, not later, and a test period's score
+may gain from training on periods after it. Where a period can be trained on earlier periods alone, that gain is the
+cost to measure: the period's score trained on earlier periods only against one trained on other periods, earlier and
+later, at the same training size. They count only with enough periods that different groupings of whole periods into
+three folds give the repeats SPLIT-33 sets for the task's size: four periods for 3 repeats, five for 10 or 20 (three
+periods allow one grouping, four six, five 25); with fewer, a period fold would give the task two or three splits where
+its size calls for more. Where entities recur across the periods and the use case meets new entities, an entity's rows
+stay in one period or the entity is held out with its period (USE-10, LEAK-17); periods count only where no entity sits
+on both
 sides. Which regime is closest depends on what was measured. Where the relation is measured not flat, such periods
 are the only remedy: without them the task is `Too Small` (SPLIT-16). With nothing measured (an
 inconclusive test included) and no person's reason, three outcomes: a person may be unwilling to take the risk of
@@ -143,19 +147,20 @@ about time), and they do not change with the split a definition chooses. A fact 
   and the fact stays what the source says.
 * **Time,** for samples over time: `Time: Dated` when the release or a parent source keeps the date (a date column, a
   value that encodes the period, a date dropped from the raw file, or a parent upload that matches the rows by an id;
-  the time probe, `time_probes.py`, looks for them); `Time: Inferred` when only an order that tracks time survives,
-  with no calendar (an id, a case number, a file position); else `Time: Lost`. An order found only within each entity
-  (a policy's terms, a patient's visits, the 2 Hz samples of one bench session) is `Time: Within Entity`, whatever the
-  samples fact says (electric_motor_temperature_prediction: designed sessions, `Samples: No Time Dimension`). A time
-  recoverable only through the outcome does not count (heart_failure_followup_survival can date its survivors only).
-* **Target:** `Target: Later` (after the features, at one shared date or after a fixed window), `Target: Varying
-  Delay` (after a delay that differs between samples: a settlement, a chargeback, a follow-up), `Target: Revised
-  Later` (assigned, then updated or propagated; also a label that accrues while its window stays open, so the
-  newest samples' label is not final: drug_induced_autoimmunity_prediction counts reports since approval, and 49
-  of its 52 drugs approved from 2010 on are negative) or `Target: Unknown` (the source does not say
-  when the target arrives); no tag when the target exists with the features. More than one can hold
-  (ieee_fraud_detection: a chargeback's varying delay, and labels the host then carries along the client's later
-  payments).
+  the time probe, `data-foundry probe time`, looks for them); `Time: Inferred` when only an order that tracks time
+  survives, with no calendar (an id, a case number, a file position); else `Time: Lost`. An order found only within each
+  entity (a policy's terms, a patient's visits, the 2 Hz samples of one bench session) is `Time: Within Entity`,
+  whatever the samples fact says (electric_motor_temperature_prediction: designed sessions,
+  `Samples: No Time Dimension`). A time recoverable only through the outcome does not count
+  (heart_failure_followup_survival can date its survivors only).
+* **Target:** `Target: Fixed Delay` (after the features, at one shared date or after a fixed window; named `Target:
+  Later` until 2026-11-23, as older notes call it), `Target: Varying Delay` (after a delay that differs between samples:
+  a settlement, a chargeback, a follow-up), `Target: Revised Later` (assigned, then updated or propagated; also a label
+  that accrues while its window stays open, so the newest samples' label is not final:
+  drug_induced_autoimmunity_prediction counts reports since approval, and 49 of its 52 drugs approved from 2010 on are
+  negative) or `Target: Unknown` (the source does not say when the target arrives); no tag when the target exists with
+  the features. More than one can hold (ieee_fraud_detection: a chargeback's varying delay, and labels the host then
+  carries along the client's later payments).
 * **Entities:** `Entities: Recur` when the source holds several rows of one entity (a patient, a client, a company),
   with or without an id. A forced split with nothing measured holds out the entity where the use case meets new
   entities, else whole periods, else rows; one whose relation is measured not flat holds out only whole periods
@@ -256,7 +261,15 @@ later period, at a known group or at all groups at once; where the label still m
      and the definition and `dataset check` refuse the tag without a person and a measurement of eight words or more.
      Where the
      windows can be built, the split is temporal however flat the relation (the next bullet), and the measurement goes
-     in the notes as what the windows cost (amended 2026-11-17, Andrej). It holds whether
+     in the notes as what the windows cost (amended 2026-11-17, Andrej). The exception is a small table: one in
+     SPLIT-33's 20- or 10-repeat tier (a training side of an IID split under 2,500 units) whose order gives only three
+     windows gets the stationary-relation test over them as well, and where it reads flat and a person signs the
+     reading off as `StationaryRelation`, the split goes on to the forced step of SPLIT-36 (a catalogue to its
+     family-key step, SPLIT-37); where it reads not flat or inconclusive, or nobody signs it off, the windows stay
+     (amended 2026-11-23, Andrej). Why:
+     three test windows of a small table score little more than noise, and a measured flat relation lets the 60 or 30
+     splits of SPLIT-33 stand for them (horse_colic_survival: three windows of 57 admissions, each run inconclusive,
+     flat pooled; infrared_thermography_temperature: one window not flat, so the windows stay). It holds whether
      the target is measured with the features (a diagnosis at the visit) or later; when the target arrives is a
      collection fact, not a prototype. It is always measured, over the longest span the source or a parent source
      covers: one year can look flat where a longer span moves. thyroid_discordant's 1985 extract had a flat
@@ -408,18 +421,18 @@ wilderness areas are too few groups).
 walking the decision tree in [split_tree.md](split_tree.md) from its record's data collection type: the use case first,
 then what the data and its documentation allow, then a measurement where one decides. The leaf reached gives the split
 and the tag that justifies it (a time basis, a forced tag or `ForcedIIDFromGrouped`), and for a temporal split the date
-the windows are cut on and the gap; the definition names it by its ID in `split_leaf`, and the tests check that it ships
-the leaf's split and tag. Answer each question from what it reads; a collection fact only points to where to look, and
-only a person answers the questions the tree marks _person decides_. A forced leaf, a leaf no definition has reached
-yet, and a question no answer fits go to a human reviewer with the split suggested and the facts behind it; only a
-reviewer adds a branch. A split the source prescribes answers a question only where the source chose it for the use
-case: matching the leaf, it fills in the leaf's periods, gap and training history (SPLIT-19); differing, the leaf
-decides (SPLIT-5). A definition that ships another split than its leaf names the leaf, what the source prescribed and
-the reason in its `splits_comment`, and the departure goes to a reviewer. The rules above still decide each step (the
-windows, the gap, the groups, the leak tests); the tree orders them. Why: the same questions asked in the same order
-make splits of similar data agree, and show where a dataset is new. Cases: the 175 v0.2 definitions placed when the tree
-was adopted and regenerated (2026-11-17); the definitions that ship another split, each departure confirmed by a
-reviewer, are listed at the end of split_tree.md.
+the windows are cut on and the gap; every definition names it by its ID in `split_leaf`, and the tests check that it
+lies on the walk from the record's type and that the definition ships the leaf's split and tag. Answer each question
+from what it reads; a collection fact only points to where to look, and only a person answers the questions the tree
+marks _person decides_. A forced leaf, a leaf no definition has reached yet, and a question no answer fits go to a human
+reviewer with the split suggested and the facts behind it; only a reviewer adds a branch. A split the source prescribes
+answers a question only where the source chose it for the use case: matching the leaf, it fills in the leaf's periods,
+gap and training history (SPLIT-19); differing, the leaf decides (SPLIT-5). A definition that ships another split than
+its leaf names the leaf, what the source prescribed and the reason in its `splits_comment`, and the departure goes to a
+reviewer. The rules above still decide each step (the windows, the gap, the groups, the leak tests); the tree orders
+them. Why: the same questions asked in the same order make splits of similar data agree, and show where a dataset is
+new. Cases: the 175 v0.2 definitions placed when the tree was adopted and regenerated (2026-11-17); the definitions that
+ship another split, each departure confirmed by a reviewer, are listed at the end of split_tree.md.
 
 **SPLIT-37 (Should; relates to SPLIT-4, SPLIT-31 and SPLIT-32).** A dataset drawn from an **expanding science
 catalogue** is a cut of a database or a testing programme that keeps growing: a bioactivity database's releases, a
@@ -607,10 +620,10 @@ short for others, or a use case that only cares about the weeks after a refit. T
 an IID split of the dataset would get: SPLIT-33's count for two thirds of all its scored units (60, 30, 9 or 3). The use
 case comes first: the window length, the step and the gap follow SPLIT-12 and SPLIT-10 and are never shortened or
 dropped to reach the count; then SPLIT-14's floor and least test window; within them, as many windows as reach the
-target. Fewer are accepted, never fewer than 3: `dataset check` warns (`splits_below_target`), and the splits comment
-names the target, the count reached and what stops more windows. Splits are counted by their training sides: test
-parts that share one training side (a window cut into folds by group, say) are one split, and are never offered to reach
-the count or the minimum of 3. Windows do not overlap by default; where the target
+target. Fewer are accepted, never fewer than 3: `dataset check` warns (`splits_dimensions_off_protocol`), and the
+splits comment names the target, the count reached and what stops more windows. Splits are counted by their training
+sides: test parts that share one training side (a window cut into folds by group, say) are one split, and are never
+offered to reach the count or the minimum of 3. Windows do not overlap by default; where the target
 cannot be reached otherwise, the review offers overlapping windows (a step shorter than the window) as an option, and
 the curator judges whether the use case admits them. The splits comment names the windows, the reasons and the numbers
 they rest on. Why: on aeolus, climate_model and delivery_eta the newest three windows ranked a model pair the other way
@@ -713,7 +726,7 @@ qsar_bioconcentration: "in other cases, we also moved towards a scaffold split a
 molecule dataset whose rows carry exact structures groups on the Bemis-Murcko scaffold, as a new chemical under
 assessment often comes from a series not yet measured. A molecule without a ring is a group of its own, and so is each
 molecule of a scaffold that holds more than a tenth of the molecules, which is no series and would leave folds of very
-unequal size (`scaffold_groups` in `data_foundry.v2.chemistry`). Where the set is a cut of a catalogue that keeps
+unequal size (`scaffold_groups` in `data_foundry.special.chemistry`). Where the set is a cut of a catalogue that keeps
 growing, SPLIT-37 says when the date a molecule entered it replaces the scaffold. Cases:
 drug_induced_autoimmunity_prediction, qsar_bioconcentration, qsar_oral_toxicity, qsar_tid_11.
 

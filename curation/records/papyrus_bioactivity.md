@@ -5,9 +5,7 @@ checked_by:
 - Myunghwan
 - Andrej
 data_foundry_status:
-- WIP (Triage)
 - 'DF: Yes'
-claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -94,7 +92,7 @@ The re-run reproduces the shipped frame exactly, and with it every count the cur
 
 CC (2026-11-24, Andrej): review issue 1, change to C: "Option C: Windows on the year a compound's measurements end." The split is now expanding one-year windows on `entry_year`, the newest document year behind any of a compound's means (the source's `all_years`), taken per source connectivity so chemical aliases share one year; it orders and splits the rows and is no model input. The scaffold grouping and the `scaffold` column leave with it — the column was the group key, never a model input, and the Bemis-Murcko scaffold stays recomputable from the shipped SMILES. `split_leaf = "L-CAT.entry-date"`, the leaf the split tree reaches with this key (the answer of 2026-11-24). The 1,667 compounds with no dated document (2,791 rows, 0.40%) take the earliest year, 1976, and always train. The windows themselves wait for the Horizon sign-off (review item H).
 
-CC (2026-11-24, Andrej): the Horizon's test windows, as asked on the review page: 2022 and 2023 together, then 2021, then 2020 (option D). The definition builds them in `_make_splits` from the constant `TEST_WINDOWS`, since one `TemporalSplits` window length cannot state a two-year window beside one-year ones, and declares a horizon of two years, the newest window's span. Training is every compound whose measurements ended before the window: 93.6%, 87.3% and 81.2% of the rows. The sign-off itself stays open as review item H.
+CC (2026-11-24, Andrej): the Horizon's test windows, as asked in review: 2022 and 2023 together, then 2021, then 2020 (option D). The definition builds them in `_make_splits` from the constant `TEST_WINDOWS`, since one `TemporalSplits` window length cannot state a two-year window beside one-year ones, and declares a horizon of two years, the newest window's span. Training is every compound whose measurements ended before the window: 93.6%, 87.3% and 81.2% of the rows. The sign-off itself stays open as review item H.
 
 CC (2026-11-25, Andrej): the declared horizon (two years, the newest window's span; no gap; test windows 2022 with 2023, then 2021, then 2020) is checked and signed off as implemented, option D ("Perfect, I sign off."). Asked first whether a rule or the framework stood against windows of unequal length: neither does. The window length is the curator's judgment, the rule on small windows asks for the wider window where a short one would only add noise, the horizon check measures the newest window, and ten temporal definitions of the working copy build their windows in `_make_splits` as this one does.
 
@@ -258,7 +256,7 @@ CC (2026-11-25, Andrej): verdict ship; nothing open in the review. The build is 
 
    **Answer (AI, 2026-11-24, later):** yes, and with it and one new measurement the walk reaches the entry-date leaf with option C.
    - The gap: the catalogue's entry-date question `[CAT.entry-date]` asks whether each item carries a final date of entry with a final label. Unlike the order question of the event logs `[ORDER.order]`, which accepts an order rebuilt from the data and checked (SPLIT-22), it never asks whether a final date can be rebuilt. Here it can: the year a compound's last measurement arrives (option C's key) makes every training label final at its cut.
-   - The arrival question `[CAT.arrival]`, its first half measured now (one Slurm job on the shipped frame): what the catalogue takes in shifts with the entry year. Each forward window's mix of protein families, organisms and sources differs from its training side's 10 to 30 times more than a random split's (total variation distance, 0 = same mix):
+   - The arrival question `[CAT.arrival]`, its first half measured now (one run on the shipped frame): what the catalogue takes in shifts with the entry year. Each forward window's mix of protein families, organisms and sources differs from its training side's 10 to 30 times more than a random split's (total variation distance, 0 = same mix):
 
      | Window (C: the year a compound's measurements end) | Families | Random | Organisms | Random | Sources | Random |
      |---|---|---|---|---|---|---|

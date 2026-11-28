@@ -7,7 +7,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -16,6 +17,7 @@ from data_foundry.v2 import (
     Smiles,
     Source,
     TaskSummary,
+    TimeBasis,
     canonical_smiles,
     drop_columns,
     encode_smiles,
@@ -156,12 +158,30 @@ class QsarBioconcentration(AbstractCuratedDataset):
         - logKOW_type is not shipped (Lennart, CC 2026-11-02, CLEAN-22): the flag that marked measured against predicted was added on 2026-10-26 so a user could drop the predicted rows. What takes it out of "keep every relevant feature" is not its size but what it is: it records how the authors filled their 2015 table, not a property of the chemical, the shape of `early_learning_predictors`' `teacher_duration` (CLEAN-22, 2026-10-30). It carries nothing a model can use either, measured on 2026-11-02 over the 30 splits with untuned LightGBM on the recommended encoding (macro ROC AUC): 0.534 alone against 0.5 for chance, nothing at all on top of the structure (0.6806 with it, 0.6806 without it), -0.0013 in the full model. The logKOW itself is worth +0.0121 over the encoding alone, better on 22 of 30 splits, which is why it stays. The provenance is this note and decision table 4; the price is that the 122 predicted rows are no longer identifiable from the shipped frame, so the logKOW ships as 84% measurement and 16% consensus prediction with no marker on the row (CLEAN-24's "measured properties stay" is qualified for it).
         - No leak in either column (checked 2026-11-02): the class is a band around the TGD line through the measured logBCF, which is dropped, and the logKOW alone scores macro ROC AUC 0.629. The band reproduces the shipped class for 94.7% of the rows with a measured logKOW but for only 72.5% of the 122 predicted ones, so the value we ship for those rows is not the number the authors read their label from. The class shares do differ by provenance (lipid storage 61% of the measured rows, 48% of the predicted ones), which is what the flag's 0.534 measures: which chemicals get a logP measured, not which mechanism they have. RDKit's MolLogP, a logKOW computed from the structure, is in the recommended encoding, and a model on that encoding predicts the table's logKOW out of fold at R-squared 0.877, mean absolute error 0.44 log units against a spread of 1.86.
         - Dropped CAS (registry numbers, an identifier) and Set (the authors' random 75/25 split).
-        - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01): the repaired SMILES in RDKit's canonical form (`canonical_smiles`; no salts here), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). From 2026-10-14 to 2026-11-01 the definition shipped RDKit's 193 varying descriptors in place of the string. The 9 descriptors do not tell positional isomers apart (61 chemicals share them with another, 14 of those with another class); in the recommended encoding every chemical has its own values (decision table). Default LightGBM's macro ROC AUC on the first 15 of our splits: 0.745 with the 9, 0.757 with RDKit's descriptors added (better on 12 of 15 splits); the MACCS keys next to the descriptors change it by -0.003 (LightGBM) and +0.009 (random forest; 2026-11-01). The SMILES read as text (character n-grams) lowered LightGBM's macro ROC AUC from 0.735 to 0.723 next to the 9 descriptors (run of 2026-10-14, settings not recorded).
+        - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01): the repaired SMILES in RDKit's canonical form (`canonical_smiles`; no salts here), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.special.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). From 2026-10-14 to 2026-11-01 the definition shipped RDKit's 193 varying descriptors in place of the string. The 9 descriptors do not tell positional isomers apart (61 chemicals share them with another, 14 of those with another class); in the recommended encoding every chemical has its own values (decision table). Default LightGBM's macro ROC AUC on the first 15 of our splits: 0.745 with the 9, 0.757 with RDKit's descriptors added (better on 12 of 15 splits); the MACCS keys next to the descriptors change it by -0.003 (LightGBM) and +0.009 (random forest; 2026-11-01). The SMILES read as text (character n-grams) lowered LightGBM's macro ROC AUC from 0.735 to 0.723 next to the 9 descriptors (run of 2026-10-14, settings not recorded).
         - Repaired rows, 6: three pairs carry each other's SMILES and descriptors (benzene and cyclohexane, naphthalene and tetralin, chlorobenzene and chlorocyclohexane; CAS numbers looked up in Wikidata and PubChem). The BCF and the class belong to the CAS number, as the 2015 table lists all six with their right SMILES and the file's logBCF, and the descriptors follow the SMILES, so we swap the SMILES and the 9 descriptors back within each pair.
         - Dropped rows, 3: triticonazole and two dioxins carry the structure of another chemical and have no partner row to repair them from.
         - Split (Lennart, CC 2026-10-26, SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold (the ring skeleton) of the repaired SMILES (`scaffold_groups`). The 42 congener series (260 chemicals, such as 64 biphenyls and 24 naphthalenes) and the other shared skeletons stay on one side; chemicals without a ring (104) and those whose skeleton is the bare benzene ring (262, 34%: more than a tenth of the set and no series) are groups of their own. A random split put relatives on both sides: a random forest scored macro ROC AUC 0.779 on test chemicals whose scaffold was in training and 0.655 on the others; under the groups 6.4% of the test chemicals have a training analog at Tanimoto 0.7 or more (Morgan radius 2, 2,048 bits), against 12.6% at random. The source split at random; qsar_oral_toxicity and drug_induced_autoimmunity_prediction group on the scaffold too.
         - The authors' 9 Dragon descriptors are dropped (Lennart, CC 2026-10-26, LEAK-31): the authors selected them on their 584 training chemicals, which sit in our test folds too. They come from Dragon 6 (commercial software), and the pool they were selected from is not published. Removing them costs nothing measurable: a random forest scores macro ROC AUC 0.760 with them and 0.759 without on 30 of our splits (paired -0.002, SE 0.001); MLOGP among them was a calculated logKOW, which the measured logKOW and RDKit's MolLogP now carry.
     """
+    split_leaf = "L-FAMILY.key"
+    time_basis = TimeBasis(
+        "UnseenGroup",
+        """
+        the use case predicts for
+        chemicals not tested yet, which whole scaffolds held out stand for. A chemical's bioconcentration in fish is a
+        fixed property of the chemical, and the assessor judges an untested chemical before a fish test. Dated by CAS
+        through NITE's workbook of the Japanese CSCL carp tests (`000064113.xlsx`, with the test year): 347 of 776
+        chemicals (44.7%), 1975 to 2007, whose BCF agrees with the shipped logBCF (correlation 0.965). Three expanding
+        windows by test year on the dated chemicals hold out no more than the scaffold groups on the same test
+        chemicals (random forest log loss 0.798 forward, 0.768 scaffold-disjoint, 0.751 random; close training analogs
+        3.8% forward against 4.6% scaffold-disjoint), so the scaffold split stays and no row is dropped. Not tested:
+        the arrival order of the 429 undated chemicals, which hold twice the share of class 2 (10.5% against 5.5%).
+        """,
+        set_by="Andrej",
+        on="2026-11-13",
+        note="`Timeless` before, 2026-11-12, Andrej",
+    )
 
     # Task
     target = "bioconcentration_mechanism"

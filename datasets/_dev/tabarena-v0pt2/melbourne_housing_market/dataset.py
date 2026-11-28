@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -216,6 +217,7 @@ class MelbourneHousingMarket(AbstractCuratedDataset):
         target_transform="log",
     )
 
+    split_leaf = "L-ORDER.windows"
     # Splits: 9 windows of 3 weekly result sheets (the 3 x 3 an IID task of this size would get).
     temporal = Temporal(
         on="Date",

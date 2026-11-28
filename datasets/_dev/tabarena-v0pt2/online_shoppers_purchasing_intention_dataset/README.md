@@ -2,25 +2,25 @@
 report_format: data-foundry-report-v2
 unique_name: online_shoppers_purchasing_intention_dataset
 container_format: 2
-checksum: v2:3a134cceff4c6641bad92674a5b6c4a5cc299c16dc923993a159b9ade7c8f606
+checksum: v2:3a5f5f3b8c3946af070bab09dcf3affe7ab01cfe591934dac37e15aebf687ed0
 build:
-  uuid: 01a111fc-b5f1-748b-a755-99b0a7c15a25
-  checksum: v2:97076c1ab7ef8a7b53470378967dcdb5fc10d5358da47b31dbcde92a3b9a5ec2
-  built_at: '2026-10-06T16:12:16+00:00'
-  path: online_shoppers_purchasing_intention_dataset/01a111fc-b5f1-748b-a755-99b0a7c15a25
+  uuid: 01a21800-e00d-7c78-88fd-98e49ebd9ea8
+  checksum: v2:3a5f5f3b8c3946af070bab09dcf3affe7ab01cfe591934dac37e15aebf687ed0
+  built_at: '2026-11-26T13:17:21+00:00'
+  path: online_shoppers_purchasing_intention_dataset/01a21800-e00d-7c78-88fd-98e49ebd9ea8
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
   n_rows: 6875
-  n_features: 16
+  n_features: 15
   dtypes:
     category: 8
     float64: 6
@@ -32,34 +32,56 @@ task:
   metric: roc_auc
   metric_origin: fallback
   scoring_columns: null
-  split_regime: iid
+  split_regime: grouped_non_iid
   stratify_on: Revenue
   time_on: null
-  group_on: null
-  group_labels: null
+  group_on: Month
+  group_labels: per_sample
   group_time_on: null
-  grouping: null
+  grouping:
+    prediction_unit: row
+    aggregation: null
+    context: none
+    n_groups: 7
+    test_groups_per_fold:
+      min: 1
+      max: 1
 splits:
-  n_repeats: 3
-  n_folds: 3
+  n_repeats: 1
+  n_folds: 7
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
   time_gap: null
   time_gap_unit: null
+  reason: 'Leave one month out (Andrej, 2026-11-19): seven splits, one repeat, each
+    testing one month and training on the other six. The months and their visits,
+    each with the train side''s share of the 6,875 visits: June 288 (95.8%), July
+    432 (93.7%), August 433 (93.7%), September 448 (93.5%), October 549 (92.0%), November
+    2,998 (56.4%) and December 1,727 (74.9%). A split by time is out: only December
+    can train on half the visits in time order, and the file order within a month
+    is not the order of days. The month is the group column and no model input. Repeats
+    would give the same seven splits.'
   n_train:
-    min: 4583
-    max: 4584
+    min: 3877
+    max: 6587
   n_test:
-    min: 2291
-    max: 2292
+    min: 288
+    max: 2998
 bundle_checks:
   ok: true
   errors: []
   warnings: []
   infos:
   - dataset_duplicate_rows
-  accepted: {}
+  - groups_not_clustered
+  accepted:
+    groups_test_groups_few: 'Decided (Andrej, 2026-11-19): the seven months June to
+      December are all the data holds, each held out once; testing one unseen month
+      at a time is the split, and each fold still scores 288 to 2,998 visits.'
+    groups_largest_share_high: 'November is a real month, not a catch-all value: 2,998
+      of the 6,875 visits (44%) as published; when it is the test month the model
+      trains on the other six (3,877 visits, 56.4%).'
 decisions: []
 ---
 
@@ -67,9 +89,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `Revenue`, scored with `roc_auc` on IID splits. 6,875 rows and 16 features. Source: UCI (2018).
+Binary classification of `Revenue`, scored with `roc_auc` on grouped splits by `Month`. 6,875 rows and 15 features. Source: UCI (2018).
 
-Built as `01a111fc-b5f1-748b-a755-99b0a7c15a25` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3a134cceff4c6641bad92674a5b6c4a5cc299c16dc923993a159b9ade7c8f606`, so the build is stale. See [Build](#build).
+Built as `01a21800-e00d-7c78-88fd-98e49ebd9ea8` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -81,9 +103,9 @@ Built as `01a111fc-b5f1-748b-a755-99b0a7c15a25` on 2026-10-06, but `dataset.py` 
 
 **Predicted.** Whether the visit ended in a purchase (1,348 of 6,875 visits, 20%).
 
-**Known at prediction time.** How many administrative, informational and product pages the visit opened and how long it spent on them, the pages' bounce, exit and value figures from the shop's analytics, the month, weekend, new or returning visitor, operating system, browser, region and traffic source.
+**Known at prediction time.** How many administrative, informational and product pages the visit opened and how long it spent on them, the pages' bounce, exit and value figures from the shop's analytics, weekend, new or returning visitor, operating system, browser, region and traffic source.
 
-**What the test data stands for.** Random visits of the same months.
+**What the test data stands for.** Each month, June to December, is held out once and predicted from the other six (56% to 96% of the visits); the month is the group, not an input.
 
 **Our changes to the source.** We keep only June to December: before June every buyer's page value is above zero and alone separates buyers almost perfectly, which suggests it counts the visit's own purchase.
 
@@ -96,7 +118,7 @@ Built as `01a111fc-b5f1-748b-a755-99b0a7c15a25` on 2026-10-06, but `dataset.py` 
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/online_shoppers_purchasing_intention_dataset.md`](../../../../curation/records/online_shoppers_purchasing_intention_dataset.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/online_shoppers_purchasing_intention_dataset.md`](../../../../curation/records/online_shoppers_purchasing_intention_dataset.md)
 - The original source: <https://doi.org/10.24432/C5F88Q>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -127,14 +149,16 @@ Only curators run `build`, when the dataset ships.
 | year | 2018 |
 | domain | business & marketing |
 | license | CC BY 4.0 |
-| data_tags | IID |
+| data_tags | Non-IID, Grouped, ForcedGroupedFromTemporal |
 | reference | sakar2019real |
 | rows x columns | 6,875 x 17 |
 | task.target | Revenue |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
-| task.split_regime | iid |
+| task.split_regime | grouped_non_iid |
 | task.stratify_on | Revenue |
+| task.group_on | Month |
+| task.group_labels | per_sample |
 
 **Metric**
 
@@ -190,35 +214,74 @@ The first 5 of 6,875 rows of the final frame (random rows: the frame is shuffled
 - Anomaly: the data contains time-based features that were preprocessed to create a time-invariant predictive task.
 - We keep only the sessions from June to December (6,875 of 12,330). "PageValues" is meant as a historical Google Analytics metric per page, stored and updated at regular intervals, averaged over the pages a session visits (Sakar et al. 2019, Sec. 2.1). In February, March and May, however, every one of the 560 buyers has PageValues > 0 and PageValues alone separates buyers with ROC AUC 0.974, so these values most likely include the session's own purchase (the page-value table was probably computed over that period). From June on, 27% of buyers have PageValues = 0 and its AUC is 0.814, as expected for a historical page metric. We keep PageValues and drop the early months; this cannot be proven from the data, as a change in site tracking would leave a similar pattern.
 - We drop "SpecialDay": it is non-zero only in February and May, so it is constant on the kept months.
-- We keep the IID split: each session belongs to a different user, sampled over one year (Sakar et al. 2019, Sec. 2.1), and only the month is known.
+- Leave one month out (Andrej, 2026-11-19: "Leave one month out, but this would still be ForcedGrouped"), in
+  place of 3 x 3 random folds: only December can train on half the visits in time order and the file order
+  within a month is not the order of days, so three time windows do not exist. `Month` is the group column and
+  no model input (until 2026-11-19 it was an ordered category): a held-out month is a level the model never
+  saw in training, so it would carry nothing but an unseen level.
+- 40 rows repeat another (2026-11-11, Andrej; LEAK-18, LEAK-41): one-page product visits with no time, a bounce
+  and no page value, all without purchase; different users per Sakar et al. 2019, kept as natural repeats.
+  The link is at chance (37 repeats, 28 to 45 in 200 shuffles of the visitor details, against 40 observed),
+  and 0.7% to 0.9% of test rows have an identical row in training.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
   categories in the order of the source's codebook (`ORDINAL_LEVELS`).
 - The target (2026-11-01, CLEAN-25): `Revenue` ships its classes as words (True means revenue). Binary: "Yes" is
   the event, the class that sorts second, so it is the metrics' positive class.
+- Time basis: ForcedGroupedFromTemporal (Andrej, 2026-11-19): the visits carry their month but no year; the stationary-relation test reads not flat (November: LightGBM +0.054 ± 0.007, Kumo-Tabular +0.039 ± 0.004 ROC AUC, floors 0.003-0.004; the purchase share moves from 10% in June to 25% in November), so whole months are held out, each once. The test months are unseen, not later: each fold also trains on the months after its test month. That does not raise the score: for August to December, at the same training size, training on the other months, earlier and later, scores below training on the earlier months alone (mean over the five months -0.005 ROC AUC for LightGBM, -0.009 random forest, -0.014 logistic regression, -0.015 TabPFN; 10 draws each); only November gains from later months (+0.004 to +0.010).
 
 ## Splits
 
-Default splits.
+Leave one group out: one repeat of 7 folds, fold i testing the i-th group of `Month` (June, Jul, Aug, Sep, Oct, Nov, Dec) and training on all the others.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 4,583 to 4,584 rows, test 2,291 to 2,292 rows.
+Leave one month out (Andrej, 2026-11-19): seven splits, one repeat, each testing one month and training on the other six. The months and their visits, each with the train side's share of the 6,875 visits: June 288 (95.8%), July 432 (93.7%), August 433 (93.7%), September 448 (93.5%), October 549 (92.0%), November 2,998 (56.4%) and December 1,727 (74.9%). A split by time is out: only December can train on half the visits in time order, and the file order within a month is not the order of days. The month is the group column and no model input. Repeats would give the same seven splits.
+
+1 repeat(s) x 7 fold(s) with seed 4267; train 3,877 to 6,587 rows, test 288 to 2,998 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 4583 | 2292 |
-| 0 | 1 | 4583 | 2292 |
-| 0 | 2 | 4584 | 2291 |
-| 1 | 0 | 4583 | 2292 |
-| 1 | 1 | 4583 | 2292 |
-| 1 | 2 | 4584 | 2291 |
-| 2 | 0 | 4583 | 2292 |
-| 2 | 1 | 4583 | 2292 |
-| 2 | 2 | 4584 | 2291 |
+| 0 | 0 | 6587 | 288 |
+| 0 | 1 | 6443 | 432 |
+| 0 | 2 | 6442 | 433 |
+| 0 | 3 | 6427 | 448 |
+| 0 | 4 | 6326 | 549 |
+| 0 | 5 | 3877 | 2998 |
+| 0 | 6 | 5148 | 1727 |
+
+## Group structure
+
+One group is a calendar month of visits, June to December of one year (the year is not in the data). The shop scores visits of months its model has not seen, and the purchase share moves from month to month (10% in June to 25% in November), so whole months are held out. Each row is one visit by a different user (Sakar et al. 2019, Sec. 2.1) and one prediction, made from that visit alone.
+
+| field | value |
+|---|---|
+| group column | `Month` |
+| labels | per_sample |
+| order inside a group | none |
+| prediction unit | row |
+| known about a group when predicting | none |
+
+| statistic | value |
+|---|---|
+| groups | 7 |
+| rows per group (min / median / max) | 288 / 448.0 / 2,998 |
+| largest group | 43.6% of the rows |
+| test groups per fold | 1 |
+| groups of two or more rows with a single label | 0.0% |
+| nearest neighbour in the same group | 30.2% of the rows (chance: 27.3%) |
+| label variance explained by the group | 0.02 (shuffled groups: 0.00) |
+
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `data-foundry probe group`.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (28 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 40 exact duplicate row(s) (0.6% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
+- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (30.2% of nearest neighbours vs 27.3%), and the group explains no more of the label than shuffled groups (0.02 vs 0.00). (hint: The grouping may not be needed: compare IID and grouped scores with `data-foundry probe group`.)
+
+Accepted on purpose:
+
+- `groups_test_groups_few`: Decided (Andrej, 2026-11-19): the seven months June to December are all the data holds, each held out once; testing one unseen month at a time is the split, and each fold still scores 288 to 2,998 visits.
+- `groups_largest_share_high`: November is a real month, not a catch-all value: 2,998 of the 6,875 visits (44%) as published; when it is the test month the model trains on the other six (3,877 visits, 56.4%).
 
 ## Data checks
 
@@ -316,11 +379,10 @@ Default splits.
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-b5f1-748b-a755-99b0a7c15a25 |
-| checksum | v2:97076c1ab7ef8a7b53470378967dcdb5fc10d5358da47b31dbcde92a3b9a5ec2 |
-| built_at | 2026-10-06T16:12:16+00:00 |
-| path | online_shoppers_purchasing_intention_dataset/01a111fc-b5f1-748b-a755-99b0a7c15a25 |
+| uuid | 01a21800-e00d-7c78-88fd-98e49ebd9ea8 |
+| checksum | v2:3a5f5f3b8c3946af070bab09dcf3affe7ab01cfe591934dac37e15aebf687ed0 |
+| built_at | 2026-11-26T13:17:21+00:00 |
+| path | online_shoppers_purchasing_intention_dataset/01a21800-e00d-7c78-88fd-98e49ebd9ea8 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:3a134cceff4c6641bad92674a5b6c4a5cc299c16dc923993a159b9ade7c8f606` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

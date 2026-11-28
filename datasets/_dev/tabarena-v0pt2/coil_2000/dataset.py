@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis, decode
+
+from data_foundry.definition import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis, decode
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -1120,6 +1121,7 @@ class Coil2000(AbstractCuratedDataset):
           words (`CODE_LABELS`), in the same order; 2 scores with no words per level are numbers (`SCORES`):
           `averageIncome`, `purchasingPowerClass`.
     """
+    split_leaf = "L-FORCED.random"
     time_basis = TimeBasis(
         "ForcedIIDFromTemporal",
         """

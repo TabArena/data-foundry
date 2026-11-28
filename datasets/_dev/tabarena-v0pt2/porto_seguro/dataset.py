@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, decode
+
+from data_foundry.definition import AbstractCuratedDataset, FeatureTypes, Metric, Source, TaskSummary, TimeBasis, decode
 
 
 class PortoSeguro(AbstractCuratedDataset):
@@ -23,7 +24,7 @@ class PortoSeguro(AbstractCuratedDataset):
         known=(
             "The insurer's anonymised features about the driver, the car and the region, whose meanings are hidden."
         ),
-        split="Random policy holders of the same period.",
+        split="Random policy holders priced at the same moment.",
         changes=("We drop a block of engineered features that the top competition solutions also dropped."),
         fit="direct",
         fit_reason=(
@@ -73,6 +74,22 @@ class PortoSeguro(AbstractCuratedDataset):
         - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
           event, the class that sorts second, so it is the metrics' positive class.
     """
+    split_leaf = "L-FORCED.random"
+    time_basis = TimeBasis(
+        "ForcedIIDFromTemporal",
+        """
+        policy holders priced at one moment, the target a
+        claim within the following year (the host's framing; record: Samples: One Moment, Target: Fixed Delay). One pricing
+        moment is one period, too few for three windows (SPLIT-8). The id is a random shuffle and no date survives, so
+        neither the moment nor a later pricing round can be checked. Leak test across the split: no repeated policy
+        holder, no order along the id, the region code in ps_reg_03 held out scores the same (ROC AUC 0.639). Not
+        tested: a later pricing round. Not taken as stationary (Andrej, 2026-11-18): A consumer pricing task with
+        market and selection drift, an unstated period and anonymised features; the measured insurance neighbours are
+        mostly inconclusive, so the evidence is mixed at best.
+        """,
+        set_by="Andrej",
+        on="2026-11-16",
+    )
 
     # Task
     target = "target"

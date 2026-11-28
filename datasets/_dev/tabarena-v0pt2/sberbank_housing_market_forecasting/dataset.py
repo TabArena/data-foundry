@@ -7,7 +7,8 @@ from pathlib import Path
 
 import pandas as pd
 import polars as pl
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Metric,
@@ -192,8 +193,8 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         fit_reason=(
             "The flat's and district's figures are known at the sale, and later months stand for the sales to come; "
             "the use case ties no window length, so the one-month windows are ours. The economic statistics are "
-            "lagged by one period because their release dates are not given; a monthly figure may still come out a "
-            "few days after a sale early in the month."
+            "lagged one period, as their release dates are not given; a monthly figure may still come out days after "
+            "a sale. The neighbourhood figures are one read of unknown date, kept."
         ),
     )
 
@@ -258,6 +259,12 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
           on more than half the sales, in place of three seven-month windows (Lennart, 2026-11-11) whose oldest,
           October 2013 to April 2014, trained on 35.4%; the use case ties no length, and no source gives Sberbank's
           refit cadence (splits comment).
+        - Potential leak, kept on purpose (Andrej, 2026-11-11): the district statistics and the neighbourhood features
+          (distances, counts of facilities nearby) are one read of a date the source does not give: none of 145
+          districts and none of 2,991 buildings sold in more than one year changes in them over 2011-2015, while the
+          city opened new metro stations (2014-2015) and other facilities. Older sales may carry facilities that came
+          after them. They stay: the read cannot be dated row by row and the data owner released it for its
+          competition. Revisit if dated district statistics are found.
         - Columns recorded on one side of a window only (Lennart, 2026-11-11): the macro file gives `provision_retail_space_sqm` for 2011 and 2012 only and the two education shares (`modern_education_share`, `old_education_build_share`) from 2013 on, so their one-year lags are recorded in 2012-2013 and from 2014: the newest windows test without the first, and the oldest trains without the other two. Kept: the data as published.
     """
 
@@ -283,15 +290,12 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         months, 1 December 2014 to 30 June 2015; the competition the eleven months after its training data, July 2015
         to May 2016). So the windows follow the count: half the sales lie before 21 February 2014, so a window trains
         on half or more only from March 2014, and one calendar month is the simplest length that fits nine windows
-        above half into March 2014 to June 2015. The windows are every other month from June 2015 back to April 2014,
-        and March 2014. Test sales, then the train side and its share of the 28,321 sales: June 2015 394, 27,927
-        (98.6%); April 2015 724, 26,687 (94.2%); February 2015 451, 25,651 (90.6%); December 2014 1,583, 23,674
-        (83.6%); October 2014 1,044, 21,466 (75.8%); August 2014 771, 19,646 (69.4%); June 2014 1,179, 17,790 (62.8%);
-        April 2014 1,214, 15,524 (54.8%); March 2014 1,117, 14,407 (50.9%). The windows hold 2015 with 394 to 724
+        above half into March 2014 to June 2015. The windows hold 2015 with 394 to 724
         sales a month, the rush of December 2014 (the month the ruble fell) and the busy 2014 at 771 to 1,214 a month.
         No gap: a sale's price is known when it is signed, and the economic statistics are already read one period
         back for their release delay.
     """
+    split_leaf = "L-ORDER.windows"
     temporal = Temporal(
         on="timestamp",
         splits=TemporalSplits(

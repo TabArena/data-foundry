@@ -7,15 +7,13 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
 tags:
 - Larger IID Data
 - 'Samples: Over Time'
 - 'Time: Lost'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - 'Entities: Recur'
 - Database Snapshot
 collections:

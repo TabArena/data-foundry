@@ -15,7 +15,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from data_foundry.schema import FORCED_TIME_TAGS, TIME_BASIS_TAGS, current_tag
+from data_foundry.schema import FORCED_TIME_TAGS, TIME_BASIS_TAGS
 
 if TYPE_CHECKING:
     from data_foundry.curation.record import CurationRecord
@@ -31,7 +31,7 @@ COLLECTION_TYPES = (
 )
 """How a source collected its rows, one per record tag (SPLIT-34); the split decision tree starts from it (SPLIT-36)."""
 
-STRICT_COLLECTION_TYPES = False
+STRICT_COLLECTION_TYPES = True
 """Whether every definition record must name a collection type. False while the records are typed in several
 changes (a record with neither a type nor a collection fact is left out); the change that completes the typing sets it
 True."""
@@ -87,12 +87,12 @@ def is_typed(tags: set[str]) -> bool:
 
 
 def definition_basis(cls: type) -> tuple[set[str], str]:
-    """A loaded definition's time-basis tags (as its container carries them) and its regime: ``iid``, ``grouped`` or
-    ``temporal``.
+    """A loaded definition's time-basis tag (the dataset metadata's ``time_basis``, as a set of none or one) and its
+    regime: ``iid``, ``grouped`` or ``temporal``.
     """
-    tags = set(cls.dataset_metadata.data_tags)
+    basis = cls.dataset_metadata.time_basis
     regime = "temporal" if cls.temporal is not None else "grouped" if cls.grouping is not None else "iid"
-    return {current_tag(t) for t in tags} & {*TIME_BASIS_TAGS, *FORCED_TIME_TAGS}, regime
+    return ({basis.tag} if basis is not None else set()) & {*TIME_BASIS_TAGS, *FORCED_TIME_TAGS}, regime
 
 
 def record_problems(tags: set[str], cls: type | None, *, strict: bool | None = None) -> list[str]:
@@ -110,7 +110,7 @@ def all_problems(records: list[CurationRecord], repo: Path) -> dict[str, list[st
     """Every definition record's contradictions, by unique name: each record with a ``v2_path`` against the definition
     it names (loaded through the registry, so inherited and computed tags count).
     """
-    from data_foundry.v2.registry import load_definition  # noqa: PLC0415 - the curation package imports v2 lazily
+    from data_foundry.definition.registry import load_definition  # noqa: PLC0415 - curation loads it lazily
 
     out = {}
     for record in records:

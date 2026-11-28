@@ -5,7 +5,17 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Source, Spectrum, TaskSummary
+
+from data_foundry.definition import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    Source,
+    Spectrum,
+    TaskSummary,
+    TimeBasis,
+)
 
 
 class MicroMass(AbstractCuratedDataset):
@@ -71,6 +81,19 @@ class MicroMass(AbstractCuratedDataset):
         - Each strain has one species; the 20 species have 7 to 20 strains each (median 10; Escherichia coli 20, Haemophilus influenzae 18, Enterobacter cloacae 16; from the v1 exploration, counted 2026-10-22).
         - The spectrum is declared as one (`special_features`, CLEAN-26, 2026-11-02) in the state the instrument's software left it: a peak list on 1,300 fixed bins ("pre-processed by the standard algorithm used for routine (culture-based) bacterial identification, which provided a peak-list representation", the archive's README). The m/z of the bins is not published, so the axis is the bin number; the recommended encoding leaves a peak list as it is.
     """
+    split_leaf = "L-EXP.item"
+    time_basis = TimeBasis(
+        "Timeless",
+        """
+        the species is a fixed property of the strain, known from the reference collection
+        before the culture, and the row is the spectrum of that culture. The release holds no acquisition date, run or
+        plate (the metadata file has the species and the strain number only), and the file order carries no campaign
+        order (time probe, 2026-11-06: no order drift, p 0.58). The panel is a single 2013 deposit, the strain
+        identifier is an integer with no accession or date, and no arrival order can be recovered, so the strain
+        key stays the split (2026-11-12). Not tested: an isolate of a species or a strain type
+        the panel does not hold, and a run batch shared across strains, which no column records.
+        """,
+    )
 
     # Task
     target = "Species"

@@ -4,17 +4,25 @@ name: Tunisian Fraud Detection Challenge
 checked_by:
 - Myunghwan
 - Lennart
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Myunghwan
+- Andrej
 suggestion: 'Yes'
 priority: 2
 decision_markers:
 - Selection Bias
+tags:
+- Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Target: Revised Later'
+- 'Entities: Recur'
+- 'Features: Read Later'
+- Panel Data
 collections:
 - New (BeyondArena)
 original_source: Zindi
 year: '2019'
+collection_period: 2013-2018
 domain: finance
 required_split:
 - Temporal (NON-IID)
@@ -70,7 +78,7 @@ CC (2026-11-04, Lennart): the `Anonymized` data tag is dropped ("drop it"): only
 
 CC (2026-11-04, Lennart): fiscal year 2018 is cut (LEAK-24, "do the change"), leaving three yearly windows 2015-2017; its three 2018-only VAT columns leave with it. The retrospective ranking stays ("okay let us keep it"). The source is Zindi's own file: Lennart's download (2026-11-04) is byte-identical to the file used, so no re-sourcing; the download description gives its SHA-256.
 
-**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled.
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review in PR #33 and the research behind each mark, and all are settled.
 
 **Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes (LEAK-24 holds for 2017, measured by four agents, so no further cut; LEAK-10 triggered by `CTR_CESSAT`, a status looked up at extraction, and by `TVA_RESTIT`, whose fill differs by label (1.30 against 1.03), both to drop; USE-10 and SPLIT-9 unsettled: the registry columns rebuild the dropped taxpayer id, and a test taxpayer's other-year labels help by +0.12 to +0.19 RMSE beyond their size, so known history or not yet known must be decided first; SPLIT-14 and MET-2 to MET-4 hold; the notes now give these numbers); disputed: USE-10 and SPLIT-9 (the previous label as a feature, or the audit planner's framing with the test taxpayers' training rows removed), SPLIT-10 (an exception or an application), LEAK-10 for `TVA_MTORDTVA` and `TVA_MTDJRTVA`; for the curator: issues 1-5. Priority 2: gap 0, use case 0, source +, shape +, risk - (use case: the source names the tax authority, but the fit is approximate, inspected dossiers only; source: Ministry of Finance data with a variable dictionary; shape: 20,930 taxpayer-years, 100 mixed inputs, temporal; risk: issue 1, a measured shortcut through taxpayer labels, and two LEAK-10 fields, issues 2-3).
 
@@ -86,28 +94,33 @@ CC (2026-11-05, Lennart): the taxpayer's earlier adjustments are held history (R
 
 CC (2026-11-05, Lennart): the refund and regularisation fields stay under LEAK-38 as amended the same day (Review issue 5, B), named in `fit_reason` as kept. The 22 registry fields that stay were looked up at extraction, so LEAK-10 decides: they stay because no mechanism ties a registry change to the adjustment, unlike `CTR_CESSAT` (choice a; a LEAK-10 Cases row).
 
-CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+
+CC (2026-11-20, Andrej): the three cohort-year windows stay, below the target of nine (split check, windows item, A as implemented): a 2014 window would train on 29.0%, under the 30% floor; the reason is in the splits comment.
+
+CC (2026-11-20, Andrej): the three cohort-year windows are the tree's leaf Temporal · labels arrive later (the labels-arrive-later step added to the fill-in branches today; tunisian its example); gap 0 kept under it, as an audit's delay of years would leave fewer than three windows (Lennart's call of 2026-11-05 confirmed).
 
 ## Review
 
 **Outcome:** added. The Tunisian Ministry of Finance's labelled taxpayer-years from the 2019 Zindi challenge: 20,930
 rows of fiscal years 2013-2017 (2018 cut on your mark), the log of the principal tax adjustment as the source gives
 it, scored by the source's RMSE on three yearly windows (test 2017, 2016, 2015; every earlier year trains). The review
-panel recommends shipping after changes, with one validity question first (issue 1). Validity: LEAK-24 holds for
-2017, measured by four agents (labels in band; the smaller count is row selection), so no further cut; USE-10 and
-SPLIT-9 are not settled, because the dropped taxpayer id can largely be rebuilt from the registry columns and a test
-taxpayer's labels from other years help the model by +0.12 to +0.19 RMSE beyond their size (issue 1); LEAK-10 is
-triggered by `TVA_RESTIT`, whose fill differs by label (issue 3), and weakly by `CTR_CESSAT`, a status looked up at
-extraction (issue 2); neither is applied yet; LEAK-38 holds for the other refund and registry fields, now with the
-fill test in the note (issue 5 is its wording); USE-8 asks for the `Selection Bias` marker (issue 4); SPLIT-14 holds
+panel recommended shipping after changes, with one validity question first (issue 1); all five issues were
+settled on 2026-11-05 (Lennart). Validity: LEAK-24 holds for 2017, measured by four agents (labels in band; the
+smaller count is row selection), so no further cut; USE-10 and SPLIT-9 were open, because the dropped taxpayer id can
+largely be rebuilt from the registry columns and a test taxpayer's labels from other years help the model by +0.12 to
++0.19 RMSE beyond their size (issue 1, settled: the previous label ships as held history); LEAK-10 is triggered by `TVA_RESTIT`, whose fill differs by label (issue 3), and weakly by `CTR_CESSAT`, a status looked up at
+extraction (issue 2); both are dropped; LEAK-38 holds for the other refund and registry fields, now with the
+fill test in the note (issue 5 is its wording); USE-8: the `Selection Bias` marker is set (issue 4); SPLIT-14 holds
 (training shares 92.2, 77.4 and 56.5%); PROV-13: the download text named a file that does not exist; fixed.
 Weighed: the source's actor (the audit planner) and the L&T move of 2026-11-04 against your kept retrospective
 framing. Value: MET-2, MET-3 and MET-4 hold; RF 5.970 against a dummy at 7.056 on 3 of 3 splits. Quality: CLEAN-1
 (`TVA_CRDFIN` is the closing credit) and the stale counts after the 2018 cut are fixed in the notes.
 
-**Main points:** Give models the taxpayer's previous-year label, or remove the test taxpayers' training rows and
-move to the audit planner's framing (1)? Drop `TVA_RESTIT` (3) and `CTR_CESSAT` (2)? Add `Selection Bias` (4)?
-Record the refund fields as an application of LEAK-38 and amend its scope to named fields (5)?
+**Main points:** All five issues settled (Lennart, 2026-11-05): the taxpayer's previous-year label ships as held
+history, `previous_target` and `years_since_previous_target` (1, B); `CTR_CESSAT` (2) and `TVA_RESTIT` (3) dropped;
+`Selection Bias` set (4); the refund and registry fields kept under LEAK-38 as amended (5). The three cohort-year
+windows, below the target of nine, stay (Andrej, 2026-11-20). Nothing open.
 
 **Record judgment:** valid. Your 2026-11-04 CC lines (RMSE as declared, `Anonymized` dropped, 2018 cut, the
 retrospective ranking kept) are all in the definition. `data_foundry_status` still says `WIP (Triage)` while the

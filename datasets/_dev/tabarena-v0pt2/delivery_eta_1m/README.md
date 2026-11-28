@@ -2,24 +2,24 @@
 report_format: data-foundry-report-v2
 unique_name: delivery_eta_1m
 container_format: 2
-checksum: v2:70b7c56326c2c93d1c55f03486c13a4e1b9e2a372f269e12e898baca3780229a
+checksum: v2:530817ab594591b8b89bb4623d7fbe6308b4148f751af8d7895ffc80061f2426
 build:
-  uuid: 01a111fc-e6b7-7547-8e7f-790705764eb1
-  checksum: v2:f63bdebe625bde55f891f2178c53431cf853f7d16663f160e5d68cc165e224f1
-  built_at: '2026-10-06T16:13:38+00:00'
-  path: delivery_eta/versions/01a111fc-e6b7-7547-8e7f-790705764eb1
+  uuid: 01a217f6-c218-7256-8cc6-3468f6e21a14
+  checksum: v2:530817ab594591b8b89bb4623d7fbe6308b4148f751af8d7895ffc80061f2426
+  built_at: '2026-11-26T13:14:21+00:00'
+  path: delivery_eta_1m/01a217f6-c218-7256-8cc6-3468f6e21a14
   data_foundry_version: 0.0.5
-  git_sha: 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
-    python: 3.11.14
+    python: 3.12.3
     pandas: 2.3.3
     numpy: 2.1.3
     pyarrow: 20.0.0
     scikit-learn: 1.7.2
     polars: 1.41.1
-build_stale: true
+build_stale: false
 data:
-  n_rows: 2500000
+  n_rows: 15969869
   n_features: 221
   dtypes:
     category: 3
@@ -47,22 +47,47 @@ splits:
   time_horizon_unit: days
   time_gap: null
   time_gap_unit: null
+  reason: 'Each test window is one week, the length of TabReD''s own validation and
+    test periods (TabReD trains on 20 October to 11 December 2023, validates on 11-18
+    December and tests on 18-25 December). TabReD states no refit cadence, and a delivery
+    estimate looks only minutes ahead, so the length says how long one fitted model
+    serves. The orders run from 20 October 2023 to 7 January 2024, so only the five
+    weeks from 4 December on keep half the orders for training. Every other one of
+    them is a test window (CC 2026-11-10), newest first: 1-7 January 2024, the newest,
+    the New Year week; 18-24 December, TabReD''s test week, before Christmas; and
+    4-10 December, outside the holidays, an early-December week of long deliveries
+    (mean log minutes 1.910 against 1.778 in the newest week) with a train side that
+    holds only 10 days after the change of 23 November (curation_comments). 25-31
+    December and 11-17 December lie between them and are not tested. No gap is needed:
+    the orders pause overnight, and the last train order before each window is delivered
+    55 minutes to 2 hours 5 minutes before the window start (order time + delivery
+    time; before 4 December at 22:58 on 3 December), so no train label is unknown
+    at a refit (0 late orders in each of the 3 windows).'
   n_train:
-    min: 1000000
-    max: 1000000
+    min: 9706793
+    max: 15469869
   n_test:
     min: 500000
     max: 500000
   row_budget:
     train: 1000000
     test: 500000
+  train_sampling:
+    default: newest_year
+    unit: rows
+    stratify_on: null
 bundle_checks:
   ok: true
   errors: []
   warnings: []
   infos:
   - dataset_duplicates_skipped
-  accepted: {}
+  accepted:
+    splits_feature_missing_in_test: 'Decided (Lennart, 2026-11-10): the 45 features
+      `num_76` to `num_121` stop being recorded on 23 November 2023 at 11:00 and stay,
+      as the service''s own model met them (curation_comments, ''Kept on purpose'').
+      The check names 41 of them: 99% or more missing in the 18-24 December window,
+      42% on its train side.'
 decisions: []
 ---
 
@@ -70,15 +95,15 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `delivery_eta_minutes`, scored with `rmse` on temporal splits by `timestamp`. 2,500,000 rows and 221 features. Source: Kaggle (2024).
+Regression of `delivery_eta_minutes`, scored with `rmse` on temporal splits by `timestamp`. 15,969,869 rows and 221 features. Source: Kaggle (2024).
 
-Built as `01a111fc-e6b7-7547-8e7f-790705764eb1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:70b7c56326c2c93d1c55f03486c13a4e1b9e2a372f269e12e898baca3780229a`, so the build is stale. See [Build](#build).
+Built as `01a217f6-c218-7256-8cc6-3468f6e21a14` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
 **Question.** How long will it take to deliver an order from an online grocery store?
 
-**Use case.** When an order is placed, the grocery service estimates its delivery time, for example to show the customer an arrival time and to plan couriers; the model is refit every week (TabReD).
+**Use case.** When an order is placed, the grocery service estimates its delivery time, for example to show the customer an arrival time and to plan couriers.
 
 **One row.** One order of an online grocery store between 20 October 2023 and 7 January 2024 (TabReD release; the store is not named).
 
@@ -86,9 +111,9 @@ Built as `01a111fc-e6b7-7547-8e7f-790705764eb1` on 2026-10-06, but `dataset.py` 
 
 **Known at prediction time.** 221 anonymised features built from courier availability, navigation data and other aggregates (TabReD), including the time of the order.
 
-**What the test data stands for.** Each test window is one of the last three weeks (18 December 2023 to 7 January 2024), up to 500,000 orders each; training is a random million of all earlier orders, as for a model refit every week.
+**What the test data stands for.** Each test window is a week, the length of TabReD's own validation and test periods: the newest (1-7 January 2024) and every other week before it (18-24 and 4-10 December 2023), up to 500,000 orders each; training is every earlier order, of which a benchmark fits on a random million.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** Courier availability and route data are known when an order is placed, and the windows follow a weekly refit. The features are anonymised, so their timing cannot be checked.
+> **Use case fit: direct (the rows, features and split mirror the use case).** Courier availability and route data are known when an order is placed. The features are anonymised, so their timing cannot be checked.
 
 ## Files in this folder
 
@@ -97,7 +122,7 @@ Built as `01a111fc-e6b7-7547-8e7f-790705764eb1` on 2026-10-06, but `dataset.py` 
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/delivery_eta.md`](../../../../curation/records/delivery_eta.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/delivery_eta.md`](../../../../curation/records/delivery_eta.md)
 - The original source: <https://www.kaggle.com/datasets/pcovkrd84mejm/delivery-eta>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -130,8 +155,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC-BY-NC-SA-4.0 |
 | data_tags | Non-IID, Temporal, Anonymized |
 | reference | rubachev2025tabred |
-| version of | delivery_eta |
-| rows x columns | 2,500,000 x 222 |
+| rows x columns | 15,969,869 x 222 |
 | task.target | delivery_eta_minutes |
 | task.problem_type | regression |
 | task.metric | rmse |
@@ -173,15 +197,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 2,500,000 rows of the final frame (the oldest rows: the frame is sorted by `timestamp`); 12 of 222 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 15,969,869 rows of the final frame (the oldest rows: the frame is sorted by `timestamp`); 12 of 222 columns, the target first. Cells are cut at 40 characters.
 
 | delivery_eta_minutes | num_0 | num_1 | num_2 | num_3 | num_4 | num_5 | num_6 | num_7 | num_8 | num_9 | num_10 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 1.76644 | 2.87776 | 4.26592 | 4.58546 | 5.19934 | 2.85111 | 3.01648 | 3.0936 | 3.26743 | 0.980583 | 0.578792 | 1.09785 |
+| 0.416515 | 2.77205 | 2.74745 | 2.80822 | 2.8366 | 2.7563 | 2.74742 | 2.79992 | 2.85065 | 0.294473 | -0.0340245 | 0.231641 |
+| 0.209721 | 2.77205 | 2.74745 | 2.80822 | 2.8366 | 2.78356 | 2.75517 | 2.8052 | 2.84538 | -0.897794 | -1.43549 | -0.795323 |
 | 2.30757 | 2.87776 | 4.26592 | 4.58546 | 5.19934 | 2.8455 | 3.057 | 3.16072 | 3.48135 | 0.421408 | 0.265056 | 0.667419 |
-| 2.37335 | 2.20253 | 2.24102 | 2.19689 | 2.27305 | 2.14828 | 2.14395 | 2.16128 | 2.24531 | 1.55418 | 0.217806 | 1.53769 |
-| 2.09392 | 2.0331 | 2.09655 | 2.25661 | 2.65173 | 1.99777 | 2.06412 | 2.15834 | 2.56959 | 1.76777 | 0.352779 | 1.57129 |
-| 1.73166 | 2.29695 | 2.16969 | 2.09652 | 2.00423 | 2.37622 | 2.21581 | 2.11726 | 2.02432 | 0.234984 | -0.92861 | 0.387075 |
-| 2.7526 | 2.20253 | 2.24102 | 2.19689 | 2.27305 | 2.16894 | 2.19148 | 2.19994 | 2.27757 | 0.628582 | 0.0999297 | 0.621098 |
+| 1.73166 | 3.1192 | 2.87795 | 2.87785 | 2.84499 | 3.10175 | 2.97475 | 2.9216 | 2.8645 | 0.625674 | -0.537047 | 1.08721 |
 
 ## Curation notes
 
@@ -192,26 +216,43 @@ We start with data from TabRed, which already comes preprocessed.
 - The target is the natural log of the minutes, as in TabReD (the column keeps its name). TabReD's reason, stated for its cooking-time data and applied here too: the times are right-skewed, and squared error on the log is close to absolute error on the minutes, the error that matters for the task.
 - We drop a duplicated column `cat_2` in the preprocessing.
 - We drop `num_29`, `num_36` and `num_71`, which are constant except in the same 2 of 16.7M rows (both hold 5.199 in all three columns), and `num_101`, which has a single value and is missing in exactly the rows where 19 other columns are missing, so it carries no information of its own.
-
-Version of `delivery_eta`: We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
+- Kept on purpose: on 23 November 2023 at 11:00 the 45 features `num_76` to `num_121` stop being recorded (99.6% to 100% missing from noon to the end; 1% to 13% before, 49% for `num_117` to `num_120`), and the deliveries get longer in the same hour (mean log minutes 1.67 before, 1.85 after); every test window lies after the cut. The cause is not published. Kept (Lennart, CC 2026-11-10): at each test window's prediction point a model gets what the service's own model got, the block missing for nearly every order, and the block is still recorded for some orders of every test window (orders carrying `num_96`: 4,508 of 4-10 December, 0.31%; 5,126 of 18-24 December, 0.35%; 7,823 of 1-7 January, 0.66%), so it is no column without values at test.
+- The row budget: Each test window keeps at most 500k of its rows, drawn at random within the window (v2 split protocol), and each train side holds every earlier order; the container keeps every row a split uses. The container records the 1M train budget, and a benchmark sub-samples each train side to 1M rows before a fit (`subsample_train`; by default a random 1M of the newest year before the window). The orders start on 20 October 2023, so the newest year is all of the history and the default is a random 1M of all earlier orders, as in TabReD: a random sample keeps data from all periods of the history.
 
 ## Splits
 
-We use each of the last 3 weeks as a test window (newest first) and all prior data as train data. No gap is needed: the orders pause overnight, and the last train order of each window is delivered 57 minutes to 6 hours before the window start (order time + delivery time), so no train label is unknown at a weekly refit (0 late orders in each of the 3 windows). Each window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows).
+Expanding-window temporal splits: 3 test window(s) of 7 days, starting at 2024-01-01, 2023-12-18, 2023-12-04, newest first; train is all earlier data. The test windows by `timestamp`, as listed: 2024-01-01 to 2024-01-07 (500,000 test, 15,469,869 train rows); 2023-12-18 to 2023-12-24 (500,000 test, 12,517,876 train rows); 2023-12-04 to 2023-12-10 (500,000 test, 9,706,793 train rows). Each test window keeps at most 500k of its rows, drawn at random; each train side holds every earlier row, and a benchmark sub-samples it to 1M rows (by default rows drawn at random from the newest year before each window, extended back in time until it holds that many rows, `subsample_train`).
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 500,000 rows. Prediction horizon: 7 days. Row budget: at most 1M train / 500k test rows per split.
+Each test window is one week, the length of TabReD's own validation and test periods (TabReD trains on 20 October to 11 December 2023, validates on 11-18 December and tests on 18-25 December). TabReD states no refit cadence, and a delivery estimate looks only minutes ahead, so the length says how long one fitted model serves. The orders run from 20 October 2023 to 7 January 2024, so only the five weeks from 4 December on keep half the orders for training. Every other one of them is a test window (CC 2026-11-10), newest first: 1-7 January 2024, the newest, the New Year week; 18-24 December, TabReD's test week, before Christmas; and 4-10 December, outside the holidays, an early-December week of long deliveries (mean log minutes 1.910 against 1.778 in the newest week) with a train side that holds only 10 days after the change of 23 November (curation_comments). 25-31 December and 11-17 December lie between them and are not tested. No gap is needed: the orders pause overnight, and the last train order before each window is delivered 55 minutes to 2 hours 5 minutes before the window start (order time + delivery time; before 4 December at 22:58 on 3 December), so no train label is unknown at a refit (0 late orders in each of the 3 windows).
+
+3 repeat(s) x 1 fold(s) with seed 4267; train 9,706,793 to 15,469,869 rows, test 500,000 rows. Prediction horizon: 7 days. Row budget: at most 500k test rows per split; a benchmark trains on at most 1M. The train sides keep every row available to them; `subsample_train` draws the 1M rows a benchmark fits on from the newest year before each window, extended back in time until it holds that many rows, at random, as rows.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 1000000 | 500000 | 2023-10-20 00:23:37 | 2023-12-31 21:13:37 | 2024-01-01 04:02:49 | 2024-01-07 22:50:18 |
-| 1 | 0 | 1000000 | 500000 | 2023-10-20 00:23:37 | 2023-12-24 22:44:27 | 2023-12-25 00:11:57 | 2023-12-31 21:41:31 |
-| 2 | 0 | 1000000 | 500000 | 2023-10-20 00:23:37 | 2023-12-17 22:45:22 | 2023-12-18 00:13:17 | 2023-12-24 22:51:03 |
+| 0 | 0 | 15469869 | 500000 | 2023-10-20 00:10:02 | 2023-12-31 21:46:20 | 2024-01-01 04:02:49 | 2024-01-07 22:50:18 |
+| 1 | 0 | 12517876 | 500000 | 2023-10-20 00:10:02 | 2023-12-17 22:52:08 | 2023-12-18 00:13:17 | 2023-12-24 22:51:03 |
+| 2 | 0 | 9706793 | 500000 | 2023-10-20 00:10:02 | 2023-12-03 22:51:05 | 2023-12-04 00:19:12 | 2023-12-10 22:50:08 |
+
+
+### The test windows
+
+Each test window against its train side, by statistics of the data, never of a model: the target, and the population stability index (PSI) of each feature, its largest value and the features that drift most (below 0.1 little shift, above 0.25 a large one), and the share of test rows with a category the train side never shows. Up to 20,000 rows per side. The candidates the windows were chosen from: `.venv/bin/python -m data_foundry.curation.cli dataset windows delivery_eta_1m`.
+
+| window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
+|---|---|---|---|---|---|---|---|---|
+| 0 | Jan 2024 | 500000 | 0.969 | mean 1.777, median 1.711, p10 0.8893, p90 2.771 | mean 1.772, median 1.723, p10 0.8473, p90 2.781 | 2.833 | num_77 (2.83), num_110 (2.83), num_78 (2.79) | 0 |
+| 1 | Dec 2023 | 500000 | 0.784 | mean 1.809, median 1.758, p10 0.8824, p90 2.818 | mean 1.777, median 1.72, p10 0.8544, p90 2.796 | 4.176 | num_91 (4.18), num_110 (4.09), num_76 (4.00) | 0.0011 |
+| 2 | Dec 2023 | 500000 | 0.608 | mean 1.899, median 1.859, p10 0.9746, p90 2.898 | mean 1.723, median 1.674, p10 0.8109, p90 2.726 | 6.208 | num_91 (6.21), num_96 (5.73), num_110 (5.71) | 0.0024 |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 555,000,000 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 3,545,310,918 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to run them; nothing else checks duplicate rows and columns.)
+
+Accepted on purpose:
+
+- `splits_feature_missing_in_test`: Decided (Lennart, 2026-11-10): the 45 features `num_76` to `num_121` stop being recorded on 23 November 2023 at 11:00 and stay, as the service's own model met them (curation_comments, 'Kept on purpose'). The check names 41 of them: 99% or more missing in the 18-24 December window, 42% on its train side.
 
 ## Data checks
 
@@ -223,65 +264,65 @@ We use each of the last 3 weeks as a test window (newest first) and all prior da
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | bin_0 | category | 0 | 0 | 2 | 1.0, 0.0 |
-| cat_0 | category | 0 | 0 | 488 | 48, 79, 131, 121, 169, 54, 13, 106, 74, 50 |
-| cat_1 | category | 0 | 0 | 523 | 176, 92, 71, 164, 61, 314, 53, 395, 214, 24 |
-| timestamp | datetime64\[ns\] | 0 | 0 | 1.69845e+06 | 2023-12-28 11:02:52, 2024-01-04 15:30:13, 2023-12-28 17:31:26, 2024-01-03 13:00… |
-| num_117 | float32 | 2.19546e+06 | 87.82 | 300142 | -1.914, -0.7206, 0.1946, 0.1942, -0.5223, -1.3421, -2.333, -0.5655, -1.081, 0.6… |
-| num_118 | float32 | 2.19546e+06 | 87.82 | 299257 | -1.7987, -0.0763, -0.0767, -0.3472, 0.8894, -2.2661, -0.7087, -2.1016, 0.8003, … |
-| num_119 | float32 | 2.19546e+06 | 87.82 | 292019 | 0.1245, -1.6657, -1.1449, -0.7956, -0.7958, -0.8197, -1.1305, -0.8197, 2.724, 2… |
-| num_120 | float32 | 2.19546e+06 | 87.82 | 293964 | -0.5906, -1.8361, -0.1169, -1.1121, 0.0067, -1.064, 0.8403, 0.352, -0.2265, 1.2… |
-| num_111 | float32 | 1.97967e+06 | 79.19 | 97 | -1.3781, -0.6895, -0.2914, 0.0, 0.2342, 0.4321, 0.6029, 0.7513, 0.8846, 1.0104 |
-| num_112 | float32 | 1.97967e+06 | 79.19 | 510804 | -5.1993, 0.0158, -0.0316, 2.4891, 0.7204, -0.9609, 0.6389, 0.0852, 0.6345, -0.6… |
-| num_113 | float32 | 1.97967e+06 | 79.19 | 484348 | -5.1993, 1.0158, -1.099, -1.0786, -0.9777, -0.6725, 0.2136, -0.436, -0.5328, -1… |
-| num_114 | float32 | 1.97967e+06 | 79.19 | 481751 | -5.1993, 3.1423, 0.7824, 0.0633, 3.1424, 3.1423, 3.1423, -0.6397, -0.6992, -1.2… |
-| num_115 | float32 | 1.97967e+06 | 79.19 | 470493 | -5.1993, 2.4569, 3.0894, 2.457, 2.4569, 2.4569, 2.457, 2.2255, 2.3653, 2.4569 |
-| num_81 | float32 | 1.95727e+06 | 78.29 | 28 | -0.6425, -0.1562, -1.3846, 0.2304, 0.5599, 0.8481, 1.1117, 1.3526, 1.58, 1.7987 |
-| num_82 | float32 | 1.95727e+06 | 78.29 | 527533 | -2.7578, -1.6615, -2.035, -1.2546, 0.5002, -0.8995, 0.1448, -1.0504, -1.2742, -… |
-| num_83 | float32 | 1.95727e+06 | 78.29 | 527488 | -2.7648, -1.2745, -0.9056, -0.7759, -0.0728, 0.5508, 0.104, -0.5702, 0.831, 2.0… |
-| num_84 | float32 | 1.95727e+06 | 78.29 | 446165 | -1.7017, -0.7383, -0.3737, 0.0924, 0.078, -0.3784, -0.7683, -1.0518, 0.4338, -0… |
-| num_85 | float32 | 1.95727e+06 | 78.29 | 513503 | -2.7613, -0.4435, -0.9914, -1.4248, 0.6534, -0.4555, -0.8979, -0.8355, -1.3703,… |
-| num_86 | float32 | 1.91431e+06 | 76.57 | 36 | -0.5221, -0.2718, -0.8057, -0.0402, 0.1791, -1.1401, 0.3844, 0.585, -1.5432, 0.… |
-| num_87 | float32 | 1.91431e+06 | 76.57 | 573847 | -5.1993, 0.0646, 0.1969, 0.4805, 0.5704, 1.1591, -0.5312, -0.0153, -0.5333, 2.9… |
-| num_88 | float32 | 1.91431e+06 | 76.57 | 572940 | -5.1993, 0.4765, -0.1091, 0.0227, 1.5242, 0.2503, 0.0875, -0.9129, -3.1434, 1.4… |
-| num_89 | float32 | 1.91431e+06 | 76.57 | 474771 | -1.6658, -0.5702, 0.355, -0.9321, -0.1632, 0.1473, -0.145, -0.7315, -0.5785, -0… |
-| num_90 | float32 | 1.91431e+06 | 76.57 | 559076 | -5.1993, -1.3472, 0.2305, 1.6943, 1.4099, 0.3706, 1.4223, 1.7147, -1.6841, 0.19… |
-| num_106 | float32 | 1.91205e+06 | 76.48 | 538047 | 2.0233, -5.1993, 1.7056, -1.4862, -1.7726, -1.6635, -0.7353, -0.7582, -1.4088, … |
-| num_109 | float32 | 1.91199e+06 | 76.48 | 540131 | 2.0744, -5.1993, -1.7671, -1.6582, -0.7144, -1.4792, -0.9596, -1.3538, -0.0797,… |
-| num_76 | float32 | 1.90941e+06 | 76.38 | 36 | -0.1397, -0.3709, 0.0816, -0.6196, 0.2887, -0.8883, 0.4865, -1.1844, 0.6816, 0.… |
-| num_77 | float32 | 1.90941e+06 | 76.38 | 578962 | -5.1993, -0.1617, -0.2035, 0.2308, 1.0698, 0.9689, -1.8213, -0.5181, 0.117, 1.1… |
-| num_78 | float32 | 1.90941e+06 | 76.38 | 577940 | -5.1993, 0.7946, -0.1396, 0.835, -1.6177, 0.7868, -0.0666, 0.1781, 1.3883, 0.66… |
-| num_79 | float32 | 1.90941e+06 | 76.38 | 474036 | -1.6492, -0.4921, 0.5098, -0.8772, 0.3063, 0.2769, -0.664, -0.0629, -0.0417, -0… |
-| num_80 | float32 | 1.90941e+06 | 76.38 | 563608 | -5.1993, 1.3844, -1.5136, 0.1105, 0.3768, 0.2484, 1.1649, 1.7483, 1.6006, -0.15… |
-| num_91 | float32 | 1.90941e+06 | 76.38 | 5 | 0.1868, -1.1844, -1.5215, -1.931, -2.4961 |
-| num_92 | float32 | 1.90941e+06 | 76.38 | 579138 | -5.1993, 1.5874, 2.4396, 0.3964, 0.7922, -0.3909, -1.0056, 0.6716, 0.7214, -0.9… |
-| num_93 | float32 | 1.90941e+06 | 76.38 | 579036 | -5.1993, 0.2966, -1.4745, 0.7025, -0.9803, 0.2694, -1.5292, 0.8885, 0.8928, 0.6… |
-| num_94 | float32 | 1.90941e+06 | 76.38 | 474019 | -1.6528, -0.4921, 0.5092, -0.8774, 0.3072, 0.2783, -0.6643, -0.0401, -0.0599, -… |
-| num_95 | float32 | 1.90941e+06 | 76.38 | 557022 | -5.1993, -1.395, -1.2895, -0.8712, -1.2925, -0.4654, -0.6168, -1.1809, -1.2528,… |
-| num_96 | float32 | 1.90941e+06 | 76.38 | 3 | 0.0489, -1.9264, -2.5045 |
-| num_97 | float32 | 1.90941e+06 | 76.38 | 576625 | -3.1036, -0.4761, 1.1429, 2.8564, -1.5116, -1.1446, -1.1482, 0.7698, 1.4004, -0… |
-| num_98 | float32 | 1.90941e+06 | 76.38 | 576502 | -3.1024, -0.4873, 0.1929, -0.3444, 1.5481, -1.405, -0.6678, 0.1569, -1.6846, 0.… |
-| num_99 | float32 | 1.90941e+06 | 76.38 | 474080 | -1.6488, -0.495, 0.509, -0.8788, 0.3044, 0.2752, -0.6673, -0.0429, -0.0626, -0.… |
-| num_100 | float32 | 1.90941e+06 | 76.38 | 541291 | -3.1062, -0.4301, -1.1549, -1.7056, -0.8161, -1.7001, -0.4217, -0.9961, -0.5854… |
-| num_102 | float32 | 1.90941e+06 | 76.38 | 474029 | -1.6484, -0.4933, 0.5075, -0.8799, 0.3045, 0.2747, -0.6673, -0.0633, -0.0615, -… |
-| num_103 | float32 | 1.90941e+06 | 76.38 | 474043 | -1.651, -0.4921, 0.508, -0.8789, 0.3036, 0.2744, -0.6649, -0.0429, -0.0622, -0.… |
-| num_104 | float32 | 1.90941e+06 | 76.38 | 474057 | -1.6502, -0.495, 0.5059, -0.8813, 0.3022, 0.2731, -0.6686, -0.0443, -0.0658, -0… |
-| num_105 | float32 | 1.90941e+06 | 76.38 | 473991 | -1.6491, -0.4944, 0.5068, -0.8793, 0.3047, 0.2752, -0.6665, -0.0602, -0.0615, -… |
-| num_107 | float32 | 1.90128e+06 | 76.05 | 937 | 0.1321, -0.7845, 0.6549, 1.0146, -0.2471, 0.4225, 1.2896, -0.1094, -0.4052, 0.8… |
-| num_108 | float32 | 1.90128e+06 | 76.05 | 935 | 0.1321, -0.7816, 0.6549, 1.0146, -0.2482, 0.4211, 1.2896, -0.1096, -0.4058, 0.8… |
-| num_110 | float32 | 1.90128e+06 | 76.05 | 97 | -0.8589, -0.4225, -1.5522, -0.1005, 0.1537, 0.3655, 0.5438, 0.7023, 0.8445, 0.9… |
-| num_116 | float32 | 1.90128e+06 | 76.05 | 40 | -0.6878, 0.2809, 0.7988, 1.1644, 1.4497, 1.6879, 1.8878, 2.0653, 2.2199, 2.3652 |
-| num_121 | float32 | 1.90128e+06 | 76.05 | 622 | -0.6889, 1.086, 0.6428, 1.9829, 0.4011, 0.2596, 0.171, 1.4615, 0.8254, 0.1127 |
-| num_201 | float32 | 1.70301e+06 | 68.12 | 394136 | 0.7513, -0.0545, -2.2693, -0.2716, -0.5408, -0.1975, -1.6076, -0.3824, 1.4958, … |
-| num_159 | float32 | 1.70282e+06 | 68.11 | 165156 | -0.6649, -1.2569, -0.7269, -1.3411, -0.7193, -0.6168, -0.6464, -1.2763, -0.6372… |
-| num_207 | float32 | 1.70286e+06 | 68.11 | 534300 | 1.5639, -1.1219, 0.4651, -0.0397, 0.4772, -0.0319, -1.8178, -1.5763, -0.93, -0.… |
-| num_160 | float32 | 1.48421e+06 | 59.37 | 334109 | 0.5281, -0.0166, -0.6709, -0.2206, 0.3685, 0.0201, -0.509, -0.7271, 0.3129, -0.… |
-| num_202 | float32 | 1.4843e+06 | 59.37 | 680898 | 0.9147, 0.1942, -0.2548, -0.2987, -0.5634, -0.4075, -0.7771, 1.2689, 1.2522, -0… |
-| num_208 | float32 | 1.48423e+06 | 59.37 | 708682 | 1.2033, -1.3194, 0.8291, -0.1688, 0.3411, -0.343, 0.9313, 1.2837, -1.6294, -0.6… |
-| num_165 | float32 | 665034 | 26.6 | 646217 | -1.4456, -1.4819, -1.9523, -1.4913, -1.448, -1.4668, -1.4849, -2.0229, -1.432, … |
-| num_213 | float32 | 665120 | 26.6 | 1.16984e+06 | 0.9877, 3.0903, 3.0907, 3.0905, -1.0204, 0.5473, -0.7098, -0.4561, -2.3069, 1.3… |
-| num_157 | float32 | 472312 | 18.89 | 413030 | -0.5282, -0.3783, 0.1461, 0.0896, -0.0784, -0.8747, -0.4158, -0.2203, -1.0105, … |
-| num_199 | float32 | 472332 | 18.89 | 1.39177e+06 | 0.5109, 0.2168, 0.7274, -0.8828, -0.5548, 0.583, 0.7609, 0.0415, 1.9572, -0.4125 |
-| num_205 | float32 | 472319 | 18.89 | 1.43058e+06 | 0.6585, -0.1064, 0.8027, -0.0449, 0.111, -0.2498, 1.0289, -2.0781, 0.9795, 0.80… |
+| cat_0 | category | 0 | 0 | 489 | 48, 131, 121, 79, 169, 54, 106, 13, 50, 74 |
+| cat_1 | category | 0 | 0 | 524 | 176, 92, 71, 53, 164, 61, 314, 21, 214, 395 |
+| timestamp | datetime64\[ns\] | 0 | 0 | 4.45136e+06 | 2023-11-09 16:54:53, 2023-10-26 14:56:18, 2023-10-31 08:06:54, 2023-12-18 18:10… |
+| num_117 | float32 | 1.21563e+07 | 76.12 | 3.3563e+06 | -0.7208, -1.3218, -1.322, -0.7207, -4.6937, 0.4309, -0.7206, -1.3219, 0.2058, -… |
+| num_118 | float32 | 1.21563e+07 | 76.12 | 3.25961e+06 | -0.0767, -4.7028, -1.0421, -0.0765, -1.042, -1.0421, 2.6693, -0.0763, 2.6693, -… |
+| num_119 | float32 | 1.21563e+07 | 76.12 | 3.0034e+06 | -1.1305, 0.1245, -0.8197, -0.7956, -0.7958, -1.6657, 2.724, -1.1449, -0.8197, -… |
+| num_120 | float32 | 1.21563e+07 | 76.12 | 2.99894e+06 | -1.3401, -0.347, -0.3472, -1.1497, -4.7333, -0.5906, -1.1499, 2.5875, 0.8404, -… |
+| num_201 | float32 | 1.08352e+07 | 67.85 | 1.12643e+06 | 0.7513, 3.0905, 3.0916, 3.0903, -0.4791, 3.0906, 3.09, 3.0909, 3.0914, 3.0911 |
+| num_159 | float32 | 1.08339e+07 | 67.84 | 305495 | -0.754, -0.7047, -0.6826, -0.6718, -0.7837, -0.7133, -0.7389, -0.701, -0.6883, … |
+| num_207 | float32 | 1.08342e+07 | 67.84 | 1.55511e+06 | 1.5639, 3.0903, 3.0901, 3.0903, 3.0902, 3.0938, -0.0508, 3.0901, 3.0901, 2.229 |
+| num_202 | float32 | 9.72038e+06 | 60.87 | 1.94158e+06 | 0.9147, 0.3079, -0.5125, -0.5206, 0.1248, 1.1262, -0.4302, -0.8623, -0.0936, -0… |
+| num_160 | float32 | 9.71996e+06 | 60.86 | 444154 | -0.0649, 0.6089, -0.3564, -0.0948, 0.6224, 0.3605, 0.0999, -0.2023, 1.0065, -0.… |
+| num_208 | float32 | 9.72006e+06 | 60.86 | 2.04562e+06 | 1.2033, -0.1867, 0.34, -0.5634, 0.4698, 0.6504, -0.1297, -0.1925, -0.6102, -1.3… |
+| num_111 | float32 | 9.46592e+06 | 59.27 | 115 | -1.3781, -0.6895, -0.2914, 0.0, 0.2342, 0.4321, 0.6029, 0.7513, 0.8846, 1.0104 |
+| num_112 | float32 | 9.46592e+06 | 59.27 | 5.38162e+06 | -5.1993, -0.9609, -0.9609, -0.9609, -0.9609, -0.9609, -0.9609, -0.9609, -0.9609… |
+| num_113 | float32 | 9.46592e+06 | 59.27 | 3.19579e+06 | -5.1993, 3.09, 3.6279, 3.09, 3.6281, 3.09, 3.0899, 3.09, 3.09, 3.6282 |
+| num_114 | float32 | 9.46592e+06 | 59.27 | 3.00489e+06 | -5.1993, 3.1424, 3.1422, 3.1423, 3.1423, 3.1424, 3.1424, 3.1423, 3.1417, 3.1423 |
+| num_115 | float32 | 9.46592e+06 | 59.27 | 2.91473e+06 | -5.1993, 2.4569, 2.4569, 2.4569, 3.0894, 2.5755, 3.0899, 2.5755, 2.4569, 2.4569 |
+| num_81 | float32 | 9.24766e+06 | 57.91 | 29 | -0.6425, -0.1562, -1.3846, 0.2304, 0.5599, 0.8481, 1.1117, 1.3526, 1.58, 1.7987 |
+| num_82 | float32 | 9.24766e+06 | 57.91 | 5.27648e+06 | -2.7578, -1.6615, -1.6864, -2.3566, -2.0157, -1.4085, -1.9446, -1.6622, -1.0565… |
+| num_83 | float32 | 9.24766e+06 | 57.91 | 5.28321e+06 | -2.7648, -1.2745, -2.2442, -1.3046, -1.0174, -0.9758, -1.652, -1.7487, -1.1984,… |
+| num_84 | float32 | 9.24766e+06 | 57.91 | 3.58651e+06 | -1.7017, -0.7383, -0.7452, -0.3784, 0.078, -0.8772, -0.9678, -1.0518, 0.0364, -… |
+| num_85 | float32 | 9.24766e+06 | 57.91 | 4.60735e+06 | -2.7613, -0.4435, -0.7405, -0.8113, -1.4248, -1.5903, -0.8538, -1.1841, -1.0314… |
+| num_86 | float32 | 8.71099e+06 | 54.55 | 36 | -0.5221, -0.2718, -0.0402, -0.8057, 0.1791, -1.1401, 0.3844, 0.585, -1.5432, 0.… |
+| num_87 | float32 | 8.71099e+06 | 54.55 | 5.82006e+06 | -5.1993, -1.9133, -2.6711, 1.0807, 0.9273, -2.9079, -2.0151, 3.0901, -2.6574, -… |
+| num_88 | float32 | 8.71099e+06 | 54.55 | 5.72414e+06 | -5.1993, -2.1712, -2.4177, 0.4804, 2.4309, -0.3168, -1.8908, -2.1714, -2.0267, … |
+| num_89 | float32 | 8.71099e+06 | 54.55 | 3.72566e+06 | -1.6658, -0.5702, -0.5785, -1.1744, -0.9321, -0.7315, -0.1676, -0.1647, 0.355, … |
+| num_90 | float32 | 8.71099e+06 | 54.55 | 4.92532e+06 | -5.1993, 1.0187, 1.1002, 1.8808, 2.1384, -0.38, 0.6739, 0.3545, 1.7921, 1.0457 |
+| num_106 | float32 | 8.68131e+06 | 54.36 | 4.99998e+06 | 2.0233, -5.1993, 1.7056, -1.6635, -1.4862, -1.9051, -2.1176, -0.9517, -0.7353, … |
+| num_109 | float32 | 8.68057e+06 | 54.36 | 4.99944e+06 | 2.0744, -5.1993, 1.7619, -1.6582, -1.4792, -0.9351, -1.8998, -2.1197, -0.5844, … |
+| num_76 | float32 | 8.64961e+06 | 54.16 | 37 | -0.1397, -0.3709, 0.0816, -0.6196, 0.2887, -0.8883, 0.4865, -1.1844, 0.6816, 0.… |
+| num_77 | float32 | 8.64961e+06 | 54.16 | 5.87073e+06 | -5.1993, -2.108, 0.7851, 0.2067, 0.3821, -0.0094, 2.8851, 0.4723, 0.9056, 0.5502 |
+| num_78 | float32 | 8.64961e+06 | 54.16 | 5.75686e+06 | -5.1993, -2.3193, 0.7161, 1.906, -0.4693, 0.173, -2.5462, 0.8108, -1.1258, 2.02… |
+| num_79 | float32 | 8.64961e+06 | 54.16 | 3.65163e+06 | -1.6492, -0.4921, -0.5007, -1.1425, -0.664, -0.8772, -0.0629, 0.5098, -0.0661, … |
+| num_80 | float32 | 8.64961e+06 | 54.16 | 4.95508e+06 | -5.1993, 0.8419, 1.5443, 1.7106, 1.6006, 1.4616, 2.0832, 1.8111, 0.7603, 0.2326 |
+| num_91 | float32 | 8.64961e+06 | 54.16 | 5 | 0.1868, -1.1844, -1.5215, -1.931, -2.4961 |
+| num_92 | float32 | 8.64961e+06 | 54.16 | 5.89067e+06 | -5.1993, -1.8142, -0.948, -0.948, -0.9488, -0.7027, -0.9484, -1.816, 1.4844, -0… |
+| num_93 | float32 | 8.64961e+06 | 54.16 | 5.89433e+06 | -5.1993, -0.9797, -1.9076, -0.9801, -1.9095, -0.9797, -0.9806, -0.65, 2.2904, -… |
+| num_94 | float32 | 8.64961e+06 | 54.16 | 3.65317e+06 | -1.6528, -0.4921, -0.5006, -1.1434, -0.6643, -0.8774, -0.0615, 0.5092, -0.0644,… |
+| num_95 | float32 | 8.64961e+06 | 54.16 | 5.02633e+06 | -5.1993, -0.5751, -0.9834, -1.4035, -1.395, -0.8553, -1.501, -1.722, -1.4026, -… |
+| num_96 | float32 | 8.64961e+06 | 54.16 | 3 | 0.0489, -1.9264, -2.5045 |
+| num_97 | float32 | 8.64961e+06 | 54.16 | 5.77725e+06 | -3.1036, -1.3866, -1.3849, -1.5116, -0.4752, -0.7018, 0.2003, -1.4925, -0.66, -… |
+| num_98 | float32 | 8.64961e+06 | 54.16 | 5.77085e+06 | -3.1024, -1.4104, -1.4086, -1.538, 0.1929, -0.4864, -1.7243, -0.7147, -1.5179, … |
+| num_99 | float32 | 8.64961e+06 | 54.16 | 3.65321e+06 | -1.6488, -0.495, -0.5035, -1.1437, -0.6673, -0.8788, -0.064, 0.509, -0.0677, 0.… |
+| num_100 | float32 | 8.64961e+06 | 54.16 | 4.5762e+06 | -3.1062, -1.1549, -0.4301, -1.7056, -0.1237, 0.1144, 0.1963, -0.8161, -1.7995, … |
+| num_102 | float32 | 8.64961e+06 | 54.16 | 3.65346e+06 | -1.6484, -0.4933, -0.5023, -1.1433, -0.6673, -0.8799, -0.0633, 0.5075, -0.0665,… |
+| num_103 | float32 | 8.64961e+06 | 54.16 | 3.65344e+06 | -1.651, -0.4921, -0.5007, -1.1436, -0.6649, -0.8789, -0.0638, 0.508, -0.0665, 0… |
+| num_104 | float32 | 8.64961e+06 | 54.16 | 3.65346e+06 | -1.6502, -0.495, -0.5045, -1.1448, -0.6686, -0.8813, -0.0658, 0.5059, -0.0691, … |
+| num_105 | float32 | 8.64961e+06 | 54.16 | 3.65312e+06 | -1.6491, -0.4944, -0.5027, -1.1441, -0.6665, -0.8793, -0.0615, 0.5068, -0.0652,… |
+| num_107 | float32 | 8.55441e+06 | 53.57 | 1376 | 0.1321, -0.7845, 0.6549, 1.0146, -0.2471, 0.4225, 1.2896, -0.4052, -0.1094, 0.8… |
+| num_108 | float32 | 8.55441e+06 | 53.57 | 1374 | 0.1321, -0.7816, 0.6549, 1.0146, -0.2482, 0.4211, 1.2896, -0.4058, -0.1096, 0.8… |
+| num_110 | float32 | 8.55441e+06 | 53.57 | 113 | -0.8589, -0.4225, -1.5522, -0.1005, 0.1537, 0.3655, 0.5438, 0.7023, 0.8445, 0.9… |
+| num_116 | float32 | 8.55441e+06 | 53.57 | 53 | -0.6878, 0.2809, 0.7988, 1.1644, 1.4497, 1.6879, 1.8878, 2.0653, 2.2199, 2.3652 |
+| num_121 | float32 | 8.55441e+06 | 53.57 | 1287 | -0.6889, 1.086, 0.6428, 1.9829, 0.4011, 0.2596, 0.171, 1.4615, 0.8254, 0.1127 |
+| num_213 | float32 | 4.29514e+06 | 26.9 | 3.33963e+06 | 0.9877, 3.0907, 3.0906, 3.0906, 3.0907, 3.0906, 3.0907, 3.0907, 3.0906, 3.0904 |
+| num_165 | float32 | 4.29463e+06 | 26.89 | 981216 | -1.4471, -1.4509, -1.4461, -1.4518, -1.423, -1.4206, -1.4668, -1.4652, -1.4418,… |
+| num_157 | float32 | 3.109e+06 | 19.47 | 512557 | -0.4685, -0.5708, -0.4954, 0.0705, -0.6446, -0.0587, -0.4942, -0.6688, -0.6403,… |
+| num_199 | float32 | 3.10916e+06 | 19.47 | 3.98117e+06 | 0.5109, 0.7995, -1.5413, 0.0388, -0.6739, -0.7774, 0.896, -0.7186, 0.7103, -0.4… |
+| num_205 | float32 | 3.10906e+06 | 19.47 | 4.16313e+06 | 0.6585, 5.1993, -0.8422, -0.6467, 0.067, 1.07, -1.2731, -0.1296, 2.2602, -0.4148 |
 
 (162 more rows not shown)
 
@@ -291,7 +332,7 @@ We use each of the last 3 weeks as a test window (newest first) and all prior da
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0.06 | 0.163 | -0.53 | 0.529 | 0.077 | log1p | 786476 | 1.30958e+08 | exponential |
+| 0 | 0 | 0.06 | 0.149 | -0.541 | 0.536 | 0.079 | log1p | 5.01518e+06 | 1.05659e+09 | exponential |
 
 ### Numeric features
 
@@ -300,66 +341,66 @@ We use each of the last 3 weeks as a test window (newest first) and all prior da
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| num_0 | 250000 | 0.00380725 | 1.01535 | -4.84558 | 4.64885 |
-| num_1 | 250000 | 0.00153957 | 1.01715 | -4.74184 | 4.26592 |
-| num_2 | 250000 | 0.00201361 | 1.01631 | -4.62729 | 4.58546 |
-| num_3 | 250000 | 0.0203108 | 1.00964 | -3.08994 | 5.19934 |
-| num_4 | 250000 | 0.00542945 | 1.01052 | -3.79825 | 3.96257 |
-| num_5 | 250000 | 9.37694e-06 | 1.01397 | -3.6445 | 5.19934 |
-| num_6 | 250000 | 0.00384715 | 1.00882 | -5.19934 | 4.00511 |
-| num_7 | 250000 | 0.0201802 | 1.00201 | -5.08913 | 4.17497 |
-| num_8 | 250000 | 0.0342646 | 0.967512 | -3.21244 | 5.19934 |
-| num_9 | 250000 | 0.00103183 | 0.999574 | -3.14285 | 4.75076 |
-| num_10 | 249818 | 0.0326983 | 0.96515 | -2.83514 | 5.19934 |
-| num_11 | 249818 | -0.00512844 | 0.978101 | -2.84878 | 3.46319 |
-| num_12 | 250000 | 0.00510625 | 0.99872 | -5.19934 | 4.29131 |
-| num_13 | 250000 | -0.00334283 | 0.999696 | -4.77301 | 4.39954 |
-| num_14 | 250000 | -0.00017024 | 0.998611 | -4.79099 | 4.73919 |
-| num_15 | 250000 | -0.000934516 | 0.998856 | -4.62651 | 5.19934 |
-| num_16 | 250000 | 0.00319734 | 0.998136 | -4.64979 | 4.41179 |
-| num_17 | 250000 | -0.00325014 | 0.988444 | -5.19934 | 3.48652 |
-| num_18 | 250000 | -0.00469486 | 0.988808 | -5.19934 | 4.62123 |
-| num_19 | 250000 | 0.0237088 | 1.00102 | -4.34917 | 5.19934 |
-| num_20 | 250000 | -0.0184862 | 1.01375 | -4.20509 | 4.58003 |
-| num_21 | 250000 | -0.00528231 | 0.987143 | -4.30199 | 4.20501 |
-| num_22 | 250000 | -0.00316874 | 1.0173 | -4.04205 | 3.39202 |
-| num_23 | 250000 | -0.0109913 | 1.01107 | -5.19934 | 5.19934 |
-| num_24 | 250000 | -0.0202774 | 0.979904 | -4.06719 | 4.37047 |
-| num_25 | 250000 | 0.00794066 | 0.981805 | -4.30477 | 5.16658 |
-| num_26 | 250000 | 0.0202637 | 1.00879 | -4.32875 | 5.19934 |
-| num_27 | 250000 | 0.0326534 | 1.00898 | -4.13046 | 3.09087 |
-| num_28 | 250000 | 0.0122344 | 0.99584 | -5.19934 | 5.19934 |
-| num_30 | 250000 | 0.0294186 | 1.02365 | -5.19934 | 3.09087 |
-| num_31 | 250000 | -0.0177617 | 0.736734 | -1.1416 | 5.19934 |
-| num_32 | 250000 | 0.0293099 | 1.02219 | -5.19934 | 3.09091 |
-| num_33 | 250000 | -0.036225 | 1.04434 | -3.49 | 5.19934 |
-| num_34 | 250000 | 0.0324327 | 1.00984 | -3.18062 | 5.19934 |
-| num_35 | 250000 | 0.0394983 | 0.99035 | -5.19934 | 3.28914 |
-| num_37 | 250000 | 0.0328359 | 1.01651 | -3.08994 | 5.19934 |
-| num_38 | 250000 | -0.025199 | 0.706511 | -1.12298 | 3.09045 |
-| num_39 | 250000 | 0.032343 | 1.01687 | -3.08994 | 5.19934 |
-| num_40 | 250000 | -0.0160642 | 1.0282 | -5.19934 | 2.96743 |
-| num_41 | 250000 | 0.017733 | 0.99902 | -4.21423 | 4.46875 |
-| num_42 | 250000 | 0.0118167 | 1.00567 | -5.19934 | 5.19934 |
-| num_43 | 250000 | -5.88789e-06 | 0.0771365 | -0.00190284 | 5.19934 |
-| num_44 | 250000 | 0.016504 | 1.00411 | -5.19934 | 3.11077 |
-| num_45 | 250000 | -0.00616769 | 0.803528 | -1.20127 | 5.19934 |
-| num_46 | 250000 | 0.0150323 | 1.00658 | -5.19934 | 5.19934 |
-| num_47 | 250000 | -0.0217017 | 1.02431 | -3.93437 | 5.19934 |
-| num_48 | 250000 | 0.0190071 | 0.999834 | -4.77198 | 4.16429 |
-| num_49 | 250000 | 0.0227203 | 1.00989 | -5.19934 | 5.19934 |
-| num_50 | 250000 | 0.0125558 | 0.241308 | -0.00874287 | 3.31281 |
-| num_51 | 250000 | 0.0169681 | 1.00284 | -5.19934 | 3.09952 |
-| num_52 | 250000 | 0.00596076 | 0.851196 | -1.26525 | 3.30582 |
-| num_53 | 250000 | 0.0188722 | 1.0013 | -3.45371 | 3.09383 |
-| num_54 | 250000 | -0.0257769 | 1.02008 | -3.77476 | 5.19934 |
-| num_55 | 250000 | 0.018734 | 1.00144 | -3.87115 | 5.19934 |
-| num_56 | 250000 | 0.0056338 | 0.999936 | -5.19934 | 3.37863 |
-| num_57 | 250000 | 0.000658702 | 0.0445597 | 1.59865e-05 | 3.09153 |
-| num_58 | 250000 | 0.0169569 | 0.999228 | -3.15561 | 3.09988 |
-| num_59 | 250000 | -0.010574 | 0.787603 | -1.18119 | 3.09364 |
-| num_60 | 250000 | 0.0182811 | 1.003 | -3.20842 | 5.19934 |
-| num_61 | 250000 | -0.0199167 | 1.01385 | -4.10392 | 3.29025 |
+| num_0 | 1.59699e+06 | 0.00221354 | 1.00929 | -4.84558 | 4.64885 |
+| num_1 | 1.59699e+06 | -0.00119178 | 1.00996 | -4.74184 | 4.26592 |
+| num_2 | 1.59699e+06 | -0.00213956 | 1.00956 | -4.62729 | 4.58546 |
+| num_3 | 1.59699e+06 | 0.00828626 | 1.00878 | -3.08994 | 5.19934 |
+| num_4 | 1.59699e+06 | 0.00351799 | 1.00446 | -5.19934 | 5.19934 |
+| num_5 | 1.59699e+06 | -0.00286581 | 1.00695 | -5.19934 | 5.19934 |
+| num_6 | 1.59699e+06 | -0.000443265 | 1.00276 | -5.19934 | 4.00511 |
+| num_7 | 1.59699e+06 | 0.00858865 | 1.00172 | -5.19934 | 4.43288 |
+| num_8 | 1.59699e+06 | 0.0328576 | 0.971263 | -3.21244 | 5.19934 |
+| num_9 | 1.59699e+06 | 0.00394741 | 0.997269 | -3.14285 | 5.19934 |
+| num_10 | 1.5959e+06 | 0.0325629 | 0.969083 | -2.83514 | 5.19934 |
+| num_11 | 1.5959e+06 | -0.00334135 | 0.980338 | -2.84878 | 3.81988 |
+| num_12 | 1.59699e+06 | 0.00152585 | 0.999459 | -5.19934 | 4.68927 |
+| num_13 | 1.59699e+06 | -0.00187046 | 0.999836 | -5.19934 | 5.19934 |
+| num_14 | 1.59699e+06 | -0.000805796 | 1.00001 | -5.19934 | 5.19934 |
+| num_15 | 1.59699e+06 | -0.000955814 | 0.999834 | -5.19934 | 5.16658 |
+| num_16 | 1.59699e+06 | 0.00203783 | 0.999559 | -4.82906 | 5.19934 |
+| num_17 | 1.59699e+06 | -0.00600335 | 0.993602 | -5.19934 | 4.69836 |
+| num_18 | 1.59699e+06 | -0.00498422 | 0.994086 | -5.19934 | 5.19934 |
+| num_19 | 1.59699e+06 | 0.00860164 | 1.00065 | -5.19934 | 5.19934 |
+| num_20 | 1.59699e+06 | -0.00308218 | 1.00618 | -4.78765 | 5.19934 |
+| num_21 | 1.59699e+06 | -0.00659441 | 0.995934 | -5.19934 | 4.90096 |
+| num_22 | 1.59699e+06 | -0.000293133 | 1.00682 | -5.19934 | 3.394 |
+| num_23 | 1.59699e+06 | -0.00395028 | 1.00814 | -5.19934 | 5.19934 |
+| num_24 | 1.59699e+06 | -0.0165928 | 0.993984 | -5.19934 | 5.03541 |
+| num_25 | 1.59699e+06 | 0.002101 | 0.98942 | -5.19934 | 4.75076 |
+| num_26 | 1.59699e+06 | 0.0128284 | 1.00097 | -4.91299 | 5.19934 |
+| num_27 | 1.59699e+06 | 0.0129875 | 1.00536 | -4.13046 | 3.09087 |
+| num_28 | 1.59699e+06 | 0.0112473 | 0.997344 | -5.19934 | 5.19934 |
+| num_30 | 1.59699e+06 | 0.0139613 | 1.0126 | -5.19934 | 3.09087 |
+| num_31 | 1.59699e+06 | -0.027574 | 0.740247 | -1.1416 | 5.19934 |
+| num_32 | 1.59699e+06 | 0.0141708 | 1.01156 | -5.19934 | 3.09091 |
+| num_33 | 1.59699e+06 | -0.0155367 | 1.02066 | -3.49 | 5.19934 |
+| num_34 | 1.59699e+06 | 0.0128333 | 1.00549 | -3.18062 | 5.19934 |
+| num_35 | 1.59699e+06 | 0.0214451 | 0.994856 | -5.19934 | 3.28914 |
+| num_37 | 1.59699e+06 | 0.0164461 | 1.006 | -3.08994 | 5.19934 |
+| num_38 | 1.59699e+06 | -0.0341256 | 0.712541 | -1.12298 | 3.09045 |
+| num_39 | 1.59699e+06 | 0.0164823 | 1.00666 | -3.08994 | 5.19934 |
+| num_40 | 1.59699e+06 | -0.00376883 | 1.01066 | -5.19934 | 2.96743 |
+| num_41 | 1.59699e+06 | 0.00834707 | 1.00105 | -4.21423 | 5.19934 |
+| num_42 | 1.59699e+06 | 0.00747824 | 1.00362 | -5.19934 | 5.19934 |
+| num_43 | 1.59699e+06 | -0.000302784 | 0.0704193 | -0.00190284 | 5.19934 |
+| num_44 | 1.59699e+06 | 0.00984269 | 1.00269 | -5.19934 | 3.11077 |
+| num_45 | 1.59699e+06 | -0.0123489 | 0.809658 | -1.20127 | 5.19934 |
+| num_46 | 1.59699e+06 | 0.00909272 | 1.00434 | -5.19934 | 5.19934 |
+| num_47 | 1.59699e+06 | -0.0097061 | 1.01133 | -5.19934 | 5.19934 |
+| num_48 | 1.59699e+06 | 0.0086472 | 1.00076 | -4.77198 | 5.19934 |
+| num_49 | 1.59699e+06 | 0.0145223 | 1.00392 | -5.19934 | 5.19934 |
+| num_50 | 1.59699e+06 | 0.0110606 | 0.2325 | -0.00874287 | 5.19934 |
+| num_51 | 1.59699e+06 | 0.00964858 | 1.00108 | -5.19934 | 3.10267 |
+| num_52 | 1.59699e+06 | -0.00262278 | 0.854551 | -1.26525 | 5.19934 |
+| num_53 | 1.59699e+06 | 0.0110203 | 0.999671 | -5.19934 | 3.09383 |
+| num_54 | 1.59699e+06 | -0.0126383 | 1.00701 | -5.19934 | 5.19934 |
+| num_55 | 1.59699e+06 | 0.007683 | 1.00241 | -3.87115 | 5.19934 |
+| num_56 | 1.59699e+06 | 0.00638531 | 1.00041 | -5.19934 | 3.37863 |
+| num_57 | 1.59699e+06 | 0.000594517 | 0.0422767 | 1.59865e-05 | 3.09338 |
+| num_58 | 1.59699e+06 | 0.010704 | 0.999285 | -3.15561 | 3.09988 |
+| num_59 | 1.59699e+06 | -0.016729 | 0.794765 | -1.18119 | 3.10381 |
+| num_60 | 1.59699e+06 | 0.0113394 | 1.00055 | -3.20842 | 5.19934 |
+| num_61 | 1.59699e+06 | -0.00903377 | 1.00517 | -5.19934 | 3.29025 |
 
 (158 more rows not shown)
 
@@ -372,23 +413,23 @@ We use each of the last 3 weeks as a test window (newest first) and all prior da
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| bin_0 | 1 | 1.0 | 171837 | 68.73 |
-| bin_0 | 2 | 0.0 | 78163 | 31.27 |
-| cat_0 | 1 | 48 | 2426 | 0.97 |
-| cat_0 | 2 | 79 | 2081 | 0.83 |
-| cat_0 | 3 | 131 | 2019 | 0.81 |
-| cat_0 | 4 | 121 | 1903 | 0.76 |
-| cat_0 | 5 | 169 | 1790 | 0.72 |
-| cat_1 | 1 | 176 | 1358 | 0.54 |
-| cat_1 | 2 | 92 | 1229 | 0.49 |
-| cat_1 | 3 | 71 | 1214 | 0.49 |
-| cat_1 | 4 | 164 | 1160 | 0.46 |
-| cat_1 | 5 | 61 | 1140 | 0.46 |
-| timestamp | 1 | 2023-12-28 11:02:52 | 4 | 0 |
-| timestamp | 2 | 2024-01-04 15:30:13 | 4 | 0 |
-| timestamp | 3 | 2023-12-28 17:31:26 | 4 | 0 |
-| timestamp | 4 | 2024-01-03 13:00:20 | 4 | 0 |
-| timestamp | 5 | 2024-01-07 07:17:24 | 4 | 0 |
+| bin_0 | 1 | 1.0 | 1090140 | 68.26 |
+| bin_0 | 2 | 0.0 | 506847 | 31.74 |
+| cat_0 | 1 | 48 | 16876 | 1.06 |
+| cat_0 | 2 | 131 | 12784 | 0.8 |
+| cat_0 | 3 | 121 | 12620 | 0.79 |
+| cat_0 | 4 | 79 | 12121 | 0.76 |
+| cat_0 | 5 | 169 | 11274 | 0.71 |
+| cat_1 | 1 | 176 | 9203 | 0.58 |
+| cat_1 | 2 | 92 | 8042 | 0.5 |
+| cat_1 | 3 | 71 | 7548 | 0.47 |
+| cat_1 | 4 | 53 | 7408 | 0.46 |
+| cat_1 | 5 | 164 | 7326 | 0.46 |
+| timestamp | 1 | 2023-11-09 16:54:53 | 7 | 0 |
+| timestamp | 2 | 2023-10-26 14:56:18 | 6 | 0 |
+| timestamp | 3 | 2023-10-31 08:06:54 | 6 | 0 |
+| timestamp | 4 | 2023-12-18 18:10:31 | 6 | 0 |
+| timestamp | 5 | 2023-11-19 15:49:50 | 6 | 0 |
 
 </details>
 
@@ -396,11 +437,10 @@ We use each of the last 3 weeks as a test window (newest first) and all prior da
 
 | field | value |
 |---|---|
-| uuid | 01a111fc-e6b7-7547-8e7f-790705764eb1 |
-| checksum | v2:f63bdebe625bde55f891f2178c53431cf853f7d16663f160e5d68cc165e224f1 |
-| built_at | 2026-10-06T16:13:38+00:00 |
-| path | delivery_eta/versions/01a111fc-e6b7-7547-8e7f-790705764eb1 |
+| uuid | 01a217f6-c218-7256-8cc6-3468f6e21a14 |
+| checksum | v2:530817ab594591b8b89bb4623d7fbe6308b4148f751af8d7895ffc80061f2426 |
+| built_at | 2026-11-26T13:14:21+00:00 |
+| path | delivery_eta_1m/01a217f6-c218-7256-8cc6-3468f6e21a14 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
-| libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:70b7c56326c2c93d1c55f03486c13a4e1b9e2a372f269e12e898baca3780229a` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

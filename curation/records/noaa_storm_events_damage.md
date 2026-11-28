@@ -3,16 +3,19 @@ unique_name: noaa_storm_events_damage
 name: NOAA NCEI Storm Events Database, property damage per storm event
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
 suggestion: 'Yes'
 priority: 2
 tags:
 - Two-Regime Zeros
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
+- Dated Event Log
 original_source: GOV Website
 year: '2026'
+collection_period: 2007-2025
 domain: environmental science & climate
 required_split:
 - Temporal (NON-IID)
@@ -73,7 +76,7 @@ a blank damage field is a cleaning choice at /add-dataset. The verdict and prior
 are the screening's other risks.
 
 CC (2026-10-30, Andrej): `Yes`, priority 2 (the AI screening had `TBD -> 2nd Tier`, priority 2; zero-inflated screening
-review page).
+review).
 
 NOAA NCEI's Storm Events Database, the archive of NWS Storm Data: one row per event and county or zone, 1950-2026, in
 yearly details, fatality and location files. The 2018-2024 details files hold 468,514 events x 51 columns. Candidate
@@ -101,7 +104,7 @@ CC (2026-11-03, Andrej): no storm-level input (issue 4 (A)); counts of a storm's
 
 CC (2026-11-03, Andrej): issue 5, B ("I go with your change"): the use case is the planner's, as in Diaz and Joseph (2019): the damage of storm events estimated for disaster planning, not the triage of a storm's counties; data, split and metric unchanged.
 
-CC (2026-11-03, Andrej): ship (review page verdict) with the planning use case of issue 5; the declared metric, RMSLE from context, checked.
+CC (2026-11-03, Andrej): ship (review verdict) with the planning use case of issue 5; the declared metric, RMSLE from context, checked.
 
 CC (2026-11-06, Lennart): decision D13 of the exposure study (#51; issue 6 of the record's Review): `duration_hours` is blank for Strong Wind and Heavy Rain, whose span NWSI 10-1605 App. A draws by the damage (Sec. 45, 21), and kept with a `Potential leak, kept on purpose:` note for Thunderstorm Wind, High Wind, Coastal Flood, Lakeshore Flood and Storm Surge/Tide, which it times by the damage or a wind or flooding criterion (Sec. 46, 24, 4, 27, 44), under the new LEAK-10 / LEAK-37 Cases row on spans the outcome sets. Supersedes the definition Andrej shipped on 2026-11-03 (lines above), which blanked only the tornado durations, as the column audit of 2026-11-01 had read the begin and end of Thunderstorm Wind alone and judged the other spans first-report facts: the study of 2026-11-05 read App. A for every type and measured the column's worth on the seven damage-timed types (+0.02 to +0.04 RMSLE, trained from 2016). On the shipped splits (untuned LightGBM, 4 bagging seeds) it is +0.013 to +0.021 on those rows, all of it on the five kept types (+0.012 to +0.021) and none on Strong Wind and Heavy Rain (-0.009 to -0.046). The notes gain the exposure paragraph: no exposure in the source; county population does not scale with the damage (Spearman -0.14 to +0.05 among positive entries), so no offset; storms whose entries share one figure hold round office values, not split totals.
 
@@ -129,7 +132,7 @@ CC (2026-11-08, Lennart): review issue 11, B ("Option B: Flash Flood kept with a
 
 **Assessment (AI, 2026-11-08):** issues 10 and 11 applied in the notes, no data change. The signal bullet gives the tuned results (3,463, 2,044 and 962 against 2,660, 2,301 and 1,740 for the mean per event type; bootstrap SE of the difference 1,580, 129 and 30 over test rows) and the capped variant as a note. The new Flash Flood bullet gives the Sec. 14 onset, the narrative shares (6.8% name water at or damage to a building, 36% a road, 10% a rescue or evacuation) and the worth on the declared metric (+102%, +93% and +31% of the deviance on its rows when blanked, +9%, +27% and +16% on all rows); the Flood worth (+43%, +0% and +9% on its rows) is stated with the outcome-free reading. `dataset check`: 0 errors, 0 warnings. No issue is open in the record's Review.
 
-CC (2026-11-08, Lennart, in chat): X4 of the PR #47 board: LEAK-10 gets a third clause for spans the outcome or an outcome-free criterion can draw (blank what features locate; keep the rest with a note only when the outcome can draw a minority of the spans and the span keeps its worth where it did not; the size of the worth alone never decides). The Flash Flood duration stays under it, and its note gives the worth by narrative class.
+CC (2026-11-08, Lennart, in chat): item X4 of the PR #47 review: LEAK-10 gets a third clause for spans the outcome or an outcome-free criterion can draw (blank what features locate; keep the rest with a note only when the outcome can draw a minority of the spans and the span keeps its worth where it did not; the size of the worth alone never decides). The Flash Flood duration stays under it, and its note gives the worth by narrative class.
 
 **Assessment (AI, 2026-11-08):** where the Flash Flood duration's worth comes from, with the narratives used only to split the test rows (`apply_2026-11-08/x4_diagnostic/`): threat-only narratives (60,264 rows; 11,229 test rows) +40% to +48% of the deviance, 24 of 24 fits positive (tuned z about 18); narratives naming a building (5,369; 718 test rows) +55% to +97%, 68% to 81% of the total cut; other damage named (8,498; 1,683) +24% to +38%. On threat-only rows the duration does not predict whether damage happens (share with damage flat at 0.27 to 0.30 by tercile) but how large it is (median positive $5k, $5k, $15k). Building-class spans are longer (median 2.75 h against 2.0 h). Coastal Flood: +17% to +19% where no damage is named; Storm Surge/Tide and Dust Storm: no worth; Lakeshore Flood and Volcanic Ashfall: too few test rows.
 
@@ -149,7 +152,7 @@ CC (2026-11-09, Andrej): review issue 14, B ("Option B: $10."): the metric's flo
 
 CC (2026-11-10, Andrej): Review issue 15 (a), "Reply (a): Uncapped": the damage stays uncapped in training and scoring. The planner's expected annual loss includes the large events; the ranking's instability (Kendall's W 0.62 across the windows, tuned LightGBM apart from the mean per event type only in 2025) is a fact of a noisy task, stated in the notes. Supersedes the AI's recommendation of the cap (2026-11-09).
 
-CC (2026-11-10, Andrej): ship (review page of 2026-11-10).
+CC (2026-11-10, Andrej): ship (review of 2026-11-10).
 
 CC (2026-11-11, Lennart): Review issue 16, B ("Option B: Spread evenly over nine years."): the test windows are the calendar years 2025, 2021 and 2017, in place of 2023 to 2025; 2017, the costliest year of the data, is tested, as the planner's uncapped annual loss includes it.
 
@@ -157,13 +160,15 @@ CC (2026-11-11, Lennart): the declared horizon (one calendar year, a 3-month gap
 
 **Assessment (AI, 2026-11-11):** applied issue 16 (B): `temporal` declares `cutoffs=(2025, 2021, 2017)` with the 3-month gap; test 45,870, 39,249 and 41,367 entries, train 793,017, 622,584 and 451,520 (94.1%, 73.8% and 53.6%); 12,636, 12,599 and 12,931 test cells of 3.1 to 3.6 entries; 4.2-5.1% of the test rows are types entered only with damage; 99.3-99.6% of the test rows are in a county or zone seen in training. The 4,257 entries of October to December 2024 lie in no split (an accepted warning). The signal, span-worth and cell-weight results of the notes are dated as measured on 2023-2025, not re-run on the new years. `dataset check`: 0 errors, 0 warnings.
 
+CC (2026-11-17, Andrej): the declared split (temporal on `begin_time`, windows of 1 year, 3 windows at fixed cutoffs, gap 3 months) is checked: the split decision tree, walked without the current split, reaches the split it ships (blind split walk, cross-dataset item).
+
 ## Review
 
 **Outcome:** added. The AI recommends shipping it after changes: the re-review panel of 2026-11-06 under the exposure
 rules (LEAK-41, MET-14 to MET-16) found no exposure, weight or offset to add and the split right; its changes that need
 no decision are made (below), issues 7, 8, 10 and 11 are decided and applied (2026-11-08), so no question of that round is open; issues 12 to 14 of 2026-11-09 are decided and
 applied (12: each county or zone, hazard and year counts once; 13: `SOURCE` stays dropped; 14: floor $10), and issue 15,
-the $10M cap, waits for a decision. NOAA
+the $10M cap, was decided on 2026-11-10 (uncapped). NOAA
 NCEI's Storm Events Database, 2007-2025: 843,144 entries of the property damage an NWS office entered for one event in
 one county or zone, 68% of them $0, for a state hazard-mitigation planner who estimates the damage of storm events
 before it is assessed (Diaz and Joseph 2019); tested on the calendar years 2025, 2021 and 2017 with a 3-month gap,
@@ -266,7 +271,7 @@ issue 10 kept that metric with its signal stated (tuned LightGBM beats the mean 
 2023, within noise), and issue 11 moved the Flash Flood duration to the spans kept with a note. Made without a decision,
 say if you disagree: the 51 Seiche durations are blank, an extension of D13.
 
-**Verdict (2026-11-10, Andrej):** ship (review page of 2026-11-10).
+**Verdict (2026-11-10, Andrej):** ship (review of 2026-11-10).
 
 **Horizon:**
 
@@ -343,7 +348,7 @@ has the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regen
    **Resolved (2026-11-03, Andrej):** B. Every marine type and drought, heat, excessive heat, the two cold types, the
    two fog types, rip current, funnel cloud, waterspout and high surf are dropped: 156,767 entries (15.7%), 99.1% at
    $0, 0.5% of the dollars. 843,144 rows and 34 event types remain, 68% at $0. RMSLE rises to 2.67, 2.93 and 2.94
-   (constant 4.05, 4.28, 4.20), as the easy zeros are gone. `dataset check` clean (Slurm).
+   (constant 4.05, 4.28, 4.20), as the easy zeros are gone. `dataset check` clean.
 
 3. **Keep RMSLE, or score within each storm?**
 
@@ -447,7 +452,7 @@ has the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regen
    * **Recommendation:** A: the counts add nothing measurable, and the all-types count carries part of the label.
      **Decision:** A or B?
 
-   **Notes for the AI:** script `noaa_storm/storm_size.py` in the run folder of 2026-11-03 (Slurm job 1342406).
+   **Notes for the AI:** script `noaa_storm/storm_size.py` in the run folder of 2026-11-03.
 
    **Resolved (2026-11-03, Andrej):** A, no storm-level input; the notes give the measurement.
 
@@ -491,7 +496,7 @@ has the horizon CC line. `dataset check`: 0 errors, 0 warnings (README not regen
    **Andrej (2026-11-03, change):** I go with your change
 
    **Resolved (2026-11-03, Andrej):** B: `use_case` is the planner's (Diaz and Joseph 2019), `fit_reason` names the
-   gaps for a planner; data, split and metric unchanged. `dataset check` clean (Slurm).
+   gaps for a planner; data, split and metric unchanged. `dataset check` clean.
 
 6. **Blank the duration where the damage draws an event's span?**
 

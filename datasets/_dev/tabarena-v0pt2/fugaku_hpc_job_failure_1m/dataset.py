@@ -10,8 +10,9 @@ import numpy as np
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
+
 from data_foundry.collections import TABARENA_V0PT2_ROW_BUDGET
-from data_foundry.v2 import (
+from data_foundry.definition import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
@@ -23,7 +24,7 @@ from data_foundry.v2 import (
     Temporal,
     TemporalSplits,
 )
-from data_foundry.v2.splits import sample_temporal_splits
+from data_foundry.definition.splits import sample_temporal_splits
 
 # The requests fixed at submission (Fujitsu job manual section 2.5.4: pjalter changes only elapse, rscunit, rscgrp and
 # priority), read beside the source's representations.

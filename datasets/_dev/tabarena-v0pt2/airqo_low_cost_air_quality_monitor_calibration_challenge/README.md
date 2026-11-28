@@ -2,22 +2,22 @@
 report_format: data-foundry-report-v2
 unique_name: airqo_low_cost_air_quality_monitor_calibration_challenge
 container_format: 2
-checksum: v2:34edd508d83450846fe555a4aed3f486115c3a6a6308382d3f773709dba3c194
+checksum: v2:a6df0030463bd95255b326c4b74397d51feed953b9b28c676e30d68da4a29ca2
 build:
-  uuid: 01a18629-ab5f-784f-9679-a007fd54c98a
-  checksum: v2:636107fbd1ea5a9ed82c2f22679b558d6a776b2332d135e8e742a7512d89bb6c
-  built_at: '2026-10-29T05:37:20+00:00'
-  path: airqo_low_cost_air_quality_monitor_calibration_challenge/01a18629-ab5f-784f-9679-a007fd54c98a
+  uuid: 01a21800-ad9e-73d9-a085-fce439694fdb
+  checksum: v2:a6df0030463bd95255b326c4b74397d51feed953b9b28c676e30d68da4a29ca2
+  built_at: '2026-11-26T13:17:08+00:00'
+  path: airqo_low_cost_air_quality_monitor_calibration_challenge/01a21800-ad9e-73d9-a085-fce439694fdb
   data_foundry_version: 0.0.5
-  git_sha: 6d189a922994ddb0221c8249d07552d4df8af88b
+  git_sha: e3ddd55462cc45eed6aa71c38abd183086888b36
   libraries:
     python: 3.12.3
-    pandas: 3.1.0
-    numpy: 2.5.4
-    pyarrow: 26.0.0
+    pandas: 2.3.3
+    numpy: 2.1.3
+    pyarrow: 20.0.0
     scikit-learn: 1.7.2
-    polars: 2.0.0
-build_stale: true
+    polars: 1.41.1
+build_stale: false
 data:
   n_rows: 10828
   n_features: 16
@@ -41,25 +41,101 @@ task:
   group_time_on: null
   grouping: null
 splits:
-  n_repeats: 5
+  n_repeats: 6
   n_folds: 1
   random_state: 4267
   time_horizon: 1
   time_horizon_unit: months
   time_gap: null
   time_gap_unit: null
+  reason: 'Six one-month windows, newest first: February 2021, January 2021, December
+    2020, November 2020, October 2020
+
+    and August 2020 (Lennart: October to February on 2026-11-05; August on 2026-11-11).
+
+    August
+
+    2020 trains on less than half the hours (47.7%), beside the five months from October
+    on 57.3% to 92.3%. A
+
+    model refit at the start of each month corrects that month''s readings; the monthly
+    cadence is the curator''s
+
+    judgment (Lennart, 2026-11-04; checked 2026-11-11), as no source gives one. Adong
+    et al. (2022) say it is
+
+    "important to retrain these models periodically" and name "seasonal re-calibration"
+    as future work; AirQo''s
+
+    refit practice is not documented. The test covers three seasons: mean reference
+    41.4 in August, the end of
+
+    the June-August dry season; 42.3 and 40.5 in October and November, two months
+    of the September-November
+
+    rains; and 44.8, 49.5 and 74.2 in the December-February dry season (SPLIT-20).
+    September 2020 (53.0%) is left
+
+    out: 63 of its 462 hours (13.6%) are at Nakawa, which has no earlier hour, a new-site
+    test in this known-site
+
+    task (USE-10). The three dry-season windows of 2026-11-04 ("ok (a)") are superseded.
+    Site coverage differs by
+
+    month: August scores Makerere only, October and November all three sites, December
+    has no USEmbassy rows,
+
+    January 45, February no Nakawa. History before the test months: USEmbassy from
+    2019-07-25, Makerere from
+
+    2020-07-15 (306 hours, half a month, before August; 2.5 to 6.5 months before the
+    later windows), and Nakawa
+
+    from 2020-09-19 with only 63 hours (to 2020-09-23) before the October window,
+    then 1.4 to 3.4 months;
+
+    Nakawa''s October hours are close to a new-site test (USE-10). The reference is
+    for the same hour and no
+
+    reporting delay is documented, so no gap is needed; no training row has a label
+    from after its window start.
+
+    Random folds over the hourly stream gave the model reference labels of neighbouring
+    hours and scored a quarter
+
+    better (untuned LightGBM, one seed, mean RMSE 11.23 against 15.34 on the five
+    test months of 2026-11-05;
+
+    trained on an equal-size random draw of all other months, future included, 14.53).
+    Superseded 2026-11-05:
+
+    12.94 against 18.26 on the three windows (review panel, 2026-11-04). Six of the
+    nine windows an IID split of
+
+    this size would get: September 2020 is out (Nakawa''s hours have no history),
+    and July 2020 and earlier train
+
+    on under 47.7% of the hours, July scoring Makerere''s first hours (Andrej, 2026-11-19).'
   n_train:
-    min: 6204
+    min: 5166
     max: 9994
   n_test:
-    min: 596
+    min: 576
     max: 1310
 bundle_checks:
   ok: true
   errors: []
   warnings: []
   infos: []
-  accepted: {}
+  accepted:
+    splits_train_under_half: 'Signed off (Lennart, 2026-11-11): August 2020 trains
+      on 47.7% of the hours, beside the five months from October 2020 to February
+      2021 on 57.3% to 92.3%; kept as the curator''s exception to SPLIT-14''s half-data
+      floor (Andrej, 2026-11-19).'
+    splits_dimensions_off_protocol: 'Six of the nine windows an IID split of this
+      size would get: September 2020 is out (Nakawa''s hours have no history), and
+      July 2020 and earlier train on under 47.7% of the hours, July scoring Makerere''s
+      first hours (Andrej, 2026-11-19).'
 decisions:
 - Dead sensor channels set missing
 - Single-hour reference errors dropped
@@ -72,7 +148,7 @@ decisions:
 
 Regression of `ref_pm2_5`, scored with `rmse` on temporal splits by `created_at`. 10,828 rows and 16 features. Source: Zindi (2021).
 
-Built as `01a18629-ab5f-784f-9679-a007fd54c98a` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:34edd508d83450846fe555a4aed3f486115c3a6a6308382d3f773709dba3c194`, so the build is stale. See [Build](#build).
+Built as `01a21800-ad9e-73d9-a085-fce439694fdb` on 2026-11-26. See [Build](#build).
 
 ## In brief
 
@@ -86,7 +162,7 @@ Built as `01a18629-ab5f-784f-9679-a007fd54c98a` on 2026-10-29, but `dataset.py` 
 
 **Known at prediction time.** The recorded hour and site, both low-cost sensors' PM2.5 and PM10 readings, the city-wide temperature and humidity, and the site descriptors. No reference value from the month being corrected is known, so reference values from other hours are not predictors.
 
-**What the test data stands for.** Five monthly windows, October 2020 to February 2021, each trained on every earlier hour: a model refit at the start of each month corrects that month's readings. The test covers two months of the September-November rains and Kampala's December-February dry season.
+**What the test data stands for.** Six monthly windows, October 2020 to February 2021 and August 2020, each trained on every earlier hour: a model refit at the start of each month corrects that month's readings. The test covers the end of Kampala's June-August dry season, two months of the September-November rains and the December-February dry season.
 
 **Our changes to the source.** Use only the labeled Train.csv. Drop the opaque row ID; set a dead sensor's two channels missing (sensor 2 in 516 hours, sensor 1 in 18); drop 12 single-hour reference errors and 92 hours of a Nakawa reference outage (10,828 of 10,932 rows stay); parse the recorded UTC+3 timestamp, type the site as categorical and decode the 90m landform class into its catalogue words.
 
@@ -97,10 +173,9 @@ Built as `01a18629-ab5f-784f-9679-a007fd54c98a` on 2026-10-29, but `dataset.py` 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
-| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
-- The curation record, with the triage decision and its sources: [`curation/records/airqo_low_cost_air_quality_monitor_calibration_challenge.md`](../../../../curation/records/airqo_low_cost_air_quality_monitor_calibration_challenge.md)
+- The curation record, with the triage decision, its sources and the review: [`curation/records/airqo_low_cost_air_quality_monitor_calibration_challenge.md`](../../../../curation/records/airqo_low_cost_air_quality_monitor_calibration_challenge.md)
 - The original source: <https://zindi.world/competitions/airqo-low-cost-air-quality-monitor-calibration-challenge>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
@@ -221,7 +296,7 @@ We start with the 10,932 labeled rows of the supplied 2021 competition Train.csv
   The rule reads the target and its neighbouring labels. The four Nakawa hours are on the training side of
   every window (superseded 2026-11-05: under the five windows they are October 2020 test labels); the
   Makerere hour is in the February 2021 test window, where CLEAN-11 lets a single extreme target leave only
-  from the training period (settled 2026-11-05: an impossible value, dropped in every window, issue 2, CC
+  from the training period (settled 2026-11-05: an impossible value, dropped in every window, CC
   below). The rule follows the spike (rate-of-change) screening that hourly reference-monitor feeds such as
   EPA's AirNow run as automated QC (no published QC document is quoted yet). It needs both neighbouring hours
   in the file, so four look-alike hours with a missing neighbour stay (superseded 2026-11-05: the rule takes
@@ -248,44 +323,47 @@ We start with the 10,932 labeled rows of the supplied 2021 competition Train.csv
 - New-site transfer, AirQo's network use, cannot be tested with three sites whose periods barely overlap
   (see fit_reason). Exact device serials, source reference aggregation and site-metadata snapshot dates
   remain unverified.
-- On the five windows, untuned models give mean RMSE 36.42 for the training mean, 21.01 for raw sensor 1,
-  20.71 for a linear model, 15.08 for a forest and 15.34 for LightGBM (27.4, 14.7, 12.2, 9.3 and 13.2 per
-  window, February first; one seed). February, the highest-pollution month, dominates the mean. (Superseded
-  2026-11-05: 41.22, 25.32, 24.76, 19.21 and 18.26 on the three windows of 2026-11-04; LightGBM 16.69, with
-  January 16.8 and November 13.0, before the 7 hours issue 2 adds.)
-- Exact feature-copy share is zero on all five windows. The hidden-group probe finds no entity-like column;
-  near-copy clusters hold 6.7% of rows, and 12.1% of test rows have one on the training side (superseded
-  2026-11-05: the quantized profiles' 17.72 percent and 0.001215 skill gap came from the random folds). Only 4
-  of 4,624 test rows have a same-site training hour within one hour, at the window starts.
-- The leak probes run on the five windows (superseded 2026-11-05: the pinned CLI failed on timezone-aware
-  dates, and a by-hand substitute on the three windows found no leak) and find none: all features score skill
-  0.813, each sensor channel alone 0.61 to 0.66 and every other column alone below 0, and no test row copies
-  a training row. Dropping one column moves an untuned LightGBM's mean RMSE by at most 0.62, and created_at
-  alone scores a skill of 0.04.
+- On the five windows of 2026-11-05 (October 2020 to February 2021; not measured again with August 2020),
+  untuned models give mean RMSE 36.42 for the training mean, 21.01 for raw sensor 1, 20.71 for a linear
+  model, 15.08 for a forest and 15.34 for LightGBM (27.4, 14.7, 12.2, 9.3 and 13.2 per window, February
+  first; one seed). February, the highest-pollution month, dominates the mean. (Superseded 2026-11-05: 41.22,
+  25.32, 24.76, 19.21 and 18.26 on the three windows of 2026-11-04; LightGBM 16.69, with January 16.8 and
+  November 13.0, before the 7 hours the spike rule adds.)
+- Exact feature-copy share is zero on all five windows of 2026-11-05 (not measured again with August 2020).
+  The hidden-group probe finds no entity-like column; near-copy clusters hold 6.7% of rows, and 12.1% of test
+  rows have one on the training side (superseded 2026-11-05: the quantized profiles' 17.72 percent and
+  0.001215 skill gap came from the random folds). Only 4 of 4,624 test rows have a same-site training hour
+  within one hour, at the window starts.
+- The leak probes run on the five windows of 2026-11-05 (not run again with August 2020; superseded
+  2026-11-05: the pinned CLI failed on timezone-aware dates, and a by-hand substitute on the three windows
+  found no leak) and find none: all features score skill 0.813, each sensor channel alone 0.61 to 0.66 and
+  every other column alone below 0, and no test row copies a training row. Dropping one column moves an
+  untuned LightGBM's mean RMSE by at most 0.62, and created_at alone scores a skill of 0.04.
 - The split is temporal (Lennart, 2026-11-04), replacing the site-balanced random folds Myunghwan approved on
   2026-10-28; see the splits comment.
 - CC (2026-11-05, Lennart): five monthly windows from October 2020 instead of the three dry-season months
-  (issue 1, A; SPLIT-20, as aeolus and perth_house_prices widened theirs). The test now holds 4,631 hours
-  (4,624 after issue 2) over both seasons, and October and November score all three sites; the smallest
+  (SPLIT-20, as aeolus and perth_house_prices widened theirs). The test now holds 4,631 hours
+  (4,624 after the spike rule) over both seasons, and October and November score all three sites; the smallest
   train side is 57.3% (SPLIT-14). Nakawa enters the October window with 63 hours of history (2020-09-19 to
   2020-09-23), so its October hours are close to a new-site test inside this known-site task (USE-10). It
-  supersedes the three windows of 2026-11-04 ("ok (a)").
-- CC (2026-11-05, Lennart): the 92-hour Nakawa reference outage leaves (issue 3, A; CLEAN-11 impossible-value
+  supersedes the three windows of 2026-11-04 ("ok (a)"). (Superseded 2026-11-11: six windows, August 2020
+  added, CC below.)
+- CC (2026-11-05, Lennart): the 92-hour Nakawa reference outage leaves (CLEAN-11 impossible-value
   clause, then CLEAN-15; as qsar_tid_11 and 2024_lusaka_mobility_prediction_hackathon). A Nakawa hour of
   2020-11-10 to 2020-11-23 with the reference below 0.3 times both low-cost PM2.5 channels is a failed
   reference: 92 hours, reference 0.1 to 11.2 against channels of 12 to 190, while Nakawa's monthly median
   ratio of reference to sensor 1 is 1.04 to 1.21 elsewhere. The target is set missing and the rows leave;
   the definition raises unless the count is 92. Without the date bound the same test catches 96 Nakawa hours.
   Under the five windows these are November 2020 test labels; November keeps 599 hours, 260 of them at Nakawa
-  (596 and 258 after issue 2).
-- CC (2026-11-05, Lennart): one symmetric dead-channel rule at 0.27 (issue 4, B; CLEAN-11; as heart_disease,
+  (596 and 258 after the spike rule).
+- CC (2026-11-05, Lennart): one symmetric dead-channel rule at 0.27 (CLEAN-11; as heart_disease,
   ashrae and protein_model_quality_rf_pcp): a sensor whose PM2.5 is below 0.27 times the other sensor's has
   both its channels set missing, and the row stays. It adds 16 sensor-2 hours of the 2019 outage and 18
   sensor-1 hours (2019-11-13/14, 2020-06-07/08), all at USEmbassy and on every window's training side; the
   definition raises unless the counts are 500, 16 and 18. Dead hours reach a ratio of 0.255, and the lowest
   live one, Makerere 2020-12-05 06:00 at 0.294 (December test window), stays a reading.
 - CC (2026-11-05, Lennart): the spike rule becomes an instrument-error rule for every window, test windows
-  included (issue 2, (a) of its consistency check; CLEAN-11 impossible-value clause, then CLEAN-15; as the
+  included ((a) of its consistency check; CLEAN-11 impossible-value clause, then CLEAN-15; as the
   Nakawa outage, qsar_tid_11 and 2024_lusaka_mobility_prediction_hackathon). Collocated instruments sample
   the same air, so a reference hour several times both sensors and the hours around it is a value the
   reference could not have read ("we think the value is wrong"). A reference hour above 3 times both PM2.5
@@ -303,28 +381,43 @@ We start with the 10,932 labeled rows of the supplied 2021 competition Train.csv
 - CC (2026-11-05, Lennart): the declared metric (RMSE on the original micrograms-per-cubic-metre scale, the
   source's) is checked and stays as declared. Public data redistribution permission
   is not established by these checks; the source's private-participant restrictions remain in force.
+- CC (2026-11-11, Lennart): a sixth test window, August 2020 ("Six months with August
+  2020", (c) of the consistency check), the end of the June-August dry season that no other test month holds.
+  August's 576 hours are all at Makerere, which has 306 earlier hours (15-31 July 2020); it trains on 47.7%
+  of the hours, the one window under half, signed off (SPLIT-14 as amended on 2026-11-11). September 2020
+  stays out: 63 of its 462 hours are at Nakawa, which has no earlier hour. The monthly windows without a gap
+  are checked (the horizon).
 
 ## Splits
 
-Five one-month windows, newest first: February 2021 to October 2020 (Lennart, 2026-11-05; issue 1, A). Each
-trains on every earlier hour (6,204 to 9,994 rows, 57-92%); the test months hold 596 to 1,310 hours. A model
-refit at the start of each month corrects that month's readings; the monthly cadence is the curator's
-judgment (Lennart, 2026-11-04). Adong et al. (2022) say it is "important to retrain these models
-periodically" and name "seasonal re-calibration" as future work; AirQo's refit practice is not documented.
-The test covers both seasons: mean reference 42.3 and 40.5 in October and November, two months of the
-September-November rains, against 44.8, 49.5 and 74.2 in the December-February dry season (SPLIT-20). The
-three dry-season windows of 2026-11-04 ("ok (a)") are superseded. Site coverage differs by month: October and
-November score all three sites, December has no USEmbassy rows, January 45, February no Nakawa. History before
-the test months: USEmbassy from 2019-07-25, Makerere from 2020-07-15 (2.5 to 6.5 months), and Nakawa from
-2020-09-19 with only 63 hours (to 2020-09-23) before the October window, then 1.4 to 3.4 months; Nakawa's
-October hours are close to a new-site test (USE-10). The reference is for the same hour and no reporting
-delay is documented, so no gap is needed; no training row has a label from after its window start. Random
-folds over the hourly stream gave the model reference labels of neighbouring hours and scored a quarter better
-(untuned LightGBM, one seed, mean RMSE 11.23 against 15.34 on the same five test months; trained on an
-equal-size random draw of all other months, future included, 14.53). Superseded 2026-11-05: 12.94 against
-18.26 on the three windows (review panel, 2026-11-04).
+Expanding-window temporal splits: 6 test window(s) of 1 month, starting at 2021-02-01, 2021-01-01, 2020-12-01, 2020-11-01, 2020-10-01, 2020-08-01, newest first; train is all earlier data. The test windows by `created_at`, as listed: 2021-02-01 to 2021-02-28 (834 test, 9,994 train rows); 2021-01-01 to 2021-01-31 (1,048 test, 8,946 train rows); 2020-12-01 to 2020-12-31 (836 test, 8,110 train rows); 2020-11-01 to 2020-11-30 (596 test, 7,514 train rows); 2020-10-01 to 2020-10-31 (1,310 test, 6,204 train rows); 2020-08-01 to 2020-08-31 (576 test, 5,166 train rows).
 
-5 repeat(s) x 1 fold(s) with seed 4267; train 6,204 to 9,994 rows, test 596 to 1,310 rows. Prediction horizon: 1 months.
+Six one-month windows, newest first: February 2021, January 2021, December 2020, November 2020, October 2020
+and August 2020 (Lennart: October to February on 2026-11-05; August on 2026-11-11).
+August
+2020 trains on less than half the hours (47.7%), beside the five months from October on 57.3% to 92.3%. A
+model refit at the start of each month corrects that month's readings; the monthly cadence is the curator's
+judgment (Lennart, 2026-11-04; checked 2026-11-11), as no source gives one. Adong et al. (2022) say it is
+"important to retrain these models periodically" and name "seasonal re-calibration" as future work; AirQo's
+refit practice is not documented. The test covers three seasons: mean reference 41.4 in August, the end of
+the June-August dry season; 42.3 and 40.5 in October and November, two months of the September-November
+rains; and 44.8, 49.5 and 74.2 in the December-February dry season (SPLIT-20). September 2020 (53.0%) is left
+out: 63 of its 462 hours (13.6%) are at Nakawa, which has no earlier hour, a new-site test in this known-site
+task (USE-10). The three dry-season windows of 2026-11-04 ("ok (a)") are superseded. Site coverage differs by
+month: August scores Makerere only, October and November all three sites, December has no USEmbassy rows,
+January 45, February no Nakawa. History before the test months: USEmbassy from 2019-07-25, Makerere from
+2020-07-15 (306 hours, half a month, before August; 2.5 to 6.5 months before the later windows), and Nakawa
+from 2020-09-19 with only 63 hours (to 2020-09-23) before the October window, then 1.4 to 3.4 months;
+Nakawa's October hours are close to a new-site test (USE-10). The reference is for the same hour and no
+reporting delay is documented, so no gap is needed; no training row has a label from after its window start.
+Random folds over the hourly stream gave the model reference labels of neighbouring hours and scored a quarter
+better (untuned LightGBM, one seed, mean RMSE 11.23 against 15.34 on the five test months of 2026-11-05;
+trained on an equal-size random draw of all other months, future included, 14.53). Superseded 2026-11-05:
+12.94 against 18.26 on the three windows (review panel, 2026-11-04). Six of the nine windows an IID split of
+this size would get: September 2020 is out (Nakawa's hours have no history), and July 2020 and earlier train
+on under 47.7% of the hours, July scoring Makerere's first hours (Andrej, 2026-11-19).
+
+6 repeat(s) x 1 fold(s) with seed 4267; train 5,166 to 9,994 rows, test 576 to 1,310 rows. Prediction horizon: 1 months.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
@@ -333,6 +426,21 @@ equal-size random draw of all other months, future included, 14.53). Superseded 
 | 2 | 0 | 8110 | 836 | 2019-07-25 09:00:00+03:00 | 2020-11-30 22:00:00+03:00 | 2020-12-01 00:00:00+03:00 | 2020-12-31 23:00:00+03:00 |
 | 3 | 0 | 7514 | 596 | 2019-07-25 09:00:00+03:00 | 2020-10-31 23:00:00+03:00 | 2020-11-01 00:00:00+03:00 | 2020-11-30 22:00:00+03:00 |
 | 4 | 0 | 6204 | 1310 | 2019-07-25 09:00:00+03:00 | 2020-09-30 23:00:00+03:00 | 2020-10-01 00:00:00+03:00 | 2020-10-31 23:00:00+03:00 |
+| 5 | 0 | 5166 | 576 | 2019-07-25 09:00:00+03:00 | 2020-07-31 23:00:00+03:00 | 2020-08-01 00:00:00+03:00 | 2020-08-31 23:00:00+03:00 |
+
+
+### The test windows
+
+Each test window against its train side, by statistics of the data, never of a model: the target, and the population stability index (PSI) of each feature, its largest value and the features that drift most (below 0.1 little shift, above 0.25 a large one), and the share of test rows with a category the train side never shows. Up to 20,000 rows per side. The candidates the windows were chosen from: `.venv/bin/python -m data_foundry.curation.cli dataset windows airqo_low_cost_air_quality_monitor_calibration_challenge`.
+
+| window | period | n_test | train_share | target_test | target_train | psi_max | top_drift | unseen_categories |
+|---|---|---|---|---|---|---|---|---|
+| 0 | Feb 2021 | 834 | 0.923 | mean 74.21, median 59.05, p10 23.59, p90 154.7 | mean 51.55, median 43, p10 21, p90 94 | 1.235 | site (1.24), lat (1.24), long (1.24) | 0 |
+| 1 | Jan 2021 | 1048 | 0.826 | mean 49.48, median 41.85, p10 15.3, p90 93.73 | mean 51.79, median 43, p10 21.8, p90 94 | 2.157 | lat (2.16), altitude (2.16), greenness (2.16) | 0 |
+| 2 | Dec 2020 | 836 | 0.749 | mean 44.81, median 35.55, p10 16.2, p90 84 | mean 52.51, median 44, p10 22.9, p90 95 | 6.837 | site (6.84), lat (6.84), long (6.84) | 0 |
+| 3 | Nov 2020 | 596 | 0.694 | mean 40.47, median 34.95, p10 13.3, p90 74.95 | mean 53.47, median 44.5, p10 23.7, p90 97 | 0.945 | site (0.94), altitude (0.94), landform_270m (0.94) | 0 |
+| 4 | Oct 2020 | 1310 | 0.573 | mean 42.31, median 36.55, p10 15.89, p90 76.11 | mean 55.82, median 46, p10 25.23, p90 100 | 2.025 | site (2.02), altitude (2.02), landform_270m (2.02) | 0 |
+| 5 | Aug 2020 | 576 | 0.477 | mean 41.42, median 35.05, p10 20.3, p90 70.25 | mean 58.75, median 49, p10 27, p90 104 | 11.265 | site (11.27), long (11.27), s2_pm2_5 (1.50) | 0 |
 
 ## Decisions
 
@@ -348,7 +456,7 @@ Both sensor-2 channels read exactly 0 in 500 USEmbassy hours (2019-11-18 to 2019
 
 ### 2. Single-hour reference errors dropped
 
-Twelve reference hours read above 3 times both low-cost PM2.5 channels and above 3 times the same site's reference in each neighbouring hour in the file, with at least one there (Nakawa 2020-10-03 10:00: 444.0 against channels of 35 and 36 and neighbours of 47.5 and 86.0). Collocated instruments sample the same air, so a single hour that neither the sensors nor the hours around it share is an instrument error of the reference, an impossible value. They become missing and the rows leave, in the test windows too (CLEAN-11, CLEAN-15; Lennart, 2026-11-04 and 2026-11-05, issue 2), by the rule, not by hand.
+Twelve reference hours read above 3 times both low-cost PM2.5 channels and above 3 times the same site's reference in each neighbouring hour in the file, with at least one there (Nakawa 2020-10-03 10:00: 444.0 against channels of 35 and 36 and neighbours of 47.5 and 86.0). Collocated instruments sample the same air, so a single hour that neither the sensors nor the hours around it share is an instrument error of the reference, an impossible value. They become missing and the rows leave, in the test windows too (CLEAN-11, CLEAN-15; Lennart, 2026-11-04 and 2026-11-05), by the rule, not by hand.
 
 | site | created_at | pm2_5 | s2_pm2_5 | ref_pm2_5 | ref_before | ref_after |
 |---|---|---|---|---|---|---|
@@ -388,8 +496,13 @@ From 2020-11-10 to 2020-11-23, 92 Nakawa hours have the reference below 0.3 time
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
 
+
+Accepted on purpose:
+
+- `splits_train_under_half`: Signed off (Lennart, 2026-11-11): August 2020 trains on 47.7% of the hours, beside the five months from October 2020 to February 2021 on 57.3% to 92.3%; kept as the curator's exception to SPLIT-14's half-data floor (Andrej, 2026-11-19).
+- `splits_dimensions_off_protocol`: Six of the nine windows an IID split of this size would get: September 2020 is out (Nakawa's hours have no history), and July 2020 and earlier train on under 47.7% of the hours, July scoring Makerere's first hours (Andrej, 2026-11-19).
 
 ## Data checks
 
@@ -469,11 +582,10 @@ From 2020-11-10 to 2020-11-23, 92 Nakawa hours have the reference below 0.3 time
 
 | field | value |
 |---|---|
-| uuid | 01a18629-ab5f-784f-9679-a007fd54c98a |
-| checksum | v2:636107fbd1ea5a9ed82c2f22679b558d6a776b2332d135e8e742a7512d89bb6c |
-| built_at | 2026-10-29T05:37:20+00:00 |
-| path | airqo_low_cost_air_quality_monitor_calibration_challenge/01a18629-ab5f-784f-9679-a007fd54c98a |
+| uuid | 01a21800-ad9e-73d9-a085-fce439694fdb |
+| checksum | v2:a6df0030463bd95255b326c4b74397d51feed953b9b28c676e30d68da4a29ca2 |
+| built_at | 2026-11-26T13:17:08+00:00 |
+| path | airqo_low_cost_air_quality_monitor_calibration_challenge/01a21800-ad9e-73d9-a085-fce439694fdb |
 | data_foundry_version | 0.0.5 |
-| git_sha | 6d189a922994ddb0221c8249d07552d4df8af88b |
-| libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:34edd508d83450846fe555a4aed3f486115c3a6a6308382d3f773709dba3c194` |
+| git_sha | e3ddd55462cc45eed6aa71c38abd183086888b36 |
+| libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |

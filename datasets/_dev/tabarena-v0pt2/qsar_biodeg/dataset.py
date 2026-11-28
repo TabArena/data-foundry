@@ -6,7 +6,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Grouping,
@@ -14,6 +15,7 @@ from data_foundry.v2 import (
     Smiles,
     Source,
     TaskSummary,
+    TimeBasis,
     canonical_smiles,
     scaffold_groups,
 )
@@ -96,7 +98,7 @@ class QsarBiodeg(AbstractCuratedDataset):
           356 readily biodegradable, as on UCI.
         - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form
           (`canonical_smiles`; no salts or mixtures here), declared in `special_features`, so a benchmark encodes it as a
-          structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's
+          structure and never as text; the recommended encoding is `data_foundry.special.chemistry.encode_smiles` (RDKit's
           2D descriptors, the 166 MACCS keys and the ECFP4 counts).
         - The authors' 41 descriptors leave (Lennart, 2026-11-01, as for qsar_tid_11: the task goes from the structure
           to a prediction, and the descriptors are one modelling choice of the authors). They were Dragon descriptors
@@ -121,6 +123,27 @@ class QsarBiodeg(AbstractCuratedDataset):
           series are held out; qsar_bioconcentration, qsar_oral_toxicity, qsar_fish_toxicity, qsar_aquatic_toxicity and
           qsar_tid_11 group the same way. The source split at random.
     """
+    split_leaf = "L-FAMILY.key"
+    time_basis = TimeBasis(
+        "UnseenGroup",
+        """
+        The source
+        builds a regulatory screen: Mansouri et al. (2013) open with REACH, which "requires information on ready
+        biodegradation" and encourages QSAR predictions in place of tests, and they validate on 670 chemicals from
+        other sources (the external set above). Its question is a chemical from outside the collection, so the
+        scaffold split stands (SPLIT-37, the source's scope), and the order in which Japan's programme tested its
+        existing chemicals lies outside it. That order was measured and is recorded here: NITE's workbook of the CSCL
+        biodegradation results of existing chemicals (https://www.nite.go.jp/data/000064112.xlsx) dates 1,006
+        chemicals by CAS-RN and J-CHECK's bulletin year 44 more (1,050 of 1,055, 1971 to 2008); the test moved from 14
+        days (80% of the tests before 1980) to 28 days (88% from 2000 on), and the share readily biodegradable swings
+        by decade (40%, 28%, 45%, 27%), a fact about the labels. A forward split by test year leaves 10.3% of the test
+        chemicals a close training analog, as the scaffold split does, against 11.8% at random.
+        The split cannot test how labels from the older 14-day tests differ from today's 28-day ones.
+        """,
+        set_by="Andrej",
+        on="2026-11-13",
+        note="no prototype tag before, 2026-11-12",
+    )
 
     # Task
     target = "Biodegradable"

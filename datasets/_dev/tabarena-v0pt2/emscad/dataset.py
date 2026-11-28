@@ -6,13 +6,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import (
+
+from data_foundry.definition import (
     AbstractCuratedDataset,
     FeatureTypes,
     Grouping,
     Metric,
     Source,
     TaskSummary,
+    TimeBasis,
     anonymize_ids,
     decode,
 )
@@ -161,7 +163,6 @@ class Emscad(AbstractCuratedDataset):
         In the original paper, the authors subsampled the data to have 450 fraudulent and 450 non-fraudulent samples.
         No details are given on how the subsampling was done. Moreover, duplicates were skipped, but no details are given on how duplicates were identified.
 
-        - The ads were posted from 2012 to 2014, but the release has no dates, so the split cannot be temporal. It is grouped by poster (see below), which marks the task as Non-IID, so there is no ForcedIIDFromTemporal tag. The lost dates could also have been used for modelling, since scams change over time.
         - Following the original paper, we drop all duplicates (when ignoring the job_id column) to avoid data leakage. We also drop reposts, which the paper describes as "fraudsters can quickly and repeatedly try to post the same job ad in identical or different locations" (Sec. 5): rows identical in every field except job_id and location (1,343 more rows, 115 of them fraudulent).
         - The labels were assigned per client ("based on client's suspicious activity on the system, false contact or company information, candidate complaints and periodic meticulous analysis of the clientele", Sec. 5), and ads of the same client appear several times. We group them exactly, without similarity thresholds: same non-empty company_profile (the client's own company text; none of the 1,708 profiles mixes labels), or a shared masked e-mail, phone or URL that occurs within at most one company profile (contacts shared by several companies, e.g. job-board links, are generic and not used). This gives about 4,500 groups (largest 539 ads, a legitimate recruiter); ads without a profile or shared contact are their own group. Random splits scored ROC AUC 0.99 because the model recognises known clients; grouped splits score about 0.93 (leak audit 2026-09-24, re-checked 2026-09-30).
         - Residual: about 335 ads without profile or shared contact still have a near-identical text (TF-IDF cosine >= 0.95) in another group, likely lightly edited reposts. Dropping them at thresholds 0.95 to 0.7 did not change the grouped AUC measurably, so we keep them.
@@ -177,6 +178,17 @@ class Emscad(AbstractCuratedDataset):
         - The target (2026-11-01, CLEAN-25): `fraudulent` ships its classes as words (1 is the event). Binary: "Yes" is
           the event, the class that sorts second, so it is the metrics' positive class.
     """
+    split_leaf = "L-FORCED.groups"
+    time_basis = TimeBasis(
+        "ForcedGroupedFromTemporal",
+        """
+        ads posted from 2012 to 2014 with no date in the release (`job_id` does
+        not follow posting time); the split groups by poster because the label is set per client, so the test posters
+        come from the same period as the training ones. Scams change over time; a dated release would allow a split by
+        posting date. Not taken as stationary (Andrej, 2026-11-18): Fraud against an adapting review is the textbook
+        case against ASR, and the source itself says the scams change.
+        """,
+    )
 
     # Task
     target = "fraudulent"
@@ -201,7 +213,7 @@ class Emscad(AbstractCuratedDataset):
         "dataset_pure_feature_value": "Large legitimate clients (e.g. one company profile with 539 ads) and their "
         "locations, departments and industries are all legitimate at a 95% base rate; the grouped split keeps each "
         "client on one side, so these values do not leak across the split.",
-        "groups_labels_constant": "The labels were assigned per client (Vidros et al. 2017, Sec. 5), so 4,439 of the "
+        "task_group_labels_mismatch": "The labels were assigned per client (Vidros et al. 2017, Sec. 5), so 4,439 of the "
         "4,441 posters have one label; 2 posters (34 ads) have both, so the labels are not one per group.",
     }
 

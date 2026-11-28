@@ -1,3 +1,7 @@
+curators:
+- Lennart
+- Andrej
+- Myunghwan
 checked_by:
 - Lennart
 - Andrej
@@ -6,14 +10,8 @@ checked_by:
 - Gioia
 - AI (UNVERIFIED)
 - Myunghwan
-claimed_by:
-- Lennart
-- Andrej
-- Myunghwan
 data_foundry_status:
 - 'DF: Yes'
-- WIP (DF)
-- WIP (Triage)
 - 'DF: Much work'
 - 'DF: Suspended'
 - TabArena (v0.1)
@@ -72,7 +70,7 @@ tags:
 - 'Time: Inferred'
 - 'Time: Within Entity'
 - 'Time: Lost'
-- 'Target: Later'
+- 'Target: Fixed Delay'
 - 'Target: Varying Delay'
 - 'Target: Revised Later'
 - 'Target: Unknown'

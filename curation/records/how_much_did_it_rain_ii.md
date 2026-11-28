@@ -65,7 +65,7 @@ independent of the remaining target distribution, then we can treat it as two re
 one count of tips, not a regime apart from the rest. The verdict (`No`, the second stage of `how_much_did_it_rain`) does
 not change.
 
-CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
+CC (2026-10-30, Andrej): `No`, as screened (verified in the zero-inflated screening).
 
 AMS Artificial Intelligence Committee contest on Kaggle (2015): NEXRAD polarimetric radar scans over MADIS rain gauges
 in the US Midwest on 20 days per month, April to August 2014, with time and location removed and rows shuffled. Each

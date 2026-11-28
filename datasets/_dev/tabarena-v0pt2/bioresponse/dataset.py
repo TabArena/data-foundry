@@ -5,7 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, GroupBasis, Metric, Source, TaskSummary, TimeBasis
+
+from data_foundry.definition import AbstractCuratedDataset, GroupBasis, Metric, Source, TaskSummary, TimeBasis
 
 
 class Bioresponse(AbstractCuratedDataset):
@@ -73,6 +74,7 @@ class Bioresponse(AbstractCuratedDataset):
           ROC AUC 0.485, against 0.484-0.497 for a random third of train; nearest-training distances match), and
           scoring new analogues of series already in testing is the lead-optimisation use case the competition framed.
     """
+    split_leaf = "L-EXP.no-kind-key"
     time_basis = TimeBasis(
         "Timeless",
         """
@@ -87,12 +89,14 @@ class Bioresponse(AbstractCuratedDataset):
     )
     group_basis = GroupBasis(
         """
-        ForcedIIDFromGrouped (Andrej, 2026-11-16): the use case screens molecules a chemist has not made
+        the use case screens molecules a chemist has not made
         yet, which whole chemical series held out would stand for (scaffold groups, SPLIT-31), but no structure or
         compound id is published, so no series can be computed and the split is random. Overlap left: close
         analogues of a test molecule sit in training (the label agreement above), so the score is optimistic for a
         new series.
         """,
+        set_by="Andrej",
+        on="2026-11-16",
     )
 
     # Task
