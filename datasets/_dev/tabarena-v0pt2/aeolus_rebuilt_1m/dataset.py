@@ -198,6 +198,103 @@ def _markdown_table(table: pd.DataFrame) -> str:
     return "\n".join(lines)
 
 
+AIRPORT_STATE = (
+    "O_SCHED_DEPS_HOUR",
+    "O_SCHED_ARRS_HOUR",
+    "D_SCHED_ARRS_HOUR",
+    "O_DEPS_PAST_HOUR",
+    "O_DEP_DELAY_PAST_HOUR",
+    "O_DEP_LATE_PAST_HOUR",
+    "D_ARRS_PAST_HOUR",
+    "D_ARR_DELAY_PAST_HOUR",
+    "D_ARR_LATE_PAST_HOUR",
+)
+"""The airports' state at the prediction point, the row form of the Aeolus release's flight network (`_airport_state`)."""
+
+
+def _hour(col: str) -> pl.Expr:
+    return pl.col(col).dt.truncate("1h")
+
+
+def _airport_state(f: pl.DataFrame) -> pl.DataFrame:
+    """The nine `AIRPORT_STATE` columns for every flight of `f`, in its row order, from the other flights of the files.
+
+    Each one is a count or a mean over one hour of the airport's flights, the hour being a whole UTC hour: the hour
+    starting at the prediction point `P` for the scheduled departures and arrivals at the origin, the flight's own
+    scheduled arrival hour for the arrivals at the destination, and the hour ending at `P` for what actually happened
+    (a departure counts when its actual time is before `P`, an arrival when it landed before `P`). Scheduled flights
+    count whatever became of them; a cancelled flight never departed, and a diverted one did not arrive at its
+    destination. The flight itself is never counted. Means and shares of late flights (15 minutes or more) are missing
+    when no flight qualifies.
+    """
+    f = f.with_row_index("_rid")
+    late = DELAY_THRESHOLD_MINUTES
+    one_hour = pl.duration(hours=1)
+    dep_ok = (pl.col("Cancelled") == 0) & pl.col("DepDelay").is_not_null() & pl.col("dep_actual").is_not_null()
+    arr_ok = (
+        (pl.col("Cancelled") == 0)
+        & (pl.col("Diverted") == 0)
+        & pl.col("arr_delay").is_not_null()
+        & pl.col("arr_actual").is_not_null()
+    )
+    scheduled_dep = f.group_by(pl.col("Origin").alias("ap"), _hour("dep_utc").alias("h"), maintain_order=True).agg(
+        pl.len().alias("n")
+    )
+    scheduled_arr = (
+        f.filter(pl.col("arr_utc").is_not_null())
+        .group_by(pl.col("Dest").alias("ap"), _hour("arr_utc").alias("h"), maintain_order=True)
+        .agg(pl.len().alias("n"))
+    )
+    actual_dep = (
+        f.filter(dep_ok)
+        .group_by(pl.col("Origin").alias("ap"), _hour("dep_actual").alias("h"), maintain_order=True)
+        .agg(pl.len().alias("n"), pl.col("DepDelay").sum().alias("s"), (pl.col("DepDelay") >= late).sum().alias("l"))
+    )
+    actual_arr = (
+        f.filter(arr_ok)
+        .group_by(pl.col("Dest").alias("ap"), _hour("arr_actual").alias("h"), maintain_order=True)
+        .agg(pl.len().alias("n"), pl.col("arr_delay").sum().alias("s"), (pl.col("arr_delay") >= late).sum().alias("l"))
+    )
+
+    def look(table: pl.DataFrame, ap: str, target: pl.Expr, own: pl.Expr | None = None, delay: str | None = None):
+        """The table's row for (airport, hour) per flight, less the flight's own contribution when it is in it."""
+        mine = pl.lit(False) if own is None else own
+        keys = f.select(
+            pl.col(ap).alias("ap"),
+            target.alias("h"),
+            mine.alias("mine"),
+            (pl.col(delay) if delay else pl.lit(0.0)).alias("d"),
+        )
+        k = keys.join(table, on=["ap", "h"], how="left", maintain_order="left")
+        own_hit = pl.col("mine").fill_null(False)
+        out = {"n": pl.col("n").fill_null(0) - own_hit.cast(pl.Int64)}
+        if "s" in table.columns:
+            out["s"] = pl.col("s").fill_null(0.0) - pl.when(own_hit).then(pl.col("d")).otherwise(0.0)
+            out["l"] = pl.col("l").fill_null(0) - (own_hit & (pl.col("d") >= late)).cast(pl.Int64)
+        return k.select(**out)
+
+    p = pl.col("P")
+    o_dep = look(scheduled_dep, "Origin", p, pl.lit(True))
+    o_arr = look(scheduled_arr, "Origin", p)
+    d_arr = look(scheduled_arr, "Dest", _hour("arr_utc"), pl.col("arr_utc").is_not_null())
+    past_dep = look(actual_dep, "Origin", p - one_hour, dep_ok & (_hour("dep_actual") == p - one_hour), "DepDelay")
+    past_arr = look(actual_arr, "Dest", p - one_hour, arr_ok & (_hour("arr_actual") == p - one_hour), "arr_delay")
+    columns = {
+        "O_SCHED_DEPS_HOUR": o_dep["n"],
+        "O_SCHED_ARRS_HOUR": o_arr["n"],
+        "D_SCHED_ARRS_HOUR": d_arr["n"],
+        "O_DEPS_PAST_HOUR": past_dep["n"],
+        "O_DEP_DELAY_PAST_HOUR": past_dep["s"] / past_dep["n"].replace(0, None),
+        "O_DEP_LATE_PAST_HOUR": past_dep["l"] / past_dep["n"].replace(0, None),
+        "D_ARRS_PAST_HOUR": past_arr["n"],
+        "D_ARR_DELAY_PAST_HOUR": past_arr["s"] / past_arr["n"].replace(0, None),
+        "D_ARR_LATE_PAST_HOUR": past_arr["l"] / past_arr["n"].replace(0, None),
+    }
+    res = pl.DataFrame({name: col.rename(name) for name, col in columns.items()})
+    # a flight without a prediction point (a skipped local time) has no window
+    return res.with_columns(pl.when(f["P"].is_not_null()).then(pl.col(c)).alias(c) for c in res.columns)
+
+
 def _flights_utc(raw: dict[str, pl.DataFrame]) -> tuple[pl.DataFrame, pl.DataFrame]:
     """Every flight of the files (December 2022 on, cancelled and diverted ones included) with its scheduled and
     actual times in UTC, the prediction point, its airports' weather stations and its aircraft's previous flight.
@@ -283,6 +380,7 @@ def _flights_utc(raw: dict[str, pl.DataFrame]) -> tuple[pl.DataFrame, pl.DataFra
         .alias("INBOUND_DEP_DELAY"),
         pl.when(pl.col("INBOUND_STATUS") == "arrived").then(pl.col("prev_arr_delay")).alias("INBOUND_ARR_DELAY"),
     )
+    f = f.hstack(_airport_state(f))
     return f, mapping
 
 
@@ -298,7 +396,7 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
         question="Will a US domestic flight arrive 15 minutes or more late?",
         use_case=(
             "Shortly before departure, an airline, an airport or a travel app estimates which of the coming flights "
-            "will arrive late, from the schedule, where the aircraft is and the current weather at both airports."
+            "will arrive late, from the schedule, where the aircraft is, the current weather and the traffic at both airports."
         ),
         row="One US domestic flight of 2023-2024 that operated (left and arrived where scheduled).",
         predicted=(
@@ -307,8 +405,9 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
         ),
         known=(
             "At the full hour before the scheduled departure: the date, airline, flight number, route, distance, "
-            "scheduled times, the airports' locations, the weather reported at both airports for that hour, and "
-            "where the aircraft's previous flight is (not yet left, in the air or landed, with its delays so far)."
+            "scheduled times, the airports' locations and weather for that hour, where the aircraft's previous flight "
+            "is, and the airports' traffic (flights scheduled in the coming hour, flights that left or landed in the "
+            "hour before, with their delays)."
         ),
         split=(
             "Each test window is two weeks of 2024: the holiday peak (18-31 December), the summer peak (3-16 July) "
@@ -440,6 +539,7 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
         - Note: Meteostat fills missing observations with model forecasts for the hour: 0.2% of the origin temperatures, 5.9% of the precipitation, 41% of the cloud cover and 97% of the condition codes (third decision). A forecast for an hour is issued before it, so it is known at the prediction point; the issue times are not in the files. Kept as Meteostat publishes them, as Aeolus did (CC 2026-10-26). Remark for users: part of the weather inputs, most of the condition code and cloud cover, are the output of a weather model, not observations, so a score on these columns depends on that model; a study of the weather's value should read them apart from the observed temperature and precipitation.
         - Impossible weather becomes missing (`MIN_TEMPERATURE_C`, `MAX_WIND_KMH`, a humidity of 0%): 4 readings of -60.6 C at Sarasota, 45 mean winds of 121-232 km/h, most in clear or fair weather, and 11 humidities of 0% at Lihue and Jackson Hole. Precipitation up to 96.5 mm in an hour (Gulf and Florida storms) stays.
         - Aircraft's previous flight: the tail number's flight scheduled to leave just before this one (`INBOUND_*`). Its scheduled times are known; its actual departure and arrival delays only when they happened by the prediction point, else missing, and `INBOUND_STATUS` says how far it had got (`none` when it did not end at this origin). The five columns add 0.15 to 0.17 ROC AUC per window (0.647-0.654 without them, 0.800-0.827 with them; untuned LightGBM, 1M training rows; measured on the windows before 2026-11-10, the newest six weeks of 2024).
+        - Airports' state at the prediction point (`AIRPORT_STATE`, nine columns; the row form of the release's flight network, added on 2026-11-27): the flights scheduled to leave and to land at the origin in the hour starting at the prediction point, those scheduled to land at the destination in this flight's scheduled arrival hour, and, for the hour before the prediction point, the departures from the origin and the arrivals at the destination that had happened (a departure by its actual time, an arrival by its actual landing), with their mean delay and their share late (15 minutes or more; missing when none). A cancelled flight counts as scheduled but never departed, a diverted one as departed but not arrived at its destination, and the flight itself is not counted. All times are UTC. Checked against a plain filter of the flight files for 400 random flights (3,600 values, no difference). Gain: 0.0073, 0.0064 and 0.0047 ROC AUC on the windows of 18 December, 3 July and 13 March (mean 0.0061; untuned LightGBM, 1M training rows, 0.834-0.835 without the columns and 0.838-0.842 with them). The gain sits in the four delay and late-share columns (alone 0.62-0.67 ROC AUC, 0.001 to 0.004 each on top of the others); the counts add under 0.001. Leak probe: the same columns read one hour later, with the actual times up to one hour after the prediction point, score higher (all nine 0.840-0.846, the delay columns alone 0.625-0.684 against 0.619-0.668), so the honest version holds nothing from after the prediction point.
         - Potential leak, kept on purpose: BTS records the aircraft that flew. When an aircraft was swapped, the row carries the swap: for 0.9% of the flights the recorded previous flight was scheduled to land after this departure (79-98% late), for 2.1% it ended elsewhere (42% late). Whether a swap was decided before the prediction point is not recorded. On the windows before 2026-11-10 (the newest six weeks of 2024) these rows are 2.6-3.4% of a window; setting their five columns to `none` and missing costs 0.0002 to 0.0013 ROC AUC, and scoring without them gives 0.007 to 0.011 less. Revisit if a source of planned tail assignments turns up.
         - Proxy missing values: scheduled block times below 15 minutes (5 rows) become missing. 52 others that are more than twice or less than half their route's median stay as BTS records them.
         - Coordinates: the BTS master coordinate of the airport sequence id the flight uses (Guam and Pago Pago with their true signs).
@@ -623,6 +723,7 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
             "INBOUND_MIN_SINCE_SCHED_DEP",
             "INBOUND_DEP_DELAY",
             "INBOUND_ARR_DELAY",
+            *AIRPORT_STATE,
             # Target: an arrival 15 minutes or more after the schedule (US DOT on-time definition, BTS ArrDel15).
             pl.when(pl.col("ArrDelay") >= DELAY_THRESHOLD_MINUTES)
             .then(pl.lit("Yes"))

@@ -1,5 +1,56 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-28, the data and split changes of 2026-11-27 ported to the restructured package (no container built)
+
+- `lt_vehicle_loan_default_prediction` accepts its 5-of-9 window count under the merged slug
+  `splits_dimensions_off_protocol` (was `splits_below_target`); the reason is unchanged.
+- `2024_lusaka_mobility_prediction_hackathon` drops the `splits_dimensions_off_protocol` acceptance of 2026-11-26:
+  it was for three four-day windows, and the nine one-day windows reach the target. Its `splits_comment` and that of
+  `nyc_taxi_trip_duration_1m` lose the sentences that only restated the windows, their sizes and the train sampling,
+  which the generated description of the splits now gives; every reason and attribution stays.
+- The rows, splits and metrics of the six datasets are those of 2026-11-27. The README of nyc_taxi_trip_duration_1m
+  is the one of 2026-11-27; the others change at the next rebuild.
+
+## 2026-11-27, data and split changes from the review of the 33 unreviewed datasets (containers not rebuilt)
+
+- `aeolus_rebuilt_1m` gains nine airport-traffic inputs known at the prediction point: flights scheduled at the
+  origin and destination in the coming hour, and the departures and arrivals of the hour before with their mean
+  delay and share late. +0.0061 ROC AUC on average over the three windows (untuned LightGBM, 1M training rows); the
+  same columns read one hour later score higher, so the honest ones use nothing after the prediction point. Rows and
+  splits unchanged.
+- `mortgage`: interest rate, maturity, credit score, LTV and property type take each loan's first recorded value
+  (33,457 rows differed).
+- `2024_lusaka_mobility_prediction_hackathon`: nine one-day windows (23 to 31 January, days from 03:00, gap one day),
+  a daily refit, in place of three four-day windows; training share 0.666 to 0.936.
+- `lt_vehicle_loan_default_prediction`: five whole-week test windows (27 September to 31 October 2018, 112,550 test
+  rows, oldest training side 51.73%) in place of nine four-day windows; the 5-of-9 count warning accepted.
+- `medical_facility_operational_data`: the newest 14-day window ends at the last arrival; no visit is left out of
+  every split (12,435 test visits); the splits comment explains the falling target level across the windows.
+
+## 2026-11-27, nyc_taxi_trip_duration: rebuilt from the TLC's open-data release (task change; container not shipped)
+
+- `nyc_taxi_trip_duration_1m` reads NYC Open Data's "2016 Yellow Taxi Trip Data" (one CSV per pickup day, 21 April
+  to 30 June 2016, 26,818,607 trips) instead of the Kaggle competition's sample of 1,458,644 trips: every train side
+  now holds over 1M trips (13.3M to 23.3M; the April window of the sample held 766,626).
+- `ratecodeid` is a new feature (the TLC's rate code, named as in its data dictionary; the code 99 is missing).
+- The windows are 24-30 June, 27 May-2 June and 10-16 June; the April week is outside the period. Each test window
+  keeps a random 500,000 trips; the container holds 23,784,905 rows.
+- The filters stay (the 120 km/h filter of the entry below drops 644 trips here); the daylight-saving fix and the
+  Kaggle id are gone. 26,131,305 trips after cleaning; README regenerated.
+
+## 2026-11-27, nyc_taxi_trip_duration: trips faster than 120 km/h dropped (task change; container not rebuilt)
+
+- `nyc_taxi_trip_duration_1m` drops the 32 trips whose straight line from pickup to drop-off implies more than
+  120 km/h (up to 1,408 km/h): a broken clock or GPS fix makes the target impossible. Same constant as
+  pkdd_15_taxi_trip_time_prediction_ii_1m and 2024_lusaka_mobility_prediction_hackathon. 3 of the rows were in a test
+  window. 1,442,619 trips after cleaning; README regenerated.
+
+## 2026-11-27, nyc_taxi_trip_duration: the one-day gap's reason (no data change)
+
+- `nyc_taxi_trip_duration_1m`'s `splits_comment` gives the latency of a weekly refit as the reason for the one-day
+  gap, and says the label delay alone (trips of at most 3 hours) would need a gap of 3 hours. The gap, the windows and
+  the frame are unchanged; README not regenerated.
+
 ## 2026-11-26, every definition rebuilt on the restructured package (174 containers)
 
 - All 174 definitions were rebuilt at the top of the codebase-review stack (#138 to #149). The generated READMEs now
